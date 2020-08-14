@@ -1,0 +1,24 @@
+# permissions for end users to edit insightsapps.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: insightsapp-editor-role
+rules:
+- apiGroups:
+  - cloud.redhat.com.cloud.redhat.com
+  resources:
+  - insightsapps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloud.redhat.com.cloud.redhat.com
+  resources:
+  - insightsapps/status
+  verbs:
+  - get
