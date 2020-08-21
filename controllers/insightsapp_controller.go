@@ -41,7 +41,28 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	_ = context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
 
-	// your logic here
+	// Fetch InsightsApps
+	app := &cloudredhatcomv1alpha1.InsightsApp{}
+	r.Client.Get(context.Background(), req.NamespacedName, app)
+	r.Log.Info("app: " + app.ObjectMeta.Name)
+	// For each app that's new:
+	//   Generate ConfigMap
+	//     kafka bootstrap env
+	//     metric port
+	//     consumer group
+	//     topic
+	//   Create Deployment with:
+	//     config mount
+	//     pod anti-affinity
+	//     resource limits
+	//     limited service account
+	//     image spec
+	//	   pull secrets
+	//     metric port
+	//     web port
+	//   Create Service
+	//   Create ServiceMonitor
+	//   Create PrometheusRules for lag
 
 	return ctrl.Result{}, nil
 }
