@@ -45,20 +45,29 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
 
 	iapp := &cloudredhatcomv1alpha1.InsightsApp{}
-	r.Client.Get(context.Background(), req.NamespacedName, iapp)
+	err := r.Client.Get(context.Background(), req.NamespacedName, iapp)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	labels := make(map[string]string)
-	labels["whippoorwill"] = "test"
-
-	d := apps.Deployment{}
+	labels["app"] = iapp.ObjectMeta.Name
 
 	m := metav1.ObjectMeta{}
 	m.Name = iapp.ObjectMeta.Name
+	m.Namespace = req.NamespacedName.Namespace
 	m.Labels = labels
+
+	d := apps.Deployment{}
 	d.ObjectMeta = m
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
+	selector := metav1.LabelSelector{}
+	selector.MatchLabels = labels
+	d.Spec.Selector = &selector
 	d.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
+	d.Spec.Template.ObjectMeta.Labels = labels
 
 	pullSecretRef := core.LocalObjectReference{}
 	pullSecretRef.Name = "quay-cloudservices-pull"
@@ -77,7 +86,11 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
-	r.Client.Create(context.Background(), &d)
+	err = r.Client.Create(context.Background(), &d)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	// For each app that's new:
 	//   Generate ConfigMap
