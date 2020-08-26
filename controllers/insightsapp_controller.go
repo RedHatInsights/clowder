@@ -20,6 +20,9 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,10 +44,41 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	_ = context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
 
-	// Fetch InsightsApps
-	app := &cloudredhatcomv1alpha1.InsightsApp{}
-	r.Client.Get(context.Background(), req.NamespacedName, app)
-	r.Log.Info("app: " + app.ObjectMeta.Name)
+	iapp := &cloudredhatcomv1alpha1.InsightsApp{}
+	r.Client.Get(context.Background(), req.NamespacedName, iapp)
+
+	labels := make(map[string]string)
+	labels["whippoorwill"] = "test"
+
+	d := apps.Deployment{}
+
+	m := metav1.ObjectMeta{}
+	m.Name = iapp.ObjectMeta.Name
+	m.Labels = labels
+	d.ObjectMeta = m
+
+	d.Spec.Replicas = iapp.Spec.MinReplicas
+	d.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
+
+	pullSecretRef := core.LocalObjectReference{}
+	pullSecretRef.Name = "quay-cloudservices-pull"
+	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
+
+	c := core.Container{}
+	c.Name = iapp.ObjectMeta.Name
+	c.Image = iapp.Spec.Image
+	c.Command = iapp.Spec.Command
+	c.Args = iapp.Spec.Args
+	c.Env = iapp.Spec.Env
+	c.Resources = iapp.Spec.Resources
+	c.LivenessProbe = iapp.Spec.LivenessProbe
+	c.ReadinessProbe = iapp.Spec.ReadinessProbe
+	c.VolumeMounts = iapp.Spec.VolumeMounts
+
+	d.Spec.Template.Spec.Containers = []core.Container{c}
+
+	r.Client.Create(context.Background(), &d)
+
 	// For each app that's new:
 	//   Generate ConfigMap
 	//     kafka bootstrap env

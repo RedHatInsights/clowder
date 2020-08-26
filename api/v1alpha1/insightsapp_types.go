@@ -29,6 +29,7 @@ type InsightsAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
 	Image          string                  `json:"image"`
 	Command        []string                `json:"command,omitempty"`
 	Args           []string                `json:"args,omitempty"`
@@ -38,8 +39,6 @@ type InsightsAppSpec struct {
 	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
 	Volumes        []v1.Volume             `json:"volumes,omitempty"`
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
-	InitContainers []InitContainer         `json:"initContainers,omitempty"`
-	PodSpec        v1.PodSpec              `json:"spec,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp
