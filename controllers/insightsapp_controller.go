@@ -22,6 +22,7 @@ import (
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -48,6 +49,23 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	err := r.Client.Get(context.Background(), req.NamespacedName, iapp)
 
 	if err != nil {
+		if k8serr.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
+	d := apps.Deployment{}
+	err = r.Client.Get(context.Background(), req.NamespacedName, &d)
+
+	update := false
+
+	if err == nil {
+		update = true
+	}
+
+	if err != nil && !k8serr.IsNotFound(err) {
 		return ctrl.Result{}, err
 	}
 
@@ -56,10 +74,9 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	m := metav1.ObjectMeta{}
 	m.Name = iapp.ObjectMeta.Name
-	m.Namespace = req.NamespacedName.Namespace
+	m.Namespace = req.Namespace
 	m.Labels = labels
 
-	d := apps.Deployment{}
 	d.ObjectMeta = m
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
@@ -86,7 +103,11 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
-	err = r.Client.Create(context.Background(), &d)
+	if update {
+		err = r.Client.Update(context.Background(), &d)
+	} else {
+		err = r.Client.Create(context.Background(), &d)
+	}
 
 	if err != nil {
 		return ctrl.Result{}, err
