@@ -21,13 +21,25 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// InsightsAppSpec defines the desired state of InsightsApp
+type InitContainer struct {
+	Args []string `json:"args"`
+}
+
 type InsightsAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Image     string                  `json:"image"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+	Image          string                  `json:"image"`
+	Command        []string                `json:"command,omitempty"`
+	Args           []string                `json:"args,omitempty"`
+	Env            []v1.EnvVar             `json:"env,omitempty"`
+	Resources      v1.ResourceRequirements `json:"resources,omitempty"`
+	LivenessProbe  *v1.Probe               `json:"livenessProbe,omitempty"`
+	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
+	Volumes        []v1.Volume             `json:"volumes,omitempty"`
+	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
+	InitContainers []InitContainer         `json:"initContainers,omitempty"`
+	PodSpec        v1.PodSpec              `json:"spec,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp
