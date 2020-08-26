@@ -77,6 +77,14 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	m.Namespace = req.Namespace
 	m.Labels = labels
 
+	owner := metav1.OwnerReference{}
+	owner.APIVersion = iapp.APIVersion
+	owner.Kind = iapp.Kind
+	owner.Name = iapp.ObjectMeta.Name
+	owner.UID = iapp.ObjectMeta.UID
+
+	m.OwnerReferences = []metav1.OwnerReference{owner}
+
 	d.ObjectMeta = m
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
