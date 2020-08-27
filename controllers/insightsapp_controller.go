@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -29,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
+	"cloud.redhat.com/whippoorwill/v2/controllers/config"
 )
 
 // InsightsAppReconciler reconciles a InsightsApp object
@@ -38,43 +40,13 @@ type InsightsAppReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
-
-func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
-
-	iapp := &cloudredhatcomv1alpha1.InsightsApp{}
-	err := r.Client.Get(context.Background(), req.NamespacedName, iapp)
-
-	if err != nil {
-		if k8serr.IsNotFound(err) {
-			return ctrl.Result{}, nil
-		}
-
-		return ctrl.Result{}, err
-	}
-
-	d := apps.Deployment{}
-	err = r.Client.Get(context.Background(), req.NamespacedName, &d)
-
-	update := false
-
-	if err == nil {
-		update = true
-	}
-
-	if err != nil && !k8serr.IsNotFound(err) {
-		return ctrl.Result{}, err
-	}
-
+func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, d *apps.Deployment) {
 	labels := make(map[string]string)
 	labels["app"] = iapp.ObjectMeta.Name
 
 	m := metav1.ObjectMeta{}
 	m.Name = iapp.ObjectMeta.Name
-	m.Namespace = req.Namespace
+	m.Namespace = iapp.ObjectMeta.Namespace
 	m.Labels = labels
 
 	owner := metav1.OwnerReference{}
@@ -110,6 +82,112 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	c.VolumeMounts = iapp.Spec.VolumeMounts
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
+}
+
+func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhatcomv1alpha1.InsightsApp, c *config.AppConfig) error {
+
+	err := r.Client.Get(context.Background(), req.NamespacedName, &core.Secret{})
+
+	update := (err == nil)
+
+	if err != nil && !k8serr.IsNotFound(err) {
+		return err
+	}
+
+	jsonData, err := json.Marshal(c)
+
+	if err != nil {
+		return err
+	}
+
+	owner := metav1.OwnerReference{}
+	owner.APIVersion = iapp.APIVersion
+	owner.Kind = iapp.Kind
+	owner.Name = iapp.ObjectMeta.Name
+	owner.UID = iapp.ObjectMeta.UID
+
+	secret := core.Secret{}
+	secret.ObjectMeta = metav1.ObjectMeta{
+		Name:            iapp.ObjectMeta.Name,
+		Namespace:       iapp.ObjectMeta.Namespace,
+		OwnerReferences: []metav1.OwnerReference{owner},
+	}
+	secret.StringData = map[string]string{
+		"cdappconfig.json": string(jsonData),
+	}
+
+	if update {
+		secret.Data = nil
+		return r.Client.Update(context.Background(), &secret)
+	}
+
+	return r.Client.Create(context.Background(), &secret)
+}
+
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
+
+func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	_ = context.Background()
+	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
+
+	iapp := cloudredhatcomv1alpha1.InsightsApp{}
+	err := r.Client.Get(context.Background(), req.NamespacedName, &iapp)
+
+	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// TODO: requeue?
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
+	d := apps.Deployment{}
+	err = r.Client.Get(context.Background(), req.NamespacedName, &d)
+
+	update := false
+
+	if err == nil {
+		update = true
+	}
+
+	if err != nil && !k8serr.IsNotFound(err) {
+		return ctrl.Result{}, err
+	}
+
+	r.makeDeployment(&iapp, &d)
+
+	cb := config.NewBuilder()
+	cb.CloudWatch(&config.CloudWatchConfig{
+		AccessKeyID:     "mah_key",
+		SecretAccessKey: "mah_sekret",
+		Region:          "us-east-1",
+		LogGroup:        iapp.ObjectMeta.Namespace,
+	})
+	c := cb.Build()
+	c.WebPort = 8080
+	c.MetricsPort = 9090
+	c.MetricsPath = "/metrics"
+
+	if err = r.persistConfig(req, iapp, c); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
+		Name: "config-secret",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: iapp.ObjectMeta.Name,
+			},
+		},
+	})
+
+	con := &d.Spec.Template.Spec.Containers[0]
+	con.VolumeMounts = append(con.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
 
 	if update {
 		err = r.Client.Update(context.Background(), &d)
@@ -120,25 +198,6 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// For each app that's new:
-	//   Generate ConfigMap
-	//     kafka bootstrap env
-	//     metric port
-	//     consumer group
-	//     topic
-	//   Create Deployment with:
-	//     config mount
-	//     pod anti-affinity
-	//     resource limits
-	//     limited service account
-	//     image spec
-	//	   pull secrets
-	//     metric port
-	//     web port
-	//   Create Service
-	//   Create ServiceMonitor
-	//   Create PrometheusRules for lag
 
 	return ctrl.Result{}, nil
 }
