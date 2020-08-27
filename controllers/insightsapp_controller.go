@@ -19,6 +19,8 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strconv"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -26,6 +28,7 @@ import (
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,6 +41,52 @@ type InsightsAppReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+}
+
+func (r *InsightsAppReconciler) makeServices(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp) error {
+	labels := make(map[string]string)
+	labels["app"] = iapp.ObjectMeta.Name
+
+	if iapp.Spec.Port != nil {
+		for _, containerPort := range iapp.Spec.Port {
+			ctrl.Log.Info(fmt.Sprintf("%v", containerPort))
+			serviceName := containerPort.Name
+			if serviceName == "" {
+				serviceName = fmt.Sprintf("%s-%s", iapp.ObjectMeta.Name, strconv.Itoa(int(containerPort.ContainerPort)))
+			}
+			namespacedName := types.NamespacedName{Name: serviceName, Namespace: req.NamespacedName.Namespace}
+			s := core.Service{}
+
+			err := r.Client.Get(context.Background(), namespacedName, &s)
+
+			update := false
+
+			if err == nil {
+				update = true
+			}
+
+			if err != nil && !k8serr.IsNotFound(err) {
+				return err
+			}
+
+			s.Name = serviceName
+			port := core.ServicePort{Protocol: containerPort.Protocol, Port: containerPort.ContainerPort}
+			s.Spec.Selector = labels
+			s.Spec.Ports = []core.ServicePort{port}
+			s.Namespace = req.Namespace
+
+			if update {
+				err = r.Client.Update(context.Background(), &s)
+			} else {
+				err = r.Client.Create(context.Background(), &s)
+			}
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, d *apps.Deployment) {
@@ -198,6 +247,30 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+
+	err = r.makeServices(&req, &iapp)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// For each app that's new:
+	//   Generate ConfigMap
+	//     kafka bootstrap env
+	//     metric port
+	//     consumer group
+	//     topic
+	//   Create Deployment with:
+	//     config mount
+	//     pod anti-affinity
+	//     resource limits
+	//     limited service account
+	//     image spec
+	//	   pull secrets
+	//     metric port
+	//     web port
+	//   Create ServiceMonitor
+	//   Create PrometheusRules for lag
 
 	return ctrl.Result{}, nil
 }
