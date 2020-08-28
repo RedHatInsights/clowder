@@ -42,6 +42,14 @@ type InsightsAppReconciler struct {
 func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
 
 	ctx := context.Background()
+	s := core.Service{}
+	err := r.Client.Get(ctx, req.NamespacedName, &s)
+
+	update, err := updateOrErr(err)
+	if err != nil {
+		return err
+	}
+
 	ports := []core.ServicePort{}
 	metricsPort := core.ServicePort{Name: "metrics", Port: base.Spec.MetricsPort, Protocol: "TCP"}
 	ports = append(ports, metricsPort)
@@ -51,37 +59,21 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 		ports = append(ports, webPort)
 	}
 
-	s := core.Service{}
-	err := r.Client.Get(ctx, req.NamespacedName, &s)
-
-	update, err := updateOrErr(err)
-	if err != nil {
-		return err
-	}
-
 	s.ObjectMeta = iapp.MakeObjectMeta()
 	s.Spec.Selector = iapp.GetLabels()
 	s.Spec.Ports = ports
 
-	if update {
-		return r.Client.Update(ctx, &s)
-	}
-
-	return r.Client.Create(ctx, &s)
+	return update.Apply(ctx, r.Client, &s)
 }
 
 func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase, d *apps.Deployment) {
 
-	labels := map[string]string{
-		"app": iapp.ObjectMeta.Name,
-	}
-
 	d.ObjectMeta = iapp.MakeObjectMeta()
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
-	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
 	d.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
-	d.Spec.Template.ObjectMeta.Labels = labels
+	d.Spec.Template.ObjectMeta.Labels = iapp.GetLabels()
 
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
@@ -96,7 +88,7 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 		LivenessProbe:  iapp.Spec.LivenessProbe,
 		ReadinessProbe: iapp.Spec.ReadinessProbe,
 		VolumeMounts:   iapp.Spec.VolumeMounts,
-		Ports: []core.ContainerPort{core.ContainerPort{
+		Ports: []core.ContainerPort{{
 			Name:          "metrics",
 			ContainerPort: base.Spec.MetricsPort,
 		}},
@@ -116,16 +108,16 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 
 	ctx := context.Background()
 
+	// In any case, we want to overwrite the secret, so this just
+	// tests to see if the secret exists
 	err := r.Client.Get(ctx, req.NamespacedName, &core.Secret{})
 
-	update := (err == nil)
-
-	if err != nil && !k8serr.IsNotFound(err) {
+	update, err := updateOrErr(err)
+	if err != nil {
 		return err
 	}
 
 	jsonData, err := json.Marshal(c)
-
 	if err != nil {
 		return err
 	}
@@ -137,21 +129,26 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 		},
 	}
 
-	if update {
-		return r.Client.Update(ctx, &secret)
-	}
-
-	return r.Client.Create(ctx, &secret)
+	return update.Apply(ctx, r.Client, &secret)
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
 
-func updateOrErr(err error) (bool, error) {
-	update := (err == nil)
+type updater bool
+
+func (u *updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
+	if *u {
+		return cl.Update(ctx, obj)
+	}
+	return cl.Create(ctx, obj)
+}
+
+func updateOrErr(err error) (updater, error) {
+	update := updater(err == nil)
 
 	if err != nil && !k8serr.IsNotFound(err) {
-		return false, err
+		return update, err
 	}
 
 	return update, nil
@@ -222,19 +219,11 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		MountPath: "/cdapp/",
 	})
 
-	if update {
-		err = r.Client.Update(ctx, &d)
-	} else {
-		err = r.Client.Create(ctx, &d)
-	}
-
-	if err != nil {
+	if err = update.Apply(ctx, r.Client, &d); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	err = r.makeService(&req, &iapp, &base)
-
-	if err != nil {
+	if err = r.makeService(&req, &iapp, &base); err != nil {
 		return ctrl.Result{}, err
 	}
 
