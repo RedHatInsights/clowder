@@ -94,52 +94,41 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 }
 
 func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, d *apps.Deployment) {
-	labels := make(map[string]string)
-	labels["app"] = iapp.ObjectMeta.Name
 
-	m := metav1.ObjectMeta{}
-	m.Name = iapp.ObjectMeta.Name
-	m.Namespace = iapp.ObjectMeta.Namespace
-	m.Labels = labels
+	labels := map[string]string{
+		"app": iapp.ObjectMeta.Name,
+	}
 
-	owner := metav1.OwnerReference{}
-	owner.APIVersion = iapp.APIVersion
-	owner.Kind = iapp.Kind
-	owner.Name = iapp.ObjectMeta.Name
-	owner.UID = iapp.ObjectMeta.UID
-
-	m.OwnerReferences = []metav1.OwnerReference{owner}
-
-	d.ObjectMeta = m
+	d.ObjectMeta = iapp.MakeObjectMeta()
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
-	selector := metav1.LabelSelector{}
-	selector.MatchLabels = labels
-	d.Spec.Selector = &selector
+	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	d.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
 	d.Spec.Template.ObjectMeta.Labels = labels
 
-	pullSecretRef := core.LocalObjectReference{}
-	pullSecretRef.Name = "quay-cloudservices-pull"
+	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
 
-	c := core.Container{}
-	c.Name = iapp.ObjectMeta.Name
-	c.Image = iapp.Spec.Image
-	c.Command = iapp.Spec.Command
-	c.Args = iapp.Spec.Args
-	c.Env = iapp.Spec.Env
-	c.Resources = iapp.Spec.Resources
-	c.LivenessProbe = iapp.Spec.LivenessProbe
-	c.ReadinessProbe = iapp.Spec.ReadinessProbe
-	c.VolumeMounts = iapp.Spec.VolumeMounts
+	c := core.Container{
+		Name:           iapp.ObjectMeta.Name,
+		Image:          iapp.Spec.Image,
+		Command:        iapp.Spec.Command,
+		Args:           iapp.Spec.Args,
+		Env:            iapp.Spec.Env,
+		Resources:      iapp.Spec.Resources,
+		LivenessProbe:  iapp.Spec.LivenessProbe,
+		ReadinessProbe: iapp.Spec.ReadinessProbe,
+		VolumeMounts:   iapp.Spec.VolumeMounts,
+	}
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
 func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhatcomv1alpha1.InsightsApp, c *config.AppConfig) error {
 
-	err := r.Client.Get(context.Background(), req.NamespacedName, &core.Secret{})
+	ctx := context.Background()
+
+	err := r.Client.Get(ctx, req.NamespacedName, &core.Secret{})
 
 	update := (err == nil)
 
@@ -153,39 +142,39 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 		return err
 	}
 
-	owner := metav1.OwnerReference{}
-	owner.APIVersion = iapp.APIVersion
-	owner.Kind = iapp.Kind
-	owner.Name = iapp.ObjectMeta.Name
-	owner.UID = iapp.ObjectMeta.UID
-
-	secret := core.Secret{}
-	secret.ObjectMeta = metav1.ObjectMeta{
-		Name:            iapp.ObjectMeta.Name,
-		Namespace:       iapp.ObjectMeta.Namespace,
-		OwnerReferences: []metav1.OwnerReference{owner},
-	}
-	secret.StringData = map[string]string{
-		"cdappconfig.json": string(jsonData),
+	secret := core.Secret{
+		ObjectMeta: iapp.MakeObjectMeta(),
+		StringData: map[string]string{
+			"cdappconfig.json": string(jsonData),
+		},
 	}
 
 	if update {
-		secret.Data = nil
-		return r.Client.Update(context.Background(), &secret)
+		return r.Client.Update(ctx, &secret)
 	}
 
-	return r.Client.Create(context.Background(), &secret)
+	return r.Client.Create(ctx, &secret)
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
 
+func updateOrErr(err error) (bool, error) {
+	update := (err == nil)
+
+	if err != nil && !k8serr.IsNotFound(err) {
+		return false, err
+	}
+
+	return update, nil
+}
+
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
+	ctx := context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
 
 	iapp := cloudredhatcomv1alpha1.InsightsApp{}
-	err := r.Client.Get(context.Background(), req.NamespacedName, &iapp)
+	err := r.Client.Get(ctx, req.NamespacedName, &iapp)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -197,31 +186,23 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	d := apps.Deployment{}
-	err = r.Client.Get(context.Background(), req.NamespacedName, &d)
+	err = r.Client.Get(ctx, req.NamespacedName, &d)
 
-	update := false
-
-	if err == nil {
-		update = true
-	}
-
-	if err != nil && !k8serr.IsNotFound(err) {
+	update, err := updateOrErr(err)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	r.makeDeployment(&iapp, &d)
 
-	cb := config.NewBuilder()
-	cb.CloudWatch(&config.CloudWatchConfig{
-		AccessKeyID:     "mah_key",
-		SecretAccessKey: "mah_sekret",
-		Region:          "us-east-1",
-		LogGroup:        iapp.ObjectMeta.Namespace,
-	})
-	c := cb.Build()
-	c.WebPort = 8080
-	c.MetricsPort = 9090
-	c.MetricsPath = "/metrics"
+	c := config.New(8080, 9090, "/metrics", config.CloudWatch(
+		config.CloudWatchConfig{
+			AccessKeyID:     "mah_key",
+			SecretAccessKey: "mah_sekret",
+			Region:          "us-east-1",
+			LogGroup:        iapp.ObjectMeta.Namespace,
+		},
+	))
 
 	if err = r.persistConfig(req, iapp, c); err != nil {
 		return ctrl.Result{}, err
@@ -243,9 +224,9 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	})
 
 	if update {
-		err = r.Client.Update(context.Background(), &d)
+		err = r.Client.Update(ctx, &d)
 	} else {
-		err = r.Client.Create(context.Background(), &d)
+		err = r.Client.Create(ctx, &d)
 	}
 
 	if err != nil {

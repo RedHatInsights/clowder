@@ -34,15 +34,30 @@ type AppConfigBuilder struct {
 	config AppConfig
 }
 
-func NewBuilder() *AppConfigBuilder {
-	return &AppConfigBuilder{}
+type Option func(*AppConfig)
+
+func CloudWatch(cwc CloudWatchConfig) Option {
+	return func(c *AppConfig) {
+		c.CloudWatch = cwc
+	}
 }
 
-func (c *AppConfigBuilder) CloudWatch(cw *CloudWatchConfig) *AppConfigBuilder {
-	c.config.CloudWatch = *cw
+func Kafka(kc KafkaConfig) Option {
+	return func(c *AppConfig) {
+		c.Kafka = kc
+	}
+}
+
+func New(webPort int, metricsPort int, metricsPath string, opts ...Option) *AppConfig {
+	c := &AppConfig{
+		WebPort:     webPort,
+		MetricsPort: metricsPort,
+		MetricsPath: metricsPath,
+	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
 	return c
-}
-
-func (c *AppConfigBuilder) Build() *AppConfig {
-	return &c.config
 }
