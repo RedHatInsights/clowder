@@ -1620,6 +1620,8 @@ spec:
                 - name
                 type: object
               type: array
+            web:
+              type: boolean
           required:
           - image
           type: object
