@@ -159,6 +159,16 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
 
+func updateOrErr(err error) (bool, error) {
+	update := (err == nil)
+
+	if err != nil && !k8serr.IsNotFound(err) {
+		return false, err
+	}
+
+	return update, nil
+}
+
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
@@ -178,9 +188,8 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	d := apps.Deployment{}
 	err = r.Client.Get(ctx, req.NamespacedName, &d)
 
-	update := (err == nil)
-
-	if err != nil && !k8serr.IsNotFound(err) {
+	update, err := updateOrErr(err)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
