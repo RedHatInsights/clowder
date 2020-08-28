@@ -42,12 +42,6 @@ type InsightsAppReconciler struct {
 
 func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp) error {
 
-	owner := metav1.OwnerReference{}
-	owner.APIVersion = iapp.APIVersion
-	owner.Kind = iapp.Kind
-	owner.Name = iapp.ObjectMeta.Name
-	owner.UID = iapp.ObjectMeta.UID
-
 	labels := make(map[string]string)
 	labels["app"] = iapp.ObjectMeta.Name
 
@@ -62,7 +56,7 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 	}
 
 	s := core.Service{}
-	s.OwnerReferences = []metav1.OwnerReference{owner}
+	s.ObjectMeta = iapp.MakeObjectMeta()
 
 	err := r.Client.Get(context.Background(), req.NamespacedName, &s)
 
@@ -169,6 +163,7 @@ func updateOrErr(err error) (bool, error) {
 	return update, nil
 }
 
+// Reconcile function for InsightsAppReconciler
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
@@ -242,6 +237,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager for InsightsAppReconciler
 func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudredhatcomv1alpha1.InsightsApp{}).
