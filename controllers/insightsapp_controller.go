@@ -42,15 +42,7 @@ type InsightsAppReconciler struct {
 
 func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp) error {
 
-	owner := metav1.OwnerReference{}
-	owner.APIVersion = iapp.APIVersion
-	owner.Kind = iapp.Kind
-	owner.Name = iapp.ObjectMeta.Name
-	owner.UID = iapp.ObjectMeta.UID
-
-	labels := make(map[string]string)
-	labels["app"] = iapp.ObjectMeta.Name
-
+	ctx := context.Background()
 	ports := []core.ServicePort{}
 	metricsPort := core.ServicePort{Name: "metrics", Port: 9000, Protocol: "TCP"}
 	ports = append(ports, metricsPort)
@@ -62,35 +54,24 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 	}
 
 	s := core.Service{}
-	s.OwnerReferences = []metav1.OwnerReference{owner}
+	err := r.Client.Get(ctx, req.NamespacedName, &s)
 
-	err := r.Client.Get(context.Background(), req.NamespacedName, &s)
-
-	update := false
-
-	if err == nil {
-		update = true
-	}
-
-	if err != nil && !k8serr.IsNotFound(err) {
+	update, err := updateOrErr(err)
+	if err != nil {
 		return err
 	}
 
+	s.OwnerReferences = []metav1.OwnerReference{iapp.MakeOwnerReference()}
 	s.Name = serviceName
-	s.Spec.Selector = labels
+	s.Spec.Selector = iapp.GetLabels()
 	s.Spec.Ports = ports
 	s.Namespace = req.Namespace
 
 	if update {
-		err = r.Client.Update(context.Background(), &s)
-	} else {
-		err = r.Client.Create(context.Background(), &s)
+		return r.Client.Update(ctx, &s)
 	}
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return r.Client.Create(ctx, &s)
 }
 
 func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, d *apps.Deployment) {
