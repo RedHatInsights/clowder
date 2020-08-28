@@ -94,45 +94,32 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 }
 
 func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, d *apps.Deployment) {
-	labels := make(map[string]string)
-	labels["app"] = iapp.ObjectMeta.Name
 
-	m := metav1.ObjectMeta{}
-	m.Name = iapp.ObjectMeta.Name
-	m.Namespace = iapp.ObjectMeta.Namespace
-	m.Labels = labels
+	labels := map[string]string{
+		"app": iapp.ObjectMeta.Name,
+	}
 
-	owner := metav1.OwnerReference{}
-	owner.APIVersion = iapp.APIVersion
-	owner.Kind = iapp.Kind
-	owner.Name = iapp.ObjectMeta.Name
-	owner.UID = iapp.ObjectMeta.UID
-
-	m.OwnerReferences = []metav1.OwnerReference{owner}
-
-	d.ObjectMeta = m
+	d.ObjectMeta = iapp.MakeObjectMeta()
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
-	selector := metav1.LabelSelector{}
-	selector.MatchLabels = labels
-	d.Spec.Selector = &selector
+	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	d.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
 	d.Spec.Template.ObjectMeta.Labels = labels
 
-	pullSecretRef := core.LocalObjectReference{}
-	pullSecretRef.Name = "quay-cloudservices-pull"
+	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
 
-	c := core.Container{}
-	c.Name = iapp.ObjectMeta.Name
-	c.Image = iapp.Spec.Image
-	c.Command = iapp.Spec.Command
-	c.Args = iapp.Spec.Args
-	c.Env = iapp.Spec.Env
-	c.Resources = iapp.Spec.Resources
-	c.LivenessProbe = iapp.Spec.LivenessProbe
-	c.ReadinessProbe = iapp.Spec.ReadinessProbe
-	c.VolumeMounts = iapp.Spec.VolumeMounts
+	c := core.Container{
+		Name:           iapp.ObjectMeta.Name,
+		Image:          iapp.Spec.Image,
+		Command:        iapp.Spec.Command,
+		Args:           iapp.Spec.Args,
+		Env:            iapp.Spec.Env,
+		Resources:      iapp.Spec.Resources,
+		LivenessProbe:  iapp.Spec.LivenessProbe,
+		ReadinessProbe: iapp.Spec.ReadinessProbe,
+		VolumeMounts:   iapp.Spec.VolumeMounts,
+	}
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 }
@@ -153,18 +140,8 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 		return err
 	}
 
-	owner := metav1.OwnerReference{}
-	owner.APIVersion = iapp.APIVersion
-	owner.Kind = iapp.Kind
-	owner.Name = iapp.ObjectMeta.Name
-	owner.UID = iapp.ObjectMeta.UID
-
 	secret := core.Secret{}
-	secret.ObjectMeta = metav1.ObjectMeta{
-		Name:            iapp.ObjectMeta.Name,
-		Namespace:       iapp.ObjectMeta.Namespace,
-		OwnerReferences: []metav1.OwnerReference{owner},
-	}
+	secret.ObjectMeta = iapp.MakeObjectMeta()
 	secret.StringData = map[string]string{
 		"cdappconfig.json": string(jsonData),
 	}

@@ -72,3 +72,25 @@ type InsightsAppList struct {
 func init() {
 	SchemeBuilder.Register(&InsightsApp{}, &InsightsAppList{})
 }
+
+func (i *InsightsApp) GetLabels() map[string]string {
+	return map[string]string{"app": i.ObjectMeta.Name}
+}
+
+func (i *InsightsApp) MakeOwnerReference() metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: i.APIVersion,
+		Kind:       i.Kind,
+		Name:       i.ObjectMeta.Name,
+		UID:        i.ObjectMeta.UID,
+	}
+}
+
+func (i *InsightsApp) MakeObjectMeta() metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:            i.ObjectMeta.Name,
+		Namespace:       i.ObjectMeta.Namespace,
+		Labels:          i.GetLabels(),
+		OwnerReferences: []metav1.OwnerReference{i.MakeOwnerReference()},
+	}
+}
