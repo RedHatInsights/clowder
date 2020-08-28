@@ -39,6 +39,8 @@ spec:
               items:
                 type: string
               type: array
+            base:
+              type: string
             command:
               items:
                 type: string
@@ -1623,6 +1625,7 @@ spec:
             web:
               type: boolean
           required:
+          - base
           - image
           type: object
         status:

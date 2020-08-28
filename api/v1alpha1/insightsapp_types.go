@@ -40,6 +40,7 @@ type InsightsAppSpec struct {
 	Volumes        []v1.Volume             `json:"volumes,omitempty"`
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
 	Web            bool                    `json:"web,omitempty"`
+	Base           string                  `json:"base"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp

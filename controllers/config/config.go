@@ -23,15 +23,11 @@ type KafkaConfig struct {
 }
 
 type AppConfig struct {
-	WebPort     int              `json:"webPort"`
-	MetricsPort int              `json:"metricsPort"`
+	WebPort     int32            `json:"webPort"`
+	MetricsPort int32            `json:"metricsPort"`
 	MetricsPath string           `json:"metricsPath"`
 	CloudWatch  CloudWatchConfig `json:"cloudWatch"`
 	Kafka       KafkaConfig      `json:"kafka"`
-}
-
-type AppConfigBuilder struct {
-	config AppConfig
 }
 
 type Option func(*AppConfig)
@@ -48,7 +44,7 @@ func Kafka(kc KafkaConfig) Option {
 	}
 }
 
-func New(webPort int, metricsPort int, metricsPath string, opts ...Option) *AppConfig {
+func New(webPort int32, metricsPort int32, metricsPath string, opts ...Option) *AppConfig {
 	c := &AppConfig{
 		WebPort:     webPort,
 		MetricsPort: metricsPort,

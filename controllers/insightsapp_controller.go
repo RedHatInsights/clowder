@@ -1,6 +1,4 @@
 /*
-
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -26,6 +24,7 @@ import (
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -40,16 +39,15 @@ type InsightsAppReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp) error {
+func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
 
 	ctx := context.Background()
 	ports := []core.ServicePort{}
-	metricsPort := core.ServicePort{Name: "metrics", Port: 9000, Protocol: "TCP"}
+	metricsPort := core.ServicePort{Name: "metrics", Port: base.Spec.MetricsPort, Protocol: "TCP"}
 	ports = append(ports, metricsPort)
-	serviceName := iapp.ObjectMeta.Name
 
 	if iapp.Spec.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: 8000, Protocol: "TCP"}
+		webPort := core.ServicePort{Name: "web", Port: base.Spec.WebPort, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
 
@@ -61,11 +59,9 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 		return err
 	}
 
-	s.OwnerReferences = []metav1.OwnerReference{iapp.MakeOwnerReference()}
-	s.Name = serviceName
+	s.ObjectMeta = iapp.MakeObjectMeta()
 	s.Spec.Selector = iapp.GetLabels()
 	s.Spec.Ports = ports
-	s.Namespace = req.Namespace
 
 	if update {
 		return r.Client.Update(ctx, &s)
@@ -74,7 +70,7 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 	return r.Client.Create(ctx, &s)
 }
 
-func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, d *apps.Deployment) {
+func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase, d *apps.Deployment) {
 
 	labels := map[string]string{
 		"app": iapp.ObjectMeta.Name,
@@ -100,6 +96,17 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 		LivenessProbe:  iapp.Spec.LivenessProbe,
 		ReadinessProbe: iapp.Spec.ReadinessProbe,
 		VolumeMounts:   iapp.Spec.VolumeMounts,
+		Ports: []core.ContainerPort{core.ContainerPort{
+			Name:          "metrics",
+			ContainerPort: base.Spec.MetricsPort,
+		}},
+	}
+
+	if iapp.Spec.Web {
+		c.Ports = append(c.Ports, core.ContainerPort{
+			Name:          "web",
+			ContainerPort: base.Spec.WebPort,
+		})
 	}
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
@@ -150,6 +157,7 @@ func updateOrErr(err error) (bool, error) {
 	return update, nil
 }
 
+// Reconcile fn
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
@@ -166,6 +174,16 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
+	base := cloudredhatcomv1alpha1.InsightsBase{}
+	err = r.Client.Get(ctx, types.NamespacedName{
+		Namespace: iapp.Namespace,
+		Name:      iapp.Spec.Base,
+	}, &base)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	d := apps.Deployment{}
 	err = r.Client.Get(ctx, req.NamespacedName, &d)
 
@@ -174,9 +192,9 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	r.makeDeployment(&iapp, &d)
+	r.makeDeployment(&iapp, &base, &d)
 
-	c := config.New(8080, 9090, "/metrics", config.CloudWatch(
+	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.CloudWatch(
 		config.CloudWatchConfig{
 			AccessKeyID:     "mah_key",
 			SecretAccessKey: "mah_sekret",
@@ -214,7 +232,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	err = r.makeService(&req, &iapp)
+	err = r.makeService(&req, &iapp, &base)
 
 	if err != nil {
 		return ctrl.Result{}, err
@@ -223,6 +241,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager sets up wi
 func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudredhatcomv1alpha1.InsightsApp{}).

@@ -1,4 +1,5 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - cloud.redhat.com_v1alpha1_insightsapp.yaml
+- cloud.redhat.com_v1alpha1_insightsbase.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

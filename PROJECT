@@ -6,6 +6,9 @@ resources:
 - group: cloud.redhat.com
   kind: InsightsApp
   version: v1alpha1
+- group: cloud.redhat.com
+  kind: InsightsBase
+  version: v1alpha1
 version: 3-alpha
 plugins:
   go.sdk.operatorframework.io/v2-alpha: {}
