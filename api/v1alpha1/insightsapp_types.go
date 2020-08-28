@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,6 +39,7 @@ type InsightsAppSpec struct {
 	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
 	Volumes        []v1.Volume             `json:"volumes,omitempty"`
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
+	Web            bool                    `json:"web,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp
