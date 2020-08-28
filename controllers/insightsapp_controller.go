@@ -126,7 +126,9 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 
 func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhatcomv1alpha1.InsightsApp, c *config.AppConfig) error {
 
-	err := r.Client.Get(context.Background(), req.NamespacedName, &core.Secret{})
+	ctx := context.Background()
+
+	err := r.Client.Get(ctx, req.NamespacedName, &core.Secret{})
 
 	update := (err == nil)
 
@@ -140,29 +142,29 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 		return err
 	}
 
-	secret := core.Secret{}
-	secret.ObjectMeta = iapp.MakeObjectMeta()
-	secret.StringData = map[string]string{
-		"cdappconfig.json": string(jsonData),
+	secret := core.Secret{
+		ObjectMeta: iapp.MakeObjectMeta(),
+		StringData: map[string]string{
+			"cdappconfig.json": string(jsonData),
+		},
 	}
 
 	if update {
-		secret.Data = nil
-		return r.Client.Update(context.Background(), &secret)
+		return r.Client.Update(ctx, &secret)
 	}
 
-	return r.Client.Create(context.Background(), &secret)
+	return r.Client.Create(ctx, &secret)
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
 
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
+	ctx := context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
 
 	iapp := cloudredhatcomv1alpha1.InsightsApp{}
-	err := r.Client.Get(context.Background(), req.NamespacedName, &iapp)
+	err := r.Client.Get(ctx, req.NamespacedName, &iapp)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -174,13 +176,9 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	d := apps.Deployment{}
-	err = r.Client.Get(context.Background(), req.NamespacedName, &d)
+	err = r.Client.Get(ctx, req.NamespacedName, &d)
 
-	update := false
-
-	if err == nil {
-		update = true
-	}
+	update := (err == nil)
 
 	if err != nil && !k8serr.IsNotFound(err) {
 		return ctrl.Result{}, err
@@ -188,17 +186,14 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.makeDeployment(&iapp, &d)
 
-	cb := config.NewBuilder()
-	cb.CloudWatch(&config.CloudWatchConfig{
-		AccessKeyID:     "mah_key",
-		SecretAccessKey: "mah_sekret",
-		Region:          "us-east-1",
-		LogGroup:        iapp.ObjectMeta.Namespace,
-	})
-	c := cb.Build()
-	c.WebPort = 8080
-	c.MetricsPort = 9090
-	c.MetricsPath = "/metrics"
+	c := config.New(8080, 9090, "/metrics", config.CloudWatch(
+		config.CloudWatchConfig{
+			AccessKeyID:     "mah_key",
+			SecretAccessKey: "mah_sekret",
+			Region:          "us-east-1",
+			LogGroup:        iapp.ObjectMeta.Namespace,
+		},
+	))
 
 	if err = r.persistConfig(req, iapp, c); err != nil {
 		return ctrl.Result{}, err
@@ -220,9 +215,9 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	})
 
 	if update {
-		err = r.Client.Update(context.Background(), &d)
+		err = r.Client.Update(ctx, &d)
 	} else {
-		err = r.Client.Create(context.Background(), &d)
+		err = r.Client.Create(ctx, &d)
 	}
 
 	if err != nil {
