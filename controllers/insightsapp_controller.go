@@ -59,7 +59,7 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 		ports = append(ports, webPort)
 	}
 
-	s.ObjectMeta = iapp.MakeObjectMeta()
+	iapp.SetObjectMeta(&s)
 	s.Spec.Selector = iapp.GetLabels()
 	s.Spec.Ports = ports
 
@@ -68,7 +68,7 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 
 func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase, d *apps.Deployment) {
 
-	d.ObjectMeta = iapp.MakeObjectMeta()
+	iapp.SetObjectMeta(d)
 
 	d.Spec.Replicas = iapp.Spec.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
@@ -123,11 +123,12 @@ func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhat
 	}
 
 	secret := core.Secret{
-		ObjectMeta: iapp.MakeObjectMeta(),
 		StringData: map[string]string{
 			"cdappconfig.json": string(jsonData),
 		},
 	}
+
+	iapp.SetObjectMeta(&secret)
 
 	return update.Apply(ctx, r.Client, &secret)
 }

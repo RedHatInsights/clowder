@@ -87,11 +87,9 @@ func (i *InsightsApp) MakeOwnerReference() metav1.OwnerReference {
 	}
 }
 
-func (i *InsightsApp) MakeObjectMeta() metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Name:            i.ObjectMeta.Name,
-		Namespace:       i.ObjectMeta.Namespace,
-		Labels:          i.GetLabels(),
-		OwnerReferences: []metav1.OwnerReference{i.MakeOwnerReference()},
-	}
+func (i *InsightsApp) SetObjectMeta(o metav1.Object) {
+	o.SetName(i.Name)
+	o.SetNamespace(i.Namespace)
+	o.SetLabels(i.GetLabels())
+	o.SetOwnerReferences([]metav1.OwnerReference{i.MakeOwnerReference()})
 }
