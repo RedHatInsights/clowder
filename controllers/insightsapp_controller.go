@@ -27,6 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/config"
@@ -233,7 +236,54 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 // SetupWithManager sets up wi
 func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	ctx := context.Background()
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudredhatcomv1alpha1.InsightsApp{}).
+		Watches(
+			&source.Kind{Type: &cloudredhatcomv1alpha1.InsightsBase{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: handler.ToRequestsFunc(
+					func(a handler.MapObject) []reconcile.Request {
+						obj := types.NamespacedName{
+							Name:      a.Meta.GetName(),
+							Namespace: a.Meta.GetNamespace(),
+						}
+						// Get the InsightsBase resource
+
+						base := cloudredhatcomv1alpha1.InsightsBase{}
+						err := r.Client.Get(ctx, obj, &base)
+
+						if err != nil {
+							r.Log.Error(err, "Failed to fetch InsightsBase")
+							return nil
+						}
+
+						// Get all the InsightsApp resources
+
+						appList := cloudredhatcomv1alpha1.InsightsAppList{}
+						r.Client.List(ctx, &appList)
+
+						reqs := []reconcile.Request{}
+
+						// Filter based on base attribute
+
+						for _, app := range appList.Items {
+							if app.Spec.Base == base.Name {
+								// Add filtered resources to return result
+								reqs = append(reqs, reconcile.Request{
+									NamespacedName: types.NamespacedName{
+										Name:      app.Name,
+										Namespace: app.Namespace,
+									},
+								})
+							}
+						}
+
+						return reqs
+					},
+				)},
+		).
+		Owns(&apps.Deployment{}).
+		Owns(&core.Service{}).
 		Complete(r)
 }
