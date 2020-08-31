@@ -17,25 +17,38 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"go.uber.org/zap"
-	"k8s.io/client-go/kubernetes/scheme"
+	apps "k8s.io/api/apps/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
+	crd "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
 var cfg *rest.Config
 var k8sClient client.Client
 var testEnv *envtest.Environment
+var logger *zap.Logger
 
-func TestApi(t *testing.T) {
-	logger, _ := zap.NewProduction()
+func TestMain(m *testing.M) {
+	// call flag.Parse() here if TestMain uses flags
+	ctrl.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(true)))
+	logger, _ = zap.NewProduction()
 	defer logger.Sync()
 
 	logger.Info("bootstrapping test environment")
@@ -47,40 +60,145 @@ func TestApi(t *testing.T) {
 	cfg, err := testEnv.Start()
 
 	if err != nil {
-		t.Error(err)
-		return
+		logger.Fatal("Error starting test env", zap.Error(err))
 	}
 
 	if cfg == nil {
-		t.Error("env config was returned nil")
-		return
+		logger.Fatal("env config was returned nil")
 	}
 
-	err = cloudredhatcomv1alpha1.AddToScheme(scheme.Scheme)
+	err = crd.AddToScheme(clientgoscheme.Scheme)
 
 	if err != nil {
-		t.Error(err)
-		return
+		logger.Fatal("Failed to add scheme", zap.Error(err))
 	}
 
 	// +kubebuilder:scaffold:scheme
 
-	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	k8sClient, err = client.New(cfg, client.Options{Scheme: clientgoscheme.Scheme})
 
 	if err != nil {
-		t.Error(err)
-		return
+		logger.Fatal("Failed to create k8s client", zap.Error(err))
 	}
 
 	if k8sClient == nil {
-		t.Error("k8sClient was returned nil")
-		return
+		logger.Fatal("k8sClient was returned nil", zap.Error(err))
 	}
+
+	stopManager := make(chan struct{})
+
+	go Run(":8080", false, testEnv.Config, stopManager)
+
+	time.Sleep(5000 * time.Millisecond)
+
+	retCode := m.Run()
+
+	logger.Info("Stopping test env...")
+
+	close(stopManager)
 
 	err = testEnv.Stop()
 
 	if err != nil {
+		logger.Fatal("Failed to tear down env", zap.Error(err))
+	}
+
+	os.Exit(retCode)
+}
+
+func TestCreateInsightsApp(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	logger.Info("Creating InsightsApp")
+
+	name := types.NamespacedName{
+		Name:      "test",
+		Namespace: "default",
+	}
+
+	objMeta := metav1.ObjectMeta{
+		Name:      name.Name,
+		Namespace: name.Namespace,
+		Labels: map[string]string{
+			"app": "test",
+		},
+	}
+
+	ibase := crd.InsightsBase{
+		ObjectMeta: objMeta,
+		Spec: crd.InsightsBaseSpec{
+			WebPort:     int32(8080),
+			MetricsPort: int32(9000),
+			MetricsPath: "/metrics",
+		},
+	}
+
+	iapp := crd.InsightsApp{
+		ObjectMeta: objMeta,
+		Spec: crd.InsightsAppSpec{
+			Image: "test:test",
+			Base:  ibase.Name,
+		},
+	}
+
+	err := k8sClient.Create(ctx, &ibase)
+
+	if err != nil {
 		t.Error(err)
 		return
 	}
+
+	// Create InsightsApp
+	err = k8sClient.Create(ctx, &iapp)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// See if Deployment is created
+
+	d := apps.Deployment{}
+
+	err = fetchWithDefaults(name, &d)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	c := d.Spec.Template.Spec.Containers[0]
+
+	if c.Image != iapp.Spec.Image {
+		t.Errorf("Bad image spec %s; expected %s", c.Image, iapp.Spec.Image)
+	}
+
+	// See if Secret is mounted
+	// See if Service is created
+}
+
+func fetchWithDefaults(name types.NamespacedName, resource runtime.Object) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return fetch(ctx, name, resource, 20, 20*time.Millisecond)
+}
+
+func fetch(ctx context.Context, name types.NamespacedName, resource runtime.Object, retryCount int, sleepTime time.Duration) error {
+	var err error
+
+	for i := 1; i <= retryCount; i++ {
+		err = k8sClient.Get(ctx, name, resource)
+
+		if err == nil {
+			return nil
+		} else if !k8serr.IsNotFound(err) {
+			return err
+		}
+
+		time.Sleep(sleepTime)
+	}
+
+	return err
 }

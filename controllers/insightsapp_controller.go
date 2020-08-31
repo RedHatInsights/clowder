@@ -236,6 +236,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 // SetupWithManager sets up wi
 func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Log.Info("Setting up manager!")
 	ctx := context.Background()
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudredhatcomv1alpha1.InsightsApp{}).
