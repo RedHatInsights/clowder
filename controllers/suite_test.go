@@ -175,6 +175,20 @@ func TestCreateInsightsApp(t *testing.T) {
 	}
 
 	// See if Secret is mounted
+
+	found := false
+	for _, mount := range c.VolumeMounts {
+		if mount.Name == "config-secret" {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("Deployment %s does not have the config volume mounted", d.Name)
+		return
+	}
+
 	// See if Service is created
 }
 
