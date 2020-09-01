@@ -6,20 +6,19 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: insightsbases.cloud.redhat.com
+  name: kafkatopics.cloud.redhat.com
 spec:
   group: cloud.redhat.com
   names:
-    kind: InsightsBase
-    listKind: InsightsBaseList
-    plural: insightsbases
-    singular: insightsbase
+    kind: KafkaTopic
+    listKind: KafkaTopicList
+    plural: kafkatopics
+    singular: kafkatopic
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: InsightsBase is the Schema for the insightsbases API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,29 +33,16 @@ spec:
         metadata:
           type: object
         spec:
-          description: InsightsBaseSpec defines the desired state of InsightsBase
+          description: // / //kubebuilder:pruning:PreserveUnknownFields
           properties:
-            kafkaCluster:
-              type: string
-            kafkaNamespace:
-              type: string
-            metricsPath:
-              type: string
-            metricsPort:
+            partitions:
               format: int32
               type: integer
-            webPort:
+            replicas:
               format: int32
               type: integer
-          required:
-          - kafkaCluster
-          - kafkaNamespace
-          - metricsPath
-          - metricsPort
-          - webPort
           type: object
         status:
-          description: InsightsBaseStatus defines the observed state of InsightsBase
           type: object
       type: object
   version: v1alpha1

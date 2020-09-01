@@ -42,6 +42,31 @@ type InsightsAppReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
+	ctx := context.Background()
+	k := cloudredhatcomv1alpha1.KafkaTopic{}
+
+	if len(iapp.Spec.KafkaTopics) > 0 {
+		kafkaNamespace := types.NamespacedName{
+			Namespace: base.Spec.KafkaNamespace,
+			Name:      iapp.Spec.Base,
+		}
+
+		err := r.Client.Get(ctx, kafkaNamespace, &k)
+
+		update, err := updateOrErr(err)
+		if err != nil {
+			return err
+		}
+		err = update.Apply(ctx, r.Client, &k)
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
 
 	ctx := context.Background()
@@ -228,6 +253,10 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	if err = r.makeService(&req, &iapp, &base); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err = r.makeKafka(&req, &iapp, &base); err != nil {
 		return ctrl.Result{}, err
 	}
 

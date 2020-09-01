@@ -20,9 +20,11 @@ import (
 
 // InsightsBaseSpec defines the desired state of InsightsBase
 type InsightsBaseSpec struct {
-	WebPort     int32  `json:"webPort"`
-	MetricsPort int32  `json:"metricsPort"`
-	MetricsPath string `json:"metricsPath"`
+	WebPort        int32  `json:"webPort"`
+	MetricsPort    int32  `json:"metricsPort"`
+	MetricsPath    string `json:"metricsPath"`
+	KafkaCluster   string `json:"kafkaCluster"`
+	KafkaNamespace string `json:"kafkaNamespace"`
 }
 
 // InsightsBaseStatus defines the observed state of InsightsBase

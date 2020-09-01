@@ -21,6 +21,37 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// // / //kubebuilder:pruning:PreserveUnknownFields
+type KafkaTopicSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	Partitions *int32 `json:"partitions,omitempty"`
+	Replicas   *int32 `json:"replicas,omitempty"`
+}
+
+type KafkaTopicStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+}
+
+type KafkaTopicList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []KafkaTopic `json:"items"`
+}
+
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
+type KafkaTopic struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   KafkaTopicSpec   `json:"spec,omitempty"`
+	Status KafkaTopicStatus `json:"status,omitempty"`
+}
+
 type InitContainer struct {
 	Args []string `json:"args"`
 }
@@ -41,6 +72,7 @@ type InsightsAppSpec struct {
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
 	Web            bool                    `json:"web,omitempty"`
 	Base           string                  `json:"base"`
+	KafkaTopics    []KafkaTopic            `json:"kafkaTopics,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp
