@@ -25,6 +25,7 @@ import (
 
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -189,7 +190,22 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	// See if Service is created
+	s := core.Service{}
+
+	err = fetchWithDefaults(name, &s)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Simple test for service right expects there only to be the metrics port
+	if len(s.Spec.Ports) > 1 {
+		t.Errorf("Bad port count %d; expected 1", len(s.Spec.Ports))
+	}
+	if s.Spec.Ports[0].Port != ibase.Spec.MetricsPort {
+		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, ibase.Spec.MetricsPort)
+	}
 }
 
 func fetchWithDefaults(name types.NamespacedName, resource runtime.Object) error {
