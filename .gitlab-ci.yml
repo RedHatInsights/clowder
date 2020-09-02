@@ -1,0 +1,17 @@
+stages:
+  - test
+  - artifact
+  - release
+
+test:
+  image: golang:1.13
+  tags:
+    - shared
+  stage: test
+  script:
+    - mkdir /kubebuilder
+    - wget -P /kubebuilder http://file.emea.redhat.com/~psavage/kubebuilder_2.3.1_linux_amd64.tar.gz
+    - tar xzvf /kubebuilder/kubebuilder_2.3.1_linux_amd64.tar.gz -C /kubebuilder
+    - ls -laR /kubebuilder
+    - make
+    - KUBEBUILDER_ASSETS=/kubebuilder/kubebuilder_2.3.1_linux_amd64/bin go test -v ./controllers/cloud.redhat.com/

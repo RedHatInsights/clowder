@@ -149,6 +149,27 @@ spec:
               type: array
             image:
               type: string
+            kafkaTopics:
+              items:
+                description: KafkaTopicSpec defines the desired state of KafkaTopic
+                properties:
+                  config:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  partitions:
+                    format: int32
+                    type: integer
+                  replicas:
+                    format: int32
+                    type: integer
+                  topicName:
+                    type: string
+                required:
+                - partitions
+                - topicName
+                type: object
+              type: array
             livenessProbe:
               description: Probe describes a health check to be performed against
                 a container to determine whether it is alive or ready to receive traffic.

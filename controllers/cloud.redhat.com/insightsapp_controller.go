@@ -31,8 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/config"
+	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 )
 
 // InsightsAppReconciler reconciles a InsightsApp object
@@ -40,6 +41,44 @@ type InsightsAppReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+}
+
+func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
+	ctx := context.Background()
+
+	if len(iapp.Spec.KafkaTopics) > 0 {
+		for _, kafkaTopic := range iapp.Spec.KafkaTopics {
+			k := strimzi.KafkaTopic{}
+			kafkaNamespace := types.NamespacedName{
+				Namespace: base.Spec.KafkaNamespace,
+				Name:      kafkaTopic.TopicName,
+			}
+
+			err := r.Client.Get(ctx, kafkaNamespace, &k)
+			update, err := updateOrErr(err)
+			if err != nil {
+				return err
+			}
+
+			labels := map[string]string{
+				"strimzi.io/cluster": base.Spec.KafkaCluster,
+				"iapp":               iapp.GetName(), // If we label it with the app name, since app names should be unique? can we use for delete selector?
+			}
+
+			k.SetName(kafkaTopic.TopicName)
+			k.SetNamespace(base.Spec.KafkaNamespace)
+			k.SetLabels(labels)
+
+			k.Spec.Replicas = kafkaTopic.Replicas
+			k.Spec.Partitions = kafkaTopic.Partitions
+			k.Spec.Config = kafkaTopic.Config
+			err = update.Apply(ctx, r.Client, &k)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
@@ -228,6 +267,10 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	if err = r.makeService(&req, &iapp, &base); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err = r.makeKafka(&req, &iapp, &base); err != nil {
 		return ctrl.Result{}, err
 	}
 

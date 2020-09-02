@@ -37,7 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	crd "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
+	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -51,11 +52,10 @@ func TestMain(m *testing.M) {
 	ctrl.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(true)))
 	logger, _ = zap.NewProduction()
 	defer logger.Sync()
-
 	logger.Info("bootstrapping test environment")
 
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "config", "crd", "bases")},
+		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
 	}
 
 	cfg, err := testEnv.Start()
@@ -69,6 +69,7 @@ func TestMain(m *testing.M) {
 	}
 
 	err = crd.AddToScheme(clientgoscheme.Scheme)
+	err = strimzi.AddToScheme(clientgoscheme.Scheme)
 
 	if err != nil {
 		logger.Fatal("Failed to add scheme", zap.Error(err))
@@ -87,23 +88,16 @@ func TestMain(m *testing.M) {
 	}
 
 	stopManager := make(chan struct{})
-
 	go Run(":8080", false, testEnv.Config, stopManager)
-
 	time.Sleep(5000 * time.Millisecond)
-
 	retCode := m.Run()
-
 	logger.Info("Stopping test env...")
-
 	close(stopManager)
-
 	err = testEnv.Stop()
 
 	if err != nil {
 		logger.Fatal("Failed to tear down env", zap.Error(err))
 	}
-
 	os.Exit(retCode)
 }
 
@@ -129,17 +123,29 @@ func TestCreateInsightsApp(t *testing.T) {
 	ibase := crd.InsightsBase{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsBaseSpec{
-			WebPort:     int32(8080),
-			MetricsPort: int32(9000),
-			MetricsPath: "/metrics",
+			WebPort:        int32(8080),
+			MetricsPort:    int32(9000),
+			MetricsPath:    "/metrics",
+			KafkaCluster:   "kafka",
+			KafkaNamespace: "default", // TODO Would like to put this into a different namespace
 		},
 	}
+
+	replicas := int32(32)
+	partitions := int32(5)
 
 	iapp := crd.InsightsApp{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsAppSpec{
 			Image: "test:test",
 			Base:  ibase.Name,
+			KafkaTopics: []strimzi.KafkaTopicSpec{
+				{
+					TopicName:  "inventory",
+					Partitions: &partitions,
+					Replicas:   &replicas,
+				},
+			},
 		},
 	}
 
@@ -203,8 +209,29 @@ func TestCreateInsightsApp(t *testing.T) {
 	if len(s.Spec.Ports) > 1 {
 		t.Errorf("Bad port count %d; expected 1", len(s.Spec.Ports))
 	}
+
 	if s.Spec.Ports[0].Port != ibase.Spec.MetricsPort {
 		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, ibase.Spec.MetricsPort)
+	}
+
+	topic := strimzi.KafkaTopic{}
+	name = types.NamespacedName{
+		Namespace: name.Namespace,
+		Name:      "inventory",
+	}
+
+	err = fetchWithDefaults(name, &topic)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if *topic.Spec.Replicas != replicas {
+		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Replicas, replicas)
+	}
+	if *topic.Spec.Partitions != partitions {
+		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Partitions, partitions)
 	}
 }
 

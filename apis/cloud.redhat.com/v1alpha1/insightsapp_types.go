@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,18 +30,19 @@ type InsightsAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
-	Image          string                  `json:"image"`
-	Command        []string                `json:"command,omitempty"`
-	Args           []string                `json:"args,omitempty"`
-	Env            []v1.EnvVar             `json:"env,omitempty"`
-	Resources      v1.ResourceRequirements `json:"resources,omitempty"`
-	LivenessProbe  *v1.Probe               `json:"livenessProbe,omitempty"`
-	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
-	Volumes        []v1.Volume             `json:"volumes,omitempty"`
-	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
-	Web            bool                    `json:"web,omitempty"`
-	Base           string                  `json:"base"`
+	MinReplicas    *int32                   `json:"minReplicas,omitempty"`
+	Image          string                   `json:"image"`
+	Command        []string                 `json:"command,omitempty"`
+	Args           []string                 `json:"args,omitempty"`
+	Env            []v1.EnvVar              `json:"env,omitempty"`
+	Resources      v1.ResourceRequirements  `json:"resources,omitempty"`
+	LivenessProbe  *v1.Probe                `json:"livenessProbe,omitempty"`
+	ReadinessProbe *v1.Probe                `json:"readinessProbe,omitempty"`
+	Volumes        []v1.Volume              `json:"volumes,omitempty"`
+	VolumeMounts   []v1.VolumeMount         `json:"volumeMounts,omitempty"`
+	Web            bool                     `json:"web,omitempty"`
+	Base           string                   `json:"base"`
+	KafkaTopics    []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp
