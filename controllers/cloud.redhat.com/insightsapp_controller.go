@@ -17,7 +17,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -56,20 +55,24 @@ func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatco
 			}
 
 			err := r.Client.Get(ctx, kafkaNamespace, &k)
-
 			update, err := updateOrErr(err)
 			if err != nil {
 				return err
 			}
 
+			labels := map[string]string{
+				"strimzi.io/cluster": base.Spec.KafkaCluster,
+				"iapp":               iapp.GetName(), // If we label it with the app name, since app names should be unique? can we use for delete selector?
+			}
+
 			k.SetName(kafkaTopic.TopicName)
 			k.SetNamespace(base.Spec.KafkaNamespace)
+			k.SetLabels(labels)
+
 			k.Spec.Replicas = kafkaTopic.Replicas
 			k.Spec.Partitions = kafkaTopic.Partitions
 			k.Spec.Config = kafkaTopic.Config
-			ctrl.Log.Info(fmt.Sprintf("%v", k))
 			err = update.Apply(ctx, r.Client, &k)
-
 			if err != nil {
 				return err
 			}
