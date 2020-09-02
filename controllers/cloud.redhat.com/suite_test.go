@@ -69,6 +69,7 @@ func TestMain(m *testing.M) {
 	}
 
 	err = crd.AddToScheme(clientgoscheme.Scheme)
+	err = strimzi.AddToScheme(clientgoscheme.Scheme)
 
 	if err != nil {
 		logger.Fatal("Failed to add scheme", zap.Error(err))
@@ -122,13 +123,16 @@ func TestCreateInsightsApp(t *testing.T) {
 	ibase := crd.InsightsBase{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsBaseSpec{
-			WebPort:     int32(8080),
-			MetricsPort: int32(9000),
-			MetricsPath: "/metrics",
+			WebPort:        int32(8080),
+			MetricsPort:    int32(9000),
+			MetricsPath:    "/metrics",
+			KafkaCluster:   "kafka",
+			KafkaNamespace: "default", // TODO Would like to put this into a different namespace
 		},
 	}
 
 	replicas := int32(32)
+	partitions := int32(5)
 
 	iapp := crd.InsightsApp{
 		ObjectMeta: objMeta,
@@ -138,7 +142,8 @@ func TestCreateInsightsApp(t *testing.T) {
 			KafkaTopics: []strimzi.KafkaTopicSpec{
 				{
 					TopicName:  "inventory",
-					Partitions: &replicas,
+					Partitions: &partitions,
+					Replicas:   &replicas,
 				},
 			},
 		},
@@ -224,6 +229,9 @@ func TestCreateInsightsApp(t *testing.T) {
 
 	if *topic.Spec.Replicas != replicas {
 		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Replicas, replicas)
+	}
+	if *topic.Spec.Partitions != partitions {
+		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Partitions, partitions)
 	}
 }
 

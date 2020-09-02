@@ -37,6 +37,7 @@ type InsightsBaseReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsbases,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsbases/status,verbs=get;update;patch
 
+//Reconcile fn
 func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
 	_ = r.Log.WithValues("insightsbase", req.NamespacedName)
@@ -46,6 +47,7 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager sets up with manager
 func (r *InsightsBaseReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cloudredhatcomv1alpha1.InsightsBase{}).
