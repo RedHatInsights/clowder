@@ -1,0 +1,20 @@
+# permissions for end users to view kafkatopics.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kafkatopic-viewer-role
+rules:
+- apiGroups:
+  - kafka.strimzi.io.cloud.redhat.com
+  resources:
+  - kafkatopics
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - kafka.strimzi.io.cloud.redhat.com
+  resources:
+  - kafkatopics/status
+  verbs:
+  - get

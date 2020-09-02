@@ -23,7 +23,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"cloud.redhat.com/whippoorwill/v2/controllers"
+	controllers "cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com"
 	// +kubebuilder:scaffold:imports
 )
 

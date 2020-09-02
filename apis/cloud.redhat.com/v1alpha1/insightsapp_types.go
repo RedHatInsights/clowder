@@ -17,40 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// // / //kubebuilder:pruning:PreserveUnknownFields
-type KafkaTopicSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	Partitions *int32 `json:"partitions,omitempty"`
-	Replicas   *int32 `json:"replicas,omitempty"`
-}
-
-type KafkaTopicStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
-type KafkaTopicList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []KafkaTopic `json:"items"`
-}
-
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-
-type KafkaTopic struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   KafkaTopicSpec   `json:"spec,omitempty"`
-	Status KafkaTopicStatus `json:"status,omitempty"`
-}
 
 type InitContainer struct {
 	Args []string `json:"args"`
@@ -60,19 +30,19 @@ type InsightsAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
-	Image          string                  `json:"image"`
-	Command        []string                `json:"command,omitempty"`
-	Args           []string                `json:"args,omitempty"`
-	Env            []v1.EnvVar             `json:"env,omitempty"`
-	Resources      v1.ResourceRequirements `json:"resources,omitempty"`
-	LivenessProbe  *v1.Probe               `json:"livenessProbe,omitempty"`
-	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
-	Volumes        []v1.Volume             `json:"volumes,omitempty"`
-	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
-	Web            bool                    `json:"web,omitempty"`
-	Base           string                  `json:"base"`
-	KafkaTopics    []KafkaTopic            `json:"kafkaTopics,omitempty"`
+	MinReplicas    *int32                   `json:"minReplicas,omitempty"`
+	Image          string                   `json:"image"`
+	Command        []string                 `json:"command,omitempty"`
+	Args           []string                 `json:"args,omitempty"`
+	Env            []v1.EnvVar              `json:"env,omitempty"`
+	Resources      v1.ResourceRequirements  `json:"resources,omitempty"`
+	LivenessProbe  *v1.Probe                `json:"livenessProbe,omitempty"`
+	ReadinessProbe *v1.Probe                `json:"readinessProbe,omitempty"`
+	Volumes        []v1.Volume              `json:"volumes,omitempty"`
+	VolumeMounts   []v1.VolumeMount         `json:"volumeMounts,omitempty"`
+	Web            bool                     `json:"web,omitempty"`
+	Base           string                   `json:"base"`
+	KafkaTopics    []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp

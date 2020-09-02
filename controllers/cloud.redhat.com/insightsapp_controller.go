@@ -31,8 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/api/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/config"
+	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 )
 
 // InsightsAppReconciler reconciles a InsightsApp object
@@ -44,7 +45,7 @@ type InsightsAppReconciler struct {
 
 func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
 	ctx := context.Background()
-	k := cloudredhatcomv1alpha1.KafkaTopic{}
+	k := strimzi.KafkaTopic{}
 
 	if len(iapp.Spec.KafkaTopics) > 0 {
 		kafkaNamespace := types.NamespacedName{

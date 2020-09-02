@@ -10,5 +10,6 @@ resources:
   kind: InsightsBase
   version: v1alpha1
 version: 3-alpha
+multigroup: true
 plugins:
   go.sdk.operatorframework.io/v2-alpha: {}
