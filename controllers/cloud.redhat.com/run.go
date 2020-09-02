@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"os"
+
 	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -19,6 +21,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(strimzi.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 

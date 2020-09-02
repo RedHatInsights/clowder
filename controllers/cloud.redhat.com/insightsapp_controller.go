@@ -17,6 +17,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -45,24 +46,33 @@ type InsightsAppReconciler struct {
 
 func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
 	ctx := context.Background()
-	k := strimzi.KafkaTopic{}
 
 	if len(iapp.Spec.KafkaTopics) > 0 {
-		kafkaNamespace := types.NamespacedName{
-			Namespace: base.Spec.KafkaNamespace,
-			Name:      iapp.Spec.Base,
-		}
+		for _, kafkaTopic := range iapp.Spec.KafkaTopics {
+			k := strimzi.KafkaTopic{}
+			kafkaNamespace := types.NamespacedName{
+				Namespace: base.Spec.KafkaNamespace,
+				Name:      kafkaTopic.TopicName,
+			}
 
-		err := r.Client.Get(ctx, kafkaNamespace, &k)
+			err := r.Client.Get(ctx, kafkaNamespace, &k)
 
-		update, err := updateOrErr(err)
-		if err != nil {
-			return err
-		}
-		err = update.Apply(ctx, r.Client, &k)
+			update, err := updateOrErr(err)
+			if err != nil {
+				return err
+			}
 
-		if err != nil {
-			return err
+			k.SetName(kafkaTopic.TopicName)
+			k.SetNamespace(base.Spec.KafkaNamespace)
+			k.Spec.Replicas = kafkaTopic.Replicas
+			k.Spec.Partitions = kafkaTopic.Partitions
+			k.Spec.Config = kafkaTopic.Config
+			ctrl.Log.Info(fmt.Sprintf("%v", k))
+			err = update.Apply(ctx, r.Client, &k)
+
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
