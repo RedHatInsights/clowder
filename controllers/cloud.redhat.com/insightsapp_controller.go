@@ -17,6 +17,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -146,6 +147,96 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
+func (r *InsightsAppReconciler) makeDatabase(iapp cloudredhatcomv1alpha1.InsightsApp) (config.DatabaseConfig, error) {
+	// TODO Right now just dealing with the creation for ephemeral - doesn't skip if RDS
+
+	ctx := context.Background()
+
+	dbObjName := fmt.Sprintf("%v-db", iapp.Name)
+	dbNamespacedName := types.NamespacedName{
+		Namespace: iapp.Namespace,
+		Name:      dbObjName,
+	}
+
+	dd := apps.Deployment{}
+	err := r.Client.Get(ctx, dbNamespacedName, &dd)
+
+	update, err := updateOrErr(err)
+	if err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	dd.SetName(dbNamespacedName.Name)
+	dd.SetNamespace(dbNamespacedName.Namespace)
+	dd.SetLabels(iapp.GetLabels())
+	dd.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
+
+	dd.Spec.Replicas = iapp.Spec.MinReplicas
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
+	dd.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
+	dd.Spec.Template.ObjectMeta.Labels = iapp.GetLabels()
+
+	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
+	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
+
+	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: "test"}
+	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: "test"}
+	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: iapp.Spec.Database.Name}
+	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: "test"}
+	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
+	ports := []core.ContainerPort{
+		core.ContainerPort{
+			Name:          "database",
+			ContainerPort: 5432,
+		},
+	}
+
+	livenessProbe := core.Probe{
+		Handler: core.Handler{
+			Exec: &core.ExecAction{
+				Command: []string{"psql", "-U", "$(POSTGRESQL_USER)", "-d", "$(POSTGRESQL_DATABASE)", "-c", "SELECT 1"},
+			},
+		},
+		InitialDelaySeconds: 15,
+		TimeoutSeconds:      2,
+	}
+	readinessProbe := core.Probe{
+		Handler: core.Handler{
+			Exec: &core.ExecAction{
+				Command: []string{"psql", "-U", "$(POSTGRESQL_USER)", "-d", "$(POSTGRESQL_DATABASE)", "-c", "SELECT 1"},
+			},
+		},
+		InitialDelaySeconds: 45,
+		TimeoutSeconds:      2,
+	}
+
+	c := core.Container{
+		Name:           dbNamespacedName.Name,
+		Image:          "registry.redhat.io/rhel8/postgresql-12:1-36",
+		Env:            envVars,
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
+		// VolumeMounts:   iapp.Spec.VolumeMounts, TODO Add in volume mount for PVC
+		Ports: ports,
+	}
+
+	dd.Spec.Template.Spec.Containers = []core.Container{c}
+
+	if err = update.Apply(ctx, r.Client, &dd); err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	dbConfig := config.DatabaseConfig{
+		Name:     iapp.Spec.Database.Name,
+		User:     dbUser.Value,
+		Pass:     dbPass.Value,
+		Hostname: dbObjName,
+		Port:     5432,
+	}
+
+	return dbConfig, nil
+}
+
 func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhatcomv1alpha1.InsightsApp, c *config.AppConfig) error {
 
 	ctx := context.Background()
@@ -234,14 +325,24 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.makeDeployment(&iapp, &base, &d)
 
+	databaseConfig := config.DatabaseConfig{}
+
+	if iapp.Spec.Database != (cloudredhatcomv1alpha1.InsightsDatabaseSpec{}) {
+
+		if databaseConfig, err = r.makeDatabase(iapp); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.CloudWatch(
 		config.CloudWatchConfig{
 			AccessKeyID:     "mah_key",
 			SecretAccessKey: "mah_sekret",
 			Region:          "us-east-1",
 			LogGroup:        iapp.ObjectMeta.Namespace,
-		},
-	))
+		}),
+		config.Database(databaseConfig),
+	)
 
 	if err = r.persistConfig(req, iapp, c); err != nil {
 		return ctrl.Result{}, err
