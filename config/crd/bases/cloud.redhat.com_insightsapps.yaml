@@ -50,10 +50,8 @@ spec:
                 name:
                   type: string
                 version:
+                  format: int32
                   type: integer
-              required:
-              - name
-              - version
               type: object
             env:
               items:
