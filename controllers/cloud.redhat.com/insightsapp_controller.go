@@ -162,54 +162,54 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 // SetupWithManager sets up wi
 func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager!")
-	ctx := context.Background()
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.InsightsApp{}).
 		Watches(
 			&source.Kind{Type: &crd.InsightsBase{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(
-					func(a handler.MapObject) []reconcile.Request {
-						obj := types.NamespacedName{
-							Name:      a.Meta.GetName(),
-							Namespace: a.Meta.GetNamespace(),
-						}
-						// Get the InsightsBase resource
-
-						base := crd.InsightsBase{}
-						err := r.Client.Get(ctx, obj, &base)
-
-						if err != nil {
-							r.Log.Error(err, "Failed to fetch InsightsBase")
-							return nil
-						}
-
-						// Get all the InsightsApp resources
-
-						appList := crd.InsightsAppList{}
-						r.Client.List(ctx, &appList)
-
-						reqs := []reconcile.Request{}
-
-						// Filter based on base attribute
-
-						for _, app := range appList.Items {
-							if app.Spec.Base == base.Name {
-								// Add filtered resources to return result
-								reqs = append(reqs, reconcile.Request{
-									NamespacedName: types.NamespacedName{
-										Name:      app.Name,
-										Namespace: app.Namespace,
-									},
-								})
-							}
-						}
-
-						return reqs
-					},
-				)},
+				ToRequests: handler.ToRequestsFunc(r.appsToEnqueueUponBaseUpdate)},
 		).
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Complete(r)
+}
+
+func (r *InsightsAppReconciler) appsToEnqueueUponBaseUpdate(a handler.MapObject) []reconcile.Request {
+	ctx := context.Background()
+	obj := types.NamespacedName{
+		Name:      a.Meta.GetName(),
+		Namespace: a.Meta.GetNamespace(),
+	}
+	// Get the InsightsBase resource
+
+	base := crd.InsightsBase{}
+	err := r.Client.Get(ctx, obj, &base)
+
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch InsightsBase")
+		return nil
+	}
+
+	// Get all the InsightsApp resources
+
+	appList := crd.InsightsAppList{}
+	r.Client.List(ctx, &appList)
+
+	reqs := []reconcile.Request{}
+
+	// Filter based on base attribute
+
+	for _, app := range appList.Items {
+		if app.Spec.Base == base.Name {
+			// Add filtered resources to return result
+			reqs = append(reqs, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      app.Name,
+					Namespace: app.Namespace,
+				},
+			})
+		}
+	}
+
+	return reqs
 }
