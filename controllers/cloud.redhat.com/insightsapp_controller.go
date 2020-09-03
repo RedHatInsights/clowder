@@ -17,11 +17,13 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -146,6 +148,172 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
+func (r *InsightsAppReconciler) makeDatabase(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) (config.DatabaseConfig, error) {
+	// TODO Right now just dealing with the creation for ephemeral - doesn't skip if RDS
+
+	ctx := context.Background()
+
+	dbObjName := fmt.Sprintf("%v-db", iapp.Name)
+	dbNamespacedName := types.NamespacedName{
+		Namespace: iapp.Namespace,
+		Name:      dbObjName,
+	}
+
+	dd := apps.Deployment{}
+	err := r.Client.Get(ctx, dbNamespacedName, &dd)
+
+	update, err := updateOrErr(err)
+	if err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	dd.SetName(dbNamespacedName.Name)
+	dd.SetNamespace(dbNamespacedName.Namespace)
+	dd.SetLabels(iapp.GetLabels())
+	dd.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
+
+	dd.Spec.Replicas = iapp.Spec.MinReplicas
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
+	dd.Spec.Template.Spec.Volumes = []core.Volume{core.Volume{
+		Name: dbNamespacedName.Name,
+		VolumeSource: core.VolumeSource{
+			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
+				ClaimName: dbNamespacedName.Name,
+			},
+		}},
+	}
+	dd.Spec.Template.ObjectMeta.Labels = iapp.GetLabels()
+
+	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
+	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
+
+	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: "test"}
+	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: "test"}
+	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: iapp.Spec.Database.Name}
+	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: "test"}
+	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
+	ports := []core.ContainerPort{
+		core.ContainerPort{
+			Name:          "database",
+			ContainerPort: 5432,
+		},
+	}
+
+	livenessProbe := core.Probe{
+		Handler: core.Handler{
+			Exec: &core.ExecAction{
+				Command: []string{
+					"psql",
+					"-U",
+					"$(POSTGRESQL_USER)",
+					"-d",
+					"$(POSTGRESQL_DATABASE)",
+					"-c",
+					"SELECT 1",
+				},
+			},
+		},
+		InitialDelaySeconds: 15,
+		TimeoutSeconds:      2,
+	}
+	readinessProbe := core.Probe{
+		Handler: core.Handler{
+			Exec: &core.ExecAction{
+				Command: []string{
+					"psql",
+					"-U",
+					"$(POSTGRESQL_USER)",
+					"-d",
+					"$(POSTGRESQL_DATABASE)",
+					"-c",
+					"SELECT 1",
+				},
+			},
+		},
+		InitialDelaySeconds: 45,
+		TimeoutSeconds:      2,
+	}
+
+	c := core.Container{
+		Name:           dbNamespacedName.Name,
+		Image:          base.Spec.DatabaseImage,
+		Env:            envVars,
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
+		// VolumeMounts:   iapp.Spec.VolumeMounts, TODO Add in volume mount for PVC
+		Ports: ports,
+		VolumeMounts: []core.VolumeMount{
+			core.VolumeMount{
+				Name:      dbNamespacedName.Name,
+				MountPath: "/var/lib/pgsql/data",
+			},
+		},
+	}
+
+	dd.Spec.Template.Spec.Containers = []core.Container{c}
+
+	if err = update.Apply(ctx, r.Client, &dd); err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	s := core.Service{}
+	err = r.Client.Get(ctx, dbNamespacedName, &s)
+
+	update, err = updateOrErr(err)
+	if err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	servicePorts := []core.ServicePort{}
+	databasePort := core.ServicePort{Name: "database", Port: 5432, Protocol: "TCP"}
+	servicePorts = append(servicePorts, databasePort)
+
+	s.SetName(dbNamespacedName.Name)
+	s.SetNamespace(dbNamespacedName.Namespace)
+	s.SetLabels(iapp.GetLabels())
+	s.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
+	s.Spec.Selector = iapp.GetLabels()
+	s.Spec.Ports = servicePorts
+
+	if err = update.Apply(ctx, r.Client, &s); err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	pvc := core.PersistentVolumeClaim{}
+
+	err = r.Client.Get(ctx, dbNamespacedName, &pvc)
+
+	update, err = updateOrErr(err)
+	if err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	pvc.SetName(dbNamespacedName.Name)
+	pvc.SetNamespace(dbNamespacedName.Namespace)
+	pvc.SetLabels(iapp.GetLabels())
+	pvc.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
+	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
+	pvc.Spec.Resources = core.ResourceRequirements{
+		Requests: core.ResourceList{
+			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
+		},
+	}
+
+	if err = update.Apply(ctx, r.Client, &pvc); err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	dbConfig := config.DatabaseConfig{
+		Name:     iapp.Spec.Database.Name,
+		User:     dbUser.Value,
+		Pass:     dbPass.Value,
+		Hostname: dbObjName,
+		Port:     5432,
+	}
+
+	return dbConfig, nil
+}
+
 func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhatcomv1alpha1.InsightsApp, c *config.AppConfig) error {
 
 	ctx := context.Background()
@@ -234,14 +402,24 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.makeDeployment(&iapp, &base, &d)
 
+	databaseConfig := config.DatabaseConfig{}
+
+	if iapp.Spec.Database != (cloudredhatcomv1alpha1.InsightsDatabaseSpec{}) {
+
+		if databaseConfig, err = r.makeDatabase(&iapp, &base); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.CloudWatch(
 		config.CloudWatchConfig{
 			AccessKeyID:     "mah_key",
 			SecretAccessKey: "mah_sekret",
 			Region:          "us-east-1",
 			LogGroup:        iapp.ObjectMeta.Namespace,
-		},
-	))
+		}),
+		config.Database(databaseConfig),
+	)
 
 	if err = r.persistConfig(req, iapp, c); err != nil {
 		return ctrl.Result{}, err

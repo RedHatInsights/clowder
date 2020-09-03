@@ -22,12 +22,21 @@ type KafkaConfig struct {
 	Topics  []TopicConfig  `json:"topics"`
 }
 
+type DatabaseConfig struct {
+	Name     string `json:"name"`
+	User     string `json:"user"`
+	Pass     string `json:"pass"`
+	Hostname string `json:"hostname"`
+	Port     int32  `json:"port"`
+}
+
 type AppConfig struct {
 	WebPort     int32            `json:"webPort"`
 	MetricsPort int32            `json:"metricsPort"`
 	MetricsPath string           `json:"metricsPath"`
 	CloudWatch  CloudWatchConfig `json:"cloudWatch"`
 	Kafka       KafkaConfig      `json:"kafka"`
+	Database    DatabaseConfig   `json:"database"`
 }
 
 type Option func(*AppConfig)
@@ -41,6 +50,12 @@ func CloudWatch(cwc CloudWatchConfig) Option {
 func Kafka(kc KafkaConfig) Option {
 	return func(c *AppConfig) {
 		c.Kafka = kc
+	}
+}
+
+func Database(dc DatabaseConfig) Option {
+	return func(c *AppConfig) {
+		c.Database = dc
 	}
 }
 

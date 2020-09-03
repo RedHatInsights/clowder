@@ -45,6 +45,14 @@ spec:
               items:
                 type: string
               type: array
+            database:
+              properties:
+                name:
+                  type: string
+                version:
+                  format: int32
+                  type: integer
+              type: object
             env:
               items:
                 description: EnvVar represents an environment variable present in

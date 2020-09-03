@@ -25,6 +25,7 @@ type InsightsBaseSpec struct {
 	MetricsPath    string `json:"metricsPath"`
 	KafkaCluster   string `json:"kafkaCluster"`
 	KafkaNamespace string `json:"kafkaNamespace"`
+	DatabaseImage  string `json:"databaseImage"`
 }
 
 // InsightsBaseStatus defines the observed state of InsightsBase

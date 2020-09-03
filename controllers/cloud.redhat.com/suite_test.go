@@ -128,11 +128,13 @@ func TestCreateInsightsApp(t *testing.T) {
 			MetricsPath:    "/metrics",
 			KafkaCluster:   "kafka",
 			KafkaNamespace: "default", // TODO Would like to put this into a different namespace
+			DatabaseImage:  "registry.redhat.io/rhel8/postgresql-12:1-36",
 		},
 	}
 
 	replicas := int32(32)
 	partitions := int32(5)
+	dbVersion := int32(12)
 
 	iapp := crd.InsightsApp{
 		ObjectMeta: objMeta,
@@ -145,6 +147,10 @@ func TestCreateInsightsApp(t *testing.T) {
 					Partitions: &partitions,
 					Replicas:   &replicas,
 				},
+			},
+			Database: crd.InsightsDatabaseSpec{
+				Version: &dbVersion,
+				Name:    "test",
 			},
 		},
 	}

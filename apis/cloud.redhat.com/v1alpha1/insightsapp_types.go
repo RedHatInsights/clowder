@@ -26,6 +26,11 @@ type InitContainer struct {
 	Args []string `json:"args"`
 }
 
+type InsightsDatabaseSpec struct {
+	Version *int32 `json:"version,omitempty"`
+	Name    string `json:"name,omitempty"`
+}
+
 type InsightsAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -43,6 +48,7 @@ type InsightsAppSpec struct {
 	Web            bool                     `json:"web,omitempty"`
 	Base           string                   `json:"base"`
 	KafkaTopics    []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
+	Database       InsightsDatabaseSpec     `json:"database,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp
