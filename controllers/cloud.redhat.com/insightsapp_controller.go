@@ -100,11 +100,13 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	}
 
-	c := config.New(&base, config.Database(databaseConfig))
+	loggingConfig := config.LoggingConfig{}
 
-	if err = maker.configureLogging(c, r.Log); err != nil {
+	if loggingConfig, err = maker.makeLogging(); err != nil {
 		return ctrl.Result{}, err
 	}
+
+	c := config.New(&base, config.Database(databaseConfig), config.Logging(loggingConfig))
 
 	if err = maker.persistConfig(c); err != nil {
 		return ctrl.Result{}, err

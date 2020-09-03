@@ -301,10 +301,10 @@ func TestCreateInsightsApp(t *testing.T) {
 	}
 
 	cwConfigVals := []string{
-		jsonContent.CloudWatch.AccessKeyID,
-		jsonContent.CloudWatch.SecretAccessKey,
-		jsonContent.CloudWatch.LogGroup,
-		jsonContent.CloudWatch.Region,
+		jsonContent.Logging.CloudWatch.AccessKeyID,
+		jsonContent.Logging.CloudWatch.SecretAccessKey,
+		jsonContent.Logging.CloudWatch.LogGroup,
+		jsonContent.Logging.CloudWatch.Region,
 	}
 
 	for i, val := range cwValues {

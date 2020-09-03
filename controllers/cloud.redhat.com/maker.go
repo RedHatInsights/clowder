@@ -9,7 +9,6 @@ import (
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
-	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -19,14 +18,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func b64decode(s *core.Secret, key string, log logr.Logger) string {
+func b64decode(s *core.Secret, key string) (string, error) {
 	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))
 
 	if err != nil {
-		log.Error(err, "Based to base64 decode")
+		return "", err
 	}
 
-	return string(decoded)
+	return string(decoded), nil
 }
 
 type Maker struct {
@@ -287,7 +286,9 @@ func (m *Maker) persistConfig(c *config.AppConfig) error {
 	return update.Apply(m.Ctx, m.Client, &secret)
 }
 
-func (m *Maker) configureLogging(c *config.AppConfig, log logr.Logger) error {
+func (m *Maker) makeLogging() (config.LoggingConfig, error) {
+
+	logging := config.LoggingConfig{Type: m.Base.Spec.Logging}
 
 	if m.Base.Spec.Logging == "cloudwatch" {
 		name := types.NamespacedName{
@@ -299,18 +300,35 @@ func (m *Maker) configureLogging(c *config.AppConfig, log logr.Logger) error {
 		err := m.Client.Get(m.Ctx, name, &secret)
 
 		if err != nil {
-			return err
+			return logging, err
 		}
 
-		c.CloudWatch = config.CloudWatchConfig{
-			AccessKeyID:     b64decode(&secret, "aws_access_key_id", log),
-			SecretAccessKey: b64decode(&secret, "aws_secret_access_key", log),
-			Region:          b64decode(&secret, "aws_region", log),
-			LogGroup:        b64decode(&secret, "log_group_name", log),
+		cwKeys := []string{
+			"aws_access_key_id",
+			"aws_secret_access_key",
+			"aws_region",
+			"log_group_name",
+		}
+
+		decoded := make([]string, 4)
+
+		for i := 0; i < 4; i++ {
+			decoded[i], err = b64decode(&secret, cwKeys[i])
+
+			if err != nil {
+				return logging, err
+			}
+		}
+
+		logging.CloudWatch = config.CloudWatchConfig{
+			AccessKeyID:     decoded[0],
+			SecretAccessKey: decoded[1],
+			Region:          decoded[2],
+			LogGroup:        decoded[3],
 		}
 	}
 
-	return nil
+	return logging, nil
 }
 
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply

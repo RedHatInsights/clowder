@@ -4,6 +4,11 @@ import (
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 )
 
+type LoggingConfig struct {
+	Type       string           `json:"type"`
+	CloudWatch CloudWatchConfig `json:"cloudwatch,omitempty"`
+}
+
 type CloudWatchConfig struct {
 	AccessKeyID     string `json:"accessKeyID"`
 	SecretAccessKey string `json:"secretAccessKey"`
@@ -35,19 +40,19 @@ type DatabaseConfig struct {
 }
 
 type AppConfig struct {
-	WebPort     int32            `json:"webPort"`
-	MetricsPort int32            `json:"metricsPort"`
-	MetricsPath string           `json:"metricsPath"`
-	CloudWatch  CloudWatchConfig `json:"cloudWatch"`
-	Kafka       KafkaConfig      `json:"kafka"`
-	Database    DatabaseConfig   `json:"database"`
+	WebPort     int32          `json:"webPort"`
+	MetricsPort int32          `json:"metricsPort"`
+	MetricsPath string         `json:"metricsPath"`
+	Logging     LoggingConfig  `json:"logging"`
+	Kafka       KafkaConfig    `json:"kafka"`
+	Database    DatabaseConfig `json:"database"`
 }
 
 type Option func(*AppConfig)
 
-func CloudWatch(cwc CloudWatchConfig) Option {
+func Logging(logging LoggingConfig) Option {
 	return func(c *AppConfig) {
-		c.CloudWatch = cwc
+		c.Logging = logging
 	}
 }
 
