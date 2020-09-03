@@ -23,6 +23,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -173,7 +174,14 @@ func (r *InsightsAppReconciler) makeDatabase(iapp cloudredhatcomv1alpha1.Insight
 
 	dd.Spec.Replicas = iapp.Spec.MinReplicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
-	dd.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
+	dd.Spec.Template.Spec.Volumes = []core.Volume{core.Volume{
+		Name: dbNamespacedName.Name,
+		VolumeSource: core.VolumeSource{
+			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
+				ClaimName: dbNamespacedName.Name,
+			},
+		}},
+	}
 	dd.Spec.Template.ObjectMeta.Labels = iapp.GetLabels()
 
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
@@ -218,11 +226,64 @@ func (r *InsightsAppReconciler) makeDatabase(iapp cloudredhatcomv1alpha1.Insight
 		ReadinessProbe: &readinessProbe,
 		// VolumeMounts:   iapp.Spec.VolumeMounts, TODO Add in volume mount for PVC
 		Ports: ports,
+		VolumeMounts: []core.VolumeMount{
+			core.VolumeMount{
+				Name:      dbNamespacedName.Name,
+				MountPath: "/var/lib/pgsql/data",
+			},
+		},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 
 	if err = update.Apply(ctx, r.Client, &dd); err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	s := core.Service{}
+	err = r.Client.Get(ctx, dbNamespacedName, &s)
+
+	update, err = updateOrErr(err)
+	if err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	servicePorts := []core.ServicePort{}
+	databasePort := core.ServicePort{Name: "database", Port: 5432, Protocol: "TCP"}
+	servicePorts = append(servicePorts, databasePort)
+
+	s.SetName(dbNamespacedName.Name)
+	s.SetNamespace(dbNamespacedName.Namespace)
+	s.SetLabels(iapp.GetLabels())
+	s.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
+	s.Spec.Selector = iapp.GetLabels()
+	s.Spec.Ports = servicePorts
+
+	if err = update.Apply(ctx, r.Client, &s); err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	pvc := core.PersistentVolumeClaim{}
+
+	err = r.Client.Get(ctx, dbNamespacedName, &pvc)
+
+	update, err = updateOrErr(err)
+	if err != nil {
+		return config.DatabaseConfig{}, err
+	}
+
+	pvc.SetName(dbNamespacedName.Name)
+	pvc.SetNamespace(dbNamespacedName.Namespace)
+	pvc.SetLabels(iapp.GetLabels())
+	pvc.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
+	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
+	pvc.Spec.Resources = core.ResourceRequirements{
+		Requests: core.ResourceList{
+			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
+		},
+	}
+
+	if err = update.Apply(ctx, r.Client, &pvc); err != nil {
 		return config.DatabaseConfig{}, err
 	}
 
