@@ -128,6 +128,7 @@ func TestCreateInsightsApp(t *testing.T) {
 			MetricsPath:    "/metrics",
 			KafkaCluster:   "kafka",
 			KafkaNamespace: "default", // TODO Would like to put this into a different namespace
+			DatabaseImage:  "registry.redhat.io/rhel8/postgresql-12:1-36",
 		},
 	}
 

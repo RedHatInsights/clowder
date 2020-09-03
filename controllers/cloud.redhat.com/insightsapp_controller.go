@@ -148,7 +148,7 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
-func (r *InsightsAppReconciler) makeDatabase(iapp cloudredhatcomv1alpha1.InsightsApp) (config.DatabaseConfig, error) {
+func (r *InsightsAppReconciler) makeDatabase(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) (config.DatabaseConfig, error) {
 	// TODO Right now just dealing with the creation for ephemeral - doesn't skip if RDS
 
 	ctx := context.Background()
@@ -220,7 +220,7 @@ func (r *InsightsAppReconciler) makeDatabase(iapp cloudredhatcomv1alpha1.Insight
 
 	c := core.Container{
 		Name:           dbNamespacedName.Name,
-		Image:          "registry.redhat.io/rhel8/postgresql-12:1-36",
+		Image:          base.Spec.DatabaseImage,
 		Env:            envVars,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
@@ -390,7 +390,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	if iapp.Spec.Database != (cloudredhatcomv1alpha1.InsightsDatabaseSpec{}) {
 
-		if databaseConfig, err = r.makeDatabase(iapp); err != nil {
+		if databaseConfig, err = r.makeDatabase(&iapp, &base); err != nil {
 			return ctrl.Result{}, err
 		}
 	}

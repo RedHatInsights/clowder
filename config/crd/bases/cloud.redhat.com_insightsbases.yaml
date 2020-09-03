@@ -36,6 +36,8 @@ spec:
         spec:
           description: InsightsBaseSpec defines the desired state of InsightsBase
           properties:
+            databaseImage:
+              type: string
             kafkaCluster:
               type: string
             kafkaNamespace:
@@ -49,6 +51,7 @@ spec:
               format: int32
               type: integer
           required:
+          - databaseImage
           - kafkaCluster
           - kafkaNamespace
           - metricsPath
