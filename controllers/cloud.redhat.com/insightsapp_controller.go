@@ -16,16 +16,11 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
-	b64 "encoding/base64"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 )
 
@@ -44,304 +38,6 @@ type InsightsAppReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-}
-
-func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *crd.InsightsApp, base *crd.InsightsBase) error {
-	ctx := context.Background()
-
-	if len(iapp.Spec.KafkaTopics) > 0 {
-		for _, kafkaTopic := range iapp.Spec.KafkaTopics {
-			k := strimzi.KafkaTopic{}
-			kafkaNamespace := types.NamespacedName{
-				Namespace: base.Spec.KafkaNamespace,
-				Name:      kafkaTopic.TopicName,
-			}
-
-			err := r.Client.Get(ctx, kafkaNamespace, &k)
-			update, err := updateOrErr(err)
-			if err != nil {
-				return err
-			}
-
-			labels := map[string]string{
-				"strimzi.io/cluster": base.Spec.KafkaCluster,
-				"iapp":               iapp.GetName(), // If we label it with the app name, since app names should be unique? can we use for delete selector?
-			}
-
-			k.SetName(kafkaTopic.TopicName)
-			k.SetNamespace(base.Spec.KafkaNamespace)
-			k.SetLabels(labels)
-
-			k.Spec.Replicas = kafkaTopic.Replicas
-			k.Spec.Partitions = kafkaTopic.Partitions
-			k.Spec.Config = kafkaTopic.Config
-			err = update.Apply(ctx, r.Client, &k)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *crd.InsightsApp, base *crd.InsightsBase) error {
-
-	ctx := context.Background()
-	s := core.Service{}
-	err := r.Client.Get(ctx, req.NamespacedName, &s)
-
-	update, err := updateOrErr(err)
-	if err != nil {
-		return err
-	}
-
-	ports := []core.ServicePort{}
-	metricsPort := core.ServicePort{Name: "metrics", Port: base.Spec.MetricsPort, Protocol: "TCP"}
-	ports = append(ports, metricsPort)
-
-	if iapp.Spec.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: base.Spec.WebPort, Protocol: "TCP"}
-		ports = append(ports, webPort)
-	}
-
-	iapp.SetObjectMeta(&s)
-	s.Spec.Selector = iapp.GetLabels()
-	s.Spec.Ports = ports
-
-	return update.Apply(ctx, r.Client, &s)
-}
-
-func (r *InsightsAppReconciler) makeDeployment(iapp *crd.InsightsApp, base *crd.InsightsBase, d *apps.Deployment) {
-
-	iapp.SetObjectMeta(d)
-
-	d.Spec.Replicas = iapp.Spec.MinReplicas
-	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
-	d.Spec.Template.Spec.Volumes = iapp.Spec.Volumes
-	d.Spec.Template.ObjectMeta.Labels = iapp.GetLabels()
-
-	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
-	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
-
-	c := core.Container{
-		Name:           iapp.ObjectMeta.Name,
-		Image:          iapp.Spec.Image,
-		Command:        iapp.Spec.Command,
-		Args:           iapp.Spec.Args,
-		Env:            iapp.Spec.Env,
-		Resources:      iapp.Spec.Resources,
-		LivenessProbe:  iapp.Spec.LivenessProbe,
-		ReadinessProbe: iapp.Spec.ReadinessProbe,
-		VolumeMounts:   iapp.Spec.VolumeMounts,
-		Ports: []core.ContainerPort{{
-			Name:          "metrics",
-			ContainerPort: base.Spec.MetricsPort,
-		}},
-	}
-
-	if iapp.Spec.Web {
-		c.Ports = append(c.Ports, core.ContainerPort{
-			Name:          "web",
-			ContainerPort: base.Spec.WebPort,
-		})
-	}
-
-	d.Spec.Template.Spec.Containers = []core.Container{c}
-}
-
-func (r *InsightsAppReconciler) makeDatabase(iapp *crd.InsightsApp, base *crd.InsightsBase) (config.DatabaseConfig, error) {
-	// TODO Right now just dealing with the creation for ephemeral - doesn't skip if RDS
-
-	ctx := context.Background()
-
-	dbObjName := fmt.Sprintf("%v-db", iapp.Name)
-	dbNamespacedName := types.NamespacedName{
-		Namespace: iapp.Namespace,
-		Name:      dbObjName,
-	}
-
-	dd := apps.Deployment{}
-	err := r.Client.Get(ctx, dbNamespacedName, &dd)
-
-	update, err := updateOrErr(err)
-	if err != nil {
-		return config.DatabaseConfig{}, err
-	}
-
-	dd.SetName(dbNamespacedName.Name)
-	dd.SetNamespace(dbNamespacedName.Namespace)
-	dd.SetLabels(iapp.GetLabels())
-	dd.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
-
-	dd.Spec.Replicas = iapp.Spec.MinReplicas
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: iapp.GetLabels()}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{core.Volume{
-		Name: dbNamespacedName.Name,
-		VolumeSource: core.VolumeSource{
-			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
-				ClaimName: dbNamespacedName.Name,
-			},
-		}},
-	}
-	dd.Spec.Template.ObjectMeta.Labels = iapp.GetLabels()
-
-	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
-
-	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: "test"}
-	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: "test"}
-	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: iapp.Spec.Database.Name}
-	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: "test"}
-	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
-	ports := []core.ContainerPort{
-		core.ContainerPort{
-			Name:          "database",
-			ContainerPort: 5432,
-		},
-	}
-
-	livenessProbe := core.Probe{
-		Handler: core.Handler{
-			Exec: &core.ExecAction{
-				Command: []string{
-					"psql",
-					"-U",
-					"$(POSTGRESQL_USER)",
-					"-d",
-					"$(POSTGRESQL_DATABASE)",
-					"-c",
-					"SELECT 1",
-				},
-			},
-		},
-		InitialDelaySeconds: 15,
-		TimeoutSeconds:      2,
-	}
-	readinessProbe := core.Probe{
-		Handler: core.Handler{
-			Exec: &core.ExecAction{
-				Command: []string{
-					"psql",
-					"-U",
-					"$(POSTGRESQL_USER)",
-					"-d",
-					"$(POSTGRESQL_DATABASE)",
-					"-c",
-					"SELECT 1",
-				},
-			},
-		},
-		InitialDelaySeconds: 45,
-		TimeoutSeconds:      2,
-	}
-
-	c := core.Container{
-		Name:           dbNamespacedName.Name,
-		Image:          base.Spec.DatabaseImage,
-		Env:            envVars,
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
-		// VolumeMounts:   iapp.Spec.VolumeMounts, TODO Add in volume mount for PVC
-		Ports: ports,
-		VolumeMounts: []core.VolumeMount{
-			core.VolumeMount{
-				Name:      dbNamespacedName.Name,
-				MountPath: "/var/lib/pgsql/data",
-			},
-		},
-	}
-
-	dd.Spec.Template.Spec.Containers = []core.Container{c}
-
-	if err = update.Apply(ctx, r.Client, &dd); err != nil {
-		return config.DatabaseConfig{}, err
-	}
-
-	s := core.Service{}
-	err = r.Client.Get(ctx, dbNamespacedName, &s)
-
-	update, err = updateOrErr(err)
-	if err != nil {
-		return config.DatabaseConfig{}, err
-	}
-
-	servicePorts := []core.ServicePort{}
-	databasePort := core.ServicePort{Name: "database", Port: 5432, Protocol: "TCP"}
-	servicePorts = append(servicePorts, databasePort)
-
-	s.SetName(dbNamespacedName.Name)
-	s.SetNamespace(dbNamespacedName.Namespace)
-	s.SetLabels(iapp.GetLabels())
-	s.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
-	s.Spec.Selector = iapp.GetLabels()
-	s.Spec.Ports = servicePorts
-
-	if err = update.Apply(ctx, r.Client, &s); err != nil {
-		return config.DatabaseConfig{}, err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-
-	err = r.Client.Get(ctx, dbNamespacedName, &pvc)
-
-	update, err = updateOrErr(err)
-	if err != nil {
-		return config.DatabaseConfig{}, err
-	}
-
-	pvc.SetName(dbNamespacedName.Name)
-	pvc.SetNamespace(dbNamespacedName.Namespace)
-	pvc.SetLabels(iapp.GetLabels())
-	pvc.SetOwnerReferences([]metav1.OwnerReference{iapp.MakeOwnerReference()})
-	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
-	pvc.Spec.Resources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
-		},
-	}
-
-	if err = update.Apply(ctx, r.Client, &pvc); err != nil {
-		return config.DatabaseConfig{}, err
-	}
-
-	dbConfig := config.DatabaseConfig{
-		Name:     iapp.Spec.Database.Name,
-		User:     dbUser.Value,
-		Pass:     dbPass.Value,
-		Hostname: dbObjName,
-		Port:     5432,
-	}
-
-	return dbConfig, nil
-}
-
-func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp crd.InsightsApp, c *config.AppConfig) error {
-
-	ctx := context.Background()
-
-	// In any case, we want to overwrite the secret, so this just
-	// tests to see if the secret exists
-	err := r.Client.Get(ctx, req.NamespacedName, &core.Secret{})
-
-	update, err := updateOrErr(err)
-	if err != nil {
-		return err
-	}
-
-	jsonData, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-
-	secret := core.Secret{
-		StringData: map[string]string{
-			"cdappconfig.json": string(jsonData),
-		},
-	}
-
-	iapp.SetObjectMeta(&secret)
-
-	return update.Apply(ctx, r.Client, &secret)
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
@@ -364,44 +60,6 @@ func updateOrErr(err error) (updater, error) {
 	}
 
 	return update, nil
-}
-
-func (r *InsightsAppReconciler) b64decode(s *core.Secret, key string) string {
-	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))
-
-	if err != nil {
-		r.Log.Error(err, "Based to base64 decode")
-	}
-
-	return string(decoded)
-}
-
-func (r *InsightsAppReconciler) configureLogging(c *config.AppConfig, iapp *crd.InsightsApp, base *crd.InsightsBase) error {
-
-	ctx := context.Background()
-
-	if base.Spec.Logging == "cloudwatch" {
-		name := types.NamespacedName{
-			Name:      "cloudwatch",
-			Namespace: iapp.Namespace,
-		}
-
-		secret := core.Secret{}
-		err := r.Client.Get(ctx, name, &secret)
-
-		if err != nil {
-			return err
-		}
-
-		c.CloudWatch = config.CloudWatchConfig{
-			AccessKeyID:     r.b64decode(&secret, "aws_access_key_id"),
-			SecretAccessKey: r.b64decode(&secret, "aws_secret_access_key"),
-			Region:          r.b64decode(&secret, "aws_region"),
-			LogGroup:        r.b64decode(&secret, "log_group_name"),
-		}
-	}
-
-	return nil
 }
 
 // Reconcile fn
@@ -431,6 +89,27 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
+	maker := Maker{App: &iapp, Base: &base, Client: r.Client, Ctx: ctx, Request: &req}
+
+	databaseConfig := config.DatabaseConfig{}
+
+	if iapp.Spec.Database != (crd.InsightsDatabaseSpec{}) {
+
+		if databaseConfig, err = maker.makeDatabase(); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.Database(databaseConfig))
+
+	if err = maker.configureLogging(c, r.Log); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err = maker.persistConfig(c); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	d := apps.Deployment{}
 	err = r.Client.Get(ctx, req.NamespacedName, &d)
 
@@ -439,28 +118,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	r.makeDeployment(&iapp, &base, &d)
-
-	databaseConfig := config.DatabaseConfig{}
-
-	if iapp.Spec.Database != (crd.InsightsDatabaseSpec{}) {
-
-		if databaseConfig, err = r.makeDatabase(&iapp, &base); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-
-	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.Database(databaseConfig))
-
-	err = r.configureLogging(c, &iapp, &base)
-
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err = r.persistConfig(req, iapp, c); err != nil {
-		return ctrl.Result{}, err
-	}
+	maker.makeDeployment(&d)
 
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 		Name: "config-secret",
@@ -481,11 +139,11 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	if err = r.makeService(&req, &iapp, &base); err != nil {
+	if err = maker.makeService(); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err = r.makeKafka(&req, &iapp, &base); err != nil {
+	if err = maker.makeKafka(); err != nil {
 		return ctrl.Result{}, err
 	}
 
