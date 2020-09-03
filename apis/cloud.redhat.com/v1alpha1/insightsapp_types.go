@@ -27,8 +27,8 @@ type InitContainer struct {
 }
 
 type InsightsDatabaseSpec struct {
-	Version *int   `json:"version"`
-	Name    string `json:"name"`
+	Version *int32 `json:"version,omitempty"`
+	Name    string `json:"name,omitempty"`
 }
 
 type InsightsAppSpec struct {

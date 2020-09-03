@@ -133,6 +133,7 @@ func TestCreateInsightsApp(t *testing.T) {
 
 	replicas := int32(32)
 	partitions := int32(5)
+	dbVersion := int32(12)
 
 	iapp := crd.InsightsApp{
 		ObjectMeta: objMeta,
@@ -145,6 +146,10 @@ func TestCreateInsightsApp(t *testing.T) {
 					Partitions: &partitions,
 					Replicas:   &replicas,
 				},
+			},
+			Database: crd.InsightsDatabaseSpec{
+				Version: &dbVersion,
+				Name:    "test",
 			},
 		},
 	}
