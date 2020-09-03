@@ -202,7 +202,15 @@ func (r *InsightsAppReconciler) makeDatabase(iapp *cloudredhatcomv1alpha1.Insigh
 	livenessProbe := core.Probe{
 		Handler: core.Handler{
 			Exec: &core.ExecAction{
-				Command: []string{"psql", "-U", "$(POSTGRESQL_USER)", "-d", "$(POSTGRESQL_DATABASE)", "-c", "SELECT 1"},
+				Command: []string{
+					"psql",
+					"-U",
+					"$(POSTGRESQL_USER)",
+					"-d",
+					"$(POSTGRESQL_DATABASE)",
+					"-c",
+					"SELECT 1",
+				},
 			},
 		},
 		InitialDelaySeconds: 15,
@@ -211,7 +219,15 @@ func (r *InsightsAppReconciler) makeDatabase(iapp *cloudredhatcomv1alpha1.Insigh
 	readinessProbe := core.Probe{
 		Handler: core.Handler{
 			Exec: &core.ExecAction{
-				Command: []string{"psql", "-U", "$(POSTGRESQL_USER)", "-d", "$(POSTGRESQL_DATABASE)", "-c", "SELECT 1"},
+				Command: []string{
+					"psql",
+					"-U",
+					"$(POSTGRESQL_USER)",
+					"-d",
+					"$(POSTGRESQL_DATABASE)",
+					"-c",
+					"SELECT 1",
+				},
 			},
 		},
 		InitialDelaySeconds: 45,
