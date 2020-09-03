@@ -100,7 +100,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	}
 
-	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.Database(databaseConfig))
+	c := config.New(&base, config.Database(databaseConfig))
 
 	if err = maker.configureLogging(c, r.Log); err != nil {
 		return ctrl.Result{}, err

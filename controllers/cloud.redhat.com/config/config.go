@@ -1,5 +1,9 @@
 package config
 
+import (
+	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+)
+
 type CloudWatchConfig struct {
 	AccessKeyID     string `json:"accessKeyID"`
 	SecretAccessKey string `json:"secretAccessKey"`
@@ -59,11 +63,11 @@ func Database(dc DatabaseConfig) Option {
 	}
 }
 
-func New(webPort int32, metricsPort int32, metricsPath string, opts ...Option) *AppConfig {
+func New(base *crd.InsightsBase, opts ...Option) *AppConfig {
 	c := &AppConfig{
-		WebPort:     webPort,
-		MetricsPort: metricsPort,
-		MetricsPath: metricsPath,
+		WebPort:     base.Spec.WebPort,
+		MetricsPort: base.Spec.MetricsPort,
+		MetricsPath: base.Spec.MetricsPath,
 	}
 
 	for _, opt := range opts {
