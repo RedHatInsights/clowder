@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	b64 "encoding/base64"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -33,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 )
@@ -45,7 +46,7 @@ type InsightsAppReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
+func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *crd.InsightsApp, base *crd.InsightsBase) error {
 	ctx := context.Background()
 
 	if len(iapp.Spec.KafkaTopics) > 0 {
@@ -83,7 +84,7 @@ func (r *InsightsAppReconciler) makeKafka(req *ctrl.Request, iapp *cloudredhatco
 	return nil
 }
 
-func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) error {
+func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *crd.InsightsApp, base *crd.InsightsBase) error {
 
 	ctx := context.Background()
 	s := core.Service{}
@@ -110,7 +111,7 @@ func (r *InsightsAppReconciler) makeService(req *ctrl.Request, iapp *cloudredhat
 	return update.Apply(ctx, r.Client, &s)
 }
 
-func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase, d *apps.Deployment) {
+func (r *InsightsAppReconciler) makeDeployment(iapp *crd.InsightsApp, base *crd.InsightsBase, d *apps.Deployment) {
 
 	iapp.SetObjectMeta(d)
 
@@ -148,7 +149,7 @@ func (r *InsightsAppReconciler) makeDeployment(iapp *cloudredhatcomv1alpha1.Insi
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
-func (r *InsightsAppReconciler) makeDatabase(iapp *cloudredhatcomv1alpha1.InsightsApp, base *cloudredhatcomv1alpha1.InsightsBase) (config.DatabaseConfig, error) {
+func (r *InsightsAppReconciler) makeDatabase(iapp *crd.InsightsApp, base *crd.InsightsBase) (config.DatabaseConfig, error) {
 	// TODO Right now just dealing with the creation for ephemeral - doesn't skip if RDS
 
 	ctx := context.Background()
@@ -314,7 +315,7 @@ func (r *InsightsAppReconciler) makeDatabase(iapp *cloudredhatcomv1alpha1.Insigh
 	return dbConfig, nil
 }
 
-func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp cloudredhatcomv1alpha1.InsightsApp, c *config.AppConfig) error {
+func (r *InsightsAppReconciler) persistConfig(req ctrl.Request, iapp crd.InsightsApp, c *config.AppConfig) error {
 
 	ctx := context.Background()
 
@@ -365,12 +366,50 @@ func updateOrErr(err error) (updater, error) {
 	return update, nil
 }
 
+func (r *InsightsAppReconciler) b64decode(s *core.Secret, key string) string {
+	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))
+
+	if err != nil {
+		r.Log.Error(err, "Based to base64 decode")
+	}
+
+	return string(decoded)
+}
+
+func (r *InsightsAppReconciler) configureLogging(c *config.AppConfig, iapp *crd.InsightsApp, base *crd.InsightsBase) error {
+
+	ctx := context.Background()
+
+	if base.Spec.Logging == "cloudwatch" {
+		name := types.NamespacedName{
+			Name:      "cloudwatch",
+			Namespace: iapp.Namespace,
+		}
+
+		secret := core.Secret{}
+		err := r.Client.Get(ctx, name, &secret)
+
+		if err != nil {
+			return err
+		}
+
+		c.CloudWatch = config.CloudWatchConfig{
+			AccessKeyID:     r.b64decode(&secret, "aws_access_key_id"),
+			SecretAccessKey: r.b64decode(&secret, "aws_secret_access_key"),
+			Region:          r.b64decode(&secret, "aws_region"),
+			LogGroup:        r.b64decode(&secret, "log_group_name"),
+		}
+	}
+
+	return nil
+}
+
 // Reconcile fn
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
 
-	iapp := cloudredhatcomv1alpha1.InsightsApp{}
+	iapp := crd.InsightsApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &iapp)
 
 	if err != nil {
@@ -382,7 +421,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	base := cloudredhatcomv1alpha1.InsightsBase{}
+	base := crd.InsightsBase{}
 	err = r.Client.Get(ctx, types.NamespacedName{
 		Namespace: iapp.Namespace,
 		Name:      iapp.Spec.Base,
@@ -404,22 +443,20 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	databaseConfig := config.DatabaseConfig{}
 
-	if iapp.Spec.Database != (cloudredhatcomv1alpha1.InsightsDatabaseSpec{}) {
+	if iapp.Spec.Database != (crd.InsightsDatabaseSpec{}) {
 
 		if databaseConfig, err = r.makeDatabase(&iapp, &base); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
 
-	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.CloudWatch(
-		config.CloudWatchConfig{
-			AccessKeyID:     "mah_key",
-			SecretAccessKey: "mah_sekret",
-			Region:          "us-east-1",
-			LogGroup:        iapp.ObjectMeta.Namespace,
-		}),
-		config.Database(databaseConfig),
-	)
+	c := config.New(base.Spec.WebPort, base.Spec.MetricsPort, base.Spec.MetricsPath, config.Database(databaseConfig))
+
+	err = r.configureLogging(c, &iapp, &base)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	if err = r.persistConfig(req, iapp, c); err != nil {
 		return ctrl.Result{}, err
@@ -460,9 +497,9 @@ func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager!")
 	ctx := context.Background()
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&cloudredhatcomv1alpha1.InsightsApp{}).
+		For(&crd.InsightsApp{}).
 		Watches(
-			&source.Kind{Type: &cloudredhatcomv1alpha1.InsightsBase{}},
+			&source.Kind{Type: &crd.InsightsBase{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: handler.ToRequestsFunc(
 					func(a handler.MapObject) []reconcile.Request {
@@ -472,7 +509,7 @@ func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 						}
 						// Get the InsightsBase resource
 
-						base := cloudredhatcomv1alpha1.InsightsBase{}
+						base := crd.InsightsBase{}
 						err := r.Client.Get(ctx, obj, &base)
 
 						if err != nil {
@@ -482,7 +519,7 @@ func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 						// Get all the InsightsApp resources
 
-						appList := cloudredhatcomv1alpha1.InsightsAppList{}
+						appList := crd.InsightsAppList{}
 						r.Client.List(ctx, &appList)
 
 						reqs := []reconcile.Request{}

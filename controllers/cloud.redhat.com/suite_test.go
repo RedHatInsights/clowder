@@ -18,11 +18,13 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	b64 "encoding/base64"
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -39,6 +41,7 @@ import (
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -120,6 +123,41 @@ func TestCreateInsightsApp(t *testing.T) {
 		},
 	}
 
+	cwValues := []string{
+		"key_id",
+		"secret",
+		"default",
+		"us-east-1",
+	}
+
+	cwKeys := []string{
+		"aws_access_key_id",
+		"aws_secret_access_key",
+		"log_group_name",
+		"aws_region",
+	}
+
+	cwData := map[string][]byte{}
+
+	for i, key := range cwKeys {
+		cwData[key] = []byte(b64.StdEncoding.EncodeToString([]byte(cwValues[i])))
+	}
+
+	cloudwatch := core.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cloudwatch",
+			Namespace: "default",
+		},
+		Data: cwData,
+	}
+
+	err := k8sClient.Create(ctx, &cloudwatch)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	ibase := crd.InsightsBase{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsBaseSpec{
@@ -129,6 +167,7 @@ func TestCreateInsightsApp(t *testing.T) {
 			KafkaCluster:   "kafka",
 			KafkaNamespace: "default", // TODO Would like to put this into a different namespace
 			DatabaseImage:  "registry.redhat.io/rhel8/postgresql-12:1-36",
+			Logging:        "cloudwatch",
 		},
 	}
 
@@ -155,7 +194,7 @@ func TestCreateInsightsApp(t *testing.T) {
 		},
 	}
 
-	err := k8sClient.Create(ctx, &ibase)
+	err = k8sClient.Create(ctx, &ibase)
 
 	if err != nil {
 		t.Error(err)
@@ -220,13 +259,15 @@ func TestCreateInsightsApp(t *testing.T) {
 		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, ibase.Spec.MetricsPort)
 	}
 
+	// Kafka validation
+
 	topic := strimzi.KafkaTopic{}
-	name = types.NamespacedName{
+	topicName := types.NamespacedName{
 		Namespace: name.Namespace,
 		Name:      "inventory",
 	}
 
-	err = fetchWithDefaults(name, &topic)
+	err = fetchWithDefaults(topicName, &topic)
 
 	if err != nil {
 		t.Error(err)
@@ -238,6 +279,39 @@ func TestCreateInsightsApp(t *testing.T) {
 	}
 	if *topic.Spec.Partitions != partitions {
 		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Partitions, partitions)
+	}
+
+	// Secret content validation
+
+	secretConfig := core.Secret{}
+
+	err = k8sClient.Get(ctx, name, &secretConfig)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	jsonContent := config.AppConfig{}
+	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	cwConfigVals := []string{
+		jsonContent.CloudWatch.AccessKeyID,
+		jsonContent.CloudWatch.SecretAccessKey,
+		jsonContent.CloudWatch.LogGroup,
+		jsonContent.CloudWatch.Region,
+	}
+
+	for i, val := range cwValues {
+		if val != cwConfigVals[i] {
+			t.Errorf("Wrong cloudwatch config value %s; expected %s", cwConfigVals[i], val)
+			return
+		}
 	}
 }
 
