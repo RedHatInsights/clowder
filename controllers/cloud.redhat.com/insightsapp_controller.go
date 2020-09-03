@@ -72,7 +72,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
-			// TODO: requeue?
+			// Must have been deleted
 			return ctrl.Result{}, nil
 		}
 
@@ -175,17 +175,23 @@ func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *InsightsAppReconciler) appsToEnqueueUponBaseUpdate(a handler.MapObject) []reconcile.Request {
+	reqs := []reconcile.Request{}
 	ctx := context.Background()
 	obj := types.NamespacedName{
 		Name:      a.Meta.GetName(),
 		Namespace: a.Meta.GetNamespace(),
 	}
+
 	// Get the InsightsBase resource
 
 	base := crd.InsightsBase{}
 	err := r.Client.Get(ctx, obj, &base)
 
 	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return reqs
+		}
 		r.Log.Error(err, "Failed to fetch InsightsBase")
 		return nil
 	}
@@ -194,8 +200,6 @@ func (r *InsightsAppReconciler) appsToEnqueueUponBaseUpdate(a handler.MapObject)
 
 	appList := crd.InsightsAppList{}
 	r.Client.List(ctx, &appList)
-
-	reqs := []reconcile.Request{}
 
 	// Filter based on base attribute
 
