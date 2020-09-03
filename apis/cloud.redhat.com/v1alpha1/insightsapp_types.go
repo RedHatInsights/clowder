@@ -95,9 +95,27 @@ func (i *InsightsApp) MakeOwnerReference() metav1.OwnerReference {
 	}
 }
 
-func (i *InsightsApp) SetObjectMeta(o metav1.Object) {
+type omfunc func(o metav1.Object)
+
+func (i *InsightsApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	o.SetName(i.Name)
 	o.SetNamespace(i.Namespace)
 	o.SetLabels(i.GetLabels())
 	o.SetOwnerReferences([]metav1.OwnerReference{i.MakeOwnerReference()})
+
+	for _, opt := range opts {
+		opt(o)
+	}
+}
+
+func Name(name string) omfunc {
+	return func(o metav1.Object) {
+		o.SetName(name)
+	}
+}
+
+func Namespace(namespace string) omfunc {
+	return func(o metav1.Object) {
+		o.SetNamespace(namespace)
+	}
 }

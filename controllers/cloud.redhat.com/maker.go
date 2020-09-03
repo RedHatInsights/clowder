@@ -217,10 +217,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	databasePort := core.ServicePort{Name: "database", Port: 5432, Protocol: "TCP"}
 	servicePorts = append(servicePorts, databasePort)
 
-	s.SetName(dbNamespacedName.Name)
-	s.SetNamespace(dbNamespacedName.Namespace)
-	s.SetLabels(m.App.GetLabels())
-	s.SetOwnerReferences([]metav1.OwnerReference{m.App.MakeOwnerReference()})
+	m.App.SetObjectMeta(&s, crd.Name(dbNamespacedName.Name), crd.Namespace(dbNamespacedName.Namespace))
 	s.Spec.Selector = m.App.GetLabels()
 	s.Spec.Ports = servicePorts
 
