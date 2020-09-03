@@ -175,18 +175,20 @@ func TestCreateInsightsApp(t *testing.T) {
 	partitions := int32(5)
 	dbVersion := int32(12)
 
+	kafkaTopics := []strimzi.KafkaTopicSpec{
+		{
+			TopicName:  "inventory",
+			Partitions: &partitions,
+			Replicas:   &replicas,
+		},
+	}
+
 	iapp := crd.InsightsApp{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsAppSpec{
-			Image: "test:test",
-			Base:  ibase.Name,
-			KafkaTopics: []strimzi.KafkaTopicSpec{
-				{
-					TopicName:  "inventory",
-					Partitions: &partitions,
-					Replicas:   &replicas,
-				},
-			},
+			Image:       "test:test",
+			Base:        ibase.Name,
+			KafkaTopics: kafkaTopics,
 			Database: crd.InsightsDatabaseSpec{
 				Version: &dbVersion,
 				Name:    "test",
@@ -311,6 +313,19 @@ func TestCreateInsightsApp(t *testing.T) {
 		if val != cwConfigVals[i] {
 			t.Errorf("Wrong cloudwatch config value %s; expected %s", cwConfigVals[i], val)
 			return
+		}
+	}
+
+	if len(jsonContent.Kafka.Brokers[0].Hostname) == 0 {
+		t.Error("Kafka broker hostname is not set")
+		return
+	}
+
+	for i, kafkaTopic := range kafkaTopics {
+		actual, expected := jsonContent.Kafka.Topics[i].Name, kafkaTopic.TopicName
+
+		if actual != expected {
+			t.Errorf("Wrong topic name %s; expected %s", actual, expected)
 		}
 	}
 }

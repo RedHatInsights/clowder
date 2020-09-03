@@ -106,7 +106,18 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	c := config.New(&base, config.Database(databaseConfig), config.Logging(loggingConfig))
+	kafkaConfig := config.KafkaConfig{}
+
+	if kafkaConfig, err = maker.makeKafka(); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	c := config.New(
+		&base,
+		config.Database(databaseConfig),
+		config.Logging(loggingConfig),
+		config.Kafka(kafkaConfig),
+	)
 
 	if err = maker.persistConfig(c); err != nil {
 		return ctrl.Result{}, err
@@ -142,10 +153,6 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	if err = maker.makeService(); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err = maker.makeKafka(); err != nil {
 		return ctrl.Result{}, err
 	}
 

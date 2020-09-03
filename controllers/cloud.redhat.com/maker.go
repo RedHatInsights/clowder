@@ -36,40 +36,62 @@ type Maker struct {
 	Request *ctrl.Request
 }
 
-func (m *Maker) makeKafka() error {
-	if len(m.App.Spec.KafkaTopics) > -1 {
-		for _, kafkaTopic := range m.App.Spec.KafkaTopics {
-			k := strimzi.KafkaTopic{}
-			kafkaNamespace := types.NamespacedName{
-				Namespace: m.Base.Spec.KafkaNamespace,
-				Name:      kafkaTopic.TopicName,
-			}
+func (m *Maker) makeKafka() (config.KafkaConfig, error) {
 
-			err := m.Client.Get(m.Ctx, kafkaNamespace, &k)
-			update, err := updateOrErr(err)
-			if err != nil {
-				return err
-			}
+	kafka := config.KafkaConfig{}
 
-			labels := map[string]string{
-				"strimzi.io/cluster": m.Base.Spec.KafkaCluster,
-				"iapp":               m.App.GetName(), // If we label it with the app name, since app names should be unique? can we use for delete selector?
-			}
-
-			k.SetName(kafkaTopic.TopicName)
-			k.SetNamespace(m.Base.Spec.KafkaNamespace)
-			k.SetLabels(labels)
-
-			k.Spec.Replicas = kafkaTopic.Replicas
-			k.Spec.Partitions = kafkaTopic.Partitions
-			k.Spec.Config = kafkaTopic.Config
-			err = update.Apply(m.Ctx, m.Client, &k)
-			if err != nil {
-				return err
-			}
-		}
+	if len(m.App.Spec.KafkaTopics) == 0 {
+		return kafka, nil
 	}
-	return nil
+
+	// TODO: Pull the kafka resource to get the broker hostname and port
+	// This will require defining the Kafka CRD
+	kafka.Brokers = []config.BrokerConfig{{
+		Hostname: m.Base.Spec.KafkaCluster,
+		Port:     5432,
+	}}
+
+	kafka.Topics = []config.TopicConfig{}
+
+	for _, kafkaTopic := range m.App.Spec.KafkaTopics {
+		k := strimzi.KafkaTopic{}
+
+		kafkaNamespace := types.NamespacedName{
+			Namespace: m.Base.Spec.KafkaNamespace,
+			Name:      kafkaTopic.TopicName,
+		}
+
+		err := m.Client.Get(m.Ctx, kafkaNamespace, &k)
+		update, err := updateOrErr(err)
+
+		if err != nil {
+			return kafka, err
+		}
+
+		labels := map[string]string{
+			"strimzi.io/cluster": m.Base.Spec.KafkaCluster,
+			"iapp":               m.App.GetName(),
+			// If we label it with the app name, since app names should be
+			// unique? can we use for delete selector?
+		}
+
+		k.SetName(kafkaTopic.TopicName)
+		k.SetNamespace(m.Base.Spec.KafkaNamespace)
+		k.SetLabels(labels)
+
+		k.Spec.Replicas = kafkaTopic.Replicas
+		k.Spec.Partitions = kafkaTopic.Partitions
+		k.Spec.Config = kafkaTopic.Config
+		err = update.Apply(m.Ctx, m.Client, &k)
+
+		if err != nil {
+			return kafka, err
+		}
+
+		kafka.Topics = append(kafka.Topics, config.TopicConfig{Name: kafkaTopic.TopicName})
+	}
+
+	return kafka, nil
 }
 
 func (m *Maker) makeService() error {
