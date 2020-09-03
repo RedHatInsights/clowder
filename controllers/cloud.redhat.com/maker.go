@@ -368,7 +368,6 @@ func (m *Maker) makeDeployment() error {
 
 	d.Spec.Replicas = m.App.Spec.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: m.App.GetLabels()}
-	d.Spec.Template.Spec.Volumes = m.App.Spec.Volumes
 	d.Spec.Template.ObjectMeta.Labels = m.App.GetLabels()
 
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
@@ -398,8 +397,14 @@ func (m *Maker) makeDeployment() error {
 		})
 	}
 
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
+
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
+	d.Spec.Template.Spec.Volumes = m.App.Spec.Volumes
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
@@ -407,12 +412,6 @@ func (m *Maker) makeDeployment() error {
 				SecretName: m.App.ObjectMeta.Name,
 			},
 		},
-	})
-
-	con := &d.Spec.Template.Spec.Containers[0]
-	con.VolumeMounts = append(con.VolumeMounts, core.VolumeMount{
-		Name:      "config-secret",
-		MountPath: "/cdapp/",
 	})
 
 	if err = update.Apply(m.Ctx, m.Client, &d); err != nil {
