@@ -123,32 +123,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	d := apps.Deployment{}
-	err = r.Client.Get(ctx, req.NamespacedName, &d)
-
-	update, err := updateOrErr(err)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	maker.makeDeployment(&d)
-
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
-		Name: "config-secret",
-		VolumeSource: core.VolumeSource{
-			Secret: &core.SecretVolumeSource{
-				SecretName: iapp.ObjectMeta.Name,
-			},
-		},
-	})
-
-	con := &d.Spec.Template.Spec.Containers[0]
-	con.VolumeMounts = append(con.VolumeMounts, core.VolumeMount{
-		Name:      "config-secret",
-		MountPath: "/cdapp/",
-	})
-
-	if err = update.Apply(ctx, r.Client, &d); err != nil {
+	if err = maker.makeDeployment(); err != nil {
 		return ctrl.Result{}, err
 	}
 

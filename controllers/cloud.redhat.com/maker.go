@@ -354,9 +354,17 @@ func (m *Maker) makeLogging() (config.LoggingConfig, error) {
 }
 
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
-func (m *Maker) makeDeployment(d *apps.Deployment) {
+func (m *Maker) makeDeployment() error {
 
-	m.App.SetObjectMeta(d)
+	d := apps.Deployment{}
+	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &d)
+
+	update, err := updateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	m.App.SetObjectMeta(&d)
 
 	d.Spec.Replicas = m.App.Spec.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: m.App.GetLabels()}
@@ -391,4 +399,25 @@ func (m *Maker) makeDeployment(d *apps.Deployment) {
 	}
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
+
+	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
+		Name: "config-secret",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: m.App.ObjectMeta.Name,
+			},
+		},
+	})
+
+	con := &d.Spec.Template.Spec.Containers[0]
+	con.VolumeMounts = append(con.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
+
+	if err = update.Apply(m.Ctx, m.Client, &d); err != nil {
+		return err
+	}
+
+	return nil
 }
