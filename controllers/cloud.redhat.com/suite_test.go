@@ -171,7 +171,7 @@ func TestCreateInsightsApp(t *testing.T) {
 			MetricsPort:    int32(9000),
 			MetricsPath:    "/metrics",
 			KafkaCluster:   "kafka",
-			KafkaNamespace: "kafka", // TODO Would like to put this into a different namespace
+			KafkaNamespace: "kafka",
 			DatabaseImage:  "registry.redhat.io/rhel8/postgresql-12:1-36",
 			Logging:        "cloudwatch",
 		},
