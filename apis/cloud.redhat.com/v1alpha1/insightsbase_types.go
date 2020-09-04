@@ -19,13 +19,13 @@ import (
 )
 
 type WebConfig struct {
-	Port      int32  `json:"port"`
-	ApiPrefix string `json:"apiPrefix"`
+	Port      int32  `json:"port,omitempty"`
+	ApiPrefix string `json:"apiPrefix,omitempty"`
 }
 
 type MetricsConfig struct {
-	Port int32  `json:"port"`
-	Path string `json:"path"`
+	Port int32  `json:"port,omitempty"`
+	Path string `json:"path,omitempty"`
 }
 
 type KafkaConfig struct {

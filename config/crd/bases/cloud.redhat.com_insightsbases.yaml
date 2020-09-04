@@ -75,9 +75,6 @@ spec:
                 port:
                   format: int32
                   type: integer
-              required:
-              - path
-              - port
               type: object
             web:
               properties:
@@ -86,9 +83,6 @@ spec:
                 port:
                   format: int32
                   type: integer
-              required:
-              - apiPrefix
-              - port
               type: object
           required:
           - kafka
