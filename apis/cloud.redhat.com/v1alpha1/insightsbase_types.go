@@ -32,6 +32,7 @@ type KafkaConfig struct {
 	ClusterName string `json:"clusterName"`
 	Namespace   string `json:"namespace"`
 	Provider    string `json:"provider"`
+	Suffix      string `json:"suffix,omitempty"`
 }
 
 type DatabaseConfig struct {
@@ -43,13 +44,19 @@ type LoggingConfig struct {
 	Providers []string `json:"providers"`
 }
 
+type ObjectStoreConfig struct {
+	Provider string `json:"provider"`
+	Suffix   string `json:"suffix,omitempty"`
+}
+
 // InsightsBaseSpec defines the desired state of InsightsBase
 type InsightsBaseSpec struct {
-	Web      WebConfig      `json:"web,omitempty"`
-	Metrics  MetricsConfig  `json:"metrics,omitempty"`
-	Kafka    KafkaConfig    `json:"kafka"`
-	Database DatabaseConfig `json:"db,omitempty"`
-	Logging  LoggingConfig  `json:"logging"`
+	Web         WebConfig         `json:"web,omitempty"`
+	Metrics     MetricsConfig     `json:"metrics,omitempty"`
+	Kafka       KafkaConfig       `json:"kafka"`
+	Database    DatabaseConfig    `json:"db,omitempty"`
+	Logging     LoggingConfig     `json:"logging"`
+	ObjectStore ObjectStoreConfig `json:"objectStore"`
 }
 
 // InsightsBaseStatus defines the observed state of InsightsBase

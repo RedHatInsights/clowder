@@ -54,6 +54,8 @@ spec:
                   type: string
                 provider:
                   type: string
+                suffix:
+                  type: string
               required:
               - clusterName
               - namespace
@@ -76,6 +78,15 @@ spec:
                   format: int32
                   type: integer
               type: object
+            objectStore:
+              properties:
+                provider:
+                  type: string
+                suffix:
+                  type: string
+              required:
+              - provider
+              type: object
             web:
               properties:
                 apiPrefix:
@@ -87,6 +98,7 @@ spec:
           required:
           - kafka
           - logging
+          - objectStore
           type: object
         status:
           description: InsightsBaseStatus defines the observed state of InsightsBase
