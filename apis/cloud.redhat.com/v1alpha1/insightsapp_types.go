@@ -119,3 +119,15 @@ func Namespace(namespace string) omfunc {
 		o.SetNamespace(namespace)
 	}
 }
+
+func UnsetOwner() omfunc {
+	return func(o metav1.Object) {
+		o.SetOwnerReferences([]metav1.OwnerReference{metav1.OwnerReference{}})
+	}
+}
+
+func Labels(labels map[string]string) omfunc {
+	return func(o metav1.Object) {
+		o.SetLabels(labels)
+	}
+}
