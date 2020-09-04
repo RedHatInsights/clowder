@@ -93,7 +93,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	databaseConfig := config.DatabaseConfig{}
 
-	if iapp.Spec.Database != (crd.InsightsDatabaseSpec{}) {
+	if iapp.Spec.Database {
 
 		if databaseConfig, err = maker.makeDatabase(); err != nil {
 			return ctrl.Result{}, err

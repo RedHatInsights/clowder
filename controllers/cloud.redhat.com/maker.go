@@ -9,6 +9,7 @@ import (
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -157,10 +158,10 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
 
-	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: "test"}
-	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: "test"}
-	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: m.App.Spec.Database.Name}
-	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: "test"}
+	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: utils.RandString(12)}
+	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: utils.RandString(12)}
+	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: "MF"}
+	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: utils.RandString(12)}
 	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
 	ports := []core.ContainerPort{
 		{
@@ -271,7 +272,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	}
 
 	dbConfig := config.DatabaseConfig{
-		Name:     m.App.Spec.Database.Name,
+		Name:     dbName.Value,
 		User:     dbUser.Value,
 		Pass:     dbPass.Value,
 		Hostname: dbObjName,
