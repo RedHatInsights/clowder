@@ -123,6 +123,12 @@ func (m *Maker) makeService() error {
 func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	// TODO Right now just dealing with the creation for ephemeral - doesn't skip if RDS
 
+	dbConfig := config.DatabaseConfig{}
+
+	if m.App.Spec.Database == (crd.InsightsDatabaseSpec{}) {
+		return dbConfig, nil
+	}
+
 	dbObjName := fmt.Sprintf("%v-db", m.App.Name)
 	dbNamespacedName := types.NamespacedName{
 		Namespace: m.App.Namespace,
@@ -133,8 +139,9 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	err := m.Client.Get(m.Ctx, dbNamespacedName, &dd)
 
 	update, err := updateOrErr(err)
+
 	if err != nil {
-		return config.DatabaseConfig{}, err
+		return dbConfig, err
 	}
 
 	dd.SetName(dbNamespacedName.Name)
@@ -223,7 +230,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 
 	if err = update.Apply(m.Ctx, m.Client, &dd); err != nil {
-		return config.DatabaseConfig{}, err
+		return dbConfig, err
 	}
 
 	s := core.Service{}
@@ -231,7 +238,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 
 	update, err = updateOrErr(err)
 	if err != nil {
-		return config.DatabaseConfig{}, err
+		return dbConfig, err
 	}
 
 	servicePorts := []core.ServicePort{}
@@ -243,7 +250,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	s.Spec.Ports = servicePorts
 
 	if err = update.Apply(m.Ctx, m.Client, &s); err != nil {
-		return config.DatabaseConfig{}, err
+		return dbConfig, err
 	}
 
 	pvc := core.PersistentVolumeClaim{}
@@ -252,7 +259,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 
 	update, err = updateOrErr(err)
 	if err != nil {
-		return config.DatabaseConfig{}, err
+		return dbConfig, err
 	}
 
 	pvc.SetName(dbNamespacedName.Name)
@@ -267,16 +274,14 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 	}
 
 	if err = update.Apply(m.Ctx, m.Client, &pvc); err != nil {
-		return config.DatabaseConfig{}, err
+		return dbConfig, err
 	}
 
-	dbConfig := config.DatabaseConfig{
-		Name:     m.App.Spec.Database.Name,
-		User:     dbUser.Value,
-		Pass:     dbPass.Value,
-		Hostname: dbObjName,
-		Port:     5432,
-	}
+	dbConfig.Name = m.App.Spec.Database.Name
+	dbConfig.User = dbUser.Value
+	dbConfig.Pass = dbPass.Value
+	dbConfig.Hostname = dbObjName
+	dbConfig.Port = 5432
 
 	return dbConfig, nil
 }
