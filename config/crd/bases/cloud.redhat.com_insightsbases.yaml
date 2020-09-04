@@ -41,6 +41,9 @@ spec:
                 image:
                   type: string
                 provider:
+                  enum:
+                  - app-interface
+                  - local
                   type: string
               required:
               - image
@@ -53,6 +56,10 @@ spec:
                 namespace:
                   type: string
                 provider:
+                  enum:
+                  - operator
+                  - app-interface
+                  - local
                   type: string
                 suffix:
                   type: string
@@ -64,6 +71,9 @@ spec:
             logging:
               properties:
                 providers:
+                  enum:
+                  - cloudwatch
+                  - local
                   items:
                     type: string
                   type: array
@@ -77,11 +87,23 @@ spec:
                 port:
                   format: int32
                   type: integer
+                provider:
+                  enum:
+                  - none
+                  - operator
+                  type: string
+              required:
+              - provider
               type: object
             objectStore:
               properties:
                 provider:
-                  type: string
+                  enum:
+                  - minio
+                  - app-interface
+                  items:
+                    type: string
+                  type: array
                 suffix:
                   type: string
               required:
@@ -94,6 +116,13 @@ spec:
                 port:
                   format: int32
                   type: integer
+                provider:
+                  enum:
+                  - none
+                  - operator
+                  type: string
+              required:
+              - provider
               type: object
           required:
           - kafka
