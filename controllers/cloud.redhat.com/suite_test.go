@@ -179,7 +179,6 @@ func TestCreateInsightsApp(t *testing.T) {
 
 	replicas := int32(32)
 	partitions := int32(5)
-	dbVersion := int32(12)
 
 	kafkaTopics := []strimzi.KafkaTopicSpec{
 		{
@@ -195,10 +194,7 @@ func TestCreateInsightsApp(t *testing.T) {
 			Image:       "test:test",
 			Base:        ibase.Name,
 			KafkaTopics: kafkaTopics,
-			Database: crd.InsightsDatabaseSpec{
-				Version: &dbVersion,
-				Name:    "test",
-			},
+			Database:    true,
 		},
 	}
 
