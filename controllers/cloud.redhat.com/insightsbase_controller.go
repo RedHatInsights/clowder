@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,6 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	cloudredhatcomv1alpha1 "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 )
 
 // InsightsBaseReconciler reconciles a InsightsBase object
@@ -39,10 +42,28 @@ type InsightsBaseReconciler struct {
 
 //Reconcile fn
 func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
+	ctx := context.Background()
 	_ = r.Log.WithValues("insightsbase", req.NamespacedName)
 
-	// your logic here
+	base := crd.InsightsBase{}
+	err := r.Client.Get(ctx, req.NamespacedName, &base)
+	update, err := updateOrErr(err)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	labels := base.GetLabels()
+	ctrl.Log.Info(fmt.Sprintf("%v", labels))
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	if labels["kafka-prefix"] == "" {
+		labels["kafka-prefix"] = utils.RandString(8)
+	}
+	base.SetLabels(labels)
+
+	update.Apply(ctx, r.Client, &base)
 
 	return ctrl.Result{}, nil
 }
