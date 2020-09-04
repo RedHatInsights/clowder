@@ -60,7 +60,6 @@ type DatabaseConfig struct {
 
 // TODO: Other potential providers: splunk, kafka
 
-// +kubebuilder:validation:Enum=cloudwatch;local
 type LoggingProviders []string
 
 type LoggingConfig struct {
@@ -70,7 +69,7 @@ type LoggingConfig struct {
 // TODO: Other potential provider: ceph, S3
 
 // +kubebuilder:validation:Enum=minio;app-interface
-type ObjectStoreProvider []string
+type ObjectStoreProvider string
 
 type ObjectStoreConfig struct {
 	Provider ObjectStoreProvider `json:"provider"`
