@@ -1,0 +1,22 @@
+---
+name: Run Unit Tests
+
+'on':
+  - pull_request
+
+jobs:
+
+  testing:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v1
+      - name: Install package and dependencies
+        run: |
+          sudo apt-get install golang-1.13
+          mkdir kubebuilder
+          wget -P kubebuilder https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_linux_amd64.tar.gz
+          tar xzvf kubebuilder/kubebuilder_2.3.1_linux_amd64.tar.gz -C kubebuilder
+          make
+      - name: Run Tests
+        run: KUBEBUILDER_ASSETS=$PWD/kubebuilder/kubebuilder_2.3.1_linux_amd64/bin go test -v ./controllers/cloud.redhat.com/
