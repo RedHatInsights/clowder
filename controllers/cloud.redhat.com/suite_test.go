@@ -25,6 +25,7 @@ import (
 	"time"
 
 	b64 "encoding/base64"
+
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -89,6 +90,11 @@ func TestMain(m *testing.M) {
 	if k8sClient == nil {
 		logger.Fatal("k8sClient was returned nil", zap.Error(err))
 	}
+
+	ctx := context.Background()
+
+	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
+	k8sClient.Create(ctx, nsSpec)
 
 	stopManager := make(chan struct{})
 	go Run(":8080", false, testEnv.Config, stopManager)
@@ -165,7 +171,7 @@ func TestCreateInsightsApp(t *testing.T) {
 			MetricsPort:    int32(9000),
 			MetricsPath:    "/metrics",
 			KafkaCluster:   "kafka",
-			KafkaNamespace: "default", // TODO Would like to put this into a different namespace
+			KafkaNamespace: "kafka", // TODO Would like to put this into a different namespace
 			DatabaseImage:  "registry.redhat.io/rhel8/postgresql-12:1-36",
 			Logging:        "cloudwatch",
 		},
@@ -265,7 +271,7 @@ func TestCreateInsightsApp(t *testing.T) {
 
 	topic := strimzi.KafkaTopic{}
 	topicName := types.NamespacedName{
-		Namespace: name.Namespace,
+		Namespace: ibase.Spec.KafkaNamespace,
 		Name:      "inventory",
 	}
 
