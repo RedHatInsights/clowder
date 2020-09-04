@@ -18,35 +18,63 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:validation:Enum=none;operator
+type WebProvider string
+
 type WebConfig struct {
-	Port      int32  `json:"port,omitempty"`
-	ApiPrefix string `json:"apiPrefix,omitempty"`
+	Port      int32       `json:"port,omitempty"`
+	ApiPrefix string      `json:"apiPrefix,omitempty"`
+	Provider  WebProvider `json:"provider"`
 }
+
+// +kubebuilder:validation:Enum=none;operator
+type MetricsProvider string
 
 type MetricsConfig struct {
-	Port int32  `json:"port,omitempty"`
-	Path string `json:"path,omitempty"`
+	Port     int32           `json:"port,omitempty"`
+	Path     string          `json:"path,omitempty"`
+	Provider MetricsProvider `json:"provider"`
 }
+
+// TODO: Other potential provider: saas
+
+// +kubebuilder:validation:Enum=operator;app-interface;local
+type KafkaProvider string
 
 type KafkaConfig struct {
-	ClusterName string `json:"clusterName"`
-	Namespace   string `json:"namespace"`
-	Provider    string `json:"provider"`
-	Suffix      string `json:"suffix,omitempty"`
+	ClusterName string        `json:"clusterName"`
+	Namespace   string        `json:"namespace"`
+	Provider    KafkaProvider `json:"provider"`
+	Suffix      string        `json:"suffix,omitempty"`
 }
+
+// TODO: Other potential providers: RDS and Operator (e.g. CrunchyDB)
+
+// +kubebuilder:validation:Enum=app-interface;local
+type DatabaseProvider string
 
 type DatabaseConfig struct {
-	Provider string `json:"provider"`
-	Image    string `json:"image"`
+	Provider DatabaseProvider `json:"provider"`
+	Image    string           `json:"image"`
 }
+
+// TODO: Other potential providers: splunk, kafka
+
+// +kubebuilder:validation:Enum=cloudwatch;local
+type LoggingProviders []string
 
 type LoggingConfig struct {
-	Providers []string `json:"providers"`
+	Providers LoggingProviders `json:"providers"`
 }
 
+// TODO: Other potential provider: ceph, S3
+
+// +kubebuilder:validation:Enum=minio;app-interface
+type ObjectStoreProvider []string
+
 type ObjectStoreConfig struct {
-	Provider string `json:"provider"`
-	Suffix   string `json:"suffix,omitempty"`
+	Provider ObjectStoreProvider `json:"provider"`
+	Suffix   string              `json:"suffix,omitempty"`
 }
 
 // InsightsBaseSpec defines the desired state of InsightsBase
