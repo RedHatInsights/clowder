@@ -151,7 +151,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 
 	dd.Spec.Replicas = m.App.Spec.MinReplicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: m.App.GetLabels()}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{core.Volume{
+	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: dbNamespacedName.Name,
 		VolumeSource: core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
@@ -219,12 +219,10 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 		ReadinessProbe: &readinessProbe,
 		// VolumeMounts:   m.App.Spec.VolumeMounts, TODO Add in volume mount for PVC
 		Ports: ports,
-		VolumeMounts: []core.VolumeMount{
-			core.VolumeMount{
-				Name:      dbNamespacedName.Name,
-				MountPath: "/var/lib/pgsql/data",
-			},
-		},
+		VolumeMounts: []core.VolumeMount{{
+			Name:      dbNamespacedName.Name,
+			MountPath: "/var/lib/pgsql/data",
+		}},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
