@@ -47,7 +47,7 @@ func (m *Maker) makeKafka() (config.KafkaConfig, error) {
 	// TODO: Pull the kafka resource to get the broker hostname and port
 	// This will require defining the Kafka CRD
 	kafka.Brokers = []config.BrokerConfig{{
-		Hostname: m.Base.Spec.KafkaCluster,
+		Hostname: m.Base.Spec.Kafka.ClusterName,
 		Port:     5432,
 	}}
 
@@ -57,7 +57,7 @@ func (m *Maker) makeKafka() (config.KafkaConfig, error) {
 		k := strimzi.KafkaTopic{}
 
 		kafkaNamespace := types.NamespacedName{
-			Namespace: m.Base.Spec.KafkaNamespace,
+			Namespace: m.Base.Spec.Kafka.Namespace,
 			Name:      kafkaTopic.TopicName,
 		}
 
@@ -69,14 +69,14 @@ func (m *Maker) makeKafka() (config.KafkaConfig, error) {
 		}
 
 		labels := map[string]string{
-			"strimzi.io/cluster": m.Base.Spec.KafkaCluster,
+			"strimzi.io/cluster": m.Base.Spec.Kafka.ClusterName,
 			"iapp":               m.App.GetName(),
 			// If we label it with the app name, since app names should be
 			// unique? can we use for delete selector?
 		}
 
 		k.SetName(kafkaTopic.TopicName)
-		k.SetNamespace(m.Base.Spec.KafkaNamespace)
+		k.SetNamespace(m.Base.Spec.Kafka.Namespace)
 		k.SetLabels(labels)
 
 		k.Spec.Replicas = kafkaTopic.Replicas
@@ -105,11 +105,11 @@ func (m *Maker) makeService() error {
 	}
 
 	ports := []core.ServicePort{
-		{Name: "metrics", Port: m.Base.Spec.MetricsPort, Protocol: "TCP"},
+		{Name: "metrics", Port: m.Base.Spec.Metrics.Port, Protocol: "TCP"},
 	}
 
 	if m.App.Spec.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: m.Base.Spec.WebPort, Protocol: "TCP"}
+		webPort := core.ServicePort{Name: "web", Port: m.Base.Spec.Web.Port, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
 
@@ -213,7 +213,7 @@ func (m *Maker) makeDatabase() (config.DatabaseConfig, error) {
 
 	c := core.Container{
 		Name:           dbNamespacedName.Name,
-		Image:          m.Base.Spec.DatabaseImage,
+		Image:          m.Base.Spec.Database.Image,
 		Env:            envVars,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
@@ -313,43 +313,45 @@ func (m *Maker) persistConfig(c *config.AppConfig) error {
 
 func (m *Maker) makeLogging() (config.LoggingConfig, error) {
 
-	logging := config.LoggingConfig{Type: m.Base.Spec.Logging}
+	logging := config.LoggingConfig{}
 
-	if m.Base.Spec.Logging == "cloudwatch" {
-		name := types.NamespacedName{
-			Name:      "cloudwatch",
-			Namespace: m.App.Namespace,
-		}
+	for _, provider := range m.Base.Spec.Logging.Providers {
+		if provider == "cloudwatch" {
+			name := types.NamespacedName{
+				Name:      "cloudwatch",
+				Namespace: m.App.Namespace,
+			}
 
-		secret := core.Secret{}
-		err := m.Client.Get(m.Ctx, name, &secret)
-
-		if err != nil {
-			return logging, err
-		}
-
-		cwKeys := []string{
-			"aws_access_key_id",
-			"aws_secret_access_key",
-			"aws_region",
-			"log_group_name",
-		}
-
-		decoded := make([]string, 4)
-
-		for i := 0; i < 4; i++ {
-			decoded[i], err = b64decode(&secret, cwKeys[i])
+			secret := core.Secret{}
+			err := m.Client.Get(m.Ctx, name, &secret)
 
 			if err != nil {
 				return logging, err
 			}
-		}
 
-		logging.CloudWatch = config.CloudWatchConfig{
-			AccessKeyID:     decoded[0],
-			SecretAccessKey: decoded[1],
-			Region:          decoded[2],
-			LogGroup:        decoded[3],
+			cwKeys := []string{
+				"aws_access_key_id",
+				"aws_secret_access_key",
+				"aws_region",
+				"log_group_name",
+			}
+
+			decoded := make([]string, 4)
+
+			for i := 0; i < 4; i++ {
+				decoded[i], err = b64decode(&secret, cwKeys[i])
+
+				if err != nil {
+					return logging, err
+				}
+			}
+
+			logging.CloudWatch = config.CloudWatchConfig{
+				AccessKeyID:     decoded[0],
+				SecretAccessKey: decoded[1],
+				Region:          decoded[2],
+				LogGroup:        decoded[3],
+			}
 		}
 	}
 
@@ -389,14 +391,14 @@ func (m *Maker) makeDeployment() error {
 		VolumeMounts:   m.App.Spec.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
-			ContainerPort: m.Base.Spec.MetricsPort,
+			ContainerPort: m.Base.Spec.Metrics.Port,
 		}},
 	}
 
 	if m.App.Spec.Web {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
-			ContainerPort: m.Base.Spec.WebPort,
+			ContainerPort: m.Base.Spec.Web.Port,
 		})
 	}
 

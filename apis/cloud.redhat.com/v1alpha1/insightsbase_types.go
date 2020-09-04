@@ -18,15 +18,38 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type WebConfig struct {
+	Port      int32  `json:"port"`
+	ApiPrefix string `json:"apiPrefix"`
+}
+
+type MetricsConfig struct {
+	Port int32  `json:"port"`
+	Path string `json:"path"`
+}
+
+type KafkaConfig struct {
+	ClusterName string `json:"clusterName"`
+	Namespace   string `json:"namespace"`
+	Provider    string `json:"provider"`
+}
+
+type DatabaseConfig struct {
+	Provider string `json:"provider"`
+	Image    string `json:"image"`
+}
+
+type LoggingConfig struct {
+	Providers []string `json:"providers"`
+}
+
 // InsightsBaseSpec defines the desired state of InsightsBase
 type InsightsBaseSpec struct {
-	WebPort        int32  `json:"webPort"`
-	MetricsPort    int32  `json:"metricsPort"`
-	MetricsPath    string `json:"metricsPath"`
-	KafkaCluster   string `json:"kafkaCluster"`
-	KafkaNamespace string `json:"kafkaNamespace"`
-	DatabaseImage  string `json:"databaseImage"`
-	Logging        string `json:"logging"`
+	Web      WebConfig      `json:"web,omitempty"`
+	Metrics  MetricsConfig  `json:"metrics,omitempty"`
+	Kafka    KafkaConfig    `json:"kafka"`
+	Database DatabaseConfig `json:"db,omitempty"`
+	Logging  LoggingConfig  `json:"logging"`
 }
 
 // InsightsBaseStatus defines the observed state of InsightsBase

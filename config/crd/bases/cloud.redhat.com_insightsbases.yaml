@@ -36,30 +36,63 @@ spec:
         spec:
           description: InsightsBaseSpec defines the desired state of InsightsBase
           properties:
-            databaseImage:
-              type: string
-            kafkaCluster:
-              type: string
-            kafkaNamespace:
-              type: string
+            db:
+              properties:
+                image:
+                  type: string
+                provider:
+                  type: string
+              required:
+              - image
+              - provider
+              type: object
+            kafka:
+              properties:
+                clusterName:
+                  type: string
+                namespace:
+                  type: string
+                provider:
+                  type: string
+              required:
+              - clusterName
+              - namespace
+              - provider
+              type: object
             logging:
-              type: string
-            metricsPath:
-              type: string
-            metricsPort:
-              format: int32
-              type: integer
-            webPort:
-              format: int32
-              type: integer
+              properties:
+                providers:
+                  items:
+                    type: string
+                  type: array
+              required:
+              - providers
+              type: object
+            metrics:
+              properties:
+                path:
+                  type: string
+                port:
+                  format: int32
+                  type: integer
+              required:
+              - path
+              - port
+              type: object
+            web:
+              properties:
+                apiPrefix:
+                  type: string
+                port:
+                  format: int32
+                  type: integer
+              required:
+              - apiPrefix
+              - port
+              type: object
           required:
-          - databaseImage
-          - kafkaCluster
-          - kafkaNamespace
+          - kafka
           - logging
-          - metricsPath
-          - metricsPort
-          - webPort
           type: object
         status:
           description: InsightsBaseStatus defines the observed state of InsightsBase

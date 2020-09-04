@@ -167,13 +167,25 @@ func TestCreateInsightsApp(t *testing.T) {
 	ibase := crd.InsightsBase{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsBaseSpec{
-			WebPort:        int32(8080),
-			MetricsPort:    int32(9000),
-			MetricsPath:    "/metrics",
-			KafkaCluster:   "kafka",
-			KafkaNamespace: "kafka",
-			DatabaseImage:  "registry.redhat.io/rhel8/postgresql-12:1-36",
-			Logging:        "cloudwatch",
+			Web: crd.WebConfig{
+				Port: int32(8080),
+			},
+			Metrics: crd.MetricsConfig{
+				Port: int32(9000),
+				Path: "/metrics",
+			},
+			Kafka: crd.KafkaConfig{
+				ClusterName: "kafka",
+				Namespace:   "kafka",
+				Provider:    "operator",
+			},
+			Database: crd.DatabaseConfig{
+				Provider: "local",
+				Image:    "registry.redhat.io/rhel8/postgresql-12:1-36",
+			},
+			Logging: crd.LoggingConfig{
+				Providers: []string{"cloudwatch"},
+			},
 		},
 	}
 
@@ -263,15 +275,15 @@ func TestCreateInsightsApp(t *testing.T) {
 		t.Errorf("Bad port count %d; expected 1", len(s.Spec.Ports))
 	}
 
-	if s.Spec.Ports[0].Port != ibase.Spec.MetricsPort {
-		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, ibase.Spec.MetricsPort)
+	if s.Spec.Ports[0].Port != ibase.Spec.Metrics.Port {
+		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, ibase.Spec.Metrics.Port)
 	}
 
 	// Kafka validation
 
 	topic := strimzi.KafkaTopic{}
 	topicName := types.NamespacedName{
-		Namespace: ibase.Spec.KafkaNamespace,
+		Namespace: ibase.Spec.Kafka.Namespace,
 		Name:      "inventory",
 	}
 

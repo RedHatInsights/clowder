@@ -70,9 +70,9 @@ func Database(dc DatabaseConfig) Option {
 
 func New(base *crd.InsightsBase, opts ...Option) *AppConfig {
 	c := &AppConfig{
-		WebPort:     base.Spec.WebPort,
-		MetricsPort: base.Spec.MetricsPort,
-		MetricsPath: base.Spec.MetricsPath,
+		WebPort:     base.Spec.Web.Port,
+		MetricsPort: base.Spec.Metrics.Port,
+		MetricsPath: base.Spec.Metrics.Path,
 	}
 
 	for _, opt := range opts {
