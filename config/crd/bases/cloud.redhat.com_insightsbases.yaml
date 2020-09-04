@@ -71,9 +71,6 @@ spec:
             logging:
               properties:
                 providers:
-                  enum:
-                  - cloudwatch
-                  - local
                   items:
                     type: string
                   type: array
@@ -101,9 +98,7 @@ spec:
                   enum:
                   - minio
                   - app-interface
-                  items:
-                    type: string
-                  type: array
+                  type: string
                 suffix:
                   type: string
               required:

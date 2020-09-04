@@ -168,11 +168,13 @@ func TestCreateInsightsApp(t *testing.T) {
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsBaseSpec{
 			Web: crd.WebConfig{
-				Port: int32(8080),
+				Port:     int32(8080),
+				Provider: "none",
 			},
 			Metrics: crd.MetricsConfig{
-				Port: int32(9000),
-				Path: "/metrics",
+				Port:     int32(9000),
+				Path:     "/metrics",
+				Provider: "none",
 			},
 			Kafka: crd.KafkaConfig{
 				ClusterName: "kafka",
@@ -180,11 +182,14 @@ func TestCreateInsightsApp(t *testing.T) {
 				Provider:    "operator",
 			},
 			Database: crd.DatabaseConfig{
-				Provider: "local",
 				Image:    "registry.redhat.io/rhel8/postgresql-12:1-36",
+				Provider: "local",
 			},
 			Logging: crd.LoggingConfig{
 				Providers: []string{"cloudwatch"},
+			},
+			ObjectStore: crd.ObjectStoreConfig{
+				Provider: "app-interface",
 			},
 		},
 	}
