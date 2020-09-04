@@ -38,6 +38,6 @@ by the controller-runtime test environment.
 Run the tests:
 
 ```
-$ KUBEBUILDER_ASSETS=$PWD/kubebuilder go test ./controllers
+$ KUBEBUILDER_ASSETS=$PWD/kubebuilder go test ./controllers/...
 ok      cloud.redhat.com/whippoorwill/v2/controllers    9.626s
 ```
