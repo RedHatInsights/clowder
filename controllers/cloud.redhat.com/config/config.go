@@ -48,27 +48,21 @@ type AppConfig struct {
 	Database    DatabaseConfig `json:"database"`
 }
 
-type Option func(*AppConfig)
+type ConfigOption func(*AppConfig)
 
-func Logging(logging LoggingConfig) Option {
+func Logging(logging LoggingConfig) ConfigOption {
 	return func(c *AppConfig) {
 		c.Logging = logging
 	}
 }
 
-func Kafka(kc KafkaConfig) Option {
-	return func(c *AppConfig) {
-		c.Kafka = kc
-	}
-}
-
-func Database(dc DatabaseConfig) Option {
+func Database(dc DatabaseConfig) ConfigOption {
 	return func(c *AppConfig) {
 		c.Database = dc
 	}
 }
 
-func New(base *crd.InsightsBase, opts ...Option) *AppConfig {
+func New(base *crd.InsightsBase, opts ...ConfigOption) *AppConfig {
 	c := &AppConfig{
 		WebPort:     base.Spec.Web.Port,
 		MetricsPort: base.Spec.Metrics.Port,

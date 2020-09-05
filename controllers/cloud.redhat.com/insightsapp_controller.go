@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/makers"
 )
 
 // InsightsAppReconciler reconciles a InsightsApp object
@@ -42,25 +42,6 @@ type InsightsAppReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
-
-type updater bool
-
-func (u *updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
-	if *u {
-		return cl.Update(ctx, obj)
-	}
-	return cl.Create(ctx, obj)
-}
-
-func updateOrErr(err error) (updater, error) {
-	update := updater(err == nil)
-
-	if err != nil && !k8serr.IsNotFound(err) {
-		return update, err
-	}
-
-	return update, nil
-}
 
 // Reconcile fn
 func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -89,44 +70,15 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	maker := Maker{App: &iapp, Base: &base, Client: r.Client, Ctx: ctx, Request: &req}
-
-	databaseConfig := config.DatabaseConfig{}
-
-	if databaseConfig, err = maker.makeDatabase(); err != nil {
-		return ctrl.Result{}, err
+	maker := makers.Maker{
+		App:     &iapp,
+		Base:    &base,
+		Client:  r.Client,
+		Ctx:     ctx,
+		Request: &req,
 	}
 
-	loggingConfig := config.LoggingConfig{}
-
-	if loggingConfig, err = maker.makeLogging(); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	kafkaConfig := config.KafkaConfig{}
-
-	if kafkaConfig, err = maker.makeKafka(); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	c := config.New(
-		&base,
-		config.Database(databaseConfig),
-		config.Logging(loggingConfig),
-		config.Kafka(kafkaConfig),
-	)
-
-	if err = maker.persistConfig(c); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err = maker.makeDeployment(); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err = maker.makeService(); err != nil {
-		return ctrl.Result{}, err
-	}
+	err = maker.Make()
 
 	return ctrl.Result{}, nil
 }

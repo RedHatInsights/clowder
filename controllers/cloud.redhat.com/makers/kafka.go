@@ -1,0 +1,95 @@
+package makers
+
+import (
+	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"k8s.io/apimachinery/pkg/types"
+)
+
+type KafkaMaker struct {
+	*Maker
+	config config.KafkaConfig
+}
+
+func (k *KafkaMaker) Make() error {
+	k.config = config.KafkaConfig{}
+
+	var f func() error
+
+	switch k.Base.Spec.Kafka.Provider {
+	case "operator":
+		f = k.operator
+	case "local":
+		f = k.local
+	}
+
+	if f != nil {
+		return f()
+	}
+
+	return nil
+}
+
+func (k *KafkaMaker) ApplyConfig(c *config.AppConfig) {
+	c.Kafka = k.config
+}
+
+func (k *KafkaMaker) local() error {
+	return nil
+}
+
+func (k *KafkaMaker) operator() error {
+
+	if len(k.App.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
+	// TODO: Pull the kafka resource to get the broker hostname and port
+	// This will require defining the Kafka CRD
+	k.config.Brokers = []config.BrokerConfig{{
+		Hostname: k.Base.Spec.Kafka.ClusterName,
+		Port:     5432,
+	}}
+
+	k.config.Topics = []config.TopicConfig{}
+
+	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
+		kRes := strimzi.KafkaTopic{}
+
+		kafkaNamespace := types.NamespacedName{
+			Namespace: k.Base.Spec.Kafka.Namespace,
+			Name:      kafkaTopic.TopicName,
+		}
+
+		err := k.Client.Get(k.Ctx, kafkaNamespace, &kRes)
+		update, err := updateOrErr(err)
+
+		if err != nil {
+			return err
+		}
+
+		labels := map[string]string{
+			"strimzi.io/cluster": k.Base.Spec.Kafka.ClusterName,
+			"iapp":               k.App.GetName(),
+			// If we label it with the app name, since app names should be
+			// unique? can we use for delete selector?
+		}
+
+		kRes.SetName(kafkaTopic.TopicName)
+		kRes.SetNamespace(k.Base.Spec.Kafka.Namespace)
+		kRes.SetLabels(labels)
+
+		kRes.Spec.Replicas = kafkaTopic.Replicas
+		kRes.Spec.Partitions = kafkaTopic.Partitions
+		kRes.Spec.Config = kafkaTopic.Config
+		err = update.Apply(k.Ctx, k.Client, &kRes)
+
+		if err != nil {
+			return err
+		}
+
+		k.config.Topics = append(k.config.Topics, config.TopicConfig{Name: kafkaTopic.TopicName})
+	}
+
+	return nil
+}
