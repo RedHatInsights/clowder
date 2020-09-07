@@ -7,6 +7,7 @@ import (
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -91,10 +92,10 @@ func (db *DatabaseMaker) local() error {
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
 
-	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: "test"}
-	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: "test"}
+	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: utils.RandString(12)}
+	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: utils.RandString(12)}
 	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: db.App.Spec.Database.Name}
-	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: "test"}
+	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: utils.RandString(12)}
 	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
 	ports := []core.ContainerPort{
 		{
