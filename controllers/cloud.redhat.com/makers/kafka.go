@@ -45,8 +45,7 @@ func (k *KafkaMaker) local() error {
 }
 
 func (k *KafkaMaker) operator() error {
-
-	if len(k.App.Spec.KafkaTopics) == 0 {
+	if k.App.Spec.KafkaTopics == nil {
 		return nil
 	}
 
