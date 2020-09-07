@@ -1,9 +1,5 @@
 package config
 
-import (
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-)
-
 type LoggingConfig struct {
 	Type       string           `json:"type"`
 	CloudWatch CloudWatchConfig `json:"cloudwatch,omitempty"`
@@ -62,11 +58,24 @@ func Database(dc DatabaseConfig) ConfigOption {
 	}
 }
 
-func New(base *crd.InsightsBase, opts ...ConfigOption) *AppConfig {
+func Web(port int32) ConfigOption {
+	return func(c *AppConfig) {
+		c.WebPort = port
+	}
+}
+
+func Metrics(path string, port int32) ConfigOption {
+	return func(c *AppConfig) {
+		c.MetricsPath = path
+		c.MetricsPort = port
+	}
+}
+
+func New(opts ...ConfigOption) *AppConfig {
 	c := &AppConfig{
-		WebPort:     base.Spec.Web.Port,
-		MetricsPort: base.Spec.Metrics.Port,
-		MetricsPath: base.Spec.Metrics.Path,
+		WebPort:     int32(8080),
+		MetricsPort: int32(9090),
+		MetricsPath: "/metrics",
 	}
 
 	for _, opt := range opts {

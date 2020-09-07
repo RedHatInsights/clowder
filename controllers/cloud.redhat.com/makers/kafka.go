@@ -2,15 +2,20 @@ package makers
 
 import (
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
+
+	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+
 	"k8s.io/apimachinery/pkg/types"
 )
 
+//KafkaMaker makes the KafkaConfig object
 type KafkaMaker struct {
 	*Maker
 	config config.KafkaConfig
 }
 
+//Make function for the KafkaMaker
 func (k *KafkaMaker) Make() error {
 	k.config = config.KafkaConfig{}
 
@@ -30,6 +35,7 @@ func (k *KafkaMaker) Make() error {
 	return nil
 }
 
+//ApplyConfig for the KafkaMaker
 func (k *KafkaMaker) ApplyConfig(c *config.AppConfig) {
 	c.Kafka = k.config
 }

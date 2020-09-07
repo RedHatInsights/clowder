@@ -20,7 +20,10 @@ import (
 	"encoding/json"
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+
+	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -59,11 +62,13 @@ func b64decode(s *core.Secret, key string) (string, error) {
 	return string(decoded), nil
 }
 
+//SubMaker interface defines interface for making sub objects
 type SubMaker interface {
 	Make() error
 	ApplyConfig(c *config.AppConfig)
 }
 
+//Maker struct for passing variables into SubMakers
 type Maker struct {
 	App     *crd.InsightsApp
 	Base    *crd.InsightsBase
@@ -80,6 +85,7 @@ func (m *Maker) getSubMakers() []SubMaker {
 	}
 }
 
+//Make generates objects and dependencies for operator
 func (m *Maker) Make() error {
 	configs := []config.ConfigOption{}
 
@@ -93,7 +99,10 @@ func (m *Maker) Make() error {
 		configs = append(configs, sm.ApplyConfig)
 	}
 
-	c := config.New(m.Base, configs...)
+	configs = append(configs, config.Web(m.Base.Spec.Web.Port))
+	configs = append(configs, config.Metrics(m.Base.Spec.Metrics.Path, m.Base.Spec.Metrics.Port))
+
+	c := config.New(configs...)
 
 	if err := m.persistConfig(c); err != nil {
 		return err

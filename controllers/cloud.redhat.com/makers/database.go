@@ -1,9 +1,13 @@
 package makers
 
 import (
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 	"fmt"
+
+	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+
+	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -11,11 +15,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+//DatabaseMaker makes the DatabaseConfig object
 type DatabaseMaker struct {
 	*Maker
 	config config.DatabaseConfig
 }
 
+//Make function for the DatabaseMaker
 func (db *DatabaseMaker) Make() error {
 	db.config = config.DatabaseConfig{}
 
@@ -36,6 +42,7 @@ func (db *DatabaseMaker) Make() error {
 
 }
 
+//ApplyConfig for the DatabaseMaker
 func (db *DatabaseMaker) ApplyConfig(c *config.AppConfig) {
 	c.Database = db.config
 }
