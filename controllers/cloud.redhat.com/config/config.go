@@ -27,6 +27,11 @@ type KafkaConfig struct {
 	Topics  []TopicConfig  `json:"topics"`
 }
 
+type ObjectStoreConfig struct {
+	AccessKey string `json:"access_key"`
+	SecretKey string `json:"secret_key"`
+}
+
 type DatabaseConfig struct {
 	Name     string `json:"name"`
 	User     string `json:"user"`
@@ -36,15 +41,22 @@ type DatabaseConfig struct {
 }
 
 type AppConfig struct {
-	WebPort     int32          `json:"webPort"`
-	MetricsPort int32          `json:"metricsPort"`
-	MetricsPath string         `json:"metricsPath"`
-	Logging     LoggingConfig  `json:"logging"`
-	Kafka       KafkaConfig    `json:"kafka"`
-	Database    DatabaseConfig `json:"database"`
+	WebPort     int32             `json:"webPort"`
+	MetricsPort int32             `json:"metricsPort"`
+	MetricsPath string            `json:"metricsPath"`
+	Logging     LoggingConfig     `json:"logging"`
+	Kafka       KafkaConfig       `json:"kafka"`
+	Database    DatabaseConfig    `json:"database"`
+	ObjectStore ObjectStoreConfig `json:"objectStore"`
 }
 
 type ConfigOption func(*AppConfig)
+
+func ObjectStore(store ObjectStoreConfig) ConfigOption {
+	return func(c *AppConfig) {
+		c.ObjectStore = store
+	}
+}
 
 func Logging(logging LoggingConfig) ConfigOption {
 	return func(c *AppConfig) {
