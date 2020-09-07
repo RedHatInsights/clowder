@@ -15,16 +15,20 @@ limitations under the License.
 package makers
 
 import (
+	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
+//LoggingMaker makes the LoggingConfig obejct
 type LoggingMaker struct {
 	*Maker
 	config config.LoggingConfig
 }
 
+//Make function for the Logging Maker
 func (l *LoggingMaker) Make() error {
 	l.config = config.LoggingConfig{}
 
@@ -49,6 +53,7 @@ func (l *LoggingMaker) Make() error {
 	return nil
 }
 
+//ApplyConfig for the LoggingMaker
 func (l *LoggingMaker) ApplyConfig(c *config.AppConfig) {
 	c.Logging = l.config
 }
