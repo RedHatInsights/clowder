@@ -66,12 +66,9 @@ func (obs *ObjectStoreMaker) appInterface() error {
 }
 
 func (obs *ObjectStoreMaker) minio() error {
-	obs.Log.Info("Got to Minio")
-
 	if !obs.App.Spec.ObjectStore {
 		return nil
 	}
-	obs.Log.Info("Got to wubwub")
 
 	minioObjName := fmt.Sprintf("%v-minio", obs.App.Name)
 	minioNamespacedName := types.NamespacedName{
