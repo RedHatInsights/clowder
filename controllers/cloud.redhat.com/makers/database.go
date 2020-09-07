@@ -27,7 +27,7 @@ func (db *DatabaseMaker) Make() error {
 
 	var f func() error
 
-	switch db.Base.Spec.Kafka.Provider {
+	switch db.Base.Spec.Database.Provider {
 	case "app-interface":
 		f = db.appInterface
 	case "local":
@@ -144,8 +144,7 @@ func (db *DatabaseMaker) local() error {
 		Env:            envVars,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
-		// VolumeMounts:   db.App.Spec.VolumeMounts, TODO Add in volume mount for PVC
-		Ports: ports,
+		Ports:          ports,
 		VolumeMounts: []core.VolumeMount{{
 			Name:      dbNamespacedName.Name,
 			MountPath: "/var/lib/pgsql/data",
