@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
+	"github.com/go-logr/logr"
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
@@ -75,6 +76,7 @@ type Maker struct {
 	Client  client.Client
 	Ctx     context.Context
 	Request *ctrl.Request
+	Log     logr.Logger
 }
 
 func (m *Maker) getSubMakers() []SubMaker {
@@ -82,6 +84,7 @@ func (m *Maker) getSubMakers() []SubMaker {
 		&KafkaMaker{Maker: m},
 		&DatabaseMaker{Maker: m},
 		&LoggingMaker{Maker: m},
+		&ObjectStoreMaker{Maker: m},
 	}
 }
 

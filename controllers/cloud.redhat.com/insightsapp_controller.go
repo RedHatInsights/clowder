@@ -76,6 +76,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		Client:  r.Client,
 		Ctx:     ctx,
 		Request: &req,
+		Log:     r.Log,
 	}
 
 	err = maker.Make()
