@@ -38,6 +38,7 @@ type DatabaseConfig struct {
 	Pass     string `json:"pass"`
 	Hostname string `json:"hostname"`
 	Port     int32  `json:"port"`
+	PGPass   string `json:"pgPass"`
 }
 
 type AppConfig struct {
