@@ -28,8 +28,8 @@ type KafkaConfig struct {
 }
 
 type ObjectStoreConfig struct {
-	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"`
+	AccessKey string `json:"accessKey"`
+	SecretKey string `json:"secretKey"`
 	Endpoint  string `json:"endpoint"`
 }
 

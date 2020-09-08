@@ -192,12 +192,15 @@ func (m *Maker) makeDeployment() error {
 		{Name: "quay-cloudservices-pull"},
 	}
 
+	env := m.App.Spec.Env
+	env = append(env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+
 	c := core.Container{
 		Name:           m.App.ObjectMeta.Name,
 		Image:          m.App.Spec.Image,
 		Command:        m.App.Spec.Command,
 		Args:           m.App.Spec.Args,
-		Env:            m.App.Spec.Env,
+		Env:            env,
 		Resources:      m.App.Spec.Resources,
 		LivenessProbe:  m.App.Spec.LivenessProbe,
 		ReadinessProbe: m.App.Spec.ReadinessProbe,
