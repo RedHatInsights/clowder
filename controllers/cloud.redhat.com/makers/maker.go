@@ -175,6 +175,22 @@ func (m *Maker) persistConfig(c *config.AppConfig) error {
 	return update.Apply(m.Ctx, m.Client, &secret)
 }
 
+func (m *Maker) getConfig() (*config.AppConfig, error) {
+	secret := core.Secret{}
+	appConfig := config.AppConfig{}
+	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &secret)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(secret.Data["cdappconfig.json"]), &appConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &appConfig, nil
+}
+
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
 func (m *Maker) makeDeployment() error {
 

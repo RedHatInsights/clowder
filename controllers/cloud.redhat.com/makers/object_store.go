@@ -87,7 +87,9 @@ func (obs *ObjectStoreMaker) minio() error {
 
 	dd.SetName(minioNamespacedName.Name)
 	dd.SetNamespace(minioNamespacedName.Namespace)
-	dd.SetLabels(obs.App.GetLabels())
+	labels := obs.App.GetLabels()
+	labels["minio"] = minioNamespacedName.Name
+	dd.SetLabels(labels)
 	dd.SetOwnerReferences([]metav1.OwnerReference{obs.App.MakeOwnerReference()})
 
 	dd.Spec.Replicas = obs.App.Spec.MinReplicas
@@ -105,8 +107,18 @@ func (obs *ObjectStoreMaker) minio() error {
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
 
-	accessKey := core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: utils.RandString(12)}
-	secretKey := core.EnvVar{Name: "MINIO_SECRET_KEY", Value: utils.RandString(12)}
+	var accessKey, secretKey core.EnvVar
+	if !update {
+		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: utils.RandString(12)}
+		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: utils.RandString(12)}
+	} else {
+		appConfig, err := obs.getConfig()
+		if err != nil {
+			return err
+		}
+		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: appConfig.ObjectStore.AccessKey}
+		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: appConfig.ObjectStore.SecretKey}
+	}
 	envVars := []core.EnvVar{accessKey, secretKey}
 	ports := []core.ContainerPort{
 		{
@@ -133,6 +145,7 @@ func (obs *ObjectStoreMaker) minio() error {
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
+	dd.Spec.Template.SetLabels(labels)
 
 	if err = update.Apply(obs.Ctx, obs.Client, &dd); err != nil {
 		return err
@@ -151,7 +164,7 @@ func (obs *ObjectStoreMaker) minio() error {
 	servicePorts = append(servicePorts, minioPort)
 
 	obs.App.SetObjectMeta(&s, crd.Name(minioNamespacedName.Name), crd.Namespace(minioNamespacedName.Namespace))
-	s.Spec.Selector = obs.App.GetLabels()
+	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
 	if err = update.Apply(obs.Ctx, obs.Client, &s); err != nil {

@@ -92,10 +92,22 @@ func (db *DatabaseMaker) local() error {
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
 
-	dbUser := core.EnvVar{Name: "POSTGRESQL_USER", Value: utils.RandString(12)}
-	dbPass := core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: utils.RandString(12)}
+	var dbUser, dbPass, pgPass core.EnvVar
+	if !update {
+		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: utils.RandString(12)}
+		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: utils.RandString(12)}
+		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: utils.RandString(12)}
+	} else {
+		appConfig, err := db.getConfig()
+		if err != nil {
+			return err
+		}
+		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: appConfig.Database.User}
+		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: appConfig.Database.Pass}
+		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: appConfig.Database.PGPass}
+	}
+
 	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: db.App.Spec.Database.Name}
-	pgPass := core.EnvVar{Name: "PGPASSWORD", Value: utils.RandString(12)}
 	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
 	ports := []core.ContainerPort{
 		{
@@ -207,6 +219,7 @@ func (db *DatabaseMaker) local() error {
 	db.config.Pass = dbPass.Value
 	db.config.Hostname = dbObjName
 	db.config.Port = 5432
+	db.config.PGPass = pgPass.Value
 
 	return nil
 }
