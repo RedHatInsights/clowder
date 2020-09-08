@@ -116,3 +116,16 @@ type InsightsBaseList struct {
 func init() {
 	SchemeBuilder.Register(&InsightsBase{}, &InsightsBaseList{})
 }
+
+func (i *InsightsBase) GetLabels() map[string]string {
+	return map[string]string{"app": i.ObjectMeta.Name}
+}
+
+func (i *InsightsBase) MakeOwnerReference() metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: i.APIVersion,
+		Kind:       i.Kind,
+		Name:       i.ObjectMeta.Name,
+		UID:        i.ObjectMeta.UID,
+	}
+}
