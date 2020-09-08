@@ -24,34 +24,14 @@ import (
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-type updater bool
-
-func (u *updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
-	if *u {
-		return cl.Update(ctx, obj)
-	}
-	return cl.Create(ctx, obj)
-}
-
-func updateOrErr(err error) (updater, error) {
-	update := updater(err == nil)
-
-	if err != nil && !k8serr.IsNotFound(err) {
-		return update, err
-	}
-
-	return update, nil
-}
 
 func b64decode(s *core.Secret, key string) (string, error) {
 	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))
@@ -127,7 +107,7 @@ func (m *Maker) makeService() error {
 	s := core.Service{}
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &s)
 
-	update, err := updateOrErr(err)
+	update, err := utils.UpdateOrErr(err)
 	if err != nil {
 		return err
 	}
@@ -154,7 +134,7 @@ func (m *Maker) persistConfig(c *config.AppConfig) error {
 	// tests to see if the secret exists
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &core.Secret{})
 
-	update, err := updateOrErr(err)
+	update, err := utils.UpdateOrErr(err)
 	if err != nil {
 		return err
 	}
@@ -197,7 +177,7 @@ func (m *Maker) makeDeployment() error {
 	d := apps.Deployment{}
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &d)
 
-	update, err := updateOrErr(err)
+	update, err := utils.UpdateOrErr(err)
 	if err != nil {
 		return err
 	}

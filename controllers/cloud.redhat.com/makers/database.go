@@ -66,7 +66,7 @@ func (db *DatabaseMaker) local() error {
 	dd := apps.Deployment{}
 	err := db.Client.Get(db.Ctx, dbNamespacedName, &dd)
 
-	update, err := updateOrErr(err)
+	update, err := utils.UpdateOrErr(err)
 
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func (db *DatabaseMaker) local() error {
 	s := core.Service{}
 	err = db.Client.Get(db.Ctx, dbNamespacedName, &s)
 
-	update, err = updateOrErr(err)
+	update, err = utils.UpdateOrErr(err)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (db *DatabaseMaker) local() error {
 
 	err = db.Client.Get(db.Ctx, dbNamespacedName, &pvc)
 
-	update, err = updateOrErr(err)
+	update, err = utils.UpdateOrErr(err)
 	if err != nil {
 		return err
 	}

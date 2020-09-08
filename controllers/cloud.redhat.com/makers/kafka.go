@@ -5,6 +5,7 @@ import (
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -67,7 +68,7 @@ func (k *KafkaMaker) operator() error {
 		}
 
 		err := k.Client.Get(k.Ctx, kafkaNamespace, &kRes)
-		update, err := updateOrErr(err)
+		update, err := utils.UpdateOrErr(err)
 
 		if err != nil {
 			return err

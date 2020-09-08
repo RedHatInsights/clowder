@@ -19,15 +19,9 @@ import (
 
 	"fmt"
 
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
-	apps "k8s.io/api/apps/v1"
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 //ObjectStoreMaker makes the StorageConfig object
@@ -66,137 +60,26 @@ func (obs *ObjectStoreMaker) appInterface() error {
 }
 
 func (obs *ObjectStoreMaker) minio() error {
-	if !obs.App.Spec.ObjectStore {
-		return nil
-	}
+	if obs.App.Spec.ObjectStore != nil {
+		endpoint := obs.Base.GetAnnotations()["endpoint"]
+		accessKeyID := obs.Base.GetAnnotations()["accessKey"]
+		secretAccessKey := obs.Base.GetAnnotations()["secretKey"]
 
-	minioObjName := fmt.Sprintf("%v-minio", obs.App.Name)
-	minioNamespacedName := types.NamespacedName{
-		Namespace: obs.App.Namespace,
-		Name:      minioObjName,
-	}
-
-	dd := apps.Deployment{}
-	err := obs.Client.Get(obs.Ctx, minioNamespacedName, &dd)
-
-	update, err := updateOrErr(err)
-
-	if err != nil {
-		return err
-	}
-
-	dd.SetName(minioNamespacedName.Name)
-	dd.SetNamespace(minioNamespacedName.Namespace)
-	labels := obs.App.GetLabels()
-	labels["minio"] = minioNamespacedName.Name
-	dd.SetLabels(labels)
-	dd.SetOwnerReferences([]metav1.OwnerReference{obs.App.MakeOwnerReference()})
-
-	dd.Spec.Replicas = obs.App.Spec.MinReplicas
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: obs.App.GetLabels()}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: minioNamespacedName.Name,
-		VolumeSource: core.VolumeSource{
-			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
-				ClaimName: minioNamespacedName.Name,
-			},
-		}},
-	}
-	dd.Spec.Template.ObjectMeta.Labels = obs.App.GetLabels()
-
-	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
-
-	var accessKey, secretKey core.EnvVar
-	if !update {
-		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: utils.RandString(12)}
-		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: utils.RandString(12)}
-	} else {
-		appConfig, err := obs.getConfig()
+		// Initialize minio client object.
+		minioClient, err := minio.New(endpoint, &minio.Options{
+			Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+			Secure: false,
+		})
 		if err != nil {
 			return err
 		}
-		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: appConfig.ObjectStore.AccessKey}
-		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: appConfig.ObjectStore.SecretKey}
+
+		obs.Log.Info(fmt.Sprintf("%v", minioClient)) // minioClient is now setup
+
+		obs.config.AccessKey = accessKeyID
+		obs.config.SecretKey = secretAccessKey
+		obs.config.Endpoint = endpoint
 	}
-	envVars := []core.EnvVar{accessKey, secretKey}
-	ports := []core.ContainerPort{
-		{
-			Name:          "minio",
-			ContainerPort: 9000,
-		},
-	}
-
-	// TODO Readiness and Liveness probes
-
-	c := core.Container{
-		Name:  minioNamespacedName.Name,
-		Image: "minio/minio",
-		Env:   envVars,
-		Ports: ports,
-		VolumeMounts: []core.VolumeMount{{
-			Name:      minioNamespacedName.Name,
-			MountPath: "/storage",
-		}},
-		Args: []string{
-			"server",
-			"/storage",
-		},
-	}
-
-	dd.Spec.Template.Spec.Containers = []core.Container{c}
-	dd.Spec.Template.SetLabels(labels)
-
-	if err = update.Apply(obs.Ctx, obs.Client, &dd); err != nil {
-		return err
-	}
-
-	s := core.Service{}
-	err = obs.Client.Get(obs.Ctx, minioNamespacedName, &s)
-
-	update, err = updateOrErr(err)
-	if err != nil {
-		return err
-	}
-
-	servicePorts := []core.ServicePort{}
-	minioPort := core.ServicePort{Name: "minio", Port: 9000, Protocol: "TCP"}
-	servicePorts = append(servicePorts, minioPort)
-
-	obs.App.SetObjectMeta(&s, crd.Name(minioNamespacedName.Name), crd.Namespace(minioNamespacedName.Namespace))
-	s.Spec.Selector = labels
-	s.Spec.Ports = servicePorts
-
-	if err = update.Apply(obs.Ctx, obs.Client, &s); err != nil {
-		return err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-
-	err = obs.Client.Get(obs.Ctx, minioNamespacedName, &pvc)
-
-	update, err = updateOrErr(err)
-	if err != nil {
-		return err
-	}
-
-	pvc.SetName(minioNamespacedName.Name)
-	pvc.SetNamespace(minioNamespacedName.Namespace)
-	pvc.SetLabels(obs.App.GetLabels())
-	pvc.SetOwnerReferences([]metav1.OwnerReference{obs.App.MakeOwnerReference()})
-	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
-	pvc.Spec.Resources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
-		},
-	}
-
-	if err = update.Apply(obs.Ctx, obs.Client, &pvc); err != nil {
-		return err
-	}
-
-	obs.config.AccessKey = accessKey.Value
-	obs.config.SecretKey = secretKey.Value
 
 	return nil
 }
