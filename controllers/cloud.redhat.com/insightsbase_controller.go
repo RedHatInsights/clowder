@@ -88,7 +88,7 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 		annotations := base.GetAnnotations()
 		annotations["accessKey"] = accessKey.Value
 		annotations["secretKey"] = secretKey.Value
-		annotations["endpoint"] = fmt.Sprintf("%v.%v.svc", minioObjName, req.Namespace)
+		annotations["endpoint"] = fmt.Sprintf("%v.%v.svc:9000", minioObjName, req.Namespace)
 		base.SetAnnotations(annotations)
 		if err = r.Client.Update(ctx, base); err != nil {
 			return err
