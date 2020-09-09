@@ -93,8 +93,8 @@ func (l *LoggingMaker) cloudwatch() error {
 		}
 	}
 
-	l.config.CloudWatch = config.CloudWatchConfig{
-		AccessKeyID:     decoded[0],
+	l.config.Cloudwatch = &config.CloudWatchConfig{
+		AccessKeyId:     decoded[0],
 		SecretAccessKey: decoded[1],
 		Region:          decoded[2],
 		LogGroup:        decoded[3],

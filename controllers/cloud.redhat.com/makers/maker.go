@@ -82,8 +82,8 @@ func (m *Maker) Make() error {
 		configs = append(configs, sm.ApplyConfig)
 	}
 
-	configs = append(configs, config.Web(m.Base.Spec.Web.Port))
-	configs = append(configs, config.Metrics(m.Base.Spec.Metrics.Path, m.Base.Spec.Metrics.Port))
+	configs = append(configs, config.Web(int(m.Base.Spec.Web.Port)))
+	configs = append(configs, config.Metrics(m.Base.Spec.Metrics.Path, int(m.Base.Spec.Metrics.Port)))
 
 	c := config.New(configs...)
 

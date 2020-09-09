@@ -7,10 +7,10 @@
             "description": "application deployment configuration for cloud.redhat.com applications",
             "properties": {
                 "webPort": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "metricsPort": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "metricsPath": {
                     "type": "string"
@@ -27,7 +27,13 @@
                 "objectStore": {
                     "$ref": "#/definitions/ObjectStoreConfig"
                 }
-            }
+            },
+            "required": [
+                "webPort",
+                "metricsPort",
+                "metricsPath",
+                "logging"
+            ]
         },
         "LoggingConfig": {
             "title": "LoggingConfig",
@@ -40,7 +46,10 @@
                 "cloudwatch": {
                     "$ref": "#/definitions/CloudWatchConfig"
                 }
-            }
+            },
+            "required": [
+                "type"
+            ]
         },
         "CloudWatchConfig": {
             "title": "CloudWatchConfig",
@@ -59,7 +68,13 @@
                 "logGroup": {
                     "type": "string"
                 }
-            }
+            },
+            "required": [
+                "accessKeyId",
+                "secretAccessKey",
+                "region",
+                "logGroup"
+            ]
         },
         "KafkaConfig": {
             "title": "KafkaConfig",
@@ -78,7 +93,11 @@
                         "$ref": "#/definitions/TopicConfig"
                     }
                 }
-            }
+            },
+            "required": [
+                "brokers",
+                "topics"
+            ]
         },
         "BrokerConfig": {
             "id": "brokerConfig",
@@ -89,9 +108,12 @@
                     "type": "string"
                 },
                 "port": {
-                    "type": "number"
+                    "type": "integer"
                 }
-            }
+            },
+            "required": [
+                "hostname"
+            ]
         },
         "TopicConfig": {
             "id": "topicConfig",
@@ -104,7 +126,10 @@
                 "consumerGroup": {
                     "type": "string"
                 }
-            }
+            },
+            "required": [
+                "name"
+            ]
         },
         "DatabaseConfig": {
             "id": "database",
@@ -115,22 +140,30 @@
                 "name": {
                     "type": "string"
                 },
-                "user": {
+                "username": {
                     "type": "string"
                 },
-                "pass": {
+                "password": {
                     "type": "string"
                 },
                 "hostname": {
                     "type": "string"
                 },
                 "port": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "pgPass": {
                     "type": "string"
                 }
-            }
+            },
+            "required": [
+                "name",
+                "username",
+                "password",
+                "hostname",
+                "port",
+                "pgPass"
+            ]
         },
         "ObjectStoreConfig": {
             "id": "objectStoreConfig",
@@ -146,7 +179,12 @@
                 "endpoint": {
                     "type": "string"
                 }
-            }
+            },
+            "required": [
+                "accessKey",
+                "secretKey",
+                "endpoint"
+            ]
         }
     }
 }

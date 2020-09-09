@@ -38,7 +38,7 @@ func (k *KafkaMaker) Make() error {
 
 //ApplyConfig for the KafkaMaker
 func (k *KafkaMaker) ApplyConfig(c *config.AppConfig) {
-	c.Kafka = k.config
+	c.Kafka = &k.config
 }
 
 func (k *KafkaMaker) local() error {
@@ -107,15 +107,16 @@ func (k *KafkaMaker) operator() error {
 	}
 
 	for _, listener := range kafkaResource.Status.Listeners {
-		print(listener.Type)
 		if listener.Type == "plain" {
-			k.config.Brokers = append(
-				k.config.Brokers,
-				config.BrokerConfig{
-					Hostname: listener.Addresses[0].Host,
-					Port:     listener.Addresses[0].Port,
-				},
-			)
+			bc := config.BrokerConfig{
+				Hostname: listener.Addresses[0].Host,
+			}
+			port := listener.Addresses[0].Port
+			if port != nil {
+				p := int(*port)
+				bc.Port = &p
+			}
+			k.config.Brokers = append(k.config.Brokers, bc)
 		}
 	}
 
