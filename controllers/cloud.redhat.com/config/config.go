@@ -14,7 +14,7 @@ type CloudWatchConfig struct {
 
 type BrokerConfig struct {
 	Hostname string `json:"hostname"`
-	Port     int    `json:"port"`
+	Port     *int32 `json:"port"`
 }
 
 type TopicConfig struct {
