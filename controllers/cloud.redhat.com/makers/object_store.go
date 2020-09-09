@@ -52,7 +52,7 @@ func (obs *ObjectStoreMaker) Make() error {
 
 //ApplyConfig for the StorageMaker
 func (obs *ObjectStoreMaker) ApplyConfig(c *config.AppConfig) {
-	c.ObjectStore = obs.config
+	c.ObjectStore = &obs.config
 }
 
 func (obs *ObjectStoreMaker) appInterface() error {

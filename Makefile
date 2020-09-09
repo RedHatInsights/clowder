@@ -62,6 +62,9 @@ fmt:
 vet:
 	go vet ./...
 
+genconfig:
+	cd controllers/cloud.redhat.com/config && gojsonschema -p config -o types.go schema.json
+
 # Generate code
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."

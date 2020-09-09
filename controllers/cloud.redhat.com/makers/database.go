@@ -45,7 +45,7 @@ func (db *DatabaseMaker) Make() error {
 
 //ApplyConfig for the DatabaseMaker
 func (db *DatabaseMaker) ApplyConfig(c *config.AppConfig) {
-	c.Database = db.config
+	c.Database = &db.config
 }
 
 func (db *DatabaseMaker) appInterface() error {
@@ -104,7 +104,7 @@ func (db *DatabaseMaker) local() error {
 		}
 		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: appConfig.Database.Username}
 		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: appConfig.Database.Password}
-		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: appConfig.Database.PGPass}
+		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: appConfig.Database.PgPass}
 	}
 
 	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: db.App.Spec.Database.Name}
@@ -219,7 +219,7 @@ func (db *DatabaseMaker) local() error {
 	db.config.Password = dbPass.Value
 	db.config.Hostname = dbObjName
 	db.config.Port = 5432
-	db.config.PGPass = pgPass.Value
+	db.config.PgPass = pgPass.Value
 
 	return nil
 }
