@@ -1,0 +1,150 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "AppConfig",
+    "id": "https://cloud.redhat.com/app/config.json",
+    "type": "object",
+    "description": "application deployment configuration for cloud.redhat.com applications",
+    "properties": {
+        "webPort": {
+            "type": "number"
+        },
+        "metricsPort": {
+            "type": "number"
+        },
+        "metricsPath": {
+            "type": "string"
+        },
+        "logging": {
+            "$ref": "#/definitions/logging"
+        },
+        "kafka": {
+            "$ref": "#/definitions/kafka"
+        },
+        "database": {
+            "$ref": "#/definitions/database"
+        },
+        "objectStore": {
+            "$ref": "#/definitions/objectStore"
+        }
+    },
+    "definitions": {
+        "logging": {
+            "id": "logging",
+            "type": "object",
+            "description": "Logging Configuration",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "cloudwatch": {
+                    "$ref": "#/definitions/cloudwatch"
+                }
+            }
+        },
+        "cloudwatch": {
+            "id": "cloudwatch",
+            "type": "object",
+            "description": "Cloud Watch configuration",
+            "properties": {
+                "accessKeyId": {
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "logGroup": {
+                    "type": "string"
+                }
+            }
+        },
+        "kafka": {
+            "id": "kafka",
+            "type": "object",
+            "description": "kafka configuration",
+            "properties": {
+                "brokers": {
+                    "type": "array",
+                    "contains": {
+                        "$ref": "#/definitions/brokerConfig"
+                    }
+                },
+                "topics": {
+                    "type": "array",
+                    "contains": {
+                        "$ref": "#definitions/topicConfig"
+                    }
+                }
+            }
+        },
+        "brokerConfig": {
+            "id": "brokerConfig",
+            "type": "object",
+            "description": "broker configuration",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "number"
+                }
+            }
+        },
+        "topicConfig": {
+            "id": "topicConfig",
+            "type": "object",
+            "description": "topic configuration",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "consumerGroup": {
+                    "type": "string"
+                }
+            }
+        },
+        "database": {
+            "id": "database",
+            "type": "object",
+            "description": "database configuration",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "pass": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "number"
+                },
+                "pgPass": {
+                    "type": "string"
+                }
+            }
+        },
+        "objectStore": {
+            "id": "objectStore",
+            "type": "object",
+            "description": "object storage configuration",
+            "properties": {
+                "accessKey": {
+                    "type": "string"
+                },
+                "secretKey": {
+                    "type": "string"
+                },
+                "endpoint": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
