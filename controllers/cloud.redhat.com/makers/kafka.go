@@ -50,13 +50,6 @@ func (k *KafkaMaker) operator() error {
 		return nil
 	}
 
-	// TODO: Pull the kafka resource to get the broker hostname and port
-	// This will require defining the Kafka CRD
-	k.config.Brokers = []config.BrokerConfig{{
-		Hostname: k.Base.Spec.Kafka.ClusterName,
-		Port:     5432,
-	}}
-
 	k.config.Topics = []config.TopicConfig{}
 
 	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
@@ -95,6 +88,23 @@ func (k *KafkaMaker) operator() error {
 		}
 
 		k.config.Topics = append(k.config.Topics, config.TopicConfig{Name: kafkaTopic.TopicName})
+	}
+
+	kafkaList := strimzi.KafkaList{}
+
+	err := k.Client.List(k.Ctx, &kafkaList)
+
+	if err != nil {
+		return err
+	}
+
+	if len(kafkaList.Items) > 0 {
+		kafka := kafkaList.Items[0]
+		for _, listener := range kafka.Status.Listeners {
+			if listener.Type == "plain" {
+				k.config.Brokers = append(k.config.Brokers, config.BrokerConfig{Hostname: listener.Addresses[0].Host, Port: listener.Addresses[0].Port})
+			}
+		}
 	}
 
 	return nil
