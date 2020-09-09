@@ -209,6 +209,7 @@ func (m *Maker) makeDeployment() error {
 			Name:          "metrics",
 			ContainerPort: m.Base.Spec.Metrics.Port,
 		}},
+		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
 	if m.App.Spec.Web {
