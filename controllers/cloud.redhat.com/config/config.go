@@ -35,8 +35,8 @@ type ObjectStoreConfig struct {
 
 type DatabaseConfig struct {
 	Name     string `json:"name"`
-	User     string `json:"user"`
-	Pass     string `json:"pass"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 	Hostname string `json:"hostname"`
 	Port     int32  `json:"port"`
 	PGPass   string `json:"pgPass"`

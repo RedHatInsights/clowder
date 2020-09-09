@@ -102,8 +102,8 @@ func (db *DatabaseMaker) local() error {
 		if err != nil {
 			return err
 		}
-		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: appConfig.Database.User}
-		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: appConfig.Database.Pass}
+		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: appConfig.Database.Username}
+		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: appConfig.Database.Password}
 		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: appConfig.Database.PGPass}
 	}
 
@@ -215,8 +215,8 @@ func (db *DatabaseMaker) local() error {
 	}
 
 	db.config.Name = db.App.Spec.Database.Name
-	db.config.User = dbUser.Value
-	db.config.Pass = dbPass.Value
+	db.config.Username = dbUser.Value
+	db.config.Password = dbPass.Value
 	db.config.Hostname = dbObjName
 	db.config.Port = 5432
 	db.config.PGPass = pgPass.Value
