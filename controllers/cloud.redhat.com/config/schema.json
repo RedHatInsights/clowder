@@ -1,35 +1,36 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "AppConfig",
-    "id": "https://cloud.redhat.com/app/config.json",
-    "type": "object",
-    "description": "application deployment configuration for cloud.redhat.com applications",
-    "properties": {
-        "webPort": {
-            "type": "number"
-        },
-        "metricsPort": {
-            "type": "number"
-        },
-        "metricsPath": {
-            "type": "string"
-        },
-        "logging": {
-            "$ref": "#/definitions/logging"
-        },
-        "kafka": {
-            "$ref": "#/definitions/kafka"
-        },
-        "database": {
-            "$ref": "#/definitions/database"
-        },
-        "objectStore": {
-            "$ref": "#/definitions/objectStore"
-        }
-    },
+    "$ref": "#/definitions/AppConfig",
     "definitions": {
-        "logging": {
-            "id": "logging",
+        "AppConfig": {
+            "type": "object",
+            "description": "application deployment configuration for cloud.redhat.com applications",
+            "properties": {
+                "webPort": {
+                    "type": "number"
+                },
+                "metricsPort": {
+                    "type": "number"
+                },
+                "metricsPath": {
+                    "type": "string"
+                },
+                "logging": {
+                    "$ref": "#/definitions/LoggingConfig"
+                },
+                "kafka": {
+                    "$ref": "#/definitions/KafkaConfig"
+                },
+                "database": {
+                    "$ref": "#/definitions/DatabaseConfig"
+                },
+                "objectStore": {
+                    "$ref": "#/definitions/ObjectStoreConfig"
+                }
+            }
+        },
+        "LoggingConfig": {
+            "title": "LoggingConfig",
             "type": "object",
             "description": "Logging Configuration",
             "properties": {
@@ -37,12 +38,12 @@
                     "type": "string"
                 },
                 "cloudwatch": {
-                    "$ref": "#/definitions/cloudwatch"
+                    "$ref": "#/definitions/CloudWatchConfig"
                 }
             }
         },
-        "cloudwatch": {
-            "id": "cloudwatch",
+        "CloudWatchConfig": {
+            "title": "CloudWatchConfig",
             "type": "object",
             "description": "Cloud Watch configuration",
             "properties": {
@@ -60,26 +61,26 @@
                 }
             }
         },
-        "kafka": {
-            "id": "kafka",
+        "KafkaConfig": {
+            "title": "KafkaConfig",
             "type": "object",
             "description": "kafka configuration",
             "properties": {
                 "brokers": {
                     "type": "array",
-                    "contains": {
-                        "$ref": "#/definitions/brokerConfig"
+                    "items": {
+                        "$ref": "#/definitions/BrokerConfig"
                     }
                 },
                 "topics": {
                     "type": "array",
-                    "contains": {
-                        "$ref": "#definitions/topicConfig"
+                    "items": {
+                        "$ref": "#/definitions/TopicConfig"
                     }
                 }
             }
         },
-        "brokerConfig": {
+        "BrokerConfig": {
             "id": "brokerConfig",
             "type": "object",
             "description": "broker configuration",
@@ -92,7 +93,7 @@
                 }
             }
         },
-        "topicConfig": {
+        "TopicConfig": {
             "id": "topicConfig",
             "type": "object",
             "description": "topic configuration",
@@ -105,8 +106,9 @@
                 }
             }
         },
-        "database": {
+        "DatabaseConfig": {
             "id": "database",
+            "title": "DatabaseConfig",
             "type": "object",
             "description": "database configuration",
             "properties": {
@@ -130,8 +132,8 @@
                 }
             }
         },
-        "objectStore": {
-            "id": "objectStore",
+        "ObjectStoreConfig": {
+            "id": "objectStoreConfig",
             "type": "object",
             "description": "object storage configuration",
             "properties": {
