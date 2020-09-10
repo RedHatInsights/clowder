@@ -42,10 +42,6 @@ type KafkaStatus struct {
 	Listeners          []KafkaListener `json:"listeners,omitempty"`
 }
 
-type KafkaSpec struct {
-	Test string `json:"test,omitempty"`
-}
-
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
@@ -54,7 +50,6 @@ type Kafka struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   KafkaSpec   `json:"spec,omitempty"`
 	Status KafkaStatus `json:"status,omitempty"`
 }
 

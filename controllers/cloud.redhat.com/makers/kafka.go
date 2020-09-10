@@ -106,10 +106,6 @@ func (k *KafkaMaker) operator() error {
 		return err
 	}
 
-	println("KAFKA!!!!!!!")
-	println(kafkaResource.Name)
-	println(len(kafkaResource.Status.Listeners))
-
 	for _, listener := range kafkaResource.Status.Listeners {
 		print(listener.Type)
 		if listener.Type == "plain" {

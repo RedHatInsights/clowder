@@ -171,7 +171,6 @@ func TestCreateInsightsApp(t *testing.T) {
 			Name:      "kafka",
 			Namespace: "kafka",
 		},
-		Spec: strimzi.KafkaSpec{Test: "test"},
 		Status: strimzi.KafkaStatus{
 			Listeners: []strimzi.KafkaListener{{
 				Type: "plain",
@@ -358,7 +357,6 @@ func TestCreateInsightsApp(t *testing.T) {
 	}
 
 	jsonContent := config.AppConfig{}
-	println(string(secretConfig.Data["cdappconfig.json"]))
 	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
 
 	if err != nil {
