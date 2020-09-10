@@ -169,7 +169,7 @@ func TestCreateInsightsApp(t *testing.T) {
 	cluster := strimzi.Kafka{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kafka",
-			Namespace: "default",
+			Namespace: "kafka",
 		},
 		Spec: strimzi.KafkaSpec{Test: "test"},
 		Status: strimzi.KafkaStatus{
@@ -183,10 +183,9 @@ func TestCreateInsightsApp(t *testing.T) {
 		},
 	}
 
-	println("FROM TEST ONEEEEE!")
-	println(len(cluster.Status.Listeners))
-
 	err = k8sClient.Create(ctx, &cluster)
+
+	k8sClient.Status().Update(ctx, &cluster)
 
 	if err != nil {
 		t.Error(err)
@@ -199,8 +198,6 @@ func TestCreateInsightsApp(t *testing.T) {
 		Name:      "kafka",
 	}
 	err = k8sClient.Get(ctx, clusterName, &kafkaResource)
-	println("FROM TEST!")
-	println(len(kafkaResource.Status.Listeners))
 
 	if err != nil {
 		t.Error(err)
