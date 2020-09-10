@@ -51,6 +51,7 @@ func (k *KafkaMaker) operator() error {
 	}
 
 	k.config.Topics = []config.TopicConfig{}
+	k.config.Brokers = []config.BrokerConfig{}
 
 	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
 		kRes := strimzi.KafkaTopic{}
@@ -87,23 +88,38 @@ func (k *KafkaMaker) operator() error {
 			return err
 		}
 
-		k.config.Topics = append(k.config.Topics, config.TopicConfig{Name: kafkaTopic.TopicName})
+		k.config.Topics = append(
+			k.config.Topics,
+			config.TopicConfig{Name: kafkaTopic.TopicName},
+		)
 	}
 
-	kafkaList := strimzi.KafkaList{}
+	clusterName := types.NamespacedName{
+		Namespace: k.Base.Spec.Kafka.Namespace,
+		Name:      k.Base.Spec.Kafka.ClusterName,
+	}
 
-	err := k.Client.List(k.Ctx, &kafkaList)
+	kafkaResource := strimzi.Kafka{}
+	err := k.Client.Get(k.Ctx, clusterName, &kafkaResource)
 
 	if err != nil {
 		return err
 	}
 
-	if len(kafkaList.Items) > 0 {
-		kafka := kafkaList.Items[0]
-		for _, listener := range kafka.Status.Listeners {
-			if listener.Type == "plain" {
-				k.config.Brokers = append(k.config.Brokers, config.BrokerConfig{Hostname: listener.Addresses[0].Host, Port: listener.Addresses[0].Port})
-			}
+	println("KAFKA!!!!!!!")
+	println(kafkaResource.Name)
+	println(len(kafkaResource.Status.Listeners))
+
+	for _, listener := range kafkaResource.Status.Listeners {
+		print(listener.Type)
+		if listener.Type == "plain" {
+			k.config.Brokers = append(
+				k.config.Brokers,
+				config.BrokerConfig{
+					Hostname: listener.Addresses[0].Host,
+					Port:     listener.Addresses[0].Port,
+				},
+			)
 		}
 	}
 

@@ -80,6 +80,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	err = maker.Make()
+
 	if err != nil {
 		return ctrl.Result{}, err
 	}

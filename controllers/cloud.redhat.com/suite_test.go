@@ -164,6 +164,49 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
+	kport := int32(9092)
+
+	cluster := strimzi.Kafka{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kafka",
+			Namespace: "default",
+		},
+		Spec: strimzi.KafkaSpec{Test: "test"},
+		Status: strimzi.KafkaStatus{
+			Listeners: []strimzi.KafkaListener{{
+				Type: "plain",
+				Addresses: []strimzi.Address{{
+					Host: "kafka-boostrap.kafka.svc",
+					Port: &kport,
+				}},
+			}},
+		},
+	}
+
+	println("FROM TEST ONEEEEE!")
+	println(len(cluster.Status.Listeners))
+
+	err = k8sClient.Create(ctx, &cluster)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	kafkaResource := strimzi.Kafka{}
+	clusterName := types.NamespacedName{
+		Namespace: "kafka",
+		Name:      "kafka",
+	}
+	err = k8sClient.Get(ctx, clusterName, &kafkaResource)
+	println("FROM TEST!")
+	println(len(kafkaResource.Status.Listeners))
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	ibase := crd.InsightsBase{
 		ObjectMeta: objMeta,
 		Spec: crd.InsightsBaseSpec{
@@ -318,6 +361,7 @@ func TestCreateInsightsApp(t *testing.T) {
 	}
 
 	jsonContent := config.AppConfig{}
+	println(string(secretConfig.Data["cdappconfig.json"]))
 	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
 
 	if err != nil {
@@ -357,7 +401,7 @@ func fetchWithDefaults(name types.NamespacedName, resource runtime.Object) error
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	return fetch(ctx, name, resource, 20, 20*time.Millisecond)
+	return fetch(ctx, name, resource, 20, 100*time.Millisecond)
 }
 
 func fetch(ctx context.Context, name types.NamespacedName, resource runtime.Object, retryCount int, sleepTime time.Duration) error {
