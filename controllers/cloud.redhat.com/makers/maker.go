@@ -16,8 +16,10 @@ package makers
 
 import (
 	"context"
+	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -89,11 +91,12 @@ func (m *Maker) Make() error {
 
 	c := config.New(configs...)
 
-	if err := m.persistConfig(c); err != nil {
+	hash, err := m.persistConfig(c)
+	if err != nil {
 		return err
 	}
 
-	if err := m.makeDeployment(); err != nil {
+	if err := m.makeDeployment(hash); err != nil {
 		return err
 	}
 
@@ -130,7 +133,7 @@ func (m *Maker) makeService() error {
 	return update.Apply(m.Ctx, m.Client, &s)
 }
 
-func (m *Maker) persistConfig(c *config.AppConfig) error {
+func (m *Maker) persistConfig(c *config.AppConfig) (string, error) {
 
 	// In any case, we want to overwrite the secret, so this just
 	// tests to see if the secret exists
@@ -138,13 +141,17 @@ func (m *Maker) persistConfig(c *config.AppConfig) error {
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	jsonData, err := json.Marshal(c)
 	if err != nil {
-		return err
+		return "", err
 	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
 
 	secret := core.Secret{
 		StringData: map[string]string{
@@ -154,7 +161,7 @@ func (m *Maker) persistConfig(c *config.AppConfig) error {
 
 	m.App.SetObjectMeta(&secret)
 
-	return update.Apply(m.Ctx, m.Client, &secret)
+	return hash, update.Apply(m.Ctx, m.Client, &secret)
 }
 
 func (m *Maker) getConfig() (*config.AppConfig, error) {
@@ -174,7 +181,7 @@ func (m *Maker) getConfig() (*config.AppConfig, error) {
 }
 
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
-func (m *Maker) makeDeployment() error {
+func (m *Maker) makeDeployment(hash string) error {
 
 	d := apps.Deployment{}
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &d)
@@ -275,6 +282,10 @@ func (m *Maker) makeDeployment() error {
 			},
 		},
 	})
+
+	annotations := make(map[string]string)
+	annotations["configHash"] = hash
+	d.SetAnnotations(annotations)
 
 	if err = update.Apply(m.Ctx, m.Client, &d); err != nil {
 		return err
