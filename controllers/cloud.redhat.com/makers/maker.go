@@ -29,6 +29,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -196,21 +197,59 @@ func (m *Maker) makeDeployment() error {
 	env := m.App.Spec.Env
 	env = append(env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
+	var livenessProbe core.Probe
+	var readinessProbe core.Probe
+
+	baseProbe := core.Probe{
+		Handler: core.Handler{
+			HTTPGet: &core.HTTPGetAction{
+				Path:   "/api/ingress/ping",
+				Scheme: "HTTP",
+				Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: 8000,
+				},
+			},
+		},
+		FailureThreshold:    3,
+		InitialDelaySeconds: 10,
+		PeriodSeconds:       30,
+		SuccessThreshold:    1,
+		TimeoutSeconds:      1,
+	}
+	if m.App.Spec.LivenessProbe != nil {
+		livenessProbe = *m.App.Spec.LivenessProbe
+	} else if m.App.Spec.Web {
+		livenessProbe = baseProbe
+	}
+	if m.App.Spec.ReadinessProbe != nil {
+		readinessProbe = *m.App.Spec.ReadinessProbe
+	} else {
+		readinessProbe = baseProbe
+		readinessProbe.InitialDelaySeconds = 45
+
+	}
+
 	c := core.Container{
-		Name:           m.App.ObjectMeta.Name,
-		Image:          m.App.Spec.Image,
-		Command:        m.App.Spec.Command,
-		Args:           m.App.Spec.Args,
-		Env:            env,
-		Resources:      m.App.Spec.Resources,
-		LivenessProbe:  m.App.Spec.LivenessProbe,
-		ReadinessProbe: m.App.Spec.ReadinessProbe,
-		VolumeMounts:   m.App.Spec.VolumeMounts,
+		Name:         m.App.ObjectMeta.Name,
+		Image:        m.App.Spec.Image,
+		Command:      m.App.Spec.Command,
+		Args:         m.App.Spec.Args,
+		Env:          env,
+		Resources:    m.App.Spec.Resources,
+		VolumeMounts: m.App.Spec.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
 			ContainerPort: m.Base.Spec.Metrics.Port,
 		}},
 		ImagePullPolicy: core.PullIfNotPresent,
+	}
+
+	if (core.Probe{}) != livenessProbe {
+		c.LivenessProbe = &livenessProbe
+	}
+	if (core.Probe{}) != readinessProbe {
+		c.ReadinessProbe = &readinessProbe
 	}
 
 	if m.App.Spec.Web {
