@@ -86,6 +86,9 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: utils.RandString(12)}
 		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: utils.RandString(12)}
 		annotations := base.GetAnnotations()
+		if annotations == nil {
+			annotations = make(map[string]string)
+		}
 		annotations["accessKey"] = accessKey.Value
 		annotations["secretKey"] = secretKey.Value
 		annotations["endpoint"] = fmt.Sprintf("%v.%v.svc:9000", minioObjName, req.Namespace)
