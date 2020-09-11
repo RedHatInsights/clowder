@@ -50,6 +50,7 @@ type InsightsAppSpec struct {
 	KafkaTopics    []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
 	Database       InsightsDatabaseSpec     `json:"database,omitempty"`
 	ObjectStore    []string                 `json:"objectStore,omitempty"`
+	InMemoryDB     bool                     `json:"inMemoryDb,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp

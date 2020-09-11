@@ -230,6 +230,9 @@ func TestCreateInsightsApp(t *testing.T) {
 			ObjectStore: crd.ObjectStoreConfig{
 				Provider: "app-interface",
 			},
+			InMemoryDB: crd.InMemoryDBConfig{
+				Provider: "redis",
+			},
 		},
 	}
 

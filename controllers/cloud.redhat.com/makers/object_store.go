@@ -17,8 +17,6 @@ package makers
 import (
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 
-	"fmt"
-
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -64,9 +62,6 @@ func (obs *ObjectStoreMaker) minio() error {
 		endpoint := obs.Base.GetAnnotations()["endpoint"]
 		accessKeyID := obs.Base.GetAnnotations()["accessKey"]
 		secretAccessKey := obs.Base.GetAnnotations()["secretKey"]
-		obs.Log.Info(endpoint)
-		obs.Log.Info(accessKeyID)
-		obs.Log.Info(secretAccessKey)
 		// Initialize minio client object.
 		minioClient, err := minio.New(endpoint, &minio.Options{
 			Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
@@ -75,8 +70,6 @@ func (obs *ObjectStoreMaker) minio() error {
 		if err != nil {
 			return err
 		}
-
-		obs.Log.Info(fmt.Sprintf("%v", minioClient)) // minioClient is now setup
 
 		for _, bucket := range obs.App.Spec.ObjectStore {
 			found, err := minioClient.BucketExists(obs.Ctx, bucket)

@@ -76,6 +76,13 @@ type ObjectStoreConfig struct {
 	Suffix   string              `json:"suffix,omitempty"`
 }
 
+// +kubebuilder:validation:Enum=redis;app-interface
+type InMemoryProvider string
+
+type InMemoryDBConfig struct {
+	Provider InMemoryProvider `json:"provider"`
+}
+
 // InsightsBaseSpec defines the desired state of InsightsBase
 type InsightsBaseSpec struct {
 	Web         WebConfig         `json:"web,omitempty"`
@@ -84,6 +91,7 @@ type InsightsBaseSpec struct {
 	Database    DatabaseConfig    `json:"db,omitempty"`
 	Logging     LoggingConfig     `json:"logging"`
 	ObjectStore ObjectStoreConfig `json:"objectStore"`
+	InMemoryDB  InMemoryDBConfig  `json:"inMemoryDb"`
 }
 
 // InsightsBaseStatus defines the observed state of InsightsBase

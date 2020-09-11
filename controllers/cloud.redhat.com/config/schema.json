@@ -26,6 +26,9 @@
                 },
                 "objectStore": {
                     "$ref": "#/definitions/ObjectStoreConfig"
+                },
+                "inMemoryDb": {
+                    "$ref": "#/definitions/InMemoryDB"
                 }
             },
             "required": [
@@ -184,6 +187,29 @@
                 "accessKey",
                 "secretKey",
                 "endpoint"
+            ]
+        },
+        "InMemoryDB": {
+            "id": "inMemoryDb",
+            "type": "object",
+            "description": "In Memory DB configuration",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "hostname",
+                "port"
             ]
         }
     }

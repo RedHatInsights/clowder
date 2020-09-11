@@ -157,6 +157,8 @@ spec:
               type: array
             image:
               type: string
+            inMemoryDb:
+              type: boolean
             kafkaTopics:
               items:
                 description: KafkaTopicSpec defines the desired state of KafkaTopic

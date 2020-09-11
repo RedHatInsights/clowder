@@ -65,6 +65,7 @@ func (m *Maker) getSubMakers() []SubMaker {
 		&DatabaseMaker{Maker: m},
 		&LoggingMaker{Maker: m},
 		&ObjectStoreMaker{Maker: m},
+		&InMemoryDBMaker{Maker: m},
 	}
 }
 
