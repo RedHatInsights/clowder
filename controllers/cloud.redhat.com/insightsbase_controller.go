@@ -23,6 +23,7 @@ import (
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -195,6 +196,10 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 	err := r.Client.Get(ctx, req.NamespacedName, &base)
 
 	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return ctrl.Result{}, nil
+		}
 		return ctrl.Result{}, err
 	}
 
