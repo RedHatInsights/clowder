@@ -285,8 +285,7 @@ func (m *Maker) makeDeployment(hash string) error {
 
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
-	d.SetAnnotations(annotations)
-
+	d.Spec.Template.SetAnnotations(annotations)
 	if err = update.Apply(m.Ctx, m.Client, &d); err != nil {
 		return err
 	}
