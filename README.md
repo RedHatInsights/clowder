@@ -22,6 +22,8 @@ An operator to deploy and operate cloud.redhat.com resources for Openshift.
 - `make deploy` will try to run the manager in the cluster configured in your
   kubeconfig.  You likely need to push the image to an image stream local to
   your target namespace.
+- `make genconfig` (optionally) needs to be run if the specification for the config
+  has been altered.
 
 ## Testing
 
