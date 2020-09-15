@@ -164,16 +164,8 @@ func createCloudwatchSecret(cwData *map[string]string) error {
 	return k8sClient.Create(context.Background(), &cloudwatch)
 }
 
-func TestCreateInsightsApp(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	logger.Info("Creating InsightsApp")
-
-	name := types.NamespacedName{
-		Name:      "test",
-		Namespace: "default",
-	}
+func createCRs(name types.NamespacedName) (*crd.InsightsBase, *crd.InsightsApp, error) {
+	ctx := context.Background()
 
 	objMeta := metav1.ObjectMeta{
 		Name:      name.Name,
@@ -181,27 +173,6 @@ func TestCreateInsightsApp(t *testing.T) {
 		Labels: map[string]string{
 			"app": "test",
 		},
-	}
-
-	cwData := map[string]string{
-		"aws_access_key_id":     "key_id",
-		"aws_secret_access_key": "secret",
-		"log_group_name":        "default",
-		"aws_region":            "us-east-1",
-	}
-
-	err := createCloudwatchSecret(&cwData)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = createKafkaCluster()
-
-	if err != nil {
-		t.Error(err)
-		return
 	}
 
 	ibase := crd.InsightsBase{
@@ -262,15 +233,50 @@ func TestCreateInsightsApp(t *testing.T) {
 		},
 	}
 
-	err = k8sClient.Create(ctx, &ibase)
+	err := k8sClient.Create(ctx, &ibase)
+
+	if err != nil {
+		return &ibase, &iapp, err
+	}
+
+	err = k8sClient.Create(ctx, &iapp)
+
+	return &ibase, &iapp, err
+}
+
+func TestCreateInsightsApp(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	logger.Info("Creating InsightsApp")
+
+	name := types.NamespacedName{
+		Name:      "test",
+		Namespace: "default",
+	}
+
+	cwData := map[string]string{
+		"aws_access_key_id":     "key_id",
+		"aws_secret_access_key": "secret",
+		"log_group_name":        "default",
+		"aws_region":            "us-east-1",
+	}
+
+	err := createCloudwatchSecret(&cwData)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	// Create InsightsApp
-	err = k8sClient.Create(ctx, &iapp)
+	err = createKafkaCluster()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ibase, iapp, err := createCRs(name)
 
 	if err != nil {
 		t.Error(err)
@@ -342,11 +348,11 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	if *topic.Spec.Replicas != replicas {
-		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Replicas, replicas)
+	if *topic.Spec.Replicas != int32(32) {
+		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Replicas, int32(32))
 	}
-	if *topic.Spec.Partitions != partitions {
-		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Partitions, partitions)
+	if *topic.Spec.Partitions != int32(5) {
+		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Partitions, int32(5))
 	}
 
 	// Secret content validation
@@ -387,7 +393,7 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	for i, kafkaTopic := range kafkaTopics {
+	for i, kafkaTopic := range iapp.Spec.KafkaTopics {
 		actual, expected := jsonContent.Kafka.Topics[i].Name, kafkaTopic.TopicName
 
 		if actual != expected {
