@@ -128,9 +128,11 @@ func (k *KafkaMaker) operator() error {
 	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
 		kRes := strimzi.KafkaTopic{}
 
+		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Base.Name, k.Request.Namespace)
+
 		kafkaNamespace := types.NamespacedName{
 			Namespace: k.Base.Spec.Kafka.Namespace,
-			Name:      kafkaTopic.TopicName,
+			Name:      topicName,
 		}
 
 		err := k.Client.Get(k.Ctx, kafkaNamespace, &kRes)
@@ -147,7 +149,7 @@ func (k *KafkaMaker) operator() error {
 			// unique? can we use for delete selector?
 		}
 
-		kRes.SetName(kafkaTopic.TopicName)
+		kRes.SetName(topicName)
 		kRes.SetNamespace(k.Base.Spec.Kafka.Namespace)
 		kRes.SetLabels(labels)
 
@@ -163,6 +165,9 @@ func (k *KafkaMaker) operator() error {
 			valList := []string{value}
 			for _, res := range appList.Items {
 				if res.ObjectMeta.Name == k.Request.Name {
+					continue
+				}
+				if res.ObjectMeta.Namespace != k.Request.Namespace {
 					continue
 				}
 				if res.Spec.KafkaTopics != nil {
@@ -195,7 +200,7 @@ func (k *KafkaMaker) operator() error {
 
 		k.config.Topics = append(
 			k.config.Topics,
-			config.TopicConfig{Name: kafkaTopic.TopicName},
+			config.TopicConfig{Name: topicName, RequestedName: kafkaTopic.TopicName},
 		)
 	}
 

@@ -126,6 +126,9 @@
             "type": "object",
             "description": "topic configuration",
             "properties": {
+                "requestedName": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -134,7 +137,8 @@
                 }
             },
             "required": [
-                "name"
+                "name",
+                "requestedName"
             ]
         },
         "DatabaseConfig": {

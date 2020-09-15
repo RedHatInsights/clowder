@@ -239,6 +239,9 @@ func (j *TopicConfig) UnmarshalJSON(b []byte) error {
 	if v, ok := raw["name"]; !ok || v == nil {
 		return fmt.Errorf("field name: required")
 	}
+	if v, ok := raw["requestedName"]; !ok || v == nil {
+		return fmt.Errorf("field requestedName: required")
+	}
 	type Plain TopicConfig
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
@@ -351,6 +354,9 @@ type TopicConfig struct {
 
 	// Name corresponds to the JSON schema field "name".
 	Name string `json:"name"`
+
+	// RequestedName corresponds to the JSON schema field "requestedName".
+	RequestedName string `json:"requestedName"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
