@@ -349,12 +349,13 @@ func TestCreateInsightsApp(t *testing.T) {
 	// Kafka validation
 
 	topic := strimzi.KafkaTopic{}
-	topicName := types.NamespacedName{
+	topicName := "inventory-test-default"
+	topicNamespacedName := types.NamespacedName{
 		Namespace: ibase.Spec.Kafka.Namespace,
-		Name:      "inventory",
+		Name:      topicName,
 	}
 
-	err = fetchWithDefaults(topicName, &topic)
+	err = fetchWithDefaults(topicNamespacedName, &topic)
 
 	if err != nil {
 		t.Error(err)
@@ -395,7 +396,7 @@ func TestCreateInsightsApp(t *testing.T) {
 	}
 
 	for i, kafkaTopic := range iapp.Spec.KafkaTopics {
-		actual, expected := jsonContent.Kafka.Topics[i].Name, kafkaTopic.TopicName
+		actual, expected := jsonContent.Kafka.Topics[i].RequestedName, kafkaTopic.TopicName
 
 		if actual != expected {
 			t.Errorf("Wrong topic name %s; expected %s", actual, expected)
