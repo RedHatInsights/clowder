@@ -27,6 +27,9 @@ type KafkaMaker struct {
 	config config.KafkaConfig
 }
 
+// +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkatopics,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkas,verbs=get;list;watch
+
 //Make function for the KafkaMaker
 func (k *KafkaMaker) Make() (ctrl.Result, error) {
 	k.config = config.KafkaConfig{}
