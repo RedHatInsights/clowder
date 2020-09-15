@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 //InMemoryDBMaker makes the InMemoryDBConfig object
@@ -19,7 +20,7 @@ type InMemoryDBMaker struct {
 }
 
 //Make function for the InMemoryDBMaker
-func (idb *InMemoryDBMaker) Make() error {
+func (idb *InMemoryDBMaker) Make() (ctrl.Result, error) {
 	idb.config = config.InMemoryDB{}
 
 	var f func() error
@@ -32,10 +33,10 @@ func (idb *InMemoryDBMaker) Make() error {
 	}
 
 	if f != nil {
-		return f()
+		return ctrl.Result{}, f()
 	}
 
-	return nil
+	return ctrl.Result{}, nil
 }
 
 //ApplyConfig for the InMemoryDBMaker

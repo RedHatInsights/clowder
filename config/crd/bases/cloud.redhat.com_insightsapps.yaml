@@ -53,6 +53,10 @@ spec:
                   format: int32
                   type: integer
               type: object
+            dependencies:
+              items:
+                type: string
+              type: array
             env:
               items:
                 description: EnvVar represents an environment variable present in

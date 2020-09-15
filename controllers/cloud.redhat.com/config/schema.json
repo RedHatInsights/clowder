@@ -29,6 +29,9 @@
                 },
                 "inMemoryDb": {
                     "$ref": "#/definitions/InMemoryDB"
+                },
+                "dependencies": {
+                    "$ref": "#/definitions/DependenciesConfig"
                 }
             },
             "required": [
@@ -208,6 +211,35 @@
                 }
             },
             "required": [
+                "hostname",
+                "port"
+            ]
+        },
+        "DependenciesConfig": {
+            "id": "dependencies",
+            "type": "array",
+            "description": "Dependent service connection info",
+            "items": {
+                "$ref": "#/definitions/DependencyConfig"
+            }
+        },
+        "DependencyConfig": {
+            "id": "dependency",
+            "type": "object",
+            "description": "Dependent service connection info",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
                 "hostname",
                 "port"
             ]

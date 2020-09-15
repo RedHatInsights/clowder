@@ -8,6 +8,7 @@ import (
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -23,7 +24,7 @@ type DatabaseMaker struct {
 }
 
 //Make function for the DatabaseMaker
-func (db *DatabaseMaker) Make() error {
+func (db *DatabaseMaker) Make() (ctrl.Result, error) {
 	db.config = config.DatabaseConfig{}
 
 	var f func() error
@@ -36,10 +37,10 @@ func (db *DatabaseMaker) Make() error {
 	}
 
 	if f != nil {
-		return f()
+		return ctrl.Result{}, f()
 	}
 
-	return nil
+	return ctrl.Result{}, nil
 
 }
 

@@ -48,7 +48,7 @@ func b64decode(s *core.Secret, key string) (string, error) {
 
 //SubMaker interface defines interface for making sub objects
 type SubMaker interface {
-	Make() error
+	Make() (ctrl.Result, error)
 	ApplyConfig(c *config.AppConfig)
 }
 
@@ -64,6 +64,7 @@ type Maker struct {
 
 func (m *Maker) getSubMakers() []SubMaker {
 	return []SubMaker{
+		&DependencyMaker{Maker: m},
 		&KafkaMaker{Maker: m},
 		&DatabaseMaker{Maker: m},
 		&LoggingMaker{Maker: m},
@@ -73,14 +74,14 @@ func (m *Maker) getSubMakers() []SubMaker {
 }
 
 //Make generates objects and dependencies for operator
-func (m *Maker) Make() error {
+func (m *Maker) Make() (ctrl.Result, error) {
 	configs := []config.ConfigOption{}
 
 	for _, sm := range m.getSubMakers() {
-		err := sm.Make()
+		result, err := sm.Make()
 
-		if err != nil {
-			return err
+		if err != nil || result.Requeue || result.RequeueAfter.Seconds() > 0.0 {
+			return result, err
 		}
 
 		configs = append(configs, sm.ApplyConfig)
@@ -93,18 +94,18 @@ func (m *Maker) Make() error {
 
 	hash, err := m.persistConfig(c)
 	if err != nil {
-		return err
+		return ctrl.Result{}, err
 	}
 
 	if err := m.makeDeployment(hash); err != nil {
-		return err
+		return ctrl.Result{}, err
 	}
 
 	if err := m.makeService(); err != nil {
-		return err
+		return ctrl.Result{}, err
 	}
 
-	return nil
+	return ctrl.Result{}, nil
 }
 
 func (m *Maker) makeService() error {

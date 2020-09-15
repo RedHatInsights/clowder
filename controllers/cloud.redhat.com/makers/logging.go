@@ -20,6 +20,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 //LoggingMaker makes the LoggingConfig obejct
@@ -29,7 +30,7 @@ type LoggingMaker struct {
 }
 
 //Make function for the Logging Maker
-func (l *LoggingMaker) Make() error {
+func (l *LoggingMaker) Make() (ctrl.Result, error) {
 	l.config = config.LoggingConfig{}
 
 	providerFns := []func() error{}
@@ -46,11 +47,11 @@ func (l *LoggingMaker) Make() error {
 		err := fn()
 
 		if err != nil {
-			return err
+			return ctrl.Result{}, err
 		}
 	}
 
-	return nil
+	return ctrl.Result{}, nil
 }
 
 //ApplyConfig for the LoggingMaker

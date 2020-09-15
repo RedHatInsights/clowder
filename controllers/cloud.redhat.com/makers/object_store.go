@@ -20,6 +20,7 @@ import (
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 //ObjectStoreMaker makes the StorageConfig object
@@ -29,7 +30,7 @@ type ObjectStoreMaker struct {
 }
 
 //Make function for the StorageMaker
-func (obs *ObjectStoreMaker) Make() error {
+func (obs *ObjectStoreMaker) Make() (ctrl.Result, error) {
 	obs.config = config.ObjectStoreConfig{}
 
 	var f func() error
@@ -42,10 +43,10 @@ func (obs *ObjectStoreMaker) Make() error {
 	}
 
 	if f != nil {
-		return f()
+		return ctrl.Result{}, f()
 	}
 
-	return nil
+	return ctrl.Result{}, nil
 }
 
 //ApplyConfig for the StorageMaker

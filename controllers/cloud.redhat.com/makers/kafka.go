@@ -14,6 +14,7 @@ import (
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func IntMinMax(listStrInts []string, max bool) (string, error) {
@@ -81,7 +82,7 @@ type KafkaMaker struct {
 }
 
 //Make function for the KafkaMaker
-func (k *KafkaMaker) Make() error {
+func (k *KafkaMaker) Make() (ctrl.Result, error) {
 	k.config = config.KafkaConfig{}
 
 	var f func() error
@@ -94,10 +95,10 @@ func (k *KafkaMaker) Make() error {
 	}
 
 	if f != nil {
-		return f()
+		return ctrl.Result{}, f()
 	}
 
-	return nil
+	return ctrl.Result{}, nil
 }
 
 //ApplyConfig for the KafkaMaker

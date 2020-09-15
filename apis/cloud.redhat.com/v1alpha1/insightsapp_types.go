@@ -51,6 +51,7 @@ type InsightsAppSpec struct {
 	Database       InsightsDatabaseSpec     `json:"database,omitempty"`
 	ObjectStore    []string                 `json:"objectStore,omitempty"`
 	InMemoryDB     bool                     `json:"inMemoryDb,omitempty"`
+	Dependencies   []string                 `json:"dependencies,omitempty"`
 }
 
 // InsightsAppStatus defines the observed state of InsightsApp

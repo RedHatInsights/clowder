@@ -79,12 +79,7 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		Log:     r.Log,
 	}
 
-	err = maker.Make()
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	return ctrl.Result{}, nil
+	return maker.Make()
 }
 
 // SetupWithManager sets up wi
