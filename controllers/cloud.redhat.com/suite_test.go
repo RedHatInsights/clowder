@@ -146,6 +146,24 @@ func createKafkaCluster() error {
 	return nil
 }
 
+func createCloudwatchSecret(cwData *map[string]string) error {
+	encoded := map[string][]byte{}
+
+	for key, value := range *cwData {
+		encoded[key] = []byte(b64.StdEncoding.EncodeToString([]byte(value)))
+	}
+
+	cloudwatch := core.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cloudwatch",
+			Namespace: "default",
+		},
+		Data: encoded,
+	}
+
+	return k8sClient.Create(context.Background(), &cloudwatch)
+}
+
 func TestCreateInsightsApp(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -165,35 +183,14 @@ func TestCreateInsightsApp(t *testing.T) {
 		},
 	}
 
-	cwValues := []string{
-		"key_id",
-		"secret",
-		"default",
-		"us-east-1",
+	cwData := map[string]string{
+		"aws_access_key_id":     "key_id",
+		"aws_secret_access_key": "secret",
+		"log_group_name":        "default",
+		"aws_region":            "us-east-1",
 	}
 
-	cwKeys := []string{
-		"aws_access_key_id",
-		"aws_secret_access_key",
-		"log_group_name",
-		"aws_region",
-	}
-
-	cwData := map[string][]byte{}
-
-	for i, key := range cwKeys {
-		cwData[key] = []byte(b64.StdEncoding.EncodeToString([]byte(cwValues[i])))
-	}
-
-	cloudwatch := core.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "cloudwatch",
-			Namespace: "default",
-		},
-		Data: cwData,
-	}
-
-	err := k8sClient.Create(ctx, &cloudwatch)
+	err := createCloudwatchSecret(&cwData)
 
 	if err != nil {
 		t.Error(err)
@@ -371,16 +368,16 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	cwConfigVals := []string{
-		jsonContent.Logging.Cloudwatch.AccessKeyId,
-		jsonContent.Logging.Cloudwatch.SecretAccessKey,
-		jsonContent.Logging.Cloudwatch.LogGroup,
-		jsonContent.Logging.Cloudwatch.Region,
+	cwConfigVals := map[string]string{
+		"aws_access_key_id":     jsonContent.Logging.Cloudwatch.AccessKeyId,
+		"aws_secret_access_key": jsonContent.Logging.Cloudwatch.SecretAccessKey,
+		"log_group_name":        jsonContent.Logging.Cloudwatch.LogGroup,
+		"aws_region":            jsonContent.Logging.Cloudwatch.Region,
 	}
 
-	for i, val := range cwValues {
-		if val != cwConfigVals[i] {
-			t.Errorf("Wrong cloudwatch config value %s; expected %s", cwConfigVals[i], val)
+	for key, val := range cwData {
+		if val != cwConfigVals[key] {
+			t.Errorf("Wrong cloudwatch config value %s; expected %s", cwConfigVals[key], val)
 			return
 		}
 	}
