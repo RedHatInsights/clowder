@@ -2,8 +2,13 @@ package utils
 
 import (
 	"context"
+	b64 "encoding/base64"
 	"math/rand"
+	"sort"
+	"strconv"
+	"strings"
 
+	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,4 +44,66 @@ func UpdateOrErr(err error) (Updater, error) {
 	}
 
 	return update, nil
+}
+
+// B64Decode decodes the provided secret
+func B64Decode(s *core.Secret, key string) (string, error) {
+	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(decoded), nil
+}
+
+func IntMinMax(listStrInts []string, max bool) (string, error) {
+	var listInts []int
+	for _, strint := range listStrInts {
+		i, err := strconv.Atoi(strint)
+		if err != nil {
+			return "", err
+		}
+		listInts = append(listInts, i)
+	}
+	ol := listInts[0]
+	for i, e := range listInts {
+		if max {
+			if i == 0 || e > ol {
+				ol = e
+			}
+		} else {
+			if i == 0 || e < ol {
+				ol = e
+			}
+		}
+	}
+	return strconv.Itoa(ol), nil
+}
+
+func IntMin(listStrInts []string) (string, error) {
+	return IntMinMax(listStrInts, false)
+}
+
+func IntMax(listStrInts []string) (string, error) {
+	return IntMinMax(listStrInts, true)
+}
+
+func ListMerge(listStrs []string) (string, error) {
+	optionStrings := make(map[string]bool)
+	for _, optionsList := range listStrs {
+		brokenString := strings.Split(optionsList, ",")
+		for _, option := range brokenString {
+			optionStrings[strings.TrimSpace(option)] = true
+		}
+	}
+	keys := make([]string, len(optionStrings))
+
+	i := -1
+	for key := range optionStrings {
+		keys[i] = key
+		i++
+	}
+	sort.Strings(keys)
+	return strings.Join(keys, ","), nil
 }

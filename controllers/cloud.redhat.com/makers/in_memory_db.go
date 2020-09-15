@@ -3,13 +3,10 @@ package makers
 import (
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
-	"fmt"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -49,25 +46,19 @@ func (idb *InMemoryDBMaker) redis() error {
 		return nil
 	}
 
-	redisObjName := fmt.Sprintf("%v-redis", idb.App.Name)
-	redisNamespacedName := types.NamespacedName{
-		Namespace: idb.App.Namespace,
-		Name:      redisObjName,
-	}
+	nn := idb.GetNamespacedName("%v-redis")
 
 	dd := apps.Deployment{}
-	err := idb.Client.Get(idb.Ctx, redisNamespacedName, &dd)
 
-	update, err := utils.UpdateOrErr(err)
-
+	update, err := idb.Get(nn, &dd)
 	if err != nil {
 		return err
 	}
 
 	oneReplica := int32(1)
 
-	dd.SetName(redisNamespacedName.Name)
-	dd.SetNamespace(redisNamespacedName.Namespace)
+	dd.SetName(nn.Name)
+	dd.SetNamespace(nn.Namespace)
 	dd.SetLabels(idb.App.GetLabels())
 	dd.SetOwnerReferences([]metav1.OwnerReference{idb.App.MakeOwnerReference()})
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: idb.App.GetLabels()}
@@ -75,7 +66,7 @@ func (idb *InMemoryDBMaker) redis() error {
 	dd.Spec.Replicas = &oneReplica
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
-		Name:  redisNamespacedName.Name,
+		Name:  nn.Name,
 		Image: "redis:6",
 		Env:   []core.EnvVar{},
 		Ports: []core.ContainerPort{{
@@ -84,14 +75,12 @@ func (idb *InMemoryDBMaker) redis() error {
 		}},
 	}}
 
-	if err = update.Apply(idb.Ctx, idb.Client, &dd); err != nil {
+	if err = update.Apply(&dd); err != nil {
 		return err
 	}
 
 	s := core.Service{}
-	err = idb.Client.Get(idb.Ctx, redisNamespacedName, &s)
-
-	update, err = utils.UpdateOrErr(err)
+	update, err = idb.Get(nn, &s)
 	if err != nil {
 		return err
 	}
@@ -104,14 +93,14 @@ func (idb *InMemoryDBMaker) redis() error {
 
 	idb.App.SetObjectMeta(
 		&s,
-		crd.Name(redisNamespacedName.Name),
-		crd.Namespace(redisNamespacedName.Namespace),
+		crd.Name(nn.Name),
+		crd.Namespace(nn.Namespace),
 	)
 
 	s.Spec.Selector = idb.App.GetLabels()
 	s.Spec.Ports = servicePorts
 
-	if err = update.Apply(idb.Ctx, idb.Client, &s); err != nil {
+	if err = update.Apply(&s); err != nil {
 		return err
 	}
 

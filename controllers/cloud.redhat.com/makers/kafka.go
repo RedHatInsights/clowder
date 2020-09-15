@@ -2,9 +2,6 @@ package makers
 
 import (
 	"fmt"
-	"sort"
-	"strconv"
-	"strings"
 
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
@@ -17,62 +14,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func IntMinMax(listStrInts []string, max bool) (string, error) {
-	var listInts []int
-	for _, strint := range listStrInts {
-		i, err := strconv.Atoi(strint)
-		if err != nil {
-			return "", err
-		}
-		listInts = append(listInts, i)
-	}
-	ol := listInts[0]
-	for i, e := range listInts {
-		if max {
-			if i == 0 || e > ol {
-				ol = e
-			}
-		} else {
-			if i == 0 || e < ol {
-				ol = e
-			}
-		}
-	}
-	return strconv.Itoa(ol), nil
-}
-
-func IntMin(listStrInts []string) (string, error) {
-	return IntMinMax(listStrInts, false)
-}
-
-func IntMax(listStrInts []string) (string, error) {
-	return IntMinMax(listStrInts, true)
-}
-
-func ListMerge(listStrs []string) (string, error) {
-	optionStrings := make(map[string]bool)
-	for _, optionsList := range listStrs {
-		brokenString := strings.Split(optionsList, ",")
-		for _, option := range brokenString {
-			optionStrings[strings.TrimSpace(option)] = true
-		}
-	}
-	keys := make([]string, len(optionStrings))
-
-	i := 0
-	for key := range optionStrings {
-		keys[i] = key
-		i++
-	}
-	sort.Strings(keys)
-	return strings.Join(keys, ","), nil
-}
-
-var ConversionMap = map[string]func([]string) (string, error){
-	"retention.ms":          IntMax,
-	"retention.bytes":       IntMax,
-	"min.compaction.lag.ms": IntMax,
-	"cleanup.policy":        ListMerge,
+var conversionMap = map[string]func([]string) (string, error){
+	"retention.ms":          utils.IntMax,
+	"retention.bytes":       utils.IntMax,
+	"min.compaction.lag.ms": utils.IntMax,
+	"cleanup.policy":        utils.ListMerge,
 }
 
 //KafkaMaker makes the KafkaConfig object
@@ -175,7 +121,7 @@ func (k *KafkaMaker) operator() error {
 					}
 				}
 			}
-			f, ok := ConversionMap[key]
+			f, ok := conversionMap[key]
 			if ok {
 				out, _ := f(valList)
 				newConfig[key] = out

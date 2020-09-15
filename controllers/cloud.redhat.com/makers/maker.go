@@ -31,6 +31,8 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -60,6 +62,41 @@ type Maker struct {
 	Ctx     context.Context
 	Request *ctrl.Request
 	Log     logr.Logger
+}
+
+type makerUpdater struct {
+	maker  *Maker
+	update utils.Updater
+}
+
+// MakerUpdater encapsulates saving an object
+type MakerUpdater interface {
+	Apply(obj runtime.Object) error
+}
+
+func (mu *makerUpdater) Apply(obj runtime.Object) error {
+	return mu.update.Apply(mu.maker.Ctx, mu.maker.Client, obj)
+}
+
+// Get is a convenience wrapper for common upsert queries
+func (m *Maker) Get(nn types.NamespacedName, obj runtime.Object) (MakerUpdater, error) {
+	err := m.Client.Get(m.Ctx, nn, obj)
+	update, err := utils.UpdateOrErr(err)
+	if err != nil {
+		return nil, err
+	}
+	return &makerUpdater{
+		maker:  m,
+		update: update,
+	}, nil
+}
+
+// GetNamespacedName constructs a new namespaced name for the app from the pattern
+func (m *Maker) GetNamespacedName(pattern string) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: m.App.Namespace,
+		Name:      fmt.Sprintf(pattern, m.App.Name),
+	}
 }
 
 func (m *Maker) getSubMakers() []SubMaker {
