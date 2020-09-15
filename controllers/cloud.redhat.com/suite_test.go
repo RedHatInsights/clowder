@@ -244,10 +244,23 @@ func createCRs(name types.NamespacedName) (*crd.InsightsBase, *crd.InsightsApp, 
 	return &ibase, &iapp, err
 }
 
-func TestCreateInsightsApp(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 
+	secretConfig := core.Secret{}
+	jsonContent := config.AppConfig{}
+
+	err := k8sClient.Get(context.Background(), name, &secretConfig)
+
+	if err != nil {
+		return &jsonContent, err
+	}
+
+	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
+
+	return &jsonContent, err
+}
+
+func TestCreateInsightsApp(t *testing.T) {
 	logger.Info("Creating InsightsApp")
 
 	name := types.NamespacedName{
@@ -355,19 +368,7 @@ func TestCreateInsightsApp(t *testing.T) {
 		t.Errorf("Bad topic replica count %d; expected %d", *topic.Spec.Partitions, int32(5))
 	}
 
-	// Secret content validation
-
-	secretConfig := core.Secret{}
-
-	err = k8sClient.Get(ctx, name, &secretConfig)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	jsonContent := config.AppConfig{}
-	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
+	jsonContent, err := fetchConfig(name)
 
 	if err != nil {
 		t.Error(err)
