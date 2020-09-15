@@ -17,6 +17,7 @@ package makers
 import (
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -87,7 +88,7 @@ func (l *LoggingMaker) cloudwatch() error {
 	decoded := make([]string, 4)
 
 	for i := 0; i < 4; i++ {
-		decoded[i], err = b64decode(&secret, cwKeys[i])
+		decoded[i], err = utils.B64Decode(&secret, cwKeys[i])
 
 		if err != nil {
 			return err

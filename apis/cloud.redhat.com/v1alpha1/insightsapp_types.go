@@ -125,7 +125,7 @@ func Namespace(namespace string) omfunc {
 
 func UnsetOwner() omfunc {
 	return func(o metav1.Object) {
-		o.SetOwnerReferences([]metav1.OwnerReference{metav1.OwnerReference{}})
+		o.SetOwnerReferences([]metav1.OwnerReference{{}})
 	}
 }
 
