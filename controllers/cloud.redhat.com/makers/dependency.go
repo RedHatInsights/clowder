@@ -19,7 +19,6 @@ type DependencyMaker struct {
 func (cm *DependencyMaker) Make() (ctrl.Result, error) {
 	cm.config = config.DependenciesConfig{}
 
-	cm.Log.Info("WHOOOO DEPSSsssSS")
 
 	// Return if no deps
 
@@ -83,7 +82,6 @@ func (cm *DependencyMaker) Make() (ctrl.Result, error) {
 
 	if len(missingDeps) > 0 {
 		// TODO: Emit event
-		cm.Log.Info("WHOOOO MISSING DEPS")
 		return ctrl.Result{Requeue: true}, nil
 	}
 

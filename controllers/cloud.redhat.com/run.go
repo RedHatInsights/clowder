@@ -27,7 +27,6 @@ func init() {
 
 // Run inits the manager and controllers and then starts the manager
 func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, signalHandler <-chan struct{}) {
-	setupLog.Info("STARTING RUN")
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
