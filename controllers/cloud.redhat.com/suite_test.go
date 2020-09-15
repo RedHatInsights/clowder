@@ -401,6 +401,11 @@ func TestCreateInsightsApp(t *testing.T) {
 		if actual != expected {
 			t.Errorf("Wrong topic name %s; expected %s", actual, expected)
 		}
+		actual, expected = jsonContent.Kafka.Topics[i].Name, topicName
+
+		if actual != expected {
+			t.Errorf("Wrong topic generated name %s; expected %s", actual, expected)
+		}
 	}
 }
 
