@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/klape/whippoorwill
-  newTag: dba0ba2
+  newTag: f27c7d4

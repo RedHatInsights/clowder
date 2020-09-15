@@ -4,7 +4,6 @@
 resources:
 - bases/cloud.redhat.com_insightsapps.yaml
 - bases/cloud.redhat.com_insightsbases.yaml
-- bases/kafka.strimzi.io_kafkatopics.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
