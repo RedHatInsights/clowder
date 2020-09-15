@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -99,7 +100,26 @@ func TestMain(m *testing.M) {
 
 	stopManager := make(chan struct{})
 	go Run(":8080", false, testEnv.Config, stopManager)
-	time.Sleep(5000 * time.Millisecond)
+
+	for i := 1; i <= 50; i++ {
+		resp, err := http.Get("http://localhost:8080/metrics")
+
+		if err == nil && resp.StatusCode == 200 {
+			logger.Info("Manager ready", zap.Int("duration", 100*i))
+			break
+		}
+
+		if i == 50 {
+			if err != nil {
+				logger.Fatal("Failed to fetch to metrics for manager after 5s", zap.Error(err))
+			}
+
+			logger.Fatal("Failed to get 200 result for metrics", zap.Int("status", resp.StatusCode))
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+
 	retCode := m.Run()
 	logger.Info("Stopping test env...")
 	close(stopManager)
