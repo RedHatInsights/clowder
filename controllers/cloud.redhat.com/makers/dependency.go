@@ -19,7 +19,6 @@ type DependencyMaker struct {
 func (cm *DependencyMaker) Make() (ctrl.Result, error) {
 	cm.config = config.DependenciesConfig{}
 
-
 	// Return if no deps
 
 	deps := cm.App.Spec.Dependencies

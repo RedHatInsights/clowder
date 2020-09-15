@@ -111,6 +111,41 @@ func TestMain(m *testing.M) {
 	os.Exit(retCode)
 }
 
+func createKafkaCluster() error {
+	ctx := context.Background()
+	kport := int32(9092)
+
+	cluster := strimzi.Kafka{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kafka",
+			Namespace: "kafka",
+		},
+		Status: strimzi.KafkaStatus{
+			Listeners: []strimzi.KafkaListener{{
+				Type: "plain",
+				Addresses: []strimzi.Address{{
+					Host: "kafka-boostrap.kafka.svc",
+					Port: &kport,
+				}},
+			}},
+		},
+	}
+
+	err := k8sClient.Create(ctx, &cluster)
+
+	if err != nil {
+		return err
+	}
+
+	err = k8sClient.Status().Update(ctx, &cluster)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func TestCreateInsightsApp(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -165,39 +200,7 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	kport := int32(9092)
-
-	cluster := strimzi.Kafka{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kafka",
-			Namespace: "kafka",
-		},
-		Status: strimzi.KafkaStatus{
-			Listeners: []strimzi.KafkaListener{{
-				Type: "plain",
-				Addresses: []strimzi.Address{{
-					Host: "kafka-boostrap.kafka.svc",
-					Port: &kport,
-				}},
-			}},
-		},
-	}
-
-	err = k8sClient.Create(ctx, &cluster)
-
-	k8sClient.Status().Update(ctx, &cluster)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	kafkaResource := strimzi.Kafka{}
-	clusterName := types.NamespacedName{
-		Namespace: "kafka",
-		Name:      "kafka",
-	}
-	err = k8sClient.Get(ctx, clusterName, &kafkaResource)
+	err = createKafkaCluster()
 
 	if err != nil {
 		t.Error(err)
