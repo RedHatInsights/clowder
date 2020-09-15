@@ -43,6 +43,7 @@ import (
 	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/makers"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -392,6 +393,23 @@ func TestCreateInsightsApp(t *testing.T) {
 		if actual != expected {
 			t.Errorf("Wrong topic name %s; expected %s", actual, expected)
 		}
+	}
+}
+
+func TestConverterFuncs(t *testing.T) {
+	answer, _ := makers.IntMin([]string{"4", "6", "7"})
+	if answer != "4" {
+		t.Errorf("Min function should have returned 4, returned %s", answer)
+	}
+
+	answer, _ = makers.IntMax([]string{"4", "6", "7"})
+	if answer != "7" {
+		t.Errorf("Min function should have returned 7, returned %s", answer)
+	}
+
+	answer, _ = makers.ListMerge([]string{"4,5,6", "6", "7,2"})
+	if answer != "2,4,5,6,7" {
+		t.Errorf("Min function should have returned 2,4,5,6,7 returned %s", answer)
 	}
 }
 
