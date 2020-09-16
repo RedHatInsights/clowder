@@ -107,3 +107,9 @@ func ListMerge(listStrs []string) (string, error) {
 	sort.Strings(keys)
 	return strings.Join(keys, ","), nil
 }
+
+// Int32 returns a pointer to an int32 version of n
+func Int32(n int) *int32 {
+	t := int32(n)
+	return &t
+}
