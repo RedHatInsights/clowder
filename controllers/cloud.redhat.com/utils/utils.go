@@ -99,7 +99,7 @@ func ListMerge(listStrs []string) (string, error) {
 	}
 	keys := make([]string, len(optionStrings))
 
-	i := -1
+	i := 0
 	for key := range optionStrings {
 		keys[i] = key
 		i++
