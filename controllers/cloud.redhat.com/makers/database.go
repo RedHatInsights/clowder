@@ -58,6 +58,18 @@ func (db *DatabaseMaker) local() error {
 		return nil
 	}
 
+	shared := db.App.Spec.Database.Shared
+	if shared != "" {
+		appConfig, err := db.getConfig(shared)
+		if err != nil {
+			return err
+		}
+
+		db.config = *appConfig.Database
+
+		return nil
+	}
+
 	dbObjName := fmt.Sprintf("%v-db", db.App.Name)
 	dbNamespacedName := types.NamespacedName{
 		Namespace: db.App.Namespace,
@@ -99,7 +111,7 @@ func (db *DatabaseMaker) local() error {
 		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: utils.RandString(12)}
 		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: utils.RandString(12)}
 	} else {
-		appConfig, err := db.getConfig()
+		appConfig, err := db.getConfig("")
 		if err != nil {
 			return err
 		}

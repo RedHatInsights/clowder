@@ -49,6 +49,8 @@ spec:
               properties:
                 name:
                   type: string
+                shared:
+                  type: string
                 version:
                   format: int32
                   type: integer

@@ -29,6 +29,7 @@ type InitContainer struct {
 type InsightsDatabaseSpec struct {
 	Version *int32 `json:"version,omitempty"`
 	Name    string `json:"name,omitempty"`
+	Shared  string `json:"shared,omitempty"`
 }
 
 type InsightsAppSpec struct {

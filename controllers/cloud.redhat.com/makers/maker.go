@@ -202,10 +202,19 @@ func (m *Maker) persistConfig(c *config.AppConfig) (string, error) {
 	return hash, update.Apply(m.Ctx, m.Client, &secret)
 }
 
-func (m *Maker) getConfig() (*config.AppConfig, error) {
+func (m *Maker) getConfig(name string) (*config.AppConfig, error) {
+	namespacedName := types.NamespacedName{
+		Namespace: m.Request.Namespace,
+	}
+	if name != "" {
+		namespacedName.Name = name
+	} else {
+		namespacedName.Name = m.Request.Name
+	}
+
 	secret := core.Secret{}
 	appConfig := config.AppConfig{}
-	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &secret)
+	err := m.Client.Get(m.Ctx, namespacedName, &secret)
 
 	if err != nil {
 		return nil, err
