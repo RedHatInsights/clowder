@@ -56,6 +56,33 @@ func (k *KafkaMaker) ApplyConfig(c *config.AppConfig) {
 }
 
 func (k *KafkaMaker) local() error {
+
+	k.config.Topics = []config.TopicConfig{}
+	k.config.Brokers = []config.BrokerConfig{}
+
+	appList := crd.InsightsAppList{}
+	err := k.Client.List(k.Ctx, &appList)
+
+	if err != nil {
+		return err
+	}
+
+	bc := config.BrokerConfig{
+		Hostname: k.Base.Name + "-kafka." + k.Request.Namespace + ".svc",
+	}
+	port := 29092
+	p := int(port)
+	bc.Port = &p
+	k.config.Brokers = append(k.config.Brokers, bc)
+	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
+
+		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Base.Name, k.Request.Namespace)
+
+		k.config.Topics = append(
+			k.config.Topics,
+			config.TopicConfig{Name: topicName, RequestedName: kafkaTopic.TopicName},
+		)
+	}
 	return nil
 }
 
