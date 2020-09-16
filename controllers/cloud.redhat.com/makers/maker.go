@@ -72,10 +72,15 @@ type makerUpdater struct {
 // MakerUpdater encapsulates saving an object
 type MakerUpdater interface {
 	Apply(obj runtime.Object) error
+	Updater() utils.Updater
 }
 
 func (mu *makerUpdater) Apply(obj runtime.Object) error {
 	return mu.update.Apply(mu.maker.Ctx, mu.maker.Client, obj)
+}
+
+func (mu *makerUpdater) Updater() utils.Updater {
+	return mu.update
 }
 
 // Get is a convenience wrapper for common upsert queries

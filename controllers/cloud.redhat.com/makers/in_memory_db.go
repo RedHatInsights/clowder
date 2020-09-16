@@ -45,10 +45,11 @@ func (idb *InMemoryDBMaker) ApplyConfig(c *config.AppConfig) {
 func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp) {
 	oneReplica := int32(1)
 
-	dd.SetName(nn.Name)
-	dd.SetNamespace(nn.Namespace)
-	dd.SetLabels(pp.GetLabels())
-	dd.SetOwnerReferences([]metav1.OwnerReference{pp.MakeOwnerReference()})
+	pp.SetObjectMeta(
+		dd,
+		crd.Name(nn.Name),
+		crd.Namespace(nn.Namespace),
+	)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: pp.GetLabels()}
 	dd.Spec.Template.ObjectMeta.Labels = pp.GetLabels()
 	dd.Spec.Replicas = &oneReplica

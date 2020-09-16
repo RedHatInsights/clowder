@@ -1,13 +1,10 @@
 package makers
 
 import (
-	"fmt"
-
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	apps "k8s.io/api/apps/v1"
@@ -53,175 +50,152 @@ func (db *DatabaseMaker) appInterface() error {
 	return nil
 }
 
-func (db *DatabaseMaker) local() error {
-	if db.App.Spec.Database == (crd.InsightsDatabaseSpec{}) {
-		return nil
-	}
-
-	dbObjName := fmt.Sprintf("%v-db", db.App.Name)
-	dbNamespacedName := types.NamespacedName{
-		Namespace: db.App.Namespace,
-		Name:      dbObjName,
-	}
-
-	dd := apps.Deployment{}
-	err := db.Client.Get(db.Ctx, dbNamespacedName, &dd)
-
-	update, err := utils.UpdateOrErr(err)
-
-	if err != nil {
-		return err
-	}
-	labels := db.App.GetLabels()
-	labels["service"] = "db"
-	dd.SetName(dbNamespacedName.Name)
-	dd.SetNamespace(dbNamespacedName.Namespace)
-	dd.SetLabels(labels)
-	dd.SetOwnerReferences([]metav1.OwnerReference{db.App.MakeOwnerReference()})
-
-	dd.Spec.Replicas = db.App.Spec.MinReplicas
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp, cfg *config.DatabaseConfig, image string) {
+	pp.SetObjectMeta(dd, crd.Name(nn.Name))
+	dd.Spec.Replicas = pp.Spec.MinReplicas
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: pp.GetLabels()}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: dbNamespacedName.Name,
+		Name: nn.Name,
 		VolumeSource: core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
-				ClaimName: dbNamespacedName.Name,
+				ClaimName: nn.Name,
 			},
 		}},
 	}
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.ObjectMeta.Labels = pp.GetLabels()
 
-	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
+	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
+		Name: "quay-cloudservices-pull",
+	}}
 
-	var dbUser, dbPass, pgPass core.EnvVar
-	if !update {
-		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: utils.RandString(12)}
-		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: utils.RandString(12)}
-		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: utils.RandString(12)}
-	} else {
-		appConfig, err := db.getConfig()
-		if err != nil {
-			return err
-		}
-		dbUser = core.EnvVar{Name: "POSTGRESQL_USER", Value: appConfig.Database.Username}
-		dbPass = core.EnvVar{Name: "POSTGRESQL_PASSWORD", Value: appConfig.Database.Password}
-		pgPass = core.EnvVar{Name: "PGPASSWORD", Value: appConfig.Database.PgPass}
+	envVars := []core.EnvVar{
+		{Name: "POSGRESQL_USER", Value: cfg.Username},
+		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
+		{Name: "PGPASSWORD", Value: cfg.PgPass},
+		{Name: "POSTGRESQL_DATABASE", Value: pp.Spec.Database.Name},
 	}
+	ports := []core.ContainerPort{{
+		Name:          "database",
+		ContainerPort: 5432,
+	}}
 
-	dbName := core.EnvVar{Name: "POSTGRESQL_DATABASE", Value: db.App.Spec.Database.Name}
-	envVars := []core.EnvVar{dbUser, dbPass, dbName, pgPass}
-	ports := []core.ContainerPort{
-		{
-			Name:          "database",
-			ContainerPort: 5432,
+	probeHandler := core.Handler{
+		Exec: &core.ExecAction{
+			Command: []string{
+				"psql",
+				"-U",
+				"$(POSTGRESQL_USER)",
+				"-d",
+				"$(POSTGRESQL_DATABASE)",
+				"-c",
+				"SELECT 1",
+			},
 		},
 	}
 
 	livenessProbe := core.Probe{
-		Handler: core.Handler{
-			Exec: &core.ExecAction{
-				Command: []string{
-					"psql",
-					"-U",
-					"$(POSTGRESQL_USER)",
-					"-d",
-					"$(POSTGRESQL_DATABASE)",
-					"-c",
-					"SELECT 1",
-				},
-			},
-		},
+		Handler:             probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
-		Handler: core.Handler{
-			Exec: &core.ExecAction{
-				Command: []string{
-					"psql",
-					"-U",
-					"$(POSTGRESQL_USER)",
-					"-d",
-					"$(POSTGRESQL_DATABASE)",
-					"-c",
-					"SELECT 1",
-				},
-			},
-		},
+		Handler:             probeHandler,
 		InitialDelaySeconds: 45,
 		TimeoutSeconds:      2,
 	}
 
 	c := core.Container{
-		Name:           dbNamespacedName.Name,
-		Image:          db.Base.Spec.Database.Image,
+		Name:           nn.Name,
+		Image:          image,
 		Env:            envVars,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
 		Ports:          ports,
 		VolumeMounts: []core.VolumeMount{{
-			Name:      dbNamespacedName.Name,
+			Name:      nn.Name,
 			MountPath: "/var/lib/pgsql/data",
 		}},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
+}
 
-	if err = update.Apply(db.Ctx, db.Client, &dd); err != nil {
-		return err
-	}
+func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.InsightsApp) {
+	servicePorts := []core.ServicePort{{
+		Name:     "database",
+		Port:     5432,
+		Protocol: "TCP",
+	}}
 
-	s := core.Service{}
-	err = db.Client.Get(db.Ctx, dbNamespacedName, &s)
-
-	update, err = utils.UpdateOrErr(err)
-	if err != nil {
-		return err
-	}
-
-	servicePorts := []core.ServicePort{}
-	databasePort := core.ServicePort{Name: "database", Port: 5432, Protocol: "TCP"}
-	servicePorts = append(servicePorts, databasePort)
-
-	db.App.SetObjectMeta(&s, crd.Name(dbNamespacedName.Name), crd.Namespace(dbNamespacedName.Namespace))
-	s.Spec.Selector = labels
+	pp.SetObjectMeta(s, crd.Name(nn.Name), crd.Namespace(nn.Namespace))
+	s.Spec.Selector = pp.GetLabels()
 	s.Spec.Ports = servicePorts
+}
 
-	if err = update.Apply(db.Ctx, db.Client, &s); err != nil {
-		return err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-
-	err = db.Client.Get(db.Ctx, dbNamespacedName, &pvc)
-
-	update, err = utils.UpdateOrErr(err)
-	if err != nil {
-		return err
-	}
-
-	pvc.SetName(dbNamespacedName.Name)
-	pvc.SetNamespace(dbNamespacedName.Namespace)
-	pvc.SetLabels(labels)
-	pvc.SetOwnerReferences([]metav1.OwnerReference{db.App.MakeOwnerReference()})
+func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.InsightsApp) {
+	pp.SetObjectMeta(pvc, crd.Name(nn.Name))
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
 		Requests: core.ResourceList{
 			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
 		},
 	}
+}
 
-	if err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
+func (db *DatabaseMaker) local() error {
+	if db.App.Spec.Database == (crd.InsightsDatabaseSpec{}) {
+		return nil
+	}
+
+	nn := db.App.GetNamespacedName("%v-db")
+
+	dd := apps.Deployment{}
+	update, err := db.Get(nn, &dd)
+	if err != nil {
 		return err
 	}
 
-	db.config.Name = db.App.Spec.Database.Name
-	db.config.Username = dbUser.Value
-	db.config.Password = dbPass.Value
-	db.config.Hostname = dbObjName
-	db.config.Port = 5432
-	db.config.PgPass = pgPass.Value
+	db.config = *config.NewDatabaseConfig(db.App.Spec.Database.Name, nn.Name)
+
+	if update.Updater() {
+		cfg, err := db.getConfig()
+		if err != nil {
+			return err
+		}
+		db.config.Username = cfg.Database.Username
+		db.config.Password = cfg.Database.Password
+		db.config.PgPass = cfg.Database.PgPass
+	}
+
+	makeLocalDB(&dd, nn, db.App, &db.config, db.Base.Spec.Database.Image)
+
+	if err = update.Apply(&dd); err != nil {
+		return err
+	}
+
+	s := core.Service{}
+	update, err = db.Get(nn, &s)
+	if err != nil {
+		return err
+	}
+
+	makeLocalService(&s, nn, db.App)
+
+	if err = update.Apply(&s); err != nil {
+		return err
+	}
+
+	pvc := core.PersistentVolumeClaim{}
+	update, err = db.Get(nn, &pvc)
+	if err != nil {
+		return err
+	}
+
+	makeLocalPVC(&pvc, nn, db.App)
+
+	if err = update.Apply(&pvc); err != nil {
+		return err
+	}
 
 	return nil
 }

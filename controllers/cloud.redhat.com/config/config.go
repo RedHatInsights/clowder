@@ -1,5 +1,7 @@
 package config
 
+import "cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
+
 type ConfigOption func(*AppConfig)
 
 func ObjectStore(store *ObjectStoreConfig) ConfigOption {
@@ -45,4 +47,16 @@ func New(opts ...ConfigOption) *AppConfig {
 	}
 
 	return c
+}
+
+// NewDatabaseConfig creates a new config for a database
+func NewDatabaseConfig(name string, hostname string) *DatabaseConfig {
+	return &DatabaseConfig{
+		Name:     name,
+		Hostname: hostname,
+		Username: utils.RandString(12),
+		Password: utils.RandString(12),
+		PgPass:   utils.RandString(12),
+		Port:     5432,
+	}
 }
