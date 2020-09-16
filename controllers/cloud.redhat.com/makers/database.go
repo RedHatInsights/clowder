@@ -72,14 +72,15 @@ func (db *DatabaseMaker) local() error {
 	if err != nil {
 		return err
 	}
-
+	labels := db.App.GetLabels()
+	labels["service"] = "db"
 	dd.SetName(dbNamespacedName.Name)
 	dd.SetNamespace(dbNamespacedName.Namespace)
-	dd.SetLabels(db.App.GetLabels())
+	dd.SetLabels(labels)
 	dd.SetOwnerReferences([]metav1.OwnerReference{db.App.MakeOwnerReference()})
 
 	dd.Spec.Replicas = db.App.Spec.MinReplicas
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: db.App.GetLabels()}
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: dbNamespacedName.Name,
 		VolumeSource: core.VolumeSource{
@@ -88,7 +89,7 @@ func (db *DatabaseMaker) local() error {
 			},
 		}},
 	}
-	dd.Spec.Template.ObjectMeta.Labels = db.App.GetLabels()
+	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
@@ -184,7 +185,7 @@ func (db *DatabaseMaker) local() error {
 	servicePorts = append(servicePorts, databasePort)
 
 	db.App.SetObjectMeta(&s, crd.Name(dbNamespacedName.Name), crd.Namespace(dbNamespacedName.Namespace))
-	s.Spec.Selector = db.App.GetLabels()
+	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
 	if err = update.Apply(db.Ctx, db.Client, &s); err != nil {
@@ -202,7 +203,7 @@ func (db *DatabaseMaker) local() error {
 
 	pvc.SetName(dbNamespacedName.Name)
 	pvc.SetNamespace(dbNamespacedName.Namespace)
-	pvc.SetLabels(db.App.GetLabels())
+	pvc.SetLabels(labels)
 	pvc.SetOwnerReferences([]metav1.OwnerReference{db.App.MakeOwnerReference()})
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
