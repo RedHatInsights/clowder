@@ -60,15 +60,18 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 		return err
 	}
 
+	labels := base.GetLabels()
+	labels["base-app"] = minioNamespacedName.Name
+
 	dd.SetName(minioNamespacedName.Name)
 	dd.SetNamespace(minioNamespacedName.Namespace)
-	dd.SetLabels(base.GetLabels())
+	dd.SetLabels(labels)
 	dd.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
 
 	replicas := int32(1)
 
 	dd.Spec.Replicas = &replicas
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: base.GetLabels()}
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: minioNamespacedName.Name,
 		VolumeSource: core.VolumeSource{
@@ -77,7 +80,7 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 			},
 		}},
 	}
-	dd.Spec.Template.ObjectMeta.Labels = base.GetLabels()
+	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
@@ -131,7 +134,7 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
-	dd.Spec.Template.SetLabels(base.GetLabels())
+	dd.Spec.Template.SetLabels(labels)
 
 	if err = update.Apply(ctx, r.Client, &dd); err != nil {
 		return err
@@ -151,10 +154,10 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 
 	s.SetName(minioNamespacedName.Name)
 	s.SetNamespace(minioNamespacedName.Namespace)
-	s.SetLabels(base.GetLabels())
+	s.SetLabels(labels)
 	s.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
 
-	s.Spec.Selector = base.GetLabels()
+	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
 	if err = update.Apply(ctx, r.Client, &s); err != nil {
@@ -172,7 +175,360 @@ func (r *InsightsBaseReconciler) makeMinio(ctx context.Context, req ctrl.Request
 
 	pvc.SetName(minioNamespacedName.Name)
 	pvc.SetNamespace(minioNamespacedName.Namespace)
-	pvc.SetLabels(base.GetLabels())
+	pvc.SetLabels(labels)
+	pvc.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
+	pvc.Spec.Resources = core.ResourceRequirements{
+		Requests: core.ResourceList{
+			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
+		},
+	}
+
+	if err = update.Apply(ctx, r.Client, &pvc); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *InsightsBaseReconciler) makeKafka(ctx context.Context, req ctrl.Request, base *crd.InsightsBase) error {
+	kafkaObjName := fmt.Sprintf("%v-kafka", req.Name)
+	kafkaNamespacedName := types.NamespacedName{
+		Namespace: req.Namespace,
+		Name:      kafkaObjName,
+	}
+
+	dd := apps.Deployment{}
+	err := r.Client.Get(ctx, kafkaNamespacedName, &dd)
+	update, err := utils.UpdateOrErr(err)
+
+	if err != nil {
+		return err
+	}
+
+	labels := base.GetLabels()
+	labels["base-app"] = kafkaNamespacedName.Name
+
+	dd.SetName(kafkaNamespacedName.Name)
+	dd.SetNamespace(kafkaNamespacedName.Namespace)
+	dd.SetLabels(labels)
+	dd.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+
+	replicas := int32(1)
+
+	dd.Spec.Replicas = &replicas
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	dd.Spec.Template.Spec.Volumes = []core.Volume{{
+		Name: kafkaNamespacedName.Name,
+		VolumeSource: core.VolumeSource{
+			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
+				ClaimName: kafkaNamespacedName.Name,
+			},
+		}},
+		{
+			Name: "mq-kafka-1",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "mq-kafka-2",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+	}
+	dd.Spec.Template.ObjectMeta.Labels = labels
+
+	envVars := []core.EnvVar{
+		{
+			Name: "KAFKA_ADVERTISED_LISTENERS", Value: "PLAINTEXT://" + kafkaNamespacedName.Name + ":29092, LOCAL://localhost:9092",
+		},
+		{
+			Name:  "KAFKA_BROKER_ID",
+			Value: "1",
+		},
+		{
+			Name:  "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR",
+			Value: "1",
+		},
+		{
+			Name:  "KAFKA_ZOOKEEPER_CONNECT",
+			Value: base.Name + "-zookeeper:32181",
+		},
+		{
+			Name:  "LOG_DIR",
+			Value: "/var/lib/mq-kafka",
+		},
+		{
+			Name:  "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+			Value: "PLAINTEXT:PLAINTEXT, LOCAL:PLAINTEXT",
+		},
+		{
+			Name:  "KAFKA_INTER_BROKER_LISTENER_NAME",
+			Value: "LOCAL",
+		},
+	}
+	ports := []core.ContainerPort{
+		{
+			Name:          "kafka",
+			ContainerPort: 9092,
+		},
+	}
+
+	// TODO Readiness and Liveness probes
+
+	c := core.Container{
+		Name:  kafkaNamespacedName.Name,
+		Image: "confluentinc/cp-kafka:latest",
+		Env:   envVars,
+		Ports: ports,
+		VolumeMounts: []core.VolumeMount{
+			{
+				Name:      kafkaNamespacedName.Name,
+				MountPath: "/var/lib/kafka",
+			},
+			{
+				Name:      "mq-kafka-1",
+				MountPath: "/etc/kafka/secrets",
+			},
+			{
+				Name:      "mq-kafka-2",
+				MountPath: "/var/lib/kafka/data",
+			},
+		},
+	}
+
+	dd.Spec.Template.Spec.Containers = []core.Container{c}
+	dd.Spec.Template.SetLabels(labels)
+
+	if err = update.Apply(ctx, r.Client, &dd); err != nil {
+		return err
+	}
+
+	s := core.Service{}
+	err = r.Client.Get(ctx, kafkaNamespacedName, &s)
+
+	update, err = utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	servicePorts := []core.ServicePort{}
+	kafkaPort := core.ServicePort{Name: "kafka", Port: 29092, Protocol: "TCP"}
+	servicePorts = append(servicePorts, kafkaPort)
+
+	s.SetName(kafkaNamespacedName.Name)
+	s.SetNamespace(kafkaNamespacedName.Namespace)
+	s.SetLabels(labels)
+	s.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+
+	s.Spec.Selector = labels
+	s.Spec.Ports = servicePorts
+
+	if err = update.Apply(ctx, r.Client, &s); err != nil {
+		return err
+	}
+
+	pvc := core.PersistentVolumeClaim{}
+
+	err = r.Client.Get(ctx, kafkaNamespacedName, &pvc)
+
+	update, err = utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	pvc.SetName(kafkaNamespacedName.Name)
+	pvc.SetNamespace(kafkaNamespacedName.Namespace)
+	pvc.SetLabels(labels)
+	pvc.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
+	pvc.Spec.Resources = core.ResourceRequirements{
+		Requests: core.ResourceList{
+			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
+		},
+	}
+
+	if err = update.Apply(ctx, r.Client, &pvc); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *InsightsBaseReconciler) makeZookeeper(ctx context.Context, req ctrl.Request, base *crd.InsightsBase) error {
+	zookeeperObjName := fmt.Sprintf("%v-zookeeper", req.Name)
+	zookeeperNamespacedName := types.NamespacedName{
+		Namespace: req.Namespace,
+		Name:      zookeeperObjName,
+	}
+
+	dd := apps.Deployment{}
+	err := r.Client.Get(ctx, zookeeperNamespacedName, &dd)
+	update, err := utils.UpdateOrErr(err)
+
+	if err != nil {
+		return err
+	}
+
+	labels := base.GetLabels()
+	labels["base-app"] = zookeeperNamespacedName.Name
+
+	dd.SetName(zookeeperNamespacedName.Name)
+	dd.SetNamespace(zookeeperNamespacedName.Namespace)
+	dd.SetLabels(labels)
+	dd.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+
+	replicas := int32(1)
+
+	dd.Spec.Replicas = &replicas
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	dd.Spec.Template.Spec.Volumes = []core.Volume{{
+		Name: zookeeperNamespacedName.Name,
+		VolumeSource: core.VolumeSource{
+			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
+				ClaimName: zookeeperNamespacedName.Name,
+			},
+		}},
+		{
+			Name: "mq-zookeeper-1",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "mq-zookeeper-2",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "mq-zookeeper-3",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+	}
+	dd.Spec.Template.ObjectMeta.Labels = labels
+
+	envVars := []core.EnvVar{
+		{
+			Name:  "ZOOKEEPER_INIT_LIMIT",
+			Value: "10",
+		},
+		{
+			Name:  "ZOOKEEPER_CLIENT_PORT",
+			Value: "32181",
+		},
+		{
+			Name:  "ZOOKEEPER_SERVER_ID",
+			Value: "1",
+		},
+		{
+			Name:  "ZOOKEEPER_SERVERS",
+			Value: zookeeperNamespacedName.Name + ":32181",
+		},
+		{
+			Name:  "ZOOKEEPER_TICK_TIME",
+			Value: "2000",
+		},
+		{
+			Name:  "ZOOKEEPER_SYNC_LIMIT",
+			Value: "10",
+		},
+	}
+	ports := []core.ContainerPort{
+		{
+			Name:          "zookeeper",
+			ContainerPort: 2181,
+		},
+		{
+			Name:          "zookeeper-1",
+			ContainerPort: 2888,
+		},
+		{
+			Name:          "zookeeper-2",
+			ContainerPort: 3888,
+		},
+	}
+
+	// TODO Readiness and Liveness probes
+
+	c := core.Container{
+		Name:  zookeeperNamespacedName.Name,
+		Image: "confluentinc/cp-zookeeper:5.3.2",
+		Env:   envVars,
+		Ports: ports,
+		VolumeMounts: []core.VolumeMount{
+			{
+				Name:      zookeeperNamespacedName.Name,
+				MountPath: "/var/lib/zookeeper",
+			},
+			{
+				Name:      "mq-zookeeper-1",
+				MountPath: "/etc/zookeeper/secrets",
+			},
+			{
+				Name:      "mq-zookeeper-2",
+				MountPath: "/var/lib/zookeeper/data",
+			},
+			{
+				Name:      "mq-zookeeper-3",
+				MountPath: "/var/lib/zookeeper/log",
+			},
+		},
+	}
+
+	dd.Spec.Template.Spec.Containers = []core.Container{c}
+	dd.Spec.Template.SetLabels(labels)
+
+	if err = update.Apply(ctx, r.Client, &dd); err != nil {
+		return err
+	}
+
+	s := core.Service{}
+	err = r.Client.Get(ctx, zookeeperNamespacedName, &s)
+
+	update, err = utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	servicePorts := []core.ServicePort{
+		{
+			Name: "zookeeper1", Port: 32181, Protocol: "TCP",
+		},
+		{
+			Name: "zookeeper2", Port: 2888, Protocol: "TCP",
+		},
+		{
+			Name: "zookeeper3", Port: 3888, Protocol: "TCP",
+		},
+	}
+
+	s.SetName(zookeeperNamespacedName.Name)
+	s.SetNamespace(zookeeperNamespacedName.Namespace)
+	s.SetLabels(labels)
+	s.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+
+	s.Spec.Selector = labels
+	s.Spec.Ports = servicePorts
+
+	if err = update.Apply(ctx, r.Client, &s); err != nil {
+		return err
+	}
+
+	pvc := core.PersistentVolumeClaim{}
+
+	err = r.Client.Get(ctx, zookeeperNamespacedName, &pvc)
+
+	update, err = utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	pvc.SetName(zookeeperNamespacedName.Name)
+	pvc.SetNamespace(zookeeperNamespacedName.Namespace)
+	pvc.SetLabels(labels)
 	pvc.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
@@ -210,6 +566,21 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 			return ctrl.Result{}, err
 		}
 	}
+
+	if base.Spec.Kafka.Provider == "local" {
+		err = r.makeZookeeper(ctx, req, &base)
+
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.makeKafka(ctx, req, &base)
+
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 
