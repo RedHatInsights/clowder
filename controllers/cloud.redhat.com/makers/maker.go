@@ -91,14 +91,6 @@ func (m *Maker) Get(nn types.NamespacedName, obj runtime.Object) (MakerUpdater, 
 	}, nil
 }
 
-// GetNamespacedName constructs a new namespaced name for the app from the pattern
-func (m *Maker) GetNamespacedName(pattern string) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: m.App.Namespace,
-		Name:      fmt.Sprintf(pattern, m.App.Name),
-	}
-}
-
 func (m *Maker) getSubMakers() []SubMaker {
 	return []SubMaker{
 		&DependencyMaker{Maker: m},
