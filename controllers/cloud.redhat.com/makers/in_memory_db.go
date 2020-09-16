@@ -6,6 +6,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -41,6 +42,28 @@ func (idb *InMemoryDBMaker) ApplyConfig(c *config.AppConfig) {
 	c.InMemoryDb = &idb.config
 }
 
+func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp) {
+	oneReplica := int32(1)
+
+	dd.SetName(nn.Name)
+	dd.SetNamespace(nn.Namespace)
+	dd.SetLabels(pp.GetLabels())
+	dd.SetOwnerReferences([]metav1.OwnerReference{pp.MakeOwnerReference()})
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: pp.GetLabels()}
+	dd.Spec.Template.ObjectMeta.Labels = pp.GetLabels()
+	dd.Spec.Replicas = &oneReplica
+
+	dd.Spec.Template.Spec.Containers = []core.Container{{
+		Name:  nn.Name,
+		Image: "redis:6",
+		Env:   []core.EnvVar{},
+		Ports: []core.ContainerPort{{
+			Name:          "redis",
+			ContainerPort: 6379,
+		}},
+	}}
+}
+
 func (idb *InMemoryDBMaker) redis() error {
 	if !idb.App.Spec.InMemoryDB {
 		return nil
@@ -55,25 +78,7 @@ func (idb *InMemoryDBMaker) redis() error {
 		return err
 	}
 
-	oneReplica := int32(1)
-
-	dd.SetName(nn.Name)
-	dd.SetNamespace(nn.Namespace)
-	dd.SetLabels(idb.App.GetLabels())
-	dd.SetOwnerReferences([]metav1.OwnerReference{idb.App.MakeOwnerReference()})
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: idb.App.GetLabels()}
-	dd.Spec.Template.ObjectMeta.Labels = idb.App.GetLabels()
-	dd.Spec.Replicas = &oneReplica
-
-	dd.Spec.Template.Spec.Containers = []core.Container{{
-		Name:  nn.Name,
-		Image: "redis:6",
-		Env:   []core.EnvVar{},
-		Ports: []core.ContainerPort{{
-			Name:          "redis",
-			ContainerPort: 6379,
-		}},
-	}}
+	makeRedisDeployment(&dd, nn, idb.App)
 
 	if err = update.Apply(&dd); err != nil {
 		return err
