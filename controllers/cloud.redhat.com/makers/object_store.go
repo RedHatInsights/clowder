@@ -104,6 +104,7 @@ func (obs *ObjectStoreMaker) minio() error {
 	return nil
 }
 
+// MakeMinio creates the actual minio service to be used by applications, this does not create buckets
 func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base *crd.InsightsBase) error {
 	minioObjName := fmt.Sprintf("%v-minio", req.Name)
 	minioNamespacedName := types.NamespacedName{
@@ -141,39 +142,32 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	pullSecretRef := core.LocalObjectReference{Name: "quay-cloudservices-pull"}
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{pullSecretRef}
+	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
+		Name: "quay-cloudservices-pull",
+	}}
 
-	var accessKey, secretKey core.EnvVar
-	if !update {
-		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: utils.RandString(12)}
-		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: utils.RandString(12)}
-		annotations := base.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
+	annotations := base.GetAnnotations()
+	if annotations == nil {
+		annotations = map[string]string{
+			"accessKey": utils.RandString(12),
+			"secretKey": utils.RandString(12),
+			"endpoint":  fmt.Sprintf("%v.%v.svc:9000", minioObjName, req.Namespace),
 		}
-		annotations["accessKey"] = accessKey.Value
-		annotations["secretKey"] = secretKey.Value
-		annotations["endpoint"] = fmt.Sprintf("%v.%v.svc:9000", minioObjName, req.Namespace)
 		base.SetAnnotations(annotations)
 		if err = client.Update(ctx, base); err != nil {
 			return err
 		}
-	} else {
-		appConfig := base.GetAnnotations()
-		if err != nil {
-			return err
-		}
-		accessKey = core.EnvVar{Name: "MINIO_ACCESS_KEY", Value: appConfig["accessKey"]}
-		secretKey = core.EnvVar{Name: "MINIO_SECRET_KEY", Value: appConfig["secretKey"]}
 	}
-	envVars := []core.EnvVar{accessKey, secretKey}
-	ports := []core.ContainerPort{
-		{
-			Name:          "minio",
-			ContainerPort: 9000,
-		},
+
+	envVars := []core.EnvVar{
+		{Name: "MINIO_ACCESS_KEY", Value: annotations["accessKey"]},
+		{Name: "MINIO_SECRET_KEY", Value: annotations["secretKey"]},
 	}
+
+	ports := []core.ContainerPort{{
+		Name:          "minio",
+		ContainerPort: 9000,
+	}}
 
 	// TODO Readiness and Liveness probes
 
@@ -207,9 +201,11 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		return err
 	}
 
-	servicePorts := []core.ServicePort{}
-	minioPort := core.ServicePort{Name: "minio", Port: 9000, Protocol: "TCP"}
-	servicePorts = append(servicePorts, minioPort)
+	servicePorts := []core.ServicePort{{
+		Name:     "minio",
+		Port:     9000,
+		Protocol: "TCP",
+	}}
 
 	s.SetName(minioNamespacedName.Name)
 	s.SetNamespace(minioNamespacedName.Namespace)
