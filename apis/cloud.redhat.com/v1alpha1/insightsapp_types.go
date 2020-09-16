@@ -17,9 +17,12 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
 	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type InitContainer struct {
@@ -87,6 +90,14 @@ func init() {
 
 func (i *InsightsApp) GetLabels() map[string]string {
 	return map[string]string{"app": i.ObjectMeta.Name}
+}
+
+// GetNamespacedName contructs a new namespaced name for an object from the pattern
+func (i *InsightsApp) GetNamespacedName(pattern string) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: i.Namespace,
+		Name:      fmt.Sprintf(pattern, i.Name),
+	}
 }
 
 func (i *InsightsApp) MakeOwnerReference() metav1.OwnerReference {

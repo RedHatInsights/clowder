@@ -64,12 +64,29 @@ func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.I
 	}}
 }
 
+func makeRedisService(s *core.Service, nn types.NamespacedName, pp *crd.InsightsApp) {
+	servicePorts := []core.ServicePort{{
+		Name:     "database",
+		Port:     5432,
+		Protocol: "TCP",
+	}}
+
+	pp.SetObjectMeta(
+		s,
+		crd.Name(nn.Name),
+		crd.Namespace(nn.Namespace),
+	)
+
+	s.Spec.Selector = pp.GetLabels()
+	s.Spec.Ports = servicePorts
+}
+
 func (idb *InMemoryDBMaker) redis() error {
 	if !idb.App.Spec.InMemoryDB {
 		return nil
 	}
 
-	nn := idb.GetNamespacedName("%v-redis")
+	nn := idb.App.GetNamespacedName("%v-redis")
 
 	dd := apps.Deployment{}
 
@@ -90,20 +107,7 @@ func (idb *InMemoryDBMaker) redis() error {
 		return err
 	}
 
-	servicePorts := []core.ServicePort{{
-		Name:     "database",
-		Port:     5432,
-		Protocol: "TCP",
-	}}
-
-	idb.App.SetObjectMeta(
-		&s,
-		crd.Name(nn.Name),
-		crd.Namespace(nn.Namespace),
-	)
-
-	s.Spec.Selector = idb.App.GetLabels()
-	s.Spec.Ports = servicePorts
+	makeRedisService(&s, nn, idb.App)
 
 	if err = update.Apply(&s); err != nil {
 		return err
