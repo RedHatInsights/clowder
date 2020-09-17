@@ -25,8 +25,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/makers"
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 )
 
 // InsightsBaseReconciler reconciles a InsightsBase object

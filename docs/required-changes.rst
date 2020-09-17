@@ -2,7 +2,7 @@ Required Changes for Apps
 =========================
 
 Deployment and configuration on an app on the Platform becomes much simpler
-after migrating to Whippoorwill because the operator removes lots of operational
+after migrating to clowder because the operator removes lots of operational
 decisions from the app, e.g. logging and kafka topic configuration.  This
 simplicity comes at a price, of course:  teams must ensure conformity to the
 conventions enforced by the operator before their app can be managed by the

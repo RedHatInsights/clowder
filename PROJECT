@@ -1,7 +1,7 @@
 domain: cloud.redhat.com
 layout: go.kubebuilder.io/v2
-projectName: whippoorwill
-repo: cloud.redhat.com/whippoorwill/v2
+projectName: clowder
+repo: cloud.redhat.com/clowder/v2
 resources:
 - group: cloud.redhat.com
   kind: InsightsApp

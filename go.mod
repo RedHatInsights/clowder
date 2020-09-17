@@ -1,4 +1,4 @@
-module cloud.redhat.com/whippoorwill/v2
+module cloud.redhat.com/clowder/v2
 
 go 1.13
 

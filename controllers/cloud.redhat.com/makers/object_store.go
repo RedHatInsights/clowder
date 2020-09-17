@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	apps "k8s.io/api/apps/v1"
