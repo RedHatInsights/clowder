@@ -69,14 +69,21 @@ func (obs *ObjectStoreMaker) appInterface() error {
 	return nil
 }
 
+func configFromBase(base *crd.InsightsBase) *config.ObjectStoreConfig {
+	ann := base.GetAnnotations()
+	return &config.ObjectStoreConfig{
+		AccessKey: ann["accessKey"],
+		Endpoint:  ann["endpoint"],
+		SecretKey: ann["secretKey"],
+	}
+}
+
 func (obs *ObjectStoreMaker) minio() error {
 	if obs.App.Spec.ObjectStore != nil {
-		endpoint := obs.Base.GetAnnotations()["endpoint"]
-		accessKeyID := obs.Base.GetAnnotations()["accessKey"]
-		secretAccessKey := obs.Base.GetAnnotations()["secretKey"]
+		obs.config = *configFromBase(obs.Base)
 		// Initialize minio client object.
-		minioClient, err := minio.New(endpoint, &minio.Options{
-			Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		minioClient, err := minio.New(obs.config.Endpoint, &minio.Options{
+			Creds:  credentials.NewStaticV4(obs.config.AccessKey, obs.config.SecretKey, ""),
 			Secure: false,
 		})
 		if err != nil {
@@ -88,17 +95,15 @@ func (obs *ObjectStoreMaker) minio() error {
 			if err != nil {
 				return err
 			}
-			if !found {
-				err := minioClient.MakeBucket(obs.Ctx, bucket, minio.MakeBucketOptions{})
-				if err != nil {
-					return err
-				}
+			if found {
+				continue
+			}
+
+			if err := minioClient.MakeBucket(obs.Ctx, bucket, minio.MakeBucketOptions{}); err != nil {
+				return err
 			}
 		}
 
-		obs.config.AccessKey = accessKeyID
-		obs.config.SecretKey = secretAccessKey
-		obs.config.Endpoint = endpoint
 	}
 
 	return nil

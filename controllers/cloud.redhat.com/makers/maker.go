@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 func b64decode(s *core.Secret, key string) (string, error) {
@@ -83,6 +84,14 @@ func (mu *makerUpdater) Updater() utils.Updater {
 	return mu.update
 }
 
+// GetNamespacedName returns a new types.NamespacedName from the request based on pattern
+func GetNamespacedName(r *reconcile.Request, pattern string) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      fmt.Sprintf(pattern, r.Name),
+		Namespace: r.Namespace,
+	}
+}
+
 // Get is a convenience wrapper for common upsert queries
 func (m *Maker) Get(nn types.NamespacedName, obj runtime.Object) (MakerUpdater, error) {
 	err := m.Client.Get(m.Ctx, nn, obj)
@@ -94,6 +103,16 @@ func (m *Maker) Get(nn types.NamespacedName, obj runtime.Object) (MakerUpdater, 
 		maker:  m,
 		update: update,
 	}, nil
+}
+
+// MakeLabeler creates a function that will label objects with metadata from the given namespaced name and labels
+func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) func(metav1.Object) {
+	return func(o metav1.Object) {
+		o.SetName(nn.Name)
+		o.SetNamespace(nn.Namespace)
+		o.SetLabels(labels)
+		o.SetOwnerReferences([]metav1.OwnerReference{m.Base.MakeOwnerReference()})
+	}
 }
 
 func (m *Maker) getSubMakers() []SubMaker {
