@@ -51,9 +51,12 @@ func (db *DatabaseMaker) appInterface() error {
 }
 
 func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp, cfg *config.DatabaseConfig, image string) {
-	pp.SetObjectMeta(dd, crd.Name(nn.Name))
+	labels := pp.GetLabels()
+	labels["service"] = "db"
+
+	pp.SetObjectMeta(dd, crd.Name(nn.Name), crd.Labels(labels))
 	dd.Spec.Replicas = pp.Spec.MinReplicas
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: pp.GetLabels()}
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: nn.Name,
 		VolumeSource: core.VolumeSource{
@@ -62,7 +65,7 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsA
 			},
 		}},
 	}
-	dd.Spec.Template.ObjectMeta.Labels = pp.GetLabels()
+	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
 		Name: "quay-cloudservices-pull",
@@ -127,13 +130,17 @@ func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.Insights
 		Protocol: "TCP",
 	}}
 
-	pp.SetObjectMeta(s, crd.Name(nn.Name), crd.Namespace(nn.Namespace))
-	s.Spec.Selector = pp.GetLabels()
+	labels := pp.GetLabels()
+	labels["service"] = "db"
+	pp.SetObjectMeta(s, crd.Name(nn.Name), crd.Namespace(nn.Namespace), crd.Labels(labels))
+	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 }
 
 func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.InsightsApp) {
-	pp.SetObjectMeta(pvc, crd.Name(nn.Name))
+	labels := pp.GetLabels()
+	labels["service"] = "db"
+	pp.SetObjectMeta(pvc, crd.Name(nn.Name), crd.Labels(labels))
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
 		Requests: core.ResourceList{

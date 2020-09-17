@@ -1,6 +1,6 @@
 package config
 
-import "cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
+import "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 type ConfigOption func(*AppConfig)
 
