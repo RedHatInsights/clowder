@@ -1,4 +1,4 @@
-# Whippoorwill :bird: - Insights Platform Operator
+# Clowder :cat: - Insights Platform Operator
 
 An operator to deploy and operate cloud.redhat.com resources for Openshift.
 
@@ -41,5 +41,5 @@ Run the tests:
 
 ```
 $ KUBEBUILDER_ASSETS=$PWD/kubebuilder go test ./controllers/...
-ok      cloud.redhat.com/whippoorwill/v2/controllers    9.626s
+ok      cloud.redhat.com/clowder/v2/controllers    9.626s
 ```

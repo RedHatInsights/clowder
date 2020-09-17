@@ -41,10 +41,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	strimzi "cloud.redhat.com/whippoorwill/v2/apis/kafka.strimzi.io/v1beta1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/utils"
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	// +kubebuilder:scaffold:imports
 )
 

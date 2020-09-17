@@ -6,13 +6,13 @@ metadata:
     capabilities: Basic Install
     operators.operatorframework.io/builder: operator-sdk-v1.0.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
-  name: whippoorwill.vX.Y.Z
+  name: clowder.vX.Y.Z
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
   customresourcedefinitions: {}
   description: Deploys and operates cloud.redhat.com services
-  displayName: whippoorwill
+  displayName: clowder
   icon:
   - base64data: ""
     mediatype: ""
@@ -33,10 +33,10 @@ spec:
   - redhat
   - cloud.redhat.com
   links:
-  - name: Whippoorwill
-    url: https://whippoorwill.domain
+  - name: clowder
+    url: https://clowder.domain
   maturity: alpha
   provider:
     name: Red Hat
-    url: https://github.com/redhatinsights/whippoorwill
+    url: https://github.com/redhatinsights/clowder
   version: 0.0.0

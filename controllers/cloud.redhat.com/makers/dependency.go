@@ -1,8 +1,8 @@
 package makers
 
 import (
-	crd "cloud.redhat.com/whippoorwill/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/whippoorwill/v2/controllers/cloud.redhat.com/config"
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"fmt"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
