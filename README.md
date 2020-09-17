@@ -4,7 +4,7 @@ An operator to deploy and operate cloud.redhat.com resources for Openshift.
 
 ## Design
 
-[Design docs](https://gitlab.cee.redhat.com/klape/operator-design/)
+[Design docs](https://github.com/RedHatInsights/clowder/tree/master/docs/)
 
 ## Dependencies
 
