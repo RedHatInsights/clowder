@@ -11,7 +11,7 @@ metadata:
 spec:
   apiservicedefinitions: {}
   customresourcedefinitions: {}
-  description: Deploys and operates cloud.redhat.com services
+  description: Deploy and operator cloud.redhat.com backend
   displayName: clowder
   icon:
   - base64data: ""
@@ -31,12 +31,13 @@ spec:
     type: AllNamespaces
   keywords:
   - redhat
-  - cloud.redhat.com
+  - insights
+  - saas
   links:
-  - name: clowder
+  - name: Clowder
     url: https://clowder.domain
   maturity: alpha
   provider:
     name: Red Hat
-    url: https://github.com/redhatinsights/clowder
+    url: https://github.com/RedHatInsights/clowder
   version: 0.0.0

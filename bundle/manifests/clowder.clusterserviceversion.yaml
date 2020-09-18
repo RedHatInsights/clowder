@@ -18,7 +18,7 @@ spec:
     - kind: InsightsBase
       name: insightsbases.cloud.redhat.com
       version: v1alpha1
-  description: Deploys and operates cloud.redhat.com services
+  description: Deploy and operator cloud.redhat.com backend
   displayName: clowder
   icon:
   - base64data: ""
@@ -145,7 +145,7 @@ spec:
                 - --enable-leader-election
                 command:
                 - /manager
-                image: quay.io/klape/clowder:717e000
+                image: quay.io/cloudservices/clowder:adeaff7
                 name: manager
                 resources:
                   limits:
@@ -208,12 +208,13 @@ spec:
     type: AllNamespaces
   keywords:
   - redhat
-  - cloud.redhat.com
+  - insights
+  - saas
   links:
   - name: Clowder
     url: https://clowder.domain
   maturity: alpha
   provider:
     name: Red Hat
-    url: https://github.com/redhatinsights/clowder
+    url: https://github.com/RedHatInsights/clowder
   version: 0.0.1

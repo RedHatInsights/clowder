@@ -1,8 +1,0 @@
-apiVersion: operators.coreos.com/v1alpha1
-kind: CatalogSource
-metadata:
-  name: clowder
-  namespace: clowder-system
-spec:
-  sourceType: grpc
-  image: quay.io/cloudservices/clowder-index:v0.0.1
