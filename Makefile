@@ -1,5 +1,5 @@
 # Current Operator version
-CURRENT_VERSION ?= 0.0.1
+CURRENT_VERSION ?= 0.0.2
 PREV_VERSION := $(shell hack/prev_sem_ver.py $(CURRENT_VERSION))
 # Default bundle image tag
 BUNDLE_IMG ?= quay.io/cloudservices/clowder-bundle:$(CURRENT_VERSION)
@@ -125,5 +125,5 @@ bundle: manifests
 bundle-build:
 	podman build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 	podman push $(BUNDLE_IMG)
-	opm index add --bundles $(BUNDLE_IMG) --from-index $(PREV_INDEX_IMG) --tag $(INDEX_IMG)
+	opm index add --bundles $(BUNDLE_IMG) --from-index $(PREV_INDEX_IMG) --tag $(INDEX_IMG) -p podman
 	podman push $(INDEX_IMG)

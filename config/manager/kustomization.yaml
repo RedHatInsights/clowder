@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/cloudservices/clowder
-  newTag: adeaff7
+  newTag: b1ad4ba
