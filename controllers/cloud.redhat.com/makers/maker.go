@@ -17,7 +17,6 @@ package makers
 import (
 	"context"
 	"crypto/sha256"
-	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -38,16 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
-
-func b64decode(s *core.Secret, key string) (string, error) {
-	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))
-
-	if err != nil {
-		return "", err
-	}
-
-	return string(decoded), nil
-}
 
 //SubMaker interface defines interface for making sub objects
 type SubMaker interface {
@@ -72,11 +61,11 @@ type makerUpdater struct {
 
 // MakerUpdater encapsulates saving an object
 type MakerUpdater interface {
-	Apply(obj runtime.Object) error
+	Apply(obj runtime.Object) (ctrl.Result, error)
 	Updater() utils.Updater
 }
 
-func (mu *makerUpdater) Apply(obj runtime.Object) error {
+func (mu *makerUpdater) Apply(obj runtime.Object) (ctrl.Result, error) {
 	return mu.update.Apply(mu.maker.Ctx, mu.maker.Client, obj)
 }
 
@@ -145,30 +134,31 @@ func (m *Maker) Make() (ctrl.Result, error) {
 
 	c := config.New(configs...)
 
-	hash, err := m.persistConfig(c)
+	hash, result, err := m.persistConfig(c)
 	if err != nil {
-		return ctrl.Result{}, err
+		return result, err
 	}
 
-	if err := m.makeDeployment(hash); err != nil {
-		return ctrl.Result{}, err
+	if result, err := m.makeDeployment(hash); err != nil {
+		return result, err
 	}
 
-	if err := m.makeService(); err != nil {
-		return ctrl.Result{}, err
+	if result, err := m.makeService(); err != nil {
+		return result, err
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func (m *Maker) makeService() error {
+func (m *Maker) makeService() (ctrl.Result, error) {
 
+	result := ctrl.Result{}
 	s := core.Service{}
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &s)
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	ports := []core.ServicePort{
@@ -187,20 +177,21 @@ func (m *Maker) makeService() error {
 	return update.Apply(m.Ctx, m.Client, &s)
 }
 
-func (m *Maker) persistConfig(c *config.AppConfig) (string, error) {
+func (m *Maker) persistConfig(c *config.AppConfig) (string, ctrl.Result, error) {
 
+	result := ctrl.Result{}
 	// In any case, we want to overwrite the secret, so this just
 	// tests to see if the secret exists
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &core.Secret{})
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return "", err
+		return "", result, err
 	}
 
 	jsonData, err := json.Marshal(c)
 	if err != nil {
-		return "", err
+		return "", result, err
 	}
 
 	h := sha256.New()
@@ -215,7 +206,8 @@ func (m *Maker) persistConfig(c *config.AppConfig) (string, error) {
 
 	m.App.SetObjectMeta(&secret)
 
-	return hash, update.Apply(m.Ctx, m.Client, &secret)
+	result, err = update.Apply(m.Ctx, m.Client, &secret)
+	return hash, result, err
 }
 
 func (m *Maker) getConfig() (*config.AppConfig, error) {
@@ -235,14 +227,15 @@ func (m *Maker) getConfig() (*config.AppConfig, error) {
 }
 
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
-func (m *Maker) makeDeployment(hash string) error {
+func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 
+	result := ctrl.Result{}
 	d := apps.Deployment{}
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &d)
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	m.App.SetObjectMeta(&d)
@@ -340,9 +333,9 @@ func (m *Maker) makeDeployment(hash string) error {
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
 	d.Spec.Template.SetAnnotations(annotations)
-	if err = update.Apply(m.Ctx, m.Client, &d); err != nil {
-		return err
+	if result, err := update.Apply(m.Ctx, m.Client, &d); err != nil {
+		return result, err
 	}
 
-	return nil
+	return result, nil
 }

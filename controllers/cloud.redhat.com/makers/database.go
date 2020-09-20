@@ -24,7 +24,7 @@ type DatabaseMaker struct {
 func (db *DatabaseMaker) Make() (ctrl.Result, error) {
 	db.config = config.DatabaseConfig{}
 
-	var f func() error
+	var f func() (ctrl.Result, error)
 
 	switch db.Base.Spec.Database.Provider {
 	case "app-interface":
@@ -34,7 +34,7 @@ func (db *DatabaseMaker) Make() (ctrl.Result, error) {
 	}
 
 	if f != nil {
-		return ctrl.Result{}, f()
+		return f()
 	}
 
 	return ctrl.Result{}, nil
@@ -46,8 +46,8 @@ func (db *DatabaseMaker) ApplyConfig(c *config.AppConfig) {
 	c.Database = &db.config
 }
 
-func (db *DatabaseMaker) appInterface() error {
-	return nil
+func (db *DatabaseMaker) appInterface() (ctrl.Result, error) {
+	return ctrl.Result{}, nil
 }
 
 func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp, cfg *config.DatabaseConfig, image string) {
@@ -149,9 +149,11 @@ func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *
 	}
 }
 
-func (db *DatabaseMaker) local() error {
+func (db *DatabaseMaker) local() (ctrl.Result, error) {
+	result := ctrl.Result{}
+
 	if db.App.Spec.Database == (crd.InsightsDatabaseSpec{}) {
-		return nil
+		return result, nil
 	}
 
 	nn := db.App.GetNamespacedName("%v-db")
@@ -159,7 +161,7 @@ func (db *DatabaseMaker) local() error {
 	dd := apps.Deployment{}
 	update, err := db.Get(nn, &dd)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	db.config = *config.NewDatabaseConfig(db.App.Spec.Database.Name, nn.Name)
@@ -167,7 +169,7 @@ func (db *DatabaseMaker) local() error {
 	if update.Updater() {
 		cfg, err := db.getConfig()
 		if err != nil {
-			return err
+			return result, err
 		}
 		db.config.Username = cfg.Database.Username
 		db.config.Password = cfg.Database.Password
@@ -176,33 +178,33 @@ func (db *DatabaseMaker) local() error {
 
 	makeLocalDB(&dd, nn, db.App, &db.config, db.Base.Spec.Database.Image)
 
-	if err = update.Apply(&dd); err != nil {
-		return err
+	if result, err = update.Apply(&dd); err != nil {
+		return result, err
 	}
 
 	s := core.Service{}
 	update, err = db.Get(nn, &s)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	makeLocalService(&s, nn, db.App)
 
-	if err = update.Apply(&s); err != nil {
-		return err
+	if result, err = update.Apply(&s); err != nil {
+		return result, err
 	}
 
 	pvc := core.PersistentVolumeClaim{}
 	update, err = db.Get(nn, &pvc)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	makeLocalPVC(&pvc, nn, db.App)
 
-	if err = update.Apply(&pvc); err != nil {
-		return err
+	if result, err = update.Apply(&pvc); err != nil {
+		return result, err
 	}
 
-	return nil
+	return result, nil
 }

@@ -21,7 +21,7 @@ type InMemoryDBMaker struct {
 func (idb *InMemoryDBMaker) Make() (ctrl.Result, error) {
 	idb.config = config.InMemoryDB{}
 
-	var f func() error
+	var f func() (ctrl.Result, error)
 
 	switch idb.Base.Spec.InMemoryDB.Provider {
 	case "redis":
@@ -31,7 +31,7 @@ func (idb *InMemoryDBMaker) Make() (ctrl.Result, error) {
 	}
 
 	if f != nil {
-		return ctrl.Result{}, f()
+		return f()
 	}
 
 	return ctrl.Result{}, nil
@@ -82,9 +82,12 @@ func makeRedisService(s *core.Service, nn types.NamespacedName, pp *crd.Insights
 	s.Spec.Ports = servicePorts
 }
 
-func (idb *InMemoryDBMaker) redis() error {
+func (idb *InMemoryDBMaker) redis() (ctrl.Result, error) {
+
+	result := ctrl.Result{}
+
 	if !idb.App.Spec.InMemoryDB {
-		return nil
+		return result, nil
 	}
 
 	nn := idb.App.GetNamespacedName("%v-redis")
@@ -93,30 +96,30 @@ func (idb *InMemoryDBMaker) redis() error {
 
 	update, err := idb.Get(nn, &dd)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	makeRedisDeployment(&dd, nn, idb.App)
 
-	if err = update.Apply(&dd); err != nil {
-		return err
+	if result, err = update.Apply(&dd); err != nil {
+		return result, err
 	}
 
 	s := core.Service{}
 	update, err = idb.Get(nn, &s)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	makeRedisService(&s, nn, idb.App)
 
-	if err = update.Apply(&s); err != nil {
-		return err
+	if result, err = update.Apply(&s); err != nil {
+		return result, err
 	}
 
-	return nil
+	return result, nil
 }
 
-func (idb *InMemoryDBMaker) appInterface() error {
-	return nil
+func (idb *InMemoryDBMaker) appInterface() (ctrl.Result, error) {
+	return ctrl.Result{}, nil
 }

@@ -11,6 +11,7 @@ import (
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -29,11 +30,21 @@ func RandString(n int) string {
 
 type Updater bool
 
-func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
+func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) (ctrl.Result, error) {
+	var err error
+	result := ctrl.Result{}
+
 	if *u {
-		return cl.Update(ctx, obj)
+		err = cl.Update(ctx, obj)
+	} else {
+		err = cl.Create(ctx, obj)
 	}
-	return cl.Create(ctx, obj)
+
+	if k8serr.IsConflict(err) {
+		result.Requeue = true
+	}
+
+	return result, err
 }
 
 func UpdateOrErr(err error) (Updater, error) {

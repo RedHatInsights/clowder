@@ -137,6 +137,42 @@ spec:
           type: object
         status:
           description: InsightsBaseStatus defines the observed state of InsightsBase
+          properties:
+            objectStore:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              properties:
+                buckets:
+                  items:
+                    type: string
+                  type: array
+                minio:
+                  properties:
+                    credentials:
+                      description: SecretReference represents a Secret Reference.
+                        It has enough information to retrieve secret in any namespace
+                      properties:
+                        name:
+                          description: Name is unique within a namespace to reference
+                            a secret resource.
+                          type: string
+                        namespace:
+                          description: Namespace defines the space within which the
+                            secret name must be unique.
+                          type: string
+                      type: object
+                    endpoint:
+                      type: string
+                  required:
+                  - credentials
+                  - endpoint
+                  type: object
+              required:
+              - buckets
+              type: object
+          required:
+          - objectStore
           type: object
       type: object
   version: v1alpha1

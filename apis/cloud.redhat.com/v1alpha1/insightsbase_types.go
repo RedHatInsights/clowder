@@ -15,6 +15,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -94,10 +95,21 @@ type InsightsBaseSpec struct {
 	InMemoryDB  InMemoryDBConfig  `json:"inMemoryDb"`
 }
 
+type MinioStatus struct {
+	Credentials core.SecretReference `json:"credentials"`
+	Endpoint    string               `json:"endpoint"`
+}
+
+type ObjectStoreStatus struct {
+	Minio   MinioStatus `json:"minio,omitempty"`
+	Buckets []string    `json:"buckets"`
+}
+
 // InsightsBaseStatus defines the observed state of InsightsBase
 type InsightsBaseStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	ObjectStore ObjectStoreStatus `json:"objectStore"`
 }
 
 // +kubebuilder:object:root=true

@@ -64,24 +64,24 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 	}
 
 	if base.Spec.ObjectStore.Provider == "minio" {
-		err = makers.MakeMinio(r.Client, ctx, req, &base)
+		result, err := makers.MakeMinio(r.Client, ctx, req, &base)
 
 		if err != nil {
-			return ctrl.Result{}, err
+			return result, err
 		}
 	}
 
 	if base.Spec.Kafka.Provider == "local" {
-		err = makers.MakeLocalZookeeper(&maker)
+		result, err := makers.MakeLocalZookeeper(&maker)
 
 		if err != nil {
-			return ctrl.Result{}, err
+			return result, err
 		}
 
-		err = makers.MakeLocalKafka(&maker)
+		result, err = makers.MakeLocalKafka(&maker)
 
 		if err != nil {
-			return ctrl.Result{}, err
+			return result, err
 		}
 	}
 
