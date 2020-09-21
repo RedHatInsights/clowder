@@ -6,7 +6,7 @@ metadata:
     capabilities: Basic Install
     operators.operatorframework.io/builder: operator-sdk-v1.0.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
-  name: clowder.v0.0.3
+  name: clowder.v0.0.4
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -145,7 +145,7 @@ spec:
                 - --enable-leader-election
                 command:
                 - /manager
-                image: quay.io/cloudservices/clowder:380a17b
+                image: quay.io/cloudservices/clowder:06239d5
                 name: manager
                 resources:
                   limits:
@@ -217,4 +217,4 @@ spec:
   provider:
     name: Red Hat
     url: https://github.com/RedHatInsights/clowder
-  version: 0.0.3
+  version: 0.0.4
