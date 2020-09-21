@@ -257,11 +257,11 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 	baseProbe := core.Probe{
 		Handler: core.Handler{
 			HTTPGet: &core.HTTPGetAction{
-				Path:   "/api/ingress/ping",
+				Path:   "/healthz",
 				Scheme: "HTTP",
 				Port: intstr.IntOrString{
 					Type:   intstr.Int,
-					IntVal: 8000,
+					IntVal: m.Base.Spec.Web.Port,
 				},
 			},
 		},
