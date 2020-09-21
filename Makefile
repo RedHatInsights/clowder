@@ -1,5 +1,5 @@
 # Current Operator version
-CURRENT_VERSION ?= 0.0.2
+CURRENT_VERSION ?= 0.0.3
 PREV_VERSION := $(shell hack/prev_sem_ver.py $(CURRENT_VERSION))
 # Default bundle image tag
 BUNDLE_IMG ?= quay.io/cloudservices/clowder-bundle:$(CURRENT_VERSION)
