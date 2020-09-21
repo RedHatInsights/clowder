@@ -4,7 +4,7 @@ metadata:
   name: clowder-olm-bundle
 parameters:
 - name: VERSION
-  value: 0.0.4
+  value: 0.0.5
 - name: TARGET_NAMESPACE
   value: clowder-system
 objects:
