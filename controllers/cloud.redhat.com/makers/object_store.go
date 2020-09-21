@@ -86,20 +86,8 @@ func configFromBase(base *crd.InsightsBase, c client.Client) (*config.ObjectStor
 		return conf, err
 	}
 
-	accessKey, err := utils.B64Decode(&secret, "accessKey")
-
-	if err != nil {
-		return conf, err
-	}
-
-	secretKey, err := utils.B64Decode(&secret, "secretKey")
-
-	if err != nil {
-		return conf, err
-	}
-
-	conf.AccessKey = accessKey
-	conf.SecretKey = secretKey
+	conf.AccessKey = string(secret.Data["accessKey"])
+	conf.SecretKey = string(secret.Data["secretKey"])
 
 	return conf, nil
 }
@@ -193,16 +181,11 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		return result, err
 	}
 
-	var accessKey string
-	var secretKey string
-
 	if len(secret.Data) == 0 {
 		endpoint := fmt.Sprintf("%v.%v.svc:9000", minioObjName, req.Namespace)
-		accessKey = utils.RandString(12)
-		secretKey = utils.RandString(12)
 		secret.StringData = map[string]string{
-			"accessKey": accessKey,
-			"secretKey": secretKey,
+			"accessKey": utils.RandString(12),
+			"secretKey": utils.RandString(12),
 			"endpoint":  endpoint,
 		}
 
@@ -227,19 +210,6 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		}
 
 		err = client.Status().Update(ctx, base)
-
-		if err != nil {
-			return result, err
-		}
-
-	} else {
-		accessKey, err = utils.B64Decode(secret, "accessKey")
-
-		if err != nil {
-			return result, err
-		}
-
-		secretKey, err = utils.B64Decode(secret, "secretKey")
 
 		if err != nil {
 			return result, err
