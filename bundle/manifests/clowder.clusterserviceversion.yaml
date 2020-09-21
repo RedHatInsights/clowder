@@ -145,7 +145,7 @@ spec:
                 - --enable-leader-election
                 command:
                 - /manager
-                image: quay.io/cloudservices/clowder:4156ef3
+                image: quay.io/cloudservices/clowder:380a17b
                 name: manager
                 resources:
                   limits:
@@ -217,5 +217,4 @@ spec:
   provider:
     name: Red Hat
     url: https://github.com/RedHatInsights/clowder
-  replaces: clowder.v0.0.2
   version: 0.0.3
