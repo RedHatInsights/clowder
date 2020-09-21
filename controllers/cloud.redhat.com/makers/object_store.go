@@ -69,18 +69,51 @@ func (obs *ObjectStoreMaker) appInterface() error {
 	return nil
 }
 
-func configFromBase(base *crd.InsightsBase) *config.ObjectStoreConfig {
-	ann := base.GetAnnotations()
-	return &config.ObjectStoreConfig{
-		AccessKey: ann["accessKey"],
-		Endpoint:  ann["endpoint"],
-		SecretKey: ann["secretKey"],
+func configFromBase(base *crd.InsightsBase, c client.Client) (*config.ObjectStoreConfig, error) {
+	conf := &config.ObjectStoreConfig{
+		Endpoint: base.Status.ObjectStore.Minio.Endpoint,
 	}
+
+	secretName := base.Status.ObjectStore.Minio.Credentials
+	name := types.NamespacedName{
+		Name:      secretName.Name,
+		Namespace: secretName.Namespace,
+	}
+	secret := core.Secret{}
+	err := c.Get(context.Background(), name, &secret)
+
+	if err != nil {
+		return conf, err
+	}
+
+	accessKey, err := utils.B64Decode(&secret, "accessKey")
+
+	if err != nil {
+		return conf, err
+	}
+
+	secretKey, err := utils.B64Decode(&secret, "secretKey")
+
+	if err != nil {
+		return conf, err
+	}
+
+	conf.AccessKey = accessKey
+	conf.SecretKey = secretKey
+
+	return conf, nil
 }
 
 func (obs *ObjectStoreMaker) minio() error {
 	if obs.App.Spec.ObjectStore != nil {
-		obs.config = *configFromBase(obs.Base)
+		c, err := configFromBase(obs.Base, obs.Client)
+
+		obs.config = *c
+
+		if err != nil {
+			return err
+		}
+
 		// Initialize minio client object.
 		minioClient, err := minio.New(obs.config.Endpoint, &minio.Options{
 			Creds:  credentials.NewStaticV4(obs.config.AccessKey, obs.config.SecretKey, ""),
