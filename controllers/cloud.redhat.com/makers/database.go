@@ -72,7 +72,7 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsA
 	}}
 
 	envVars := []core.EnvVar{
-		{Name: "POSGRESQL_USER", Value: cfg.Username},
+		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
 		{Name: "PGPASSWORD", Value: cfg.PgPass},
 		{Name: "POSTGRESQL_DATABASE", Value: pp.Spec.Database.Name},
