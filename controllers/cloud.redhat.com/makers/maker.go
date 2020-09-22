@@ -46,8 +46,8 @@ type SubMaker interface {
 
 //Maker struct for passing variables into SubMakers
 type Maker struct {
-	App     *crd.InsightsApp
-	Base    *crd.InsightsBase
+	App     *crd.Application
+	Env     *crd.Environment
 	Client  client.Client
 	Ctx     context.Context
 	Request *ctrl.Request
@@ -100,7 +100,7 @@ func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) f
 		o.SetName(nn.Name)
 		o.SetNamespace(nn.Namespace)
 		o.SetLabels(labels)
-		o.SetOwnerReferences([]metav1.OwnerReference{m.Base.MakeOwnerReference()})
+		o.SetOwnerReferences([]metav1.OwnerReference{m.Env.MakeOwnerReference()})
 	}
 }
 
@@ -129,8 +129,8 @@ func (m *Maker) Make() (ctrl.Result, error) {
 		configs = append(configs, sm.ApplyConfig)
 	}
 
-	configs = append(configs, config.Web(int(m.Base.Spec.Web.Port)))
-	configs = append(configs, config.Metrics(m.Base.Spec.Metrics.Path, int(m.Base.Spec.Metrics.Port)))
+	configs = append(configs, config.Web(int(m.Env.Spec.Web.Port)))
+	configs = append(configs, config.Metrics(m.Env.Spec.Metrics.Path, int(m.Env.Spec.Metrics.Port)))
 
 	c := config.New(configs...)
 
@@ -162,11 +162,11 @@ func (m *Maker) makeService() (ctrl.Result, error) {
 	}
 
 	ports := []core.ServicePort{
-		{Name: "metrics", Port: m.Base.Spec.Metrics.Port, Protocol: "TCP"},
+		{Name: "metrics", Port: m.Env.Spec.Metrics.Port, Protocol: "TCP"},
 	}
 
 	if m.App.Spec.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: m.Base.Spec.Web.Port, Protocol: "TCP"}
+		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Web.Port, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
 
@@ -261,7 +261,7 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 				Scheme: "HTTP",
 				Port: intstr.IntOrString{
 					Type:   intstr.Int,
-					IntVal: m.Base.Spec.Web.Port,
+					IntVal: m.Env.Spec.Web.Port,
 				},
 			},
 		},
@@ -294,7 +294,7 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 		VolumeMounts: m.App.Spec.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
-			ContainerPort: m.Base.Spec.Metrics.Port,
+			ContainerPort: m.Env.Spec.Metrics.Port,
 		}},
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
@@ -309,7 +309,7 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 	if m.App.Spec.Web {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
-			ContainerPort: m.Base.Spec.Web.Port,
+			ContainerPort: m.Env.Spec.Web.Port,
 		})
 	}
 

@@ -27,16 +27,16 @@ func (cm *DependencyMaker) Make() (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	// Get all InsightsApps
+	// Get all Applications
 
-	apps := crd.InsightsAppList{}
+	apps := crd.ApplicationList{}
 	err := cm.Client.List(cm.Ctx, &apps)
 
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	appMap := map[string]crd.InsightsApp{}
+	appMap := map[string]crd.Application{}
 
 	for _, app := range apps.Items {
 		appMap[app.Name] = app

@@ -33,26 +33,26 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 )
 
-// InsightsAppReconciler reconciles a InsightsApp object
-type InsightsAppReconciler struct {
+// ApplicationReconciler reconciles a Application object
+type ApplicationReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsapps/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=applications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=applications/status,verbs=get;update;patch
 
 // +kubebuilder:rbac:groups="",resources=services;persistentvolumeclaims;secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile fn
-func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	_ = r.Log.WithValues("insightsapp", req.NamespacedName)
+	_ = r.Log.WithValues("application", req.NamespacedName)
 
-	iapp := crd.InsightsApp{}
-	err := r.Client.Get(ctx, req.NamespacedName, &iapp)
+	app := crd.Application{}
+	err := r.Client.Get(ctx, req.NamespacedName, &app)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -63,19 +63,19 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	base := crd.InsightsBase{}
+	env := crd.Environment{}
 	err = r.Client.Get(ctx, types.NamespacedName{
-		Namespace: iapp.Namespace,
-		Name:      iapp.Spec.Base,
-	}, &base)
+		Namespace: app.Namespace,
+		Name:      app.Spec.Base,
+	}, &env)
 
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	maker := makers.Maker{
-		App:     &iapp,
-		Base:    &base,
+		App:     &app,
+		Env:     &env,
 		Client:  r.Client,
 		Ctx:     ctx,
 		Request: &req,
@@ -86,21 +86,21 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 // SetupWithManager sets up wi
-func (r *InsightsAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager!")
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&crd.InsightsApp{}).
+		For(&crd.Application{}).
 		Watches(
-			&source.Kind{Type: &crd.InsightsBase{}},
+			&source.Kind{Type: &crd.Environment{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(r.appsToEnqueueUponBaseUpdate)},
+				ToRequests: handler.ToRequestsFunc(r.appsToEnqueueUponEnvUpdate)},
 		).
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Complete(r)
 }
 
-func (r *InsightsAppReconciler) appsToEnqueueUponBaseUpdate(a handler.MapObject) []reconcile.Request {
+func (r *ApplicationReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) []reconcile.Request {
 	reqs := []reconcile.Request{}
 	ctx := context.Background()
 	obj := types.NamespacedName{
@@ -108,29 +108,29 @@ func (r *InsightsAppReconciler) appsToEnqueueUponBaseUpdate(a handler.MapObject)
 		Namespace: a.Meta.GetNamespace(),
 	}
 
-	// Get the InsightsBase resource
+	// Get the Environment resource
 
-	base := crd.InsightsBase{}
-	err := r.Client.Get(ctx, obj, &base)
+	env := crd.Environment{}
+	err := r.Client.Get(ctx, obj, &env)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
 			// Must have been deleted
 			return reqs
 		}
-		r.Log.Error(err, "Failed to fetch InsightsBase")
+		r.Log.Error(err, "Failed to fetch Environment")
 		return nil
 	}
 
-	// Get all the InsightsApp resources
+	// Get all the Application resources
 
-	appList := crd.InsightsAppList{}
+	appList := crd.ApplicationList{}
 	r.Client.List(ctx, &appList)
 
 	// Filter based on base attribute
 
 	for _, app := range appList.Items {
-		if app.Spec.Base == base.Name {
+		if app.Spec.Base == env.Name {
 			// Add filtered resources to return result
 			reqs = append(reqs, reconcile.Request{
 				NamespacedName: types.NamespacedName{

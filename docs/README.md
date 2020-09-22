@@ -144,7 +144,7 @@ App teams will also be required to retrofit their applications to the standards
 imposed by these CRs, e.g.  database and logging environment variable names,
 pre-hook pod conventions, etc.
 
-InsightsApp
+Application
 -----------
 
 This is intended to be a replacement for a single ``Deployment`` or
@@ -179,11 +179,11 @@ service) and `advisor-service`_ (a kafka client).
 .. _advisor-api: advisor/advisor-api.yml
 .. _advisor-service: advisor/advisor-api.yml
 
-InsightsBase
+Environment
 ------------
 
-The ``InsightsBase`` represents the foundation of an instance of
-cloud.redhat.com.  The fact that any number of ``InsightsBase`` resources can be
+The ``Environment`` represents the foundation of an instance of
+cloud.redhat.com.  The fact that any number of ``Environment`` resources can be
 managed by a single operator means that the one operator can manage multiple
 instances of a cloud.redhat.com deployment in parallel.
 
@@ -206,23 +206,23 @@ Configuration:
 * Entitlements service config
 * publicly exposed?
 
-``InsightsApp`` resources will always depend on one ``InsightsBase``, referenced
+``Application`` resources will always depend on one ``Environment``, referenced
 by name in its ``base`` attribute.
 
-``InsightsBase`` will be defined in the same namespaces that the gateway is
-deployed in.  Thus most, if not all, ``InsightsApps`` will live in a different
+``Environment`` will be defined in the same namespaces that the gateway is
+deployed in.  Thus most, if not all, ``Applications`` will live in a different
 namespace.
 
-Changes to an ``InsightsBase`` will propagate to all the associated
-``InsightsApps``.
+Changes to an ``Environment`` will propagate to all the associated
+``Applications``.
 
 Serivce Dependencies
 ====================
 
-The operator will introduce the idea of service dependencies.  An ``InsightsApp``
+The operator will introduce the idea of service dependencies.  An ``Application``
 can list out a number of service dependencies.  If any of the dependencies are
 not met, then the operator will emit an event listing the missing service
-dependencies and requeue the ``InsightsApp`` for reconciliation until the
+dependencies and requeue the ``Application`` for reconciliation until the
 dependencies are met.  This is similar to how Openshift already manages
 dependencies, e.g. a missing persistent volume.
 
@@ -239,8 +239,8 @@ the routing configuration of the gateway as apps are deployed or removed.
 
 A new CRD will be introduced to persist routing configuration:
 ``InsightsRoute``.  This resource will be automatically created by the
-``InsightsApp`` controller, but devs can add these resources to their deployment
-template if they are not using ``InsightsApp`` to deploy their public facing
+``Application`` controller, but devs can add these resources to their deployment
+template if they are not using ``Application`` to deploy their public facing
 service.
 
 .. _Turnpike: https://github.com/RedHatInsights/turnpike
@@ -275,7 +275,7 @@ at consistent locations.
 Kafka
 -----
 
-Kafka topics will be listed in ``InsightsApps``, and ``KafkaTopic`` resources
+Kafka topics will be listed in ``Applications``, and ``KafkaTopic`` resources
 will be implicity created when an app references non-existent topics.  A topic
 definition has an ``owner`` boolean field.  If it is set to ``true``, then the
 CR can define the configuration of the topic, e.g. partition count or retention
@@ -298,8 +298,8 @@ Convention Compliance
 * Web services must consume provided API prefix and port number
 * Apps must consume provided metrics path and port number
 
-Most apps should be able to comfortably fit into the InsightsApp conventions.
-If not, apps can specify their own pod template in their InsightsApp, but this
+Most apps should be able to comfortably fit into the Application conventions.
+If not, apps can specify their own pod template in their Application, but this
 may cause an app to lose operational compliance.  Thus, use of a custom pod
 template is discouraged unless absolutely necessary.
 
@@ -398,7 +398,7 @@ the operator instead of tracking them in app-interface.
 
 There should be little to no change in app-interface for the operator to be
 utilized by apps; instead, an app's deployment template will be significanly
-modified to push an ``InsightsApp`` instead a ``Deployment`` and ``Service``.
+modified to push an ``Application`` instead a ``Deployment`` and ``Service``.
 An app's ``ServiceMonitors`` and ``PrometheusRules`` may be removed from
 app-interface if the operator starts creating these.  Namespaces, AWS
 resources, secrets, and deployment pipelines are still managed via

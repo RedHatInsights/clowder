@@ -29,23 +29,23 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 )
 
-// InsightsBaseReconciler reconciles a InsightsBase object
-type InsightsBaseReconciler struct {
+// EnvironmentReconciler reconciles a Environment object
+type EnvironmentReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsbases,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=insightsbases/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=environments/status,verbs=get;update;patch
 
 //Reconcile fn
-func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	_ = r.Log.WithValues("insightsbase", req.NamespacedName)
+	_ = r.Log.WithValues("environment", req.NamespacedName)
 
-	base := crd.InsightsBase{}
-	err := r.Client.Get(ctx, req.NamespacedName, &base)
+	env := crd.Environment{}
+	err := r.Client.Get(ctx, req.NamespacedName, &env)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -58,12 +58,12 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 	maker := makers.Maker{
 		Ctx:     ctx,
 		Client:  r.Client,
-		Base:    &base,
+		Env:     &env,
 		Request: &req,
 		Log:     r.Log,
 	}
 
-	if base.Spec.ObjectStore.Provider == "minio" {
+	if env.Spec.ObjectStore.Provider == "minio" {
 		result, err := makers.MakeMinio(&maker)
 
 		if err != nil {
@@ -71,7 +71,7 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 		}
 	}
 
-	if base.Spec.Kafka.Provider == "local" {
+	if env.Spec.Kafka.Provider == "local" {
 		result, err := makers.MakeLocalZookeeper(&maker)
 
 		if err != nil {
@@ -89,8 +89,8 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 }
 
 // SetupWithManager sets up with manager
-func (r *InsightsBaseReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&crd.InsightsBase{}).
+		For(&crd.Environment{}).
 		Complete(r)
 }

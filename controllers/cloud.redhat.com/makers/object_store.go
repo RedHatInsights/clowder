@@ -47,7 +47,7 @@ func (obs *ObjectStoreMaker) Make() (ctrl.Result, error) {
 
 	var f func() error
 
-	switch obs.Base.Spec.ObjectStore.Provider {
+	switch obs.Env.Spec.ObjectStore.Provider {
 	case "minio":
 		f = obs.minio
 	case "app-interface":
@@ -70,13 +70,13 @@ func (obs *ObjectStoreMaker) appInterface() error {
 	return nil
 }
 
-func configFromBase(base *crd.InsightsBase, c client.Client) (*config.ObjectStoreConfig, error) {
+func configFromEnv(env *crd.Environment, c client.Client) (*config.ObjectStoreConfig, error) {
 	conf := &config.ObjectStoreConfig{
-		Hostname: base.Status.ObjectStore.Minio.Hostname,
-		Port:     int(base.Status.ObjectStore.Minio.Port),
+		Hostname: env.Status.ObjectStore.Minio.Hostname,
+		Port:     int(env.Status.ObjectStore.Minio.Port),
 	}
 
-	secretName := base.Status.ObjectStore.Minio.Credentials
+	secretName := env.Status.ObjectStore.Minio.Credentials
 	name := types.NamespacedName{
 		Name:      secretName.Name,
 		Namespace: secretName.Namespace,
@@ -96,7 +96,7 @@ func configFromBase(base *crd.InsightsBase, c client.Client) (*config.ObjectStor
 
 func (obs *ObjectStoreMaker) minio() error {
 	if obs.App.Spec.ObjectStore != nil {
-		c, err := configFromBase(obs.Base, obs.Client)
+		c, err := configFromEnv(obs.Env, obs.Client)
 
 		obs.config = *c
 
@@ -143,8 +143,8 @@ func MakeMinio(m *Maker) (ctrl.Result, error) {
 		return result, err
 	}
 
-	labels := m.Base.GetLabels()
-	labels["base-app"] = nn.Name
+	labels := m.Env.GetLabels()
+	labels["env-app"] = nn.Name
 
 	labeler := m.MakeLabeler(nn, labels)
 
@@ -186,14 +186,14 @@ func MakeMinio(m *Maker) (ctrl.Result, error) {
 
 		secret.Name = nn.Name
 		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{m.Base.MakeOwnerReference()}
+		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{m.Env.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
 		if result, err = secretUpdate.Apply(secret); err != nil {
 			return result, err
 		}
 
-		m.Base.Status.ObjectStore = crd.ObjectStoreStatus{
+		m.Env.Status.ObjectStore = crd.ObjectStoreStatus{
 			Buckets: []string{},
 			Minio: crd.MinioStatus{
 				Credentials: core.SecretReference{
@@ -205,7 +205,7 @@ func MakeMinio(m *Maker) (ctrl.Result, error) {
 			},
 		}
 
-		err = m.Client.Status().Update(m.Ctx, m.Base)
+		err = m.Client.Status().Update(m.Ctx, m.Env)
 
 		if err != nil {
 			return result, err

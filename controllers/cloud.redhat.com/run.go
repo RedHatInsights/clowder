@@ -39,20 +39,20 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 		os.Exit(1)
 	}
 
-	if err = (&InsightsAppReconciler{
+	if err = (&ApplicationReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("InsightsApp"),
+		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "InsightsApp")
+		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
 	}
-	if err = (&InsightsBaseReconciler{
+	if err = (&EnvironmentReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("InsightsBase"),
+		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "InsightsBase")
+		setupLog.Error(err, "unable to create controller", "controller", "Environment")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

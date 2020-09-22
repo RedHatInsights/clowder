@@ -84,8 +84,8 @@ type InMemoryDBConfig struct {
 	Provider InMemoryProvider `json:"provider"`
 }
 
-// InsightsBaseSpec defines the desired state of InsightsBase
-type InsightsBaseSpec struct {
+// EnvironmentSpec defines the desired state of Environment
+type EnvironmentSpec struct {
 	Web         WebConfig         `json:"web,omitempty"`
 	Metrics     MetricsConfig     `json:"metrics,omitempty"`
 	Kafka       KafkaConfig       `json:"kafka"`
@@ -106,8 +106,8 @@ type ObjectStoreStatus struct {
 	Buckets []string    `json:"buckets"`
 }
 
-// InsightsBaseStatus defines the observed state of InsightsBase
-type InsightsBaseStatus struct {
+// EnvironmentStatus defines the observed state of Environment
+type EnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	ObjectStore ObjectStoreStatus `json:"objectStore"`
@@ -116,33 +116,33 @@ type InsightsBaseStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// InsightsBase is the Schema for the insightsbases API
-type InsightsBase struct {
+// Environment is the Schema for the environments API
+type Environment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   InsightsBaseSpec   `json:"spec,omitempty"`
-	Status InsightsBaseStatus `json:"status,omitempty"`
+	Spec   EnvironmentSpec   `json:"spec,omitempty"`
+	Status EnvironmentStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// InsightsBaseList contains a list of InsightsBase
-type InsightsBaseList struct {
+// EnvironmentList contains a list of Environment
+type EnvironmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []InsightsBase `json:"items"`
+	Items           []Environment `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&InsightsBase{}, &InsightsBaseList{})
+	SchemeBuilder.Register(&Environment{}, &EnvironmentList{})
 }
 
-func (i *InsightsBase) GetLabels() map[string]string {
+func (i *Environment) GetLabels() map[string]string {
 	return map[string]string{"app": i.ObjectMeta.Name}
 }
 
-func (i *InsightsBase) MakeOwnerReference() metav1.OwnerReference {
+func (i *Environment) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,

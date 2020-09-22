@@ -35,7 +35,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - insightsapps
+  - applications
   verbs:
   - create
   - delete
@@ -47,7 +47,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - insightsapps/status
+  - applications/status
   verbs:
   - get
   - patch
@@ -55,7 +55,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - insightsbases
+  - environments
   verbs:
   - create
   - delete
@@ -67,7 +67,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - insightsbases/status
+  - environments/status
   verbs:
   - get
   - patch
