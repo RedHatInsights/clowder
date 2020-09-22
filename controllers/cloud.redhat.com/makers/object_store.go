@@ -131,39 +131,32 @@ func (obs *ObjectStoreMaker) minio() error {
 }
 
 // MakeMinio creates the actual minio service to be used by applications, this does not create buckets
-func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base *crd.InsightsBase) (ctrl.Result, error) {
+func MakeMinio(m *Maker) (ctrl.Result, error) {
 	result := ctrl.Result{}
-	minioObjName := fmt.Sprintf("%v-minio", req.Name)
-	minioNamespacedName := types.NamespacedName{
-		Namespace: req.Namespace,
-		Name:      minioObjName,
-	}
+	nn := GetNamespacedName(m.Request, "%v-minio")
 
 	dd := apps.Deployment{}
-	err := client.Get(ctx, minioNamespacedName, &dd)
-	update, err := utils.UpdateOrErr(err)
-
+	update, err := m.Get(nn, &dd)
 	if err != nil {
 		return result, err
 	}
 
-	labels := base.GetLabels()
-	labels["base-app"] = minioNamespacedName.Name
+	labels := m.Base.GetLabels()
+	labels["base-app"] = nn.Name
 
-	dd.SetName(minioNamespacedName.Name)
-	dd.SetNamespace(minioNamespacedName.Namespace)
-	dd.SetLabels(labels)
-	dd.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+	labeler := m.MakeLabeler(nn, labels)
+
+	labeler(&dd)
 
 	replicas := int32(1)
 
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: minioNamespacedName.Name,
+		Name: nn.Name,
 		VolumeSource: core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
-				ClaimName: minioNamespacedName.Name,
+				ClaimName: nn.Name,
 			},
 		}},
 	}
@@ -174,31 +167,29 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 	}}
 
 	secret := &core.Secret{}
-	err = client.Get(ctx, minioNamespacedName, secret)
-	secretUpdate, err := utils.UpdateOrErr(err)
-
+	secretUpdate, err := m.Get(nn, secret)
 	if err != nil {
 		return result, err
 	}
 
 	if len(secret.Data) == 0 {
-		endpoint := fmt.Sprintf("%v.%v.svc:9000", minioObjName, req.Namespace)
+		endpoint := fmt.Sprintf("%v.%v.svc:9000", nn.Name, nn.Namespace)
 		secret.StringData = map[string]string{
 			"accessKey": utils.RandString(12),
 			"secretKey": utils.RandString(12),
 			"endpoint":  endpoint,
 		}
 
-		secret.Name = minioNamespacedName.Name
-		secret.Namespace = minioNamespacedName.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{base.MakeOwnerReference()}
+		secret.Name = nn.Name
+		secret.Namespace = nn.Namespace
+		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{m.Base.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
-		if result, err = secretUpdate.Apply(ctx, client, secret); err != nil {
+		if result, err = secretUpdate.Apply(secret); err != nil {
 			return result, err
 		}
 
-		base.Status.ObjectStore = crd.ObjectStoreStatus{
+		m.Base.Status.ObjectStore = crd.ObjectStoreStatus{
 			Buckets: []string{},
 			Minio: crd.MinioStatus{
 				Credentials: core.SecretReference{
@@ -209,7 +200,7 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 			},
 		}
 
-		err = client.Status().Update(ctx, base)
+		err = m.Client.Status().Update(m.Ctx, m.Base)
 
 		if err != nil {
 			return result, err
@@ -221,7 +212,7 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		ValueFrom: &core.EnvVarSource{
 			SecretKeyRef: &core.SecretKeySelector{
 				LocalObjectReference: core.LocalObjectReference{
-					Name: minioNamespacedName.Name,
+					Name: nn.Name,
 				},
 				Key: "accessKey",
 			},
@@ -231,7 +222,7 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		ValueFrom: &core.EnvVarSource{
 			SecretKeyRef: &core.SecretKeySelector{
 				LocalObjectReference: core.LocalObjectReference{
-					Name: minioNamespacedName.Name,
+					Name: nn.Name,
 				},
 				Key: "secretKey",
 			},
@@ -246,12 +237,12 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 	// TODO Readiness and Liveness probes
 
 	c := core.Container{
-		Name:  minioNamespacedName.Name,
+		Name:  nn.Name,
 		Image: "minio/minio",
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{{
-			Name:      minioNamespacedName.Name,
+			Name:      nn.Name,
 			MountPath: "/storage",
 		}},
 		Args: []string{
@@ -263,14 +254,12 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if result, err = update.Apply(ctx, client, &dd); err != nil {
+	if result, err = update.Apply(&dd); err != nil {
 		return result, err
 	}
 
 	s := core.Service{}
-	err = client.Get(ctx, minioNamespacedName, &s)
-
-	update, err = utils.UpdateOrErr(err)
+	update, err = m.Get(nn, &s)
 	if err != nil {
 		return result, err
 	}
@@ -281,31 +270,24 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		Protocol: "TCP",
 	}}
 
-	s.SetName(minioNamespacedName.Name)
-	s.SetNamespace(minioNamespacedName.Namespace)
-	s.SetLabels(labels)
-	s.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+	labeler(&s)
 
 	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
-	if result, err = update.Apply(ctx, client, &s); err != nil {
+	if result, err = update.Apply(&s); err != nil {
 		return result, err
 	}
 
 	pvc := core.PersistentVolumeClaim{}
 
-	err = client.Get(ctx, minioNamespacedName, &pvc)
-
-	update, err = utils.UpdateOrErr(err)
+	update, err = m.Get(nn, &pvc)
 	if err != nil {
 		return result, err
 	}
 
-	pvc.SetName(minioNamespacedName.Name)
-	pvc.SetNamespace(minioNamespacedName.Namespace)
-	pvc.SetLabels(labels)
-	pvc.SetOwnerReferences([]metav1.OwnerReference{base.MakeOwnerReference()})
+	labeler(&pvc)
+
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
 		Requests: core.ResourceList{
@@ -313,7 +295,7 @@ func MakeMinio(client client.Client, ctx context.Context, req ctrl.Request, base
 		},
 	}
 
-	if result, err = update.Apply(ctx, client, &pvc); err != nil {
+	if result, err = update.Apply(&pvc); err != nil {
 		return result, err
 	}
 	return result, nil
