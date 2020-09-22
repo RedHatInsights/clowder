@@ -55,6 +55,14 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 		setupLog.Error(err, "unable to create controller", "controller", "InsightsBase")
 		os.Exit(1)
 	}
+	if err = (&controllers.TurnpikeRouteReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("TurnpikeRoute"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TurnpikeRoute")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

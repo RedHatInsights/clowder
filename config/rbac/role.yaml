@@ -73,6 +73,26 @@ rules:
   - patch
   - update
 - apiGroups:
+  - cloud.redhat.com
+  resources:
+  - turnpikeroutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - turnpikeroutes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - kafka.strimzi.io
   resources:
   - kafkas
@@ -92,3 +112,21 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - v1
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v1
+  resources:
+  - configmaps/status
+  verbs:
+  - get
