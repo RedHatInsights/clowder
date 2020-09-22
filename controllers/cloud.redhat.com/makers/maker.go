@@ -25,6 +25,7 @@ import (
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers/objectstore"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -46,12 +47,27 @@ type SubMaker interface {
 
 //Maker struct for passing variables into SubMakers
 type Maker struct {
-	App     *crd.ClowdApp
-	Env     *crd.ClowdEnvironment
-	Client  client.Client
-	Ctx     context.Context
-	Request *ctrl.Request
-	Log     logr.Logger
+	App         *crd.ClowdApp
+	Env         *crd.ClowdEnvironment
+	Client      client.Client
+	Ctx         context.Context
+	Request     *ctrl.Request
+	Log         logr.Logger
+	ObjectStore objectstore.ObjectStore
+}
+
+func New(maker *Maker) (*Maker, error) {
+	if maker.Env.Spec.ObjectStore.Provider == "minio" {
+		cfg, err := objectstore.GetConfig(maker.Ctx, maker.Env.Status.ObjectStore.Minio, maker.Client)
+		if err != nil {
+			return nil, err
+		}
+		maker.ObjectStore, err = objectstore.NewMinIO(cfg)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return maker, nil
 }
 
 type makerUpdater struct {
