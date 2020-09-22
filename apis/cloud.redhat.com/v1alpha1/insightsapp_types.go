@@ -33,7 +33,7 @@ type InsightsDatabaseSpec struct {
 	Name    string `json:"name,omitempty"`
 }
 
-type InsightsAppSpec struct {
+type ApplicationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
@@ -56,8 +56,8 @@ type InsightsAppSpec struct {
 	Dependencies   []string                 `json:"dependencies,omitempty"`
 }
 
-// InsightsAppStatus defines the observed state of InsightsApp
-type InsightsAppStatus struct {
+// ApplicationStatus defines the observed state of Application
+type ApplicationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
@@ -65,41 +65,41 @@ type InsightsAppStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// InsightsApp is the Schema for the insightsapps API
-type InsightsApp struct {
+// Application is the Schema for the applications API
+type Application struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   InsightsAppSpec   `json:"spec,omitempty"`
-	Status InsightsAppStatus `json:"status,omitempty"`
+	Spec   ApplicationSpec   `json:"spec,omitempty"`
+	Status ApplicationStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// InsightsAppList contains a list of InsightsApp
-type InsightsAppList struct {
+// ApplicationList contains a list of Application
+type ApplicationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []InsightsApp `json:"items"`
+	Items           []Application `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&InsightsApp{}, &InsightsAppList{})
+	SchemeBuilder.Register(&Application{}, &ApplicationList{})
 }
 
-func (i *InsightsApp) GetLabels() map[string]string {
+func (i *Application) GetLabels() map[string]string {
 	return map[string]string{"app": i.ObjectMeta.Name}
 }
 
 // GetNamespacedName contructs a new namespaced name for an object from the pattern
-func (i *InsightsApp) GetNamespacedName(pattern string) types.NamespacedName {
+func (i *Application) GetNamespacedName(pattern string) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: i.Namespace,
 		Name:      fmt.Sprintf(pattern, i.Name),
 	}
 }
 
-func (i *InsightsApp) MakeOwnerReference() metav1.OwnerReference {
+func (i *Application) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
@@ -110,7 +110,7 @@ func (i *InsightsApp) MakeOwnerReference() metav1.OwnerReference {
 
 type omfunc func(o metav1.Object)
 
-func (i *InsightsApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
+func (i *Application) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	o.SetName(i.Name)
 	o.SetNamespace(i.Namespace)
 	o.SetLabels(i.GetLabels())

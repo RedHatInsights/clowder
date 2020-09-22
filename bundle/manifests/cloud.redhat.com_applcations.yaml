@@ -4,20 +4,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: insightsapps.cloud.redhat.com
+  name: applications.cloud.redhat.com
 spec:
   group: cloud.redhat.com
   names:
-    kind: InsightsApp
-    listKind: InsightsAppList
-    plural: insightsapps
-    singular: insightsapp
+    kind: Application
+    listKind: ApplicationList
+    plural: applications
+    singular: application
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: InsightsApp is the Schema for the insightsapps API
+      description: Application is the Schema for the applications API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -1190,7 +1190,7 @@ spec:
           - image
           type: object
         status:
-          description: InsightsAppStatus defines the observed state of InsightsApp
+          description: ApplicationStatus defines the observed state of Application
           type: object
       type: object
   version: v1alpha1

@@ -4,10 +4,10 @@ projectName: clowder
 repo: cloud.redhat.com/clowder/v2
 resources:
 - group: cloud.redhat.com
-  kind: InsightsApp
+  kind: Application
   version: v1alpha1
 - group: cloud.redhat.com
-  kind: InsightsBase
+  kind: Environment
   version: v1alpha1
 version: 3-alpha
 multigroup: true

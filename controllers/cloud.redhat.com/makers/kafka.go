@@ -40,7 +40,7 @@ func (k *KafkaMaker) Make() (ctrl.Result, error) {
 
 	var f func() (ctrl.Result, error)
 
-	switch k.Base.Spec.Kafka.Provider {
+	switch k.Env.Spec.Kafka.Provider {
 	case "operator":
 		f = k.operator
 	case "local":
@@ -65,7 +65,7 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 	k.config.Topics = []config.TopicConfig{}
 	k.config.Brokers = []config.BrokerConfig{}
 
-	appList := crd.InsightsAppList{}
+	appList := crd.ApplicationList{}
 	err := k.Client.List(k.Ctx, &appList)
 
 	if err != nil {
@@ -73,7 +73,7 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 	}
 
 	bc := config.BrokerConfig{
-		Hostname: k.Base.Name + "-kafka." + k.Request.Namespace + ".svc",
+		Hostname: k.Env.Name + "-kafka." + k.Request.Namespace + ".svc",
 	}
 	port := 29092
 	p := int(port)
@@ -81,7 +81,7 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 	k.config.Brokers = append(k.config.Brokers, bc)
 	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
 
-		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Base.Name, k.Request.Namespace)
+		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Env.Name, k.Request.Namespace)
 
 		k.config.Topics = append(
 			k.config.Topics,
@@ -100,7 +100,7 @@ func (k *KafkaMaker) operator() (ctrl.Result, error) {
 	k.config.Topics = []config.TopicConfig{}
 	k.config.Brokers = []config.BrokerConfig{}
 
-	appList := crd.InsightsAppList{}
+	appList := crd.ApplicationList{}
 	err := k.Client.List(k.Ctx, &appList)
 
 	if err != nil {
@@ -110,10 +110,10 @@ func (k *KafkaMaker) operator() (ctrl.Result, error) {
 	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
 		kRes := strimzi.KafkaTopic{}
 
-		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Base.Name, k.Request.Namespace)
+		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Env.Name, k.Request.Namespace)
 
 		update, err := k.Get(types.NamespacedName{
-			Namespace: k.Base.Spec.Kafka.Namespace,
+			Namespace: k.Env.Spec.Kafka.Namespace,
 			Name:      topicName,
 		}, &kRes)
 
@@ -122,14 +122,14 @@ func (k *KafkaMaker) operator() (ctrl.Result, error) {
 		}
 
 		labels := map[string]string{
-			"strimzi.io/cluster": k.Base.Spec.Kafka.ClusterName,
-			"iapp":               k.App.GetName(),
+			"strimzi.io/cluster": k.Env.Spec.Kafka.ClusterName,
+			"app":                k.App.GetName(),
 			// If we label it with the app name, since app names should be
 			// unique? can we use for delete selector?
 		}
 
 		kRes.SetName(topicName)
-		kRes.SetNamespace(k.Base.Spec.Kafka.Namespace)
+		kRes.SetNamespace(k.Env.Spec.Kafka.Namespace)
 		kRes.SetLabels(labels)
 
 		kRes.Spec.Replicas = kafkaTopic.Replicas
@@ -182,8 +182,8 @@ func (k *KafkaMaker) operator() (ctrl.Result, error) {
 	}
 
 	clusterName := types.NamespacedName{
-		Namespace: k.Base.Spec.Kafka.Namespace,
-		Name:      k.Base.Spec.Kafka.ClusterName,
+		Namespace: k.Env.Spec.Kafka.Namespace,
+		Name:      k.Env.Spec.Kafka.ClusterName,
 	}
 
 	kafkaResource := strimzi.Kafka{}
@@ -218,8 +218,8 @@ func MakeLocalKafka(maker *Maker) (ctrl.Result, error) {
 		return result, err
 	}
 
-	labels := maker.Base.GetLabels()
-	labels["base-app"] = nn.Name
+	labels := maker.Env.GetLabels()
+	labels["env-app"] = nn.Name
 
 	labeler := maker.MakeLabeler(nn, labels)
 
@@ -263,7 +263,7 @@ func MakeLocalKafka(maker *Maker) (ctrl.Result, error) {
 		},
 		{
 			Name:  "KAFKA_ZOOKEEPER_CONNECT",
-			Value: maker.Base.Name + "-zookeeper:32181",
+			Value: maker.Env.Name + "-zookeeper:32181",
 		},
 		{
 			Name:  "LOG_DIR",
@@ -363,8 +363,8 @@ func MakeLocalZookeeper(maker *Maker) (ctrl.Result, error) {
 		return result, err
 	}
 
-	labels := maker.Base.GetLabels()
-	labels["base-app"] = nn.Name
+	labels := maker.Env.GetLabels()
+	labels["env-app"] = nn.Name
 
 	labeler := maker.MakeLabeler(nn, labels)
 

@@ -26,7 +26,7 @@ func (db *DatabaseMaker) Make() (ctrl.Result, error) {
 
 	var f func() (ctrl.Result, error)
 
-	switch db.Base.Spec.Database.Provider {
+	switch db.Env.Spec.Database.Provider {
 	case "app-interface":
 		f = db.appInterface
 	case "local":
@@ -50,7 +50,7 @@ func (db *DatabaseMaker) appInterface() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp, cfg *config.DatabaseConfig, image string) {
+func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.Application, cfg *config.DatabaseConfig, image string) {
 	labels := pp.GetLabels()
 	labels["service"] = "db"
 
@@ -123,7 +123,7 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsA
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
-func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.InsightsApp) {
+func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.Application) {
 	servicePorts := []core.ServicePort{{
 		Name:     "database",
 		Port:     5432,
@@ -137,7 +137,7 @@ func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.Insights
 	s.Spec.Ports = servicePorts
 }
 
-func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.InsightsApp) {
+func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.Application) {
 	labels := pp.GetLabels()
 	labels["service"] = "db"
 	pp.SetObjectMeta(pvc, crd.Name(nn.Name), crd.Labels(labels))
@@ -176,7 +176,7 @@ func (db *DatabaseMaker) local() (ctrl.Result, error) {
 		db.config.PgPass = cfg.Database.PgPass
 	}
 
-	makeLocalDB(&dd, nn, db.App, &db.config, db.Base.Spec.Database.Image)
+	makeLocalDB(&dd, nn, db.App, &db.config, db.Env.Spec.Database.Image)
 
 	if result, err = update.Apply(&dd); err != nil {
 		return result, err

@@ -23,7 +23,7 @@ func (idb *InMemoryDBMaker) Make() (ctrl.Result, error) {
 
 	var f func() (ctrl.Result, error)
 
-	switch idb.Base.Spec.InMemoryDB.Provider {
+	switch idb.Env.Spec.InMemoryDB.Provider {
 	case "redis":
 		f = idb.redis
 	case "app-interface":
@@ -42,7 +42,7 @@ func (idb *InMemoryDBMaker) ApplyConfig(c *config.AppConfig) {
 	c.InMemoryDb = &idb.config
 }
 
-func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.InsightsApp) {
+func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.Application) {
 	oneReplica := int32(1)
 
 	pp.SetObjectMeta(
@@ -65,7 +65,7 @@ func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.I
 	}}
 }
 
-func makeRedisService(s *core.Service, nn types.NamespacedName, pp *crd.InsightsApp) {
+func makeRedisService(s *core.Service, nn types.NamespacedName, pp *crd.Application) {
 	servicePorts := []core.ServicePort{{
 		Name:     "database",
 		Port:     5432,

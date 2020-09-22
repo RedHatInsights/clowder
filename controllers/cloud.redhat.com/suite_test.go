@@ -184,7 +184,7 @@ func createCloudwatchSecret(cwData *map[string]string) error {
 	return k8sClient.Create(context.Background(), &cloudwatch)
 }
 
-func createCRs(name types.NamespacedName) (*crd.InsightsBase, *crd.InsightsApp, error) {
+func createCRs(name types.NamespacedName) (*crd.Environment, *crd.Application, error) {
 	ctx := context.Background()
 
 	objMeta := metav1.ObjectMeta{
@@ -195,9 +195,9 @@ func createCRs(name types.NamespacedName) (*crd.InsightsBase, *crd.InsightsApp, 
 		},
 	}
 
-	ibase := crd.InsightsBase{
+	env := crd.Environment{
 		ObjectMeta: objMeta,
-		Spec: crd.InsightsBaseSpec{
+		Spec: crd.EnvironmentSpec{
 			Web: crd.WebConfig{
 				Port:     int32(8080),
 				Provider: "none",
@@ -240,11 +240,11 @@ func createCRs(name types.NamespacedName) (*crd.InsightsBase, *crd.InsightsApp, 
 		},
 	}
 
-	iapp := crd.InsightsApp{
+	app := crd.Application{
 		ObjectMeta: objMeta,
-		Spec: crd.InsightsAppSpec{
+		Spec: crd.ApplicationSpec{
 			Image:       "test:test",
-			Base:        ibase.Name,
+			Base:        env.Name,
 			KafkaTopics: kafkaTopics,
 			Database: crd.InsightsDatabaseSpec{
 				Version: &dbVersion,
@@ -253,15 +253,15 @@ func createCRs(name types.NamespacedName) (*crd.InsightsBase, *crd.InsightsApp, 
 		},
 	}
 
-	err := k8sClient.Create(ctx, &ibase)
+	err := k8sClient.Create(ctx, &env)
 
 	if err != nil {
-		return &ibase, &iapp, err
+		return &env, &app, err
 	}
 
-	err = k8sClient.Create(ctx, &iapp)
+	err = k8sClient.Create(ctx, &app)
 
-	return &ibase, &iapp, err
+	return &env, &app, err
 }
 
 func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
@@ -280,8 +280,8 @@ func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 	return &jsonContent, err
 }
 
-func TestCreateInsightsApp(t *testing.T) {
-	logger.Info("Creating InsightsApp")
+func TestCreateApplication(t *testing.T) {
+	logger.Info("Creating Application")
 
 	name := types.NamespacedName{
 		Name:      "test",
@@ -309,7 +309,7 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	ibase, iapp, err := createCRs(name)
+	env, app, err := createCRs(name)
 
 	if err != nil {
 		t.Error(err)
@@ -329,8 +329,8 @@ func TestCreateInsightsApp(t *testing.T) {
 
 	c := d.Spec.Template.Spec.Containers[0]
 
-	if c.Image != iapp.Spec.Image {
-		t.Errorf("Bad image spec %s; expected %s", c.Image, iapp.Spec.Image)
+	if c.Image != app.Spec.Image {
+		t.Errorf("Bad image spec %s; expected %s", c.Image, app.Spec.Image)
 	}
 
 	// See if Secret is mounted
@@ -362,8 +362,8 @@ func TestCreateInsightsApp(t *testing.T) {
 		t.Errorf("Bad port count %d; expected 1", len(s.Spec.Ports))
 	}
 
-	if s.Spec.Ports[0].Port != ibase.Spec.Metrics.Port {
-		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, ibase.Spec.Metrics.Port)
+	if s.Spec.Ports[0].Port != env.Spec.Metrics.Port {
+		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, env.Spec.Metrics.Port)
 	}
 
 	// Kafka validation
@@ -371,7 +371,7 @@ func TestCreateInsightsApp(t *testing.T) {
 	topic := strimzi.KafkaTopic{}
 	topicName := "inventory-test-default"
 	topicNamespacedName := types.NamespacedName{
-		Namespace: ibase.Spec.Kafka.Namespace,
+		Namespace: env.Spec.Kafka.Namespace,
 		Name:      topicName,
 	}
 
@@ -415,7 +415,7 @@ func TestCreateInsightsApp(t *testing.T) {
 		return
 	}
 
-	for i, kafkaTopic := range iapp.Spec.KafkaTopics {
+	for i, kafkaTopic := range app.Spec.KafkaTopics {
 		actual, expected := jsonContent.Kafka.Topics[i].RequestedName, kafkaTopic.TopicName
 
 		if actual != expected {

@@ -36,7 +36,7 @@ func (l *LoggingMaker) Make() (ctrl.Result, error) {
 
 	providerFns := []func() error{}
 
-	for _, provider := range l.Base.Spec.Logging.Providers {
+	for _, provider := range l.Env.Spec.Logging.Providers {
 		if provider == "cloudwatch" {
 			providerFns = append(providerFns, l.cloudwatch)
 		} else if provider == "local" {
