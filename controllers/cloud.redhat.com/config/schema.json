@@ -83,7 +83,7 @@
             ]
         },
         "KafkaConfig": {
-            "title": "KafkaConfig",
+            "id": "kafkaConfig",
             "type": "object",
             "description": "kafka configuration",
             "properties": {
@@ -186,14 +186,18 @@
                 "secretKey": {
                     "type": "string"
                 },
-                "endpoint": {
+                "hostname": {
                     "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             },
             "required": [
                 "accessKey",
                 "secretKey",
-                "endpoint"
+                "hostname",
+                "port"
             ]
         },
         "InMemoryDB": {

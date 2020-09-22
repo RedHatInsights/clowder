@@ -122,8 +122,11 @@ func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
 	if v, ok := raw["accessKey"]; !ok || v == nil {
 		return fmt.Errorf("field accessKey: required")
 	}
-	if v, ok := raw["endpoint"]; !ok || v == nil {
-		return fmt.Errorf("field endpoint: required")
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
 	}
 	if v, ok := raw["secretKey"]; !ok || v == nil {
 		return fmt.Errorf("field secretKey: required")
@@ -340,8 +343,11 @@ type ObjectStoreConfig struct {
 	// AccessKey corresponds to the JSON schema field "accessKey".
 	AccessKey string `json:"accessKey"`
 
-	// Endpoint corresponds to the JSON schema field "endpoint".
-	Endpoint string `json:"endpoint"`
+	// Hostname corresponds to the JSON schema field "hostname".
+	Hostname string `json:"hostname"`
+
+	// Port corresponds to the JSON schema field "port".
+	Port int `json:"port"`
 
 	// SecretKey corresponds to the JSON schema field "secretKey".
 	SecretKey string `json:"secretKey"`
