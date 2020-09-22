@@ -73,13 +73,22 @@ func (r *InsightsAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	maker := makers.Maker{
+	maker, err := makers.New(&makers.Maker{
 		App:     &iapp,
 		Base:    &base,
 		Client:  r.Client,
 		Ctx:     ctx,
 		Request: &req,
 		Log:     r.Log,
+	})
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if iapp.Spec.ObjectStore != nil {
+		for _, bucket := range iapp.Spec.ObjectStore {
+			maker.ObjectStore.CreateBucket(ctx, bucket)
+		}
 	}
 
 	return maker.Make()

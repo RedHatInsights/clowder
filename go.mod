@@ -3,9 +3,12 @@ module cloud.redhat.com/clowder/v2
 go 1.13
 
 require (
+	github.com/go-ini/ini v1.61.0 // indirect
 	github.com/go-logr/logr v0.1.0
+	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/redhatinsights/app-common-go v0.0.0-20200907091517-7ff0d0942f17
+	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.10.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
