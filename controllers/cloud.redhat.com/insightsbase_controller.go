@@ -64,7 +64,7 @@ func (r *InsightsBaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 	}
 
 	if base.Spec.ObjectStore.Provider == "minio" {
-		result, err := makers.MakeMinio(r.Client, ctx, req, &base)
+		result, err := makers.MakeMinio(&maker)
 
 		if err != nil {
 			return result, err
