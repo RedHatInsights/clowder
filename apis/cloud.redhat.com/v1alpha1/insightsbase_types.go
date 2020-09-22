@@ -97,7 +97,8 @@ type InsightsBaseSpec struct {
 
 type MinioStatus struct {
 	Credentials core.SecretReference `json:"credentials"`
-	Endpoint    string               `json:"endpoint"`
+	Hostname    string               `json:"hostname"`
+	Port        int32                `json:"port"`
 }
 
 type ObjectStoreStatus struct {

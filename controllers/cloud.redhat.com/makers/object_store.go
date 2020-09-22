@@ -19,6 +19,7 @@ import (
 
 	"context"
 	"fmt"
+	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -71,7 +72,8 @@ func (obs *ObjectStoreMaker) appInterface() error {
 
 func configFromBase(base *crd.InsightsBase, c client.Client) (*config.ObjectStoreConfig, error) {
 	conf := &config.ObjectStoreConfig{
-		Endpoint: base.Status.ObjectStore.Minio.Endpoint,
+		Hostname: base.Status.ObjectStore.Minio.Hostname,
+		Port:     int(base.Status.ObjectStore.Minio.Port),
 	}
 
 	secretName := base.Status.ObjectStore.Minio.Credentials
@@ -101,9 +103,9 @@ func (obs *ObjectStoreMaker) minio() error {
 		if err != nil {
 			return err
 		}
-
+		endpoint := fmt.Sprintf("%v:%v", obs.config.Hostname, obs.config.Port)
 		// Initialize minio client object.
-		minioClient, err := minio.New(obs.config.Endpoint, &minio.Options{
+		minioClient, err := minio.New(endpoint, &minio.Options{
 			Creds:  credentials.NewStaticV4(obs.config.AccessKey, obs.config.SecretKey, ""),
 			Secure: false,
 		})
@@ -173,11 +175,13 @@ func MakeMinio(m *Maker) (ctrl.Result, error) {
 	}
 
 	if len(secret.Data) == 0 {
-		endpoint := fmt.Sprintf("%v.%v.svc:9000", nn.Name, nn.Namespace)
+		hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
+		port := int32(9000)
 		secret.StringData = map[string]string{
 			"accessKey": utils.RandString(12),
 			"secretKey": utils.RandString(12),
-			"endpoint":  endpoint,
+			"hostname":  hostname,
+			"port":      strconv.Itoa(int(port)),
 		}
 
 		secret.Name = nn.Name
@@ -196,7 +200,8 @@ func MakeMinio(m *Maker) (ctrl.Result, error) {
 					Name:      secret.Name,
 					Namespace: secret.Namespace,
 				},
-				Endpoint: endpoint,
+				Hostname: hostname,
+				Port:     port,
 			},
 		}
 
