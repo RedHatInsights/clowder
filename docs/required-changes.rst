@@ -67,3 +67,6 @@ Standardize on how you configure Redis
 
 Create a list of service dependencies
 -------------------------------------
+
+Stop pulling images from Dockerhub
+----------------------------------
