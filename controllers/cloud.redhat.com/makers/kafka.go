@@ -73,7 +73,7 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 	}
 
 	bc := config.BrokerConfig{
-		Hostname: k.Env.Name + "-kafka." + k.Request.Namespace + ".svc",
+		Hostname: k.Env.Name + "-kafka." + k.Env.Namespace + ".svc",
 	}
 	port := 29092
 	p := int(port)
@@ -81,7 +81,7 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 	k.config.Brokers = append(k.config.Brokers, bc)
 	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
 
-		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Env.Name, k.Request.Namespace)
+		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Env.Name, k.Env.Namespace)
 
 		k.config.Topics = append(
 			k.config.Topics,
@@ -210,7 +210,7 @@ func (k *KafkaMaker) operator() (ctrl.Result, error) {
 
 func MakeLocalKafka(maker *Maker) (ctrl.Result, error) {
 	result := ctrl.Result{}
-	nn := GetNamespacedName(maker.Request, "%v-kafka")
+	nn := GetNamespacedName(maker.Request, "%v-kafka", maker.Env.Spec.Namespace)
 
 	dd := apps.Deployment{}
 	update, err := maker.Get(nn, &dd)
@@ -354,7 +354,7 @@ func MakeLocalKafka(maker *Maker) (ctrl.Result, error) {
 func MakeLocalZookeeper(maker *Maker) (ctrl.Result, error) {
 
 	result := ctrl.Result{}
-	nn := GetNamespacedName(maker.Request, "%v-zookeeper")
+	nn := GetNamespacedName(maker.Request, "%v-zookeeper", maker.Env.Spec.Namespace)
 
 	dd := apps.Deployment{}
 	update, err := maker.Get(nn, &dd)

@@ -135,7 +135,7 @@ func (obs *ObjectStoreMaker) minio() error {
 // MakeMinio creates the actual minio service to be used by applications, this does not create buckets
 func MakeMinio(m *Maker) (ctrl.Result, error) {
 	result := ctrl.Result{}
-	nn := GetNamespacedName(m.Request, "%v-minio")
+	nn := GetNamespacedName(m.Request, "%v-minio", m.Env.Spec.Namespace)
 
 	dd := apps.Deployment{}
 	update, err := m.Get(nn, &dd)

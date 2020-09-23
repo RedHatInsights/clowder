@@ -65,8 +65,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	env := crd.Environment{}
 	err = r.Client.Get(ctx, types.NamespacedName{
-		Namespace: app.Namespace,
-		Name:      app.Spec.Base,
+		Name: app.Spec.EnvName,
 	}, &env)
 
 	if err != nil {
@@ -130,7 +129,7 @@ func (r *ApplicationReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) 
 	// Filter based on base attribute
 
 	for _, app := range appList.Items {
-		if app.Spec.Base == env.Name {
+		if app.Spec.EnvName == env.Name {
 			// Add filtered resources to return result
 			reqs = append(reqs, reconcile.Request{
 				NamespacedName: types.NamespacedName{

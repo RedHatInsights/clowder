@@ -244,7 +244,7 @@ func createCRs(name types.NamespacedName) (*crd.Environment, *crd.Application, e
 		ObjectMeta: objMeta,
 		Spec: crd.ApplicationSpec{
 			Image:       "test:test",
-			Base:        env.Name,
+			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
 			Database: crd.InsightsDatabaseSpec{
 				Version: &dbVersion,

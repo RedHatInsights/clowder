@@ -86,6 +86,7 @@ type InMemoryDBConfig struct {
 
 // EnvironmentSpec defines the desired state of Environment
 type EnvironmentSpec struct {
+	Namespace   string            `json:"namespace"`
 	Web         WebConfig         `json:"web,omitempty"`
 	Metrics     MetricsConfig     `json:"metrics,omitempty"`
 	Kafka       KafkaConfig       `json:"kafka"`
@@ -115,6 +116,7 @@ type EnvironmentStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster,shortName=env
 
 // Environment is the Schema for the environments API
 type Environment struct {
@@ -126,6 +128,7 @@ type Environment struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // EnvironmentList contains a list of Environment
 type EnvironmentList struct {
