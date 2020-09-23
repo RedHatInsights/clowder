@@ -74,10 +74,13 @@ func (mu *makerUpdater) Updater() utils.Updater {
 }
 
 // GetNamespacedName returns a new types.NamespacedName from the request based on pattern
-func GetNamespacedName(r *reconcile.Request, pattern string) types.NamespacedName {
+func GetNamespacedName(r *reconcile.Request, pattern, namespace string) types.NamespacedName {
+	if namespace == "" {
+		namespace = r.Namespace
+	}
 	return types.NamespacedName{
 		Name:      fmt.Sprintf(pattern, r.Name),
-		Namespace: r.Namespace,
+		Namespace: namespace,
 	}
 }
 

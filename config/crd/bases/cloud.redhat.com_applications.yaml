@@ -13,6 +13,8 @@ spec:
     kind: Application
     listKind: ApplicationList
     plural: applications
+    shortNames:
+    - app
     singular: application
   scope: Namespaced
   subresources:
@@ -39,8 +41,6 @@ spec:
               items:
                 type: string
               type: array
-            base:
-              type: string
             command:
               items:
                 type: string
@@ -159,6 +159,8 @@ spec:
                 - name
                 type: object
               type: array
+            envName:
+              type: string
             image:
               type: string
             inMemoryDb:
@@ -1664,7 +1666,7 @@ spec:
             web:
               type: boolean
           required:
-          - base
+          - envName
           - image
           type: object
         status:

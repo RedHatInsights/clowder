@@ -13,8 +13,10 @@ spec:
     kind: Environment
     listKind: EnvironmentList
     plural: environments
+    shortNames:
+    - env
     singular: environment
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -102,6 +104,8 @@ spec:
               required:
               - provider
               type: object
+            namespace:
+              type: string
             objectStore:
               properties:
                 provider:
@@ -133,6 +137,7 @@ spec:
           - inMemoryDb
           - kafka
           - logging
+          - namespace
           - objectStore
           type: object
         status:
