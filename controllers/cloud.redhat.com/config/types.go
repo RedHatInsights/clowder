@@ -2,8 +2,10 @@
 
 package config
 
-import "fmt"
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
@@ -59,7 +61,7 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// application deployment configuration for cloud.redhat.com applications
+// clowdapp deployment configuration for cloud.redhat.com clowdapps
 type AppConfig struct {
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`

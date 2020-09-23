@@ -39,20 +39,20 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 		os.Exit(1)
 	}
 
-	if err = (&ApplicationReconciler{
+	if err = (&ClowdAppReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdApp"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Application")
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdApp")
 		os.Exit(1)
 	}
-	if err = (&EnvironmentReconciler{
+	if err = (&ClowdEnvironmentReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Environment")
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

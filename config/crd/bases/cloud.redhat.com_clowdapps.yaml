@@ -6,22 +6,22 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: applications.cloud.redhat.com
+  name: clowdapps.cloud.redhat.com
 spec:
   group: cloud.redhat.com
   names:
-    kind: Application
-    listKind: ApplicationList
-    plural: applications
+    kind: ClowdApp
+    listKind: ClowdAppList
+    plural: clowdapps
     shortNames:
     - app
-    singular: application
+    singular: clowdapp
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Application is the Schema for the applications API
+      description: ClowdApp is the Schema for the clowdapps API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -1670,7 +1670,7 @@ spec:
           - image
           type: object
         status:
-          description: ApplicationStatus defines the observed state of Application
+          description: ClowdAppStatus defines the observed state of ClowdApp
           type: object
       type: object
   version: v1alpha1

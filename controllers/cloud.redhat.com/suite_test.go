@@ -184,7 +184,7 @@ func createCloudwatchSecret(cwData *map[string]string) error {
 	return k8sClient.Create(context.Background(), &cloudwatch)
 }
 
-func createCRs(name types.NamespacedName) (*crd.Environment, *crd.Application, error) {
+func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
 	ctx := context.Background()
 
 	objMeta := metav1.ObjectMeta{
@@ -195,9 +195,9 @@ func createCRs(name types.NamespacedName) (*crd.Environment, *crd.Application, e
 		},
 	}
 
-	env := crd.Environment{
+	env := crd.ClowdEnvironment{
 		ObjectMeta: objMeta,
-		Spec: crd.EnvironmentSpec{
+		Spec: crd.ClowdEnvironmentSpec{
 			Web: crd.WebConfig{
 				Port:     int32(8080),
 				Provider: "none",
@@ -240,9 +240,9 @@ func createCRs(name types.NamespacedName) (*crd.Environment, *crd.Application, e
 		},
 	}
 
-	app := crd.Application{
+	app := crd.ClowdApp{
 		ObjectMeta: objMeta,
-		Spec: crd.ApplicationSpec{
+		Spec: crd.ClowdAppSpec{
 			Image:       "test:test",
 			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
@@ -280,8 +280,8 @@ func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 	return &jsonContent, err
 }
 
-func TestCreateApplication(t *testing.T) {
-	logger.Info("Creating Application")
+func TestCreateClowdApp(t *testing.T) {
+	logger.Info("Creating ClowdApp")
 
 	name := types.NamespacedName{
 		Name:      "test",

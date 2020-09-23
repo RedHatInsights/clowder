@@ -65,7 +65,7 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 	k.config.Topics = []config.TopicConfig{}
 	k.config.Brokers = []config.BrokerConfig{}
 
-	appList := crd.ApplicationList{}
+	appList := crd.ClowdAppList{}
 	err := k.Client.List(k.Ctx, &appList)
 
 	if err != nil {
@@ -100,7 +100,7 @@ func (k *KafkaMaker) operator() (ctrl.Result, error) {
 	k.config.Topics = []config.TopicConfig{}
 	k.config.Brokers = []config.BrokerConfig{}
 
-	appList := crd.ApplicationList{}
+	appList := crd.ClowdAppList{}
 	err := k.Client.List(k.Ctx, &appList)
 
 	if err != nil {

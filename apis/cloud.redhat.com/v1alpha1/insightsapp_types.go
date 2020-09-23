@@ -34,7 +34,7 @@ type InsightsDatabaseSpec struct {
 	Name    string `json:"name,omitempty"`
 }
 
-type ApplicationSpec struct {
+type ClowdAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
@@ -57,8 +57,8 @@ type ApplicationSpec struct {
 	Dependencies   []string                 `json:"dependencies,omitempty"`
 }
 
-// ApplicationStatus defines the observed state of Application
-type ApplicationStatus struct {
+// ClowdAppStatus defines the observed state of ClowdApp
+type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
@@ -67,41 +67,41 @@ type ApplicationStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=app
 
-// Application is the Schema for the applications API
-type Application struct {
+// ClowdApp is the Schema for the clowdapps API
+type ClowdApp struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ApplicationSpec   `json:"spec,omitempty"`
-	Status ApplicationStatus `json:"status,omitempty"`
+	Spec   ClowdAppSpec   `json:"spec,omitempty"`
+	Status ClowdAppStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// ApplicationList contains a list of Application
-type ApplicationList struct {
+// ClowdAppList contains a list of ClowdApp
+type ClowdAppList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Application `json:"items"`
+	Items           []ClowdApp `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Application{}, &ApplicationList{})
+	SchemeBuilder.Register(&ClowdApp{}, &ClowdAppList{})
 }
 
-func (i *Application) GetLabels() map[string]string {
+func (i *ClowdApp) GetLabels() map[string]string {
 	return map[string]string{"app": i.ObjectMeta.Name}
 }
 
 // GetNamespacedName contructs a new namespaced name for an object from the pattern
-func (i *Application) GetNamespacedName(pattern string) types.NamespacedName {
+func (i *ClowdApp) GetNamespacedName(pattern string) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: i.Namespace,
 		Name:      fmt.Sprintf(pattern, i.Name),
 	}
 }
 
-func (i *Application) MakeOwnerReference() metav1.OwnerReference {
+func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
@@ -112,7 +112,7 @@ func (i *Application) MakeOwnerReference() metav1.OwnerReference {
 
 type omfunc func(o metav1.Object)
 
-func (i *Application) SetObjectMeta(o metav1.Object, opts ...omfunc) {
+func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	o.SetName(i.Name)
 	o.SetNamespace(i.Namespace)
 	o.SetLabels(i.GetLabels())

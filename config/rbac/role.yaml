@@ -35,7 +35,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - applications
+  - clowdapps
   verbs:
   - create
   - delete
@@ -47,7 +47,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - applications/status
+  - clowdapps/status
   verbs:
   - get
   - patch
@@ -55,7 +55,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - environments
+  - clowdenvironments
   verbs:
   - create
   - delete
@@ -67,7 +67,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - environments/status
+  - clowdenvironments/status
   verbs:
   - get
   - patch

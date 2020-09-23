@@ -4,7 +4,7 @@
     "definitions": {
         "AppConfig": {
             "type": "object",
-            "description": "application deployment configuration for cloud.redhat.com applications",
+            "description": "clowdapp deployment configuration for cloud.redhat.com clowdapps",
             "properties": {
                 "webPort": {
                     "type": "integer"

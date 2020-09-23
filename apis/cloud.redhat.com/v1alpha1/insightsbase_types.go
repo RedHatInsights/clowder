@@ -84,8 +84,8 @@ type InMemoryDBConfig struct {
 	Provider InMemoryProvider `json:"provider"`
 }
 
-// EnvironmentSpec defines the desired state of Environment
-type EnvironmentSpec struct {
+// ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
+type ClowdEnvironmentSpec struct {
 	Namespace   string            `json:"namespace"`
 	Web         WebConfig         `json:"web,omitempty"`
 	Metrics     MetricsConfig     `json:"metrics,omitempty"`
@@ -107,8 +107,8 @@ type ObjectStoreStatus struct {
 	Buckets []string    `json:"buckets"`
 }
 
-// EnvironmentStatus defines the observed state of Environment
-type EnvironmentStatus struct {
+// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
+type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	ObjectStore ObjectStoreStatus `json:"objectStore"`
@@ -118,34 +118,34 @@ type EnvironmentStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=env
 
-// Environment is the Schema for the environments API
-type Environment struct {
+// ClowdEnvironment is the Schema for the clowdenvironments API
+type ClowdEnvironment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   EnvironmentSpec   `json:"spec,omitempty"`
-	Status EnvironmentStatus `json:"status,omitempty"`
+	Spec   ClowdEnvironmentSpec   `json:"spec,omitempty"`
+	Status ClowdEnvironmentStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 
-// EnvironmentList contains a list of Environment
-type EnvironmentList struct {
+// ClowdEnvironmentList contains a list of ClowdEnvironment
+type ClowdEnvironmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Environment `json:"items"`
+	Items           []ClowdEnvironment `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Environment{}, &EnvironmentList{})
+	SchemeBuilder.Register(&ClowdEnvironment{}, &ClowdEnvironmentList{})
 }
 
-func (i *Environment) GetLabels() map[string]string {
+func (i *ClowdEnvironment) GetLabels() map[string]string {
 	return map[string]string{"app": i.ObjectMeta.Name}
 }
 
-func (i *Environment) MakeOwnerReference() metav1.OwnerReference {
+func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,

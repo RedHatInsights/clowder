@@ -18,7 +18,7 @@ var (
 
 func TestMakeDeployment(t *testing.T) {
 	dd := apps.Deployment{}
-	pp := &crd.Application{}
+	pp := &crd.ClowdApp{}
 	makeRedisDeployment(&dd, nn, pp)
 
 	if dd.GetName() != nn.Name {
@@ -28,7 +28,7 @@ func TestMakeDeployment(t *testing.T) {
 
 func TestMakeService(t *testing.T) {
 	s := core.Service{}
-	pp := &crd.Application{}
+	pp := &crd.ClowdApp{}
 	makeRedisService(&s, nn, pp)
 
 	if len(s.Spec.Ports) < 1 {

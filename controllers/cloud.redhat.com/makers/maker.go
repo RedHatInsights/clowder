@@ -46,8 +46,8 @@ type SubMaker interface {
 
 //Maker struct for passing variables into SubMakers
 type Maker struct {
-	App     *crd.Application
-	Env     *crd.Environment
+	App     *crd.ClowdApp
+	Env     *crd.ClowdEnvironment
 	Client  client.Client
 	Ctx     context.Context
 	Request *ctrl.Request
