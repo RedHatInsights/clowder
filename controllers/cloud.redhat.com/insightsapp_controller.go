@@ -33,25 +33,25 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 )
 
-// ApplicationReconciler reconciles a Application object
-type ApplicationReconciler struct {
+// ClowdAppReconciler reconciles a ClowdApp object
+type ClowdAppReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=applications,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=applications/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps/status,verbs=get;update;patch
 
 // +kubebuilder:rbac:groups="",resources=services;persistentvolumeclaims;secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile fn
-func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	_ = r.Log.WithValues("application", req.NamespacedName)
+	_ = r.Log.WithValues("clowdapp", req.NamespacedName)
 
-	app := crd.Application{}
+	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
 
 	if err != nil {
@@ -63,7 +63,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	env := crd.Environment{}
+	env := crd.ClowdEnvironment{}
 	err = r.Client.Get(ctx, types.NamespacedName{
 		Name: app.Spec.EnvName,
 	}, &env)
@@ -85,12 +85,12 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 // SetupWithManager sets up wi
-func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager!")
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&crd.Application{}).
+		For(&crd.ClowdApp{}).
 		Watches(
-			&source.Kind{Type: &crd.Environment{}},
+			&source.Kind{Type: &crd.ClowdEnvironment{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: handler.ToRequestsFunc(r.appsToEnqueueUponEnvUpdate)},
 		).
@@ -99,7 +99,7 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *ApplicationReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) []reconcile.Request {
+func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) []reconcile.Request {
 	reqs := []reconcile.Request{}
 	ctx := context.Background()
 	obj := types.NamespacedName{
@@ -107,9 +107,9 @@ func (r *ApplicationReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) 
 		Namespace: a.Meta.GetNamespace(),
 	}
 
-	// Get the Environment resource
+	// Get the ClowdEnvironment resource
 
-	env := crd.Environment{}
+	env := crd.ClowdEnvironment{}
 	err := r.Client.Get(ctx, obj, &env)
 
 	if err != nil {
@@ -117,13 +117,13 @@ func (r *ApplicationReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) 
 			// Must have been deleted
 			return reqs
 		}
-		r.Log.Error(err, "Failed to fetch Environment")
+		r.Log.Error(err, "Failed to fetch ClowdEnvironment")
 		return nil
 	}
 
-	// Get all the Application resources
+	// Get all the ClowdApp resources
 
-	appList := crd.ApplicationList{}
+	appList := crd.ClowdAppList{}
 	r.Client.List(ctx, &appList)
 
 	// Filter based on base attribute

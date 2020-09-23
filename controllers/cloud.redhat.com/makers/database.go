@@ -50,7 +50,7 @@ func (db *DatabaseMaker) appInterface() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.Application, cfg *config.DatabaseConfig, image string) {
+func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
 	labels := pp.GetLabels()
 	labels["service"] = "db"
 
@@ -123,7 +123,7 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.Applicati
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
-func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.Application) {
+func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.ClowdApp) {
 	servicePorts := []core.ServicePort{{
 		Name:     "database",
 		Port:     5432,
@@ -137,7 +137,7 @@ func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.Applicat
 	s.Spec.Ports = servicePorts
 }
 
-func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.Application) {
+func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.ClowdApp) {
 	labels := pp.GetLabels()
 	labels["service"] = "db"
 	pp.SetObjectMeta(pvc, crd.Name(nn.Name), crd.Labels(labels))

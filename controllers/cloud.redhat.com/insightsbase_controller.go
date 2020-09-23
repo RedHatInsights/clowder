@@ -29,22 +29,22 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 )
 
-// EnvironmentReconciler reconciles a Environment object
-type EnvironmentReconciler struct {
+// ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
+type ClowdEnvironmentReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=environments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
 
 //Reconcile fn
-func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	_ = r.Log.WithValues("environment", req.NamespacedName)
+	_ = r.Log.WithValues("clowdenvironment", req.NamespacedName)
 
-	env := crd.Environment{}
+	env := crd.ClowdEnvironment{}
 	err := r.Client.Get(ctx, req.NamespacedName, &env)
 
 	if err != nil {
@@ -89,8 +89,8 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 // SetupWithManager sets up with manager
-func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&crd.Environment{}).
+		For(&crd.ClowdEnvironment{}).
 		Complete(r)
 }

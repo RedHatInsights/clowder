@@ -52,7 +52,7 @@ Create build pipeline in app-interface
 
 Required by App SRE
 
-Replace Deployment and Service resources with Application
+Replace Deployment and Service resources with ClowdApp
 ---------------------------------------------------------
 
 This is what actually makes an app managed by the operator.

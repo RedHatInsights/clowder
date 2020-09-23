@@ -12,11 +12,11 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - kind: Application
-      name: applications.cloud.redhat.com
+    - kind: ClowdApp
+      name: clowdapps.cloud.redhat.com
       version: v1alpha1
-    - kind: Environment
-      name: environments.cloud.redhat.com
+    - kind: ClowdEnvironment
+      name: clowdenvironments.cloud.redhat.com
       version: v1alpha1
   description: Deploy and operator cloud.redhat.com backend
   displayName: clowder
@@ -56,7 +56,7 @@ spec:
         - apiGroups:
           - cloud.redhat.com
           resources:
-          - applications
+          - clowdapps
           verbs:
           - create
           - delete
@@ -68,7 +68,7 @@ spec:
         - apiGroups:
           - cloud.redhat.com
           resources:
-          - applications/status
+          - clowdapps/status
           verbs:
           - get
           - patch
@@ -76,7 +76,7 @@ spec:
         - apiGroups:
           - cloud.redhat.com
           resources:
-          - environments
+          - clowdenvironments
           verbs:
           - create
           - delete
@@ -88,7 +88,7 @@ spec:
         - apiGroups:
           - cloud.redhat.com
           resources:
-          - environments/status
+          - clowdenvironments/status
           verbs:
           - get
           - patch

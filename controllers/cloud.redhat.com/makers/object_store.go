@@ -70,7 +70,7 @@ func (obs *ObjectStoreMaker) appInterface() error {
 	return nil
 }
 
-func configFromEnv(env *crd.Environment, c client.Client) (*config.ObjectStoreConfig, error) {
+func configFromEnv(env *crd.ClowdEnvironment, c client.Client) (*config.ObjectStoreConfig, error) {
 	conf := &config.ObjectStoreConfig{
 		Hostname: env.Status.ObjectStore.Minio.Hostname,
 		Port:     int(env.Status.ObjectStore.Minio.Port),
@@ -132,7 +132,7 @@ func (obs *ObjectStoreMaker) minio() error {
 	return nil
 }
 
-// MakeMinio creates the actual minio service to be used by applications, this does not create buckets
+// MakeMinio creates the actual minio service to be used by clowdapps, this does not create buckets
 func MakeMinio(m *Maker) (ctrl.Result, error) {
 	result := ctrl.Result{}
 	nn := GetNamespacedName(m.Request, "%v-minio", m.Env.Spec.Namespace)

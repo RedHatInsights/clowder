@@ -6,22 +6,22 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: environments.cloud.redhat.com
+  name: clowdenvironments.cloud.redhat.com
 spec:
   group: cloud.redhat.com
   names:
-    kind: Environment
-    listKind: EnvironmentList
-    plural: environments
+    kind: ClowdEnvironment
+    listKind: ClowdEnvironmentList
+    plural: clowdenvironments
+    singular: clowdenvironment
     shortNames:
     - env
-    singular: environment
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Environment is the Schema for the environments API
+      description: ClowdEnvironment is the Schema for the clowdenvironments API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -36,7 +36,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: EnvironmentSpec defines the desired state of Environment
+          description: ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
           properties:
             db:
               properties:
@@ -141,7 +141,7 @@ spec:
           - objectStore
           type: object
         status:
-          description: EnvironmentStatus defines the observed state of Environment
+          description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
           properties:
             objectStore:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state

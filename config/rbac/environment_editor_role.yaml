@@ -1,13 +1,13 @@
-# permissions for end users to edit environments.
+# permissions for end users to edit clowdenvironments.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: environment-editor-role
+  name: clowdenvironment-editor-role
 rules:
 - apiGroups:
   - cloud.redhat.com.cloud.redhat.com
   resources:
-  - environments
+  - clowdenvironments
   verbs:
   - create
   - delete
@@ -19,6 +19,6 @@ rules:
 - apiGroups:
   - cloud.redhat.com.cloud.redhat.com
   resources:
-  - environments/status
+  - clowdenvironments/status
   verbs:
   - get

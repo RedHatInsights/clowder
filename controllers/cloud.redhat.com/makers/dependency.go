@@ -1,9 +1,10 @@
 package makers
 
 import (
+	"fmt"
+
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"fmt"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -27,16 +28,16 @@ func (cm *DependencyMaker) Make() (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	// Get all Applications
+	// Get all ClowdApps
 
-	apps := crd.ApplicationList{}
+	apps := crd.ClowdAppList{}
 	err := cm.Client.List(cm.Ctx, &apps)
 
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	appMap := map[string]crd.Application{}
+	appMap := map[string]crd.ClowdApp{}
 
 	for _, app := range apps.Items {
 		appMap[app.Name] = app
