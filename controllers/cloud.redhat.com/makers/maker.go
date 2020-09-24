@@ -25,6 +25,7 @@ import (
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -125,9 +126,10 @@ func New(maker *Maker) (*Maker, error) {
 
 //Make generates objects and dependencies for operator
 func (m *Maker) Make() (ctrl.Result, error) {
-	c := config.AppConfig{}
+	result, c, err := m.runProviders()
 
-	hash, result, err := m.persistConfig(&c)
+	hash, result, err := m.persistConfig(c)
+
 	if err != nil {
 		return result, err
 	}
@@ -331,4 +333,78 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 	}
 
 	return result, nil
+}
+
+func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
+	result := ctrl.Result{}
+
+	provider := providers.Provider{
+		Client: m.Client,
+		Ctx:    m.Ctx,
+		Env:    m.Env,
+	}
+
+	c := config.AppConfig{}
+
+	objectStoreProvider, err := provider.GetObjectStore()
+
+	if err != nil {
+		return result, &c, err
+	}
+
+	for _, bucket := range m.App.Spec.ObjectStore {
+		objectStoreProvider.CreateBucket(bucket)
+	}
+
+	objectStoreProvider.Configure(&c)
+
+	dbSpec := m.App.Spec.Database
+
+	if dbSpec.Name != "" {
+		databaseProvider, err := provider.GetDatabase()
+
+		if err != nil {
+			return result, &c, err
+		}
+
+		databaseProvider.CreateDatabase(dbSpec.Name, dbSpec.Version)
+		databaseProvider.Configure(&c)
+	}
+
+	kafkaProvider, err := provider.GetKafka()
+
+	if err != nil {
+		return result, &c, err
+	}
+
+	for _, topic := range m.App.Spec.KafkaTopics {
+		kafkaProvider.CreateTopic(topic)
+
+		if err != nil {
+			return result, &c, err
+		}
+	}
+
+	kafkaProvider.Configure(&c)
+
+	if m.App.Spec.InMemoryDB {
+		inMemoryDbProvider, err := provider.GetInMemoryDB()
+
+		if err != nil {
+			return result, &c, err
+		}
+
+		inMemoryDbProvider.CreateInMemoryDB(m.App.Name)
+		inMemoryDbProvider.Configure(&c)
+	}
+
+	loggingProvider, err := provider.GetLogging()
+
+	if err != nil {
+		return result, &c, err
+	}
+
+	loggingProvider.Configure(&c)
+
+	return result, &c, nil
 }
