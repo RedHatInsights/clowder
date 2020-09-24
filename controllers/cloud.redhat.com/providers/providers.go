@@ -38,7 +38,7 @@ type KafkaProvider interface {
 // DatabaseProvider is the interface for apps to use to configure databases
 type DatabaseProvider interface {
 	Configurable
-	CreateDatabase(name string, version *int32) error
+	CreateDatabase(app *crd.ClowdApp) error
 }
 
 // InMemoryDBProvider is the interface for apps to use to configure in-memory
@@ -69,7 +69,15 @@ func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
 }
 
 func (c *Provider) GetDatabase() (DatabaseProvider, error) {
-	return nil, nil
+	var o DatabaseProvider
+	var err error
+
+	switch c.Env.Spec.Database.Provider {
+	case "local":
+		o, err = NewLocalDBProvider(c)
+	}
+
+	return o, err
 }
 
 func (c *Provider) GetKafka() (KafkaProvider, error) {
