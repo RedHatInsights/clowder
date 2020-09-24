@@ -33,6 +33,7 @@ type Provider interface {
 // ObjectStoreProvider is the interface for apps to use to configure object
 // stores
 type ObjectStoreProvider interface {
+	Provider
 	CreateBucket(bucket string) error
 }
 
@@ -61,43 +62,23 @@ type LoggingProvider interface {
 
 // ProviderChooser will return the correct Provider given the current
 // environment settings
-type ProviderChooser struct {
-	Ctx *ProviderContext
-}
 
-func (p *ProviderChooser) New(ctx *ProviderContext) {
-	p.Ctx = ctx
-}
-
-func (p *ProviderChooser) Get(kind string) Provider {
-	return &MinIO{}
-}
-
-func (p *ProviderChooser) GetObjectStore() ObjectStoreProvider {
-	var provider ObjectStoreProvider
-	switch p.Ctx.Env.Spec.ObjectStore.Provider {
+func (c *ProviderContext) GetObjectStore() (ObjectStoreProvider, error) {
+	switch c.Ctx.Env.Spec.ObjectStore.Provider {
 	case "minio":
-		provider = &MinIO{}
-		err := provider.New(p.Ctx)
-
-		if err != nil {
-			return provider, err
-		}
+		return NewMinIO(c.Ctx)
 	}
 }
 
-func (p *ProviderChooser) GetKakfa() KafkaProvider {
-	return nil
+func (c *ProviderContext) GetDatabase() (DatabaseProvider, error) {
+	return nil, nil
 }
-
-func (p *ProviderChooser) GetDatabase() DatabaseProvider {
-	return nil
+func (c *ProviderContext) GetKafka() (KafkaProvider, error) {
+	return nil, nil
 }
-
-func (p *ProviderChooser) GetInMemoryDB() InMemoryDBProvider {
-	return nil
+func (c *ProviderContext) GetInMemoryDB() (InMemoryDBProvider, error) {
+	return nil, nil
 }
-
-func (p *ProviderChooser) GetLogging() LoggingProvider {
-	return nil
+func (c *ProviderContext) GetLogging() (LoggingProvider, error) {
+	return nil, nil
 }
