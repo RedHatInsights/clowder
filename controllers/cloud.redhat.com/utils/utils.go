@@ -8,9 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -123,4 +126,15 @@ func ListMerge(listStrs []string) (string, error) {
 func Int32(n int) *int32 {
 	t := int32(n)
 	return &t
+}
+
+// MakeLabeler creates a function that will label objects with metadata from
+// the given namespaced name and labels
+func MakeLabeler(nn types.NamespacedName, labels map[string]string, env *crd.ClowdEnvironment) func(metav1.Object) {
+	return func(o metav1.Object) {
+		o.SetName(nn.Name)
+		o.SetNamespace(nn.Namespace)
+		o.SetLabels(labels)
+		o.SetOwnerReferences([]metav1.OwnerReference{env.MakeOwnerReference()})
+	}
 }

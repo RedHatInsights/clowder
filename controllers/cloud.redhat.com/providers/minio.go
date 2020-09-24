@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -11,15 +12,12 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-type MinIO struct {
-	Client *minio.Client
-	Config *config.ObjectStoreConfig
-}
 
 func GetConfig(ctx context.Context, m crd.MinioStatus, c client.Client) (*config.ObjectStoreConfig, error) {
 	conf := &config.ObjectStoreConfig{
@@ -50,20 +48,30 @@ func GetConfig(ctx context.Context, m crd.MinioStatus, c client.Client) (*config
 	return conf, nil
 }
 
-// NewMinIO constructs a new client for the given config
-func (m *MinIO) Init(ctx ProviderContext) (ctrl.Result, error) {
-	result := ctrl.Result{}
+// MinIO is an object store provider that deploys and configures MinIO
+type MinIO struct {
+	Client *minio.Client
+	Config *config.ObjectStoreConfig
+}
+
+// Init constructs a new client for the given config
+func (m *MinIO) Init(ctx ProviderContext) error {
 	cfg, err := GetConfig(ctx.Ctx, ctx.Env.Status.ObjectStore.Minio, ctx.Client)
 
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	if cfg == nil {
-		m.DeployMinio(types.NamespacedName{
-			Namespace: ctx.Env.Spec.Namespace,
-			Name:      ctx.Env.Name,
-		})
+		m.DeployMinio(
+			ctx.Ctx,
+			types.NamespacedName{
+				Namespace: ctx.Env.Spec.Namespace,
+				Name:      ctx.Env.Name,
+			},
+			ctx.Client,
+			ctx.Env,
+		)
 	}
 
 	endpoint := fmt.Sprintf("%v:%v", cfg.Hostname, cfg.Port)
@@ -73,13 +81,13 @@ func (m *MinIO) Init(ctx ProviderContext) (ctrl.Result, error) {
 	})
 
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	m.Client = cl
 	m.Config = cfg
 
-	return result, nil
+	return nil
 }
 
 func (m *MinIO) Configure(c *config.AppConfig) {
@@ -103,20 +111,20 @@ func (m *MinIO) CreateBucket(ctx context.Context, bucket string) error {
 
 // DeployMinio creates the actual minio service to be used by clowdapps, this
 // does not create buckets
-func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, client client.Client) (ctrl.Result, error) {
+func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client client.Client, env *crd.ClowdEnvironment) (ctrl.Result, error) {
 	result := ctrl.Result{}
 
 	dd := apps.Deployment{}
-	update, err := utils.UpdateOrErr(client.Get(ctx, name, dd))
+	update, err := utils.UpdateOrErr(client.Get(ctx, nn, &dd))
 
 	if err != nil {
 		return result, err
 	}
 
-	labels := m.Env.GetLabels()
+	labels := env.GetLabels()
 	labels["env-app"] = nn.Name
 
-	labeler := m.MakeLabeler(nn, labels)
+	labeler := utils.MakeLabeler(nn, labels, env)
 
 	labeler(&dd)
 
@@ -139,7 +147,8 @@ func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, clie
 	}}
 
 	secret := &core.Secret{}
-	secretUpdate, err := m.Get(nn, secret)
+	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
+
 	if err != nil {
 		return result, err
 	}
@@ -156,14 +165,14 @@ func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, clie
 
 		secret.Name = nn.Name
 		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{m.Env.MakeOwnerReference()}
+		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{env.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
-		if result, err = secretUpdate.Apply(secret); err != nil {
+		if result, err = secretUpdate.Apply(ctx, client, secret); err != nil {
 			return result, err
 		}
 
-		m.Env.Status.ObjectStore = crd.ObjectStoreStatus{
+		env.Status.ObjectStore = crd.ObjectStoreStatus{
 			Buckets: []string{},
 			Minio: crd.MinioStatus{
 				Credentials: core.SecretReference{
@@ -175,7 +184,7 @@ func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, clie
 			},
 		}
 
-		err = m.Client.Status().Update(m.Ctx, m.Env)
+		err = client.Status().Update(ctx, env)
 
 		if err != nil {
 			return result, err
@@ -229,12 +238,13 @@ func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, clie
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if result, err = update.Apply(&dd); err != nil {
+	if result, err = update.Apply(ctx, client, &dd); err != nil {
 		return result, err
 	}
 
 	s := core.Service{}
-	update, err = m.Get(nn, &s)
+	update, err = utils.UpdateOrErr(client.Get(ctx, nn, &s))
+
 	if err != nil {
 		return result, err
 	}
@@ -250,13 +260,14 @@ func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, clie
 	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
-	if result, err = update.Apply(&s); err != nil {
+	if result, err = update.Apply(ctx, client, &s); err != nil {
 		return result, err
 	}
 
 	pvc := core.PersistentVolumeClaim{}
 
-	update, err = m.Get(nn, &pvc)
+	update, err = utils.UpdateOrErr(client.Get(ctx, nn, &pvc))
+
 	if err != nil {
 		return result, err
 	}
@@ -270,7 +281,7 @@ func (m *MinIO) DeployMinio(name types.NamespacedName, ctx context.Context, clie
 		},
 	}
 
-	if result, err = update.Apply(&pvc); err != nil {
+	if result, err = update.Apply(ctx, client, &pvc); err != nil {
 		return result, err
 	}
 	return result, nil
