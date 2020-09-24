@@ -25,7 +25,6 @@ import (
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers/objectstore"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -114,7 +113,8 @@ func (m *Maker) Get(nn types.NamespacedName, obj runtime.Object) (MakerUpdater, 
 	}, nil
 }
 
-// MakeLabeler creates a function that will label objects with metadata from the given namespaced name and labels
+// MakeLabeler creates a function that will label objects with metadata from
+// the given namespaced name and labels
 func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) func(metav1.Object) {
 	return func(o metav1.Object) {
 		o.SetName(nn.Name)
