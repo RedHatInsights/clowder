@@ -84,11 +84,11 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	if app.Spec.ObjectStore != nil {
-		for _, bucket := range app.Spec.ObjectStore {
-			maker.ObjectStore.CreateBucket(ctx, bucket)
-		}
-	}
+	// if app.Spec.ObjectStore != nil {
+	// 	for _, bucket := range app.Spec.ObjectStore {
+	// 		maker.ObjectStore.CreateBucket(ctx, bucket)
+	// 	}
+	// }
 
 	return maker.Make()
 }

@@ -46,27 +46,12 @@ type SubMaker interface {
 
 //Maker struct for passing variables into SubMakers
 type Maker struct {
-	App         *crd.ClowdApp
-	Env         *crd.ClowdEnvironment
-	Client      client.Client
-	Ctx         context.Context
-	Request     *ctrl.Request
-	Log         logr.Logger
-	ObjectStore objectstore.ObjectStore
-}
-
-func New(maker *Maker) (*Maker, error) {
-	if maker.Env.Spec.ObjectStore.Provider == "minio" {
-		cfg, err := objectstore.GetConfig(maker.Ctx, maker.Env.Status.ObjectStore.Minio, maker.Client)
-		if err != nil {
-			return nil, err
-		}
-		maker.ObjectStore, err = objectstore.NewMinIO(cfg)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return maker, nil
+	App     *crd.ClowdApp
+	Env     *crd.ClowdEnvironment
+	Client  client.Client
+	Ctx     context.Context
+	Request *ctrl.Request
+	Log     logr.Logger
 }
 
 type makerUpdater struct {
@@ -130,31 +115,19 @@ func (m *Maker) getSubMakers() []SubMaker {
 		&KafkaMaker{Maker: m},
 		&DatabaseMaker{Maker: m},
 		&LoggingMaker{Maker: m},
-		&ObjectStoreMaker{Maker: m},
 		&InMemoryDBMaker{Maker: m},
 	}
 }
 
+func New(maker *Maker) (*Maker, error) {
+	return maker, nil
+}
+
 //Make generates objects and dependencies for operator
 func (m *Maker) Make() (ctrl.Result, error) {
-	configs := []config.ConfigOption{}
+	c := config.AppConfig{}
 
-	for _, sm := range m.getSubMakers() {
-		result, err := sm.Make()
-
-		if err != nil || result.Requeue || result.RequeueAfter.Seconds() > 0.0 {
-			return result, err
-		}
-
-		configs = append(configs, sm.ApplyConfig)
-	}
-
-	configs = append(configs, config.Web(int(m.Env.Spec.Web.Port)))
-	configs = append(configs, config.Metrics(m.Env.Spec.Metrics.Path, int(m.Env.Spec.Metrics.Port)))
-
-	c := config.New(configs...)
-
-	hash, result, err := m.persistConfig(c)
+	hash, result, err := m.persistConfig(&c)
 	if err != nil {
 		return result, err
 	}

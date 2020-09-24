@@ -63,13 +63,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Log:     r.Log,
 	}
 
-	if env.Spec.ObjectStore.Provider == "minio" {
-		result, err := makers.MakeMinio(&maker)
+	// if env.Spec.ObjectStore.Provider == "minio" {
+	// 	result, err := makers.MakeMinio(&maker)
 
-		if err != nil {
-			return result, err
-		}
-	}
+	// 	if err != nil {
+	// 		return result, err
+	// 	}
+	// }
 
 	if env.Spec.Kafka.Provider == "local" {
 		result, err := makers.MakeLocalZookeeper(&maker)

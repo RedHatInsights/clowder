@@ -52,10 +52,12 @@ func GetConfig(ctx context.Context, m crd.MinioStatus, c client.Client) (*config
 type MinIO struct {
 	Client *minio.Client
 	Config *config.ObjectStoreConfig
+	Ctx    *ProviderContext
 }
 
-// Init constructs a new client for the given config
-func (m *MinIO) Init(ctx ProviderContext) error {
+// New constructs a new client for the given config
+func (m *MinIO) New(ctx *ProviderContext) error {
+	m.Ctx = ctx
 	cfg, err := GetConfig(ctx.Ctx, ctx.Env.Status.ObjectStore.Minio, ctx.Client)
 
 	if err != nil {
@@ -95,8 +97,8 @@ func (m *MinIO) Configure(c *config.AppConfig) {
 }
 
 // CreateBucket creates a new bucket
-func (m *MinIO) CreateBucket(ctx context.Context, bucket string) error {
-	found, err := m.Client.BucketExists(ctx, bucket)
+func (m *MinIO) CreateBucket(bucket string) error {
+	found, err := m.Client.BucketExists(m.Ctx.Ctx, bucket)
 
 	if err != nil {
 		return err
@@ -106,7 +108,7 @@ func (m *MinIO) CreateBucket(ctx context.Context, bucket string) error {
 		return nil // possibly return a found error?
 	}
 
-	return m.Client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{})
+	return m.Client.MakeBucket(m.Ctx.Ctx, bucket, minio.MakeBucketOptions{})
 }
 
 // DeployMinio creates the actual minio service to be used by clowdapps, this

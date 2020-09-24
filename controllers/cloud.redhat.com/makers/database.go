@@ -164,7 +164,9 @@ func (db *DatabaseMaker) local() (ctrl.Result, error) {
 		return result, err
 	}
 
-	db.config = *config.NewDatabaseConfig(db.App.Spec.Database.Name, nn.Name)
+	db.config = config.DatabaseConfig{
+		Name: db.App.Spec.Database.Name,
+	}
 
 	if update.Updater() {
 		cfg, err := db.getConfig()
