@@ -114,7 +114,6 @@ func (m *Maker) getSubMakers() []SubMaker {
 	return []SubMaker{
 		&DependencyMaker{Maker: m},
 		&KafkaMaker{Maker: m},
-		&DatabaseMaker{Maker: m},
 		&LoggingMaker{Maker: m},
 		&InMemoryDBMaker{Maker: m},
 	}
@@ -367,7 +366,7 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 			return result, &c, err
 		}
 
-		databaseProvider.CreateDatabase(dbSpec.Name, dbSpec.Version)
+		databaseProvider.CreateDatabase(m.App)
 		databaseProvider.Configure(&c)
 	}
 

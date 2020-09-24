@@ -1,12 +1,11 @@
-package makers
+package providers
 
 import (
+	"fmt"
+
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-
-	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	ctrl "sigs.k8s.io/controller-runtime"
-
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -14,48 +13,90 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-//DatabaseMaker makes the DatabaseConfig object
-type DatabaseMaker struct {
-	*Maker
-	config config.DatabaseConfig
+type localDbProvider struct {
+	Provider
+	Config *config.DatabaseConfig
 }
 
-//Make function for the DatabaseMaker
-func (db *DatabaseMaker) Make() (ctrl.Result, error) {
-	db.config = config.DatabaseConfig{}
+func (db *localDbProvider) Configure(c *config.AppConfig) {
+	c.Database = db.Config
+}
 
-	var f func() (ctrl.Result, error)
+func NewLocalDBProvider(p *Provider) (DatabaseProvider, error) {
+	return &localDbProvider{Provider: *p}, nil
+}
 
-	switch db.Env.Spec.Database.Provider {
-	case "app-interface":
-		f = db.appInterface
-	case "local":
-		f = db.local
+// CreateDatabase ensures a database is created for the given app.  The
+// namespaced name passed in must be the actual name of the db resources
+func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%v-db", app.Name),
+		Namespace: app.Namespace,
 	}
 
-	if f != nil {
-		return f()
+	dd := apps.Deployment{}
+	exists, err := utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &dd))
+
+	if err != nil {
+		return err
 	}
 
-	return ctrl.Result{}, nil
+	if exists {
+		// DB was already created
+		return fmt.Errorf("DB has already been created")
+	}
 
-}
+	cfg := config.DatabaseConfig{
+		Hostname: fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
+		Port:     5432,
+		Username: utils.RandString(16),
+		Password: utils.RandString(16),
+		PgPass:   utils.RandString(16),
+		Name:     app.Spec.Database.Name,
+	}
 
-//ApplyConfig for the DatabaseMaker
-func (db *DatabaseMaker) ApplyConfig(c *config.AppConfig) {
-	c.Database = &db.config
-}
+	makeLocalDB(&dd, nn, app, &cfg, db.Env.Spec.Database.Image)
 
-func (db *DatabaseMaker) appInterface() (ctrl.Result, error) {
-	return ctrl.Result{}, nil
+	if _, err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
+		return err
+	}
+
+	s := core.Service{}
+	update, err := utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &s))
+
+	if err != nil {
+		return err
+	}
+
+	makeLocalService(&s, nn, app)
+
+	if _, err = update.Apply(db.Ctx, db.Client, &s); err != nil {
+		return err
+	}
+
+	pvc := core.PersistentVolumeClaim{}
+	update, err = utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &pvc))
+
+	if err != nil {
+		return err
+	}
+
+	makeLocalPVC(&pvc, nn, app)
+
+	if _, err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
 	labels := pp.GetLabels()
 	labels["service"] = "db"
 
+	replicas := int32(1)
 	pp.SetObjectMeta(dd, crd.Name(nn.Name), crd.Labels(labels))
-	dd.Spec.Replicas = pp.Spec.MinReplicas
+	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: nn.Name,
@@ -147,66 +188,4 @@ func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *
 			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
 		},
 	}
-}
-
-func (db *DatabaseMaker) local() (ctrl.Result, error) {
-	result := ctrl.Result{}
-
-	if db.App.Spec.Database == (crd.InsightsDatabaseSpec{}) {
-		return result, nil
-	}
-
-	nn := db.App.GetNamespacedName("%v-db")
-
-	dd := apps.Deployment{}
-	update, err := db.Get(nn, &dd)
-	if err != nil {
-		return result, err
-	}
-
-	db.config = config.DatabaseConfig{
-		Name: db.App.Spec.Database.Name,
-	}
-
-	if update.Updater() {
-		cfg, err := db.getConfig()
-		if err != nil {
-			return result, err
-		}
-		db.config.Username = cfg.Database.Username
-		db.config.Password = cfg.Database.Password
-		db.config.PgPass = cfg.Database.PgPass
-	}
-
-	makeLocalDB(&dd, nn, db.App, &db.config, db.Env.Spec.Database.Image)
-
-	if result, err = update.Apply(&dd); err != nil {
-		return result, err
-	}
-
-	s := core.Service{}
-	update, err = db.Get(nn, &s)
-	if err != nil {
-		return result, err
-	}
-
-	makeLocalService(&s, nn, db.App)
-
-	if result, err = update.Apply(&s); err != nil {
-		return result, err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-	update, err = db.Get(nn, &pvc)
-	if err != nil {
-		return result, err
-	}
-
-	makeLocalPVC(&pvc, nn, db.App)
-
-	if result, err = update.Apply(&pvc); err != nil {
-		return result, err
-	}
-
-	return result, nil
 }
