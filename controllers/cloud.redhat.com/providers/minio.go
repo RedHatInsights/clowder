@@ -55,8 +55,9 @@ type MinIO struct {
 	Ctx    *ProviderContext
 }
 
-// New constructs a new client for the given config
-func (m *MinIO) New(ctx *ProviderContext) error {
+// NewMinIO constructs a new minio for the given config
+func NewMinIO(ctx *ProviderContext) error {
+	m := &MinIO{}
 	m.Ctx = ctx
 	cfg, err := GetConfig(ctx.Ctx, ctx.Env.Status.ObjectStore.Minio, ctx.Client)
 
