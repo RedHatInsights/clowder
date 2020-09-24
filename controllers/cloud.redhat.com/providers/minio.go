@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -48,32 +47,50 @@ func GetConfig(ctx context.Context, m crd.MinioStatus, c client.Client) (*config
 	return conf, nil
 }
 
-// MinIO is an object store provider that deploys and configures MinIO
-type MinIO struct {
+// minio is an object store provider that deploys and configures MinIO
+type minioProvider struct {
+	Ctx    context.Context
 	Client *minio.Client
 	Config *config.ObjectStoreConfig
-	Ctx    *ProviderContext
 }
 
-// NewMinIO constructs a new minio for the given config
-func NewMinIO(ctx *ProviderContext) error {
-	m := &MinIO{}
-	m.Ctx = ctx
-	cfg, err := GetConfig(ctx.Ctx, ctx.Env.Status.ObjectStore.Minio, ctx.Client)
+func (m *minioProvider) Configure(c *config.AppConfig) {
+	c.ObjectStore = m.Config
+}
+
+// CreateBucket creates a new bucket
+func (m *minioProvider) CreateBucket(bucket string) error {
+	found, err := m.Client.BucketExists(m.Ctx, bucket)
 
 	if err != nil {
 		return err
 	}
 
+	if found {
+		return nil // possibly return a found error?
+	}
+
+	return m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
+}
+
+// NewMinIO constructs a new minio for the given config
+func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
+	m := &minioProvider{Ctx: p.Ctx}
+	cfg, err := GetConfig(p.Ctx, p.Env.Status.ObjectStore.Minio, p.Client)
+
+	if err != nil {
+		return m, err
+	}
+
 	if cfg == nil {
-		m.DeployMinio(
-			ctx.Ctx,
+		deployMinio(
+			p.Ctx,
 			types.NamespacedName{
-				Namespace: ctx.Env.Spec.Namespace,
-				Name:      ctx.Env.Name,
+				Namespace: p.Env.Spec.Namespace,
+				Name:      p.Env.Name,
 			},
-			ctx.Client,
-			ctx.Env,
+			p.Client,
+			p.Env,
 		)
 	}
 
@@ -84,44 +101,23 @@ func NewMinIO(ctx *ProviderContext) error {
 	})
 
 	if err != nil {
-		return err
+		return m, err
 	}
 
 	m.Client = cl
 	m.Config = cfg
 
-	return nil
-}
-
-func (m *MinIO) Configure(c *config.AppConfig) {
-	c.ObjectStore = m.Config
-}
-
-// CreateBucket creates a new bucket
-func (m *MinIO) CreateBucket(bucket string) error {
-	found, err := m.Client.BucketExists(m.Ctx.Ctx, bucket)
-
-	if err != nil {
-		return err
-	}
-
-	if found {
-		return nil // possibly return a found error?
-	}
-
-	return m.Client.MakeBucket(m.Ctx.Ctx, bucket, minio.MakeBucketOptions{})
+	return m, nil
 }
 
 // DeployMinio creates the actual minio service to be used by clowdapps, this
 // does not create buckets
-func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client client.Client, env *crd.ClowdEnvironment) (ctrl.Result, error) {
-	result := ctrl.Result{}
-
+func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Client, env *crd.ClowdEnvironment) (*config.ObjectStoreConfig, error) {
 	dd := apps.Deployment{}
 	update, err := utils.UpdateOrErr(client.Get(ctx, nn, &dd))
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	labels := env.GetLabels()
@@ -153,15 +149,19 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
+	var hostname, accessKey, secretKey string
+	port := int32(9000)
+
 	if len(secret.Data) == 0 {
-		hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
-		port := int32(9000)
+		hostname = fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
+		accessKey = utils.RandString(12)
+		secretKey = utils.RandString(12)
 		secret.StringData = map[string]string{
-			"accessKey": utils.RandString(12),
-			"secretKey": utils.RandString(12),
+			"accessKey": accessKey,
+			"secretKey": secretKey,
 			"hostname":  hostname,
 			"port":      strconv.Itoa(int(port)),
 		}
@@ -171,8 +171,8 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{env.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
-		if result, err = secretUpdate.Apply(ctx, client, secret); err != nil {
-			return result, err
+		if _, err = secretUpdate.Apply(ctx, client, secret); err != nil {
+			return nil, err
 		}
 
 		env.Status.ObjectStore = crd.ObjectStoreStatus{
@@ -190,7 +190,7 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 		err = client.Status().Update(ctx, env)
 
 		if err != nil {
-			return result, err
+			return nil, err
 		}
 	}
 
@@ -241,20 +241,20 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if result, err = update.Apply(ctx, client, &dd); err != nil {
-		return result, err
+	if _, err = update.Apply(ctx, client, &dd); err != nil {
+		return nil, err
 	}
 
 	s := core.Service{}
 	update, err = utils.UpdateOrErr(client.Get(ctx, nn, &s))
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	servicePorts := []core.ServicePort{{
 		Name:     "minio",
-		Port:     9000,
+		Port:     port,
 		Protocol: "TCP",
 	}}
 
@@ -263,8 +263,8 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
-	if result, err = update.Apply(ctx, client, &s); err != nil {
-		return result, err
+	if _, err = update.Apply(ctx, client, &s); err != nil {
+		return nil, err
 	}
 
 	pvc := core.PersistentVolumeClaim{}
@@ -272,7 +272,7 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 	update, err = utils.UpdateOrErr(client.Get(ctx, nn, &pvc))
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	labeler(&pvc)
@@ -284,8 +284,14 @@ func (m *MinIO) DeployMinio(ctx context.Context, nn types.NamespacedName, client
 		},
 	}
 
-	if result, err = update.Apply(ctx, client, &pvc); err != nil {
-		return result, err
+	if _, err = update.Apply(ctx, client, &pvc); err != nil {
+		return nil, err
 	}
-	return result, nil
+
+	return &config.ObjectStoreConfig{
+		Hostname:  hostname,
+		Port:      int(port),
+		AccessKey: accessKey,
+		SecretKey: secretKey,
+	}, nil
 }
