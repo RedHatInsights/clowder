@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
@@ -57,27 +58,23 @@ type LoggingProvider interface {
 }
 
 func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
-	var o ObjectStoreProvider
-	var err error
-
-	switch c.Env.Spec.ObjectStore.Provider {
+	objectStoreProvider := c.Env.Spec.ObjectStore.Provider
+	switch objectStoreProvider {
 	case "minio":
-		o, err = NewMinIO(c)
+		return NewMinIO(c)
+	default:
+		return nil, fmt.Errorf("No matching provider for %s", objectStoreProvider)
 	}
-
-	return o, err
 }
 
 func (c *Provider) GetDatabase() (DatabaseProvider, error) {
-	var o DatabaseProvider
-	var err error
-
-	switch c.Env.Spec.Database.Provider {
+	dbProvider := c.Env.Spec.Database.Provider
+	switch dbProvider {
 	case "local":
-		o, err = NewLocalDBProvider(c)
+		return NewLocalDBProvider(c)
+	default:
+		return nil, fmt.Errorf("No matching provider for %s", dbProvider)
 	}
-
-	return o, err
 }
 
 func (c *Provider) GetKafka() (KafkaProvider, error) {
