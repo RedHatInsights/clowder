@@ -7,6 +7,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -33,7 +34,7 @@ type ObjectStoreProvider interface {
 // KafkaProvider is the interface for apps to use to configure kafka topics
 type KafkaProvider interface {
 	Configurable
-	CreateTopic(topic strimzi.KafkaTopicSpec) error
+	CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error
 }
 
 // DatabaseProvider is the interface for apps to use to configure databases
@@ -78,7 +79,13 @@ func (c *Provider) GetDatabase() (DatabaseProvider, error) {
 }
 
 func (c *Provider) GetKafka() (KafkaProvider, error) {
-	return nil, nil
+	kafkaProvider := c.Env.Spec.Kafka.Provider
+	switch kafkaProvider {
+	case "operator":
+		return NewStrimzi(c)
+	default:
+		return nil, fmt.Errorf("No matching provider for %s", kafkaProvider)
+	}
 }
 
 func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {

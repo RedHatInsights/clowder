@@ -14,16 +14,8 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
-
-var conversionMap = map[string]func([]string) (string, error){
-	"retention.ms":          utils.IntMax,
-	"retention.bytes":       utils.IntMax,
-	"min.compaction.lag.ms": utils.IntMax,
-	"cleanup.policy":        utils.ListMerge,
-}
 
 //KafkaMaker makes the KafkaConfig object
 type KafkaMaker struct {
@@ -88,123 +80,6 @@ func (k *KafkaMaker) local() (ctrl.Result, error) {
 			config.TopicConfig{Name: topicName, RequestedName: kafkaTopic.TopicName},
 		)
 	}
-	return result, nil
-}
-
-func (k *KafkaMaker) operator() (ctrl.Result, error) {
-	result := ctrl.Result{}
-	if k.App.Spec.KafkaTopics == nil {
-		return result, nil
-	}
-
-	k.config.Topics = []config.TopicConfig{}
-	k.config.Brokers = []config.BrokerConfig{}
-
-	appList := crd.ClowdAppList{}
-	err := k.Client.List(k.Ctx, &appList)
-
-	if err != nil {
-		return result, err
-	}
-
-	for _, kafkaTopic := range k.App.Spec.KafkaTopics {
-		kRes := strimzi.KafkaTopic{}
-
-		topicName := fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, k.Env.Name, k.Request.Namespace)
-
-		update, err := k.Get(types.NamespacedName{
-			Namespace: k.Env.Spec.Kafka.Namespace,
-			Name:      topicName,
-		}, &kRes)
-
-		if err != nil {
-			return result, err
-		}
-
-		labels := map[string]string{
-			"strimzi.io/cluster": k.Env.Spec.Kafka.ClusterName,
-			"app":                k.App.GetName(),
-			// If we label it with the app name, since app names should be
-			// unique? can we use for delete selector?
-		}
-
-		kRes.SetName(topicName)
-		kRes.SetNamespace(k.Env.Spec.Kafka.Namespace)
-		kRes.SetLabels(labels)
-
-		kRes.Spec.Replicas = kafkaTopic.Replicas
-		kRes.Spec.Partitions = kafkaTopic.Partitions
-		kRes.Spec.Config = kafkaTopic.Config
-
-		newConfig := make(map[string]string)
-
-		// This can be improved from an efficiency PoV
-		// Loop through all key/value pairs in the config
-		for key, value := range kRes.Spec.Config {
-			valList := []string{value}
-			for _, res := range appList.Items {
-				if res.ObjectMeta.Name == k.Request.Name {
-					continue
-				}
-				if res.ObjectMeta.Namespace != k.Request.Namespace {
-					continue
-				}
-				if res.Spec.KafkaTopics != nil {
-					for _, topic := range res.Spec.KafkaTopics {
-						if topic.Config != nil {
-							if val, ok := topic.Config[key]; ok {
-								valList = append(valList, val)
-							}
-						}
-					}
-				}
-			}
-			f, ok := conversionMap[key]
-			if ok {
-				out, _ := f(valList)
-				newConfig[key] = out
-			} else {
-				err = fmt.Errorf("no conversion type for %s", key)
-				return result, err
-			}
-		}
-
-		kRes.Spec.Config = newConfig
-
-		if result, err = update.Apply(&kRes); err != nil {
-			return result, err
-		}
-
-		k.config.Topics = append(
-			k.config.Topics,
-			config.TopicConfig{Name: topicName, RequestedName: kafkaTopic.TopicName},
-		)
-	}
-
-	clusterName := types.NamespacedName{
-		Namespace: k.Env.Spec.Kafka.Namespace,
-		Name:      k.Env.Spec.Kafka.ClusterName,
-	}
-
-	kafkaResource := strimzi.Kafka{}
-	if _, err := k.Get(clusterName, &kafkaResource); err != nil {
-		return result, err
-	}
-
-	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type == "plain" {
-			bc := config.BrokerConfig{
-				Hostname: listener.Addresses[0].Host,
-			}
-			port := listener.Addresses[0].Port
-			if port != nil {
-				p := int(*port)
-				bc.Port = &p
-			}
-			k.config.Brokers = append(k.config.Brokers, bc)
-		}
-	}
-
 	return result, nil
 }
 

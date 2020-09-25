@@ -375,8 +375,13 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 		return result, &c, err
 	}
 
+	nn := types.NamespacedName{
+		Name:      m.App.Name,
+		Namespace: m.App.Namespace,
+	}
+
 	for _, topic := range m.App.Spec.KafkaTopics {
-		kafkaProvider.CreateTopic(topic)
+		kafkaProvider.CreateTopic(nn, &topic)
 
 		if err != nil {
 			return result, &c, err
