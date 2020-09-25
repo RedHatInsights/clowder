@@ -46,7 +46,7 @@ type DatabaseProvider interface {
 // databases
 type InMemoryDBProvider interface {
 	Configurable
-	CreateInMemoryDB(name string) error
+	CreateInMemoryDB(app *crd.ClowdApp) error
 }
 
 // LoggingProvider is the interface for apps to use to configure logging.  This
@@ -82,7 +82,13 @@ func (c *Provider) GetKafka() (KafkaProvider, error) {
 }
 
 func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
-	return nil, nil
+	dbProvider := c.Env.Spec.InMemoryDB.Provider
+	switch dbProvider {
+	case "redis":
+		return NewRedis(c)
+	default:
+		return nil, fmt.Errorf("No matching provider for %s", dbProvider)
+	}
 }
 
 func (c *Provider) GetLogging() (LoggingProvider, error) {

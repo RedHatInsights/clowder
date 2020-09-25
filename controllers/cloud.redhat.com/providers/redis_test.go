@@ -1,4 +1,4 @@
-package makers
+package providers
 
 import (
 	"testing"
@@ -36,7 +36,7 @@ func TestMakeService(t *testing.T) {
 	}
 
 	p := s.Spec.Ports[0]
-	if p.Port != 5432 {
-		t.Errorf("Port number is incorrect, got: %v, want: %v", p.Port, 5432)
+	if p.Port != 6379 {
+		t.Errorf("Port number is incorrect, got: %v, want: %v", p.Port, 6379)
 	}
 }
