@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -55,34 +55,16 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
-	maker := makers.Maker{
-		Ctx:     ctx,
-		Client:  r.Client,
-		Env:     &env,
-		Request: &req,
-		Log:     r.Log,
+	provider := providers.Provider{
+		Ctx:    ctx,
+		Client: r.Client,
+		Env:    &env,
 	}
 
-	// if env.Spec.ObjectStore.Provider == "minio" {
-	// 	result, err := makers.MakeMinio(&maker)
+	err = provider.SetUpEnvironment()
 
-	// 	if err != nil {
-	// 		return result, err
-	// 	}
-	// }
-
-	if env.Spec.Kafka.Provider == "local" {
-		result, err := makers.MakeLocalZookeeper(&maker)
-
-		if err != nil {
-			return result, err
-		}
-
-		result, err = makers.MakeLocalKafka(&maker)
-
-		if err != nil {
-			return result, err
-		}
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil

@@ -109,3 +109,37 @@ func (c *Provider) GetLogging() (LoggingProvider, error) {
 		return nil, fmt.Errorf("No matching provider for %s", logProvider)
 	}
 }
+
+func (c *Provider) SetUpEnvironment() error {
+	_, err := c.GetObjectStore()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = c.GetDatabase()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = c.GetKafka()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = c.GetInMemoryDB()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = c.GetLogging()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
