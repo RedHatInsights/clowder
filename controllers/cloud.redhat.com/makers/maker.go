@@ -113,7 +113,6 @@ func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) f
 func (m *Maker) getSubMakers() []SubMaker {
 	return []SubMaker{
 		&DependencyMaker{Maker: m},
-		&KafkaMaker{Maker: m},
 		&LoggingMaker{Maker: m},
 	}
 }
