@@ -13,9 +13,9 @@ spec:
     kind: ClowdEnvironment
     listKind: ClowdEnvironmentList
     plural: clowdenvironments
-    singular: clowdenvironment
     shortNames:
     - env
+    singular: clowdenvironment
   scope: Cluster
   subresources:
     status: {}

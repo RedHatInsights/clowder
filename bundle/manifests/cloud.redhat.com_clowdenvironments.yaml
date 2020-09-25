@@ -11,8 +11,10 @@ spec:
     kind: ClowdEnvironment
     listKind: ClowdEnvironmentList
     plural: clowdenvironments
+    shortNames:
+    - env
     singular: clowdenvironment
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -96,6 +98,8 @@ spec:
               required:
               - provider
               type: object
+            namespace:
+              type: string
             objectStore:
               properties:
                 provider:
@@ -127,6 +131,7 @@ spec:
           - inMemoryDb
           - kafka
           - logging
+          - namespace
           - objectStore
           type: object
         status:
@@ -151,11 +156,15 @@ spec:
                           description: Namespace defines the space within which the secret name must be unique.
                           type: string
                       type: object
-                    endpoint:
+                    hostname:
                       type: string
+                    port:
+                      format: int32
+                      type: integer
                   required:
                   - credentials
-                  - endpoint
+                  - hostname
+                  - port
                   type: object
               required:
               - buckets
