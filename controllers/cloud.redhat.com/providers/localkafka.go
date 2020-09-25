@@ -58,20 +58,13 @@ func NewLocalKafka(p *Provider) (KafkaProvider, error) {
 		Config:   config,
 	}
 
-	appList := crd.ClowdAppList{}
-	err := p.Client.List(p.Ctx, &appList)
+	err := makeLocalZookeeper(p)
 
 	if err != nil {
 		return &kafkaProvider, err
 	}
 
-	makeLocalZookeeper(p)
-
-	if err != nil {
-		return &kafkaProvider, err
-	}
-
-	makeLocalKafka(p)
+	err = makeLocalKafka(p)
 
 	if err != nil {
 		return &kafkaProvider, err
