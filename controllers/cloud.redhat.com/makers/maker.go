@@ -403,6 +403,12 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 		return result, &c, err
 	}
 
+	err = loggingProvider.SetUpLogging(nn)
+
+	if err != nil {
+		return result, &c, err
+	}
+
 	loggingProvider.Configure(&c)
 
 	return result, &c, nil

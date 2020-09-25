@@ -61,10 +61,10 @@ type DatabaseConfig struct {
 
 // TODO: Other potential providers: splunk, kafka
 
-type LoggingProviders []string
+type LoggingProvider string
 
 type LoggingConfig struct {
-	Providers LoggingProviders `json:"providers"`
+	Provider LoggingProvider `json:"provider"`
 }
 
 // TODO: Other potential provider: ceph, S3

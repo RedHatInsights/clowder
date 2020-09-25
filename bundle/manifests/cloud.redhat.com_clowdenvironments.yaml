@@ -76,12 +76,10 @@ spec:
               type: object
             logging:
               properties:
-                providers:
-                  items:
-                    type: string
-                  type: array
+                provider:
+                  type: string
               required:
-              - providers
+              - provider
               type: object
             metrics:
               properties:

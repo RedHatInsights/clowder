@@ -79,11 +79,11 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	cfg, err := GetConfig(p.Ctx, p.Env.Status.ObjectStore.Minio, p.Client)
 
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("newminio: getconfig: %w", err)
 	}
 
 	if cfg == nil {
-		deployMinio(
+		cfg, err = deployMinio(
 			p.Ctx,
 			types.NamespacedName{
 				Namespace: p.Env.Spec.Namespace,
@@ -92,6 +92,10 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 			p.Client,
 			p.Env,
 		)
+
+		if err != nil {
+			return m, fmt.Errorf("newminio: deploy: %w", err)
+		}
 	}
 
 	endpoint := fmt.Sprintf("%v:%v", cfg.Hostname, cfg.Port)
@@ -101,7 +105,7 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	})
 
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("newminio: new: %w", err)
 	}
 
 	m.Client = cl

@@ -63,6 +63,8 @@ func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
 	switch objectStoreProvider {
 	case "minio":
 		return NewMinIO(c)
+	case "app-interface":
+		return &AppInterfaceProvider{Provider: *c}, nil
 	default:
 		return nil, fmt.Errorf("No matching provider for %s", objectStoreProvider)
 	}
@@ -101,7 +103,7 @@ func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
 }
 
 func (c *Provider) GetLogging() (LoggingProvider, error) {
-	logProvider := c.Env.Spec.InMemoryDB.Provider
+	logProvider := c.Env.Spec.Logging.Provider
 	switch logProvider {
 	case "app-interface":
 		return NewAppInterface(c)
@@ -114,7 +116,7 @@ func (c *Provider) SetUpEnvironment() error {
 	_, err := c.GetObjectStore()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("setupenv: %w", err)
 	}
 
 	_, err = c.GetDatabase()

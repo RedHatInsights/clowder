@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -217,7 +218,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 				Provider: "local",
 			},
 			Logging: crd.LoggingConfig{
-				Providers: []string{"cloudwatch"},
+				Provider: "app-interface",
 			},
 			ObjectStore: crd.ObjectStoreConfig{
 				Provider: "app-interface",
@@ -225,6 +226,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 			InMemoryDB: crd.InMemoryDBConfig{
 				Provider: "redis",
 			},
+			Namespace: "default",
 		},
 	}
 
@@ -395,6 +397,8 @@ func TestCreateClowdApp(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	fmt.Printf("%+v\n", jsonContent)
 
 	cwConfigVals := map[string]string{
 		"aws_access_key_id":     jsonContent.Logging.Cloudwatch.AccessKeyId,

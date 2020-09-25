@@ -4,11 +4,8 @@ import (
 	"fmt"
 
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
-
-	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
-
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"

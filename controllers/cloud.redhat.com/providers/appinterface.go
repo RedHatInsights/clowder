@@ -1,29 +1,34 @@
 package providers
 
 import (
+	"fmt"
+
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
-
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
-type appInterfaceProvider struct {
+type AppInterfaceProvider struct {
 	Provider
 	Config config.LoggingConfig
 }
 
-func (a *appInterfaceProvider) Configure(c *config.AppConfig) {
+func (a *AppInterfaceProvider) Configure(c *config.AppConfig) {
 	c.Logging = a.Config
 }
 
 func NewAppInterface(p *Provider) (LoggingProvider, error) {
-	provider := appInterfaceProvider{}
+	provider := AppInterfaceProvider{Provider: *p}
 
 	return &provider, nil
 }
 
-func (a *appInterfaceProvider) SetUpLogging(nn types.NamespacedName) error {
+func (a *AppInterfaceProvider) CreateBucket(bucket string) error {
+	return nil
+}
+
+func (a *AppInterfaceProvider) SetUpLogging(nn types.NamespacedName) error {
 	a.Config = config.LoggingConfig{}
 	return setCloudwatchSecret(nn, &a.Provider, &a.Config)
 }
@@ -36,6 +41,7 @@ func setCloudwatchSecret(nn types.NamespacedName, p *Provider, c *config.Logging
 	}
 
 	secret := core.Secret{}
+	fmt.Printf("%+v\n", p)
 	err := p.Client.Get(p.Ctx, name, &secret)
 
 	if err != nil {
