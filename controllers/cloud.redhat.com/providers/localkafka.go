@@ -3,7 +3,6 @@ package providers
 import (
 	"fmt"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
