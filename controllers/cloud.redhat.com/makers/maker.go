@@ -39,6 +39,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+//DependencyMaker makes the DependencyConfig object
+type DependencyMaker struct {
+	*Maker
+	config config.DependenciesConfig
+}
+
 //SubMaker interface defines interface for making sub objects
 type SubMaker interface {
 	Make() (ctrl.Result, error)
@@ -112,7 +118,6 @@ func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) f
 
 func (m *Maker) getSubMakers() []SubMaker {
 	return []SubMaker{
-		&DependencyMaker{Maker: m},
 		&LoggingMaker{Maker: m},
 	}
 }
@@ -124,6 +129,10 @@ func New(maker *Maker) (*Maker, error) {
 //Make generates objects and dependencies for operator
 func (m *Maker) Make() (ctrl.Result, error) {
 	result, c, err := m.runProviders()
+
+	if result, err := m.makeDependencies(c); err != nil {
+		return result, err
+	}
 
 	hash, result, err := m.persistConfig(c)
 
@@ -409,4 +418,76 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 	loggingProvider.Configure(&c)
 
 	return result, &c, nil
+}
+
+func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
+	depConfig := config.DependenciesConfig{}
+
+	// Return if no deps
+
+	deps := m.App.Spec.Dependencies
+
+	if deps == nil || len(deps) == 0 {
+		return ctrl.Result{}, nil
+	}
+
+	// Get all ClowdApps
+
+	apps := crd.ClowdAppList{}
+	err := m.Client.List(m.Ctx, &apps)
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	appMap := map[string]crd.ClowdApp{}
+
+	for _, app := range apps.Items {
+		appMap[app.Name] = app
+	}
+
+	// Iterate over all deps
+
+	missingDeps := []string{}
+
+	for _, dep := range m.App.Spec.Dependencies {
+		depApp, exists := appMap[dep]
+
+		if !exists {
+			missingDeps = append(missingDeps, dep)
+			continue
+		}
+
+		// If app has public endpoint, add it to app config
+
+		svcName := types.NamespacedName{
+			Name:      depApp.Name,
+			Namespace: depApp.Namespace,
+		}
+
+		svc := core.Service{}
+		err = m.Client.Get(m.Ctx, svcName, &svc)
+
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		for _, port := range svc.Spec.Ports {
+			if port.Name == "web" {
+				depConfig = append(depConfig, config.DependencyConfig{
+					Hostname: fmt.Sprintf("%s.%s.svc", svc.Name, svc.Namespace),
+					Port:     int(port.Port),
+					Name:     depApp.Name,
+				})
+			}
+		}
+	}
+
+	if len(missingDeps) > 0 {
+		// TODO: Emit event
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	c.Dependencies = depConfig
+	return ctrl.Result{}, nil
 }
