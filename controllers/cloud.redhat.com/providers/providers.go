@@ -55,7 +55,7 @@ type InMemoryDBProvider interface {
 // per-environment basis.
 type LoggingProvider interface {
 	Configurable
-	SetupLogging(name string) error
+	SetUpLogging(nn types.NamespacedName) error
 }
 
 func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
@@ -101,5 +101,11 @@ func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
 }
 
 func (c *Provider) GetLogging() (LoggingProvider, error) {
-	return nil, nil
+	logProvider := c.Env.Spec.InMemoryDB.Provider
+	switch logProvider {
+	case "app-interface":
+		return NewAppInterface(c)
+	default:
+		return nil, fmt.Errorf("No matching provider for %s", logProvider)
+	}
 }

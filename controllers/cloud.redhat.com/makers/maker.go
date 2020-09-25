@@ -45,12 +45,6 @@ type DependencyMaker struct {
 	config config.DependenciesConfig
 }
 
-//SubMaker interface defines interface for making sub objects
-type SubMaker interface {
-	Make() (ctrl.Result, error)
-	ApplyConfig(c *config.AppConfig)
-}
-
 //Maker struct for passing variables into SubMakers
 type Maker struct {
 	App     *crd.ClowdApp
@@ -113,12 +107,6 @@ func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) f
 		o.SetNamespace(nn.Namespace)
 		o.SetLabels(labels)
 		o.SetOwnerReferences([]metav1.OwnerReference{m.Env.MakeOwnerReference()})
-	}
-}
-
-func (m *Maker) getSubMakers() []SubMaker {
-	return []SubMaker{
-		&LoggingMaker{Maker: m},
 	}
 }
 
