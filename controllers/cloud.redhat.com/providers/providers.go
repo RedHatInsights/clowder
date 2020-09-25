@@ -83,6 +83,8 @@ func (c *Provider) GetKafka() (KafkaProvider, error) {
 	switch kafkaProvider {
 	case "operator":
 		return NewStrimzi(c)
+	case "local":
+		return NewLocalKafka(c)
 	default:
 		return nil, fmt.Errorf("No matching provider for %s", kafkaProvider)
 	}
