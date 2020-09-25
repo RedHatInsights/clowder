@@ -431,7 +431,9 @@ func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, app := range apps.Items {
-		appMap[app.Name] = app
+		if app.Spec.EnvName == m.App.Spec.EnvName {
+			appMap[app.Name] = app
+		}
 	}
 
 	// Iterate over all deps
