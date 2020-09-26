@@ -66,7 +66,7 @@ func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
 	case "app-interface":
 		return &AppInterfaceProvider{Provider: *c}, nil
 	default:
-		return nil, fmt.Errorf("No matching provider for %s", objectStoreProvider)
+		return nil, fmt.Errorf("No matching object store provider for %s", objectStoreProvider)
 	}
 }
 
@@ -76,7 +76,7 @@ func (c *Provider) GetDatabase() (DatabaseProvider, error) {
 	case "local":
 		return NewLocalDBProvider(c)
 	default:
-		return nil, fmt.Errorf("No matching provider for %s", dbProvider)
+		return nil, fmt.Errorf("No matching db provider for %s", dbProvider)
 	}
 }
 
@@ -88,7 +88,7 @@ func (c *Provider) GetKafka() (KafkaProvider, error) {
 	case "local":
 		return NewLocalKafka(c)
 	default:
-		return nil, fmt.Errorf("No matching provider for %s", kafkaProvider)
+		return nil, fmt.Errorf("No matching kafka provider for %s", kafkaProvider)
 	}
 }
 
@@ -98,7 +98,7 @@ func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
 	case "redis":
 		return NewRedis(c)
 	default:
-		return nil, fmt.Errorf("No matching provider for %s", dbProvider)
+		return nil, fmt.Errorf("No matching memory db provider for %s", dbProvider)
 	}
 }
 
@@ -107,8 +107,10 @@ func (c *Provider) GetLogging() (LoggingProvider, error) {
 	switch logProvider {
 	case "app-interface":
 		return NewAppInterface(c)
+	case "none":
+		return nil, nil
 	default:
-		return nil, fmt.Errorf("No matching provider for %s", logProvider)
+		return nil, fmt.Errorf("No matching logging provider for %s", logProvider)
 	}
 }
 

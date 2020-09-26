@@ -24,7 +24,7 @@ func (k *localKafka) Configure(config *config.AppConfig) {
 
 func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error {
 	topicName := fmt.Sprintf(
-		"%s-%s-%s", topic.TopicName, k.Env.Name, k.Env.Namespace,
+		"%s-%s-%s", topic.TopicName, k.Env.Name, k.Env.Spec.Namespace,
 	)
 
 	k.Config.Topics = append(
@@ -41,10 +41,11 @@ func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTo
 func NewLocalKafka(p *Provider) (KafkaProvider, error) {
 
 	port := 29092
+	fmt.Printf("namespace: %v\n", p.Env.Namespace)
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
-			Hostname: fmt.Sprintf("%v-kafka.%v.svc", p.Env.Name, p.Env.Namespace),
+			Hostname: fmt.Sprintf("%v-kafka.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
 			Port:     &port,
 		}},
 	}
@@ -132,7 +133,7 @@ func makeLocalKafka(p *Provider) error {
 		},
 		{
 			Name:  "LOG_DIR",
-			Value: "/var/lib/mq-kafka",
+			Value: "/var/lib/kafka",
 		},
 		{
 			Name:  "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
@@ -154,7 +155,7 @@ func makeLocalKafka(p *Provider) error {
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: "confluentinc/cp-kafka:latest",
+		Image: "confluentinc/cp-kafka:latest", // TODO: Pull image from quay
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{
