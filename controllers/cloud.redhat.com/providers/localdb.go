@@ -6,6 +6,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -94,9 +95,8 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp,
 	labels := pp.GetLabels()
 	labels["service"] = "db"
 
-	replicas := int32(1)
 	pp.SetObjectMeta(dd, crd.Name(nn.Name), crd.Labels(labels))
-	dd.Spec.Replicas = &replicas
+	dd.Spec.Replicas = utils.Int32(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: nn.Name,

@@ -245,7 +245,10 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	app := crd.ClowdApp{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdAppSpec{
-			Image:       "test:test",
+			Pods: []crd.PodSpec{{
+				Image: "test:test",
+				Name:  "testpod",
+			}},
 			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
 			Database: crd.InsightsDatabaseSpec{
@@ -322,7 +325,11 @@ func TestCreateClowdApp(t *testing.T) {
 
 	d := apps.Deployment{}
 
-	err = fetchWithDefaults(name, &d)
+	appnn := types.NamespacedName{
+		Name:      app.Spec.Pods[0].Name,
+		Namespace: name.Namespace,
+	}
+	err = fetchWithDefaults(appnn, &d)
 
 	if err != nil {
 		t.Error(err)
@@ -331,8 +338,8 @@ func TestCreateClowdApp(t *testing.T) {
 
 	c := d.Spec.Template.Spec.Containers[0]
 
-	if c.Image != app.Spec.Image {
-		t.Errorf("Bad image spec %s; expected %s", c.Image, app.Spec.Image)
+	if c.Image != app.Spec.Pods[0].Image {
+		t.Errorf("Bad image spec %s; expected %s", c.Image, app.Spec.Pods[0].Image)
 	}
 
 	// See if Secret is mounted
@@ -352,7 +359,7 @@ func TestCreateClowdApp(t *testing.T) {
 
 	s := core.Service{}
 
-	err = fetchWithDefaults(name, &s)
+	err = fetchWithDefaults(appnn, &s)
 
 	if err != nil {
 		t.Error(err)
