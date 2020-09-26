@@ -113,34 +113,26 @@ func (c *Provider) GetLogging() (LoggingProvider, error) {
 }
 
 func (c *Provider) SetUpEnvironment() error {
-	_, err := c.GetObjectStore()
+	var err error
 
-	if err != nil {
-		return fmt.Errorf("setupenv: %w", err)
+	if _, err = c.GetObjectStore(); err != nil {
+		return fmt.Errorf("setupenv: getobjectstore: %w", err)
 	}
 
-	_, err = c.GetDatabase()
-
-	if err != nil {
-		return err
+	if _, err = c.GetDatabase(); err != nil {
+		return fmt.Errorf("setupenv: getdatabase: %w", err)
 	}
 
-	_, err = c.GetKafka()
-
-	if err != nil {
-		return err
+	if _, err = c.GetKafka(); err != nil {
+		return fmt.Errorf("setupenv: getkafka: %w", err)
 	}
 
-	_, err = c.GetInMemoryDB()
-
-	if err != nil {
-		return err
+	if _, err = c.GetInMemoryDB(); err != nil {
+		return fmt.Errorf("setupenv: getinmemorydb: %w", err)
 	}
 
-	_, err = c.GetLogging()
-
-	if err != nil {
-		return err
+	if _, err = c.GetLogging(); err != nil {
+		return fmt.Errorf("setupenv: getlogging: %w", err)
 	}
 
 	return nil
