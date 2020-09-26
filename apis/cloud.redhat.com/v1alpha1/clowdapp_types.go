@@ -34,27 +34,31 @@ type InsightsDatabaseSpec struct {
 	Name    string `json:"name,omitempty"`
 }
 
+type PodSpec struct {
+	Name           string                  `json:"name"`
+	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
+	Image          string                  `json:"image"`
+	Command        []string                `json:"command,omitempty"`
+	Args           []string                `json:"args,omitempty"`
+	Env            []v1.EnvVar             `json:"env,omitempty"`
+	Resources      v1.ResourceRequirements `json:"resources,omitempty"`
+	LivenessProbe  *v1.Probe               `json:"livenessProbe,omitempty"`
+	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
+	Volumes        []v1.Volume             `json:"volumes,omitempty"`
+	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
+	Web            bool                    `json:"web,omitempty"`
+}
+
 type ClowdAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	MinReplicas    *int32                   `json:"minReplicas,omitempty"`
-	Image          string                   `json:"image"`
-	Command        []string                 `json:"command,omitempty"`
-	Args           []string                 `json:"args,omitempty"`
-	Env            []v1.EnvVar              `json:"env,omitempty"`
-	Resources      v1.ResourceRequirements  `json:"resources,omitempty"`
-	LivenessProbe  *v1.Probe                `json:"livenessProbe,omitempty"`
-	ReadinessProbe *v1.Probe                `json:"readinessProbe,omitempty"`
-	Volumes        []v1.Volume              `json:"volumes,omitempty"`
-	VolumeMounts   []v1.VolumeMount         `json:"volumeMounts,omitempty"`
-	Web            bool                     `json:"web,omitempty"`
-	EnvName        string                   `json:"envName"`
-	KafkaTopics    []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
-	Database       InsightsDatabaseSpec     `json:"database,omitempty"`
-	ObjectStore    []string                 `json:"objectStore,omitempty"`
-	InMemoryDB     bool                     `json:"inMemoryDb,omitempty"`
-	Dependencies   []string                 `json:"dependencies,omitempty"`
+	Pods         []PodSpec                `json:"pods"`
+	EnvName      string                   `json:"envName"`
+	KafkaTopics  []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
+	Database     InsightsDatabaseSpec     `json:"database,omitempty"`
+	ObjectStore  []string                 `json:"objectStore,omitempty"`
+	InMemoryDB   bool                     `json:"inMemoryDb,omitempty"`
+	Dependencies []string                 `json:"dependencies,omitempty"`
 }
 
 // ClowdAppStatus defines the observed state of ClowdApp

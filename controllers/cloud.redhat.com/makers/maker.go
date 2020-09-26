@@ -128,22 +128,28 @@ func (m *Maker) Make() (ctrl.Result, error) {
 		return result, err
 	}
 
-	if result, err := m.makeDeployment(hash); err != nil {
-		return result, err
-	}
+	for _, pod := range m.App.Spec.Pods {
 
-	if result, err := m.makeService(); err != nil {
-		return result, err
-	}
+		if result, err := m.makeDeployment(pod, hash); err != nil {
+			return result, err
+		}
 
+		if result, err := m.makeService(pod); err != nil {
+			return result, err
+		}
+	}
 	return ctrl.Result{}, nil
 }
 
-func (m *Maker) makeService() (ctrl.Result, error) {
+func (m *Maker) makeService(pod crd.PodSpec) (ctrl.Result, error) {
 
 	result := ctrl.Result{}
 	s := core.Service{}
-	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &s)
+	nn := types.NamespacedName{
+		Name:      pod.Name,
+		Namespace: m.Request.Namespace,
+	}
+	err := m.Client.Get(m.Ctx, nn, &s)
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
@@ -154,13 +160,16 @@ func (m *Maker) makeService() (ctrl.Result, error) {
 		{Name: "metrics", Port: m.Env.Spec.Metrics.Port, Protocol: "TCP"},
 	}
 
-	if m.App.Spec.Web == true {
+	if pod.Web == true {
 		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Web.Port, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
 
-	m.App.SetObjectMeta(&s)
-	s.Spec.Selector = m.App.GetLabels()
+	labels := m.App.GetLabels()
+	labels["pod"] = nn.Name
+	m.App.SetObjectMeta(&s, crd.Name(pod.Name), crd.Labels(labels))
+
+	s.Spec.Selector = labels
 	s.Spec.Ports = ports
 
 	return update.Apply(m.Ctx, m.Client, &s)
@@ -216,28 +225,35 @@ func (m *Maker) getConfig() (*config.AppConfig, error) {
 }
 
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
-func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
+func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) (ctrl.Result, error) {
+
+	nn := types.NamespacedName{
+		Name:      pod.Name,
+		Namespace: m.Request.Namespace,
+	}
 
 	result := ctrl.Result{}
 	d := apps.Deployment{}
-	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &d)
+	err := m.Client.Get(m.Ctx, nn, &d)
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
 		return result, err
 	}
 
-	m.App.SetObjectMeta(&d)
+	labels := m.App.GetLabels()
+	labels["pod"] = nn.Name
+	m.App.SetObjectMeta(&d, crd.Name(pod.Name), crd.Labels(labels))
 
-	d.Spec.Replicas = m.App.Spec.MinReplicas
-	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: m.App.GetLabels()}
-	d.Spec.Template.ObjectMeta.Labels = m.App.GetLabels()
+	d.Spec.Replicas = pod.MinReplicas
+	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	d.Spec.Template.ObjectMeta.Labels = labels
 
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
 		{Name: "quay-cloudservices-pull"},
 	}
 
-	env := m.App.Spec.Env
+	env := pod.Env
 	env = append(env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
 	var livenessProbe core.Probe
@@ -260,13 +276,13 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 		SuccessThreshold:    1,
 		TimeoutSeconds:      1,
 	}
-	if m.App.Spec.LivenessProbe != nil {
-		livenessProbe = *m.App.Spec.LivenessProbe
-	} else if m.App.Spec.Web {
+	if pod.LivenessProbe != nil {
+		livenessProbe = *pod.LivenessProbe
+	} else if pod.Web {
 		livenessProbe = baseProbe
 	}
-	if m.App.Spec.ReadinessProbe != nil {
-		readinessProbe = *m.App.Spec.ReadinessProbe
+	if pod.ReadinessProbe != nil {
+		readinessProbe = *pod.ReadinessProbe
 	} else {
 		readinessProbe = baseProbe
 		readinessProbe.InitialDelaySeconds = 45
@@ -274,13 +290,13 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 	}
 
 	c := core.Container{
-		Name:         m.App.ObjectMeta.Name,
-		Image:        m.App.Spec.Image,
-		Command:      m.App.Spec.Command,
-		Args:         m.App.Spec.Args,
+		Name:         nn.Name,
+		Image:        pod.Image,
+		Command:      pod.Command,
+		Args:         pod.Args,
 		Env:          env,
-		Resources:    m.App.Spec.Resources,
-		VolumeMounts: m.App.Spec.VolumeMounts,
+		Resources:    pod.Resources,
+		VolumeMounts: pod.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
 			ContainerPort: m.Env.Spec.Metrics.Port,
@@ -295,7 +311,7 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 		c.ReadinessProbe = &readinessProbe
 	}
 
-	if m.App.Spec.Web {
+	if pod.Web {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
 			ContainerPort: m.Env.Spec.Web.Port,
@@ -309,7 +325,7 @@ func (m *Maker) makeDeployment(hash string) (ctrl.Result, error) {
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
-	d.Spec.Template.Spec.Volumes = m.App.Spec.Volumes
+	d.Spec.Template.Spec.Volumes = pod.Volumes
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
