@@ -70,16 +70,16 @@ type makeFn func(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Servi
 func makeComponent(p *Provider, suffix string, fn makeFn) error {
 	nn := getNamespacedName(p.Env, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
-	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, dd, svc, pvc)
+	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, svc, pvc, dd)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("make-%s: get: %w", suffix, err)
 	}
 
 	fn(p.Env, dd, svc, pvc)
 
 	if err = utils.ApplyAll(p.Ctx, p.Client, updates); err != nil {
-		return err
+		return fmt.Errorf("make-%s: upsert: %w", suffix, err)
 	}
 
 	return nil
