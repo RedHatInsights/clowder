@@ -14,7 +14,7 @@ import (
 
 type redisProvider struct {
 	Provider
-	Config config.InMemoryDB
+	Config config.InMemoryDBConfig
 }
 
 func (r *redisProvider) Configure(config *config.AppConfig) {
@@ -94,7 +94,7 @@ func (r *redisProvider) CreateInMemoryDB(app *crd.ClowdApp) error {
 		return err
 	}
 
-	r.Config = config.InMemoryDB{
+	r.Config = config.InMemoryDBConfig{
 		Hostname: fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
 		Port:     6379,
 	}

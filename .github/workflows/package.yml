@@ -19,4 +19,4 @@ jobs:
           tar xzvf kubebuilder/kubebuilder_2.3.1_linux_amd64.tar.gz -C kubebuilder
           make
       - name: Run Tests
-        run: KUBEBUILDER_ASSETS=$PWD/kubebuilder/kubebuilder_2.3.1_linux_amd64/bin go test -v ./controllers/cloud.redhat.com/
+        run: KUBEBUILDER_ASSETS=$PWD/kubebuilder/kubebuilder_2.3.1_linux_amd64/bin go test -v ./controllers/...
