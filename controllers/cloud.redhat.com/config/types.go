@@ -2,10 +2,209 @@
 
 package config
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "fmt"
+import "encoding/json"
+
+// clowdapp deployment configuration for cloud.redhat.com clowdapps
+type AppConfig struct {
+	// Database corresponds to the JSON schema field "database".
+	Database *DatabaseConfig `json:"database,omitempty"`
+
+	// Endpoints corresponds to the JSON schema field "endpoints".
+	Endpoints []DependencyEndpoint `json:"endpoints,omitempty"`
+
+	// InMemoryDb corresponds to the JSON schema field "inMemoryDb".
+	InMemoryDb *InMemoryDBConfig `json:"inMemoryDb,omitempty"`
+
+	// Kafka corresponds to the JSON schema field "kafka".
+	Kafka *KafkaConfig `json:"kafka,omitempty"`
+
+	// Logging corresponds to the JSON schema field "logging".
+	Logging LoggingConfig `json:"logging"`
+
+	// MetricsPath corresponds to the JSON schema field "metricsPath".
+	MetricsPath string `json:"metricsPath"`
+
+	// MetricsPort corresponds to the JSON schema field "metricsPort".
+	MetricsPort int `json:"metricsPort"`
+
+	// ObjectStore corresponds to the JSON schema field "objectStore".
+	ObjectStore *ObjectStoreConfig `json:"objectStore,omitempty"`
+
+	// WebPort corresponds to the JSON schema field "webPort".
+	WebPort int `json:"webPort"`
+}
+
+// broker configuration
+type BrokerConfig struct {
+	// Hostname corresponds to the JSON schema field "hostname".
+	Hostname string `json:"hostname"`
+
+	// Port corresponds to the JSON schema field "port".
+	Port *int `json:"port,omitempty"`
+}
+
+// Cloud Watch configuration
+type CloudWatchConfig struct {
+	// AccessKeyId corresponds to the JSON schema field "accessKeyId".
+	AccessKeyId string `json:"accessKeyId"`
+
+	// LogGroup corresponds to the JSON schema field "logGroup".
+	LogGroup string `json:"logGroup"`
+
+	// Region corresponds to the JSON schema field "region".
+	Region string `json:"region"`
+
+	// SecretAccessKey corresponds to the JSON schema field "secretAccessKey".
+	SecretAccessKey string `json:"secretAccessKey"`
+}
+
+// database configuration
+type DatabaseConfig struct {
+	// Hostname corresponds to the JSON schema field "hostname".
+	Hostname string `json:"hostname"`
+
+	// Name corresponds to the JSON schema field "name".
+	Name string `json:"name"`
+
+	// Password corresponds to the JSON schema field "password".
+	Password string `json:"password"`
+
+	// PgPass corresponds to the JSON schema field "pgPass".
+	PgPass string `json:"pgPass"`
+
+	// Port corresponds to the JSON schema field "port".
+	Port int `json:"port"`
+
+	// Username corresponds to the JSON schema field "username".
+	Username string `json:"username"`
+}
+
+// Dependent service connection info
+type DependencyEndpoint struct {
+	// App corresponds to the JSON schema field "app".
+	App string `json:"app"`
+
+	// Hostname corresponds to the JSON schema field "hostname".
+	Hostname string `json:"hostname"`
+
+	// Name corresponds to the JSON schema field "name".
+	Name string `json:"name"`
+
+	// Port corresponds to the JSON schema field "port".
+	Port int `json:"port"`
+}
+
+// In Memory DB configuration
+type InMemoryDBConfig struct {
+	// Hostname corresponds to the JSON schema field "hostname".
+	Hostname string `json:"hostname"`
+
+	// Password corresponds to the JSON schema field "password".
+	Password *string `json:"password,omitempty"`
+
+	// Port corresponds to the JSON schema field "port".
+	Port int `json:"port"`
+
+	// Username corresponds to the JSON schema field "username".
+	Username *string `json:"username,omitempty"`
+}
+
+// kafka configuration
+type KafkaConfig struct {
+	// Brokers corresponds to the JSON schema field "brokers".
+	Brokers []BrokerConfig `json:"brokers"`
+
+	// Topics corresponds to the JSON schema field "topics".
+	Topics []TopicConfig `json:"topics"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	type Plain BrokerConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = BrokerConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	type Plain InMemoryDBConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = InMemoryDBConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TopicConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["requestedName"]; !ok || v == nil {
+		return fmt.Errorf("field requestedName: required")
+	}
+	type Plain TopicConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = TopicConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DependencyEndpoint) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["app"]; !ok || v == nil {
+		return fmt.Errorf("field app: required")
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	type Plain DependencyEndpoint
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = DependencyEndpoint(plain)
+	return nil
+}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
@@ -61,57 +260,30 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// clowdapp deployment configuration for cloud.redhat.com clowdapps
-type AppConfig struct {
-	// Database corresponds to the JSON schema field "database".
-	Database *DatabaseConfig `json:"database,omitempty"`
-
-	// Dependencies corresponds to the JSON schema field "dependencies".
-	Dependencies DependenciesConfig `json:"dependencies,omitempty"`
-
-	// InMemoryDb corresponds to the JSON schema field "inMemoryDb".
-	InMemoryDb *InMemoryDB `json:"inMemoryDb,omitempty"`
-
-	// Kafka corresponds to the JSON schema field "kafka".
-	Kafka *KafkaConfig `json:"kafka,omitempty"`
-
-	// Logging corresponds to the JSON schema field "logging".
-	Logging LoggingConfig `json:"logging"`
-
-	// MetricsPath corresponds to the JSON schema field "metricsPath".
-	MetricsPath string `json:"metricsPath"`
-
-	// MetricsPort corresponds to the JSON schema field "metricsPort".
-	MetricsPort int `json:"metricsPort"`
-
-	// ObjectStore corresponds to the JSON schema field "objectStore".
-	ObjectStore *ObjectStoreConfig `json:"objectStore,omitempty"`
-
-	// WebPort corresponds to the JSON schema field "webPort".
-	WebPort int `json:"webPort"`
-}
-
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *DependencyConfig) UnmarshalJSON(b []byte) error {
+func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
+	if v, ok := raw["accessKeyId"]; !ok || v == nil {
+		return fmt.Errorf("field accessKeyId: required")
 	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
+	if v, ok := raw["logGroup"]; !ok || v == nil {
+		return fmt.Errorf("field logGroup: required")
 	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
+	if v, ok := raw["region"]; !ok || v == nil {
+		return fmt.Errorf("field region: required")
 	}
-	type Plain DependencyConfig
+	if v, ok := raw["secretAccessKey"]; !ok || v == nil {
+		return fmt.Errorf("field secretAccessKey: required")
+	}
+	type Plain CloudWatchConfig
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
 	}
-	*j = DependencyConfig(plain)
+	*j = CloudWatchConfig(plain)
 	return nil
 }
 
@@ -158,177 +330,6 @@ func (j *LoggingConfig) UnmarshalJSON(b []byte) error {
 	}
 	*j = LoggingConfig(plain)
 	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *InMemoryDB) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain InMemoryDB
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = InMemoryDB(plain)
-	return nil
-}
-
-// broker configuration
-type BrokerConfig struct {
-	// Hostname corresponds to the JSON schema field "hostname".
-	Hostname string `json:"hostname"`
-
-	// Port corresponds to the JSON schema field "port".
-	Port *int `json:"port,omitempty"`
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	type Plain BrokerConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = BrokerConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["accessKeyId"]; !ok || v == nil {
-		return fmt.Errorf("field accessKeyId: required")
-	}
-	if v, ok := raw["logGroup"]; !ok || v == nil {
-		return fmt.Errorf("field logGroup: required")
-	}
-	if v, ok := raw["region"]; !ok || v == nil {
-		return fmt.Errorf("field region: required")
-	}
-	if v, ok := raw["secretAccessKey"]; !ok || v == nil {
-		return fmt.Errorf("field secretAccessKey: required")
-	}
-	type Plain CloudWatchConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = CloudWatchConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *TopicConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["requestedName"]; !ok || v == nil {
-		return fmt.Errorf("field requestedName: required")
-	}
-	type Plain TopicConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = TopicConfig(plain)
-	return nil
-}
-
-// Cloud Watch configuration
-type CloudWatchConfig struct {
-	// AccessKeyId corresponds to the JSON schema field "accessKeyId".
-	AccessKeyId string `json:"accessKeyId"`
-
-	// LogGroup corresponds to the JSON schema field "logGroup".
-	LogGroup string `json:"logGroup"`
-
-	// Region corresponds to the JSON schema field "region".
-	Region string `json:"region"`
-
-	// SecretAccessKey corresponds to the JSON schema field "secretAccessKey".
-	SecretAccessKey string `json:"secretAccessKey"`
-}
-
-// database configuration
-type DatabaseConfig struct {
-	// Hostname corresponds to the JSON schema field "hostname".
-	Hostname string `json:"hostname"`
-
-	// Name corresponds to the JSON schema field "name".
-	Name string `json:"name"`
-
-	// Password corresponds to the JSON schema field "password".
-	Password string `json:"password"`
-
-	// PgPass corresponds to the JSON schema field "pgPass".
-	PgPass string `json:"pgPass"`
-
-	// Port corresponds to the JSON schema field "port".
-	Port int `json:"port"`
-
-	// Username corresponds to the JSON schema field "username".
-	Username string `json:"username"`
-}
-
-// Dependent service connection info
-type DependenciesConfig []DependencyConfig
-
-// Dependent service connection info
-type DependencyConfig struct {
-	// Hostname corresponds to the JSON schema field "hostname".
-	Hostname string `json:"hostname"`
-
-	// Name corresponds to the JSON schema field "name".
-	Name string `json:"name"`
-
-	// Port corresponds to the JSON schema field "port".
-	Port int `json:"port"`
-}
-
-// In Memory DB configuration
-type InMemoryDB struct {
-	// Hostname corresponds to the JSON schema field "hostname".
-	Hostname string `json:"hostname"`
-
-	// Password corresponds to the JSON schema field "password".
-	Password *string `json:"password,omitempty"`
-
-	// Port corresponds to the JSON schema field "port".
-	Port int `json:"port"`
-
-	// Username corresponds to the JSON schema field "username".
-	Username *string `json:"username,omitempty"`
-}
-
-// kafka configuration
-type KafkaConfig struct {
-	// Brokers corresponds to the JSON schema field "brokers".
-	Brokers []BrokerConfig `json:"brokers"`
-
-	// Topics corresponds to the JSON schema field "topics".
-	Topics []TopicConfig `json:"topics"`
 }
 
 // Logging Configuration

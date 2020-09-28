@@ -28,10 +28,14 @@
                     "$ref": "#/definitions/ObjectStoreConfig"
                 },
                 "inMemoryDb": {
-                    "$ref": "#/definitions/InMemoryDB"
+                    "$ref": "#/definitions/InMemoryDBConfig"
                 },
-                "dependencies": {
-                    "$ref": "#/definitions/DependenciesConfig"
+                "endpoints": {
+                    "id": "endpoints",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DependencyEndpoint"
+                    }
                 }
             },
             "required": [
@@ -200,8 +204,8 @@
                 "port"
             ]
         },
-        "InMemoryDB": {
-            "id": "inMemoryDb",
+        "InMemoryDBConfig": {
+            "id": "inMemoryDbConfig",
             "type": "object",
             "description": "In Memory DB configuration",
             "properties": {
@@ -221,17 +225,10 @@
             "required": [
                 "hostname",
                 "port"
+
             ]
         },
-        "DependenciesConfig": {
-            "id": "dependencies",
-            "type": "array",
-            "description": "Dependent service connection info",
-            "items": {
-                "$ref": "#/definitions/DependencyConfig"
-            }
-        },
-        "DependencyConfig": {
+        "DependencyEndpoint": {
             "id": "dependency",
             "type": "object",
             "description": "Dependent service connection info",
@@ -244,12 +241,16 @@
                 },
                 "port": {
                     "type": "integer"
+                },
+                "app": {
+                    "type": "string"
                 }
             },
             "required": [
                 "name",
                 "hostname",
-                "port"
+                "port",
+                "app"
             ]
         }
     }

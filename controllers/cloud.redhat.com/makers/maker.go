@@ -42,7 +42,7 @@ import (
 //DependencyMaker makes the DependencyConfig object
 type DependencyMaker struct {
 	*Maker
-	config config.DependenciesConfig
+	config []config.DependencyEndpoint
 }
 
 //Maker struct for passing variables into SubMakers
@@ -433,7 +433,6 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 }
 
 func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
-	depConfig := config.DependenciesConfig{}
 
 	// Return if no deps
 
@@ -452,21 +451,32 @@ func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	// Iterate over all deps
+
+	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Web.Port, m.App, &apps)
+
+	if len(missingDeps) > 0 {
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	c.Endpoints = depConfig
+	return ctrl.Result{}, nil
+}
+
+func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (depConfig []config.DependencyEndpoint, missingDeps []string) {
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, app := range apps.Items {
-		if app.Spec.EnvName == m.App.Spec.EnvName {
+		if app.Spec.EnvName == app.Spec.EnvName {
 			appMap[app.Name] = app
 		}
 	}
 
-	// Iterate over all deps
+	missingDeps = []string{}
+	depConfig = []config.DependencyEndpoint{}
 
-	missingDeps := []string{}
-
-	for _, dep := range m.App.Spec.Dependencies {
+	for _, dep := range app.Spec.Dependencies {
 		depApp, exists := appMap[dep]
-
 		if !exists {
 			missingDeps = append(missingDeps, dep)
 			continue
@@ -474,34 +484,17 @@ func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
 
 		// If app has public endpoint, add it to app config
 
-		svcName := types.NamespacedName{
-			Name:      depApp.Name,
-			Namespace: depApp.Namespace,
-		}
-
-		svc := core.Service{}
-		err = m.Client.Get(m.Ctx, svcName, &svc)
-
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		for _, port := range svc.Spec.Ports {
-			if port.Name == "web" {
-				depConfig = append(depConfig, config.DependencyConfig{
-					Hostname: fmt.Sprintf("%s.%s.svc", svc.Name, svc.Namespace),
-					Port:     int(port.Port),
-					Name:     depApp.Name,
+		for _, pod := range depApp.Spec.Pods {
+			if pod.Web {
+				depConfig = append(depConfig, config.DependencyEndpoint{
+					Hostname: fmt.Sprintf("%s.%s.svc", pod.Name, depApp.Namespace),
+					Port:     int(webPort),
+					Name:     pod.Name,
+					App:      depApp.Name,
 				})
 			}
 		}
 	}
 
-	if len(missingDeps) > 0 {
-		// TODO: Emit event
-		return ctrl.Result{Requeue: true}, nil
-	}
-
-	c.Dependencies = depConfig
-	return ctrl.Result{}, nil
+	return depConfig, missingDeps
 }
