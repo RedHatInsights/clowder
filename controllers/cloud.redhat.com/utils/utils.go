@@ -60,6 +60,33 @@ func UpdateOrErr(err error) (Updater, error) {
 	return update, nil
 }
 
+func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedName, obj ...runtime.Object) (map[runtime.Object]Updater, error) {
+	updates := map[runtime.Object]Updater{}
+
+	for _, resource := range obj {
+
+		update, err := UpdateOrErr(cl.Get(ctx, nn, resource))
+
+		if err != nil {
+			return updates, err
+		}
+
+		updates[resource] = update
+	}
+
+	return updates, nil
+}
+
+func ApplyAll(ctx context.Context, cl client.Client, updates map[runtime.Object]Updater) error {
+	for resource, update := range updates {
+		if _, err := update.Apply(ctx, cl, resource); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // B64Decode decodes the provided secret
 func B64Decode(s *core.Secret, key string) (string, error) {
 	decoded, err := b64.StdEncoding.DecodeString(string(s.Data[key]))

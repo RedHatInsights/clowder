@@ -3,6 +3,7 @@ package providers
 import (
 	"fmt"
 
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -39,9 +40,7 @@ func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTo
 }
 
 func NewLocalKafka(p *Provider) (KafkaProvider, error) {
-
 	port := 29092
-	fmt.Printf("namespace: %v\n", p.Env.Namespace)
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
@@ -55,41 +54,52 @@ func NewLocalKafka(p *Provider) (KafkaProvider, error) {
 		Config:   config,
 	}
 
-	err := makeLocalZookeeper(p)
-
-	if err != nil {
+	if err := makeComponent(p, "zookeeper", makeLocalZookeeper); err != nil {
 		return &kafkaProvider, err
 	}
 
-	err = makeLocalKafka(p)
-
-	if err != nil {
+	if err := makeComponent(p, "kafka", makeLocalKafka); err != nil {
 		return &kafkaProvider, err
 	}
 
 	return &kafkaProvider, nil
 }
 
-func makeLocalKafka(p *Provider) error {
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-kafka", p.Env.Name),
-		Namespace: p.Env.Spec.Namespace,
-	}
+type makeFn func(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
 
-	dd := apps.Deployment{}
-
-	update, err := utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &dd))
+func makeComponent(p *Provider, suffix string, fn makeFn) error {
+	nn := getNamespacedName(p.Env, suffix)
+	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
+	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, dd, svc, pvc)
 
 	if err != nil {
 		return err
 	}
 
-	labels := p.Env.GetLabels()
+	fn(p.Env, dd, svc, pvc)
+
+	if err = utils.ApplyAll(p.Ctx, p.Client, updates); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getNamespacedName(env *crd.ClowdEnvironment, suffix string) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      fmt.Sprintf("%v-%v", env.Name, suffix),
+		Namespace: env.Spec.Namespace,
+	}
+}
+
+func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+	nn := getNamespacedName(env, "kafka")
+
+	labels := env.GetLabels()
 	labels["env-app"] = nn.Name
+	labeler := utils.MakeLabeler(nn, labels, env)
 
-	labeler := utils.MakeLabeler(nn, labels, p.Env)
-
-	labeler(&dd)
+	labeler(dd)
 
 	dd.Spec.Replicas = utils.Int32(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -117,7 +127,8 @@ func makeLocalKafka(p *Provider) error {
 
 	envVars := []core.EnvVar{
 		{
-			Name: "KAFKA_ADVERTISED_LISTENERS", Value: "PLAINTEXT://" + nn.Name + ":29092, LOCAL://localhost:9092",
+			Name:  "KAFKA_ADVERTISED_LISTENERS",
+			Value: "PLAINTEXT://" + nn.Name + ":29092, LOCAL://localhost:9092",
 		},
 		{
 			Name:  "KAFKA_BROKER_ID",
@@ -129,7 +140,7 @@ func makeLocalKafka(p *Provider) error {
 		},
 		{
 			Name:  "KAFKA_ZOOKEEPER_CONNECT",
-			Value: p.Env.Name + "-zookeeper:32181",
+			Value: env.Name + "-zookeeper:32181",
 		},
 		{
 			Name:  "LOG_DIR",
@@ -177,34 +188,12 @@ func makeLocalKafka(p *Provider) error {
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if _, err = update.Apply(p.Ctx, p.Client, &dd); err != nil {
-		return err
-	}
+	labeler(svc)
 
-	s := core.Service{}
-	update, err = utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &s))
+	svc.Spec.Selector = labels
+	svc.Spec.Ports = []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
 
-	if err != nil {
-		return err
-	}
-
-	labeler(&s)
-
-	s.Spec.Selector = labels
-	s.Spec.Ports = []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
-
-	if _, err = update.Apply(p.Ctx, p.Client, &s); err != nil {
-		return err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-	update, err = utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &pvc))
-
-	if err != nil {
-		return err
-	}
-
-	labeler(&pvc)
+	labeler(pvc)
 
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
@@ -212,34 +201,17 @@ func makeLocalKafka(p *Provider) error {
 			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
 		},
 	}
-
-	if _, err = update.Apply(p.Ctx, p.Client, &pvc); err != nil {
-		return err
-	}
-
-	return nil
 }
 
-func makeLocalZookeeper(p *Provider) error {
+func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
 
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-zookeeper", p.Env.Name),
-		Namespace: p.Env.Spec.Namespace,
-	}
+	nn := getNamespacedName(env, "zookeeper")
 
-	dd := apps.Deployment{}
-	update, err := utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &dd))
-
-	if err != nil {
-		return err
-	}
-
-	labels := p.Env.GetLabels()
+	labels := env.GetLabels()
 	labels["env-app"] = nn.Name
+	labeler := utils.MakeLabeler(nn, labels, env)
 
-	labeler := utils.MakeLabeler(nn, labels, p.Env)
-
-	labeler(&dd)
+	labeler(dd)
 
 	dd.Spec.Replicas = utils.Int32(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -342,16 +314,6 @@ func makeLocalZookeeper(p *Provider) error {
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if _, err = update.Apply(p.Ctx, p.Client, &dd); err != nil {
-		return err
-	}
-
-	s := core.Service{}
-	update, err = utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &s))
-	if err != nil {
-		return err
-	}
-
 	servicePorts := []core.ServicePort{
 		{
 			Name: "zookeeper1", Port: 32181, Protocol: "TCP",
@@ -364,22 +326,12 @@ func makeLocalZookeeper(p *Provider) error {
 		},
 	}
 
-	labeler(&s)
+	labeler(svc)
 
-	s.Spec.Selector = labels
-	s.Spec.Ports = servicePorts
+	svc.Spec.Selector = labels
+	svc.Spec.Ports = servicePorts
 
-	if _, err = update.Apply(p.Ctx, p.Client, &s); err != nil {
-		return err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-	update, err = utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &pvc))
-	if err != nil {
-		return err
-	}
-
-	labeler(&pvc)
+	labeler(pvc)
 
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
@@ -387,9 +339,4 @@ func makeLocalZookeeper(p *Provider) error {
 			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
 		},
 	}
-
-	if _, err = update.Apply(p.Ctx, p.Client, &pvc); err != nil {
-		return err
-	}
-	return nil
 }
