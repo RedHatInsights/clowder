@@ -87,7 +87,7 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 			p.Ctx,
 			types.NamespacedName{
 				Namespace: p.Env.Spec.Namespace,
-				Name:      p.Env.Name,
+				Name:      p.Env.Name + "-minio",
 			},
 			p.Client,
 			p.Env,
