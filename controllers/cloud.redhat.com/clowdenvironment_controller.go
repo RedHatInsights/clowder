@@ -71,7 +71,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 			return ctrl.Result{Requeue: true}, nil
 		}
 
-		return ctrl.Result{}, err
+		r.Log.Error(root, "Reconciliation failure")
+		return ctrl.Result{}, nil
 	}
 
 	return ctrl.Result{}, nil

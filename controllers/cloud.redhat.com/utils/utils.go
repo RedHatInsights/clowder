@@ -4,21 +4,43 @@ import (
 	"context"
 	b64 "encoding/base64"
 	"errors"
+	"fmt"
 	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"github.com/go-logr/logr"
+	"go.uber.org/zap"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+var Log logr.Logger = ctrllog.NullLogger{}
+
+type ApplyError struct {
+	Stack zap.Field
+	Msg   string
+}
+
+func (a *ApplyError) Error() string {
+	return fmt.Sprintf("%s:\n%s", a.Msg, a.Stack.String)
+}
+
+func NewApplyError(msg string) *ApplyError {
+	return &ApplyError{
+		Msg:   msg,
+		Stack: zap.Stack("stack"),
+	}
+}
 
 // RandString generates a random string of length n
 func RandString(n int) string {
@@ -36,9 +58,15 @@ type Updater bool
 func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
 	var err error
 
+	if obj.GetObjectKind().GroupVersionKind().Kind == "" {
+		return NewApplyError("Asked to apply resource with no kind")
+	}
+
 	if *u {
+		Log.Info("Updating resource", "kind", obj.GetObjectKind())
 		err = cl.Update(ctx, obj)
 	} else {
+		Log.Info("Creating resource", "kind", obj.GetObjectKind())
 		err = cl.Create(ctx, obj)
 	}
 
@@ -49,7 +77,7 @@ func RootCause(err error) error {
 	cause := errors.Unwrap(err)
 
 	if cause != nil {
-		return RootCause(err)
+		return RootCause(cause)
 	}
 
 	return err

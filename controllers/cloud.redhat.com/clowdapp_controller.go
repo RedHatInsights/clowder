@@ -100,8 +100,8 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{Requeue: true}, nil
 		}
 
-		r.Log.Error(err, "Reconciliation failure")
-		return ctrl.Result{}, err
+		r.Log.Error(root, "Reconciliation failure")
+		return ctrl.Result{}, nil
 	}
 
 	return ctrl.Result{}, err
@@ -110,6 +110,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // SetupWithManager sets up wi
 func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager!")
+	utils.Log = r.Log.WithValues("name", "util")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdApp{}).
 		Watches(
