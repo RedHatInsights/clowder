@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -57,16 +58,19 @@ type Updater bool
 
 func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
 	var err error
+	var kind string
 
 	if obj.GetObjectKind().GroupVersionKind().Kind == "" {
-		return NewApplyError("Asked to apply resource with no kind")
+		kind = reflect.TypeOf(obj).String()
+	} else {
+		kind = obj.GetObjectKind().GroupVersionKind().Kind
 	}
 
 	if *u {
-		Log.Info("Updating resource", "kind", obj.GetObjectKind())
+		Log.Info("Updating resource", "kind", kind)
 		err = cl.Update(ctx, obj)
 	} else {
-		Log.Info("Creating resource", "kind", obj.GetObjectKind())
+		Log.Info("Creating resource", "kind", kind)
 		err = cl.Create(ctx, obj)
 	}
 
