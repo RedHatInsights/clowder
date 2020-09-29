@@ -102,6 +102,13 @@ func TestLocalDBDeployment(t *testing.T) {
 		Name:     app.Spec.Database.Name,
 	}
 
+	envVars := []core.EnvVar{
+		{Name: "POSTGRESQL_USER", Value: cfg.Username},
+		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
+		{Name: "PGPASSWORD", Value: cfg.PgPass},
+		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
+	}
+
 	d := apps.Deployment{}
 
 	image := "imagename:tag"
@@ -114,4 +121,26 @@ func TestLocalDBDeployment(t *testing.T) {
 	if d.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort != 5432 {
 		t.Fatalf("Port requested %v does not match the one in spec: %v ", 5432, d.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort)
 	}
+	if !compareEnvs(&envVars, &d.Spec.Template.Spec.Containers[0].Env) {
+		t.Fatal("Envvars didn't match")
+	}
+}
+
+func compareEnvs(a, b *([]core.EnvVar)) bool {
+	if a == nil && b == nil {
+		return true
+	} else if len(*a) != len(*b) {
+		return false
+	}
+
+	envs := make(map[string]string)
+	for _, env := range *a {
+		envs[env.Name] = env.Value
+	}
+	for _, env := range *b {
+		if envs[env.Name] != env.Value {
+			return false
+		}
+	}
+	return true
 }
