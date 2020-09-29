@@ -27,6 +27,7 @@ import (
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -64,6 +65,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	err = provider.SetUpEnvironment()
 
 	if err != nil {
+		root := utils.RootCause(err)
+		if k8serr.IsConflict(root) {
+			r.Log.Info("Conflict reported.  Requeuing request.")
+			return ctrl.Result{Requeue: true}, nil
+		}
+
 		return ctrl.Result{}, err
 	}
 

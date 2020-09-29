@@ -175,7 +175,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{env.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
-		if _, err = secretUpdate.Apply(ctx, client, secret); err != nil {
+		if err = secretUpdate.Apply(ctx, client, secret); err != nil {
 			return nil, err
 		}
 
@@ -245,7 +245,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if _, err = update.Apply(ctx, client, &dd); err != nil {
+	if err = update.Apply(ctx, client, &dd); err != nil {
 		return nil, err
 	}
 
@@ -267,7 +267,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 
-	if _, err = update.Apply(ctx, client, &s); err != nil {
+	if err = update.Apply(ctx, client, &s); err != nil {
 		return nil, err
 	}
 
@@ -288,7 +288,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		},
 	}
 
-	if _, err = update.Apply(ctx, client, &pvc); err != nil {
+	if err = update.Apply(ctx, client, &pvc); err != nil {
 		return nil, err
 	}
 

@@ -77,7 +77,7 @@ func (r *redisProvider) CreateInMemoryDB(app *crd.ClowdApp) error {
 
 	makeRedisDeployment(&dd, nn, app)
 
-	if _, err = update.Apply(r.Ctx, r.Client, &dd); err != nil {
+	if err = update.Apply(r.Ctx, r.Client, &dd); err != nil {
 		return err
 	}
 
@@ -90,7 +90,7 @@ func (r *redisProvider) CreateInMemoryDB(app *crd.ClowdApp) error {
 
 	makeRedisService(&s, nn, app)
 
-	if _, err = update.Apply(r.Ctx, r.Client, &s); err != nil {
+	if err = update.Apply(r.Ctx, r.Client, &s); err != nil {
 		return err
 	}
 

@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -62,11 +63,11 @@ type makerUpdater struct {
 
 // MakerUpdater encapsulates saving an object
 type MakerUpdater interface {
-	Apply(obj runtime.Object) (ctrl.Result, error)
+	Apply(obj runtime.Object) error
 	Updater() utils.Updater
 }
 
-func (mu *makerUpdater) Apply(obj runtime.Object) (ctrl.Result, error) {
+func (mu *makerUpdater) Apply(obj runtime.Object) error {
 	return mu.update.Apply(mu.maker.Ctx, mu.maker.Client, obj)
 }
 
@@ -115,35 +116,34 @@ func New(maker *Maker) (*Maker, error) {
 }
 
 //Make generates objects and dependencies for operator
-func (m *Maker) Make() (ctrl.Result, error) {
-	result, c, err := m.runProviders()
+func (m *Maker) Make() error {
+	c, err := m.runProviders()
 
-	if result, err := m.makeDependencies(c); err != nil {
-		return result, err
+	if err := m.makeDependencies(c); err != nil {
+		return err
 	}
 
-	hash, result, err := m.persistConfig(c)
+	hash, err := m.persistConfig(c)
 
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	for _, pod := range m.App.Spec.Pods {
 
-		if result, err := m.makeDeployment(pod, hash); err != nil {
-			return result, err
+		if err := m.makeDeployment(pod, hash); err != nil {
+			return err
 		}
 
-		if result, err := m.makeService(pod); err != nil {
-			return result, err
+		if err := m.makeService(pod); err != nil {
+			return err
 		}
 	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
-func (m *Maker) makeService(pod crd.PodSpec) (ctrl.Result, error) {
+func (m *Maker) makeService(pod crd.PodSpec) error {
 
-	result := ctrl.Result{}
 	s := core.Service{}
 	nn := types.NamespacedName{
 		Name:      pod.Name,
@@ -153,7 +153,7 @@ func (m *Maker) makeService(pod crd.PodSpec) (ctrl.Result, error) {
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	ports := []core.ServicePort{
@@ -175,21 +175,20 @@ func (m *Maker) makeService(pod crd.PodSpec) (ctrl.Result, error) {
 	return update.Apply(m.Ctx, m.Client, &s)
 }
 
-func (m *Maker) persistConfig(c *config.AppConfig) (string, ctrl.Result, error) {
+func (m *Maker) persistConfig(c *config.AppConfig) (string, error) {
 
-	result := ctrl.Result{}
 	// In any case, we want to overwrite the secret, so this just
 	// tests to see if the secret exists
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &core.Secret{})
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return "", result, err
+		return "", err
 	}
 
 	jsonData, err := json.Marshal(c)
 	if err != nil {
-		return "", result, err
+		return "", err
 	}
 
 	h := sha256.New()
@@ -204,8 +203,8 @@ func (m *Maker) persistConfig(c *config.AppConfig) (string, ctrl.Result, error) 
 
 	m.App.SetObjectMeta(&secret)
 
-	result, err = update.Apply(m.Ctx, m.Client, &secret)
-	return hash, result, err
+	err = update.Apply(m.Ctx, m.Client, &secret)
+	return hash, err
 }
 
 func (m *Maker) getConfig() (*config.AppConfig, error) {
@@ -225,20 +224,19 @@ func (m *Maker) getConfig() (*config.AppConfig, error) {
 }
 
 // This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
-func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) (ctrl.Result, error) {
+func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 
 	nn := types.NamespacedName{
 		Name:      pod.Name,
 		Namespace: m.Request.Namespace,
 	}
 
-	result := ctrl.Result{}
 	d := apps.Deployment{}
 	err := m.Client.Get(m.Ctx, nn, &d)
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	labels := m.App.GetLabels()
@@ -338,16 +336,14 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) (ctrl.Result, error
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
 	d.Spec.Template.SetAnnotations(annotations)
-	if result, err := update.Apply(m.Ctx, m.Client, &d); err != nil {
-		return result, err
+	if err := update.Apply(m.Ctx, m.Client, &d); err != nil {
+		return err
 	}
 
-	return result, nil
+	return nil
 }
 
-func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
-	result := ctrl.Result{}
-
+func (m *Maker) runProviders() (*config.AppConfig, error) {
 	provider := providers.Provider{
 		Client: m.Client,
 		Ctx:    m.Ctx,
@@ -359,7 +355,7 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 	objectStoreProvider, err := provider.GetObjectStore()
 
 	if err != nil {
-		return result, &c, err
+		return &c, err
 	}
 
 	for _, bucket := range m.App.Spec.ObjectStore {
@@ -374,7 +370,7 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 		databaseProvider, err := provider.GetDatabase()
 
 		if err != nil {
-			return result, &c, err
+			return &c, err
 		}
 
 		databaseProvider.CreateDatabase(m.App)
@@ -384,7 +380,7 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 	kafkaProvider, err := provider.GetKafka()
 
 	if err != nil {
-		return result, &c, err
+		return &c, err
 	}
 
 	nn := types.NamespacedName{
@@ -396,7 +392,7 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 		kafkaProvider.CreateTopic(nn, &topic)
 
 		if err != nil {
-			return result, &c, err
+			return &c, err
 		}
 	}
 
@@ -406,7 +402,7 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 		inMemoryDbProvider, err := provider.GetInMemoryDB()
 
 		if err != nil {
-			return result, &c, err
+			return &c, err
 		}
 
 		inMemoryDbProvider.CreateInMemoryDB(m.App)
@@ -416,30 +412,30 @@ func (m *Maker) runProviders() (ctrl.Result, *config.AppConfig, error) {
 	loggingProvider, err := provider.GetLogging()
 
 	if err != nil {
-		return result, &c, err
+		return &c, err
 	}
 
 	if loggingProvider != nil {
 		err = loggingProvider.SetUpLogging(nn)
 
 		if err != nil {
-			return result, &c, err
+			return &c, err
 		}
 
 		loggingProvider.Configure(&c)
 	}
 
-	return result, &c, nil
+	return &c, nil
 }
 
-func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
+func (m *Maker) makeDependencies(c *config.AppConfig) error {
 
 	// Return if no deps
 
 	deps := m.App.Spec.Dependencies
 
 	if deps == nil || len(deps) == 0 {
-		return ctrl.Result{}, nil
+		return nil
 	}
 
 	// Get all ClowdApps
@@ -448,7 +444,7 @@ func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
 	err := m.Client.List(m.Ctx, &apps)
 
 	if err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	// Iterate over all deps
@@ -456,11 +452,19 @@ func (m *Maker) makeDependencies(c *config.AppConfig) (ctrl.Result, error) {
 	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Web.Port, m.App, &apps)
 
 	if len(missingDeps) > 0 {
-		return ctrl.Result{Requeue: true}, nil
+		return &MissingDependencies{MissingDeps: missingDeps}
 	}
 
 	c.Endpoints = depConfig
-	return ctrl.Result{}, nil
+	return nil
+}
+
+type MissingDependencies struct {
+	MissingDeps []string
+}
+
+func (e *MissingDependencies) Error() string {
+	return fmt.Sprintf("Missing dependencies: %s", strings.Join(e.MissingDeps[:], ","))
 }
 
 func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (depConfig []config.DependencyEndpoint, missingDeps []string) {

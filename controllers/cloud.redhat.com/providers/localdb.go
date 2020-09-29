@@ -58,7 +58,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	makeLocalDB(&dd, nn, app, &cfg, db.Env.Spec.Database.Image)
 
-	if _, err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
+	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	makeLocalService(&s, nn, app)
 
-	if _, err = update.Apply(db.Ctx, db.Client, &s); err != nil {
+	if err = update.Apply(db.Ctx, db.Client, &s); err != nil {
 		return err
 	}
 
@@ -84,7 +84,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	makeLocalPVC(&pvc, nn, app)
 
-	if _, err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
+	if err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
 		return err
 	}
 

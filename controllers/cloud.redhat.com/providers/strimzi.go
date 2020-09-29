@@ -142,7 +142,7 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 
 	kRes.Spec.Config = newConfig
 
-	if _, err = update.Apply(s.Ctx, s.Client, &kRes); err != nil {
+	if err = update.Apply(s.Ctx, s.Client, &kRes); err != nil {
 		return err
 	}
 

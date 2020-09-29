@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	b64 "encoding/base64"
+	"errors"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -14,7 +15,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -33,9 +33,8 @@ func RandString(n int) string {
 
 type Updater bool
 
-func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) (ctrl.Result, error) {
+func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
 	var err error
-	result := ctrl.Result{}
 
 	if *u {
 		err = cl.Update(ctx, obj)
@@ -43,11 +42,17 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 		err = cl.Create(ctx, obj)
 	}
 
-	if k8serr.IsConflict(err) {
-		result.Requeue = true
+	return err
+}
+
+func RootCause(err error) error {
+	cause := errors.Unwrap(err)
+
+	if cause != nil {
+		return RootCause(err)
 	}
 
-	return result, err
+	return err
 }
 
 func UpdateOrErr(err error) (Updater, error) {
@@ -79,7 +84,7 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 
 func ApplyAll(ctx context.Context, cl client.Client, updates map[runtime.Object]Updater) error {
 	for resource, update := range updates {
-		if _, err := update.Apply(ctx, cl, resource); err != nil {
+		if err := update.Apply(ctx, cl, resource); err != nil {
 			return err
 		}
 	}
