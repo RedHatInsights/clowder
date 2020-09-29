@@ -352,6 +352,10 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 
 	c := config.AppConfig{}
 
+	c.WebPort = int(m.Env.Spec.Web.Port)
+	c.MetricsPort = int(m.Env.Spec.Metrics.Port)
+	c.MetricsPath = m.Env.Spec.Metrics.Path
+
 	objectStoreProvider, err := provider.GetObjectStore()
 
 	if err != nil {
