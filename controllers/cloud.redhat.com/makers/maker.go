@@ -119,6 +119,10 @@ func New(maker *Maker) (*Maker, error) {
 func (m *Maker) Make() error {
 	c, err := m.runProviders()
 
+	if err != nil {
+		return err
+	}
+
 	if err := m.makeDependencies(c); err != nil {
 		return err
 	}
@@ -363,7 +367,11 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	}
 
 	for _, bucket := range m.App.Spec.ObjectStore {
-		objectStoreProvider.CreateBucket(bucket)
+		err = objectStoreProvider.CreateBucket(bucket)
+	}
+
+	if err != nil {
+		return &c, err
 	}
 
 	objectStoreProvider.Configure(&c)
