@@ -7,6 +7,7 @@ import (
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -63,14 +64,20 @@ func (m *minioProvider) CreateBucket(bucket string) error {
 	found, err := m.Client.BucketExists(m.Ctx, bucket)
 
 	if err != nil {
-		return err
+		return errors.Wrap("Failed to check if bucket exists in minio", err)
 	}
 
 	if found {
 		return nil // possibly return a found error?
 	}
 
-	return m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
+	err = m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
+
+	if err != nil {
+		return errors.Wrap("Failed to create bucket in minio", err)
+	}
+
+	return nil
 }
 
 // NewMinIO constructs a new minio for the given config
@@ -79,7 +86,7 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	cfg, err := GetConfig(p.Ctx, p.Env.Status.ObjectStore.Minio, p.Client)
 
 	if err != nil {
-		return m, fmt.Errorf("newminio: getconfig: %w", err)
+		return m, errors.Wrap("Failed to fetch minio config", err)
 	}
 
 	if cfg == nil {
@@ -94,7 +101,7 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 		)
 
 		if err != nil {
-			return m, fmt.Errorf("newminio: deploy: %w", err)
+			return m, err
 		}
 	}
 
@@ -105,7 +112,7 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	})
 
 	if err != nil {
-		return m, fmt.Errorf("newminio: new: %w", err)
+		return m, errors.Wrap("Failed to create minio client", err)
 	}
 
 	m.Client = cl
@@ -194,7 +201,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		err = client.Status().Update(ctx, env)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap("Failed to update minio status on env", err)
 		}
 	}
 

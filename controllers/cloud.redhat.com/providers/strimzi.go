@@ -6,10 +6,9 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 
-	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
-
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -76,7 +75,7 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 	err := s.Client.List(s.Ctx, &appList)
 
 	if err != nil {
-		return err
+		return errors.Wrap("Topic creation failed: Error listing apps", err)
 	}
 
 	kRes := strimzi.KafkaTopic{}
@@ -135,8 +134,7 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 			out, _ := f(valList)
 			newConfig[key] = out
 		} else {
-			err = fmt.Errorf("no conversion type for %s", key)
-			return err
+			return errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
 

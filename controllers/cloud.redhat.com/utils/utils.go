@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	b64 "encoding/base64"
-	"errors"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -12,8 +11,8 @@ import (
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"github.com/go-logr/logr"
-	"go.uber.org/zap"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,22 +25,6 @@ import (
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 var Log logr.Logger = ctrllog.NullLogger{}
-
-type ApplyError struct {
-	Stack zap.Field
-	Msg   string
-}
-
-func (a *ApplyError) Error() string {
-	return fmt.Sprintf("%s:\n%s", a.Msg, a.Stack.String)
-}
-
-func NewApplyError(msg string) *ApplyError {
-	return &ApplyError{
-		Msg:   msg,
-		Stack: zap.Stack("stack"),
-	}
-}
 
 // RandString generates a random string of length n
 func RandString(n int) string {
@@ -66,32 +49,34 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 		kind = obj.GetObjectKind().GroupVersionKind().Kind
 	}
 
+	meta := obj.(metav1.Object)
+
 	if *u {
-		Log.Info("Updating resource", "kind", kind)
+		Log.Info("Updating resource", "kind", kind, "name", meta.GetName())
 		err = cl.Update(ctx, obj)
 	} else {
-		Log.Info("Creating resource", "kind", kind)
+		Log.Info("Creating resource", "kind", kind, "name", meta.GetName())
 		err = cl.Create(ctx, obj)
 	}
 
-	return err
-}
+	if err != nil {
+		verb := "creating"
+		if *u {
+			verb = "updating"
+		}
 
-func RootCause(err error) error {
-	cause := errors.Unwrap(err)
-
-	if cause != nil {
-		return RootCause(cause)
+		msg := fmt.Sprintf("Error %s resource %s %s", verb, kind, meta.GetName())
+		return errors.Wrap(msg, err)
 	}
 
-	return err
+	return nil
 }
 
 func UpdateOrErr(err error) (Updater, error) {
 	update := Updater(err == nil)
 
 	if err != nil && !k8serr.IsNotFound(err) {
-		return update, err
+		return update, errors.Wrap("Failed to update", err)
 	}
 
 	return update, nil
@@ -140,7 +125,7 @@ func IntMinMax(listStrInts []string, max bool) (string, error) {
 	for _, strint := range listStrInts {
 		i, err := strconv.Atoi(strint)
 		if err != nil {
-			return "", err
+			return "", errors.Wrap("Failed to convert", err)
 		}
 		listInts = append(listInts, i)
 	}

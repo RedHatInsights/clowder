@@ -19,13 +19,13 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
 
 	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
@@ -188,7 +188,7 @@ func (m *Maker) persistConfig(c *config.AppConfig) (string, error) {
 
 	jsonData, err := json.Marshal(c)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap("Failed to marshal config JSON", err)
 	}
 
 	h := sha256.New()
@@ -213,12 +213,12 @@ func (m *Maker) getConfig() (*config.AppConfig, error) {
 	err := m.Client.Get(m.Ctx, m.Request.NamespacedName, &secret)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap("Failed to fetch config seret", err)
 	}
 
 	err = json.Unmarshal([]byte(secret.Data["cdappconfig.json"]), &appConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap("Failed to unmarshal JSON", err)
 	}
 	return &appConfig, nil
 }
@@ -374,7 +374,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		databaseProvider, err := provider.GetDatabase()
 
 		if err != nil {
-			return &c, err
+			return &c, errors.Wrap("Failed to init db provider", err)
 		}
 
 		err = databaseProvider.CreateDatabase(m.App)
@@ -387,7 +387,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	kafkaProvider, err := provider.GetKafka()
 
 	if err != nil {
-		return &c, err
+		return &c, errors.Wrap("Failed to init kafka provider", err)
 	}
 
 	nn := types.NamespacedName{
@@ -399,7 +399,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		kafkaProvider.CreateTopic(nn, &topic)
 
 		if err != nil {
-			return &c, err
+			return &c, errors.Wrap("Failed to init kafka topic", err)
 		}
 	}
 
@@ -409,7 +409,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		inMemoryDbProvider, err := provider.GetInMemoryDB()
 
 		if err != nil {
-			return &c, err
+			return &c, errors.Wrap("Failed to init in-memory db provider", err)
 		}
 
 		inMemoryDbProvider.CreateInMemoryDB(m.App)
@@ -419,14 +419,14 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	loggingProvider, err := provider.GetLogging()
 
 	if err != nil {
-		return &c, err
+		return &c, errors.Wrap("Failed to init logging provider", err)
 	}
 
 	if loggingProvider != nil {
 		err = loggingProvider.SetUpLogging(nn)
 
 		if err != nil {
-			return &c, err
+			return &c, errors.Wrap("Failed to set up logging", err)
 		}
 
 		loggingProvider.Configure(&c)
@@ -451,7 +451,7 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 	err := m.Client.List(m.Ctx, &apps)
 
 	if err != nil {
-		return err
+		return errors.Wrap("Failed to list apps", err)
 	}
 
 	// Iterate over all deps
@@ -459,19 +459,11 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Web.Port, m.App, &apps)
 
 	if len(missingDeps) > 0 {
-		return &MissingDependencies{MissingDeps: missingDeps}
+		return &errors.MissingDependencies{MissingDeps: missingDeps}
 	}
 
 	c.Endpoints = depConfig
 	return nil
-}
-
-type MissingDependencies struct {
-	MissingDeps []string
-}
-
-func (e *MissingDependencies) Error() string {
-	return fmt.Sprintf("Missing dependencies: %s", strings.Join(e.MissingDeps[:], ","))
 }
 
 func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (depConfig []config.DependencyEndpoint, missingDeps []string) {

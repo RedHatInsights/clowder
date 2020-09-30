@@ -5,6 +5,7 @@ import (
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -43,8 +44,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 	}
 
 	if exists {
-		// DB was already created
-		return fmt.Errorf("DB has already been created")
+		return errors.New("DB has already been created")
 	}
 
 	cfg := config.DatabaseConfig{
