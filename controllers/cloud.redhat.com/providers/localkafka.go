@@ -14,6 +14,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type envVar struct {
+	Name  string
+	Value string
+}
+
 type localKafka struct {
 	Provider
 	Config config.KafkaConfig
@@ -92,12 +97,12 @@ func getNamespacedName(env *crd.ClowdEnvironment, suffix string) types.Namespace
 	}
 }
 
-func makeEnvVars(kv *map[string]string) []core.EnvVar {
+func makeEnvVars(list *[]envVar) []core.EnvVar {
 
 	envVars := []core.EnvVar{}
 
-	for k, v := range *kv {
-		envVars = append(envVars, core.EnvVar{Name: k, Value: v})
+	for _, ev := range *list {
+		envVars = append(envVars, core.EnvVar{Name: ev.Name, Value: ev.Value})
 	}
 
 	return envVars
@@ -136,14 +141,14 @@ func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	envVars := makeEnvVars(&map[string]string{
-		"KAFKA_ADVERTISED_LISTENERS":             "PLAINTEXT://" + nn.Name + ":29092, LOCAL://localhost:9092",
-		"KAFKA_BROKER_ID":                        "1",
-		"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR": "1",
-		"KAFKA_ZOOKEEPER_CONNECT":                env.Name + "-zookeeper:32181",
-		"LOG_DIR":                                "/var/lib/kafka",
-		"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP":   "PLAINTEXT:PLAINTEXT, LOCAL:PLAINTEXT",
-		"KAFKA_INTER_BROKER_LISTENER_NAME":       "LOCAL",
+	envVars := makeEnvVars(&[]envVar{
+		{"KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://" + nn.Name + ":29092, LOCAL://localhost:9092"},
+		{"KAFKA_BROKER_ID", "1"},
+		{"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1"},
+		{"KAFKA_ZOOKEEPER_CONNECT", env.Name + "-zookeeper:32181"},
+		{"LOG_DIR", "/var/lib/kafka"},
+		{"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:PLAINTEXT, LOCAL:PLAINTEXT"},
+		{"KAFKA_INTER_BROKER_LISTENER_NAME", "LOCAL"},
 	})
 
 	ports := []core.ContainerPort{
@@ -234,13 +239,13 @@ func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *cor
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	envVars := makeEnvVars(&map[string]string{
-		"ZOOKEEPER_INIT_LIMIT":  "10",
-		"ZOOKEEPER_CLIENT_PORT": "32181",
-		"ZOOKEEPER_SERVER_ID":   "1",
-		"ZOOKEEPER_SERVERS":     nn.Name + ":32181",
-		"ZOOKEEPER_TICK_TIME":   "2000",
-		"ZOOKEEPER_SYNC_LIMIT":  "10",
+	envVars := makeEnvVars(&[]envVar{
+		{"ZOOKEEPER_INIT_LIMIT", "10"},
+		{"ZOOKEEPER_CLIENT_PORT", "32181"},
+		{"ZOOKEEPER_SERVER_ID", "1"},
+		{"ZOOKEEPER_SERVERS", nn.Name + ":32181"},
+		{"ZOOKEEPER_TICK_TIME", "2000"},
+		{"ZOOKEEPER_SYNC_LIMIT", "10"},
 	})
 
 	ports := []core.ContainerPort{
