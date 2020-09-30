@@ -7,6 +7,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -66,7 +67,8 @@ func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
 	case "app-interface":
 		return &AppInterfaceProvider{Provider: *c}, nil
 	default:
-		return nil, fmt.Errorf("No matching object store provider for %s", objectStoreProvider)
+		errStr := fmt.Sprintf("No matching object store provider for %s", objectStoreProvider)
+		return nil, errors.New(errStr)
 	}
 }
 
@@ -76,7 +78,8 @@ func (c *Provider) GetDatabase() (DatabaseProvider, error) {
 	case "local":
 		return NewLocalDBProvider(c)
 	default:
-		return nil, fmt.Errorf("No matching db provider for %s", dbProvider)
+		errStr := fmt.Sprintf("No matching db provider for %s", dbProvider)
+		return nil, errors.New(errStr)
 	}
 }
 
@@ -88,7 +91,8 @@ func (c *Provider) GetKafka() (KafkaProvider, error) {
 	case "local":
 		return NewLocalKafka(c)
 	default:
-		return nil, fmt.Errorf("No matching kafka provider for %s", kafkaProvider)
+		errStr := fmt.Sprintf("No matching kafka provider for %s", kafkaProvider)
+		return nil, errors.New(errStr)
 	}
 }
 
@@ -98,7 +102,8 @@ func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
 	case "redis":
 		return NewRedis(c)
 	default:
-		return nil, fmt.Errorf("No matching memory db provider for %s", dbProvider)
+		errStr := fmt.Sprintf("No matching in-memory db provider for %s", dbProvider)
+		return nil, errors.New(errStr)
 	}
 }
 
@@ -110,7 +115,8 @@ func (c *Provider) GetLogging() (LoggingProvider, error) {
 	case "none":
 		return nil, nil
 	default:
-		return nil, fmt.Errorf("No matching logging provider for %s", logProvider)
+		errStr := fmt.Sprintf("No matching logging provider for %s", logProvider)
+		return nil, errors.New(errStr)
 	}
 }
 
@@ -118,23 +124,23 @@ func (c *Provider) SetUpEnvironment() error {
 	var err error
 
 	if _, err = c.GetObjectStore(); err != nil {
-		return fmt.Errorf("setupenv: getobjectstore: %w", err)
+		return errors.Wrap("setupenv: getobjectstore", err)
 	}
 
 	if _, err = c.GetDatabase(); err != nil {
-		return fmt.Errorf("setupenv: getdatabase: %w", err)
+		return errors.Wrap("setupenv: getdatabase", err)
 	}
 
 	if _, err = c.GetKafka(); err != nil {
-		return fmt.Errorf("setupenv: getkafka: %w", err)
+		return errors.Wrap("setupenv: getkafka", err)
 	}
 
 	if _, err = c.GetInMemoryDB(); err != nil {
-		return fmt.Errorf("setupenv: getinmemorydb: %w", err)
+		return errors.Wrap("setupenv: getinmemorydb", err)
 	}
 
 	if _, err = c.GetLogging(); err != nil {
-		return fmt.Errorf("setupenv: getlogging: %w", err)
+		return errors.Wrap("setupenv: getlogging", err)
 	}
 
 	return nil

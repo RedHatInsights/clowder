@@ -6,6 +6,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -78,13 +79,13 @@ func makeComponent(p *Provider, suffix string, fn makeFn) error {
 	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, svc, pvc, dd)
 
 	if err != nil {
-		return fmt.Errorf("make-%s: get: %w", suffix, err)
+		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
 	}
 
 	fn(p.Env, dd, svc, pvc)
 
 	if err = utils.ApplyAll(p.Ctx, p.Client, updates); err != nil {
-		return fmt.Errorf("make-%s: upsert: %w", suffix, err)
+		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
 	}
 
 	return nil

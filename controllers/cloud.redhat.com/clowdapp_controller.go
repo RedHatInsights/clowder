@@ -16,7 +16,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -31,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
@@ -84,27 +84,8 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	})
 
 	err = maker.Make()
-
-	if err != nil {
-		var depErr *makers.MissingDependencies
-
-		if errors.As(err, &depErr) {
-			// TODO: emit event
-			r.Log.Info(depErr.Error())
-			return ctrl.Result{Requeue: true}, nil
-		}
-
-		root := utils.RootCause(err)
-		if k8serr.IsConflict(root) {
-			r.Log.Info("Conflict reported.  Requeuing request.")
-			return ctrl.Result{Requeue: true}, nil
-		}
-
-		r.Log.Error(root, "Reconciliation failure")
-		return ctrl.Result{}, nil
-	}
-
-	return ctrl.Result{}, err
+	requeue := errors.HandleError(r.Log, err)
+	return ctrl.Result{Requeue: requeue}, nil
 }
 
 // SetupWithManager sets up wi

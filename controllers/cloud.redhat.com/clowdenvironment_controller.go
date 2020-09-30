@@ -20,14 +20,14 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
-	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -63,19 +63,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	err = provider.SetUpEnvironment()
-
-	if err != nil {
-		root := utils.RootCause(err)
-		if k8serr.IsConflict(root) {
-			r.Log.Info("Conflict reported.  Requeuing request.")
-			return ctrl.Result{Requeue: true}, nil
-		}
-
-		r.Log.Error(root, "Reconciliation failure")
-		return ctrl.Result{}, nil
-	}
-
-	return ctrl.Result{}, nil
+	requeue := errors.HandleError(r.Log, err)
+	return ctrl.Result{Requeue: requeue}, nil
 }
 
 // SetupWithManager sets up with manager

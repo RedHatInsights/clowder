@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -45,7 +46,7 @@ func setCloudwatchSecret(nn types.NamespacedName, p *Provider, c *config.Logging
 	err := p.Client.Get(p.Ctx, name, &secret)
 
 	if err != nil {
-		return err
+		return errors.Wrap("Failed to fetch cloudwatch secret", err)
 	}
 
 	cwKeys := []string{
@@ -61,7 +62,7 @@ func setCloudwatchSecret(nn types.NamespacedName, p *Provider, c *config.Logging
 		decoded[i], err = utils.B64Decode(&secret, cwKeys[i])
 
 		if err != nil {
-			return err
+			return errors.Wrap("Failed to b64 decode", err)
 		}
 	}
 
