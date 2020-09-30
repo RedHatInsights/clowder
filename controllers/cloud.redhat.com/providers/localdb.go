@@ -56,6 +56,8 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 		Name:     app.Spec.Database.Name,
 	}
 
+	db.Config = &cfg
+
 	makeLocalDB(&dd, nn, app, &cfg, db.Env.Spec.Database.Image)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {

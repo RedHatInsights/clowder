@@ -377,7 +377,10 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 			return &c, err
 		}
 
-		databaseProvider.CreateDatabase(m.App)
+		err = databaseProvider.CreateDatabase(m.App)
+		if err != nil {
+			m.Log.Info(err.Error())
+		}
 		databaseProvider.Configure(&c)
 	}
 
