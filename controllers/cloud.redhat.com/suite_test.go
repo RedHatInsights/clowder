@@ -336,6 +336,13 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
+	antiAffinity := d.Spec.Template.Spec.Affinity.PodAntiAffinity
+	terms := antiAffinity.PreferredDuringSchedulingIgnoredDuringExecution
+
+	if len(terms) != 2 {
+		t.Errorf("Incorrect number of anti-affinity terms: %d; expected 2", len(terms))
+	}
+
 	c := d.Spec.Template.Spec.Containers[0]
 
 	if c.Image != app.Spec.Pods[0].Image {
