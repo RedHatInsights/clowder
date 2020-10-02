@@ -227,7 +227,27 @@ func (m *Maker) getConfig() (*config.AppConfig, error) {
 	return &appConfig, nil
 }
 
-// This should probably take arguments for addtional volumes, so that we can add those and then do one Apply
+func applyPodAntiAffinity(t *core.PodTemplateSpec) {
+	labelSelector := &metav1.LabelSelector{MatchLabels: t.Labels}
+	t.Spec.Affinity = &core.Affinity{PodAntiAffinity: &core.PodAntiAffinity{
+		PreferredDuringSchedulingIgnoredDuringExecution: []core.WeightedPodAffinityTerm{{
+			Weight: 100,
+			PodAffinityTerm: core.PodAffinityTerm{
+				LabelSelector: labelSelector,
+				TopologyKey:   "failure-domain.beta.kubernetes.io/zone",
+			},
+		}, {
+			Weight: 99,
+			PodAffinityTerm: core.PodAffinityTerm{
+				LabelSelector: labelSelector,
+				TopologyKey:   "kubernetes.io/hostname",
+			},
+		}},
+	}}
+}
+
+// This should probably take arguments for addtional volumes, so that we can
+// add those and then do one Apply
 func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 
 	nn := types.NamespacedName{
@@ -336,6 +356,8 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 			},
 		},
 	})
+
+	applyPodAntiAffinity(&d.Spec.Template)
 
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
