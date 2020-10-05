@@ -33,6 +33,14 @@ func TestLocalKafka(t *testing.T) {
 	if dd.Name != "env-kafka" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-kafka")
 	}
+
+	if svc.Name != "env-kafka" {
+		t.Errorf("Wrong service name %s; expected %s", svc.Name, "env-kafka")
+	}
+
+	if pvc.Name != "env-kafka" {
+		t.Errorf("Wrong pvc name %s; expected %s", pvc.Name, "env-kafka")
+	}
 }
 
 func TestLocalZookeeper(t *testing.T) {
@@ -43,6 +51,14 @@ func TestLocalZookeeper(t *testing.T) {
 	makeLocalZookeeper(&env, &dd, &svc, &pvc)
 
 	if dd.Name != "env-zookeeper" {
-		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-kafka")
+		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-zookeeper")
+	}
+
+	if svc.Name != "env-zookeeper" {
+		t.Errorf("Wrong service name %s; expected %s", svc.Name, "env-zookeeper")
+	}
+
+	if pvc.Name != "env-zookeeper" {
+		t.Errorf("Wrong pvc name %s; expected %s", pvc.Name, "env-zookeeper")
 	}
 }

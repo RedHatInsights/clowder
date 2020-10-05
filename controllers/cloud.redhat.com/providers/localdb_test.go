@@ -24,7 +24,7 @@ func getBaseElements() (types.NamespacedName, crd.ClowdApp) {
 	objMeta := metav1.ObjectMeta{
 		Name:      "reqapp",
 		Namespace: "default",
-		Labels: map[string]string{
+		Labels: labels{
 			"app": "test",
 		},
 	}

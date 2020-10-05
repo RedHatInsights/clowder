@@ -12,6 +12,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type labels map[string]string
+
 type Provider struct {
 	Client client.Client
 	Ctx    context.Context

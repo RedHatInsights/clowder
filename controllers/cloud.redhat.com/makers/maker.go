@@ -169,12 +169,7 @@ func (m *Maker) makeService(pod crd.PodSpec) error {
 		ports = append(ports, webPort)
 	}
 
-	labels := m.App.GetLabels()
-	labels["pod"] = nn.Name
-	m.App.SetObjectMeta(&s, crd.Name(pod.Name), crd.Labels(labels))
-
-	s.Spec.Selector = labels
-	s.Spec.Ports = ports
+	utils.MakeService(&s, nn, map[string]string{"pod": nn.Name}, ports, m.App)
 
 	return update.Apply(m.Ctx, m.Client, &s)
 }

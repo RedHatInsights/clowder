@@ -10,7 +10,6 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -101,7 +100,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
 	labels := app.GetLabels()
 	labels["service"] = "db"
-	labler := utils.MakeAppLabeler(nn, labels, app)
+	labler := utils.MakeLabeler(nn, labels, app)
 	labler(dd)
 	dd.Spec.Replicas = utils.Int32(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -177,24 +176,9 @@ func makeLocalService(s *core.Service, nn types.NamespacedName, app *crd.ClowdAp
 		Port:     5432,
 		Protocol: "TCP",
 	}}
-
-	labels := app.GetLabels()
-	labels["service"] = "db"
-	labler := utils.MakeAppLabeler(nn, labels, app)
-	labler(s)
-	s.Spec.Selector = labels
-	s.Spec.Ports = servicePorts
+	utils.MakeService(s, nn, labels{"service": "db"}, servicePorts, app)
 }
 
 func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, app *crd.ClowdApp) {
-	labels := app.GetLabels()
-	labels["service"] = "db"
-	labler := utils.MakeAppLabeler(nn, labels, app)
-	labler(pvc)
-	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
-	pvc.Spec.Resources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
-		},
-	}
+	utils.MakePVC(pvc, nn, labels{"service": "db"}, "1Gi", app)
 }

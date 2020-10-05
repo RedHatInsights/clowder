@@ -44,21 +44,14 @@ func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.C
 	}}
 }
 
-func makeRedisService(s *core.Service, nn types.NamespacedName, pp *crd.ClowdApp) {
+func makeRedisService(s *core.Service, nn types.NamespacedName, app *crd.ClowdApp) {
 	servicePorts := []core.ServicePort{{
 		Name:     "redis",
 		Port:     6379,
 		Protocol: "TCP",
 	}}
 
-	pp.SetObjectMeta(
-		s,
-		crd.Name(nn.Name),
-		crd.Namespace(nn.Namespace),
-	)
-
-	s.Spec.Selector = pp.GetLabels()
-	s.Spec.Ports = servicePorts
+	utils.MakeService(s, nn, nil, servicePorts, app)
 }
 
 func (r *redisProvider) CreateInMemoryDB(app *crd.ClowdApp) error {
