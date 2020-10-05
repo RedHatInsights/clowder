@@ -10,7 +10,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -185,19 +184,10 @@ func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	labeler(svc)
+	servicePorts := []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
 
-	svc.Spec.Selector = labels
-	svc.Spec.Ports = []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
-
-	labeler(pvc)
-
-	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
-	pvc.Spec.Resources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
-		},
-	}
+	utils.MakeService(svc, nn, labels, servicePorts, env)
+	utils.MakePVC(pvc, nn, labels, "1Gi", env)
 }
 
 func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
@@ -306,17 +296,6 @@ func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *cor
 		},
 	}
 
-	labeler(svc)
-
-	svc.Spec.Selector = labels
-	svc.Spec.Ports = servicePorts
-
-	labeler(pvc)
-
-	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
-	pvc.Spec.Resources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
-		},
-	}
+	utils.MakeService(svc, nn, labels, servicePorts, env)
+	utils.MakePVC(pvc, nn, labels, "1Gi", env)
 }

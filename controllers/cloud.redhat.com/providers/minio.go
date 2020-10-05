@@ -13,7 +13,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -206,10 +205,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		Protocol: "TCP",
 	}}
 
-	labeler(&s)
-
-	s.Spec.Selector = labels
-	s.Spec.Ports = servicePorts
+	utils.MakeService(&s, nn, labels, servicePorts, env)
 
 	if err = update.Apply(ctx, client, &s); err != nil {
 		return nil, err
@@ -223,14 +219,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		return nil, err
 	}
 
-	labeler(&pvc)
-
-	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
-	pvc.Spec.Resources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse("1Gi"),
-		},
-	}
+	utils.MakePVC(&pvc, nn, labels, "1Gi", env)
 
 	if err = update.Apply(ctx, client, &pvc); err != nil {
 		return nil, err

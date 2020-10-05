@@ -91,7 +91,7 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 		return err
 	}
 
-	labels := map[string]string{
+	labels := labels{
 		"strimzi.io/cluster": s.Env.Spec.Kafka.ClusterName,
 		"app":                nn.Name,
 		// If we label it with the app name, since app names should be
