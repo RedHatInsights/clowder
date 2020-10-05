@@ -43,22 +43,27 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 		return err
 	}
 
-	if exists {
-		return errors.New("DB has already been created")
+	dbCfg := config.DatabaseConfig{}
+	dataInit := func() map[string]string {
+		return map[string]string{
+			"hostname": fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
+			"port":     "5432",
+			"username": utils.RandString(16),
+			"password": utils.RandString(16),
+			"pgPass":   utils.RandString(16),
+			"name":     app.Spec.Database.Name,
+		}
 	}
 
-	cfg := config.DatabaseConfig{
-		Hostname: fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-		Port:     5432,
-		Username: utils.RandString(16),
-		Password: utils.RandString(16),
-		PgPass:   utils.RandString(16),
-		Name:     app.Spec.Database.Name,
+	secMap, err := config.MakeOrGetSecret(db.Ctx, db.Env, db.Client, nn, dataInit)
+	if err != nil {
+		return errors.Wrap("Couldn't set/get secret", err)
 	}
+	dbCfg.Populate(secMap)
 
-	db.Config = &cfg
+	db.Config = &dbCfg
 
-	makeLocalDB(&dd, nn, app, &cfg, db.Env.Spec.Database.Image)
+	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Database.Image)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err
