@@ -19,35 +19,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func GetConfig(ctx context.Context, m crd.MinioStatus, c client.Client) (*config.ObjectStoreConfig, error) {
-	conf := &config.ObjectStoreConfig{
-		Hostname: m.Hostname,
-		Port:     int(m.Port),
-	}
-
-	name := types.NamespacedName{
-		Name:      m.Credentials.Name,
-		Namespace: m.Credentials.Namespace,
-	}
-
-	secret := core.Secret{}
-
-	found, err := utils.UpdateOrErr(c.Get(ctx, name, &secret))
-
-	if err != nil {
-		return conf, err
-	}
-
-	if !found {
-		return nil, nil
-	}
-
-	conf.AccessKey = string(secret.Data["accessKey"])
-	conf.SecretKey = string(secret.Data["secretKey"])
-
-	return conf, nil
-}
-
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	Ctx    context.Context
@@ -83,29 +54,24 @@ func (m *minioProvider) CreateBucket(bucket string) error {
 // NewMinIO constructs a new minio for the given config
 func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	m := &minioProvider{Ctx: p.Ctx}
-	cfg, err := GetConfig(p.Ctx, p.Env.Status.ObjectStore.Minio, p.Client)
-
-	if err != nil {
-		return m, errors.Wrap("Failed to fetch minio config", err)
+	nn := types.NamespacedName{
+		Namespace: p.Env.Spec.Namespace,
+		Name:      p.Env.Name + "-minio",
 	}
 
-	if cfg == nil {
-		cfg, err = deployMinio(
-			p.Ctx,
-			types.NamespacedName{
-				Namespace: p.Env.Spec.Namespace,
-				Name:      p.Env.Name + "-minio",
-			},
-			p.Client,
-			p.Env,
-		)
+	cfg, err := deployMinio(
+		p.Ctx,
+		nn,
+		p.Client,
+		p.Env,
+	)
 
-		if err != nil {
-			return m, err
-		}
+	if err != nil {
+		return m, err
 	}
 
 	endpoint := fmt.Sprintf("%v:%v", cfg.Hostname, cfg.Port)
+
 	cl, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
 		Secure: false,
@@ -156,54 +122,25 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		Name: "quay-cloudservices-pull",
 	}}
 
-	secret := &core.Secret{}
-	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
+	// get the secret
 
-	if err != nil {
-		return nil, err
-	}
-
-	var hostname, accessKey, secretKey string
 	port := int32(9000)
 
-	if len(secret.Data) == 0 {
-		hostname = fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
-		accessKey = utils.RandString(12)
-		secretKey = utils.RandString(12)
-		secret.StringData = map[string]string{
-			"accessKey": accessKey,
-			"secretKey": secretKey,
-			"hostname":  hostname,
+	obsCfg := config.ObjectStoreConfig{}
+	dataInit := func() map[string]string {
+		return map[string]string{
+			"accessKey": utils.RandString(12),
+			"secretKey": utils.RandString(12),
+			"hostname":  fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
 			"port":      strconv.Itoa(int(port)),
 		}
-
-		secret.Name = nn.Name
-		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{env.MakeOwnerReference()}
-		secret.Type = core.SecretTypeOpaque
-
-		if err = secretUpdate.Apply(ctx, client, secret); err != nil {
-			return nil, err
-		}
-
-		env.Status.ObjectStore = crd.ObjectStoreStatus{
-			Buckets: []string{},
-			Minio: crd.MinioStatus{
-				Credentials: core.SecretReference{
-					Name:      secret.Name,
-					Namespace: secret.Namespace,
-				},
-				Hostname: hostname,
-				Port:     port,
-			},
-		}
-
-		err = client.Status().Update(ctx, env)
-
-		if err != nil {
-			return nil, errors.Wrap("Failed to update minio status on env", err)
-		}
 	}
+
+	secMap, err := config.MakeOrGetSecret(ctx, env, client, nn, dataInit) //Will set data if it already exists
+	if err != nil {
+		return nil, errors.Wrap("Couldn't set/get secret", err)
+	}
+	obsCfg.Populate(secMap)
 
 	envVars := []core.EnvVar{{
 		Name: "MINIO_ACCESS_KEY",
@@ -229,7 +166,7 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 
 	ports := []core.ContainerPort{{
 		Name:          "minio",
-		ContainerPort: 9000,
+		ContainerPort: port,
 	}}
 
 	// TODO Readiness and Liveness probes
@@ -299,10 +236,5 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		return nil, err
 	}
 
-	return &config.ObjectStoreConfig{
-		Hostname:  hostname,
-		Port:      int(port),
-		AccessKey: accessKey,
-		SecretKey: secretKey,
-	}, nil
+	return &obsCfg, nil
 }
