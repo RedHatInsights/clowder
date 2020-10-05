@@ -187,3 +187,14 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, env *crd.Clo
 		o.SetOwnerReferences([]metav1.OwnerReference{env.MakeOwnerReference()})
 	}
 }
+
+// MakeAppLabeler creates a function that will label app specific objects with metadata from
+// the given namespaced name and labels
+func MakeAppLabeler(nn types.NamespacedName, labels map[string]string, app *crd.ClowdApp) func(metav1.Object) {
+	return func(o metav1.Object) {
+		o.SetName(nn.Name)
+		o.SetNamespace(nn.Namespace)
+		o.SetLabels(labels)
+		o.SetOwnerReferences([]metav1.OwnerReference{app.MakeOwnerReference()})
+	}
+}
