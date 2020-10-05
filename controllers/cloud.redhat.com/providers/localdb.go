@@ -98,11 +98,11 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 	return nil
 }
 
-func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
-	labels := pp.GetLabels()
+func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
+	labels := app.GetLabels()
 	labels["service"] = "db"
-
-	pp.SetObjectMeta(dd, crd.Name(nn.Name), crd.Labels(labels))
+	labler := utils.MakeAppLabeler(nn, labels, app)
+	labler(dd)
 	dd.Spec.Replicas = utils.Int32(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
@@ -123,7 +123,7 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp,
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
 		{Name: "PGPASSWORD", Value: cfg.PgPass},
-		{Name: "POSTGRESQL_DATABASE", Value: pp.Spec.Database.Name},
+		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
 	}
 	ports := []core.ContainerPort{{
 		Name:          "database",
@@ -171,24 +171,26 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp,
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
-func makeLocalService(s *core.Service, nn types.NamespacedName, pp *crd.ClowdApp) {
+func makeLocalService(s *core.Service, nn types.NamespacedName, app *crd.ClowdApp) {
 	servicePorts := []core.ServicePort{{
 		Name:     "database",
 		Port:     5432,
 		Protocol: "TCP",
 	}}
 
-	labels := pp.GetLabels()
+	labels := app.GetLabels()
 	labels["service"] = "db"
-	pp.SetObjectMeta(s, crd.Name(nn.Name), crd.Namespace(nn.Namespace), crd.Labels(labels))
+	labler := utils.MakeAppLabeler(nn, labels, app)
+	labler(s)
 	s.Spec.Selector = labels
 	s.Spec.Ports = servicePorts
 }
 
-func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, pp *crd.ClowdApp) {
-	labels := pp.GetLabels()
+func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, app *crd.ClowdApp) {
+	labels := app.GetLabels()
 	labels["service"] = "db"
-	pp.SetObjectMeta(pvc, crd.Name(nn.Name), crd.Labels(labels))
+	labler := utils.MakeAppLabeler(nn, labels, app)
+	labler(pvc)
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
 		Requests: core.ResourceList{

@@ -88,6 +88,9 @@ func TestLocalDBService(t *testing.T) {
 	if s.Spec.Ports[0] != servicePorts[0] {
 		t.Fatalf("Port did not match the expected database port")
 	}
+	if s.Spec.Selector["service"] != "db" {
+		t.Fatal("db selector was not set")
+	}
 }
 
 func TestLocalDBDeployment(t *testing.T) {
