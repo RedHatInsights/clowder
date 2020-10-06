@@ -58,7 +58,7 @@ type InMemoryDBProvider interface {
 // per-environment basis.
 type LoggingProvider interface {
 	Configurable
-	SetUpLogging(nn types.NamespacedName) error
+	SetUpLogging(app *crd.ClowdApp) error
 }
 
 func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {

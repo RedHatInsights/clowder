@@ -491,7 +491,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	}
 
 	if loggingProvider != nil {
-		err = loggingProvider.SetUpLogging(nn)
+		err = loggingProvider.SetUpLogging(m.App)
 
 		if err != nil {
 			return &c, errors.Wrap("Failed to set up logging", err)

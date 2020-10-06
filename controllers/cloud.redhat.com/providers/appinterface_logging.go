@@ -3,6 +3,7 @@ package providers
 import (
 	"fmt"
 
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -25,16 +26,16 @@ func NewAppInterfaceLogging(p *Provider) (LoggingProvider, error) {
 	return &provider, nil
 }
 
-func (a *AppInterfaceLoggingProvider) SetUpLogging(nn types.NamespacedName) error {
+func (a *AppInterfaceLoggingProvider) SetUpLogging(app *crd.ClowdApp) error {
 	a.Config = config.LoggingConfig{}
-	return setCloudwatchSecret(nn, &a.Provider, &a.Config)
+	return setCloudwatchSecret(app.Namespace, &a.Provider, &a.Config)
 }
 
-func setCloudwatchSecret(nn types.NamespacedName, p *Provider, c *config.LoggingConfig) error {
+func setCloudwatchSecret(ns string, p *Provider, c *config.LoggingConfig) error {
 
 	name := types.NamespacedName{
 		Name:      "cloudwatch",
-		Namespace: nn.Namespace,
+		Namespace: ns,
 	}
 
 	secret := core.Secret{}
