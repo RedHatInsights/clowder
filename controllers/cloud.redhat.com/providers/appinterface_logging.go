@@ -10,26 +10,26 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-type AppInterfaceProvider struct {
+type AppInterfaceLoggingProvider struct {
 	Provider
 	Config config.LoggingConfig
 }
 
-func (a *AppInterfaceProvider) Configure(c *config.AppConfig) {
+func (a *AppInterfaceLoggingProvider) Configure(c *config.AppConfig) {
 	c.Logging = a.Config
 }
 
-func NewAppInterface(p *Provider) (LoggingProvider, error) {
-	provider := AppInterfaceProvider{Provider: *p}
+func NewAppInterfaceLogging(p *Provider) (LoggingProvider, error) {
+	provider := AppInterfaceLoggingProvider{Provider: *p}
 
 	return &provider, nil
 }
 
-func (a *AppInterfaceProvider) CreateBucket(bucket string) error {
+func (a *AppInterfaceLoggingProvider) CreateBucket(bucket string) error {
 	return nil
 }
 
-func (a *AppInterfaceProvider) SetUpLogging(nn types.NamespacedName) error {
+func (a *AppInterfaceLoggingProvider) SetUpLogging(nn types.NamespacedName) error {
 	a.Config = config.LoggingConfig{}
 	return setCloudwatchSecret(nn, &a.Provider, &a.Config)
 }
