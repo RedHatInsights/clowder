@@ -51,11 +51,20 @@ func Wrap(msg string, err error) error {
 }
 
 type MissingDependencies struct {
-	MissingDeps []string
+	MissingDeps map[string][]string
 }
 
 func (e *MissingDependencies) Error() string {
-	return fmt.Sprintf("Missing dependencies: %s", strings.Join(e.MissingDeps[:], ","))
+	typeList := []string{}
+
+	for t, vals := range e.MissingDeps {
+		depList := strings.Join(vals, "\n\t")
+		typeList = append(typeList, fmt.Sprintf("%s\n\t%s", t, depList))
+	}
+
+	body := strings.Join(typeList, "\n")
+
+	return fmt.Sprintf("Missing dependencies: \n%s", body)
 }
 
 func RootCause(err error) error {

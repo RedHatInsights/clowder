@@ -482,7 +482,8 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Web.Port, m.App, &apps)
 
 	if len(missingDeps) > 0 {
-		return &errors.MissingDependencies{MissingDeps: missingDeps}
+		depVal := map[string][]string{"services": missingDeps}
+		return &errors.MissingDependencies{MissingDeps: depVal}
 	}
 
 	c.Endpoints = depConfig
