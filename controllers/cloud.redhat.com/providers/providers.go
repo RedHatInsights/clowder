@@ -66,8 +66,8 @@ func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
 	switch objectStoreProvider {
 	case "minio":
 		return NewMinIO(c)
-	case "app-interface":
-		return &AppInterfaceProvider{Provider: *c}, nil
+	// case "app-interface":
+	// 	return &AppInterfaceProvider{Provider: *c}, nil
 	default:
 		errStr := fmt.Sprintf("No matching object store provider for %s", objectStoreProvider)
 		return nil, errors.New(errStr)
@@ -113,7 +113,7 @@ func (c *Provider) GetLogging() (LoggingProvider, error) {
 	logProvider := c.Env.Spec.Logging.Provider
 	switch logProvider {
 	case "app-interface":
-		return NewAppInterface(c)
+		return NewAppInterfaceLogging(c)
 	case "none":
 		return nil, nil
 	default:
