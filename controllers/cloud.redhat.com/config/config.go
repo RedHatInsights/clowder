@@ -23,14 +23,6 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	dbc.Username = (*data)["username"]
 }
 
-func (ojs *ObjectStoreConfig) Populate(data *map[string]string) {
-	port, _ := strconv.Atoi((*data)["port"])
-	ojs.Hostname = (*data)["hostname"]
-	ojs.AccessKey = (*data)["accessKey"]
-	ojs.SecretKey = (*data)["secretKey"]
-	ojs.Port = port
-}
-
 func MakeOrGetSecret(ctx context.Context, env *crd.ClowdEnvironment, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))

@@ -20,13 +20,23 @@ import (
 
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
-	Ctx    context.Context
-	Client *minio.Client
-	Config *config.ObjectStoreConfig
+	Ctx       context.Context
+	Client    *minio.Client
+	Buckets   []config.ObjectStoreBucket
+	Hostname  string
+	Port      int
+	AccessKey string
+	SecretKey string
 }
 
 func (m *minioProvider) Configure(c *config.AppConfig) {
-	c.ObjectStore = m.Config
+	c.ObjectStore = &config.ObjectStoreConfig{
+		Hostname:  m.Hostname,
+		Port:      m.Port,
+		AccessKey: &m.AccessKey,
+		SecretKey: &m.SecretKey,
+		Buckets:   m.Buckets,
+	}
 }
 
 // CreateBuckets creates new buckets
@@ -48,6 +58,11 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 			msg := fmt.Sprintf("Failed to create bucket %s in minio", bucket)
 			return errors.Wrap(msg, err)
 		}
+
+		m.Buckets = append(m.Buckets, config.ObjectStoreBucket{
+			Name:          bucket,
+			RequestedName: bucket,
+		})
 	}
 
 	return nil
@@ -55,13 +70,12 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 
 // NewMinIO constructs a new minio for the given config
 func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
-	m := &minioProvider{Ctx: p.Ctx}
 	nn := types.NamespacedName{
 		Namespace: p.Env.Spec.Namespace,
 		Name:      p.Env.Name + "-minio",
 	}
 
-	cfg, err := deployMinio(
+	secMap, err := deployMinio(
 		p.Ctx,
 		nn,
 		p.Client,
@@ -69,13 +83,23 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	)
 
 	if err != nil {
-		return m, err
+		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%v:%v", cfg.Hostname, cfg.Port)
+	port, _ := strconv.Atoi(secMap["port"])
+
+	m := &minioProvider{
+		Ctx:       p.Ctx,
+		AccessKey: secMap["accessKey"],
+		SecretKey: secMap["secretKey"],
+		Hostname:  secMap["hostname"],
+		Port:      port,
+	}
+
+	endpoint := fmt.Sprintf("%v:%v", m.Hostname, m.Port)
 
 	cl, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+		Creds:  credentials.NewStaticV4(m.AccessKey, m.SecretKey, ""),
 		Secure: false,
 	})
 
@@ -84,14 +108,13 @@ func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
 	}
 
 	m.Client = cl
-	m.Config = cfg
 
 	return m, nil
 }
 
 // DeployMinio creates the actual minio service to be used by clowdapps, this
 // does not create buckets
-func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Client, env *crd.ClowdEnvironment) (*config.ObjectStoreConfig, error) {
+func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Client, env *crd.ClowdEnvironment) (map[string]string, error) {
 	dd := apps.Deployment{}
 	update, err := utils.UpdateOrErr(client.Get(ctx, nn, &dd))
 
@@ -128,7 +151,6 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 
 	port := int32(9000)
 
-	obsCfg := config.ObjectStoreConfig{}
 	dataInit := func() map[string]string {
 		return map[string]string{
 			"accessKey": utils.RandString(12),
@@ -142,7 +164,6 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 	if err != nil {
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
-	obsCfg.Populate(secMap)
 
 	envVars := []core.EnvVar{{
 		Name: "MINIO_ACCESS_KEY",
@@ -228,5 +249,5 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		return nil, err
 	}
 
-	return &obsCfg, nil
+	return *secMap, nil
 }
