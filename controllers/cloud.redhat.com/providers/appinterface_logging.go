@@ -25,10 +25,6 @@ func NewAppInterfaceLogging(p *Provider) (LoggingProvider, error) {
 	return &provider, nil
 }
 
-func (a *AppInterfaceLoggingProvider) CreateBucket(bucket string) error {
-	return nil
-}
-
 func (a *AppInterfaceLoggingProvider) SetUpLogging(nn types.NamespacedName) error {
 	a.Config = config.LoggingConfig{}
 	return setCloudwatchSecret(nn, &a.Provider, &a.Config)

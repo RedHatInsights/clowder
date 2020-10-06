@@ -29,22 +29,25 @@ func (m *minioProvider) Configure(c *config.AppConfig) {
 	c.ObjectStore = m.Config
 }
 
-// CreateBucket creates a new bucket
-func (m *minioProvider) CreateBucket(bucket string) error {
-	found, err := m.Client.BucketExists(m.Ctx, bucket)
+// CreateBuckets creates new buckets
+func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
+	for _, bucket := range app.Spec.ObjectStore {
+		found, err := m.Client.BucketExists(m.Ctx, bucket)
 
-	if err != nil {
-		return errors.Wrap("Failed to check if bucket exists in minio", err)
-	}
+		if err != nil {
+			return errors.Wrap("Failed to check if bucket exists in minio", err)
+		}
 
-	if found {
-		return nil // possibly return a found error?
-	}
+		if found {
+			continue // possibly return a found error?
+		}
 
-	err = m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
+		err = m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
 
-	if err != nil {
-		return errors.Wrap("Failed to create bucket in minio", err)
+		if err != nil {
+			msg := fmt.Sprintf("Failed to create bucket %s in minio", bucket)
+			return errors.Wrap(msg, err)
+		}
 	}
 
 	return nil
