@@ -22,7 +22,7 @@ type Provider struct {
 
 // Configurable is responsible for applying the respective section of
 // AppConfig.  It should be called in the app reconciler after all
-// provider-specific API calls (e.g. CreateBucket) have been made.
+// provider-specific API calls (e.g. CreateBuckets) have been made.
 type Configurable interface {
 	Configure(c *config.AppConfig)
 }
@@ -31,7 +31,7 @@ type Configurable interface {
 // stores
 type ObjectStoreProvider interface {
 	Configurable
-	CreateBucket(bucket string) error
+	CreateBuckets(app *crd.ClowdApp) error
 }
 
 // KafkaProvider is the interface for apps to use to configure kafka topics
@@ -66,8 +66,8 @@ func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
 	switch objectStoreProvider {
 	case "minio":
 		return NewMinIO(c)
-	// case "app-interface":
-	// 	return &AppInterfaceProvider{Provider: *c}, nil
+	case "app-interface":
+		return &AppInterfaceObjectstoreProvider{Provider: *c}, nil
 	default:
 		errStr := fmt.Sprintf("No matching object store provider for %s", objectStoreProvider)
 		return nil, errors.New(errStr)

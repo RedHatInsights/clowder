@@ -428,9 +428,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		return &c, err
 	}
 
-	for _, bucket := range m.App.Spec.ObjectStore {
-		err = objectStoreProvider.CreateBucket(bucket)
-	}
+	err = objectStoreProvider.CreateBuckets(m.App)
 
 	if err != nil {
 		return &c, err
