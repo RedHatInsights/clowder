@@ -9,11 +9,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func getTestEnv() crd.ClowdEnvironment {
+func getKafkaTestEnv() crd.ClowdEnvironment {
 	return crd.ClowdEnvironment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "env",
-			Namespace: "test",
+			Name: "env",
 		},
 		Spec: crd.ClowdEnvironmentSpec{
 			Kafka: crd.KafkaConfig{
@@ -24,7 +23,7 @@ func getTestEnv() crd.ClowdEnvironment {
 }
 
 func TestLocalKafka(t *testing.T) {
-	env := getTestEnv()
+	env := getKafkaTestEnv()
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
 
@@ -44,7 +43,7 @@ func TestLocalKafka(t *testing.T) {
 }
 
 func TestLocalZookeeper(t *testing.T) {
-	env := getTestEnv()
+	env := getKafkaTestEnv()
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
 

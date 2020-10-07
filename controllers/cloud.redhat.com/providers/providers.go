@@ -8,6 +8,9 @@ import (
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -50,7 +53,6 @@ type DatabaseProvider interface {
 // databases
 type InMemoryDBProvider interface {
 	Configurable
-	CreateInMemoryDB(app *crd.ClowdApp) error
 }
 
 // LoggingProvider is the interface for apps to use to configure logging.  This
@@ -99,12 +101,12 @@ func (c *Provider) GetKafka() (KafkaProvider, error) {
 }
 
 func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
-	dbProvider := c.Env.Spec.InMemoryDB.Provider
-	switch dbProvider {
+	inMemoryDBProvider := c.Env.Spec.InMemoryDB.Provider
+	switch inMemoryDBProvider {
 	case "redis":
-		return NewRedis(c)
+		return NewLocalRedis(c)
 	default:
-		errStr := fmt.Sprintf("No matching in-memory db provider for %s", dbProvider)
+		errStr := fmt.Sprintf("No matching in-memory db provider for %s", inMemoryDBProvider)
 		return nil, errors.New(errStr)
 	}
 }
@@ -146,4 +148,31 @@ func (c *Provider) SetUpEnvironment() error {
 	}
 
 	return nil
+}
+
+type makeFn func(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
+
+func makeComponent(p *Provider, suffix string, fn makeFn) error {
+	nn := getNamespacedName(p.Env, suffix)
+	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
+	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, svc, pvc, dd)
+
+	if err != nil {
+		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
+	}
+
+	fn(p.Env, dd, svc, pvc)
+
+	if err = utils.ApplyAll(p.Ctx, p.Client, updates); err != nil {
+		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
+	}
+
+	return nil
+}
+
+func getNamespacedName(env *crd.ClowdEnvironment, suffix string) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      fmt.Sprintf("%v-%v", env.Name, suffix),
+		Namespace: env.Spec.Namespace,
+	}
 }
