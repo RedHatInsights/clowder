@@ -114,11 +114,11 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	}
 }
 
-func (i *ClowdApp) GetNamespace() string {
+func (i *ClowdApp) GetClowdNamespace() string {
 	return i.Namespace
 }
 
-func (i *ClowdApp) GetName() string {
+func (i *ClowdApp) GetClowdName() string {
 	return i.Name
 }
 

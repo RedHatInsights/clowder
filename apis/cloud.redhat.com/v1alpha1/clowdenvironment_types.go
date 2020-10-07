@@ -156,10 +156,10 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 	}
 }
 
-func (i *ClowdEnvironment) GetNamespace() string {
+func (i *ClowdEnvironment) GetClowdNamespace() string {
 	return i.Spec.Namespace
 }
 
-func (i *ClowdEnvironment) GetName() string {
+func (i *ClowdEnvironment) GetClowdName() string {
 	return i.Name
 }

@@ -177,7 +177,7 @@ func makeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, s
 
 func getNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName {
 	return types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v", o.GetName(), suffix),
-		Namespace: o.GetNamespace(),
+		Name:      fmt.Sprintf("%v-%v", o.GetClowdName(), suffix),
+		Namespace: o.GetClowdNamespace(),
 	}
 }
