@@ -25,6 +25,7 @@ import (
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 type ClowdObject interface {
+	GetNamespacedName(string) types.NamespacedName
 	MakeOwnerReference() metav1.OwnerReference
 	metav1.Object
 }
@@ -91,9 +92,6 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 	updates := map[runtime.Object]Updater{}
 
 	for _, resource := range obj {
-		if reflect.ValueOf(obj).IsZero() {
-			continue
-		}
 		update, err := UpdateOrErr(cl.Get(ctx, nn, resource))
 
 		if err != nil {
@@ -108,7 +106,15 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 
 func ApplyAll(ctx context.Context, cl client.Client, updates map[runtime.Object]Updater) error {
 	for resource, update := range updates {
+		if reflect.ValueOf(resource).IsZero() {
+			fmt.Printf("SKIPPING===============%v", resource)
+			continue
+		}
+
 		if err := update.Apply(ctx, cl, resource); err != nil {
+			fmt.Printf("\n%v\n", resource)
+			fmt.Printf("\n%v\n", core.PersistentVolumeClaim{})
+			fmt.Printf("\n%v\n", core.PersistentVolumeClaim{})
 			return err
 		}
 	}

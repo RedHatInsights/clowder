@@ -21,28 +21,30 @@ func (r *localRedis) Configure(config *config.AppConfig) {
 }
 
 func NewLocalRedis(p *Provider) (InMemoryDBProvider, error) {
-	config := config.InMemoryDBConfig{
-		Hostname: fmt.Sprintf("%v.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
-		Port:     6379,
-	}
-
-	redisProvider := localRedis{Provider: *p, Config: config}
-
-	if err := makeComponent(p, "redis", makeLocalRedis); err != nil {
-		return &redisProvider, err
-	}
-
-	return &redisProvider, nil
+	return &localRedis{Provider: *p}, nil
 }
 
-func makeLocalRedis(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
-	nn := getNamespacedName(env, "redis")
+func (p *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
+	config := config.InMemoryDBConfig{
+		Hostname: fmt.Sprintf("%v.%v.svc", app.Name, app.Namespace),
+		Port:     6379,
+	}
+	p.Config = config
+	if err := makeComponent(&p.Provider, "redis", makeLocalRedis, app); err != nil {
+		fmt.Print("-----------------------ERROR--------------------------")
+		return err
+	}
+	return nil
+}
+
+func makeLocalRedis(app *utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+	nn := (*app).GetNamespacedName("redis")
 
 	oneReplica := int32(1)
 
-	labels := env.GetLabels()
+	labels := (*app).GetLabels()
 	labels["env-app"] = nn.Name
-	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler := utils.MakeLabeler(nn, labels, *app)
 
 	labeler(dd)
 
@@ -87,5 +89,5 @@ func makeLocalRedis(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(svc, nn, nil, servicePorts, env)
+	utils.MakeService(svc, nn, nil, servicePorts, *app)
 }

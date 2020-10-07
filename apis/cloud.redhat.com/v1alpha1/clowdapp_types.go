@@ -98,10 +98,10 @@ func (i *ClowdApp) GetLabels() map[string]string {
 }
 
 // GetNamespacedName contructs a new namespaced name for an object from the pattern
-func (i *ClowdApp) GetNamespacedName(pattern string) types.NamespacedName {
+func (i *ClowdApp) GetNamespacedName(suffix string) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: i.Namespace,
-		Name:      fmt.Sprintf(pattern, i.Name),
+		Name:      fmt.Sprintf("%v-%v", i.Name, suffix),
 	}
 }
 

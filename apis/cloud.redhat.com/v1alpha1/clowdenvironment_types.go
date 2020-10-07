@@ -15,9 +15,12 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // +kubebuilder:validation:Enum=none;operator
@@ -153,5 +156,12 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
+	}
+}
+
+func (i *ClowdEnvironment) GetNamespacedName(suffix string) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      fmt.Sprintf("%v-%v", i.Name, suffix),
+		Namespace: i.Spec.Namespace,
 	}
 }
