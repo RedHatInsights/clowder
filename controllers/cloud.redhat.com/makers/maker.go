@@ -31,6 +31,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -258,9 +259,19 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 		return err
 	}
 
-	labels := m.App.GetLabels()
+	initDeployment(m.App, m.Env, &d, nn, pod, hash)
+
+	if err := update.Apply(m.Ctx, m.Client, &d); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, pod crd.PodSpec, hash string) {
+	labels := app.GetLabels()
 	labels["pod"] = nn.Name
-	m.App.SetObjectMeta(&d, crd.Name(pod.Name), crd.Labels(labels))
+	app.SetObjectMeta(d, crd.Name(pod.Name), crd.Labels(labels))
 
 	d.Spec.Replicas = pod.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -270,8 +281,8 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 		{Name: "quay-cloudservices-pull"},
 	}
 
-	env := pod.Env
-	env = append(env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+	envvar := pod.Env
+	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
 	var livenessProbe core.Probe
 	var readinessProbe core.Probe
@@ -283,7 +294,7 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 				Scheme: "HTTP",
 				Port: intstr.IntOrString{
 					Type:   intstr.Int,
-					IntVal: m.Env.Spec.Web.Port,
+					IntVal: env.Spec.Web.Port,
 				},
 			},
 		},
@@ -306,17 +317,56 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 
 	}
 
+	var lcpu, lmemory, rcpu, rmemory resource.Quantity
+	nullCPU := resource.Quantity{Format: resource.DecimalSI}
+	nullMemory := resource.Quantity{Format: resource.BinarySI}
+
+	if *pod.Resources.Limits.Cpu() != nullCPU {
+		lcpu = pod.Resources.Limits["cpu"]
+	} else {
+		lcpu = env.Spec.ResourceDefaults.Limits["cpu"]
+	}
+
+	if *pod.Resources.Limits.Memory() != nullMemory {
+		lmemory = pod.Resources.Limits["memory"]
+	} else {
+		lmemory = env.Spec.ResourceDefaults.Limits["memory"]
+	}
+
+	if *pod.Resources.Requests.Cpu() != nullCPU {
+		rcpu = pod.Resources.Requests["cpu"]
+	} else {
+		rcpu = env.Spec.ResourceDefaults.Requests["cpu"]
+	}
+
+	if *pod.Resources.Requests.Memory() != nullMemory {
+		rmemory = pod.Resources.Requests["memory"]
+	} else {
+		rmemory = env.Spec.ResourceDefaults.Requests["memory"]
+	}
+
+	resources := core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"cpu":    lcpu,
+			"memory": lmemory,
+		},
+		Requests: core.ResourceList{
+			"cpu":    rcpu,
+			"memory": rmemory,
+		},
+	}
+
 	c := core.Container{
 		Name:         nn.Name,
 		Image:        pod.Image,
 		Command:      pod.Command,
 		Args:         pod.Args,
-		Env:          env,
-		Resources:    pod.Resources,
+		Env:          envvar,
+		Resources:    resources,
 		VolumeMounts: pod.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
-			ContainerPort: m.Env.Spec.Metrics.Port,
+			ContainerPort: env.Spec.Metrics.Port,
 		}},
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
@@ -331,7 +381,7 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 	if pod.Web {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
-			ContainerPort: m.Env.Spec.Web.Port,
+			ContainerPort: env.Spec.Web.Port,
 		})
 	}
 
@@ -347,7 +397,7 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: m.App.ObjectMeta.Name,
+				SecretName: app.ObjectMeta.Name,
 			},
 		},
 	})
@@ -357,11 +407,6 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
 	d.Spec.Template.SetAnnotations(annotations)
-	if err := update.Apply(m.Ctx, m.Client, &d); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (m *Maker) runProviders() (*config.AppConfig, error) {
