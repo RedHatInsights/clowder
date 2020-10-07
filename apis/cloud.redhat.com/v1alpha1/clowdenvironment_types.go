@@ -16,6 +16,7 @@ package v1alpha1
 
 import (
 	core "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -86,14 +87,15 @@ type InMemoryDBConfig struct {
 
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
 type ClowdEnvironmentSpec struct {
-	Namespace   string            `json:"namespace"`
-	Web         WebConfig         `json:"web,omitempty"`
-	Metrics     MetricsConfig     `json:"metrics,omitempty"`
-	Kafka       KafkaConfig       `json:"kafka"`
-	Database    DatabaseConfig    `json:"db,omitempty"`
-	Logging     LoggingConfig     `json:"logging"`
-	ObjectStore ObjectStoreConfig `json:"objectStore"`
-	InMemoryDB  InMemoryDBConfig  `json:"inMemoryDb"`
+	Namespace        string                  `json:"namespace"`
+	Web              WebConfig               `json:"web,omitempty"`
+	Metrics          MetricsConfig           `json:"metrics,omitempty"`
+	Kafka            KafkaConfig             `json:"kafka"`
+	Database         DatabaseConfig          `json:"db,omitempty"`
+	Logging          LoggingConfig           `json:"logging"`
+	ObjectStore      ObjectStoreConfig       `json:"objectStore"`
+	InMemoryDB       InMemoryDBConfig        `json:"inMemoryDb"`
+	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 }
 
 type MinioStatus struct {
