@@ -104,7 +104,7 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 
 	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
 		err := errors.New("Could not find object store hostname from secrets")
-		return &objectStoreConfig, err
+		return nil, err
 	}
 
 	objectStoreConfig.Buckets = buckets
