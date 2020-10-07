@@ -91,7 +91,9 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 	updates := map[runtime.Object]Updater{}
 
 	for _, resource := range obj {
-
+		if reflect.ValueOf(obj).IsZero() {
+			continue
+		}
 		update, err := UpdateOrErr(cl.Get(ctx, nn, resource))
 
 		if err != nil {

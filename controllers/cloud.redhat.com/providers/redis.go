@@ -9,29 +9,65 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
-type redisProvider struct {
+type localRedis struct {
 	Provider
 	Config config.InMemoryDBConfig
 }
 
-func (r *redisProvider) Configure(config *config.AppConfig) {
+func (r *localRedis) Configure(config *config.AppConfig) {
 	config.InMemoryDb = &r.Config
 }
 
-func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.ClowdApp) {
+func NewLocalRedis(p *Provider) (InMemoryDBProvider, error) {
+	config := config.InMemoryDBConfig{
+		Hostname: fmt.Sprintf("%v.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
+		Port:     6379,
+	}
+
+	redisProvider := localRedis{Provider: *p, Config: config}
+
+	if err := makeComponent(p, "redis", makeLocalRedis); err != nil {
+		return &redisProvider, err
+	}
+
+	return &redisProvider, nil
+}
+
+func makeLocalRedis(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+	nn := getNamespacedName(env, "redis")
+
 	oneReplica := int32(1)
 
-	pp.SetObjectMeta(
-		dd,
-		crd.Name(nn.Name),
-		crd.Namespace(nn.Namespace),
-	)
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: pp.GetLabels()}
-	dd.Spec.Template.ObjectMeta.Labels = pp.GetLabels()
+	labels := env.GetLabels()
+	labels["env-app"] = nn.Name
+	labeler := utils.MakeLabeler(nn, labels, env)
+
+	labeler(dd)
+
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	dd.Spec.Template.ObjectMeta.Labels = labels
 	dd.Spec.Replicas = &oneReplica
+
+	probeHandler := core.Handler{
+		Exec: &core.ExecAction{
+			Command: []string{
+				"redis-cli",
+			},
+		},
+	}
+
+	livenessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 15,
+		TimeoutSeconds:      2,
+	}
+	readinessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 45,
+		TimeoutSeconds:      2,
+	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
@@ -41,60 +77,15 @@ func makeRedisDeployment(dd *apps.Deployment, nn types.NamespacedName, pp *crd.C
 			Name:          "redis",
 			ContainerPort: 6379,
 		}},
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
 	}}
-}
 
-func makeRedisService(s *core.Service, nn types.NamespacedName, app *crd.ClowdApp) {
 	servicePorts := []core.ServicePort{{
 		Name:     "redis",
 		Port:     6379,
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(s, nn, nil, servicePorts, app)
-}
-
-func (r *redisProvider) CreateInMemoryDB(app *crd.ClowdApp) error {
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-redis", app.Name),
-		Namespace: app.Namespace,
-	}
-
-	dd := apps.Deployment{}
-
-	update, err := utils.UpdateOrErr(r.Client.Get(r.Ctx, nn, &dd))
-
-	if err != nil {
-		return err
-	}
-
-	makeRedisDeployment(&dd, nn, app)
-
-	if err = update.Apply(r.Ctx, r.Client, &dd); err != nil {
-		return err
-	}
-
-	s := core.Service{}
-	update, err = utils.UpdateOrErr(r.Client.Get(r.Ctx, nn, &s))
-
-	if err != nil {
-		return err
-	}
-
-	makeRedisService(&s, nn, app)
-
-	if err = update.Apply(r.Ctx, r.Client, &s); err != nil {
-		return err
-	}
-
-	r.Config = config.InMemoryDBConfig{
-		Hostname: fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-		Port:     6379,
-	}
-
-	return nil
-}
-
-func NewRedis(p *Provider) (InMemoryDBProvider, error) {
-	return &redisProvider{Provider: *p}, nil
+	utils.MakeService(svc, nn, nil, servicePorts, env)
 }
