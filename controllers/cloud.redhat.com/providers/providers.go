@@ -147,3 +147,7 @@ func (c *Provider) SetUpEnvironment() error {
 
 	return nil
 }
+
+func strPtr(s string) *string {
+	return &s
+}

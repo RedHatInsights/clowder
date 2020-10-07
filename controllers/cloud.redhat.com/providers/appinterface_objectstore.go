@@ -2,7 +2,6 @@ package providers
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -46,12 +45,18 @@ func (a *AppInterfaceObjectstoreProvider) CreateBuckets(app *crd.ClowdApp) error
 		return err
 	}
 
+	resolveBucketDeps(app.Spec.ObjectStore, objStoreConfig)
+	a.Config = *objStoreConfig
+	return nil
+}
+
+func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) error {
 	buckets := []config.ObjectStoreBucket{}
 	missing := []string{}
 
-	for _, requestedBucket := range app.Spec.ObjectStore {
+	for _, requestedBucket := range requestedBuckets {
 		found := false
-		for _, bucket := range objStoreConfig.Buckets {
+		for _, bucket := range c.Buckets {
 			if strings.HasPrefix(bucket.Name, requestedBucket) {
 				found = true
 				bucket.RequestedName = requestedBucket
@@ -70,43 +75,28 @@ func (a *AppInterfaceObjectstoreProvider) CreateBuckets(app *crd.ClowdApp) error
 		return errors.New("Missing buckets from app-interface: " + bucketStr)
 	}
 
-	objStoreConfig.Buckets = buckets
-	a.Config = *objStoreConfig
-
+	c.Buckets = buckets
 	return nil
 }
 
 func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error) {
 	buckets := []config.ObjectStoreBucket{}
-
-	objectStoreConfig := config.ObjectStoreConfig{
-		Buckets: buckets,
-		Port:    443,
-	}
-
-	keys := map[string]string{
-		"aws_access_key_id":     "AccessKey",
-		"aws_secret_access_key": "SecretKey",
-		"bucket":                "Name",
-	}
+	objectStoreConfig := config.ObjectStoreConfig{Port: 443}
 
 	for _, secret := range secrets {
-		bucketConfig := config.ObjectStoreBucket{}
-		rBucketConfig := reflect.ValueOf(&bucketConfig).Elem()
-		found := true
-		for key, kVal := range keys {
-			if val, ok := secret.Data[key]; ok {
-				fv := rBucketConfig.FieldByName(kVal)
-				fv.SetString(string(val))
-			} else {
-				found = false
-				break
-			}
-		}
+		accessKey, accessKeyOk := secret.Data["aws_access_key_id"]
+		secretKey, secretKeyOk := secret.Data["aws_secret_access_key"]
+		name, nameOk := secret.Data["bucket"]
+		endpoint, endpointOk := secret.Data["endpoint"]
 
-		if found {
-			if val, ok := secret.Data["endpoint"]; ok {
-				objectStoreConfig.Hostname = string(val)
+		if accessKeyOk && secretKeyOk && nameOk {
+			bucketConfig := config.ObjectStoreBucket{
+				AccessKey: strPtr(string(accessKey)),
+				SecretKey: strPtr(string(secretKey)),
+				Name:      string(name),
+			}
+			if endpointOk {
+				objectStoreConfig.Hostname = string(endpoint)
 			}
 			buckets = append(buckets, bucketConfig)
 		}
@@ -117,5 +107,6 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 		return &objectStoreConfig, err
 	}
 
+	objectStoreConfig.Buckets = buckets
 	return &objectStoreConfig, nil
 }
