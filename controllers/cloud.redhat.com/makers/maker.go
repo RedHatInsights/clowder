@@ -480,6 +480,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 			return &c, errors.Wrap("Failed to init in-memory db provider", err)
 		}
 
+		inMemoryDbProvider.CreateInMemoryDB(m.App)
 		inMemoryDbProvider.Configure(&c)
 	}
 

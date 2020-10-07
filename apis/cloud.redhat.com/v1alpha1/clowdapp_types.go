@@ -114,6 +114,14 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	}
 }
 
+func (i *ClowdApp) GetNamespace() string {
+	return i.Namespace
+}
+
+func (i *ClowdApp) GetName() string {
+	return i.Name
+}
+
 type omfunc func(o metav1.Object)
 
 func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {

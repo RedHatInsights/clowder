@@ -53,6 +53,7 @@ type DatabaseProvider interface {
 // databases
 type InMemoryDBProvider interface {
 	Configurable
+	CreateInMemoryDB(app *crd.ClowdApp) error
 }
 
 // LoggingProvider is the interface for apps to use to configure logging.  This
@@ -154,29 +155,29 @@ func strPtr(s string) *string {
 	return &s
 }
 
-type makeFn func(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
+type makeFn func(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
 
-func makeComponent(p *Provider, suffix string, fn makeFn) error {
-	nn := getNamespacedName(p.Env, suffix)
+func makeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, suffix string, fn makeFn) error {
+	nn := getNamespacedName(o, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
-	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, svc, pvc, dd)
+	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
 
 	if err != nil {
 		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
 	}
 
-	fn(p.Env, dd, svc, pvc)
+	fn(o, dd, svc, pvc)
 
-	if err = utils.ApplyAll(p.Ctx, p.Client, updates); err != nil {
+	if err = utils.ApplyAll(ctx, cl, updates); err != nil {
 		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
 	}
 
 	return nil
 }
 
-func getNamespacedName(env *crd.ClowdEnvironment, suffix string) types.NamespacedName {
+func getNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName {
 	return types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v", env.Name, suffix),
-		Namespace: env.Spec.Namespace,
+		Name:      fmt.Sprintf("%v-%v", o.GetName(), suffix),
+		Namespace: o.GetNamespace(),
 	}
 }

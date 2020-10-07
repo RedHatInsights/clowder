@@ -26,7 +26,9 @@ const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 
 type ClowdObject interface {
 	MakeOwnerReference() metav1.OwnerReference
-	metav1.Object
+	GetLabels() map[string]string
+	GetNamespace() string
+	GetName() string
 }
 
 var Log logr.Logger = ctrllog.NullLogger{}

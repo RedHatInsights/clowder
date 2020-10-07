@@ -226,7 +226,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 			InMemoryDB: crd.InMemoryDBConfig{
 				Provider: "redis",
 			},
-			Namespace: "default",
+			Namespace: objMeta.Namespace,
 		},
 	}
 
