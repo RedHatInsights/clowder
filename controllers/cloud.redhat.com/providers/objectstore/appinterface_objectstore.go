@@ -1,4 +1,4 @@
-package providers
+package objectstore
 
 import (
 	"fmt"
@@ -7,12 +7,13 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type AppInterfaceObjectstoreProvider struct {
-	Provider
+	p.Provider
 	Config config.ObjectStoreConfig
 }
 
@@ -20,7 +21,7 @@ func (a *AppInterfaceObjectstoreProvider) Configure(c *config.AppConfig) {
 	c.ObjectStore = &a.Config
 }
 
-func NewAppInterfaceObjectstore(p *Provider) (ObjectStoreProvider, error) {
+func NewAppInterfaceObjectstore(p *p.Provider) (p.ObjectStoreProvider, error) {
 	provider := AppInterfaceObjectstoreProvider{Provider: *p}
 
 	return &provider, nil
@@ -91,8 +92,8 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 
 		if accessKeyOk && secretKeyOk && nameOk {
 			bucketConfig := config.ObjectStoreBucket{
-				AccessKey: strPtr(string(accessKey)),
-				SecretKey: strPtr(string(secretKey)),
+				AccessKey: p.StrPtr(string(accessKey)),
+				SecretKey: p.StrPtr(string(secretKey)),
 				Name:      string(name),
 			}
 			if endpointOk {

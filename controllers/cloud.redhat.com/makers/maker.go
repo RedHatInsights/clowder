@@ -27,6 +27,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	rt "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/runtime"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -422,7 +423,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	c.MetricsPort = int(m.Env.Spec.Metrics.Port)
 	c.MetricsPath = m.Env.Spec.Metrics.Path
 
-	objectStoreProvider, err := provider.GetObjectStore()
+	objectStoreProvider, err := rt.GetObjectStore(&provider)
 
 	if err != nil {
 		return &c, err
@@ -439,7 +440,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	dbSpec := m.App.Spec.Database
 
 	if dbSpec.Name != "" {
-		databaseProvider, err := provider.GetDatabase()
+		databaseProvider, err := rt.GetDatabase(&provider)
 
 		if err != nil {
 			return &c, errors.Wrap("Failed to init db provider", err)
@@ -452,7 +453,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		databaseProvider.Configure(&c)
 	}
 
-	kafkaProvider, err := provider.GetKafka()
+	kafkaProvider, err := rt.GetKafka(&provider)
 
 	if err != nil {
 		return &c, errors.Wrap("Failed to init kafka provider", err)
@@ -474,7 +475,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	kafkaProvider.Configure(&c)
 
 	if m.App.Spec.InMemoryDB {
-		inMemoryDbProvider, err := provider.GetInMemoryDB()
+		inMemoryDbProvider, err := rt.GetInMemoryDB(&provider)
 
 		if err != nil {
 			return &c, errors.Wrap("Failed to init in-memory db provider", err)
@@ -487,7 +488,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		inMemoryDbProvider.Configure(&c)
 	}
 
-	loggingProvider, err := provider.GetLogging()
+	loggingProvider, err := rt.GetLogging(&provider)
 
 	if err != nil {
 		return &c, errors.Wrap("Failed to init logging provider", err)

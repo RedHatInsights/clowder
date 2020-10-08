@@ -1,4 +1,4 @@
-package providers
+package database
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +16,7 @@ import (
 )
 
 type localDbProvider struct {
-	Provider
+	p.Provider
 	Config *config.DatabaseConfig
 }
 
@@ -23,7 +24,7 @@ func (db *localDbProvider) Configure(c *config.AppConfig) {
 	c.Database = db.Config
 }
 
-func NewLocalDBProvider(p *Provider) (DatabaseProvider, error) {
+func NewLocalDBProvider(p *p.Provider) (p.DatabaseProvider, error) {
 	return &localDbProvider{Provider: *p}, nil
 }
 
@@ -176,9 +177,9 @@ func makeLocalService(s *core.Service, nn types.NamespacedName, app *crd.ClowdAp
 		Port:     5432,
 		Protocol: "TCP",
 	}}
-	utils.MakeService(s, nn, labels{"service": "db"}, servicePorts, app)
+	utils.MakeService(s, nn, p.Labels{"service": "db"}, servicePorts, app)
 }
 
 func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, app *crd.ClowdApp) {
-	utils.MakePVC(pvc, nn, labels{"service": "db"}, "1Gi", app)
+	utils.MakePVC(pvc, nn, p.Labels{"service": "db"}, "1Gi", app)
 }

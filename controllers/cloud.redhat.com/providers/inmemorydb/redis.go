@@ -1,10 +1,12 @@
-package providers
+package inmemorydb
 
 import (
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -12,7 +14,7 @@ import (
 )
 
 type localRedis struct {
-	Provider
+	p.Provider
 	Config config.InMemoryDBConfig
 }
 
@@ -21,10 +23,10 @@ func (r *localRedis) Configure(config *config.AppConfig) {
 }
 
 func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
-	return makeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis)
+	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis)
 }
 
-func NewLocalRedis(p *Provider) (InMemoryDBProvider, error) {
+func NewLocalRedis(p *providers.Provider) (providers.InMemoryDBProvider, error) {
 	config := config.InMemoryDBConfig{
 		Hostname: fmt.Sprintf("%v.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
 		Port:     6379,
@@ -36,7 +38,7 @@ func NewLocalRedis(p *Provider) (InMemoryDBProvider, error) {
 }
 
 func makeLocalRedis(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
-	nn := getNamespacedName(o, "redis")
+	nn := providers.GetNamespacedName(o, "redis")
 
 	oneReplica := int32(1)
 

@@ -1,4 +1,4 @@
-package providers
+package inmemorydb
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package providers
+package logging
 
 import (
 	"fmt"
@@ -6,13 +6,14 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 type AppInterfaceLoggingProvider struct {
-	Provider
+	p.Provider
 	Config config.LoggingConfig
 }
 
@@ -20,7 +21,7 @@ func (a *AppInterfaceLoggingProvider) Configure(c *config.AppConfig) {
 	c.Logging = a.Config
 }
 
-func NewAppInterfaceLogging(p *Provider) (LoggingProvider, error) {
+func NewAppInterfaceLogging(p *p.Provider) (p.LoggingProvider, error) {
 	provider := AppInterfaceLoggingProvider{Provider: *p}
 
 	return &provider, nil
@@ -31,7 +32,7 @@ func (a *AppInterfaceLoggingProvider) SetUpLogging(app *crd.ClowdApp) error {
 	return setCloudwatchSecret(app.Namespace, &a.Provider, &a.Config)
 }
 
-func setCloudwatchSecret(ns string, p *Provider, c *config.LoggingConfig) error {
+func setCloudwatchSecret(ns string, p *p.Provider, c *config.LoggingConfig) error {
 
 	name := types.NamespacedName{
 		Name:      "cloudwatch",

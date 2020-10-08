@@ -1,10 +1,11 @@
-package providers
+package objectstore
 
 import (
 	"fmt"
 	"testing"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 )
@@ -71,8 +72,8 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 		Port:     443,
 		Hostname: testSecretSpecs.ExactKeys["endpoint"],
 		Buckets: []config.ObjectStoreBucket{{
-			AccessKey: strPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
-			SecretKey: strPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
+			AccessKey: p.StrPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
+			SecretKey: p.StrPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
 			Name:      testSecretSpecs.ExactKeys["bucket"],
 		}},
 	}

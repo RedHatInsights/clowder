@@ -11,11 +11,12 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type labels map[string]string
+type Labels map[string]string
 
 type Provider struct {
 	Client client.Client
@@ -64,101 +65,14 @@ type LoggingProvider interface {
 	SetUpLogging(app *crd.ClowdApp) error
 }
 
-func (c *Provider) GetObjectStore() (ObjectStoreProvider, error) {
-	objectStoreProvider := c.Env.Spec.ObjectStore.Provider
-	switch objectStoreProvider {
-	case "minio":
-		return NewMinIO(c)
-	case "app-interface":
-		return &AppInterfaceObjectstoreProvider{Provider: *c}, nil
-	default:
-		errStr := fmt.Sprintf("No matching object store provider for %s", objectStoreProvider)
-		return nil, errors.New(errStr)
-	}
-}
-
-func (c *Provider) GetDatabase() (DatabaseProvider, error) {
-	dbProvider := c.Env.Spec.Database.Provider
-	switch dbProvider {
-	case "local":
-		return NewLocalDBProvider(c)
-	default:
-		errStr := fmt.Sprintf("No matching db provider for %s", dbProvider)
-		return nil, errors.New(errStr)
-	}
-}
-
-func (c *Provider) GetKafka() (KafkaProvider, error) {
-	kafkaProvider := c.Env.Spec.Kafka.Provider
-	switch kafkaProvider {
-	case "operator":
-		return NewStrimzi(c)
-	case "local":
-		return NewLocalKafka(c)
-	default:
-		errStr := fmt.Sprintf("No matching kafka provider for %s", kafkaProvider)
-		return nil, errors.New(errStr)
-	}
-}
-
-func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
-	inMemoryDBProvider := c.Env.Spec.InMemoryDB.Provider
-	switch inMemoryDBProvider {
-	case "redis":
-		return NewLocalRedis(c)
-	default:
-		errStr := fmt.Sprintf("No matching in-memory db provider for %s", inMemoryDBProvider)
-		return nil, errors.New(errStr)
-	}
-}
-
-func (c *Provider) GetLogging() (LoggingProvider, error) {
-	logProvider := c.Env.Spec.Logging.Provider
-	switch logProvider {
-	case "app-interface":
-		return NewAppInterfaceLogging(c)
-	case "none":
-		return nil, nil
-	default:
-		errStr := fmt.Sprintf("No matching logging provider for %s", logProvider)
-		return nil, errors.New(errStr)
-	}
-}
-
-func (c *Provider) SetUpEnvironment() error {
-	var err error
-
-	if _, err = c.GetObjectStore(); err != nil {
-		return errors.Wrap("setupenv: getobjectstore", err)
-	}
-
-	if _, err = c.GetDatabase(); err != nil {
-		return errors.Wrap("setupenv: getdatabase", err)
-	}
-
-	if _, err = c.GetKafka(); err != nil {
-		return errors.Wrap("setupenv: getkafka", err)
-	}
-
-	if _, err = c.GetInMemoryDB(); err != nil {
-		return errors.Wrap("setupenv: getinmemorydb", err)
-	}
-
-	if _, err = c.GetLogging(); err != nil {
-		return errors.Wrap("setupenv: getlogging", err)
-	}
-
-	return nil
-}
-
-func strPtr(s string) *string {
+func StrPtr(s string) *string {
 	return &s
 }
 
 type makeFn func(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
 
-func makeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, suffix string, fn makeFn) error {
-	nn := getNamespacedName(o, suffix)
+func MakeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, suffix string, fn makeFn) error {
+	nn := GetNamespacedName(o, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
 	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
 
@@ -175,7 +89,7 @@ func makeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, s
 	return nil
 }
 
-func getNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName {
+func GetNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%v-%v", o.GetClowdName(), suffix),
 		Namespace: o.GetClowdNamespace(),
