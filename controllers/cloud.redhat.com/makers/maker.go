@@ -20,6 +20,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
 
@@ -27,7 +33,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	rt "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/runtime"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -423,85 +428,20 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	c.MetricsPort = int(m.Env.Spec.Metrics.Port)
 	c.MetricsPath = m.Env.Spec.Metrics.Path
 
-	objectStoreProvider, err := rt.GetObjectStore(&provider)
-
-	if err != nil {
-		return &c, err
+	if err := objectstore.RunAppProvider(provider, &c, m.App); err != nil {
+		return &c, errors.Wrap("setupenv: getobjectstore", err)
 	}
-
-	err = objectStoreProvider.CreateBuckets(m.App)
-
-	if err != nil {
-		return &c, err
+	if err := logging.RunAppProvider(provider, &c, m.App); err != nil {
+		return &c, errors.Wrap("setupenv: logging", err)
 	}
-
-	objectStoreProvider.Configure(&c)
-
-	dbSpec := m.App.Spec.Database
-
-	if dbSpec.Name != "" {
-		databaseProvider, err := rt.GetDatabase(&provider)
-
-		if err != nil {
-			return &c, errors.Wrap("Failed to init db provider", err)
-		}
-
-		err = databaseProvider.CreateDatabase(m.App)
-		if err != nil {
-			m.Log.Info(err.Error())
-		}
-		databaseProvider.Configure(&c)
+	if err := kafka.RunAppProvider(provider, &c, m.App); err != nil {
+		return &c, errors.Wrap("setupenv: kafka", err)
 	}
-
-	kafkaProvider, err := rt.GetKafka(&provider)
-
-	if err != nil {
-		return &c, errors.Wrap("Failed to init kafka provider", err)
+	if err := inmemorydb.RunAppProvider(provider, &c, m.App); err != nil {
+		return &c, errors.Wrap("setupenv: inmemorydb", err)
 	}
-
-	nn := types.NamespacedName{
-		Name:      m.App.Name,
-		Namespace: m.App.Namespace,
-	}
-
-	for _, topic := range m.App.Spec.KafkaTopics {
-		err := kafkaProvider.CreateTopic(nn, &topic)
-
-		if err != nil {
-			return &c, errors.Wrap("Failed to init kafka topic", err)
-		}
-	}
-
-	kafkaProvider.Configure(&c)
-
-	if m.App.Spec.InMemoryDB {
-		inMemoryDbProvider, err := rt.GetInMemoryDB(&provider)
-
-		if err != nil {
-			return &c, errors.Wrap("Failed to init in-memory db provider", err)
-		}
-
-		err = inMemoryDbProvider.CreateInMemoryDB(m.App)
-		if err != nil {
-			return &c, errors.Wrap("Failed to create in-memory db", err)
-		}
-		inMemoryDbProvider.Configure(&c)
-	}
-
-	loggingProvider, err := rt.GetLogging(&provider)
-
-	if err != nil {
-		return &c, errors.Wrap("Failed to init logging provider", err)
-	}
-
-	if loggingProvider != nil {
-		err = loggingProvider.SetUpLogging(m.App)
-
-		if err != nil {
-			return &c, errors.Wrap("Failed to set up logging", err)
-		}
-
-		loggingProvider.Configure(&c)
+	if err := database.RunAppProvider(provider, &c, m.App); err != nil {
+		return &c, errors.Wrap("setupenv: database", err)
 	}
 
 	return &c, nil
