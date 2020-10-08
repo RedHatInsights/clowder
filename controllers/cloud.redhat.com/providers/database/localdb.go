@@ -17,11 +17,11 @@ import (
 
 type localDbProvider struct {
 	p.Provider
-	Config *config.DatabaseConfig
+	Config config.DatabaseConfig
 }
 
 func (db *localDbProvider) Configure(c *config.AppConfig) {
-	c.Database = db.Config
+	c.Database = &db.Config
 }
 
 func NewLocalDBProvider(p *p.Provider) (DatabaseProvider, error) {
@@ -59,9 +59,11 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
-	dbCfg.Populate(secMap)
 
-	db.Config = &dbCfg
+	dbCfg.Populate(secMap)
+	dbCfg.AdminUsername = "postgres"
+
+	db.Config = dbCfg
 
 	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Database.Image)
 
@@ -122,7 +124,8 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
-		{Name: "PGPASSWORD", Value: cfg.PgPass},
+		{Name: "PGPASSWORD", Value: cfg.AdminPassword},
+		// TODO: Do we need to set the DB name?
 		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
 	}
 	ports := []core.ContainerPort{{

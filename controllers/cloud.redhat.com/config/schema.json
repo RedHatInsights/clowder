@@ -166,7 +166,10 @@
                 "port": {
                     "type": "integer"
                 },
-                "pgPass": {
+                "adminUsername": {
+                    "type": "string"
+                },
+                "adminPassword": {
                     "type": "string"
                 }
             },
@@ -176,7 +179,8 @@
                 "password",
                 "hostname",
                 "port",
-                "pgPass"
+                "adminUsername",
+                "adminPassword"
             ]
         },
         "ObjectStoreBucket": {

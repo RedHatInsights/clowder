@@ -21,6 +21,8 @@ func GetDatabase(c *p.Provider) (DatabaseProvider, error) {
 	switch dbProvider {
 	case "local":
 		return NewLocalDBProvider(c)
+	case "app-interface":
+		return NewAppInterfaceObjectstore(c)
 	default:
 		errStr := fmt.Sprintf("No matching db provider for %s", dbProvider)
 		return nil, errors.New(errStr)

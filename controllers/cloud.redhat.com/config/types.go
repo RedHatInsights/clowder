@@ -38,6 +38,12 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
+	if v, ok := raw["adminPassword"]; !ok || v == nil {
+		return fmt.Errorf("field adminPassword: required")
+	}
+	if v, ok := raw["adminUsername"]; !ok || v == nil {
+		return fmt.Errorf("field adminUsername: required")
+	}
 	if v, ok := raw["hostname"]; !ok || v == nil {
 		return fmt.Errorf("field hostname: required")
 	}
@@ -46,9 +52,6 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 	}
 	if v, ok := raw["password"]; !ok || v == nil {
 		return fmt.Errorf("field password: required")
-	}
-	if v, ok := raw["pgPass"]; !ok || v == nil {
-		return fmt.Errorf("field pgPass: required")
 	}
 	if v, ok := raw["port"]; !ok || v == nil {
 		return fmt.Errorf("field port: required")
@@ -289,6 +292,12 @@ type CloudWatchConfig struct {
 
 // database configuration
 type DatabaseConfig struct {
+	// AdminPassword corresponds to the JSON schema field "adminPassword".
+	AdminPassword string `json:"adminPassword"`
+
+	// AdminUsername corresponds to the JSON schema field "adminUsername".
+	AdminUsername string `json:"adminUsername"`
+
 	// Hostname corresponds to the JSON schema field "hostname".
 	Hostname string `json:"hostname"`
 
@@ -297,9 +306,6 @@ type DatabaseConfig struct {
 
 	// Password corresponds to the JSON schema field "password".
 	Password string `json:"password"`
-
-	// PgPass corresponds to the JSON schema field "pgPass".
-	PgPass string `json:"pgPass"`
 
 	// Port corresponds to the JSON schema field "port".
 	Port int `json:"port"`

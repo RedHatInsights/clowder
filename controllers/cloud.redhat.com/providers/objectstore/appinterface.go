@@ -84,24 +84,22 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	buckets := []config.ObjectStoreBucket{}
 	objectStoreConfig := config.ObjectStoreConfig{Port: 443}
 
-	for _, secret := range secrets {
-		accessKey, accessKeyOk := secret.Data["aws_access_key_id"]
-		secretKey, secretKeyOk := secret.Data["aws_secret_access_key"]
-		name, nameOk := secret.Data["bucket"]
-		endpoint, endpointOk := secret.Data["endpoint"]
-
-		if accessKeyOk && secretKeyOk && nameOk {
-			bucketConfig := config.ObjectStoreBucket{
-				AccessKey: p.StrPtr(string(accessKey)),
-				SecretKey: p.StrPtr(string(secretKey)),
-				Name:      string(name),
-			}
-			if endpointOk {
-				objectStoreConfig.Hostname = string(endpoint)
-			}
-			buckets = append(buckets, bucketConfig)
+	extractFn := func(m map[string][]byte) {
+		bucketConfig := config.ObjectStoreBucket{
+			AccessKey: p.StrPtr(string(m["aws_access_key_id"])),
+			SecretKey: p.StrPtr(string(m["aws_secret_access_key"])),
+			Name:      string(m["bucket"]),
 		}
+
+		if endpoint, ok := m["endpoint"]; ok {
+			objectStoreConfig.Hostname = string(endpoint)
+		}
+
+		buckets = append(buckets, bucketConfig)
 	}
+
+	keys := []string{"aws_access_key_id", "aws_secret_access_key", "bucket"}
+	p.ExtractSecretData(secrets, extractFn, keys...)
 
 	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
 		err := errors.New("Could not find object store hostname from secrets")

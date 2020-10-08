@@ -18,7 +18,7 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	dbc.Hostname = (*data)["hostname"]
 	dbc.Name = (*data)["name"]
 	dbc.Password = (*data)["password"]
-	dbc.PgPass = (*data)["pgPass"]
+	dbc.AdminPassword = (*data)["pgPass"]
 	dbc.Port = port
 	dbc.Username = (*data)["username"]
 }

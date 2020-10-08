@@ -98,18 +98,18 @@ func TestLocalDBDeployment(t *testing.T) {
 	nn, app := getBaseElements()
 
 	cfg := config.DatabaseConfig{
-		Hostname: fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-		Port:     5432,
-		Username: utils.RandString(16),
-		Password: utils.RandString(16),
-		PgPass:   utils.RandString(16),
-		Name:     app.Spec.Database.Name,
+		Hostname:      fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
+		Port:          5432,
+		Username:      utils.RandString(16),
+		Password:      utils.RandString(16),
+		AdminPassword: utils.RandString(16),
+		Name:          app.Spec.Database.Name,
 	}
 
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
-		{Name: "PGPASSWORD", Value: cfg.PgPass},
+		{Name: "PGPASSWORD", Value: cfg.AdminPassword},
 		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
 	}
 
