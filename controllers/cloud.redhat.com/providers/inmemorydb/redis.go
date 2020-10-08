@@ -26,7 +26,7 @@ func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
 	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis)
 }
 
-func NewLocalRedis(p *providers.Provider) (providers.InMemoryDBProvider, error) {
+func NewLocalRedis(p *providers.Provider) (InMemoryDBProvider, error) {
 	config := config.InMemoryDBConfig{
 		Hostname: fmt.Sprintf("%v.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
 		Port:     6379,

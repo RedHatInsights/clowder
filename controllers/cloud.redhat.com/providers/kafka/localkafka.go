@@ -46,7 +46,7 @@ func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTo
 	return nil
 }
 
-func NewLocalKafka(p *p.Provider) (p.KafkaProvider, error) {
+func NewLocalKafka(p *p.Provider) (KafkaProvider, error) {
 	port := 29092
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},

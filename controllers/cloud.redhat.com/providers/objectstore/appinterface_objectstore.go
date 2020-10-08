@@ -21,7 +21,7 @@ func (a *AppInterfaceObjectstoreProvider) Configure(c *config.AppConfig) {
 	c.ObjectStore = &a.Config
 }
 
-func NewAppInterfaceObjectstore(p *p.Provider) (p.ObjectStoreProvider, error) {
+func NewAppInterfaceObjectstore(p *p.Provider) (ObjectStoreProvider, error) {
 	provider := AppInterfaceObjectstoreProvider{Provider: *p}
 
 	return &provider, nil

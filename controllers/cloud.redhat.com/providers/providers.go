@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -29,40 +28,6 @@ type Provider struct {
 // provider-specific API calls (e.g. CreateBuckets) have been made.
 type Configurable interface {
 	Configure(c *config.AppConfig)
-}
-
-// ObjectStoreProvider is the interface for apps to use to configure object
-// stores
-type ObjectStoreProvider interface {
-	Configurable
-	CreateBuckets(app *crd.ClowdApp) error
-}
-
-// KafkaProvider is the interface for apps to use to configure kafka topics
-type KafkaProvider interface {
-	Configurable
-	CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error
-}
-
-// DatabaseProvider is the interface for apps to use to configure databases
-type DatabaseProvider interface {
-	Configurable
-	CreateDatabase(app *crd.ClowdApp) error
-}
-
-// InMemoryDBProvider is the interface for apps to use to configure in-memory
-// databases
-type InMemoryDBProvider interface {
-	Configurable
-	CreateInMemoryDB(app *crd.ClowdApp) error
-}
-
-// LoggingProvider is the interface for apps to use to configure logging.  This
-// may not be needed on a per-app basis; logging is often only configured on a
-// per-environment basis.
-type LoggingProvider interface {
-	Configurable
-	SetUpLogging(app *crd.ClowdApp) error
 }
 
 func StrPtr(s string) *string {

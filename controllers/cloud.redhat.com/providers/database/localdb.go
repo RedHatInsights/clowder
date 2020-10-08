@@ -24,7 +24,7 @@ func (db *localDbProvider) Configure(c *config.AppConfig) {
 	c.Database = db.Config
 }
 
-func NewLocalDBProvider(p *p.Provider) (p.DatabaseProvider, error) {
+func NewLocalDBProvider(p *p.Provider) (DatabaseProvider, error) {
 	return &localDbProvider{Provider: *p}, nil
 }
 

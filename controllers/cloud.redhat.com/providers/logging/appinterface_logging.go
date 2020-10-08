@@ -21,7 +21,7 @@ func (a *AppInterfaceLoggingProvider) Configure(c *config.AppConfig) {
 	c.Logging = a.Config
 }
 
-func NewAppInterfaceLogging(p *p.Provider) (p.LoggingProvider, error) {
+func NewAppInterfaceLogging(p *p.Provider) (LoggingProvider, error) {
 	provider := AppInterfaceLoggingProvider{Provider: *p}
 
 	return &provider, nil

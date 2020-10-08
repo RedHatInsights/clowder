@@ -27,7 +27,11 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	rt "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/runtime"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -63,7 +67,22 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Env:    &env,
 	}
 
-	err = rt.SetUpEnvironment(&provider)
+	if err = objectstore.RunEnvProvider(provider); err != nil {
+		return ctrl.Result{}, errors.Wrap("setupenv: getobjectstore", err)
+	}
+	if err = logging.RunEnvProvider(provider); err != nil {
+		return ctrl.Result{}, errors.Wrap("setupenv: logging", err)
+	}
+	if err = kafka.RunEnvProvider(provider); err != nil {
+		return ctrl.Result{}, errors.Wrap("setupenv: kafka", err)
+	}
+	if err = inmemorydb.RunEnvProvider(provider); err != nil {
+		return ctrl.Result{}, errors.Wrap("setupenv: inmemorydb", err)
+	}
+	if err = database.RunEnvProvider(provider); err != nil {
+		return ctrl.Result{}, errors.Wrap("setupenv: database", err)
+	}
+
 	requeue := errors.HandleError(r.Log, err)
 	return ctrl.Result{Requeue: requeue}, nil
 }

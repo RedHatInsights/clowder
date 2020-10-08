@@ -58,7 +58,7 @@ func (s *strimziProvider) configureBrokers() error {
 	return nil
 }
 
-func NewStrimzi(p *p.Provider) (p.KafkaProvider, error) {
+func NewStrimzi(p *p.Provider) (KafkaProvider, error) {
 	kafkaProvider := &strimziProvider{
 		Provider: *p,
 		Config: config.KafkaConfig{

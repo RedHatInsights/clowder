@@ -71,7 +71,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 }
 
 // NewMinIO constructs a new minio for the given config
-func NewMinIO(p *p.Provider) (p.ObjectStoreProvider, error) {
+func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
 	nn := types.NamespacedName{
 		Namespace: p.Env.Spec.Namespace,
 		Name:      p.Env.Name + "-minio",
