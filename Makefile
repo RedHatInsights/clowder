@@ -1,10 +1,6 @@
 # Current Operator version
-CURRENT_VERSION ?= 0.0.8
-PREV_VERSION := $(shell hack/prev_sem_ver.py $(CURRENT_VERSION))
-# Default bundle image tag
-BUNDLE_IMG ?= quay.io/cloudservices/clowder-bundle:$(CURRENT_VERSION)
-INDEX_IMG ?= quay.io/cloudservices/clowder-index:$(CURRENT_VERSION)
-PREV_INDEX_IMG ?= quay.io/cloudservices/clowder-index:$(PREV_VERSION)
+VERSION ?= 0.0.8
+#
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -117,13 +113,5 @@ endif
 bundle: manifests
 	operator-sdk generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(CURRENT_VERSION) $(BUNDLE_METADATA_OPTS)
+	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	operator-sdk bundle validate ./bundle
-
-# Build the bundle image.
-.PHONY: bundle-build
-bundle-build:
-	podman build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
-	podman push $(BUNDLE_IMG)
-	opm index add --bundles $(BUNDLE_IMG) --from-index $(PREV_INDEX_IMG) --tag $(INDEX_IMG) -p podman
-	podman push $(INDEX_IMG)

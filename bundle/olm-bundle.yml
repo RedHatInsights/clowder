@@ -3,8 +3,10 @@ kind: Template
 metadata:
   name: clowder-olm-bundle
 parameters:
-- name: VERSION
-  value: 0.0.8
+- name: IMAGE_TAG
+  value: latest
+- name: IMAGE
+  value: quay.io/cloudservices/clowder-index
 - name: TARGET_NAMESPACE
   value: clowder-system
 objects:
@@ -14,7 +16,7 @@ objects:
     name: clowder-source
   spec:
     sourceType: grpc
-    image: quay.io/cloudservices/clowder-index:${VERSION}
+    image: ${IMAGE}:${IMAGE_TAG}
 - apiVersion: operators.coreos.com/v1
   kind: OperatorGroup
   metadata:
