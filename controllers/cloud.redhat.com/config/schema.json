@@ -22,7 +22,11 @@
                     "$ref": "#/definitions/KafkaConfig"
                 },
                 "database": {
-                    "$ref": "#/definitions/DatabaseConfig"
+                    "id": "databases",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DatabaseConfig"
+                    }
                 },
                 "objectStore": {
                     "$ref": "#/definitions/ObjectStoreConfig"

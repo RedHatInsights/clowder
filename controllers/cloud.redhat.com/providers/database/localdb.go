@@ -17,7 +17,7 @@ import (
 
 type localDbProvider struct {
 	p.Provider
-	Config *config.DatabaseConfig
+	Config []config.DatabaseConfig
 }
 
 func (db *localDbProvider) Configure(c *config.AppConfig) {
@@ -31,8 +31,12 @@ func NewLocalDBProvider(p *p.Provider) (DatabaseProvider, error) {
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
+
+}
+
+func (db *localDbProvider) createDatabase(spec *crd.InsightsDatabaseSpec) error {
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-db", app.Name),
+		Name:      fmt.Sprintf("%v-db", spec.Name),
 		Namespace: app.Namespace,
 	}
 

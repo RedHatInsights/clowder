@@ -68,7 +68,7 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 // clowdapp deployment configuration for cloud.redhat.com clowdapps
 type AppConfig struct {
 	// Database corresponds to the JSON schema field "database".
-	Database *DatabaseConfig `json:"database,omitempty"`
+	Database []DatabaseConfig `json:"database,omitempty"`
 
 	// Endpoints corresponds to the JSON schema field "endpoints".
 	Endpoints []DependencyEndpoint `json:"endpoints,omitempty"`
