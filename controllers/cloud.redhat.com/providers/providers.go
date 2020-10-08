@@ -60,3 +60,21 @@ func GetNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName 
 		Namespace: o.GetClowdNamespace(),
 	}
 }
+
+type ExtractFn func(m map[string][]byte)
+
+func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
+	for _, secret := range secrets {
+		allOk := true
+		for _, key := range keys {
+			if _, ok := secret.Data[key]; !ok {
+				allOk = false
+				break
+			}
+		}
+
+		if allOk {
+			fn(secret.Data)
+		}
+	}
+}
