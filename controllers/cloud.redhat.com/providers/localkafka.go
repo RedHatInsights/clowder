@@ -12,6 +12,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 type envVar struct {
@@ -158,7 +159,25 @@ func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 		},
 	}
 
-	// TODO Readiness and Liveness probes
+	probeHandler := core.Handler{
+		TCPSocket: &core.TCPSocketAction{
+			Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: 9092,
+			},
+		},
+	}
+
+	livenessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 15,
+		TimeoutSeconds:      2,
+	}
+	readinessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 45,
+		TimeoutSeconds:      2,
+	}
 
 	c := core.Container{
 		Name:  nn.Name,
@@ -179,6 +198,8 @@ func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 				MountPath: "/var/lib/kafka/data",
 			},
 		},
+		ReadinessProbe: &readinessProbe,
+		LivenessProbe:  &livenessProbe,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
@@ -254,7 +275,32 @@ func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *cor
 		},
 	}
 
-	// TODO Readiness and Liveness probes
+	probeHandler := core.Handler{
+		Exec: &core.ExecAction{
+			Command: []string{
+				"echo",
+				"ruok",
+				"|",
+				"nc",
+				"127.0.0.1",
+				"32181",
+				"|",
+				"grep",
+				"imok",
+			},
+		},
+	}
+
+	livenessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 15,
+		TimeoutSeconds:      2,
+	}
+	readinessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 45,
+		TimeoutSeconds:      2,
+	}
 
 	c := core.Container{
 		Name:  nn.Name,
@@ -279,6 +325,8 @@ func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *cor
 				MountPath: "/var/lib/zookeeper/log",
 			},
 		},
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}

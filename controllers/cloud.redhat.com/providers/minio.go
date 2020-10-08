@@ -15,6 +15,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -168,7 +169,25 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 		ContainerPort: port,
 	}}
 
-	// TODO Readiness and Liveness probes
+	probeHandler := core.Handler{
+		TCPSocket: &core.TCPSocketAction{
+			Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: 9000,
+			},
+		},
+	}
+
+	livenessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 15,
+		TimeoutSeconds:      2,
+	}
+	readinessProbe := core.Probe{
+		Handler:             probeHandler,
+		InitialDelaySeconds: 45,
+		TimeoutSeconds:      2,
+	}
 
 	c := core.Container{
 		Name:  nn.Name,
@@ -183,6 +202,8 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 			"server",
 			"/storage",
 		},
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
