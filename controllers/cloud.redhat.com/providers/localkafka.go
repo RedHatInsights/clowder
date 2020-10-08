@@ -3,10 +3,8 @@ package providers
 import (
 	"fmt"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -59,42 +57,15 @@ func NewLocalKafka(p *Provider) (KafkaProvider, error) {
 		Config:   config,
 	}
 
-	if err := makeComponent(p, "zookeeper", makeLocalZookeeper); err != nil {
+	if err := makeComponent(p.Ctx, p.Client, p.Env, "zookeeper", makeLocalZookeeper); err != nil {
 		return &kafkaProvider, err
 	}
 
-	if err := makeComponent(p, "kafka", makeLocalKafka); err != nil {
+	if err := makeComponent(p.Ctx, p.Client, p.Env, "kafka", makeLocalKafka); err != nil {
 		return &kafkaProvider, err
 	}
 
 	return &kafkaProvider, nil
-}
-
-type makeFn func(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
-
-func makeComponent(p *Provider, suffix string, fn makeFn) error {
-	nn := getNamespacedName(p.Env, suffix)
-	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
-	updates, err := utils.UpdateAllOrErr(p.Ctx, p.Client, nn, svc, pvc, dd)
-
-	if err != nil {
-		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
-	}
-
-	fn(p.Env, dd, svc, pvc)
-
-	if err = utils.ApplyAll(p.Ctx, p.Client, updates); err != nil {
-		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
-	}
-
-	return nil
-}
-
-func getNamespacedName(env *crd.ClowdEnvironment, suffix string) types.NamespacedName {
-	return types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v", env.Name, suffix),
-		Namespace: env.Spec.Namespace,
-	}
 }
 
 func makeEnvVars(list *[]envVar) []core.EnvVar {
@@ -108,12 +79,12 @@ func makeEnvVars(list *[]envVar) []core.EnvVar {
 	return envVars
 }
 
-func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
-	nn := getNamespacedName(env, "kafka")
+func makeLocalKafka(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+	nn := getNamespacedName(o, "kafka")
 
-	labels := env.GetLabels()
+	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
-	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)
 
@@ -145,7 +116,7 @@ func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 		{"KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://" + nn.Name + ":29092, LOCAL://localhost:9092"},
 		{"KAFKA_BROKER_ID", "1"},
 		{"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1"},
-		{"KAFKA_ZOOKEEPER_CONNECT", env.Name + "-zookeeper:32181"},
+		{"KAFKA_ZOOKEEPER_CONNECT", o.GetClowdName() + "-zookeeper:32181"},
 		{"LOG_DIR", "/var/lib/kafka"},
 		{"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:PLAINTEXT, LOCAL:PLAINTEXT"},
 		{"KAFKA_INTER_BROKER_LISTENER_NAME", "LOCAL"},
@@ -186,17 +157,17 @@ func makeLocalKafka(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Se
 
 	servicePorts := []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
 
-	utils.MakeService(svc, nn, labels, servicePorts, env)
-	utils.MakePVC(pvc, nn, labels, "1Gi", env)
+	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakePVC(pvc, nn, labels, "1Gi", o)
 }
 
-func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalZookeeper(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
 
-	nn := getNamespacedName(env, "zookeeper")
+	nn := getNamespacedName(o, "zookeeper")
 
-	labels := env.GetLabels()
+	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
-	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)
 
@@ -296,6 +267,6 @@ func makeLocalZookeeper(env *crd.ClowdEnvironment, dd *apps.Deployment, svc *cor
 		},
 	}
 
-	utils.MakeService(svc, nn, labels, servicePorts, env)
-	utils.MakePVC(pvc, nn, labels, "1Gi", env)
+	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakePVC(pvc, nn, labels, "1Gi", o)
 }

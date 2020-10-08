@@ -155,3 +155,11 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 		UID:        i.ObjectMeta.UID,
 	}
 }
+
+func (i *ClowdEnvironment) GetClowdNamespace() string {
+	return i.Spec.Namespace
+}
+
+func (i *ClowdEnvironment) GetClowdName() string {
+	return i.Name
+}

@@ -8,6 +8,9 @@ import (
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -99,12 +102,12 @@ func (c *Provider) GetKafka() (KafkaProvider, error) {
 }
 
 func (c *Provider) GetInMemoryDB() (InMemoryDBProvider, error) {
-	dbProvider := c.Env.Spec.InMemoryDB.Provider
-	switch dbProvider {
+	inMemoryDBProvider := c.Env.Spec.InMemoryDB.Provider
+	switch inMemoryDBProvider {
 	case "redis":
-		return NewRedis(c)
+		return NewLocalRedis(c)
 	default:
-		errStr := fmt.Sprintf("No matching in-memory db provider for %s", dbProvider)
+		errStr := fmt.Sprintf("No matching in-memory db provider for %s", inMemoryDBProvider)
 		return nil, errors.New(errStr)
 	}
 }
@@ -150,4 +153,31 @@ func (c *Provider) SetUpEnvironment() error {
 
 func strPtr(s string) *string {
 	return &s
+}
+
+type makeFn func(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
+
+func makeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, suffix string, fn makeFn) error {
+	nn := getNamespacedName(o, suffix)
+	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
+	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
+
+	if err != nil {
+		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
+	}
+
+	fn(o, dd, svc, pvc)
+
+	if err = utils.ApplyAll(ctx, cl, updates); err != nil {
+		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
+	}
+
+	return nil
+}
+
+func getNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      fmt.Sprintf("%v-%v", o.GetClowdName(), suffix),
+		Namespace: o.GetClowdNamespace(),
+	}
 }
