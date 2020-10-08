@@ -87,5 +87,5 @@ func makeLocalRedis(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service,
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(svc, nn, nil, servicePorts, o)
+	utils.MakeService(svc, nn, labels, servicePorts, o)
 }
