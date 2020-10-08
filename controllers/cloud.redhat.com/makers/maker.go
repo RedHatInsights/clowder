@@ -464,7 +464,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	}
 
 	for _, topic := range m.App.Spec.KafkaTopics {
-		kafkaProvider.CreateTopic(nn, &topic)
+		err := kafkaProvider.CreateTopic(nn, &topic)
 
 		if err != nil {
 			return &c, errors.Wrap("Failed to init kafka topic", err)
@@ -480,7 +480,10 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 			return &c, errors.Wrap("Failed to init in-memory db provider", err)
 		}
 
-		inMemoryDbProvider.CreateInMemoryDB(m.App)
+		err = inMemoryDbProvider.CreateInMemoryDB(m.App)
+		if err != nil {
+			return &c, errors.Wrap("Failed to create in-memory db", err)
+		}
 		inMemoryDbProvider.Configure(&c)
 	}
 

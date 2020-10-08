@@ -59,10 +59,15 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 	meta := obj.(metav1.Object)
 
 	if *u {
-		Log.Info("Updating resource", "kind", kind, "name", meta.GetName())
+		Log.Info("Updating resource", "kind", kind, "object_name", meta.GetName())
 		err = cl.Update(ctx, obj)
 	} else {
-		Log.Info("Creating resource", "kind", kind, "name", meta.GetName())
+		if meta.GetName() == "" {
+			Log.Info("Skipping resource as name unknown", "kind", kind)
+			return nil
+		}
+
+		Log.Info("Creating resource", "kind", kind, "object_name", meta.GetName())
 		err = cl.Create(ctx, obj)
 	}
 
@@ -93,9 +98,6 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 	updates := map[runtime.Object]Updater{}
 
 	for _, resource := range obj {
-		if reflect.ValueOf(obj).IsZero() {
-			continue
-		}
 		update, err := UpdateOrErr(cl.Get(ctx, nn, resource))
 
 		if err != nil {
