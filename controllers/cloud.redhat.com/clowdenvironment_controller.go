@@ -27,6 +27,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	rt "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/runtime"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -62,7 +63,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Env:    &env,
 	}
 
-	err = provider.SetUpEnvironment()
+	err = rt.SetUpEnvironment(&provider)
 	requeue := errors.HandleError(r.Log, err)
 	return ctrl.Result{Requeue: requeue}, nil
 }

@@ -1,10 +1,13 @@
-package providers
+package kafka
 
 import (
 	"fmt"
 
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -19,7 +22,7 @@ type envVar struct {
 }
 
 type localKafka struct {
-	Provider
+	providers.Provider
 	Config config.KafkaConfig
 }
 
@@ -43,7 +46,7 @@ func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTo
 	return nil
 }
 
-func NewLocalKafka(p *Provider) (KafkaProvider, error) {
+func NewLocalKafka(p *p.Provider) (p.KafkaProvider, error) {
 	port := 29092
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
@@ -58,11 +61,11 @@ func NewLocalKafka(p *Provider) (KafkaProvider, error) {
 		Config:   config,
 	}
 
-	if err := makeComponent(p.Ctx, p.Client, p.Env, "zookeeper", makeLocalZookeeper); err != nil {
+	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "zookeeper", makeLocalZookeeper); err != nil {
 		return &kafkaProvider, err
 	}
 
-	if err := makeComponent(p.Ctx, p.Client, p.Env, "kafka", makeLocalKafka); err != nil {
+	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "kafka", makeLocalKafka); err != nil {
 		return &kafkaProvider, err
 	}
 
@@ -81,7 +84,7 @@ func makeEnvVars(list *[]envVar) []core.EnvVar {
 }
 
 func makeLocalKafka(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
-	nn := getNamespacedName(o, "kafka")
+	nn := providers.GetNamespacedName(o, "kafka")
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -184,7 +187,7 @@ func makeLocalKafka(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service,
 
 func makeLocalZookeeper(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
 
-	nn := getNamespacedName(o, "zookeeper")
+	nn := providers.GetNamespacedName(o, "zookeeper")
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name

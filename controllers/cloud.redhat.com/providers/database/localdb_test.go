@@ -1,4 +1,4 @@
-package providers
+package database
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
 
@@ -24,7 +25,7 @@ func getBaseElements() (types.NamespacedName, crd.ClowdApp) {
 	objMeta := metav1.ObjectMeta{
 		Name:      "reqapp",
 		Namespace: "default",
-		Labels: labels{
+		Labels: p.Labels{
 			"app": "test",
 		},
 	}

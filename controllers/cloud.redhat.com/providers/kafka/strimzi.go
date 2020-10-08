@@ -1,4 +1,4 @@
-package providers
+package kafka
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -20,7 +21,7 @@ var conversionMap = map[string]func([]string) (string, error){
 }
 
 type strimziProvider struct {
-	Provider
+	p.Provider
 	Config config.KafkaConfig
 }
 
@@ -57,7 +58,7 @@ func (s *strimziProvider) configureBrokers() error {
 	return nil
 }
 
-func NewStrimzi(p *Provider) (KafkaProvider, error) {
+func NewStrimzi(p *p.Provider) (p.KafkaProvider, error) {
 	kafkaProvider := &strimziProvider{
 		Provider: *p,
 		Config: config.KafkaConfig{
@@ -91,7 +92,7 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 		return err
 	}
 
-	labels := labels{
+	labels := p.Labels{
 		"strimzi.io/cluster": s.Env.Spec.Kafka.ClusterName,
 		"app":                nn.Name,
 		// If we label it with the app name, since app names should be

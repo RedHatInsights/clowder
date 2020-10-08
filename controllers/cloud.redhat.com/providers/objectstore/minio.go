@@ -1,4 +1,4 @@
-package providers
+package objectstore
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -70,7 +71,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 }
 
 // NewMinIO constructs a new minio for the given config
-func NewMinIO(p *Provider) (ObjectStoreProvider, error) {
+func NewMinIO(p *p.Provider) (p.ObjectStoreProvider, error) {
 	nn := types.NamespacedName{
 		Namespace: p.Env.Spec.Namespace,
 		Name:      p.Env.Name + "-minio",
