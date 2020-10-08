@@ -47,12 +47,11 @@ func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTo
 }
 
 func NewLocalKafka(p *p.Provider) (KafkaProvider, error) {
-	port := 29092
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
 			Hostname: fmt.Sprintf("%v-kafka.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
-			Port:     &port,
+			Port:     intPtr(29092),
 		}},
 	}
 

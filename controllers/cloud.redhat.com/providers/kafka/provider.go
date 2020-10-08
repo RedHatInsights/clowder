@@ -24,6 +24,8 @@ func GetKafka(c *p.Provider) (KafkaProvider, error) {
 		return NewStrimzi(c)
 	case "local":
 		return NewLocalKafka(c)
+	case "app-interface":
+		return NewAppInterface(c)
 	default:
 		errStr := fmt.Sprintf("No matching kafka provider for %s", kafkaProvider)
 		return nil, errors.New(errStr)
@@ -62,4 +64,8 @@ func RunEnvProvider(provider p.Provider) error {
 	}
 
 	return nil
+}
+
+func intPtr(i int) *int {
+	return &i
 }
