@@ -251,7 +251,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 			}},
 			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
-			Database: crd.InsightsDatabaseSpec{
+			Database: crd.DatabaseSpec{
 				Version: &dbVersion,
 				Name:    "test",
 			},

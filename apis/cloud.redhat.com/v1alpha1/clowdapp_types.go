@@ -29,7 +29,7 @@ type InitContainer struct {
 	Args []string `json:"args"`
 }
 
-type InsightsDatabaseSpec struct {
+type DatabaseSpec struct {
 	Version *int32 `json:"version,omitempty"`
 	Name    string `json:"name,omitempty"`
 }
@@ -55,7 +55,7 @@ type ClowdAppSpec struct {
 	Pods         []PodSpec                `json:"pods"`
 	EnvName      string                   `json:"envName"`
 	KafkaTopics  []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
-	Database     InsightsDatabaseSpec     `json:"database,omitempty"`
+	Database     DatabaseSpec             `json:"database,omitempty"`
 	ObjectStore  []string                 `json:"objectStore,omitempty"`
 	InMemoryDB   bool                     `json:"inMemoryDb,omitempty"`
 	Dependencies []string                 `json:"dependencies,omitempty"`
