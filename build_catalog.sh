@@ -60,24 +60,22 @@ if [ $exists -eq 1 ]; then
 fi
 
 # Build/push the new bundle
-pushd deploy/bundle
-  log "Creating bundle $BUNDLE_IMAGE:$current_commit"
-  if [[ $prev_version != "" ]]; then
-    export REPLACE_VERSION=$prev_version
-  fi
-  export BUNDLE_IMAGE_TAG=$current_commit
-  export OPERATOR_IMAGE_TAG=v$version
-  export VERSION=$version
-  make bundle
-  docker tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
+log "Creating bundle $BUNDLE_IMAGE:$current_commit"
+if [[ $prev_version != "" ]]; then
+export REPLACE_VERSION=$prev_version
+fi
+export BUNDLE_IMAGE_TAG=$current_commit
+export OPERATOR_IMAGE_TAG=v$version
+export VERSION=$version
+make bundle
+docker tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
 
-  log "Pushing the bundle $BUNDLE_IMAGE:$current_commit to repository"
-  $docker_cmd push $BUNDLE_IMAGE:$current_commit
-  # Do not push the latest tag here.  If there is a problem creating the catalog then
-  # pushing the latest tag here will mean subsequent runs will be extracting a bundle
-  # version that isn't referenced in the catalog.  This will result in all future
-  # catalog creation failing to be created.
-popd
+log "Pushing the bundle $BUNDLE_IMAGE:$current_commit to repository"
+$docker_cmd push $BUNDLE_IMAGE:$current_commit
+# Do not push the latest tag here.  If there is a problem creating the catalog then
+# pushing the latest tag here will mean subsequent runs will be extracting a bundle
+# version that isn't referenced in the catalog.  This will result in all future
+# catalog creation failing to be created.
 
 # Download opm build
 curl -L https://github.com/operator-framework/operator-registry/releases/download/v$opm_version/linux-amd64-opm -o ./opm
