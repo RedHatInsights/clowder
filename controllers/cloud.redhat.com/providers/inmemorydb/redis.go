@@ -23,14 +23,13 @@ func (r *localRedis) Configure(config *config.AppConfig) {
 }
 
 func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
+	r.Config.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
+	r.Config.Port = 6379
 	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis)
 }
 
 func NewLocalRedis(p *providers.Provider) (InMemoryDBProvider, error) {
-	config := config.InMemoryDBConfig{
-		Hostname: fmt.Sprintf("%v.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
-		Port:     6379,
-	}
+	config := config.InMemoryDBConfig{}
 
 	redisProvider := localRedis{Provider: *p, Config: config}
 
