@@ -15,11 +15,11 @@ import (
 
 type appInterface struct {
 	p.Provider
-	Config []config.DatabaseConfig
+	Config config.DatabaseConfig
 }
 
 func (a *appInterface) Configure(c *config.AppConfig) {
-	c.Database = a.Config
+	c.Database = &a.Config
 }
 
 func NewAppInterfaceObjectstore(p *p.Provider) (DatabaseProvider, error) {
@@ -29,7 +29,7 @@ func NewAppInterfaceObjectstore(p *p.Provider) (DatabaseProvider, error) {
 }
 
 func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
-	if len(app.Spec.Database) == 0 {
+	if app.Spec.Database.Name == "" {
 		return nil
 	}
 
@@ -47,12 +47,12 @@ func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
 		return err
 	}
 
-	matched, missing := resolveDb(app.Spec.Database, dbConfigs)
+	matched := resolveDb(app.Spec.Database, dbConfigs)
 
-	if len(missing) > 0 {
+	if matched == (config.DatabaseConfig{}) {
 		return &errors.MissingDependencies{
 			MissingDeps: map[string][]string{
-				"database": missing,
+				"database": []string{app.Name},
 			},
 		}
 	}
@@ -61,47 +61,25 @@ func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
 	return nil
 }
 
-func resolveDb(specs []crd.InsightsDatabaseSpec, c []config.DatabaseConfig) ([]config.DatabaseConfig, []string) {
-	missing := []string{}
-	matched := []config.DatabaseConfig{}
-	for _, spec := range specs {
-		found := false
-		for _, config := range c {
-			suffixSegments := 1 // environment
-			hostname := strings.Split(config.Hostname, ".")[0]
-			nameSegments := strings.Split(hostname, "-")
-			segLen := len(nameSegments)
-			lastSegment := nameSegments[segLen-1]
+func resolveDb(spec crd.InsightsDatabaseSpec, c []config.DatabaseConfig) config.DatabaseConfig {
+	for _, config := range c {
+		hostname := strings.Split(config.Hostname, ".")[0]
+		nameSegments := strings.Split(hostname, "-")
+		segLen := len(nameSegments)
+		lastSegment := nameSegments[segLen-1]
 
-			if lastSegment == "readonly" {
-				if !spec.Readonly {
-					continue
-				}
-				suffixSegments = 2
-			} else if spec.Readonly {
-				continue
-			}
-
-			dbName := strings.Join(nameSegments[:segLen-suffixSegments], "-")
-
-			if dbName == spec.Name {
-				found = true
-				matched = append(matched, config)
-			}
+		if lastSegment == "readonly" {
+			continue
 		}
 
-		if !found {
-			name := spec.Name
+		dbName := strings.Join(nameSegments[:segLen-1], "-")
 
-			if spec.Readonly {
-				name = name + " (readonly)"
-			}
-
-			missing = append(missing, name)
+		if dbName == spec.Name {
+			return config
 		}
 	}
 
-	return matched, missing
+	return config.DatabaseConfig{}
 }
 
 func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfig, error) {

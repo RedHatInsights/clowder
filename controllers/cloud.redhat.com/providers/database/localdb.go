@@ -17,11 +17,11 @@ import (
 
 type localDbProvider struct {
 	p.Provider
-	Config []config.DatabaseConfig
+	Config config.DatabaseConfig
 }
 
 func (db *localDbProvider) Configure(c *config.AppConfig) {
-	c.Database = db.Config
+	c.Database = &db.Config
 }
 
 func NewLocalDBProvider(p *p.Provider) (DatabaseProvider, error) {
@@ -31,12 +31,8 @@ func NewLocalDBProvider(p *p.Provider) (DatabaseProvider, error) {
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
-
-}
-
-func (db *localDbProvider) createDatabase(spec *crd.InsightsDatabaseSpec) error {
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-db", spec.Name),
+		Name:      fmt.Sprintf("%v-db", app.Name),
 		Namespace: app.Namespace,
 	}
 
@@ -65,7 +61,7 @@ func (db *localDbProvider) createDatabase(spec *crd.InsightsDatabaseSpec) error 
 	}
 	dbCfg.Populate(secMap)
 
-	db.Config = &dbCfg
+	db.Config = dbCfg
 
 	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Database.Image)
 
