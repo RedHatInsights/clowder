@@ -52,7 +52,7 @@ func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
 	if matched == (config.DatabaseConfig{}) {
 		return &errors.MissingDependencies{
 			MissingDeps: map[string][]string{
-				"database": []string{app.Name},
+				"database": {app.Name},
 			},
 		}
 	}
