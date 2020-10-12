@@ -18,6 +18,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+const bucketCheckErrorMsg = "Failed to check if bucket %q exists in minio"
+const bucketCreateErrorMsg = "Failed to create bucket %q in minio"
+
+func wrapBucketError(errorMsg string, bucketName string, err error) error {
+	msg := fmt.Sprintf(errorMsg, bucketName)
+	return errors.Wrap(msg, err)
+}
+
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	p.Provider
@@ -41,7 +49,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 		found, err := m.Client.BucketExists(m.Ctx, bucket)
 
 		if err != nil {
-			return errors.Wrap("Failed to check if bucket exists in minio", err)
+			return wrapBucketError(bucketCheckErrorMsg, bucket, err)
 		}
 
 		if found {
@@ -51,8 +59,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 		err = m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
 
 		if err != nil {
-			msg := fmt.Sprintf("Failed to create bucket %s in minio", bucket)
-			return errors.Wrap(msg, err)
+			return wrapBucketError(bucketCreateErrorMsg, bucket, err)
 		}
 
 		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
