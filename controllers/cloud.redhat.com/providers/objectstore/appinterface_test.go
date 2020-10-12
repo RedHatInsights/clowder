@@ -83,4 +83,3 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 		t.Error(equalsErr)
 	}
 }
-

@@ -9,32 +9,26 @@ import (
 
 func TestMinioConfigure(t *testing.T) {
 	testProvider := &minioProvider{
-		Buckets: []config.ObjectStoreBucket{{
-			AccessKey:     p.StrPtr("bucket_access_key"),
-			Name:          "my_bucket",
-			RequestedName: "my_bucket_requested_name",
-			SecretKey:     p.StrPtr("bucket_secret_key"),
-		}},
-		Hostname:  "my.minio.com",
-		Port:      8080,
-		AccessKey: "access_key",
-		SecretKey: "secret_key",
+		Config: config.ObjectStoreConfig{
+			Buckets: []config.ObjectStoreBucket{{
+				AccessKey:     p.StrPtr("bucket_access_key"),
+				Name:          "my_bucket",
+				RequestedName: "my_bucket_requested_name",
+				SecretKey:     p.StrPtr("bucket_secret_key"),
+			}},
+			Hostname:  "my.minio.com",
+			Port:      8080,
+			AccessKey: p.StrPtr("access_key"),
+			SecretKey: p.StrPtr("secret_key"),
+		},
 	}
 
 	testAppConfig := &config.AppConfig{}
 
-	expected := &config.ObjectStoreConfig{
-		Buckets:   testProvider.Buckets,
-		Hostname:  testProvider.Hostname,
-		Port:      testProvider.Port,
-		AccessKey: &testProvider.AccessKey,
-		SecretKey: &testProvider.SecretKey,
-	}
-
 	testProvider.Configure(testAppConfig)
 	result := testAppConfig.ObjectStore
 
-	equalsErr := objectStoreEquals(result, expected)
+	equalsErr := objectStoreEquals(result, &testProvider.Config)
 
 	if equalsErr != "" {
 		t.Error(equalsErr)

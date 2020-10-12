@@ -6,7 +6,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 )
 
-
 func objectStoreEquals(actual *config.ObjectStoreConfig, expected *config.ObjectStoreConfig) string {
 	oneNil, otherNil := actual == nil, expected == nil
 
