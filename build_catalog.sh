@@ -67,6 +67,8 @@ fi
 export BUNDLE_IMAGE_TAG=$current_commit
 export OPERATOR_IMAGE_TAG=v$version
 export VERSION=$version
+curl -L https://github.com/operator-framework/operator-sdk/releases/download/v1.0.1/operator-sdk-v1.0.1-x86_64-linux-gnu -o ./operator-sdk
+export PATH=$PATH:.
 make bundle
 docker tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
 
