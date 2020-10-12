@@ -68,7 +68,9 @@ export BUNDLE_IMAGE_TAG=$current_commit
 export OPERATOR_IMAGE_TAG=v$version
 export VERSION=$version
 curl -L https://github.com/operator-framework/operator-sdk/releases/download/v1.0.1/operator-sdk-v1.0.1-x86_64-linux-gnu -o ./operator-sdk
+curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.8.5/kustomize_v3.8.5_linux_amd64.tar.gz | tar xzf - > kustomize
 chmod +x ./operator-sdk
+chmod +x ./kustomize
 export PATH=$PATH:.
 make bundle
 docker tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
