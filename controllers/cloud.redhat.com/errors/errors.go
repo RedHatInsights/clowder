@@ -77,6 +77,25 @@ func RootCause(err error) error {
 	return err
 }
 
+func getRootStack(err error) string {
+	var stack string
+	var clowderErr *ClowderError
+
+	if errlib.As(err, &clowderErr) {
+		cause := errlib.Unwrap(err)
+
+		if cause != nil {
+			stack = getRootStack(cause)
+		}
+
+		if stack == "" {
+			stack = clowderErr.Stack.String
+		}
+	}
+
+	return stack
+}
+
 func HandleError(log logr.Logger, err error) bool {
 	if err != nil {
 		var depErr *MissingDependencies
@@ -93,12 +112,7 @@ func HandleError(log logr.Logger, err error) bool {
 			return true
 		}
 
-		var clowderErr *ClowderError
-		if errlib.As(err, &clowderErr) {
-			log.Error(err, "Reconciliation failure", "stack", clowderErr.Stack.String)
-		} else {
-			log.Error(err, "Reconciliation failure")
-		}
+		log.Error(err, "Reconciliation failure", "stack", getRootStack(err))
 	}
 	return false
 }
