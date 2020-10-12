@@ -8,7 +8,7 @@ parameters:
 - name: IMAGE
   value: quay.io/cloudservices/clowder-index
 - name: TARGET_NAMESPACE
-  value: clowder-system
+  value: clowder
 objects:
 - apiVersion: operators.coreos.com/v1alpha1
   kind: CatalogSource
