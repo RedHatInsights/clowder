@@ -84,6 +84,11 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	})
 
 	err = maker.Make()
+
+	if err == nil {
+		r.Log.Info("Reconciliation successful", "app", app.Name)
+	}
+
 	requeue := errors.HandleError(r.Log, err)
 	return ctrl.Result{Requeue: requeue}, nil
 }

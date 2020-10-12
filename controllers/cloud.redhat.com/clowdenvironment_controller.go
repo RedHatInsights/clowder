@@ -83,6 +83,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, errors.Wrap("setupenv: database", err)
 	}
 
+	if err == nil {
+		r.Log.Info("Reconciliation successful", "env", env.Name)
+	}
+
 	requeue := errors.HandleError(r.Log, err)
 	return ctrl.Result{Requeue: requeue}, nil
 }
