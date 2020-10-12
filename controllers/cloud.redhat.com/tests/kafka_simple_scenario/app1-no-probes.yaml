@@ -1,0 +1,25 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app1
+  namespace: new-c-t
+spec:
+  envName: ephem
+  pods:
+  - image: quay.io/image/name
+    name: app1
+    env:
+      - name: DEBUG
+        value: "true"
+    web: true
+  kafkaTopics:
+    - replicas: 5
+      partitions: 5
+      topicName: app1-topic
+    - partitions: 5
+      topicName: app1-topic-no-partitions
+    - partitions: 5
+      topicName: app1-topic-no-partitions
+      config:
+        "leap": 5

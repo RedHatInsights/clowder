@@ -1,0 +1,17 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app2
+  namespace: new-c-t
+spec:
+  envName: ephem2
+  pods:
+  - image: quay.io/image/name
+    name: app2
+    env:
+      - name: DEBUG
+        value: "true"
+    web: true
+  objectStore:
+    - app2-bucket

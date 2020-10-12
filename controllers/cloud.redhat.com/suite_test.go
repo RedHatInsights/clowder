@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -41,6 +42,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/yaml"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
@@ -487,4 +489,99 @@ func fetch(ctx context.Context, name types.NamespacedName, resource runtime.Obje
 	}
 
 	return err
+}
+
+func LoadTestFile(filename string) (*string, error) {
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Printf("failed to read file %s", filename)
+		return nil, err
+	}
+	stringData := string(data)
+	return &stringData, nil
+}
+
+type groupOfCRs struct {
+	Env  *crd.ClowdEnvironment
+	Apps []*crd.ClowdApp
+}
+
+type Spec struct {
+	Kind string `yaml:"kind"`
+}
+
+func TestFullCreate(t *testing.T) {
+
+	testDirs, err := ioutil.ReadDir("tests")
+	if err != nil {
+		t.Fatalf("failed opening directory: %s", err)
+	}
+
+	logger.Info("Creating ClowdApp")
+
+	ctx := context.Background()
+
+	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "new-c-t"}}
+	k8sClient.Create(ctx, nsSpec)
+
+	for _, testDir := range testDirs {
+		if !testDir.IsDir() {
+			continue
+		}
+
+		testfiles, err := ioutil.ReadDir("tests/" + testDir.Name())
+		if err != nil {
+			t.Fatalf("failed opening directory: %s", err)
+		}
+
+		t.Run(testDir.Name(), func(t *testing.T) {
+			testInput := groupOfCRs{}
+
+			for _, testfile := range testfiles {
+				filename := testfile.Name()
+				ff, err := LoadTestFile("tests/" + testDir.Name() + "/" + filename)
+				if err != nil {
+					t.Fatalf("Cloud not load file: %v", err.Error())
+				}
+				ttt := &Spec{}
+				yaml.Unmarshal([]byte(*ff), ttt)
+				var obj runtime.Object
+				switch ttt.Kind {
+				case "ClowdEnvironment":
+					obj = &crd.ClowdEnvironment{}
+				case "ClowdApp":
+					obj = &crd.ClowdApp{}
+				default:
+					t.Fatal("Resource not of correct type")
+				}
+
+				yaml.Unmarshal([]byte(*ff), obj)
+				err = k8sClient.Create(ctx, obj)
+
+				if err != nil {
+					t.Errorf("Cloud not create resource: %v", err.Error())
+				}
+
+				switch ttt.Kind {
+				case "ClowdEnvironment":
+					testInput.Env = obj.(*crd.ClowdEnvironment)
+				case "ClowdApp":
+					testInput.Apps = append(testInput.Apps, obj.(*crd.ClowdApp))
+				}
+			}
+			err := KafkaValidator(testInput)
+			if err != nil {
+				t.Errorf("Got error deadening: %v", err.Error())
+			}
+		})
+	}
+
+	d := apps.Deployment{}
+
+	err = fetchWithDefaults(types.NamespacedName{Name: "ephem-minio", Namespace: "new-c-t"}, &d)
+
+	if err != nil {
+		t.Errorf("Got error getting deployment: %v", err.Error())
+	}
 }
