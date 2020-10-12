@@ -1,13 +1,13 @@
 package objectstore
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"github.com/minio/minio-go/v7"
@@ -15,29 +15,23 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
-	Ctx       context.Context
-	Client    *minio.Client
-	Buckets   []config.ObjectStoreBucket
-	Hostname  string
-	Port      int
-	AccessKey string
-	SecretKey string
+	p.Provider
+	Config config.ObjectStoreConfig
+	Client *minio.Client
 }
 
 func (m *minioProvider) Configure(c *config.AppConfig) {
 	c.ObjectStore = &config.ObjectStoreConfig{
-		Hostname:  m.Hostname,
-		Port:      m.Port,
-		AccessKey: &m.AccessKey,
-		SecretKey: &m.SecretKey,
-		Buckets:   m.Buckets,
+		Hostname:  m.Config.Hostname,
+		Port:      m.Config.Port,
+		AccessKey: m.Config.AccessKey,
+		SecretKey: m.Config.SecretKey,
+		Buckets:   m.Config.Buckets,
 	}
 }
 
@@ -61,7 +55,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 			return errors.Wrap(msg, err)
 		}
 
-		m.Buckets = append(m.Buckets, config.ObjectStoreBucket{
+		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
 		})
@@ -72,64 +66,63 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 
 // NewMinIO constructs a new minio for the given config
 func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
-	nn := types.NamespacedName{
-		Namespace: p.Env.Spec.Namespace,
-		Name:      p.Env.Name + "-minio",
+	cfg := config.ObjectStoreConfig{}
+
+	minioProvider := minioProvider{Provider: *p, Config: cfg}
+
+	nn := providers.GetNamespacedName(p.Env, "minio")
+
+	dataInit := func() map[string]string {
+		return map[string]string{
+			"accessKey": utils.RandString(12),
+			"secretKey": utils.RandString(12),
+			"hostname":  fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
+			"port":      strconv.Itoa(int(9000)),
+		}
 	}
 
-	secMap, err := deployMinio(
-		p.Ctx,
-		nn,
-		p.Client,
-		p.Env,
-	)
+	secMap, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, dataInit) //Will set data if it already exists
+	if err != nil {
+		return nil, errors.Wrap("Couldn't set/get secret", err)
+	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	port, _ := strconv.Atoi(secMap["port"])
-
-	m := &minioProvider{
-		Ctx:       p.Ctx,
-		AccessKey: secMap["accessKey"],
-		SecretKey: secMap["secretKey"],
-		Hostname:  secMap["hostname"],
-		Port:      port,
-	}
-
-	endpoint := fmt.Sprintf("%v:%v", m.Hostname, m.Port)
+	port, _ := strconv.Atoi((*secMap)["port"])
+	minioProvider.Ctx = p.Ctx
+	minioProvider.Config.AccessKey = providers.StrPtr((*secMap)["accessKey"])
+	minioProvider.Config.SecretKey = providers.StrPtr((*secMap)["secretKey"])
+	minioProvider.Config.Hostname = (*secMap)["hostname"]
+	minioProvider.Config.Port = port
+	endpoint := fmt.Sprintf("%v:%v", minioProvider.Config.Hostname, minioProvider.Config.Port)
 
 	cl, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(m.AccessKey, m.SecretKey, ""),
+		Creds:  credentials.NewStaticV4(*minioProvider.Config.AccessKey, *minioProvider.Config.SecretKey, ""),
 		Secure: false,
 	})
 
 	if err != nil {
-		return m, errors.Wrap("Failed to create minio client", err)
+		return nil, errors.Wrap("Failed to create minio client", err)
 	}
 
-	m.Client = cl
+	minioProvider.Client = cl
 
-	return m, nil
+	providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO)
+
+	return &minioProvider, nil
 }
 
-// DeployMinio creates the actual minio service to be used by clowdapps, this
-// does not create buckets
-func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Client, env *crd.ClowdEnvironment) (map[string]string, error) {
-	dd := apps.Deployment{}
-	update, err := utils.UpdateOrErr(client.Get(ctx, nn, &dd))
+func makeLocalMinIO(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+	nn := providers.GetNamespacedName(o, "minio")
 
-	if err != nil {
-		return nil, err
-	}
-
-	labels := env.GetLabels()
+	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
 
-	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler := utils.MakeLabeler(nn, labels, o)
 
-	labeler(&dd)
+	labeler(dd)
 
 	replicas := int32(1)
 
@@ -152,20 +145,6 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 	// get the secret
 
 	port := int32(9000)
-
-	dataInit := func() map[string]string {
-		return map[string]string{
-			"accessKey": utils.RandString(12),
-			"secretKey": utils.RandString(12),
-			"hostname":  fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-			"port":      strconv.Itoa(int(port)),
-		}
-	}
-
-	secMap, err := config.MakeOrGetSecret(ctx, env, client, nn, dataInit) //Will set data if it already exists
-	if err != nil {
-		return nil, errors.Wrap("Couldn't set/get secret", err)
-	}
 
 	envVars := []core.EnvVar{{
 		Name: "MINIO_ACCESS_KEY",
@@ -234,42 +213,12 @@ func deployMinio(ctx context.Context, nn types.NamespacedName, client client.Cli
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	if err = update.Apply(ctx, client, &dd); err != nil {
-		return nil, err
-	}
-
-	s := core.Service{}
-	update, err = utils.UpdateOrErr(client.Get(ctx, nn, &s))
-
-	if err != nil {
-		return nil, err
-	}
-
 	servicePorts := []core.ServicePort{{
 		Name:     "minio",
 		Port:     port,
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(&s, nn, labels, servicePorts, env)
-
-	if err = update.Apply(ctx, client, &s); err != nil {
-		return nil, err
-	}
-
-	pvc := core.PersistentVolumeClaim{}
-
-	update, err = utils.UpdateOrErr(client.Get(ctx, nn, &pvc))
-
-	if err != nil {
-		return nil, err
-	}
-
-	utils.MakePVC(&pvc, nn, labels, "1Gi", env)
-
-	if err = update.Apply(ctx, client, &pvc); err != nil {
-		return nil, err
-	}
-
-	return *secMap, nil
+	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakePVC(pvc, nn, labels, "1Gi", o)
 }
