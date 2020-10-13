@@ -62,7 +62,7 @@ fi
 # Build/push the new bundle
 log "Creating bundle $BUNDLE_IMAGE:$current_commit"
 if [[ $prev_version != "" ]]; then
-export REPLACE_VERSION=$prev_version
+  export REPLACE_VERSION=$prev_version
 fi
 export BUNDLE_IMAGE_TAG=$current_commit
 export OPERATOR_IMAGE_TAG=v$version
