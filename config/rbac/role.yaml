@@ -75,7 +75,7 @@ rules:
 - apiGroups:
   - kafka.strimzi.io
   resources:
-  - kafka
+  - kafkas
   verbs:
   - get
   - list
@@ -83,7 +83,7 @@ rules:
 - apiGroups:
   - kafka.strimzi.io
   resources:
-  - kafkatopic
+  - kafkatopics
   verbs:
   - create
   - delete
