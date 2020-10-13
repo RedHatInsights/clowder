@@ -12,6 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: replace with assert.ErrorIs whenever testify is next released...
+func assertErrorIs(t *testing.T, got error, want error) {
+	t.Helper()
+	if !errlib.Is(got, want) {
+		t.Errorf("got error: %s, want error: %s", got, want)
+	}
+}
+
 type mockBucket struct {
 	Name        string
 	Exists      bool
@@ -64,6 +72,8 @@ func (c *mockBucketHandler) CreateClient(
 }
 
 func TestMinio(t *testing.T) {
+	assert := assert.New(t)
+
 	testProvider := p.Provider{
 		Ctx: context.TODO(),
 	}
@@ -135,16 +145,12 @@ func TestMinio(t *testing.T) {
 		}
 
 		gotErr := testMinioProvider.CreateBuckets(testApp)
-		assert.Contains(t, testBucketHandler.ExistsCalls, bucketWithExistsError)
-		assert.NotContains(t, testBucketHandler.MakeCalls, bucketWithExistsError)
+		assert.Contains(testBucketHandler.ExistsCalls, bucketWithExistsError)
+		assert.NotContains(testBucketHandler.MakeCalls, bucketWithExistsError)
 
 		wantErr := newBucketError(bucketCheckErrorMsg, bucketWithExistsError, fakeError)
-		if gotErr == nil {
-			t.Errorf("Expected to hit an error checking if bucket exists, got nil")
-		}
-		if !errlib.Is(gotErr, wantErr) {
-			t.Errorf("Expected to hit bucket check error, got: %s", gotErr)
-		}
+		assert.Error(gotErr)
+		assertErrorIs(t, gotErr, wantErr)
 	})
 
 	t.Run("createBucketsHitsCreateError", func(t *testing.T) {
@@ -155,15 +161,11 @@ func TestMinio(t *testing.T) {
 		}
 
 		gotErr := testMinioProvider.CreateBuckets(testApp)
-		assert.Contains(t, testBucketHandler.ExistsCalls, bucketWithCreateError)
-		assert.Contains(t, testBucketHandler.MakeCalls, bucketWithCreateError)
+		assert.Contains(testBucketHandler.ExistsCalls, bucketWithCreateError)
+		assert.Contains(testBucketHandler.MakeCalls, bucketWithCreateError)
 		wantErr := newBucketError(bucketCreateErrorMsg, bucketWithCreateError, fakeError)
-		if gotErr == nil {
-			t.Errorf("Expected to hit an error creating bucket, got nil")
-		}
-		if !errlib.Is(gotErr, wantErr) {
-			t.Errorf("Expected to hit bucket create error, got: %s", gotErr)
-		}
+		assert.Error(gotErr)
+		assertErrorIs(t, gotErr, wantErr)
 	})
 
 	t.Run("createBucketsAlreadyExists", func(t *testing.T) {
@@ -174,11 +176,9 @@ func TestMinio(t *testing.T) {
 		}
 
 		gotErr := testMinioProvider.CreateBuckets(testApp)
-		if gotErr != nil {
-			t.Errorf("Expected no error, got: %s", gotErr)
-		}
-		assert.Contains(t, testBucketHandler.ExistsCalls, bucketAlreadyExists)
-		assert.NotContains(t, testBucketHandler.MakeCalls, bucketAlreadyExists)
+		assert.NoError(gotErr)
+		assert.Contains(testBucketHandler.ExistsCalls, bucketAlreadyExists)
+		assert.NotContains(testBucketHandler.MakeCalls, bucketAlreadyExists)
 	})
 
 	t.Run("createBucketsSuccess", func(t *testing.T) {
@@ -189,10 +189,8 @@ func TestMinio(t *testing.T) {
 		}
 
 		gotErr := testMinioProvider.CreateBuckets(testApp)
-		if gotErr != nil {
-			t.Errorf("Expected no error, got: %s", gotErr)
-		}
-		assert.Contains(t, testBucketHandler.ExistsCalls, bucketNew)
-		assert.Contains(t, testBucketHandler.MakeCalls, bucketNew)
+		assert.NoError(gotErr)
+		assert.Contains(testBucketHandler.ExistsCalls, bucketNew)
+		assert.Contains(testBucketHandler.MakeCalls, bucketNew)
 	})
 }
