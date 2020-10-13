@@ -47,7 +47,7 @@ func (a *appInterface) CreateTopic(nn types.NamespacedName, topic *strimzi.Kafka
 
 func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.NamespacedName) error {
 	if cl == nil {
-        // Don't validate topics from within test suite
+		// Don't validate topics from within test suite
 		return nil
 	}
 
@@ -65,8 +65,13 @@ func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.Namespac
 
 func validateBrokerService(ctx context.Context, cl client.Client, nn types.NamespacedName) error {
 	if cl == nil {
-        // Don't validate brokers from within test suite
+		// Don't validate brokers from within test suite
 		return nil
+	}
+
+	nn = types.NamespacedName{
+		Name:      fmt.Sprintf("%s-kafka-bootstrap", nn.Name),
+		Namespace: nn.Namespace,
 	}
 
 	svc := core.Service{}
