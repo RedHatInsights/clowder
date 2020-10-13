@@ -21,6 +21,20 @@ func (a *appInterface) Configure(config *config.AppConfig) {
 }
 
 func (a *appInterface) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error {
+	topicName := types.NamespacedName{
+		Namespace: a.Env.Spec.Kafka.Namespace,
+		Name:      topic.TopicName,
+	}
+
+	t := strimzi.KafkaTopic{}
+	err := a.Client.Get(a.Ctx, topicName, &t)
+
+	if err != nil {
+		return &errors.MissingDependencies{
+			MissingDeps: map[string][]string{"topics": {topicName.Name}},
+		}
+	}
+
 	a.Config.Topics = append(
 		a.Config.Topics,
 		config.TopicConfig{

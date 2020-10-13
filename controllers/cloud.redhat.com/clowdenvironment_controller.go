@@ -66,21 +66,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Env:    &env,
 	}
 
-	if err = objectstore.RunEnvProvider(provider); err != nil {
-		return ctrl.Result{}, errors.Wrap("setupenv: getobjectstore", err)
-	}
-	if err = logging.RunEnvProvider(provider); err != nil {
-		return ctrl.Result{}, errors.Wrap("setupenv: logging", err)
-	}
-	if err = kafka.RunEnvProvider(provider); err != nil {
-		return ctrl.Result{}, errors.Wrap("setupenv: kafka", err)
-	}
-	if err = inmemorydb.RunEnvProvider(provider); err != nil {
-		return ctrl.Result{}, errors.Wrap("setupenv: inmemorydb", err)
-	}
-	if err = database.RunEnvProvider(provider); err != nil {
-		return ctrl.Result{}, errors.Wrap("setupenv: database", err)
-	}
+	err = runProvidersForEnv(provider)
 
 	if err == nil {
 		r.Log.Info("Reconciliation successful", "env", env.Name)
@@ -88,6 +74,26 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	requeue := errors.HandleError(r.Log, err)
 	return ctrl.Result{Requeue: requeue}, nil
+}
+
+func runProvidersForEnv(provider providers.Provider) error {
+	if err := objectstore.RunEnvProvider(provider); err != nil {
+		return errors.Wrap("setupenv: getobjectstore", err)
+	}
+	if err := logging.RunEnvProvider(provider); err != nil {
+		return errors.Wrap("setupenv: logging", err)
+	}
+	if err := kafka.RunEnvProvider(provider); err != nil {
+		return errors.Wrap("setupenv: kafka", err)
+	}
+	if err := inmemorydb.RunEnvProvider(provider); err != nil {
+		return errors.Wrap("setupenv: inmemorydb", err)
+	}
+	if err := database.RunEnvProvider(provider); err != nil {
+		return errors.Wrap("setupenv: database", err)
+	}
+
+	return nil
 }
 
 // SetupWithManager sets up with manager

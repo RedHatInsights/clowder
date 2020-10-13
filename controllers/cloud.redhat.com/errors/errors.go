@@ -61,8 +61,8 @@ func (e *MissingDependencies) Error() string {
 	typeList := []string{}
 
 	for t, vals := range e.MissingDeps {
-		depList := strings.Join(vals, "\n\t")
-		typeList = append(typeList, fmt.Sprintf("%s\n\t%s", t, depList))
+		depList := strings.Join(vals, ",")
+		typeList = append(typeList, fmt.Sprintf("- %s: %s", t, depList))
 	}
 
 	body := strings.Join(typeList, "\n")
