@@ -45,9 +45,10 @@ type ClowdAppReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps/status,verbs=get;update;patch
-
 // +kubebuilder:rbac:groups="",resources=services;persistentvolumeclaims;secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkatopic,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafka,verbs=get;list;watch
 
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
