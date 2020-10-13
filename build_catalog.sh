@@ -48,7 +48,7 @@ if [ $exists -eq 1 ]; then
   tmp_dir=$(mktemp -d -t sa-XXXXXXXXXX)
   pushd $tmp_dir
     docker export tmp_$$ | tar -xf -
-    prev_version=`find . -name *.clusterserviceversion.* | xargs cat - | python3 -c 'import sys,yaml; print(yaml.safe_load(sys.stdin.read())["metadata"]["name"])'`
+    prev_version=`find . -name *.clusterserviceversion.* | xargs cat - | python3 -c 'import sys,yaml; print(yaml.safe_load(sys.stdin.read())["spec"]["version"])'`
     if [[ "$prev_version" == "" ]]; then
       log "Unable to find previous bundle version"
       exit 1
