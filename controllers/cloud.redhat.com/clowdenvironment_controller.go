@@ -47,8 +47,7 @@ type ClowdEnvironmentReconciler struct {
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	_ = r.Log.WithValues("clowdenvironment", req.NamespacedName)
+	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), r.Log.WithValues("env", req.Name))
 
 	env := crd.ClowdEnvironment{}
 	err := r.Client.Get(ctx, req.NamespacedName, &env)

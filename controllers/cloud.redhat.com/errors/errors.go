@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"context"
 	errlib "errors"
 	"fmt"
 	"strings"
@@ -9,6 +10,8 @@ import (
 	"go.uber.org/zap"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
+
+type ClowdKey string
 
 // TODO: Make this configruable
 var stacksEnabled bool = true
@@ -77,7 +80,7 @@ func RootCause(err error) error {
 	return err
 }
 
-func getRootStack(err error) string {
+func GetRootStack(err error) string {
 	var stack string
 	var clowderErr *ClowderError
 
@@ -85,7 +88,7 @@ func getRootStack(err error) string {
 		cause := errlib.Unwrap(err)
 
 		if cause != nil {
-			stack = getRootStack(cause)
+			stack = GetRootStack(cause)
 		}
 
 		if stack == "" {
@@ -94,6 +97,11 @@ func getRootStack(err error) string {
 	}
 
 	return stack
+}
+
+func LogError(ctx context.Context, name string, err *ClowderError) {
+	log := ctx.Value(ClowdKey("log")).(logr.Logger)
+	log.Error(err, err.Msg, "stack", GetRootStack(err))
 }
 
 func HandleError(log logr.Logger, err error) bool {
@@ -112,7 +120,7 @@ func HandleError(log logr.Logger, err error) bool {
 			return true
 		}
 
-		log.Error(err, "Reconciliation failure", "stack", getRootStack(err))
+		log.Error(err, "Reconciliation failure", "stack", GetRootStack(err))
 	}
 	return false
 }

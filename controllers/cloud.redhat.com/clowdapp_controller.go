@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -50,8 +51,8 @@ type ClowdAppReconciler struct {
 
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	_ = r.Log.WithValues("clowdapp", req.NamespacedName)
+	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
+	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), r.Log.WithValues("app", qualifiedName))
 
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
