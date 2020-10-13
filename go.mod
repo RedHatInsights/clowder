@@ -9,6 +9,7 @@ require (
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/redhatinsights/app-common-go v0.0.0-20200907091517-7ff0d0942f17
+	github.com/stretchr/testify v1.4.0
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.10.0
 	k8s.io/api v0.18.6
