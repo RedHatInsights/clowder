@@ -3,7 +3,6 @@ package objectstore
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -12,10 +11,10 @@ import (
 )
 
 type mockBucket struct {
-	Name           string
-	Exists         bool
-	CreateErrorMsg string
-	ExistsErrorMsg string
+	Name        string
+	Exists      bool
+	CreateError error
+	ExistsError error
 }
 
 type mockBucketHandler struct {
@@ -25,10 +24,10 @@ type mockBucketHandler struct {
 func (c *mockBucketHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
 	for _, mockBucket := range c.MockBuckets {
 		if mockBucket.Name == bucketName {
-			if mockBucket.ExistsErrorMsg == "" {
+			if mockBucket.ExistsError == nil {
 				return mockBucket.Exists, nil
 			}
-			return mockBucket.Exists, fmt.Errorf(mockBucket.ExistsErrorMsg)
+			return mockBucket.Exists, mockBucket.ExistsError
 		}
 	}
 	// todo: really we should error out of the test here if there's no MockBuckets
@@ -38,10 +37,10 @@ func (c *mockBucketHandler) Exists(ctx context.Context, bucketName string) (bool
 func (c *mockBucketHandler) Make(ctx context.Context, bucketName string) (err error) {
 	for _, mockBucket := range c.MockBuckets {
 		if mockBucket.Name == bucketName {
-			if mockBucket.CreateErrorMsg == "" {
+			if mockBucket.CreateError == nil {
 				return nil
 			}
-			return fmt.Errorf(mockBucket.CreateErrorMsg)
+			return mockBucket.CreateError
 		}
 	}
 	// todo: really we should error out of the test here if there's no MockBuckets
@@ -59,13 +58,15 @@ func TestMinio(t *testing.T) {
 		Ctx: context.TODO(),
 	}
 
+	bucketWithExistsError := "bucket_with_exists_error"
+	fakeError := errors.New("something very bad happened")
+
 	testBucketHandler := &mockBucketHandler{
 		MockBuckets: []mockBucket{
 			mockBucket{
-				Name:           "bucket_with_exists_error",
-				Exists:         false,
-				ExistsErrorMsg: "AHH!",
-				CreateErrorMsg: "",
+				Name:        bucketWithExistsError,
+				Exists:      false,
+				ExistsError: fakeError,
 			},
 		},
 	}
@@ -91,7 +92,7 @@ func TestMinio(t *testing.T) {
 
 	testApp := &crd.ClowdApp{
 		Spec: crd.ClowdAppSpec{
-			ObjectStore: []string{"bucket_with_exists_error"},
+			ObjectStore: []string{bucketWithExistsError},
 		},
 	}
 
@@ -107,12 +108,17 @@ func TestMinio(t *testing.T) {
 	})
 
 	t.Run("createBucketsHitsCheckError", func(t *testing.T) {
-		err := testMinioProvider.CreateBuckets(testApp)
-		if err == nil {
-			t.Errorf("Expected to hit an error checking if bucket exists, got nil error")
+		gotErr := testMinioProvider.CreateBuckets(testApp)
+		wantErr := &BucketErr{
+			BucketName: bucketWithExistsError,
+			Message:    bucketCheckErrorMsg,
+			Err:        fakeError,
 		}
-		if !errors.Is(err, fmt.Errorf(fmt.Sprintf(bucketCheckErrorMsg, "bucket_with_exists_error"))) {
-			t.Errorf("Expected to hit error of type 'bucketCheckErrorMsg', got: %s", err)
+		if gotErr == nil {
+			t.Errorf("Expected to hit an error checking if bucket exists, got nil")
+		}
+		if !errors.Is(gotErr, wantErr) {
+			t.Errorf("Expected to hit bucket check error, got: %s", gotErr)
 		}
 	})
 

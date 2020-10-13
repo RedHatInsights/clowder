@@ -19,12 +19,41 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-const bucketCheckErrorMsg = "Failed to check if bucket %q exists in minio"
-const bucketCreateErrorMsg = "Failed to create bucket %q in minio"
+// Custom error handling
+const bucketCheckErrorMsg = "failed to check if bucket exists"
+const bucketCreateErrorMsg = "failed to create bucket"
 
-func wrapBucketError(errorMsg string, bucketName string, err error) error {
-	msg := fmt.Sprintf(errorMsg, bucketName)
-	return errors.Wrap(msg, err)
+// BucketErr may be thrown when interacting with the external minio client
+type BucketErr struct {
+	BucketName string
+	Message    string
+	Err        error
+}
+
+func (e *BucketErr) Error() string {
+	return fmt.Sprintf("bucket %q -- %s: %s", e.BucketName, e.Message, e.Err.Error())
+}
+
+func (e *BucketErr) Unwrap() error {
+	return e.Err
+}
+
+// Is compares two BucketErr's
+func (e *BucketErr) Is(target error) bool {
+	t, ok := target.(*BucketErr)
+	if !ok {
+		return false
+	}
+	return (e.BucketName == t.BucketName && e.Message == t.Message && e.Err == t.Err)
+}
+
+func newBucketErr(errorMsg string, bucketName string, err error) error {
+	newErr := &BucketErr{
+		BucketName: bucketName,
+		Message:    errorMsg,
+		Err:        err,
+	}
+	return newErr
 }
 
 // Create a bucketHandler interface to allow for mocking of minio client actions in tests
@@ -89,7 +118,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
 
 		if err != nil {
-			return wrapBucketError(bucketCheckErrorMsg, bucket, err)
+			return newBucketErr(bucketCheckErrorMsg, bucket, err)
 		}
 
 		if found {
@@ -99,7 +128,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 		err = m.BucketHandler.Make(m.Ctx, bucket)
 
 		if err != nil {
-			return wrapBucketError(bucketCreateErrorMsg, bucket, err)
+			return newBucketErr(bucketCreateErrorMsg, bucket, err)
 		}
 
 		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
