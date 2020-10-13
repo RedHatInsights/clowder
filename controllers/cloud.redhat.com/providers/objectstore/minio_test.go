@@ -9,7 +9,6 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	"github.com/minio/minio-go/v7"
 )
 
 type mockBucket struct {
@@ -19,11 +18,11 @@ type mockBucket struct {
 	ExistsErrorMsg string
 }
 
-type mockMinioClient struct {
+type mockBucketHandler struct {
 	MockBuckets []mockBucket
 }
 
-func (c *mockMinioClient) BucketExists(ctx context.Context, bucketName string) (bool, error) {
+func (c *mockBucketHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
 	for _, mockBucket := range c.MockBuckets {
 		if mockBucket.Name == bucketName {
 			if mockBucket.ExistsErrorMsg == "" {
@@ -36,9 +35,7 @@ func (c *mockMinioClient) BucketExists(ctx context.Context, bucketName string) (
 	return false, nil
 }
 
-func (c *mockMinioClient) MakeBucket(
-	ctx context.Context, bucketName string, opts minio.MakeBucketOptions) (err error) {
-
+func (c *mockBucketHandler) Make(ctx context.Context, bucketName string) (err error) {
 	for _, mockBucket := range c.MockBuckets {
 		if mockBucket.Name == bucketName {
 			if mockBucket.CreateErrorMsg == "" {
@@ -51,12 +48,18 @@ func (c *mockMinioClient) MakeBucket(
 	return nil
 }
 
+func (c *mockBucketHandler) CreateClient(
+	hostname string, port int, accessKey *string, secretKey *string,
+) error {
+	return nil
+}
+
 func TestMinio(t *testing.T) {
 	testProvider := p.Provider{
 		Ctx: context.TODO(),
 	}
 
-	testMinioClient := &mockMinioClient{
+	testBucketHandler := &mockBucketHandler{
 		MockBuckets: []mockBucket{
 			mockBucket{
 				Name:           "bucket_with_exists_error",
@@ -68,8 +71,8 @@ func TestMinio(t *testing.T) {
 	}
 
 	testMinioProvider := &minioProvider{
-		Provider: testProvider,
-		Client:   testMinioClient, // TODO: use an interface?
+		Provider:      testProvider,
+		BucketHandler: testBucketHandler,
 		Config: config.ObjectStoreConfig{
 			Buckets: []config.ObjectStoreBucket{{
 				AccessKey:     p.StrPtr("bucket_access_key"),

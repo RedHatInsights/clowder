@@ -1,6 +1,7 @@
 package objectstore
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -26,11 +27,50 @@ func wrapBucketError(errorMsg string, bucketName string, err error) error {
 	return errors.Wrap(msg, err)
 }
 
+// Create a bucketHandler interface to allow for mocking of minio client actions in tests
+type bucketHandler interface {
+	Exists(ctx context.Context, bucketName string) (bool, error)
+	Make(ctx context.Context, bucketName string) error
+	CreateClient(hostname string, port int, accessKey *string, secretKey *string) error
+}
+
+// minioHandler will implement the above interface using minio-go
+type minioHandler struct {
+	Client *minio.Client
+}
+
+func (h *minioHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
+	return h.Client.BucketExists(ctx, bucketName)
+}
+
+func (h *minioHandler) Make(ctx context.Context, bucketName string) error {
+	return h.Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+}
+
+func (h *minioHandler) CreateClient(
+	hostname string, port int, accessKey *string, secretKey *string,
+) error {
+	endpoint := fmt.Sprintf("%v:%v", hostname, port)
+
+	cl, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(*accessKey, *secretKey, ""),
+		Secure: false,
+	})
+
+	if err != nil {
+		return errors.Wrap("Failed to create minio client", err)
+	}
+
+	h.Client = cl
+
+	return nil
+}
+
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	p.Provider
-	Config config.ObjectStoreConfig
-	Client *minio.Client
+	Config        config.ObjectStoreConfig
+	BucketHandler bucketHandler
 }
 
 func (m *minioProvider) Configure(c *config.AppConfig) {
@@ -46,7 +86,7 @@ func (m *minioProvider) Configure(c *config.AppConfig) {
 // CreateBuckets creates new buckets
 func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 	for _, bucket := range app.Spec.ObjectStore {
-		found, err := m.Client.BucketExists(m.Ctx, bucket)
+		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
 
 		if err != nil {
 			return wrapBucketError(bucketCheckErrorMsg, bucket, err)
@@ -56,7 +96,7 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 			continue // possibly return a found error?
 		}
 
-		err = m.Client.MakeBucket(m.Ctx, bucket, minio.MakeBucketOptions{})
+		err = m.BucketHandler.Make(m.Ctx, bucket)
 
 		if err != nil {
 			return wrapBucketError(bucketCreateErrorMsg, bucket, err)
@@ -103,18 +143,18 @@ func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
 	minioProvider.Config.SecretKey = providers.StrPtr((*secMap)["secretKey"])
 	minioProvider.Config.Hostname = (*secMap)["hostname"]
 	minioProvider.Config.Port = port
-	endpoint := fmt.Sprintf("%v:%v", minioProvider.Config.Hostname, minioProvider.Config.Port)
 
-	cl, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(*minioProvider.Config.AccessKey, *minioProvider.Config.SecretKey, ""),
-		Secure: false,
-	})
+	minioProvider.BucketHandler = &minioHandler{}
+	err = minioProvider.BucketHandler.CreateClient(
+		minioProvider.Config.Hostname,
+		minioProvider.Config.Port,
+		minioProvider.Config.AccessKey,
+		minioProvider.Config.SecretKey,
+	)
 
 	if err != nil {
-		return nil, errors.Wrap("Failed to create minio client", err)
+		return nil, err
 	}
-
-	minioProvider.Client = cl
 
 	providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO)
 
