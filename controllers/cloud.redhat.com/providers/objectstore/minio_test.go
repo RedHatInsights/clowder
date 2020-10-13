@@ -2,11 +2,12 @@ package objectstore
 
 import (
 	"context"
-	"errors"
+	errlib "errors"
 	"testing"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
@@ -109,17 +110,12 @@ func TestMinio(t *testing.T) {
 
 	t.Run("createBucketsHitsCheckError", func(t *testing.T) {
 		gotErr := testMinioProvider.CreateBuckets(testApp)
-		wantErr := &BucketErr{
-			BucketName: bucketWithExistsError,
-			Message:    bucketCheckErrorMsg,
-			Err:        fakeError,
-		}
+		wantErr := newBucketError(bucketCheckErrorMsg, bucketWithExistsError, fakeError)
 		if gotErr == nil {
 			t.Errorf("Expected to hit an error checking if bucket exists, got nil")
 		}
-		if !errors.Is(gotErr, wantErr) {
+		if !errlib.Is(gotErr, wantErr) {
 			t.Errorf("Expected to hit bucket check error, got: %s", gotErr)
 		}
 	})
-
 }
