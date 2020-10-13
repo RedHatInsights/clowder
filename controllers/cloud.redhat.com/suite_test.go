@@ -26,8 +26,6 @@ import (
 	"testing"
 	"time"
 
-	b64 "encoding/base64"
-
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -168,18 +166,12 @@ func createKafkaCluster() error {
 }
 
 func createCloudwatchSecret(cwData *map[string]string) error {
-	encoded := map[string][]byte{}
-
-	for key, value := range *cwData {
-		encoded[key] = []byte(b64.StdEncoding.EncodeToString([]byte(value)))
-	}
-
 	cloudwatch := core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cloudwatch",
 			Namespace: "default",
 		},
-		Data: encoded,
+		StringData: *cwData,
 	}
 
 	return k8sClient.Create(context.Background(), &cloudwatch)
