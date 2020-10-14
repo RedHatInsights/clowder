@@ -30,6 +30,7 @@ type KafkaConfig struct {
 	CleanupPolicy      string `json:"cleanup.policy,omitempty"`
 	MaxMessageBytes    int    `json:"max.message.bytes,omitempty"`
 	SegmentBytes       int    `json:"segment.bytes,omitempty"`
+	CompressionType    string `json:"compression.type,omitempty"`
 }
 
 // KafkaTopicSpec defines the desired state of KafkaTopic
