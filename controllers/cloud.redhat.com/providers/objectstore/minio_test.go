@@ -71,13 +71,15 @@ func (c *mockBucketHandler) CreateClient(
 	return nil
 }
 
+func getTestProvider(t *testing.T) p.Provider {
+	t.Helper()
+	return p.Provider{Ctx: context.TODO()}
+}
+
 func getTestMinioProvider(t *testing.T) *minioProvider {
 	t.Helper()
-	testProvider := p.Provider{
-		Ctx: context.TODO(),
-	}
 	testMinioProvider := &minioProvider{
-		Provider: testProvider,
+		Provider: getTestProvider(t),
 	}
 	return testMinioProvider
 }
@@ -196,5 +198,85 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.MakeCalls, 1)
 		assert.Contains(handler.ExistsCalls, bucketName)
 		assert.Contains(handler.MakeCalls, bucketName)
+	})
+
+	t.Run("createMultipleBuckets", func(t *testing.T) {
+		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
+
+		mockBuckets := []mockBucket{
+			mockBucket{Name: b1, Exists: false},
+			mockBucket{Name: b2, Exists: false},
+			mockBucket{Name: b3, Exists: false},
+		}
+
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
+		assert.NoError(gotErr)
+		assert.Len(handler.ExistsCalls, 3)
+		assert.Len(handler.MakeCalls, 3)
+		for _, b := range []string{b1, b2, b3} {
+			assert.Contains(handler.ExistsCalls, b)
+			assert.Contains(handler.MakeCalls, b)
+		}
+	})
+
+	t.Run("createMultipleBucketsSomeExist", func(t *testing.T) {
+		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
+
+		mockBuckets := []mockBucket{
+			mockBucket{Name: b1, Exists: true},
+			mockBucket{Name: b2, Exists: true},
+			mockBucket{Name: b3, Exists: false},
+		}
+
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
+		assert.NoError(gotErr)
+		assert.Len(handler.ExistsCalls, 3)
+		assert.Len(handler.MakeCalls, 1)
+		for _, b := range []string{b1, b2, b3} {
+			assert.Contains(handler.ExistsCalls, b)
+		}
+		assert.Contains(handler.MakeCalls, b3)
+	})
+
+	t.Run("createMultipleBucketsWithExistsFailure", func(t *testing.T) {
+		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
+
+		mockBuckets := []mockBucket{
+			mockBucket{Name: b1, Exists: false},
+			mockBucket{Name: b2, Exists: false, ExistsError: fakeError},
+			mockBucket{Name: b3, Exists: false},
+		}
+
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
+		wantErr := newBucketError(bucketCheckErrorMsg, b2, fakeError)
+		assert.Error(gotErr)
+		assertErrorIs(t, wantErr, gotErr)
+
+		// CreateBuckets should have bailed early
+		assert.Len(handler.ExistsCalls, 2)
+		assert.Len(handler.MakeCalls, 1)
+	})
+
+	t.Run("createMultipleBucketsWithCreateFailure", func(t *testing.T) {
+		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
+
+		mockBuckets := []mockBucket{
+			mockBucket{Name: b1, Exists: false},
+			mockBucket{Name: b2, Exists: false, CreateError: fakeError},
+			mockBucket{Name: b3, Exists: false},
+		}
+
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
+		wantErr := newBucketError(bucketCreateErrorMsg, b2, fakeError)
+		assert.Error(gotErr)
+		assertErrorIs(t, wantErr, gotErr)
+
+		// CreateBuckets should have bailed early
+		assert.Len(handler.ExistsCalls, 2)
+		assert.Len(handler.MakeCalls, 2)
 	})
 }
