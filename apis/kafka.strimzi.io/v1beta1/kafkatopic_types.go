@@ -28,6 +28,8 @@ type KafkaConfig struct {
 	RetentionBytes     int    `json:"retention.bytes,omitempty"`
 	MinCompactionLagMs int    `json:"min.compaction.lag.ms,omitempty"`
 	CleanupPolicy      string `json:"cleanup.policy,omitempty"`
+	MaxMessageBytes    int    `json:"max.message.bytes,omitempty"`
+	SegmentBytes       int    `json:"segment.bytes,omitempty"`
 }
 
 // KafkaTopicSpec defines the desired state of KafkaTopic
