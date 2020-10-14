@@ -23,23 +23,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-type KafkaConfig struct {
-	RetentionMs        int    `json:"retention.ms,omitempty"`
-	RetentionBytes     int    `json:"retention.bytes,omitempty"`
-	MinCompactionLagMs int    `json:"min.compaction.lag.ms,omitempty"`
-	CleanupPolicy      string `json:"cleanup.policy,omitempty"`
-	MaxMessageBytes    int    `json:"max.message.bytes,omitempty"`
-	SegmentBytes       int    `json:"segment.bytes,omitempty"`
-	SegmentMs          int    `json:"segment.ms,omitempty"`
-	CompressionType    string `json:"compression.type,omitempty"`
-}
-
 // KafkaTopicSpec defines the desired state of KafkaTopic
 type KafkaTopicSpec struct {
-	Config     *KafkaConfig `json:"config,omitempty"`
-	Partitions *int32       `json:"partitions"`
-	Replicas   *int32       `json:"replicas,omitempty"`
-	TopicName  string       `json:"topicName"`
+	Config     map[string]string `json:"config,omitempty"`
+	Partitions *int32            `json:"partitions"`
+	Replicas   *int32            `json:"replicas,omitempty"`
+	TopicName  string            `json:"topicName"`
 }
 
 // KafkaTopicStatus defines the observed state of KafkaTopic

@@ -440,19 +440,19 @@ func TestCreateClowdApp(t *testing.T) {
 }
 
 func TestConverterFuncs(t *testing.T) {
-	answer, _ := utils.IntMin([]int{4, 6, 7})
-	if answer != 4 {
-		t.Errorf("Min function should have returned 4, returned %v", answer)
+	answer, _ := utils.IntMin([]string{"4", "6", "7"})
+	if answer != "4" {
+		t.Errorf("Min function should have returned 4, returned %s", answer)
 	}
 
-	answer, _ = utils.IntMax([]int{4, 6, 7})
-	if answer != 7 {
-		t.Errorf("Min function should have returned 7, returned %v", answer)
+	answer, _ = utils.IntMax([]string{"4", "6", "7"})
+	if answer != "7" {
+		t.Errorf("Min function should have returned 7, returned %s", answer)
 	}
 
-	sAnswer, _ := utils.ListMerge([]string{"4,5,6", "6", "7,2"})
-	if sAnswer != "2,4,5,6,7" {
-		t.Errorf("Min function should have returned 2,4,5,6,7 returned %v", sAnswer)
+	answer, _ = utils.ListMerge([]string{"4,5,6", "6", "7,2"})
+	if answer != "2,4,5,6,7" {
+		t.Errorf("Min function should have returned 2,4,5,6,7 returned %s", answer)
 	}
 }
 

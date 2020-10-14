@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
@@ -130,7 +131,15 @@ func B64Decode(s *core.Secret, key string) (string, error) {
 	return string(decoded), nil
 }
 
-func IntMinMax(listInts []int, max bool) (int, error) {
+func IntMinMax(listStrInts []string, max bool) (string, error) {
+	var listInts []int
+	for _, strint := range listStrInts {
+		i, err := strconv.Atoi(strint)
+		if err != nil {
+			return "", errors.Wrap("Failed to convert", err)
+		}
+		listInts = append(listInts, i)
+	}
 	ol := listInts[0]
 	for i, e := range listInts {
 		if max {
@@ -143,15 +152,15 @@ func IntMinMax(listInts []int, max bool) (int, error) {
 			}
 		}
 	}
-	return ol, nil
+	return strconv.Itoa(ol), nil
 }
 
-func IntMin(listInts []int) (int, error) {
-	return IntMinMax(listInts, false)
+func IntMin(listStrInts []string) (string, error) {
+	return IntMinMax(listStrInts, false)
 }
 
-func IntMax(listInts []int) (int, error) {
-	return IntMinMax(listInts, true)
+func IntMax(listStrInts []string) (string, error) {
+	return IntMinMax(listStrInts, true)
 }
 
 func ListMerge(listStrs []string) (string, error) {

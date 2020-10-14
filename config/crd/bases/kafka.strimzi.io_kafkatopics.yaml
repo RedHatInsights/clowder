@@ -37,15 +37,8 @@ spec:
           description: KafkaTopicSpec defines the desired state of KafkaTopic
           properties:
             config:
-              properties:
-                cleanup.policy:
-                  type: string
-                min.compaction.lag.ms:
-                  type: integer
-                retention.bytes:
-                  type: integer
-                retention.ms:
-                  type: integer
+              additionalProperties:
+                type: string
               type: object
             partitions:
               format: int32

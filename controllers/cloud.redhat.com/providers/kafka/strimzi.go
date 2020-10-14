@@ -13,6 +13,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+var conversionMap = map[string]func([]string) (string, error){
+	"retention.ms":          utils.IntMax,
+	"retention.bytes":       utils.IntMax,
+	"min.compaction.lag.ms": utils.IntMax,
+	"cleanup.policy":        utils.ListMerge,
+}
+
 type strimziProvider struct {
 	p.Provider
 	Config config.KafkaConfig
@@ -100,87 +107,36 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 	kRes.Spec.Partitions = topic.Partitions
 	kRes.Spec.Config = topic.Config
 
+	newConfig := make(map[string]string)
+
 	// This can be improved from an efficiency PoV
 	// Loop through all key/value pairs in the config
-
-	retentionMsValList := []int{}
-	retentionBytesValList := []int{}
-	minCompactionLagMsValList := []int{}
-	cleanupPolicyValList := []string{}
-
-	if kRes.Spec.Config != nil {
-		if kRes.Spec.Config.RetentionMs != 0 {
-			retentionMsValList = append(retentionMsValList, kRes.Spec.Config.RetentionMs)
-		}
-		if kRes.Spec.Config.RetentionBytes != 0 {
-			retentionBytesValList = append(retentionBytesValList, kRes.Spec.Config.RetentionBytes)
-		}
-		if kRes.Spec.Config.MinCompactionLagMs != 0 {
-			minCompactionLagMsValList = append(minCompactionLagMsValList, kRes.Spec.Config.MinCompactionLagMs)
-		}
-		if kRes.Spec.Config.CleanupPolicy != "" {
-			cleanupPolicyValList = append(cleanupPolicyValList, kRes.Spec.Config.CleanupPolicy)
-		}
-	}
-	for _, res := range appList.Items {
-		if res.ObjectMeta.Name == nn.Name {
-			continue
-		}
-		if res.ObjectMeta.Namespace != nn.Namespace {
-			continue
-		}
-		if res.Spec.KafkaTopics != nil {
-			for _, appTopic := range res.Spec.KafkaTopics {
-				if appTopic.TopicName != topic.TopicName {
-					continue
-				}
-				if appTopic.Config != nil {
-					if appTopic.Config.RetentionMs != 0 {
-						retentionMsValList = append(retentionMsValList, appTopic.Config.RetentionMs)
-					}
-					if appTopic.Config.RetentionBytes != 0 {
-						retentionBytesValList = append(retentionBytesValList, appTopic.Config.RetentionBytes)
-					}
-					if appTopic.Config.MinCompactionLagMs != 0 {
-						minCompactionLagMsValList = append(minCompactionLagMsValList, appTopic.Config.MinCompactionLagMs)
-					}
-					if appTopic.Config.CleanupPolicy != "" {
-						cleanupPolicyValList = append(cleanupPolicyValList, appTopic.Config.CleanupPolicy)
+	for key, value := range kRes.Spec.Config {
+		valList := []string{value}
+		for _, res := range appList.Items {
+			if res.ObjectMeta.Name == nn.Name {
+				continue
+			}
+			if res.ObjectMeta.Namespace != nn.Namespace {
+				continue
+			}
+			if res.Spec.KafkaTopics != nil {
+				for _, topic := range res.Spec.KafkaTopics {
+					if topic.Config != nil {
+						if val, ok := topic.Config[key]; ok {
+							valList = append(valList, val)
+						}
 					}
 				}
 			}
 		}
-	}
-
-	newConfig := &strimzi.KafkaConfig{}
-
-	if len(retentionMsValList) > 0 {
-		retentionMsFinalValue, err := utils.IntMax(retentionMsValList)
-		if err != nil {
-			return err
+		f, ok := conversionMap[key]
+		if ok {
+			out, _ := f(valList)
+			newConfig[key] = out
+		} else {
+			return errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
-		newConfig.RetentionMs = retentionMsFinalValue
-	}
-	if len(retentionBytesValList) > 0 {
-		retentionBytesFinalValue, err := utils.IntMax(retentionBytesValList)
-		if err != nil {
-			return err
-		}
-		newConfig.RetentionBytes = retentionBytesFinalValue
-	}
-	if len(minCompactionLagMsValList) > 0 {
-		minCompactionLagMsFinalValue, err := utils.IntMax(minCompactionLagMsValList)
-		if err != nil {
-			return err
-		}
-		newConfig.MinCompactionLagMs = minCompactionLagMsFinalValue
-	}
-	if len(cleanupPolicyValList) > 0 {
-		cleanupPolicyFinalValue, err := utils.ListMerge(cleanupPolicyValList)
-		if err != nil {
-			return err
-		}
-		newConfig.CleanupPolicy = cleanupPolicyFinalValue
 	}
 
 	kRes.Spec.Config = newConfig
