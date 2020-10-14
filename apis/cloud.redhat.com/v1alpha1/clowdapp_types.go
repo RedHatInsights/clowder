@@ -94,7 +94,21 @@ func init() {
 }
 
 func (i *ClowdApp) GetLabels() map[string]string {
-	return map[string]string{"app": i.ObjectMeta.Name}
+	if i.Labels == nil {
+		i.Labels = map[string]string{}
+	}
+
+	if _, ok := i.Labels["app"]; !ok {
+		i.Labels["app"] = i.ObjectMeta.Name
+	}
+
+	newMap := make(map[string]string, len(i.Labels))
+
+	for k, v := range i.Labels {
+		newMap[k] = v
+	}
+
+	return newMap
 }
 
 // GetNamespacedName contructs a new namespaced name for an object from the pattern

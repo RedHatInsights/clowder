@@ -183,9 +183,6 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	objMeta := metav1.ObjectMeta{
 		Name:      name.Name,
 		Namespace: name.Namespace,
-		Labels: map[string]string{
-			"app": "test",
-		},
 	}
 
 	env := crd.ClowdEnvironment{
@@ -313,6 +310,11 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
+	labels := map[string]string{
+		"app": app.Name,
+		"pod": app.Spec.Pods[0].Name,
+	}
+
 	// See if Deployment is created
 
 	d := apps.Deployment{}
@@ -326,6 +328,10 @@ func TestCreateClowdApp(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 		return
+	}
+
+	if !mapEq(d.Labels, labels) {
+		t.Errorf("Deployment label mismatch %v; expected %v", d.Labels, labels)
 	}
 
 	antiAffinity := d.Spec.Template.Spec.Affinity.PodAntiAffinity
@@ -363,6 +369,10 @@ func TestCreateClowdApp(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 		return
+	}
+
+	if !mapEq(s.Labels, labels) {
+		t.Errorf("Service label mismatch %v; expected %v", s.Labels, labels)
 	}
 
 	// Simple test for service right expects there only to be the metrics port
@@ -479,4 +489,24 @@ func fetch(ctx context.Context, name types.NamespacedName, resource runtime.Obje
 	}
 
 	return err
+}
+
+func mapEq(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for k, va := range a {
+		vb, ok := b[k]
+
+		if !ok {
+			return false
+		}
+
+		if va != vb {
+			return false
+		}
+	}
+
+	return true
 }

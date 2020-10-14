@@ -206,7 +206,7 @@ func getCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 			appliedLabels[k] = v
 		}
 	}
-	return MakeLabeler(nn, labels, baseResource)
+	return MakeLabeler(nn, appliedLabels, baseResource)
 }
 
 func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource ClowdObject) {
