@@ -103,7 +103,6 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
 	labels := app.GetLabels()
 	labels["service"] = "db"
-	fmt.Printf("localdb app.GetLabels() %v", app.GetLabels())
 	labler := utils.MakeLabeler(nn, labels, app)
 	labler(dd)
 	dd.Spec.Replicas = utils.Int32(1)

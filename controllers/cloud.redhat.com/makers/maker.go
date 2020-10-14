@@ -277,7 +277,6 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, pod crd.PodSpec, hash string) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
-	fmt.Printf("initDeployment labels %v", labels)
 	app.SetObjectMeta(d, crd.Name(pod.Name), crd.Labels(labels))
 
 	d.Spec.Replicas = pod.MinReplicas
