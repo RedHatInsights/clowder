@@ -71,46 +71,46 @@ func (c *mockBucketHandler) CreateClient(
 	return nil
 }
 
-func TestMinio(t *testing.T) {
-	assert := assert.New(t)
-
+func getTestMinioProvider(t *testing.T) *minioProvider {
+	t.Helper()
 	testProvider := p.Provider{
 		Ctx: context.TODO(),
 	}
+	testMinioProvider := &minioProvider{
+		Provider: testProvider,
+	}
+	return testMinioProvider
+}
 
-	bucketWithExistsError := "bucket_with_exists_error"
-	bucketWithCreateError := "bucket_with_create_error"
-	bucketAlreadyExists := "i_am_already_here"
-	bucketNew := "please_create_me"
-	fakeError := errors.New("something very bad happened")
-
-	testBucketHandler := &mockBucketHandler{
-		MockBuckets: []mockBucket{
-			mockBucket{
-				Name:        bucketWithExistsError,
-				Exists:      false,
-				ExistsError: fakeError,
-			},
-			mockBucket{
-				Name:        bucketWithCreateError,
-				Exists:      false,
-				CreateError: fakeError,
-			},
-			mockBucket{
-				Name:   bucketAlreadyExists,
-				Exists: true,
-			},
-			mockBucket{
-				Name:   bucketNew,
-				Exists: false,
-			},
+func setupBucketTest(t *testing.T, mockBuckets []mockBucket) (
+	*mockBucketHandler, *crd.ClowdApp, *minioProvider,
+) {
+	t.Helper()
+	var bucketNames []string
+	for _, mb := range mockBuckets {
+		bucketNames = append(bucketNames, mb.Name)
+	}
+	testApp := &crd.ClowdApp{
+		Spec: crd.ClowdAppSpec{
+			ObjectStore: bucketNames,
 		},
 	}
+	testMinioProvider := getTestMinioProvider(t)
+	testBucketHandler := &mockBucketHandler{MockBuckets: mockBuckets}
+	testMinioProvider.BucketHandler = testBucketHandler
+	return testBucketHandler, testApp, testMinioProvider
+}
 
-	testMinioProvider := &minioProvider{
-		Provider:      testProvider,
-		BucketHandler: testBucketHandler,
-		Config: config.ObjectStoreConfig{
+func TestMinio(t *testing.T) {
+	assert := assert.New(t)
+
+	fakeError := errors.New("something very bad happened")
+
+	t.Run("configure", func(t *testing.T) {
+		testAppConfig := &config.AppConfig{}
+
+		mp := getTestMinioProvider(t)
+		mp.Config = config.ObjectStoreConfig{
 			Buckets: []config.ObjectStoreBucket{{
 				AccessKey:     p.StrPtr("bucket_access_key"),
 				Name:          "my_bucket",
@@ -121,16 +121,11 @@ func TestMinio(t *testing.T) {
 			Port:      8080,
 			AccessKey: p.StrPtr("access_key"),
 			SecretKey: p.StrPtr("secret_key"),
-		},
-	}
-
-	testAppConfig := &config.AppConfig{}
-
-	t.Run("configure", func(t *testing.T) {
-		testMinioProvider.Configure(testAppConfig)
+		}
+		mp.Configure(testAppConfig)
 		result := testAppConfig.ObjectStore
 
-		equalsErr := objectStoreEquals(result, &testMinioProvider.Config)
+		equalsErr := objectStoreEquals(result, &mp.Config)
 
 		if equalsErr != "" {
 			t.Error(equalsErr)
@@ -138,59 +133,68 @@ func TestMinio(t *testing.T) {
 	})
 
 	t.Run("createBucketsHitsCheckError", func(t *testing.T) {
-		testApp := &crd.ClowdApp{
-			Spec: crd.ClowdAppSpec{
-				ObjectStore: []string{bucketWithExistsError},
-			},
-		}
+		bucketName := "testBucket"
+		mockBuckets := []mockBucket{mockBucket{
+			Name:        bucketName,
+			Exists:      false,
+			ExistsError: fakeError,
+		}}
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
 
-		gotErr := testMinioProvider.CreateBuckets(testApp)
-		assert.Contains(testBucketHandler.ExistsCalls, bucketWithExistsError)
-		assert.NotContains(testBucketHandler.MakeCalls, bucketWithExistsError)
-
-		wantErr := newBucketError(bucketCheckErrorMsg, bucketWithExistsError, fakeError)
+		assert.Len(handler.ExistsCalls, 1)
+		assert.Len(handler.MakeCalls, 0)
+		assert.Contains(handler.ExistsCalls, bucketName)
+		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
 		assertErrorIs(t, gotErr, wantErr)
 	})
 
 	t.Run("createBucketsHitsCreateError", func(t *testing.T) {
-		testApp := &crd.ClowdApp{
-			Spec: crd.ClowdAppSpec{
-				ObjectStore: []string{bucketWithCreateError},
-			},
-		}
+		bucketName := "testBucket"
+		mockBuckets := []mockBucket{mockBucket{
+			Name:        bucketName,
+			Exists:      false,
+			CreateError: fakeError,
+		}}
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
 
-		gotErr := testMinioProvider.CreateBuckets(testApp)
-		assert.Contains(testBucketHandler.ExistsCalls, bucketWithCreateError)
-		assert.Contains(testBucketHandler.MakeCalls, bucketWithCreateError)
-		wantErr := newBucketError(bucketCreateErrorMsg, bucketWithCreateError, fakeError)
+		assert.Len(handler.ExistsCalls, 1)
+		assert.Len(handler.MakeCalls, 1)
+		assert.Contains(handler.ExistsCalls, bucketName)
+		assert.Contains(handler.MakeCalls, bucketName)
+		wantErr := newBucketError(bucketCreateErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
 		assertErrorIs(t, gotErr, wantErr)
 	})
 
 	t.Run("createBucketsAlreadyExists", func(t *testing.T) {
-		testApp := &crd.ClowdApp{
-			Spec: crd.ClowdAppSpec{
-				ObjectStore: []string{bucketAlreadyExists},
-			},
-		}
-
-		gotErr := testMinioProvider.CreateBuckets(testApp)
+		bucketName := "testBucket"
+		mockBuckets := []mockBucket{mockBucket{
+			Name:   bucketName,
+			Exists: true,
+		}}
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
 		assert.NoError(gotErr)
-		assert.Contains(testBucketHandler.ExistsCalls, bucketAlreadyExists)
-		assert.NotContains(testBucketHandler.MakeCalls, bucketAlreadyExists)
+		assert.Len(handler.ExistsCalls, 1)
+		assert.Len(handler.MakeCalls, 0)
+		assert.Contains(handler.ExistsCalls, bucketName)
 	})
 
 	t.Run("createBucketsSuccess", func(t *testing.T) {
-		testApp := &crd.ClowdApp{
-			Spec: crd.ClowdAppSpec{
-				ObjectStore: []string{bucketNew},
-			},
-		}
-
-		gotErr := testMinioProvider.CreateBuckets(testApp)
+		bucketName := "testBucket"
+		mockBuckets := []mockBucket{mockBucket{
+			Name:   bucketName,
+			Exists: false,
+		}}
+		handler, app, mp := setupBucketTest(t, mockBuckets)
+		gotErr := mp.CreateBuckets(app)
 		assert.NoError(gotErr)
-		assert.Contains(testBucketHandler.ExistsCalls, bucketNew)
-		assert.Contains(testBucketHandler.MakeCalls, bucketNew)
+		assert.Len(handler.ExistsCalls, 1)
+		assert.Len(handler.MakeCalls, 1)
+		assert.Contains(handler.ExistsCalls, bucketName)
+		assert.Contains(handler.MakeCalls, bucketName)
 	})
 }
