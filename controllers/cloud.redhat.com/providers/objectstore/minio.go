@@ -110,46 +110,55 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 	return nil
 }
 
+func createMinioProvider(
+	p *p.Provider, secMap map[string]string, handler bucketHandler,
+) (*minioProvider, error) {
+	mp := &minioProvider{Provider: *p, Config: config.ObjectStoreConfig{}}
+
+	port, _ := strconv.Atoi(secMap["port"])
+	mp.Ctx = p.Ctx
+	mp.Config.AccessKey = providers.StrPtr(secMap["accessKey"])
+	mp.Config.SecretKey = providers.StrPtr(secMap["secretKey"])
+	mp.Config.Hostname = secMap["hostname"]
+	mp.Config.Port = port
+
+	mp.BucketHandler = handler
+	err := mp.BucketHandler.CreateClient(
+		mp.Config.Hostname,
+		mp.Config.Port,
+		mp.Config.AccessKey,
+		mp.Config.SecretKey,
+	)
+
+	if err != nil {
+		return nil, errors.Wrap("error creating minio client", err)
+	}
+	return mp, nil
+}
+
+func createDefaultMinioSecMap(name string, namespace string) map[string]string {
+	return map[string]string{
+		"accessKey": utils.RandString(12),
+		"secretKey": utils.RandString(12),
+		"hostname":  fmt.Sprintf("%v.%v.svc", name, namespace),
+		"port":      strconv.Itoa(int(9000)),
+	}
+}
+
 // NewMinIO constructs a new minio for the given config
 func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
-	cfg := config.ObjectStoreConfig{}
-
-	minioProvider := minioProvider{Provider: *p, Config: cfg}
-
 	nn := providers.GetNamespacedName(p.Env, "minio")
 
 	dataInit := func() map[string]string {
-		return map[string]string{
-			"accessKey": utils.RandString(12),
-			"secretKey": utils.RandString(12),
-			"hostname":  fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-			"port":      strconv.Itoa(int(9000)),
-		}
+		return createDefaultMinioSecMap(nn.Name, nn.Namespace)
 	}
-
-	secMap, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, dataInit) //Will set data if it already exists
+	// MakeOrGetSecret will set data if it already exists
+	secMap, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, dataInit)
 	if err != nil {
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	port, _ := strconv.Atoi((*secMap)["port"])
-	minioProvider.Ctx = p.Ctx
-	minioProvider.Config.AccessKey = providers.StrPtr((*secMap)["accessKey"])
-	minioProvider.Config.SecretKey = providers.StrPtr((*secMap)["secretKey"])
-	minioProvider.Config.Hostname = (*secMap)["hostname"]
-	minioProvider.Config.Port = port
-
-	minioProvider.BucketHandler = &minioHandler{}
-	err = minioProvider.BucketHandler.CreateClient(
-		minioProvider.Config.Hostname,
-		minioProvider.Config.Port,
-		minioProvider.Config.AccessKey,
-		minioProvider.Config.SecretKey,
-	)
+	mp, err := createMinioProvider(p, *secMap, &minioHandler{})
 
 	if err != nil {
 		return nil, err
@@ -157,7 +166,7 @@ func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
 
 	providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO)
 
-	return &minioProvider, nil
+	return mp, nil
 }
 
 func makeLocalMinIO(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {

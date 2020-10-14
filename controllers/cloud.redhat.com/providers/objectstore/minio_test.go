@@ -3,6 +3,7 @@ package objectstore
 import (
 	"context"
 	errlib "errors"
+	"strconv"
 	"testing"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -28,9 +29,14 @@ type mockBucket struct {
 }
 
 type mockBucketHandler struct {
-	ExistsCalls []string
-	MakeCalls   []string
-	MockBuckets []mockBucket
+	hostname              string
+	port                  int
+	accessKey             *string
+	secretKey             *string
+	wantCreateClientError bool
+	ExistsCalls           []string
+	MakeCalls             []string
+	MockBuckets           []mockBucket
 }
 
 func (c *mockBucketHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
@@ -68,6 +74,13 @@ func (c *mockBucketHandler) Make(ctx context.Context, bucketName string) (err er
 func (c *mockBucketHandler) CreateClient(
 	hostname string, port int, accessKey *string, secretKey *string,
 ) error {
+	if c.wantCreateClientError == true {
+		return errors.New("create client error")
+	}
+	c.hostname = hostname
+	c.port = port
+	c.accessKey = accessKey
+	c.secretKey = secretKey
 	return nil
 }
 
@@ -278,5 +291,42 @@ func TestMinio(t *testing.T) {
 		// CreateBuckets should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 2)
+	})
+
+	t.Run("minioProviderCreate", func(t *testing.T) {
+		secMap := map[string]string{
+			"accessKey": "123456abcdef",
+			"secretKey": "abcdef123456",
+			"hostname":  "foo.bar.svc",
+			"port":      "9000",
+		}
+		tp := getTestProvider(t)
+
+		mp, err := createMinioProvider(
+			&tp, secMap, &mockBucketHandler{wantCreateClientError: false},
+		)
+
+		assert.NoError(err)
+		assert.Equal(mp.Config.Hostname, secMap["hostname"])
+		port, _ := strconv.Atoi(secMap["port"])
+		assert.Equal(mp.Config.Port, port)
+		assert.Equal(mp.Config.AccessKey, p.StrPtr(secMap["accessKey"]))
+		assert.Equal(mp.Config.SecretKey, p.StrPtr(secMap["secretKey"]))
+		assert.Equal(mp.Ctx, tp.Ctx)
+	})
+
+	t.Run("minioProviderCreateHitsError", func(t *testing.T) {
+		secMap := map[string]string{
+			"accessKey": "123456abcdef",
+			"secretKey": "abcdef123456",
+			"hostname":  "foo.bar.svc",
+			"port":      "9000",
+		}
+		tp := getTestProvider(t)
+
+		mp, err := createMinioProvider(&tp, secMap, &mockBucketHandler{wantCreateClientError: true})
+
+		assert.Error(err)
+		assert.Nil(mp)
 	})
 }
