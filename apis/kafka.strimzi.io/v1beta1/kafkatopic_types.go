@@ -30,6 +30,7 @@ type KafkaConfig struct {
 	CleanupPolicy      string `json:"cleanup.policy,omitempty"`
 	MaxMessageBytes    int    `json:"max.message.bytes,omitempty"`
 	SegmentBytes       int    `json:"segment.bytes,omitempty"`
+	SegmentMs          int    `json:"segment.ms,omitempty"`
 	CompressionType    string `json:"compression.type,omitempty"`
 }
 
