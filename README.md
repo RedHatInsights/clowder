@@ -77,19 +77,21 @@ The diagram below describes how the application accesses the configuration.
 
 ## Testing
 
-The tests rely on the test environment set up by controller-runtime.  This
-enables the operator to get initialized against a control pane just like it
-would against a real Openshift cluster.
+The tests rely on the test environment set up by controller-runtime.  This enables the operator to 
+get initialized against a control pane just like it would against a real Openshift cluster.
 
-While the tests do not rely on any additional testing frameworks (e.g. Ginkgo),
-you do need to download
-[kubebuilder](https://github.com/kubernetes-sigs/kubebuilder/releases) in order
-to set up the control plane used
-by the controller-runtime test environment.
+1. Download and install `kubebuilder`.
+[See install instructions here](https://book.kubebuilder.io/quick-start.html#installation).
+2. Make sure that `kubebuilder` is present in your `PATH`. It is recommended you append it to your
+`PATH` in your `.bashrc`, `.zshrc`, or similar.
+3. Download and install `kustomize`.
+[See install instructions here](https://kubernetes-sigs.github.io/kustomize/installation/binaries/).
+This places a `kustomize` binary in whatever directory you ran the above script in. Move this binary
+to a folder that is on your `PATH` or make sure the directory is appended to your `PATH`
+
 
 Run the tests:
 
 ```
-$ KUBEBUILDER_ASSETS=$PWD/kubebuilder go test ./controllers/...
-ok      cloud.redhat.com/clowder/v2/controllers    9.626s
+make test
 ```
