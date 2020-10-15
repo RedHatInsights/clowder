@@ -10,7 +10,7 @@
 
 ## Running Clowder
 -------------------
-At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add `ingress-env-minio.clowder-system.svc` to your `/etc/hosts` localhost (127.0.0.1). 
+At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your `/etc/hosts` localhost (127.0.0.1). For this example, we are using the `ingress-env-minio.clowder-system.svc` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
 
 We're going to use Ingress as the example, so the configuration we're doing is specific to that. If you are standing up a different application, substitute your own services, or other variables. 
 
@@ -68,7 +68,7 @@ and then run `oc apply -f clowd-environment.yaml`
 
 Once applied, check the terminal that is running the operator and make sure there aren't any errors. If you're unsure, you can check the `clowder-system` namespace.
 
-Before we add the ClowdApp, we need to port forward the minio port on your local machine with `oc port-forward svc/ingress-env-minio 9000`
+Before we add the ClowdApp, we need to port forward the minio port on your local machine with `oc port-forward svc/ingress-env-minio 9000`. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio service and perform bucket operations, we'll need to forward the port. 
 
 
 ## Applying the ClowdApp
@@ -77,9 +77,7 @@ First, run `oc new-project ingress` to create the ingress namespace.
 
 Create the following file as `clowd-app.yaml` and change the image to your own `image:` in quay
 
-Note: to do that, build from [this branch](https://github.com/psav/insights-ingress-go/tree/psav/compatibility_for_wpw) and push to quay. If that's a bit too much, you can try using your own app image here and changing the spec below to match what your deployment should look like. 
-
-Before applying, you'll need to make a copy of your image pull secret and rename it to `quay-cloudservices-pull`. Then, apply it to the `ingress` namespace with `oc apply -f $secretname.yaml`
+Before applying, you'll need to make a copy of your image pull secret and rename it to `quay-cloudservices-pull`. A feature requests is coming to fix this, but for now, rename your personal secret. Then, apply it to the `ingress` namespace with `oc apply -f $secretname.yaml`
 
 ``` yaml
 ---
