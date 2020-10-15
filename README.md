@@ -95,3 +95,6 @@ Run the tests:
 ```
 make test
 ```
+
+If you're just getting started with writing tests in Go, or getting started with Go in general, take
+a look at https://quii.gitbook.io/learn-go-with-tests/
