@@ -66,18 +66,14 @@ spec:
 
 and then run `oc apply -f clowd-environment.yaml`
 
-Once applied, check the terminal that is running the operator and make sure there aren't any errors. If you're unsure, you can check the `clowder-system` namespace.
+Once applied, check the terminal that is running the operator and make sure there aren't any errors. If you're unsure, you can check the `clowder-system` namespace. If you see issues with any types (like Kafka), run:
+* `oc apply -f config/crd/bases/kafka.strimzi.io_kafkatopics.yaml`
+* `oc apply -f config/crd/bases/kafka.strimzi.io_kafkas.yaml`
 
-Before we add the ClowdApp, we need to port forward the minio port on your local machine with `oc port-forward svc/ingress-env-minio 9000`. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio service and perform bucket operations, we'll need to forward the port. 
+Before we add the ClowdApp, we need to port forward the minio port on your local machine with oc port-forward svc/ingress-env-minio 9000. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio service and perform bucket operations, we'll need to forward the port. 
 
+Create the following file as `clowd-app.yaml` 
 
-## Applying the ClowdApp
--------------------------
-First, run `oc new-project ingress` to create the ingress namespace. 
-
-Create the following file as `clowd-app.yaml` and change the image to your own `image:` in quay
-
-Before applying, you'll need to make a copy of your image pull secret and rename it to `quay-cloudservices-pull`. A feature requests is coming to fix this, but for now, rename your personal secret. Then, apply it to the `ingress` namespace with `oc apply -f $secretname.yaml`
 
 ``` yaml
 ---
@@ -88,7 +84,7 @@ metadata:
 spec:
   envName: ingress-env 
   pods:
-  - image: quay.io/bholifie/ingress:3eb6be5
+  - image: quay.io/cloudservices/insights-ingress-go-poc:5bcb3d14
     name: ingress
     livenessProbe:
       failureThreshold: 3
