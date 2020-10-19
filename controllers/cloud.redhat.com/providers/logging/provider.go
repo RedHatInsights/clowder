@@ -24,7 +24,7 @@ func GetLogging(c *p.Provider) (LoggingProvider, error) {
 	case "app-interface":
 		return NewAppInterfaceLogging(c)
 	case "none":
-		return nil, nil
+		return NewNullLogging(c)
 	default:
 		errStr := fmt.Sprintf("No matching logging provider for %s", logProvider)
 		return nil, errors.New(errStr)
