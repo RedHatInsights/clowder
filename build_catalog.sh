@@ -28,7 +28,7 @@ done
 
 num_commits=$(git rev-list $(git rev-list --max-parents=0 HEAD)..HEAD --count)
 current_commit=$(git rev-parse --short=7 HEAD)
-version="0.1.$num_commits-$current_commit"
+version="0.1.$num_commits-git$current_commit"
 opm_version="1.14.0"
 
 # Login to docker
@@ -65,7 +65,6 @@ if [[ $prev_version != "" ]]; then
   export REPLACE_VERSION=$prev_version
 fi
 export BUNDLE_IMAGE_TAG=$current_commit
-export OPERATOR_IMAGE_TAG=v$version
 export VERSION=$version
 curl -L https://github.com/operator-framework/operator-sdk/releases/download/v1.0.1/operator-sdk-v1.0.1-x86_64-linux-gnu -o ./operator-sdk
 curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.8.5/kustomize_v3.8.5_linux_amd64.tar.gz | tar xzf - > kustomize
