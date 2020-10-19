@@ -312,7 +312,7 @@ func TestCreateClowdApp(t *testing.T) {
 
 	labels := map[string]string{
 		"app": app.Name,
-		"pod": app.Spec.Pods[0].Name,
+		"pod": fmt.Sprintf("%s-%s", app.Name, app.Spec.Pods[0].Name),
 	}
 
 	// See if Deployment is created
@@ -320,7 +320,7 @@ func TestCreateClowdApp(t *testing.T) {
 	d := apps.Deployment{}
 
 	appnn := types.NamespacedName{
-		Name:      app.Spec.Pods[0].Name,
+		Name:      fmt.Sprintf("%s-%s", app.Name, app.Spec.Pods[0].Name),
 		Namespace: name.Namespace,
 	}
 	err = fetchWithDefaults(appnn, &d)
