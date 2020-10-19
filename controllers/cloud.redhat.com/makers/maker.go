@@ -142,22 +142,22 @@ func (m *Maker) Make() error {
 
 	for _, pod := range m.App.Spec.Pods {
 
-		if err := m.makeDeployment(pod, hash); err != nil {
+		if err := m.makeDeployment(pod, m.App, hash); err != nil {
 			return err
 		}
 
-		if err := m.makeService(pod); err != nil {
+		if err := m.makeService(pod, m.App); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *Maker) makeService(pod crd.PodSpec) error {
+func (m *Maker) makeService(pod crd.PodSpec, app *crd.ClowdApp) error {
 
 	s := core.Service{}
 	nn := types.NamespacedName{
-		Name:      pod.Name,
+		Name:      fmt.Sprintf("%v-%v", app.Name, pod.Name),
 		Namespace: m.Request.Namespace,
 	}
 	err := m.Client.Get(m.Ctx, nn, &s)
@@ -250,10 +250,10 @@ func applyPodAntiAffinity(t *core.PodTemplateSpec) {
 
 // This should probably take arguments for addtional volumes, so that we can
 // add those and then do one Apply
-func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
+func (m *Maker) makeDeployment(pod crd.PodSpec, app *crd.ClowdApp, hash string) error {
 
 	nn := types.NamespacedName{
-		Name:      pod.Name,
+		Name:      fmt.Sprintf("%v-%v", app.Name, pod.Name),
 		Namespace: m.Request.Namespace,
 	}
 
@@ -277,7 +277,7 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, hash string) error {
 func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, pod crd.PodSpec, hash string) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
-	app.SetObjectMeta(d, crd.Name(pod.Name), crd.Labels(labels))
+	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
 
 	d.Spec.Replicas = pod.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -502,10 +502,11 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 
 		for _, pod := range depApp.Spec.Pods {
 			if pod.Web {
+				name := fmt.Sprintf("%s-%s", app.Name, pod.Name)
 				depConfig = append(depConfig, config.DependencyEndpoint{
-					Hostname: fmt.Sprintf("%s.%s.svc", pod.Name, depApp.Namespace),
+					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
-					Name:     pod.Name,
+					Name:     name,
 					App:      depApp.Name,
 				})
 			}

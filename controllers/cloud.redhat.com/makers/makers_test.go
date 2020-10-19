@@ -60,13 +60,13 @@ func TestSingleDependency(t *testing.T) {
 		t.Errorf("We got a missing dep when there shouldn't have been one")
 	}
 
-	if config[0].Hostname != "bopper.bopperspace.svc" {
+	if config[0].Hostname != "reqapp-bopper.bopperspace.svc" {
 		t.Errorf("We didn't get the right service hostname")
 	}
 	if config[0].Port != 8000 {
 		t.Errorf("We didn't get the right service port")
 	}
-	if config[0].Name != "bopper" {
+	if config[0].Name != "reqapp-bopper" {
 		t.Errorf("We didn't get the right service name")
 	}
 }
@@ -177,39 +177,39 @@ func TestMultiDependency(t *testing.T) {
 		t.Errorf("We got a missing dep error")
 	}
 
-	if config[0].Hostname != "chopper.bopperspace.svc" {
+	if config[0].Hostname != "reqapp-chopper.bopperspace.svc" {
 		t.Errorf("We didn't get the right service hostname")
 	}
 	if config[0].Port != 8000 {
 		t.Errorf("We didn't get the right service port")
 	}
-	if config[0].Name != "chopper" {
+	if config[0].Name != "reqapp-chopper" {
 		t.Errorf("We didn't get the right service name")
 	}
 	if config[0].App != "bopper" {
 		t.Errorf("We didn't get the right app name")
 	}
 
-	if config[1].Hostname != "bopper.bopperspace.svc" {
+	if config[1].Hostname != "reqapp-bopper.bopperspace.svc" {
 		t.Errorf("We didn't get the right service hostname")
 	}
 	if config[1].Port != 8000 {
 		t.Errorf("We didn't get the right service port")
 	}
-	if config[1].Name != "bopper" {
+	if config[1].Name != "reqapp-bopper" {
 		t.Errorf("We didn't get the right service name")
 	}
 	if config[1].App != "bopper" {
 		t.Errorf("We didn't get the right app name")
 	}
 
-	if config[2].Hostname != "whopper.snapperspace.svc" {
+	if config[2].Hostname != "reqapp-whopper.snapperspace.svc" {
 		t.Errorf("We didn't get the right service hostname")
 	}
 	if config[2].Port != 8000 {
 		t.Errorf("We didn't get the right service port")
 	}
-	if config[2].Name != "whopper" {
+	if config[2].Name != "reqapp-whopper" {
 		t.Errorf("We didn't get the right service name")
 	}
 	if config[2].App != "snapper" {
