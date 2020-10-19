@@ -22,12 +22,15 @@ func NewNullLogging(p *p.Provider) (LoggingProvider, error) {
 }
 
 func (a *NullLoggingProvider) SetUpLogging(app *crd.ClowdApp) error {
-	a.Config = config.LoggingConfig{}
-	a.Config.Cloudwatch.AccessKeyId = ""
-	a.Config.Cloudwatch.SecretAccessKey = ""
-	a.Config.Cloudwatch.Region = ""
-	a.Config.Cloudwatch.LogGroup = ""
-	a.Config.Type = "null"
+	a.Config = config.LoggingConfig{
+		Cloudwatch: &config.CloudWatchConfig{
+			AccessKeyId:     "",
+			SecretAccessKey: "",
+			Region:          "",
+			LogGroup:        "",
+		},
+		Type: "null",
+	}
 
 	return nil
 }
