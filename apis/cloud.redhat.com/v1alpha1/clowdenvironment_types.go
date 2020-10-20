@@ -87,7 +87,7 @@ type InMemoryDBConfig struct {
 
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
 type ClowdEnvironmentSpec struct {
-	Namespace        string                  `json:"namespace"`
+	TargetNamespace  string                  `json:"targetNamespace"`
 	Providers        ProvidersConfig         `json:"providers"`
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 }
@@ -161,7 +161,7 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 }
 
 func (i *ClowdEnvironment) GetClowdNamespace() string {
-	return i.Spec.Namespace
+	return i.Spec.TargetNamespace
 }
 
 func (i *ClowdEnvironment) GetClowdName() string {

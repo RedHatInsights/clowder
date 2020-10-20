@@ -32,7 +32,7 @@ func (k *localKafka) Configure(config *config.AppConfig) {
 
 func (k *localKafka) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error {
 	topicName := fmt.Sprintf(
-		"%s-%s-%s", topic.TopicName, k.Env.Name, k.Env.Spec.Namespace,
+		"%s-%s-%s", topic.TopicName, k.Env.Name, k.Env.GetClowdNamespace(),
 	)
 
 	k.Config.Topics = append(
@@ -50,7 +50,7 @@ func NewLocalKafka(p *p.Provider) (KafkaProvider, error) {
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
-			Hostname: fmt.Sprintf("%v-kafka.%v.svc", p.Env.Name, p.Env.Spec.Namespace),
+			Hostname: fmt.Sprintf("%v-kafka.%v.svc", p.Env.Name, p.Env.GetClowdNamespace()),
 			Port:     intPtr(29092),
 		}},
 	}

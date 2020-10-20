@@ -216,7 +216,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					Mode: "none",
 				},
 			},
-			Namespace: objMeta.Namespace,
+			TargetNamespace: objMeta.Namespace,
 		},
 	}
 

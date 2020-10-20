@@ -38,23 +38,6 @@ spec:
         spec:
           description: ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
           properties:
-            metrics:
-              properties:
-                mode:
-                  enum:
-                  - none
-                  - operator
-                  type: string
-                path:
-                  type: string
-                port:
-                  format: int32
-                  type: integer
-              required:
-              - mode
-              type: object
-            namespace:
-              type: string
             providers:
               properties:
                 db:
@@ -106,6 +89,21 @@ spec:
                   required:
                   - mode
                   type: object
+                metrics:
+                  properties:
+                    mode:
+                      enum:
+                      - none
+                      - operator
+                      type: string
+                    path:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                  required:
+                  - mode
+                  type: object
                 objectStore:
                   properties:
                     mode:
@@ -115,6 +113,21 @@ spec:
                       type: string
                     suffix:
                       type: string
+                  required:
+                  - mode
+                  type: object
+                web:
+                  properties:
+                    apiPrefix:
+                      type: string
+                    mode:
+                      enum:
+                      - none
+                      - operator
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
                   required:
                   - mode
                   type: object
@@ -150,25 +163,12 @@ spec:
                     value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   type: object
               type: object
-            web:
-              properties:
-                apiPrefix:
-                  type: string
-                mode:
-                  enum:
-                  - none
-                  - operator
-                  type: string
-                port:
-                  format: int32
-                  type: integer
-              required:
-              - mode
-              type: object
+            targetNamespace:
+              type: string
           required:
-          - namespace
           - providers
           - resourceDefaults
+          - targetNamespace
           type: object
         status:
           description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
