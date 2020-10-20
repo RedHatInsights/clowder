@@ -168,11 +168,11 @@ func (m *Maker) makeService(pod crd.PodSpec, app *crd.ClowdApp) error {
 	}
 
 	ports := []core.ServicePort{
-		{Name: "metrics", Port: m.Env.Spec.Metrics.Port, Protocol: "TCP"},
+		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP"},
 	}
 
 	if pod.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Web.Port, Protocol: "TCP"}
+		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
 
@@ -300,7 +300,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 				Scheme: "HTTP",
 				Port: intstr.IntOrString{
 					Type:   intstr.Int,
-					IntVal: env.Spec.Web.Port,
+					IntVal: env.Spec.Providers.Web.Port,
 				},
 			},
 		},
@@ -372,7 +372,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		VolumeMounts: pod.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
-			ContainerPort: env.Spec.Metrics.Port,
+			ContainerPort: env.Spec.Providers.Metrics.Port,
 		}},
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
@@ -387,7 +387,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	if pod.Web {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
-			ContainerPort: env.Spec.Web.Port,
+			ContainerPort: env.Spec.Providers.Web.Port,
 		})
 	}
 
@@ -424,9 +424,9 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 
 	c := config.AppConfig{}
 
-	c.WebPort = int(m.Env.Spec.Web.Port)
-	c.MetricsPort = int(m.Env.Spec.Metrics.Port)
-	c.MetricsPath = m.Env.Spec.Metrics.Path
+	c.WebPort = int(m.Env.Spec.Providers.Web.Port)
+	c.MetricsPort = int(m.Env.Spec.Providers.Metrics.Port)
+	c.MetricsPath = m.Env.Spec.Providers.Metrics.Path
 
 	if err := objectstore.RunAppProvider(provider, &c, m.App); err != nil {
 		return &c, errors.Wrap("setupenv: getobjectstore", err)
@@ -468,7 +468,7 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 
 	// Iterate over all deps
 
-	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Web.Port, m.App, &apps)
+	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Providers.Web.Port, m.App, &apps)
 
 	if len(missingDeps) > 0 {
 		depVal := map[string][]string{"services": missingDeps}

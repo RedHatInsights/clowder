@@ -88,18 +88,18 @@ type InMemoryDBConfig struct {
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
 type ClowdEnvironmentSpec struct {
 	Namespace        string                  `json:"namespace"`
-	Web              WebConfig               `json:"web,omitempty"`
-	Metrics          MetricsConfig           `json:"metrics,omitempty"`
 	Providers        ProvidersConfig         `json:"providers"`
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 }
 
 type ProvidersConfig struct {
-	Kafka       KafkaConfig       `json:"kafka"`
 	Database    DatabaseConfig    `json:"db,omitempty"`
-	Logging     LoggingConfig     `json:"logging"`
-	ObjectStore ObjectStoreConfig `json:"objectStore"`
 	InMemoryDB  InMemoryDBConfig  `json:"inMemoryDb"`
+	Kafka       KafkaConfig       `json:"kafka"`
+	Logging     LoggingConfig     `json:"logging"`
+	Metrics     MetricsConfig     `json:"metrics,omitempty"`
+	ObjectStore ObjectStoreConfig `json:"objectStore"`
+	Web         WebConfig         `json:"web,omitempty"`
 }
 
 type MinioStatus struct {

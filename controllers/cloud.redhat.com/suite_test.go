@@ -187,15 +187,6 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	env := crd.ClowdEnvironment{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdEnvironmentSpec{
-			Web: crd.WebConfig{
-				Port: int32(8080),
-				Mode: "none",
-			},
-			Metrics: crd.MetricsConfig{
-				Port: int32(9000),
-				Path: "/metrics",
-				Mode: "none",
-			},
 			Providers: crd.ProvidersConfig{
 				Kafka: crd.KafkaConfig{
 					ClusterName: "kafka",
@@ -214,6 +205,15 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 				},
 				InMemoryDB: crd.InMemoryDBConfig{
 					Mode: "redis",
+				},
+				Web: crd.WebConfig{
+					Port: int32(8080),
+					Mode: "none",
+				},
+				Metrics: crd.MetricsConfig{
+					Port: int32(9000),
+					Path: "/metrics",
+					Mode: "none",
 				},
 			},
 			Namespace: objMeta.Namespace,
@@ -381,8 +381,8 @@ func TestCreateClowdApp(t *testing.T) {
 		t.Errorf("Bad port count %d; expected 1", len(s.Spec.Ports))
 	}
 
-	if s.Spec.Ports[0].Port != env.Spec.Metrics.Port {
-		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, env.Spec.Metrics.Port)
+	if s.Spec.Ports[0].Port != env.Spec.Providers.Metrics.Port {
+		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, env.Spec.Providers.Metrics.Port)
 	}
 
 	// Kafka validation
