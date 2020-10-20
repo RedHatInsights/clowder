@@ -23,7 +23,9 @@ const bucketCheckErrorMsg = "failed to check if bucket exists"
 const bucketCreateErrorMsg = "failed to create bucket"
 
 func newBucketError(msg string, bucketName string, rootCause error) error {
-	return errors.Wrap(fmt.Sprintf("bucket %q -- %s", bucketName, msg), rootCause)
+	newErr := errors.Wrap(fmt.Sprintf("bucket %q -- %s", bucketName, msg), rootCause)
+	newErr.Requeue = true
+	return newErr
 }
 
 // Create a bucketHandler interface to allow for mocking of minio client actions in tests

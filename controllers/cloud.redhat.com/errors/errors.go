@@ -17,9 +17,10 @@ type ClowdKey string
 var stacksEnabled bool = true
 
 type ClowderError struct {
-	Stack zap.Field
-	Msg   string
-	Cause error
+	Stack   zap.Field
+	Msg     string
+	Cause   error
+	Requeue bool
 }
 
 func (a *ClowderError) Unwrap() error {
@@ -55,9 +56,13 @@ func New(msg string) *ClowderError {
 	}
 }
 
-func Wrap(msg string, err error) error {
+func Wrap(msg string, err error) *ClowderError {
 	clowderErr := New(msg)
 	clowderErr.Cause = err
+	var cerr *ClowderError
+	if errlib.As(err, &cerr) {
+		clowderErr.Requeue = cerr.Requeue
+	}
 	return clowderErr
 }
 
@@ -115,11 +120,16 @@ func LogError(ctx context.Context, name string, err *ClowderError) {
 func HandleError(log logr.Logger, err error) bool {
 	if err != nil {
 		var depErr *MissingDependencies
-
+		var clowderError *ClowderError
 		if errlib.As(err, &depErr) {
 			// TODO: emit event
 			log.Info(depErr.Error())
 			return true
+		} else if errlib.As(err, &clowderError) {
+			log.Info(clowderError.Error())
+			if clowderError.Requeue {
+				return true
+			}
 		}
 
 		root := RootCause(err)
