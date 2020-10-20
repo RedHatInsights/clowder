@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +22,7 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	dbc.Username = (*data)["username"]
 }
 
-func MakeOrGetSecret(ctx context.Context, env *crd.ClowdEnvironment, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
+func MakeOrGetSecret(ctx context.Context, obj utils.ClowdObject, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
 
@@ -39,7 +38,7 @@ func MakeOrGetSecret(ctx context.Context, env *crd.ClowdEnvironment, client clie
 
 		secret.Name = nn.Name
 		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{env.MakeOwnerReference()}
+		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
 		if err = secretUpdate.Apply(ctx, client, secret); err != nil {

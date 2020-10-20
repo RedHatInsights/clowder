@@ -55,7 +55,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 		}
 	}
 
-	secMap, err := config.MakeOrGetSecret(db.Ctx, db.Env, db.Client, nn, dataInit)
+	secMap, err := config.MakeOrGetSecret(db.Ctx, app, db.Client, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
