@@ -188,31 +188,33 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdEnvironmentSpec{
 			Web: crd.WebConfig{
-				Port:     int32(8080),
-				Provider: "none",
+				Port: int32(8080),
+				Mode: "none",
 			},
 			Metrics: crd.MetricsConfig{
-				Port:     int32(9000),
-				Path:     "/metrics",
-				Provider: "none",
+				Port: int32(9000),
+				Path: "/metrics",
+				Mode: "none",
 			},
-			Kafka: crd.KafkaConfig{
-				ClusterName: "kafka",
-				Namespace:   "kafka",
-				Provider:    "operator",
-			},
-			Database: crd.DatabaseConfig{
-				Image:    "registry.redhat.io/rhel8/postgresql-12:1-36",
-				Provider: "local",
-			},
-			Logging: crd.LoggingConfig{
-				Provider: "app-interface",
-			},
-			ObjectStore: crd.ObjectStoreConfig{
-				Provider: "app-interface",
-			},
-			InMemoryDB: crd.InMemoryDBConfig{
-				Provider: "redis",
+			Providers: crd.ProvidersConfig{
+				Kafka: crd.KafkaConfig{
+					ClusterName: "kafka",
+					Namespace:   "kafka",
+					Mode:        "operator",
+				},
+				Database: crd.DatabaseConfig{
+					Image: "registry.redhat.io/rhel8/postgresql-12:1-36",
+					Mode:  "local",
+				},
+				Logging: crd.LoggingConfig{
+					Mode: "app-interface",
+				},
+				ObjectStore: crd.ObjectStoreConfig{
+					Mode: "app-interface",
+				},
+				InMemoryDB: crd.InMemoryDBConfig{
+					Mode: "redis",
+				},
 			},
 			Namespace: objMeta.Namespace,
 		},
@@ -388,7 +390,7 @@ func TestCreateClowdApp(t *testing.T) {
 	topic := strimzi.KafkaTopic{}
 	topicName := "inventory-test-default"
 	topicNamespacedName := types.NamespacedName{
-		Namespace: env.Spec.Kafka.Namespace,
+		Namespace: env.Spec.Providers.Kafka.Namespace,
 		Name:      topicName,
 	}
 

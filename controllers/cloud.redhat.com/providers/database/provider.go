@@ -17,14 +17,14 @@ type DatabaseProvider interface {
 }
 
 func GetDatabase(c *p.Provider) (DatabaseProvider, error) {
-	dbProvider := c.Env.Spec.Database.Provider
-	switch dbProvider {
+	dbMode := c.Env.Spec.Providers.Database.Mode
+	switch dbMode {
 	case "local":
 		return NewLocalDBProvider(c)
 	case "app-interface":
 		return NewAppInterfaceObjectstore(c)
 	default:
-		errStr := fmt.Sprintf("No matching db provider for %s", dbProvider)
+		errStr := fmt.Sprintf("No matching db mode for %s", dbMode)
 		return nil, errors.New(errStr)
 	}
 }

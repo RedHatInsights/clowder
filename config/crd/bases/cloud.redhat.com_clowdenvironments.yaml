@@ -38,83 +38,91 @@ spec:
         spec:
           description: ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
           properties:
-            db:
-              properties:
-                image:
-                  type: string
-                provider:
-                  enum:
-                  - app-interface
-                  - local
-                  type: string
-              required:
-              - image
-              - provider
-              type: object
-            inMemoryDb:
-              properties:
-                provider:
-                  enum:
-                  - redis
-                  - app-interface
-                  type: string
-              required:
-              - provider
-              type: object
-            kafka:
-              properties:
-                clusterName:
-                  type: string
-                namespace:
-                  type: string
-                provider:
-                  enum:
-                  - operator
-                  - app-interface
-                  - local
-                  type: string
-                suffix:
-                  type: string
-              required:
-              - clusterName
-              - namespace
-              - provider
-              type: object
-            logging:
-              properties:
-                provider:
-                  type: string
-              required:
-              - provider
-              type: object
             metrics:
               properties:
+                mode:
+                  enum:
+                  - none
+                  - operator
+                  type: string
                 path:
                   type: string
                 port:
                   format: int32
                   type: integer
-                provider:
-                  enum:
-                  - none
-                  - operator
-                  type: string
               required:
-              - provider
+              - mode
               type: object
             namespace:
               type: string
-            objectStore:
+            providers:
               properties:
-                provider:
-                  enum:
-                  - minio
-                  - app-interface
-                  type: string
-                suffix:
-                  type: string
+                db:
+                  properties:
+                    image:
+                      type: string
+                    mode:
+                      enum:
+                      - app-interface
+                      - local
+                      type: string
+                  required:
+                  - image
+                  - mode
+                  type: object
+                inMemoryDb:
+                  properties:
+                    mode:
+                      enum:
+                      - redis
+                      - app-interface
+                      type: string
+                  required:
+                  - mode
+                  type: object
+                kafka:
+                  properties:
+                    clusterName:
+                      type: string
+                    mode:
+                      enum:
+                      - operator
+                      - app-interface
+                      - local
+                      type: string
+                    namespace:
+                      type: string
+                    suffix:
+                      type: string
+                  required:
+                  - clusterName
+                  - mode
+                  - namespace
+                  type: object
+                logging:
+                  properties:
+                    mode:
+                      type: string
+                  required:
+                  - mode
+                  type: object
+                objectStore:
+                  properties:
+                    mode:
+                      enum:
+                      - minio
+                      - app-interface
+                      type: string
+                    suffix:
+                      type: string
+                  required:
+                  - mode
+                  type: object
               required:
-              - provider
+              - inMemoryDb
+              - kafka
+              - logging
+              - objectStore
               type: object
             resourceDefaults:
               description: ResourceRequirements describes the compute resource requirements.
@@ -146,23 +154,20 @@ spec:
               properties:
                 apiPrefix:
                   type: string
-                port:
-                  format: int32
-                  type: integer
-                provider:
+                mode:
                   enum:
                   - none
                   - operator
                   type: string
+                port:
+                  format: int32
+                  type: integer
               required:
-              - provider
+              - mode
               type: object
           required:
-          - inMemoryDb
-          - kafka
-          - logging
           - namespace
-          - objectStore
+          - providers
           - resourceDefaults
           type: object
         status:

@@ -31,8 +31,8 @@ func (s *strimziProvider) Configure(config *config.AppConfig) {
 
 func (s *strimziProvider) configureBrokers() error {
 	clusterName := types.NamespacedName{
-		Namespace: s.Env.Spec.Kafka.Namespace,
-		Name:      s.Env.Spec.Kafka.ClusterName,
+		Namespace: s.Env.Spec.Providers.Kafka.Namespace,
+		Name:      s.Env.Spec.Providers.Kafka.ClusterName,
 	}
 
 	kafkaResource := strimzi.Kafka{}
@@ -84,7 +84,7 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 	topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
 
 	update, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, types.NamespacedName{
-		Namespace: s.Env.Spec.Kafka.Namespace,
+		Namespace: s.Env.Spec.Providers.Kafka.Namespace,
 		Name:      topicName,
 	}, &kRes))
 
@@ -93,14 +93,14 @@ func (s *strimziProvider) CreateTopic(nn types.NamespacedName, topic *strimzi.Ka
 	}
 
 	labels := p.Labels{
-		"strimzi.io/cluster": s.Env.Spec.Kafka.ClusterName,
+		"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.ClusterName,
 		"app":                nn.Name,
 		// If we label it with the app name, since app names should be
 		// unique? can we use for delete selector?
 	}
 
 	kRes.SetName(topicName)
-	kRes.SetNamespace(s.Env.Spec.Kafka.Namespace)
+	kRes.SetNamespace(s.Env.Spec.Providers.Kafka.Namespace)
 	kRes.SetLabels(labels)
 
 	kRes.Spec.Replicas = topic.Replicas

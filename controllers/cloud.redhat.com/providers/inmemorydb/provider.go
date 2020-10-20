@@ -17,12 +17,12 @@ type InMemoryDBProvider interface {
 }
 
 func GetInMemoryDB(c *p.Provider) (InMemoryDBProvider, error) {
-	dbProvider := c.Env.Spec.InMemoryDB.Provider
-	switch dbProvider {
+	dbMode := c.Env.Spec.Providers.InMemoryDB.Mode
+	switch dbMode {
 	case "redis":
 		return NewLocalRedis(c)
 	default:
-		errStr := fmt.Sprintf("No matching in-memory db provider for %s", dbProvider)
+		errStr := fmt.Sprintf("No matching in-memory db mode for %s", dbMode)
 		return nil, errors.New(errStr)
 	}
 }

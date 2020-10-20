@@ -15,9 +15,11 @@ func TestAppInterface(t *testing.T) {
 	pr := p.Provider{
 		Env: &crd.ClowdEnvironment{
 			Spec: crd.ClowdEnvironmentSpec{
-				Kafka: crd.KafkaConfig{
-					ClusterName: clusterName,
-					Namespace:   ns,
+				Providers: crd.ProvidersConfig{
+					Kafka: crd.KafkaConfig{
+						ClusterName: clusterName,
+						Namespace:   ns,
+					},
 				},
 			},
 		},

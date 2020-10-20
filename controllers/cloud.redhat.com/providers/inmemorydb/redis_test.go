@@ -15,11 +15,13 @@ func getRedisTestEnv() crd.ClowdEnvironment {
 			Name: "env",
 		},
 		Spec: crd.ClowdEnvironmentSpec{
-			Kafka: crd.KafkaConfig{
-				Provider: "local",
-			},
-			InMemoryDB: crd.InMemoryDBConfig{
-				Provider: "redis",
+			Providers: crd.ProvidersConfig{
+				Kafka: crd.KafkaConfig{
+					Mode: "local",
+				},
+				InMemoryDB: crd.InMemoryDBConfig{
+					Mode: "redis",
+				},
 			},
 		},
 	}

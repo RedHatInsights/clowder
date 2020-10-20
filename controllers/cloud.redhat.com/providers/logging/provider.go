@@ -19,14 +19,14 @@ type LoggingProvider interface {
 }
 
 func GetLogging(c *p.Provider) (LoggingProvider, error) {
-	logProvider := c.Env.Spec.Logging.Provider
-	switch logProvider {
+	logMode := c.Env.Spec.Providers.Logging.Mode
+	switch logMode {
 	case "app-interface":
 		return NewAppInterfaceLogging(c)
 	case "none":
 		return NewNullLogging(c)
 	default:
-		errStr := fmt.Sprintf("No matching logging provider for %s", logProvider)
+		errStr := fmt.Sprintf("No matching logging mode for %s", logMode)
 		return nil, errors.New(errStr)
 	}
 }

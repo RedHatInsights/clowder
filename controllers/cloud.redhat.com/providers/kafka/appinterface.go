@@ -24,7 +24,7 @@ func (a *appInterface) Configure(config *config.AppConfig) {
 
 func (a *appInterface) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error {
 	topicName := types.NamespacedName{
-		Namespace: a.Env.Spec.Kafka.Namespace,
+		Namespace: a.Env.Spec.Providers.Kafka.Namespace,
 		Name:      topic.TopicName,
 	}
 
@@ -90,8 +90,8 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 
 func NewAppInterface(p *p.Provider) (KafkaProvider, error) {
 	nn := types.NamespacedName{
-		Name:      p.Env.Spec.Kafka.ClusterName,
-		Namespace: p.Env.Spec.Kafka.Namespace,
+		Name:      p.Env.Spec.Providers.Kafka.ClusterName,
+		Namespace: p.Env.Spec.Providers.Kafka.Namespace,
 	}
 
 	err := validateBrokerService(p.Ctx, p.Client, nn)

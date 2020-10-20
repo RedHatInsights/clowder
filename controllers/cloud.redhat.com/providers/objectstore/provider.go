@@ -18,14 +18,14 @@ type ObjectStoreProvider interface {
 }
 
 func GetObjectStore(c *p.Provider) (ObjectStoreProvider, error) {
-	objectStoreProvider := c.Env.Spec.ObjectStore.Provider
-	switch objectStoreProvider {
+	objectStoreMode := c.Env.Spec.Providers.ObjectStore.Mode
+	switch objectStoreMode {
 	case "minio":
 		return NewMinIO(c)
 	case "app-interface":
 		return &AppInterfaceObjectstoreProvider{Provider: *c}, nil
 	default:
-		errStr := fmt.Sprintf("No matching object store provider for %s", objectStoreProvider)
+		errStr := fmt.Sprintf("No matching object store mode for %s", objectStoreMode)
 		return nil, errors.New(errStr)
 	}
 }

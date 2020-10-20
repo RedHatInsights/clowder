@@ -65,7 +65,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	db.Config = dbCfg
 
-	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Database.Image)
+	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Providers.Database.Image)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err

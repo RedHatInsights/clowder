@@ -15,8 +15,10 @@ func getKafkaTestEnv() crd.ClowdEnvironment {
 			Name: "env",
 		},
 		Spec: crd.ClowdEnvironmentSpec{
-			Kafka: crd.KafkaConfig{
-				Provider: "local",
+			Providers: crd.ProvidersConfig{
+				Kafka: crd.KafkaConfig{
+					Mode: "local",
+				},
 			},
 		},
 	}

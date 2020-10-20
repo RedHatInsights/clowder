@@ -18,8 +18,8 @@ type KafkaProvider interface {
 }
 
 func GetKafka(c *p.Provider) (KafkaProvider, error) {
-	kafkaProvider := c.Env.Spec.Kafka.Provider
-	switch kafkaProvider {
+	kafkaMode := c.Env.Spec.Providers.Kafka.Mode
+	switch kafkaMode {
 	case "operator":
 		return NewStrimzi(c)
 	case "local":
@@ -27,7 +27,7 @@ func GetKafka(c *p.Provider) (KafkaProvider, error) {
 	case "app-interface":
 		return NewAppInterface(c)
 	default:
-		errStr := fmt.Sprintf("No matching kafka provider for %s", kafkaProvider)
+		errStr := fmt.Sprintf("No matching kafka mode for %s", kafkaMode)
 		return nil, errors.New(errStr)
 	}
 }
