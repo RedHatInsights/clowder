@@ -82,12 +82,14 @@ get initialized against a control pane just like it would against a real Openshi
 
 1. Download and install `kubebuilder`.
 [See install instructions here](https://book.kubebuilder.io/quick-start.html#installation).
+
 2. Make sure that the directory you installed kubebuilder in is present in your `PATH`. You should
 see the following executables in that directory:
-```
-etcd  kube-apiserver  kubebuilder  kubectl
-```
-It is recommended you append the directory to your `PATH` in your `.bashrc`, `.zshrc`, or similar.
+    ```
+    etcd  kube-apiserver  kubebuilder  kubectl
+    ```
+    It is recommended you append the directory to your `PATH` in your `.bashrc`, `.zshrc`, or similar.
+
 3. Download and install `kustomize`.
 [See install instructions here](https://kubernetes-sigs.github.io/kustomize/installation/binaries/).
 This places a `kustomize` binary in whatever directory you ran the above script in. Move this binary
