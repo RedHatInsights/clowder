@@ -285,8 +285,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	d.Spec.Strategy = apps.DeploymentStrategy{
 		Type: apps.RollingUpdateDeploymentStrategyType,
 		RollingUpdate: &apps.RollingUpdateDeployment{
-			MaxSurge:       &intstr.IntOrString{Type: intstr.Int, IntVal: int32(25)},
-			MaxUnavailable: &intstr.IntOrString{Type: intstr.Int, IntVal: int32(25)},
+			MaxSurge:       &intstr.FromInt(25)
+			MaxUnavailable: &intstr.FromInt(25)
 		},
 	}
 
