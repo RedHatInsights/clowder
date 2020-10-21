@@ -93,14 +93,12 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 			return newBucketError(bucketCheckErrorMsg, bucket, err)
 		}
 
-		if found {
-			continue // possibly return a found error?
-		}
+		if !found {
+			err = m.BucketHandler.Make(m.Ctx, bucket)
 
-		err = m.BucketHandler.Make(m.Ctx, bucket)
-
-		if err != nil {
-			return newBucketError(bucketCreateErrorMsg, bucket, err)
+			if err != nil {
+				return newBucketError(bucketCreateErrorMsg, bucket, err)
+			}
 		}
 
 		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
