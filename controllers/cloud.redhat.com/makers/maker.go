@@ -289,6 +289,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			MaxUnavailable: &intstr.IntOrString{Type: intstr.Int, IntVal: int32(25)},
 		},
 	}
+	d.Spec.ProgressDeadlineSeconds = int32("600")
 
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
 		{Name: "quay-cloudservices-pull"},
