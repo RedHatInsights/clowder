@@ -155,13 +155,16 @@ func TestMinio(t *testing.T) {
 			ExistsError: fakeError,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
 
+		gotErr := mp.CreateBuckets(app)
+		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)
+		assert.Error(gotErr)
+
+		assert.Len(mp.Config.Buckets, 0)
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 0)
 		assert.Contains(handler.ExistsCalls, bucketName)
-		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)
-		assert.Error(gotErr)
+
 		assertErrorIs(t, gotErr, wantErr)
 	})
 
@@ -173,15 +176,16 @@ func TestMinio(t *testing.T) {
 			CreateError: fakeError,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
+
 		gotErr := mp.CreateBuckets(app)
+		wantErr := newBucketError(bucketCreateErrorMsg, bucketName, fakeError)
+		assert.Error(gotErr)
+		assertErrorIs(t, gotErr, wantErr)
 
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 1)
 		assert.Contains(handler.ExistsCalls, bucketName)
 		assert.Contains(handler.MakeCalls, bucketName)
-		wantErr := newBucketError(bucketCreateErrorMsg, bucketName, fakeError)
-		assert.Error(gotErr)
-		assertErrorIs(t, gotErr, wantErr)
 	})
 
 	t.Run("createBucketsAlreadyExists", func(t *testing.T) {
@@ -196,6 +200,10 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 0)
 		assert.Contains(handler.ExistsCalls, bucketName)
+
+		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName}
+		assert.Contains(mp.Config.Buckets, wantBucketConfig)
+		assert.Len(mp.Config.Buckets, 1)
 	})
 
 	t.Run("createBucketsSuccess", func(t *testing.T) {
@@ -211,6 +219,10 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.MakeCalls, 1)
 		assert.Contains(handler.ExistsCalls, bucketName)
 		assert.Contains(handler.MakeCalls, bucketName)
+
+		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName}
+		assert.Contains(mp.Config.Buckets, wantBucketConfig)
+		assert.Len(mp.Config.Buckets, 1)
 	})
 
 	t.Run("createMultipleBuckets", func(t *testing.T) {
@@ -227,7 +239,10 @@ func TestMinio(t *testing.T) {
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
 		assert.Len(handler.MakeCalls, 3)
+		assert.Len(mp.Config.Buckets, 3)
 		for _, b := range []string{b1, b2, b3} {
+			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b}
+			assert.Contains(mp.Config.Buckets, wantBucketConfig)
 			assert.Contains(handler.ExistsCalls, b)
 			assert.Contains(handler.MakeCalls, b)
 		}
@@ -247,8 +262,11 @@ func TestMinio(t *testing.T) {
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
 		assert.Len(handler.MakeCalls, 1)
+		assert.Len(mp.Config.Buckets, 3)
 		for _, b := range []string{b1, b2, b3} {
 			assert.Contains(handler.ExistsCalls, b)
+			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b}
+			assert.Contains(mp.Config.Buckets, wantBucketConfig)
 		}
 		assert.Contains(handler.MakeCalls, b3)
 	})
@@ -271,6 +289,9 @@ func TestMinio(t *testing.T) {
 		// CreateBuckets should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 1)
+		assert.Len(mp.Config.Buckets, 1)
+		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
+		assert.Contains(mp.Config.Buckets, wantBucketConfig)
 	})
 
 	t.Run("createMultipleBucketsWithCreateFailure", func(t *testing.T) {
@@ -291,6 +312,9 @@ func TestMinio(t *testing.T) {
 		// CreateBuckets should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 2)
+		assert.Len(mp.Config.Buckets, 1)
+		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
+		assert.Contains(mp.Config.Buckets, wantBucketConfig)
 	})
 
 	t.Run("minioProviderCreate", func(t *testing.T) {
