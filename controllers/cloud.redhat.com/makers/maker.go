@@ -282,6 +282,13 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	d.Spec.Replicas = pod.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	d.Spec.Template.ObjectMeta.Labels = labels
+	d.Spec.Strategy = apps.DeploymentStrategy{
+		Type: apps.RollingUpdateDeploymentStrategyType,
+		RollingUpdate: &apps.RollingUpdateDeployment{
+			MaxSurge:       &intstr.IntOrString{Type: intstr.Int, IntVal: int32(25)},
+			MaxUnavailable: &intstr.IntOrString{Type: intstr.Int, IntVal: int32(25)},
+		},
+	}
 
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
 		{Name: "quay-cloudservices-pull"},
