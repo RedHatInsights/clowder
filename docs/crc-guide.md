@@ -12,6 +12,8 @@
 -------------------
 At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your `/etc/hosts` localhost (127.0.0.1). For this example, we are using the `ingress-env-minio.clowder-system.svc` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
 
+Your `etc/hosts` should now look like `127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 ingress-env-minio.clowder-system.svc`. If you are not using the ingress-env, change it to the appropriate service. 
+
 We're going to use Ingress as the example, so the configuration we're doing is specific to that. If you are standing up a different application, substitute your own services, or other variables. 
 
 `make run 2>&1 | grep '^{' | jq -r .`
@@ -33,28 +35,29 @@ kind: ClowdEnvironment
 metadata:
   name: ingress-env
 spec:
-  namespace: clowder-system
-  web:
-    port: 8000
-    provider: operator
-  metrics:
-    port: 9000
-    provider: operator
-    path: "/metrics"
-  kafka:
-    namespace: default
-    clusterName: crc-cluster
-    provider: local
-  db:
-    image: "registry.redhat.io/rhel8/postgresql-12:1-36"
-    provider: local
-  logging:
-    provider: none
-  objectStore:
-    provider: minio
-    port: 9000
-  inMemoryDb:
-    provider: redis
+  targetNamespace: clowder-system
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      namespace: default
+      clusterName: crc-cluster
+      mode: local
+    db:
+      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+      port: 9000
+    inMemoryDb:
+      mode: redis
   resourceDefaults:
     limits: 
       cpu: "500m"
@@ -62,6 +65,7 @@ spec:
     requests:
       cpu: "300m"
       memory: "1024Mi"
+
 ```
 
 and then run `oc apply -f clowd-environment.yaml`
