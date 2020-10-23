@@ -37,8 +37,8 @@ document and mounts it in the app's container.  This should also insulate apps
 from differences between environments, e.g. production, ephemeral, and local
 development.
 
-There is a companion client library for Clowder, currently implemented in Go and
-Python, that consumes the configuration document mounted into every application
+There is a companion client library for Clowder, currently implemented in `Go`_ and
+`Python`_, that consumes the configuration document mounted into every application
 container and exposes it via an API.  This API is the recommended way to consume
 configuration that comes from Clowder.
 
@@ -69,6 +69,9 @@ library.
 Clowder can provision Redis on behalf of an app.  If an app uses Redis, we
 suggest testing with the version of Redis deployed by Clowder to ensure it is
 compatible.  If not, changes to the app will need to be made.
+
+.. _Go: https://github.com/RedHatInsights/app-common-go
+.. _Python: https://github.com/RedHatInsights/app-common-python
 
 Develop ClowdApp resource for target service
 --------------------------------------------
