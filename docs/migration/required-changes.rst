@@ -20,10 +20,6 @@ Clowder Requirements
     * Kafka topic names
     * Web port number
     * Metrics port number and path
-* Deploy metrics endpoint on isolated port
-    * If an app's metrics endpoint is deployed on the same port as a different
-      web service, it needs to be modified to use a different port.  It is a
-      `best practice`_ to deploy the metrics endpoint on a separate port.
 * Use minio as the only object storage client library
     * The operator will use minio to provision buckets in the ephemeral
       environments, and the `minio client library`_ supports connecting to
@@ -33,6 +29,10 @@ Clowder Requirements
 * Apps using OAuth proxy will need to migrate to Turnpike
 * Standardize on how Redis is configured
 * Create a list of service dependencies
+* Deploy metrics endpoint on isolated port
+    * If an app's metrics endpoint is deployed on the same port as a different
+      web service, it needs to be modified to use a different port.  It is a
+      `best practice`_ to deploy the metrics endpoint on a separate port.
 
 .. _best practice: https://github.com/korfuri/django-prometheus/blob/master/documentation/exports.md#exporting-metrics-in-a-dedicated-thread
 .. _minio client library: https://docs.min.io/docs/python-client-api-reference.html
