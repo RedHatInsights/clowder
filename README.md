@@ -78,7 +78,7 @@ The diagram below describes how the application accesses the configuration.
 ## Testing
 
 The tests rely on the test environment set up by controller-runtime.  This enables the operator to 
-get initialized against a control pane just like it would against a real Openshift cluster.
+get initialized against a control plane just like it would against a real OpenShift cluster.
 
 1. Download and install `kubebuilder`.
 [See install instructions here](https://book.kubebuilder.io/quick-start.html#installation).
