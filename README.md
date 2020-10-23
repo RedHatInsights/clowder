@@ -83,24 +83,30 @@ get initialized against a control pane just like it would against a real Openshi
 1. Download and install `kubebuilder`.
 [See install instructions here](https://book.kubebuilder.io/quick-start.html#installation).
 
-2. Make sure that the directory you installed kubebuilder in is present in your `PATH`. You should
-see the following executables in that directory:
+2. Normally kubebuilder is installed to `/usr/local/kubebuilder/bin`. You should see the following
+executables in that directory:
     ```
     etcd  kube-apiserver  kubebuilder  kubectl
     ```
-    It is recommended you append the directory to your `PATH` in your `.bashrc`, `.zshrc`, or similar.
+    You may want to append this directory to your `PATH` in your `.bashrc`, `.zshrc`, or similar.
+
+    **NOTE**: If you choose to place the kubebuilder executables in a different path, make sure to
+    use the `KUBEBUILDER_ASSETS` env var when running tests (mentioned in step 4 below)
 
 3. Download and install `kustomize`.
 [See install instructions here](https://kubernetes-sigs.github.io/kustomize/installation/binaries/).
 This places a `kustomize` binary in whatever directory you ran the above script in. Move this binary
 to a folder that is on your `PATH` or make sure the directory is appended to your `PATH`
 
+4. Run the tests:
+    ```
+    make test
+    ```
 
-Run the tests:
-
-```
-make test
-```
+    If kubebuilder is installed somewhere other than `/usr/local/kubebuilder/bin`, then:
+    ```
+    KUBEBUILDER_ASSETS=/path/to/kubebuilder/bin make test
+    ```
 
 If you're just getting started with writing tests in Go, or getting started with Go in general, take
 a look at https://quii.gitbook.io/learn-go-with-tests/
