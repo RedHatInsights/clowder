@@ -20,7 +20,7 @@ Ensure code repo has a Dockerfile
 
 App SRE's build conventions require that all images be built using a Dockerfile.  
 The Dockerfile can live anywhere in your code repo; you can configure a custom
-location in your build_deploy.sh (described later) if you place it somewhere
+location in your ``build_deploy.sh`` (described later) if you place it somewhere
 besides the root folder.
 
 Note that a Dockerfile must not pull from Dockerhub.  App SRE blocks all
@@ -31,7 +31,7 @@ Code changes to consume configuration
 
 One of Clowder's key features is centralized configuration.  Instead of cobbling
 together an app's configuration from a disparate set of secrets, environment
-variables, and ConfigMaps that potentially change from environment to
+variables, and ``ConfigMaps`` that potentially change from environment to
 environment, Clowder combines much of an app's configuration into a single JSON
 document and mounts it in the app's container.  This should also insulate apps
 from differences between environments, e.g. production, ephemeral, and local
@@ -45,7 +45,7 @@ configuration that comes from Clowder.
 Until a dev team is confident an app will not need to be deployed without
 Clowder, please use an environment variable to switch between consuming
 configuration from Clowder and from its current configuration method (e.g. env
-vars, ConfigMap).
+vars, ``ConfigMap``).
 
 Here are the items that you should consume from the Clowder client library:
 
@@ -61,7 +61,7 @@ There are a couple of less trivial changes that may need to be made, depending
 on what services are consumed by an app.
 
 If object storage, i.e. S3, is used by an app, it is recommended that an app
-switch to the MinIO client library.  MinIO is used in pre-production
+switch to the `MinIO client library`_.  MinIO is used in pre-production
 environments, and it also supports interacting with S3.  Thus switching to this
 library will allow an app to have to include only one object storage client
 library.
@@ -72,8 +72,9 @@ compatible.  If not, changes to the app will need to be made.
 
 .. _Go: https://github.com/RedHatInsights/app-common-go
 .. _Python: https://github.com/RedHatInsights/app-common-python
+.. _MiIO client library: https://github.com/minio/mc
 
-Develop ClowdApp resource for target service
+Develop ``ClowdApp`` resource for target service
 --------------------------------------------
 
 Developing the ``ClowdApp`` resource largely consists of two parts: 
@@ -109,21 +110,21 @@ on Codeready Containers`_.
 .. _saas-templates: https://gitlab.cee.redhat.com/insights-platform/saas-templates/
 .. _installed on Codeready Containers: https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md
 
-Add build_deploy.sh and pr_check.sh to source code repo
+Add ``build_deploy.sh`` and ``pr_check.sh`` to source code repo
 -------------------------------------------------------
 
 App SRE's build jobs largely rely on shell scripts in the target code repo to
 execute the build and tests, respectively.  There are two jobs for each app:
 "build master" and "PR check", and each job has a corresponding shell script:
-build_deploy.sh and pr_check.sh.
+``build_deploy.sh`` and ``pr_check.sh.``
 
-build_deploy.sh builds an app's image using a Dockerfile and pushes to quay with
-credentials provided in Jenkins job environment.  Make sure to push the latest
-and qa image tags if e2e-deploy backwards compatibility is needed.  There is
+``build_deploy.sh`` builds an app's image using a Dockerfile and pushes to Quay with
+credentials provided in Jenkins job environment.  Make sure to push the ``latest``
+and ``qa`` image tags if e2e-deploy backwards compatibility is needed.  There is
 little variation in this file between projects, thus there are many examples to
 pull from.
 
-pr_check.sh is where an app's unit test, static code analysis, linting, and
+``pr_check.sh`` is where an app's unit test, static code analysis, linting, and
 smoke/integration testing will be performed.  It is largely up to app owners
 what goes into this script.  Smoke/integration testing will be performed by
 bonfire, and there is an example script to paste into your app's script.  There
@@ -179,8 +180,8 @@ Gitlab:
 
 
 In your app's build.yml, you need to specify on which Jenkins server to have
-your jobs defined.  App SRE provides two Jenkins servers: ci-int for projects
-hosted on gitlab.cee.redhat.com, and ci-ext for public projects hosted on
+your jobs defined.  App SRE provides two Jenkins servers: ``ci-int`` for projects
+hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects hosted on
 Github.  Note that private Github projects are **not supported**; if a Github
 project must remain private, then its origin must move to gitlab.cee.redhat.com.
 
@@ -193,7 +194,7 @@ against e2e-deploy that removes ``BuildConfig`` resources from the buildfactory
 folder.  Remember to push the ``qa`` and ``latest`` tags from your
 ``build_deploy.sh`` script if you need backwards compatibility with e2e-deploy.
 
-Create deployment template with ClowdApp resource
+Create deployment template with ``ClowdApp`` resource
 -------------------------------------------------
 
 Going forward, an app's deployment template must live in its source code repo.
@@ -202,9 +203,9 @@ App SRE's convention.
 
 Additional resources defined in an app's current deployment template besides
 Deployment and Service should be copied over to the new template in the app's
-source code repo.  Then the ClowdApp developed above should be added in.
+source code repo.  Then the ``ClowdApp`` developed above should be added in.
 
-A ClowdApp must point to a ClowdEnvironment resource via its ``envName`` spec
+A ``ClowdApp`` must point to a ``ClowdEnvironment`` resource via its ``envName`` spec
 attribute, and its value should be set as the ``ENV_NAME`` template parameter.
 
 Modify saas-deploy file for service
