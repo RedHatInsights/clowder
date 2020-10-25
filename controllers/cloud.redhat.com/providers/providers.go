@@ -7,6 +7,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -34,9 +35,9 @@ func StrPtr(s string) *string {
 	return &s
 }
 
-type makeFn func(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
+type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
 
-func MakeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, suffix string, fn makeFn) error {
+func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suffix string, fn makeFn) error {
 	nn := GetNamespacedName(o, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
 	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
@@ -54,7 +55,7 @@ func MakeComponent(ctx context.Context, cl client.Client, o utils.ClowdObject, s
 	return nil
 }
 
-func GetNamespacedName(o utils.ClowdObject, suffix string) types.NamespacedName {
+func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%v-%v", o.GetClowdName(), suffix),
 		Namespace: o.GetClowdNamespace(),

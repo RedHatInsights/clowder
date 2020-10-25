@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -23,13 +24,6 @@ import (
 )
 
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
-type ClowdObject interface {
-	MakeOwnerReference() metav1.OwnerReference
-	GetLabels() map[string]string
-	GetClowdNamespace() string
-	GetClowdName() string
-}
 
 var Log logr.Logger = ctrllog.NullLogger{}
 
@@ -190,7 +184,7 @@ func Int32(n int) *int32 {
 
 // MakeLabeler creates a function that will label objects with metadata from
 // the given namespaced name and labels
-func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj ClowdObject) func(metav1.Object) {
+func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.ClowdObject) func(metav1.Object) {
 	return func(o metav1.Object) {
 		o.SetName(nn.Name)
 		o.SetNamespace(nn.Namespace)
@@ -199,7 +193,7 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj ClowdObj
 	}
 }
 
-func getCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource ClowdObject) func(metav1.Object) {
+func getCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
 	appliedLabels := baseResource.GetLabels()
 	if labels != nil {
 		for k, v := range labels {
@@ -209,14 +203,14 @@ func getCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 	return MakeLabeler(nn, appliedLabels, baseResource)
 }
 
-func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource ClowdObject) {
+func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject) {
 	labeler := getCustomLabeler(labels, nn, baseResource)
 	labeler(service)
 	service.Spec.Selector = labels
 	service.Spec.Ports = ports
 }
 
-func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels map[string]string, size string, baseResource ClowdObject) {
+func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels map[string]string, size string, baseResource obj.ClowdObject) {
 	labeler := getCustomLabeler(labels, nn, baseResource)
 	labeler(pvc)
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}

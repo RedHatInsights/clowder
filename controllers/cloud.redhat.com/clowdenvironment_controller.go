@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,8 +39,9 @@ import (
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
 type ClowdEnvironmentReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
@@ -47,7 +49,9 @@ type ClowdEnvironmentReconciler struct {
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), r.Log.WithValues("env", req.Name))
+	log := r.Log.WithValues("env", req.Name)
+	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
+	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 
 	env := crd.ClowdEnvironment{}
 	err := r.Client.Get(ctx, req.NamespacedName, &env)
@@ -59,6 +63,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 		return ctrl.Result{}, err
 	}
+
+	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
 
 	provider := providers.Provider{
 		Ctx:    ctx,
@@ -72,7 +78,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		r.Log.Info("Reconciliation successful", "env", env.Name)
 	}
 
-	requeue := errors.HandleError(r.Log, err)
+	requeue := errors.HandleError(ctx, err)
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
@@ -98,6 +104,7 @@ func runProvidersForEnv(provider providers.Provider) error {
 
 // SetupWithManager sets up with manager
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Recorder = mgr.GetEventRecorderFor("env")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdEnvironment{}).
 		Complete(r)

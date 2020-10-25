@@ -5,6 +5,7 @@ import (
 
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 
@@ -82,7 +83,7 @@ func makeEnvVars(list *[]envVar) []core.EnvVar {
 	return envVars
 }
 
-func makeLocalKafka(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
 	nn := providers.GetNamespacedName(o, "kafka")
 
 	labels := o.GetLabels()
@@ -184,7 +185,7 @@ func makeLocalKafka(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service,
 	utils.MakePVC(pvc, nn, labels, "1Gi", o)
 }
 
-func makeLocalZookeeper(o utils.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
 
 	nn := providers.GetNamespacedName(o, "zookeeper")
 

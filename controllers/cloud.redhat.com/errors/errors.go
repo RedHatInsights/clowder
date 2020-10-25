@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"strings"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
 	"go.uber.org/zap"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 )
 
 type ClowdKey string
@@ -117,16 +120,23 @@ func LogError(ctx context.Context, name string, err *ClowderError) {
 	log.Error(err, err.Msg, "stack", GetRootStack(err))
 }
 
-func HandleError(log logr.Logger, err error) bool {
+func HandleError(ctx context.Context, err error) bool {
+	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
+	recorder := *(ctx.Value(ClowdKey("recorder")).(*record.EventRecorder))
+	obj := ctx.Value(ClowdKey("obj")).(runtime.Object)
+
 	if err != nil {
 		var depErr *MissingDependencies
 		var clowderError *ClowderError
 		if errlib.As(err, &depErr) {
-			// TODO: emit event
-			log.Info(depErr.Error())
+			msg := depErr.Error()
+			recorder.Event(obj, "Warning", "MissingDependencies", msg)
+			log.Info(msg)
 			return true
 		} else if errlib.As(err, &clowderError) {
-			log.Info(clowderError.Error())
+			msg := clowderError.Error()
+			recorder.Event(obj, "Warning", "ClowdError", msg)
+			log.Info(msg)
 			if clowderError.Requeue {
 				return true
 			}
@@ -139,6 +149,10 @@ func HandleError(log logr.Logger, err error) bool {
 		}
 
 		log.Error(err, "Reconciliation failure", "stack", GetRootStack(err))
+	} else {
+		clowdObj := obj.(object.ClowdObject)
+		msg := "Successfully reconciled %s"
+		recorder.Eventf(obj, "Normal", "SuccessfulCreate", msg, clowdObj.GetClowdName())
 	}
 	return false
 }

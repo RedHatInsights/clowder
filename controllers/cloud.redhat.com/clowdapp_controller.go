@@ -24,6 +24,7 @@ import (
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -39,8 +40,9 @@ import (
 // ClowdAppReconciler reconciles a ClowdApp object
 type ClowdAppReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch;create;update;patch;delete
@@ -53,7 +55,9 @@ type ClowdAppReconciler struct {
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
-	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), r.Log.WithValues("app", qualifiedName))
+	log := r.Log.WithValues("app", qualifiedName)
+	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
+	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
@@ -66,6 +70,8 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		return ctrl.Result{}, err
 	}
+
+	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &app)
 
 	env := crd.ClowdEnvironment{}
 	err = r.Client.Get(ctx, types.NamespacedName{
@@ -91,14 +97,15 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		r.Log.Info("Reconciliation successful", "app", app.Name)
 	}
 
-	requeue := errors.HandleError(r.Log, err)
+	requeue := errors.HandleError(ctx, err)
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
 // SetupWithManager sets up wi
 func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	r.Log.Info("Setting up manager!")
+	r.Log.Info("Setting up manager")
 	utils.Log = r.Log.WithValues("name", "util")
+	r.Recorder = mgr.GetEventRecorderFor("app")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdApp{}).
 		Watches(

@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +23,7 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	dbc.Username = (*data)["username"]
 }
 
-func MakeOrGetSecret(ctx context.Context, obj utils.ClowdObject, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
+func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
 
