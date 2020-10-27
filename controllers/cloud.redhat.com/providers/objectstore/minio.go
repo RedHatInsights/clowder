@@ -156,7 +156,9 @@ func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
 	// MakeOrGetSecret will set data if it already exists
 	secMap, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, dataInit)
 	if err != nil {
-		return nil, errors.Wrap("Couldn't set/get secret", err)
+		raisedErr := errors.Wrap("Couldn't set/get secret", err)
+		raisedErr.Requeue = true
+		return nil, raisedErr
 	}
 
 	mp, err := createMinioProvider(p, *secMap, &minioHandler{})
