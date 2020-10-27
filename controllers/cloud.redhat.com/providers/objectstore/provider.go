@@ -31,19 +31,21 @@ func GetObjectStore(c *p.Provider) (ObjectStoreProvider, error) {
 }
 
 func RunAppProvider(provider providers.Provider, c *config.AppConfig, app *crd.ClowdApp) error {
-	objectStoreProvider, err := GetObjectStore(&provider)
+	if len(app.Spec.ObjectStore) == 0 {
+		objectStoreProvider, err := GetObjectStore(&provider)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		err = objectStoreProvider.CreateBuckets(app)
+
+		if err != nil {
+			return err
+		}
+
+		objectStoreProvider.Configure(c)
 	}
-
-	err = objectStoreProvider.CreateBuckets(app)
-
-	if err != nil {
-		return err
-	}
-
-	objectStoreProvider.Configure(c)
 	return nil
 }
 
