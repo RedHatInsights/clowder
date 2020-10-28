@@ -26,7 +26,7 @@ func (r *localRedis) Configure(config *config.AppConfig) {
 func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
 	r.Config.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
 	r.Config.Port = 6379
-	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis)
+	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis, r.Provider.Env.Spec.Providers.InMemoryDB.PVC)
 }
 
 func NewLocalRedis(p *providers.Provider) (InMemoryDBProvider, error) {
@@ -37,7 +37,7 @@ func NewLocalRedis(p *providers.Provider) (InMemoryDBProvider, error) {
 	return &redisProvider, nil
 }
 
-func makeLocalRedis(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalRedis(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "redis")
 
 	oneReplica := int32(1)

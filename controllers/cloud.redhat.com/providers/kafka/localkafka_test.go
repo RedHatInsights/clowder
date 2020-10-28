@@ -29,7 +29,7 @@ func TestLocalKafka(t *testing.T) {
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
 
-	makeLocalKafka(&env, &dd, &svc, &pvc)
+	makeLocalKafka(&env, &dd, &svc, &pvc, true)
 
 	if dd.Name != "env-kafka" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-kafka")
@@ -49,7 +49,7 @@ func TestLocalZookeeper(t *testing.T) {
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
 
-	makeLocalZookeeper(&env, &dd, &svc, &pvc)
+	makeLocalZookeeper(&env, &dd, &svc, &pvc, true)
 
 	if dd.Name != "env-zookeeper" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-zookeeper")

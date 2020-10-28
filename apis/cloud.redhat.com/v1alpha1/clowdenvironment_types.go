@@ -48,6 +48,7 @@ type KafkaConfig struct {
 	Namespace   string    `json:"namespace"`
 	Mode        KafkaMode `json:"mode"`
 	Suffix      string    `json:"suffix,omitempty"`
+	PVC         bool      `json:"pvc,omitempty"`
 }
 
 // TODO: Other potential modes: RDS and Operator (e.g. CrunchyDB)
@@ -58,6 +59,7 @@ type DatabaseMode string
 type DatabaseConfig struct {
 	Mode  DatabaseMode `json:"mode"`
 	Image string       `json:"image"`
+	PVC   bool         `json:"pvc,omitempty"`
 }
 
 // TODO: Other potential modes: splunk, kafka
@@ -76,6 +78,7 @@ type ObjectStoreMode string
 type ObjectStoreConfig struct {
 	Mode   ObjectStoreMode `json:"mode"`
 	Suffix string          `json:"suffix,omitempty"`
+	PVC    bool            `json:"pvc,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=redis;app-interface
@@ -83,6 +86,7 @@ type InMemoryMode string
 
 type InMemoryDBConfig struct {
 	Mode InMemoryMode `json:"mode"`
+	PVC  bool         `json:"pvc,omitempty"`
 }
 
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment

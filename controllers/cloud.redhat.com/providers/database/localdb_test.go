@@ -117,7 +117,7 @@ func TestLocalDBDeployment(t *testing.T) {
 
 	image := "imagename:tag"
 
-	makeLocalDB(&d, nn, &app, &cfg, image)
+	makeLocalDB(&d, nn, &app, &cfg, image, true)
 
 	if d.Spec.Template.Spec.Containers[0].Image != image {
 		t.Fatalf("Image requested %v does not match the one in spec: %v ", image, d.Spec.Template.Spec.Containers[0].Image)

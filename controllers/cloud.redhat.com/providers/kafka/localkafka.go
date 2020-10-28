@@ -61,11 +61,11 @@ func NewLocalKafka(p *p.Provider) (KafkaProvider, error) {
 		Config:   config,
 	}
 
-	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "zookeeper", makeLocalZookeeper); err != nil {
+	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC); err != nil {
 		return &kafkaProvider, err
 	}
 
-	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "kafka", makeLocalKafka); err != nil {
+	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC); err != nil {
 		return &kafkaProvider, err
 	}
 
@@ -83,7 +83,7 @@ func makeEnvVars(list *[]envVar) []core.EnvVar {
 	return envVars
 }
 
-func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "kafka")
 
 	labels := o.GetLabels()
@@ -92,15 +92,26 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	labeler(dd)
 
-	dd.Spec.Replicas = utils.Int32(1)
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: nn.Name,
-		VolumeSource: core.VolumeSource{
+	var volSource core.VolumeSource
+	if usePVC {
+		volSource = core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
 				ClaimName: nn.Name,
 			},
-		}},
+		}
+	} else {
+		volSource = core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		}
+	}
+
+	dd.Spec.Replicas = utils.Int32(1)
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	dd.Spec.Template.Spec.Volumes = []core.Volume{
+		{
+			Name:         nn.Name,
+			VolumeSource: volSource,
+		},
 		{
 			Name: "mq-kafka-1",
 			VolumeSource: core.VolumeSource{
@@ -182,10 +193,12 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 	servicePorts := []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
-	utils.MakePVC(pvc, nn, labels, "1Gi", o)
+	if usePVC {
+		utils.MakePVC(pvc, nn, labels, "1Gi", o)
+	}
 }
 
-func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
 
 	nn := providers.GetNamespacedName(o, "zookeeper")
 
@@ -195,15 +208,26 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 
 	labeler(dd)
 
-	dd.Spec.Replicas = utils.Int32(1)
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: nn.Name,
-		VolumeSource: core.VolumeSource{
+	var volSource core.VolumeSource
+	if usePVC {
+		volSource = core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
 				ClaimName: nn.Name,
 			},
-		}},
+		}
+	} else {
+		volSource = core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		}
+	}
+
+	dd.Spec.Replicas = utils.Int32(1)
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	dd.Spec.Template.Spec.Volumes = []core.Volume{
+		{
+			Name:         nn.Name,
+			VolumeSource: volSource,
+		},
 		{
 			Name: "mq-zookeeper-1",
 			VolumeSource: core.VolumeSource{
@@ -319,5 +343,7 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 	}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
-	utils.MakePVC(pvc, nn, labels, "1Gi", o)
+	if usePVC {
+		utils.MakePVC(pvc, nn, labels, "1Gi", o)
+	}
 }

@@ -165,12 +165,12 @@ func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
 		return nil, err
 	}
 
-	providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO)
+	providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
 
 	return mp, nil
 }
 
-func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim) {
+func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "minio")
 
 	labels := o.GetLabels()
@@ -184,13 +184,25 @@ func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: nn.Name,
-		VolumeSource: core.VolumeSource{
+
+	var volSource core.VolumeSource
+	if usePVC {
+		volSource = core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
 				ClaimName: nn.Name,
 			},
-		}},
+		}
+	} else {
+		volSource = core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		}
+	}
+
+	dd.Spec.Template.Spec.Volumes = []core.Volume{
+		{
+			Name:         nn.Name,
+			VolumeSource: volSource,
+		},
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
@@ -276,5 +288,7 @@ func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
-	utils.MakePVC(pvc, nn, labels, "1Gi", o)
+	if usePVC {
+		utils.MakePVC(pvc, nn, labels, "1Gi", o)
+	}
 }

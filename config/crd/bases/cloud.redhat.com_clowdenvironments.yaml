@@ -49,6 +49,8 @@ spec:
                       - app-interface
                       - local
                       type: string
+                    pvc:
+                      type: boolean
                   required:
                   - image
                   - mode
@@ -60,6 +62,8 @@ spec:
                       - redis
                       - app-interface
                       type: string
+                    pvc:
+                      type: boolean
                   required:
                   - mode
                   type: object
@@ -75,6 +79,8 @@ spec:
                       type: string
                     namespace:
                       type: string
+                    pvc:
+                      type: boolean
                     suffix:
                       type: string
                   required:
@@ -111,6 +117,8 @@ spec:
                       - minio
                       - app-interface
                       type: string
+                    pvc:
+                      type: boolean
                     suffix:
                       type: string
                   required:
