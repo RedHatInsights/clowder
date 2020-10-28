@@ -65,7 +65,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	db.Config = dbCfg
 
-	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Providers.Database.Image)
+	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Providers.Database.Image, db.Env.Spec.Providers.Database.PVC)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err
@@ -84,36 +84,49 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 		return err
 	}
 
-	pvc := core.PersistentVolumeClaim{}
-	update, err = utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &pvc))
+	if db.Env.Spec.Providers.Database.PVC {
+		pvc := core.PersistentVolumeClaim{}
+		update, err = utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &pvc))
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		makeLocalPVC(&pvc, nn, app)
+
+		if err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
+			return err
+		}
 	}
-
-	makeLocalPVC(&pvc, nn, app)
-
-	if err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp, cfg *config.DatabaseConfig, image string) {
+func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp, cfg *config.DatabaseConfig, image string, usePVC bool) {
 	labels := app.GetLabels()
 	labels["service"] = "db"
 	labler := utils.MakeLabeler(nn, labels, app)
 	labler(dd)
-	dd.Spec.Replicas = utils.Int32(1)
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{{
-		Name: nn.Name,
-		VolumeSource: core.VolumeSource{
+
+	var volSource core.VolumeSource
+	if usePVC {
+		volSource = core.VolumeSource{
 			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
 				ClaimName: nn.Name,
 			},
-		}},
+		}
+	} else {
+		volSource = core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		}
+	}
+
+	dd.Spec.Replicas = utils.Int32(1)
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	dd.Spec.Template.Spec.Volumes = []core.Volume{
+		{
+			Name:         nn.Name,
+			VolumeSource: volSource,
+		},
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
 

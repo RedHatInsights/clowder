@@ -31,7 +31,7 @@ func TestLocalRedis(t *testing.T) {
 	env := getRedisTestEnv()
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
-	makeLocalRedis(&env, &dd, &svc, &pvc)
+	makeLocalRedis(&env, &dd, &svc, &pvc, true)
 
 	if dd.GetName() != "env-redis" {
 		t.Errorf("Name was not set correctly, got: %v, want: %v", dd.GetName(), "env-redis")

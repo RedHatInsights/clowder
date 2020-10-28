@@ -35,9 +35,9 @@ func StrPtr(s string) *string {
 	return &s
 }
 
-type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim)
+type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool)
 
-func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suffix string, fn makeFn) error {
+func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suffix string, fn makeFn, usePVC bool) error {
 	nn := GetNamespacedName(o, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
 	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
@@ -46,7 +46,7 @@ func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suf
 		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
 	}
 
-	fn(o, dd, svc, pvc)
+	fn(o, dd, svc, pvc, usePVC)
 
 	if err = utils.ApplyAll(ctx, cl, updates); err != nil {
 		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
