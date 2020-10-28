@@ -3,9 +3,12 @@ Migrate to App-SRE Build Pipeline and Clowder
 
 Deployment and configuration of an app on cloud.redhat.com becomes much simpler
 after migrating to Clowder because a lot of operational decisions are made for
-the app, e.g. logging and kafka topic configuration. The migration involves some
-work, of course:  apps must ensure conformity to the conventions enforced by
-Clowder before they can be managed by it.
+the app, e.g. logging and kafka topic configuration.  In addition, migrating to
+the operator unlocks the ability to leverage ephemeral environments for
+smoke/integration testing.
+
+The migration involves some work, of course:  apps must ensure conformity to the
+conventions enforced by Clowder before they can be managed by it.
 
 This migration combines two migrations into one: 
 
@@ -18,12 +21,12 @@ perform more steps before seeing results.
 Ensure code repo has a Dockerfile
 ---------------------------------
 
-App SRE's build conventions require that all images be built using a Dockerfile.  
+AppSRE's build conventions require that all images be built using a Dockerfile.
 The Dockerfile can live anywhere in your code repo; you can configure a custom
 location in your ``build_deploy.sh`` (described later) if it is placed somewhere
 besides the root folder.
 
-Note that a Dockerfile must not pull from Dockerhub.  App SRE blocks all
+Note that a Dockerfile **must not** pull from Dockerhub.  AppSRE blocks all
 requests to Dockerhub due to strict rate limiting imposed on their APIs.
 
 Code changes to consume configuration
@@ -33,8 +36,8 @@ One of Clowder's key features is centralized configuration.  Instead of cobbling
 together an app's configuration from a disparate set of secrets, environment
 variables, and ``ConfigMaps`` that potentially change from environment to
 environment, Clowder combines much of an app's configuration into a single JSON
-document and mounts it in the app's container.  This should also insulate apps
-from differences between environments, e.g. production, ephemeral, and local
+document and mounts it in the app's container.  This insulates apps from
+differences between environments, e.g. production, ephemeral, and local
 development.
 
 There is a companion client library for Clowder, currently implemented in `Go`_ and
@@ -60,11 +63,12 @@ Here are the items that you should consume from the Clowder client library:
 There are a couple of less trivial changes that may need to be made, depending
 on what services are consumed by an app.
 
-If object storage (e.g. S3) is used by an app, it is recommended that an app
-switch to the `MinIO client library`_.  MinIO is deployed by Clowder in
-pre-production environments, and the client library also supports interacting
-with S3.  Thus switching to this library will allow an app to have to use only
-one object storage library.
+If object storage (e.g. S3) is used by an app, it is required that an app
+switch to the `MinIO client library`_ if the app is intended to be deployed
+outside of stage and production.  MinIO is deployed by Clowder in pre-production
+environments as the object store provider, and the client library also supports
+interacting with S3.  Thus switching to this library will allow an app to have
+to use only one object storage library.
 
 Clowder can provision Redis on behalf of an app.  If an app uses Redis, we
 suggest testing with the version of Redis deployed by Clowder to ensure it is
@@ -119,7 +123,7 @@ Create deployment template with ``ClowdApp`` resource
 
 Going forward, an app's deployment template must live in its source code repo.
 This will simply saas-deploy file configuration (see below) and has always been
-App SRE's convention.
+AppSRE's convention.
 
 Additional resources defined in an app's current deployment template besides
 Deployment and Service should be copied over to the new template in the app's
@@ -131,7 +135,7 @@ attribute, and its value should be set as the ``ENV_NAME`` template parameter.
 Add ``build_deploy.sh`` and ``pr_check.sh`` to source code repo
 ---------------------------------------------------------------
 
-App SRE's build jobs largely rely on shell scripts in the target code repo to
+AppSRE's build jobs largely rely on shell scripts in the target code repo to
 execute the build and tests, respectively.  There are two jobs for each app:
 "build master" and "PR check", and each job has a corresponding shell script:
 ``build_deploy.sh`` and ``pr_check.sh.``
@@ -158,7 +162,7 @@ Create "PR check" and "build master" Jenkins jobs in app-interface
 Two Jenkins jobs need to be defined for each app in app-interface: one to build
 the image and one to run test validations against PRs.
 
-App SRE uses Jenkins Job Builder (JJB) to define jobs in YAML.  Jobs are created
+AppSRE uses Jenkins Job Builder (JJB) to define jobs in YAML.  Jobs are created
 by referencing job templates and filling in template parameters.  There are two
 common patterns: one for github repos and another for gitlab repos.
 
@@ -198,7 +202,7 @@ Gitlab:
 
 
 In your app's build.yml, you need to specify on which Jenkins server to have
-your jobs defined.  App SRE provides two Jenkins servers: ``ci-int`` for projects
+your jobs defined.  AppSRE provides two Jenkins servers: ``ci-int`` for projects
 hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects hosted on
 Github.  Note that private Github projects are **not supported**; if a Github
 project must remain private, then its origin must move to gitlab.cee.redhat.com.
@@ -242,6 +246,10 @@ pipeline in e2e-deploy/buildfactory needs to be disabled.  To do this, open a PR
 against e2e-deploy that removes ``BuildConfig`` resources from the buildfactory
 folder.  Remember to push the ``qa`` and ``latest`` tags from your
 ``build_deploy.sh`` script if you need backwards compatibility with e2e-deploy.
+
+Note that in order to maintain compatibility with existing CI and QA
+environments, the deployment templates for apps in e2e-deploy must be
+maintained.
 
 Deploy to stage and production
 ------------------------------
