@@ -20,7 +20,7 @@ Ensure code repo has a Dockerfile
 
 App SRE's build conventions require that all images be built using a Dockerfile.  
 The Dockerfile can live anywhere in your code repo; you can configure a custom
-location in your ``build_deploy.sh`` (described later) if you place it somewhere
+location in your ``build_deploy.sh`` (described later) if it is placed somewhere
 besides the root folder.
 
 Note that a Dockerfile must not pull from Dockerhub.  App SRE blocks all
@@ -49,22 +49,22 @@ vars, ``ConfigMap``).
 
 Here are the items that you should consume from the Clowder client library:
 
-* Dependent service hostnames: Look these up by the app name
-* Kafka bootstrap URL: Multiple URLs can be provided, though only one is ever
+* *Dependent service hostnames*: Look these up by the app name
+* *Kafka bootstrap URL*: Multiple URLs can be provided, though only one is ever
   present today
-* Kafka topic names: Please look up the actual topic name based on the requested
+* *Kafka topic names*: Please look up the actual topic name based on the requested
   name.
-* Web prefix and port number
-* Metrics path and port number
+* *Web prefix and port number*
+* *Metrics path and port number*
 
 There are a couple of less trivial changes that may need to be made, depending
 on what services are consumed by an app.
 
-If object storage, i.e. S3, is used by an app, it is recommended that an app
-switch to the `MinIO client library`_.  MinIO is used in pre-production
-environments, and it also supports interacting with S3.  Thus switching to this
-library will allow an app to have to include only one object storage client
-library.
+If object storage (e.g. S3) is used by an app, it is recommended that an app
+switch to the `MinIO client library`_.  MinIO is deployed by Clowder in
+pre-production environments, and the client library also supports interacting
+with S3.  Thus switching to this library will allow an app to have to use only
+one object storage library.
 
 Clowder can provision Redis on behalf of an app.  If an app uses Redis, we
 suggest testing with the version of Redis deployed by Clowder to ensure it is
@@ -72,10 +72,14 @@ compatible.  If not, changes to the app will need to be made.
 
 .. _Go: https://github.com/RedHatInsights/app-common-go
 .. _Python: https://github.com/RedHatInsights/app-common-python
-.. _MiIO client library: https://github.com/minio/mc
+.. _MinIO client library: https://github.com/minio/mc
 
 Develop ``ClowdApp`` resource for target service
---------------------------------------------
+------------------------------------------------
+
+An app's ``ClowdApp`` resourced will become its interface with Clowder.  It will
+replace the app's ``Deployment`` and ``Service`` resources in its deployment
+template.
 
 Developing the ``ClowdApp`` resource largely consists of two parts: 
 
@@ -110,8 +114,22 @@ on Codeready Containers`_.
 .. _saas-templates: https://gitlab.cee.redhat.com/insights-platform/saas-templates/
 .. _installed on Codeready Containers: https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md
 
+Create deployment template with ``ClowdApp`` resource
+-----------------------------------------------------
+
+Going forward, an app's deployment template must live in its source code repo.
+This will simply saas-deploy file configuration (see below) and has always been
+App SRE's convention.
+
+Additional resources defined in an app's current deployment template besides
+Deployment and Service should be copied over to the new template in the app's
+source code repo.  Then the ``ClowdApp`` developed above should be added in.
+
+A ``ClowdApp`` must point to a ``ClowdEnvironment`` resource via its ``envName`` spec
+attribute, and its value should be set as the ``ENV_NAME`` template parameter.
+
 Add ``build_deploy.sh`` and ``pr_check.sh`` to source code repo
--------------------------------------------------------
+---------------------------------------------------------------
 
 App SRE's build jobs largely rely on shell scripts in the target code repo to
 execute the build and tests, respectively.  There are two jobs for each app:
@@ -185,55 +203,19 @@ hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects hosted on
 Github.  Note that private Github projects are **not supported**; if a Github
 project must remain private, then its origin must move to gitlab.cee.redhat.com.
 
-Disable builds in e2e-deploy
-----------------------------
+Create new saas-deploy file
+---------------------------
 
-Once an app's build pipeline is set up through app-interface, the same build
-pipeline in e2e-deploy/buildfactory needs to be disabled.  To do this, open a PR
-against e2e-deploy that removes ``BuildConfig`` resources from the buildfactory
-folder.  Remember to push the ``qa`` and ``latest`` tags from your
-``build_deploy.sh`` script if you need backwards compatibility with e2e-deploy.
-
-Create deployment template with ``ClowdApp`` resource
--------------------------------------------------
-
-Going forward, an app's deployment template must live in its source code repo.
-This will simply saas-deploy file configuration (see below) and has always been
-App SRE's convention.
-
-Additional resources defined in an app's current deployment template besides
-Deployment and Service should be copied over to the new template in the app's
-source code repo.  Then the ``ClowdApp`` developed above should be added in.
-
-A ``ClowdApp`` must point to a ``ClowdEnvironment`` resource via its ``envName`` spec
-attribute, and its value should be set as the ``ENV_NAME`` template parameter.
-
-Modify saas-deploy file for service
------------------------------------
-
-Once all the previous steps have been completed, it's time to deploy the
-Clowder-dependent app.  This can be a little tricky since we need to keep the
-current production app running smoothly until we are confident the new changes
-are ready to be promoted.
-
-It's likely best to create a separate saas-deploy file for Clowder-based
-services.  The current ``deploy.yml`` can be cloned, with the name appended with
-``-clowder`` and all the ``resourceTemplates`` removed.  Apps on Github need to
-refer to ``ci-ext`` Jenkins, while apps on Gitlab should reference ``ci-int``.
-If there are multiple services in one saas-deploy file which are not hosted by
-the same provider, then two separate saas-deploy files must be maintained since
-a saas-deploy file can only point to one Jenkins instance.
+The last step to enable smoke testing is to create a new saas-deploy file to
+provide `Bonfire`_ with a way to deploy the app to an ephemeral environment.
 
 Points to ensure are in place in your new saas-deploy file:
 
 * Add ``ClowdApp`` as a resource type
 * Point ``resourceTemplate`` ``url`` and ``path`` to the deployment template in
   the app's code repo
-* Remove ``IMAGE_TAG`` from all targets.  This was only specified because the
+* Remove ``IMAGE_TAG`` from the ``target``.  This was only specified because the
   deployment template was in a separate repo than the code.
-* Ensure ref is set to master for stage and a git SHA for production.  Note that
-  this means that all pushes to ``master`` will automatically be deployed to
-  stage (per App SRE convention).
 * Add an ephemeral target.  This will be used by Bonfire to know how to deploy
   the app.  Example:
 
@@ -245,5 +227,41 @@ Points to ensure are in place in your new saas-deploy file:
       ref: internal  # populated by bonfire
       parameters:
         REPLICAS: 1
+
+Once these changes are merged into app-interface, you should be able to open a
+PR against the app's source code repo and see Bonfire deploy the app, assuming
+all dependent services are also set up with Bonfire.
+
+.. _Bonfire: https://github.com/redhatinsights/bonfire 
+
+Disable builds in e2e-deploy
+----------------------------
+
+Once an app's build pipeline is set up through app-interface, the same build
+pipeline in e2e-deploy/buildfactory needs to be disabled.  To do this, open a PR
+against e2e-deploy that removes ``BuildConfig`` resources from the buildfactory
+folder.  Remember to push the ``qa`` and ``latest`` tags from your
+``build_deploy.sh`` script if you need backwards compatibility with e2e-deploy.
+
+Deploy to stage and production
+------------------------------
+
+Once all the previous steps have been completed, it's time to deploy the
+Clowder-dependent app to stage.  Move your ``target`` for stage to the new
+saas-deploy file, ensuring ``ref`` is set to ``master``.  Note that this means
+that all pushes to ``master`` will automatically be deployed to stage (per App
+SRE convention).  Also remember to remove the ``IMAGE_TAG`` template parameter.
+
+We should treat the deployment to stage as a test run for deploying to
+production.  A cutover plan should account for the impact of an app's outage.
+If the impact is low, the cutover plan can be simplified to save time and effort
+in planning.  If the impact is high, then the cutover should be carefully
+planned to ensure a little down time as possible.  If no additional care is
+taken to minimize downtime, an app can expect 2-15 minutes of downtime, assuming
+there are no regressions.
+
+Once the app has been sufficiently validated in stage, follow the same process
+to move the production target to the new saas-deploy file.  The only other
+difference is that the ``ref`` for production should point to a git SHA.
 
 .. vim: tw=80 spell spelllang=en
