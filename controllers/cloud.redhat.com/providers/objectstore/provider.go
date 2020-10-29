@@ -31,7 +31,7 @@ func GetObjectStore(c *p.Provider) (ObjectStoreProvider, error) {
 }
 
 func RunAppProvider(provider providers.Provider, c *config.AppConfig, app *crd.ClowdApp) error {
-	if len(app.Spec.ObjectStore) == 0 {
+	if len(app.Spec.ObjectStore) != 0 {
 		objectStoreProvider, err := GetObjectStore(&provider)
 
 		if err != nil {
