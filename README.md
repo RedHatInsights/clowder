@@ -52,6 +52,35 @@ The diagram below describes how the application accesses the configuration.
 
 !["Clowder Client"](images/clowder-new.svg "Clowder Client")
 
+## Why use Clowder?
+
+In addition to reducing the effort to maintain a deployment template (as stated
+above), Clowder providers a number of other benefits:
+
+- **Deploy ephemeral environments**, used to run integration tests in a PR check,
+  run performance tests, or deploy an isolated environment to develop against a
+  feature branch.
+- **Maintain compliance with operational guidelines** laid out by App SRE.  A few
+  of these include pod affinity, rollout parameters, and image pull policy.
+- **Maximize consistency** between apps.  Any dev or SRE that learns how one
+  Clowder app is deployed then understands many aspects about how _any_ app on
+  Clowder is deployed.
+- **Deploy a full environment locally**, e.g. Codeready containers or a remote
+  cluster for personal use.
+
+There are new features coming up as well:
+
+- Autoscaling (possibly via [Keda](https://github.com/kedacore/keda))
+- Dynamic routing for public web sevices
+- Automatic metrics configuration
+- Automatic network policy configuration
+- Standard, configurable alerting: Error rate, latency, Kafka topic lag, etc
+- Canary deployments (possibly via [Flagger](https://github.com/weaveworks/flagger))
+- Operational remediations
+- Observe service status from a `ClowdApp` `status`, based on sevice dependencies.
+- Istio integration
+- Advanced logging configurations (e.g. logging messages to kafka topics)
+
 ## Design
 
 [Design docs](https://github.com/RedHatInsights/clowder/tree/master/docs/)
