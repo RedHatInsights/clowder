@@ -105,6 +105,8 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
+			AccessKey:     m.Config.AccessKey,
+			SecretKey:     m.Config.SecretKey,
 		})
 	}
 
