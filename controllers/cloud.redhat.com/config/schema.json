@@ -171,6 +171,9 @@
                 },
                 "adminPassword": {
                     "type": "string"
+                },
+                "rdsCa": {
+                    "type": "string"
                 }
             },
             "required": [

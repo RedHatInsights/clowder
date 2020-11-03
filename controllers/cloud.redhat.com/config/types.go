@@ -310,6 +310,9 @@ type DatabaseConfig struct {
 	// Port corresponds to the JSON schema field "port".
 	Port int `json:"port"`
 
+	// RdsCa corresponds to the JSON schema field "rdsCa".
+	RdsCa *string `json:"rdsCa,omitempty"`
+
 	// Username corresponds to the JSON schema field "username".
 	Username string `json:"username"`
 }

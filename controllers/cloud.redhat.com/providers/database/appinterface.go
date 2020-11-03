@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -13,6 +15,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var rdsCa string
+
+const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
+
 type appInterface struct {
 	p.Provider
 	Config config.DatabaseConfig
@@ -22,8 +28,46 @@ func (a *appInterface) Configure(c *config.AppConfig) {
 	c.Database = &a.Config
 }
 
+func fetchCa() (string, error) {
+	resp, err := http.Get(caURL)
+
+	if err != nil {
+		return "", errors.Wrap("Error fetching CA bundle", err)
+	}
+
+	if resp.StatusCode != 200 {
+		msg := fmt.Sprintf("Bad status code: %d", resp.StatusCode)
+		return "", errors.New(msg)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		errors.Wrap("Error reading response body", err)
+	}
+
+	caBundle := string(body)
+
+	if !strings.HasPrefix(caBundle, "-----BEGIN CERTIFICATE") {
+		msg := fmt.Sprintf("Invalid RDS CA bundle")
+		return "", errors.New(msg)
+	}
+
+	return caBundle, nil
+}
+
 func NewAppInterfaceObjectstore(p *p.Provider) (DatabaseProvider, error) {
 	provider := appInterface{Provider: *p}
+
+	if rdsCa == "" {
+		_rdsCa, err := fetchCa()
+
+		if err != nil {
+			return nil, errors.Wrap("Failed to fetch RDS CA bundle", err)
+		}
+
+		rdsCa = _rdsCa
+	}
 
 	return &provider, nil
 }
@@ -60,6 +104,7 @@ func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
 	// The creds given by app-interface have elevated privileges
 	matched.AdminPassword = matched.Password
 	matched.AdminUsername = matched.Username
+	matched.RdsCa = &rdsCa
 
 	a.Config = matched
 	return nil
