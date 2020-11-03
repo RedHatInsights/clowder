@@ -82,6 +82,7 @@ func (m *minioProvider) Configure(c *config.AppConfig) {
 		AccessKey: m.Config.AccessKey,
 		SecretKey: m.Config.SecretKey,
 		Buckets:   m.Config.Buckets,
+		Tls:       false,
 	}
 }
 

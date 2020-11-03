@@ -137,6 +137,9 @@ func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
 	if v, ok := raw["port"]; !ok || v == nil {
 		return fmt.Errorf("field port: required")
 	}
+	if v, ok := raw["tls"]; !ok || v == nil {
+		return fmt.Errorf("field tls: required")
+	}
 	type Plain ObjectStoreConfig
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
@@ -396,6 +399,9 @@ type ObjectStoreConfig struct {
 
 	// SecretKey corresponds to the JSON schema field "secretKey".
 	SecretKey *string `json:"secretKey,omitempty"`
+
+	// Tls corresponds to the JSON schema field "tls".
+	Tls bool `json:"tls"`
 }
 
 // topic configuration
