@@ -107,5 +107,6 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	}
 
 	objectStoreConfig.Buckets = buckets
+	objectStoreConfig.Tls = true
 	return &objectStoreConfig, nil
 }
