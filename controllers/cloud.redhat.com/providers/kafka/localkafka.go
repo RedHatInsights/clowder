@@ -128,7 +128,7 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	envVars := makeEnvVars(&[]envVar{
-		{"KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://" + nn.Name + ":29092, LOCAL://localhost:9092"},
+		{"KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://" + nn.Name + "." + nn.Namespace + ".svc:29092, LOCAL://localhost:9092"},
 		{"KAFKA_BROKER_ID", "1"},
 		{"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1"},
 		{"KAFKA_ZOOKEEPER_CONNECT", o.GetClowdName() + "-zookeeper:32181"},
