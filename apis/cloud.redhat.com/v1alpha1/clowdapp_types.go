@@ -26,7 +26,10 @@ import (
 )
 
 type InitContainer struct {
-	Args []string `json:"args"`
+	Command    []string    `json:"command,omitempty"`
+	Args       []string    `json:"args,omitempty"`
+	InheritEnv bool        `json:"inheritEnv,omitempty"`
+	Env        []v1.EnvVar `json:"env,omitempty"`
 }
 
 type DatabaseSpec struct {
@@ -38,6 +41,7 @@ type PodSpec struct {
 	Name           string                  `json:"name"`
 	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
 	Image          string                  `json:"image"`
+	InitContainers []InitContainer         `json:"initContainers"`
 	Command        []string                `json:"command,omitempty"`
 	Args           []string                `json:"args,omitempty"`
 	Env            []v1.EnvVar             `json:"env,omitempty"`

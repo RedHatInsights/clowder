@@ -406,6 +406,55 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
+	if len(pod.InitContainers) > 0 {
+		d.Spec.Template.Spec.InitContainers = make([]core.Container, len(pod.InitContainers))
+	}
+
+	for i, ic := range pod.InitContainers {
+		icStruct := core.Container{
+			Name:            nn.Name + "-init",
+			Image:           c.Image,
+			Command:         ic.Command,
+			Args:            ic.Args,
+			Resources:       c.Resources,
+			VolumeMounts:    c.VolumeMounts,
+			ImagePullPolicy: c.ImagePullPolicy,
+		}
+
+		if ic.InheritEnv {
+			// The idea here is that you can override the inherited values by
+			// setting them on the initContainer env
+			icStruct.Env = []core.EnvVar{}
+			for _, e := range c.Env {
+				found := false
+				for _, envvar := range ic.Env {
+					if e.Name == envvar.Name {
+						found = true
+						icStruct.Env = append(icStruct.Env, core.EnvVar{
+							Name:  e.Name,
+							Value: envvar.Value,
+						})
+					}
+				}
+				if !found {
+					icStruct.Env = append(icStruct.Env, core.EnvVar{
+						Name:  e.Name,
+						Value: e.Value,
+					})
+				}
+			}
+		} else {
+			for _, envvar := range ic.Env {
+				icStruct.Env = append(icStruct.Env, core.EnvVar{
+					Name:  envvar.Name,
+					Value: envvar.Value,
+				})
+			}
+		}
+
+		d.Spec.Template.Spec.InitContainers[i] = icStruct
+	}
+
 	d.Spec.Template.Spec.Volumes = pod.Volumes
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 		Name: "config-secret",
