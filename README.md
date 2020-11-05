@@ -139,3 +139,14 @@ to a folder that is on your `PATH` or make sure the directory is appended to you
 
 If you're just getting started with writing tests in Go, or getting started with Go in general, take
 a look at https://quii.gitbook.io/learn-go-with-tests/
+
+## Developing Locally with CRC
+
+You can spin up Clowder in crc and test changes to your ClowdEnvironment and ClowdApp locally.
+
+[CRC Guide Getting Started](https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md)
+
+
+## Migrating an App to Clowder
+
+[Insights App Migration Guide](https://github.com/RedHatInsights/clowder/tree/master/docs/migration)

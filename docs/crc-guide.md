@@ -10,9 +10,9 @@
 
 ## Running Clowder
 -------------------
-At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your `/etc/hosts` localhost (127.0.0.1). For this example, we are using the `ingress-env-minio.clowder-system.svc` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
+At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your `/etc/hosts` localhost (127.0.0.1). For this example, we are using the `dev-env-minio.clowder-system.svc` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
 
-Your `etc/hosts` should now look like `127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 ingress-env-minio.clowder-system.svc`. If you are not using the ingress-env, change it to the appropriate service. 
+Your `etc/hosts` should now look like `127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 dev-env-minio.clowder-system.svc`. If you are not using the ingress-env, change it to the appropriate service.
 
 We're going to use Ingress as the example, so the configuration we're doing is specific to that. If you are standing up a different application, substitute your own services, or other variables. 
 
@@ -24,7 +24,7 @@ This will start the operator on your local machine with output redirected to `jq
 ---------------------------------
 Now that Clowder is running, we need to give it a `ClowdEnvironment` for Ingress to run inside. 
 
-In a new terminal, run `oc new-project clowder-system`
+In a new terminal, run `oc new-project clowder-dev`
 
 Create the following as `clowd-environment.yaml`
 
@@ -33,9 +33,9 @@ Create the following as `clowd-environment.yaml`
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: ingress-env
+  name: dev-env
 spec:
-  targetNamespace: clowder-system
+  targetNamespace: clowder-dev
   providers:
     web:
       port: 8000
@@ -70,11 +70,11 @@ spec:
 
 and then run `oc apply -f clowd-environment.yaml`
 
-Once applied, check the terminal that is running the operator and make sure there aren't any errors. If you're unsure, you can check the `clowder-system` namespace. If you see issues with any types (like Kafka), run:
+Once applied, check the terminal that is running the operator and make sure there aren't any errors. If you're unsure, you can check the `clowder-dev` namespace. If you see issues with any types (like Kafka), run:
 * `oc apply -f config/crd/bases/kafka.strimzi.io_kafkatopics.yaml`
 * `oc apply -f config/crd/bases/kafka.strimzi.io_kafkas.yaml`
 
-Before we add the ClowdApp, we need to port forward the minio port on your local machine with `oc port-forward svc/ingress-env-minio 9000`. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio service and perform bucket operations, we'll need to forward the port. 
+Before we add the ClowdApp, we need to port forward the minio port on your local machine with `oc port-forward svc/dev-env-minio 9000`. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio service and perform bucket operations, we'll need to forward the port. 
 
 Create the following file as `clowd-app.yaml` 
 
@@ -86,7 +86,7 @@ kind: ClowdApp
 metadata:
   name: ingress
 spec:
-  envName: ingress-env 
+  envName: dev-env 
   pods:
   - image: quay.io/cloudservices/insights-ingress-go-poc:5bcb3d14
     name: ingress
