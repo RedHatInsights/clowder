@@ -19,6 +19,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strconv"
+
+	"cloud.redhat.com/clowder/v2/apis/keda.sh/v1alpha1"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -80,6 +83,10 @@ func (m *Maker) Make() error {
 		}
 
 		if err := m.makeService(deployment, m.App); err != nil {
+			return err
+		}
+
+		if err := m.makeAutoScaler(pod, m.App, c); err != nil {
 			return err
 		}
 	}
@@ -733,4 +740,73 @@ func processAppEndpoints(
 	}
 
 	return missingDeps
+}
+
+func (m *Maker) makeAutoScaler(pod crd.PodSpec, app *crd.ClowdApp, appConfig *config.AppConfig) error {
+	if pod.AutoScaling.Enabled == false {
+		return nil
+	}
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%v-%v", app.Name, pod.Name),
+		Namespace: m.Request.Namespace,
+	}
+
+	// get the deployment we are going to be watching
+	d := apps.Deployment{}
+	err := m.Client.Get(m.Ctx, nn, &d)
+	if err != nil {
+		return err
+	}
+
+	// Set up the watcher to watch the Deployment we created earlier.
+	target := v1alpha1.ScaleTarget{Name: d.Name, Kind: d.Kind, APIVersion: d.APIVersion}
+	scalerSpec := v1alpha1.ScaledObjectSpec{ScaleTargetRef: &target}
+
+	// Setting the min/max replica counts with defaults
+	// since the default is `0` for minReplicas - it would scale the deployment down to 0 until there is traffic
+	// and generally we don't want that.
+	if pod.MinReplicas == nil {
+		scalerSpec.MinReplicaCount = new(int32)
+		*scalerSpec.MinReplicaCount = 1
+	} else {
+		scalerSpec.MinReplicaCount = pod.MinReplicas
+	}
+	if pod.AutoScaling.MaxReplicas == nil {
+		scalerSpec.MaxReplicaCount = new(int32)
+		*scalerSpec.MaxReplicaCount = 10
+	} else {
+		scalerSpec.MaxReplicaCount = pod.AutoScaling.MaxReplicas
+	}
+
+	// Add a single kafka trigger with the configuration specified.
+	scalerSpec.Triggers = []v1alpha1.ScaleTriggers{
+		{
+			Type: "kafka",
+			Metadata: map[string]string{
+				"bootstrapServers": fmt.Sprintf("%s:%d", appConfig.Kafka.Brokers[0].Hostname, *appConfig.Kafka.Brokers[0].Port),
+				"consumerGroup":    pod.AutoScaling.ConsumerGroup,
+				"topic":            pod.AutoScaling.Topic,
+				"lagThreshold":     strconv.Itoa(int(*pod.AutoScaling.QueueDepth)),
+			},
+		},
+	}
+
+	scaler := v1alpha1.ScaledObject{Spec: scalerSpec}
+	scaler.Name = fmt.Sprintf("%s-autoscaler", d.Name)
+	// Set up the owner reference so the k8s garbage collector cleans up the resource for us.
+	scaler.SetOwnerReferences([]metav1.OwnerReference{app.MakeOwnerReference()})
+	scaler.Namespace = d.Namespace
+
+	err = m.Client.Get(m.Ctx, nn, &scaler)
+	update, err := utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	if err := update.Apply(m.Ctx, m.Client, &scaler); err != nil {
+		return err
+	}
+
+	return nil
 }

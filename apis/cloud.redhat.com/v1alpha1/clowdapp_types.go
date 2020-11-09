@@ -140,6 +140,20 @@ type Deployment struct {
 	PodSpec PodSpec `json:"podSpec"`
 }
 
+// Define AutoScaling rules for kafka-based applications
+type AutoScalingSpec struct {
+	// enable/disable autoscaling
+	Enabled bool `json:"enabled"`
+	// when to trigger a scale-up event
+	QueueDepth *int32 `json:"queue_depth"`
+	// which consumer group to watch for queue depth
+	ConsumerGroup string `json:"consumer_group"`
+	// which topic to monitor
+	Topic string `json:"topic"`
+	// max number of replicas to scale up, default is 10
+	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+}
+
 // PodSpec defines a container running inside a ClowdApp.
 type PodSpec struct {
 
@@ -197,6 +211,7 @@ type PodSpecDeprecated struct {
 	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
 	Volumes        []v1.Volume             `json:"volumes,omitempty"`
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
+	AutoScaling    AutoScalingSpec         `json:"autoScaling,omitempty"`
 }
 
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the
