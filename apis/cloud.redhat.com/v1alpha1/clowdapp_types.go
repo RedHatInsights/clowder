@@ -41,7 +41,7 @@ type PodSpec struct {
 	Name           string                  `json:"name"`
 	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
 	Image          string                  `json:"image"`
-	InitContainers []InitContainer         `json:"initContainers"`
+	InitContainers []InitContainer         `json:"initContainers,omitempty"`
 	Command        []string                `json:"command,omitempty"`
 	Args           []string                `json:"args,omitempty"`
 	Env            []v1.EnvVar             `json:"env,omitempty"`
