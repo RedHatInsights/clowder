@@ -64,7 +64,7 @@ spec:
       containers:
       - env:
         - name: KAFKA_ADVERTISED_LISTENERS
-          value: PLAINTEXT://ephem-kafka:29092, LOCAL://localhost:9092
+          value: PLAINTEXT://ephem-kafka.skuttl-test.svc:29092, LOCAL://localhost:9092
         - name: KAFKA_BROKER_ID
           value: "1"
         - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
