@@ -47,3 +47,7 @@ stages:
     labels:
       suite: olm
       test: olm-status-descriptors-test
+  - image: quay.io/psav/skuttl-jq:v1.0.1
+    labels:
+      suite: kuttlsuite
+      test: kuttltest1

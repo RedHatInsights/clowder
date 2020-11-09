@@ -79,6 +79,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	requeue := errors.HandleError(ctx, err)
+	if requeue {
+		r.Log.Error(err, "Requeueing due to error")
+	}
 	return ctrl.Result{Requeue: requeue}, nil
 }
 

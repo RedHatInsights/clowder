@@ -1,0 +1,10 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+testDirs:
+- ./controllers/cloud.redhat.com/tests/
+startControlPlane: true
+commands:
+  - command: ./bin/manager
+    background: true
+crdDir: ./config/crd/bases
+timeout: 5

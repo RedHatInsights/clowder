@@ -1,0 +1,14 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-minio-app puptoo -o json > /tmp/test-minio-app
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-minio-app | base64 -d > /tmp/test-minio-app-json
+
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "first-bucket") | .name == "first-bucket"' -e < /tmp/test-minio-app-json
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "second-bucket") | .name == "second-bucket"' -e < /tmp/test-minio-app-json
+- script: jq -r '.objectStore.hostname == "test-minio-app-minio.test-minio-app.svc"' -e < /tmp/test-minio-app-json
+- script: jq -r '.objectStore.port == 9000' -e < /tmp/test-minio-app-json
+- script: jq -r '.objectStore.accessKey != ""' -e < /tmp/test-minio-app-json
+- script: jq -r '.objectStore.secretKey != ""' -e < /tmp/test-minio-app-json

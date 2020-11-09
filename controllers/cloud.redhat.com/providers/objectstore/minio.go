@@ -170,7 +170,12 @@ func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
 		return nil, err
 	}
 
-	providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
+	err = providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
+	if err != nil {
+		raisedErr := errors.Wrap("Couldn't make component", err)
+		raisedErr.Requeue = true
+		return nil, raisedErr
+	}
 
 	return mp, nil
 }
@@ -257,12 +262,12 @@ func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	livenessProbe := core.Probe{
 		Handler:             probeHandler,
-		InitialDelaySeconds: 15,
+		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
-		InitialDelaySeconds: 45,
+		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 	}
 
