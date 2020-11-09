@@ -33,26 +33,29 @@ func GetKafka(c *p.Provider) (KafkaProvider, error) {
 }
 
 func RunAppProvider(provider p.Provider, c *config.AppConfig, app *crd.ClowdApp) error {
-	kafkaProvider, err := GetKafka(&provider)
+	if len(app.Spec.KafkaTopics) != 0 {
 
-	if err != nil {
-		return errors.Wrap("Failed to init kafka provider", err)
-	}
-
-	nn := types.NamespacedName{
-		Name:      app.Name,
-		Namespace: app.Namespace,
-	}
-
-	for _, topic := range app.Spec.KafkaTopics {
-		err := kafkaProvider.CreateTopic(nn, &topic)
+		kafkaProvider, err := GetKafka(&provider)
 
 		if err != nil {
-			return errors.Wrap("Failed to init kafka topic", err)
+			return errors.Wrap("Failed to init kafka provider", err)
 		}
-	}
 
-	kafkaProvider.Configure(c)
+		nn := types.NamespacedName{
+			Name:      app.Name,
+			Namespace: app.Namespace,
+		}
+
+		for _, topic := range app.Spec.KafkaTopics {
+			err := kafkaProvider.CreateTopic(nn, &topic)
+
+			if err != nil {
+				return errors.Wrap("Failed to init kafka topic", err)
+			}
+		}
+
+		kafkaProvider.Configure(c)
+	}
 	return nil
 }
 

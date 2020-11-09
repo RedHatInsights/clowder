@@ -70,6 +70,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		return ctrl.Result{}, err
 	}
+	r.Log.Info("Reconciliation started", "app", app.Name)
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &app)
 
@@ -99,6 +100,9 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	requeue := errors.HandleError(ctx, err)
+	if requeue {
+		r.Log.Error(err, "Requeueing due to error")
+	}
 	return ctrl.Result{Requeue: requeue}, nil
 }
 

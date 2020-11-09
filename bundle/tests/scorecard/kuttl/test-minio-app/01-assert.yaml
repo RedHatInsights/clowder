@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-minio-app
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-minio-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-minio-app
+    env-app: test-minio-app-minio
+  name: test-minio-app-minio
+  namespace: test-minio-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-minio-app
+  selfLink: /apis/apps/v1/namespaces/test-minio-app/deployments/test-minio-app-minio
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: test-minio-app
+      env-app: test-minio-app-minio
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-minio-app
+        env-app: test-minio-app-minio
+    spec:
+      containers:
+      - args:
+        - server
+        - /storage
+        env:
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: accessKey
+              name: test-minio-app-minio
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secretKey
+              name: test-minio-app-minio
+        image: minio/minio
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 2
+        name: test-minio-app-minio
+        ports:
+        - containerPort: 9000
+          name: minio
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 2
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /storage
+          name: test-minio-app-minio
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: quay-cloudservices-pull
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: test-minio-app-minio
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-minio-app
+    env-app: test-minio-app-minio
+  name: test-minio-app-minio
+  namespace: test-minio-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-minio-app
+  selfLink: /api/v1/namespaces/test-minio-app/services/test-minio-app-minio
+spec:
+  ports:
+  - name: minio
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app: test-minio-app
+    env-app: test-minio-app-minio
+  sessionAffinity: None
+  type: ClusterIP

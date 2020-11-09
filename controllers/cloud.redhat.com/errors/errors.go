@@ -116,7 +116,7 @@ func GetRootStack(err error) string {
 }
 
 func LogError(ctx context.Context, name string, err *ClowderError) {
-	log := ctx.Value(ClowdKey("log")).(logr.Logger)
+	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
 	log.Error(err, err.Msg, "stack", GetRootStack(err))
 }
 
