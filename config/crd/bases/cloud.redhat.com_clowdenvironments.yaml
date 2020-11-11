@@ -128,6 +128,8 @@ spec:
                   properties:
                     apiPrefix:
                       type: string
+                    chromeImage:
+                      type: string
                     mode:
                       enum:
                       - none
@@ -136,6 +138,8 @@ spec:
                     port:
                       format: int32
                       type: integer
+                    spandxImage:
+                      type: string
                   required:
                   - mode
                   type: object

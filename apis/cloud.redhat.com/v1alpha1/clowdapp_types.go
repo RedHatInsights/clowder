@@ -37,10 +37,15 @@ type DatabaseSpec struct {
 	Name    string `json:"name,omitempty"`
 }
 
+type WebSpec struct {
+	Backend       bool   `json:"backend,omitempty"`
+	FrontendImage string `json:"frontendImage,omitempty"`
+}
+
 type PodSpec struct {
 	Name           string                  `json:"name"`
 	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
-	Image          string                  `json:"image"`
+	Image          string                  `json:"image,omitempty"`
 	InitContainers []InitContainer         `json:"initContainers,omitempty"`
 	Command        []string                `json:"command,omitempty"`
 	Args           []string                `json:"args,omitempty"`
@@ -50,7 +55,7 @@ type PodSpec struct {
 	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
 	Volumes        []v1.Volume             `json:"volumes,omitempty"`
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
-	Web            bool                    `json:"web,omitempty"`
+	Web            WebSpec                 `json:"web,omitempty"`
 }
 
 type ClowdAppSpec struct {

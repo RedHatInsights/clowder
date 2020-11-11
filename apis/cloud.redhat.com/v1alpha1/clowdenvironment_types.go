@@ -24,9 +24,11 @@ import (
 type WebMode string
 
 type WebConfig struct {
-	Port      int32   `json:"port,omitempty"`
-	ApiPrefix string  `json:"apiPrefix,omitempty"`
-	Mode      WebMode `json:"mode"`
+	Port        int32   `json:"port,omitempty"`
+	ApiPrefix   string  `json:"apiPrefix,omitempty"`
+	ChromeImage string  `json:"chromeImage,omitempty"`
+	SpandxImage string  `json:"spandxImage,omitempty"`
+	Mode        WebMode `json:"mode"`
 }
 
 // +kubebuilder:validation:Enum=none;operator

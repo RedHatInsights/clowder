@@ -47,7 +47,9 @@ func TestSingleDependency(t *testing.T) {
 			ObjectMeta: nobjMeta,
 			Spec: crd.ClowdAppSpec{
 				Pods: []crd.PodSpec{{
-					Web:  true,
+					Web: crd.WebSpec{
+						Backend: true,
+					},
 					Name: "bopper",
 				}}},
 		},
@@ -150,7 +152,9 @@ func TestMultiDependency(t *testing.T) {
 				ObjectMeta: n2objMeta,
 				Spec: crd.ClowdAppSpec{
 					Pods: []crd.PodSpec{{
-						Web:  true,
+						Web: crd.WebSpec{
+							Backend: true,
+						},
 						Name: "whopper",
 					}}},
 			},
@@ -159,11 +163,15 @@ func TestMultiDependency(t *testing.T) {
 				Spec: crd.ClowdAppSpec{
 					Pods: []crd.PodSpec{
 						{
-							Web:  true,
+							Web: crd.WebSpec{
+								Backend: true,
+							},
 							Name: "chopper",
 						},
 						{
-							Web:  true,
+							Web: crd.WebSpec{
+								Backend: true,
+							},
 							Name: "bopper",
 						},
 					},

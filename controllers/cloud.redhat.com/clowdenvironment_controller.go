@@ -29,6 +29,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/frontend"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
@@ -100,6 +101,9 @@ func runProvidersForEnv(provider providers.Provider) error {
 	}
 	if err := database.RunEnvProvider(provider); err != nil {
 		return errors.Wrap("setupenv: database", err)
+	}
+	if err := frontend.RunEnvProvider(provider); err != nil {
+		return errors.Wrap("setupenv: frontend", err)
 	}
 
 	return nil

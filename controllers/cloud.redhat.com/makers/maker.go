@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/frontend"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
@@ -141,13 +142,14 @@ func (m *Maker) Make() error {
 	}
 
 	for _, pod := range m.App.Spec.Pods {
+		if pod.Image != "" {
+			if err := m.makeDeployment(pod, m.App, hash); err != nil {
+				return err
+			}
 
-		if err := m.makeDeployment(pod, m.App, hash); err != nil {
-			return err
-		}
-
-		if err := m.makeService(pod, m.App); err != nil {
-			return err
+			if err := m.makeService(pod, m.App); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -171,7 +173,7 @@ func (m *Maker) makeService(pod crd.PodSpec, app *crd.ClowdApp) error {
 		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP"},
 	}
 
-	if pod.Web == true {
+	if pod.Web.Backend == true {
 		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
@@ -320,7 +322,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
-	} else if pod.Web {
+	} else if pod.Web.Backend == true {
 		livenessProbe = baseProbe
 	}
 	if pod.ReadinessProbe != nil {
@@ -392,7 +394,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		c.ReadinessProbe = &readinessProbe
 	}
 
-	if pod.Web {
+	if pod.Web.Backend {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
 			ContainerPort: env.Spec.Providers.Web.Port,
@@ -500,7 +502,9 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	if err := database.RunAppProvider(provider, &c, m.App); err != nil {
 		return &c, errors.Wrap("setupenv: database", err)
 	}
-
+	if err := frontend.RunAppProvider(provider, &c, m.App); err != nil {
+		return &c, errors.Wrap("setupenv: frontend", err)
+	}
 	return &c, nil
 }
 
@@ -558,7 +562,7 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 		// If app has public endpoint, add it to app config
 
 		for _, pod := range depApp.Spec.Pods {
-			if pod.Web {
+			if pod.Web.Backend {
 				name := fmt.Sprintf("%s-%s", app.Name, pod.Name)
 				depConfig = append(depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),

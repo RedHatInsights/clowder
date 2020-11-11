@@ -30,6 +30,9 @@
                 "inMemoryDb": {
                     "$ref": "#/definitions/InMemoryDBConfig"
                 },
+                "frontend": {
+                    "$ref": "#/definitions/FrontendConfig"
+                },
                 "endpoints": {
                     "id": "endpoints",
                     "type": "array",
@@ -59,6 +62,19 @@
             },
             "required": [
                 "type"
+            ]
+        },
+        "FrontendConfig": {
+            "title": "FrontendConfig",
+            "type": "object",
+            "description": "Frontend config",
+            "properties": {
+                "chrome": {
+                    "type": "string"
+                }
+            },
+            "required":[
+                "chrome"
             ]
         },
         "CloudWatchConfig": {
