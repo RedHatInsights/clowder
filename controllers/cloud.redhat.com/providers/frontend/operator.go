@@ -90,15 +90,35 @@ func createConfigMap(app *crd.ClowdApp, p *providers.Provider, c *config.AppConf
 	appList := crd.ClowdAppList{}
 	err := p.Client.List(p.Ctx, &appList)
 
-	data := `//.const frontendHost = process.env.PLATFORM === 'linux' ? 'localhost' : 'host.docker.internal';
-const frontendHost = 'advisor-frontend';
-const chromefrontendHost = 'chrome2';
-const SECTION = 'insights';
-const APP_ID = 'advisor';
-const routes = {};
+	data := fmt.Sprintf(`vcl 4.1;
 
-const CATALOG_APP_ID = 'catalog';
-const CATALOG_FRONTEND_PORT = 8003;
+backend default {
+    .host = "ci.cloud.redhat.com";
+	.port = "443";
+	.ssl = 1;
+}
+backend chrome {
+    .host = "%v-chrome.%v.svc";
+    .port = "8080";
+}
+`, p.Env.Name, p.Env.Spec.TargetNamespace)
+	for _, app := range appList.Items {
+		if app.Spec.EnvName != p.Env.Name {
+			continue
+		}
+		for _, pod := range app.Spec.Pods {
+			if pod.Web.FrontendImage != "" {
+				data += fmt.Sprintf(`backend %v {
+    .host = "%v";
+    .port = "8080";
+}
+`, pod.Name, fmt.Sprintf("%v-frontend.%v.svc", pod.Name, app.Namespace))
+			}
+		}
+	}
+	data += `sub vcl_recv {
+    if (req.url ~ "^/apps/chrome/") {
+        set req.backend_hint = chrome;
 `
 	for _, app := range appList.Items {
 		if app.Spec.EnvName != p.Env.Name {
@@ -106,20 +126,23 @@ const CATALOG_FRONTEND_PORT = 8003;
 		}
 		for _, pod := range app.Spec.Pods {
 			if pod.Web.FrontendImage != "" {
-				data += fmt.Sprintf("routes[`/apps/%v`] = { host: `http://%v:8080` };\n", pod.Name, fmt.Sprintf("%v-frontend.%v.svc", pod.Name, app.Namespace))
-				data += fmt.Sprintf("routes[`/${SECTION}/%v`] = { host: `http://%v:8080` };\n", pod.Name, fmt.Sprintf("%v-frontend.%v.svc", pod.Name, app.Namespace))
+				data += fmt.Sprintf(`    } elif (req.url ~ "^/insights/%v/") {
+        set req.backend_hint = %v;
+    } elif (req.url ~ "^/apps/%v/") {
+        set req.backend_hint = %v;
+`, pod.Name, pod.Name, pod.Name, pod.Name)
 			}
 		}
-		//data += fmt.Sprintf("routes[`/${SECTION}/%v`] = { host: `http://%v:8002` };\n"
 	}
-	data += fmt.Sprintf("routes[`/apps/chrome`] = { host: `http://%v-chrome.%v.svc:8080` };\n", p.Env.Name, p.Env.Spec.TargetNamespace)
-	data += "routes[`/beta/apps/${APP_ID}`] = { host: `http://${frontendHost}:8002` };\n"
-	data += "routes[`/beta/${SECTION}/${APP_ID}`] = { host: `http://${frontendHost}:8002` };\n"
-	data += "routes[`/${SECTION}`] = { host: `http://${frontendHost}:8002` };\n"
-	data += "routes[`/apps/${CATALOG_APP_ID}`] = { host: `https://${frontendHost}:${CATALOG_FRONTEND_PORT}` };\n"
 
-	data += "module.exports = { routes };"
-
+	data += `    } else {
+        set req.backend_hint = default;
+    }
+}
+sub vcl_backend_response {
+    set beresp.do_esi = true;
+}
+`
 	configMap := core.ConfigMap{}
 
 	nn := providers.GetNamespacedName(p.Env, "spandx")
@@ -134,7 +157,7 @@ const CATALOG_FRONTEND_PORT = 8003;
 	configMap.Name = nn.Name
 	configMap.Namespace = nn.Namespace
 	configMap.Data = map[string]string{
-		"spandx.config.js": data,
+		"default.vcl": data,
 	}
 
 	if err = update.Apply(p.Ctx, p.Client, &configMap); err != nil {
@@ -265,7 +288,7 @@ func makeLocalSpandx(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, 
 
 	volumeMounts := []core.VolumeMount{{
 		Name:      "config-volume",
-		MountPath: "/config/",
+		MountPath: "/etc/varnish/",
 	}}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
@@ -274,7 +297,7 @@ func makeLocalSpandx(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, 
 		Env:   []core.EnvVar{},
 		Ports: []core.ContainerPort{{
 			Name:          "spandx",
-			ContainerPort: 1337,
+			ContainerPort: 8080,
 		}},
 		VolumeMounts: volumeMounts,
 
@@ -298,7 +321,7 @@ func makeLocalSpandx(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, 
 
 	servicePorts := []core.ServicePort{{
 		Name:     "spandx",
-		Port:     1337,
+		Port:     8080,
 		Protocol: "TCP",
 	}}
 
