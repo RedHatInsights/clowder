@@ -95,7 +95,6 @@ func createConfigMap(app *crd.ClowdApp, p *providers.Provider, c *config.AppConf
 backend default {
     .host = "ci.cloud.redhat.com";
 	.port = "443";
-	.ssl = 1;
 }
 backend chrome {
     .host = "%v-chrome.%v.svc";
