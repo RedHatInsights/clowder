@@ -23,23 +23,40 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// Address struct represents the physical connection details of a Kafka Server.
 type Address struct {
+	// Host defines the hostname of the Kafka server.
 	Host string `json:"host,omitempty"`
+
+	// Port defines the port of the Kafka server.
 	Port *int32 `json:"port,omitempty"`
 }
 
+// KafkaListener represents a configured Kafka listener instance.
 type KafkaListener struct {
-	Addresses        []Address `json:"addresses,omitempty"`
-	BootstrapServers string    `json:"bootstrapServers,omitempty"`
-	Type             string    `json:"type,omitempty"`
-	Certificates     []string  `json:"certificates,omitempty"`
+	// A list of addresses that the Kafka instance is listening on.
+	Addresses []Address `json:"addresses,omitempty"`
+
+	// A bootstrap server that the Kafka client can initially conenct to.
+	BootstrapServers string `json:"bootstrapServers,omitempty"`
+
+	// The Kafka server type.
+	Type string `json:"type,omitempty"`
+
+	// A list of certificates to be used with this Kafka instance.
+	Certificates []string `json:"certificates,omitempty"`
 }
 
 // KafkaTopicStatus defines the observed state of KafkaTopic
 type KafkaStatus struct {
-	Conditions         []Condition     `json:"conditions,omitempty"`
-	ObservedGeneration *int32          `json:"observedGeneration,omitempty"`
-	Listeners          []KafkaListener `json:"listeners,omitempty"`
+	// A list of k8s Conditions.
+	Conditions []Condition `json:"conditions,omitempty"`
+
+	// The observed generation of the Kafka resource.
+	ObservedGeneration *int32 `json:"observedGeneration,omitempty"`
+
+	// A list of KafkaListener objects.
+	Listeners []KafkaListener `json:"listeners,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -55,11 +72,13 @@ type Kafka struct {
 
 // +kubebuilder:object:root=true
 
-// KafkaTopicList contains a list of KafkaTopic
+// KafkaList contains a list of instances.
 type KafkaList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Kafka `json:"items"`
+
+	// A list of Kafka objects.
+	Items []Kafka `json:"items"`
 }
 
 func init() {
