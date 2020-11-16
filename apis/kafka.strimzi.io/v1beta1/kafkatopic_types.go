@@ -25,24 +25,43 @@ import (
 
 // KafkaTopicSpec defines the desired state of KafkaTopic
 type KafkaTopicSpec struct {
-	Config     map[string]string `json:"config,omitempty"`
-	Partitions *int32            `json:"partitions"`
-	Replicas   *int32            `json:"replicas,omitempty"`
-	TopicName  string            `json:"topicName"`
+	// A key/value pair describing the configuration of a particular topic.
+	Config map[string]string `json:"config,omitempty"`
+
+	// The requested number of partitions for this topic.
+	Partitions *int32 `json:"partitions"`
+
+	// The requested number of replicas for this topic.
+	Replicas *int32 `json:"replicas,omitempty"`
+
+	// The topic name.
+	TopicName string `json:"topicName"`
 }
 
 // KafkaTopicStatus defines the observed state of KafkaTopic
 type KafkaTopicStatus struct {
-	Conditions         []Condition `json:"conditions,omitempty"`
-	ObservedGeneration *int32      `json:"observedGeneration,omitempty"`
+	// A list of k8s Conditions.
+	Conditions []Condition `json:"conditions,omitempty"`
+
+	// The observed generation of the Kafka resource.
+	ObservedGeneration *int32 `json:"observedGeneration,omitempty"`
 }
 
 type Condition struct {
+	// The last transition time of the resource.
 	LastTransitionTime string `json:"lastTransitionTime,omitempty"`
-	Message            string `json:"message,omitempty"`
-	Reason             string `json:"reason,omitempty"`
-	Status             string `json:"status,omitempty"`
-	Type               string `json:"type,omitempty"`
+
+	// The message of the last transition.
+	Message string `json:"message,omitempty"`
+
+	// The Reason for hte transition change.
+	Reason string `json:"reason,omitempty"`
+
+	// The status of the condition.
+	Status string `json:"status,omitempty"`
+
+	// The type of the condition.
+	Type string `json:"type,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -53,6 +72,7 @@ type KafkaTopic struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// The KafkaTopicSpec specification defines a KafkaTopic.
 	Spec   KafkaTopicSpec   `json:"spec,omitempty"`
 	Status KafkaTopicStatus `json:"status,omitempty"`
 }
@@ -63,7 +83,9 @@ type KafkaTopic struct {
 type KafkaTopicList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []KafkaTopic `json:"items"`
+
+	// A list of KafkaTopic objects.
+	Items []KafkaTopic `json:"items"`
 }
 
 func init() {
