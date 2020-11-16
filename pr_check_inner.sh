@@ -25,7 +25,7 @@ chmod 600 minikube-ssh-ident
 
 export MINIKUBE_IP=`ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip"`
 
-scp -o StrictHostKeyChecking=no -vvv -i minikube-ssh-ident $MINIKUBE_USER@$MINIKUBE_HOST:$MINIKUBE_ROOTDIR/.minikube/profiles/minikube/client.key ./
+scp -o StrictHostKeyChecking=no -i minikube-ssh-ident $MINIKUBE_USER@$MINIKUBE_HOST:$MINIKUBE_ROOTDIR/.minikube/profiles/minikube/client.key ./
 scp -i minikube-ssh-ident $MINIKUBE_USER@$MINIKUBE_HOST:$MINIKUBE_ROOTDIR/.minikube/profiles/minikube/client.crt ./
 scp -i minikube-ssh-ident $MINIKUBE_USER@$MINIKUBE_HOST:$MINIKUBE_ROOTDIR/.minikube/ca.crt ./
 
@@ -54,6 +54,7 @@ preferences: {}
 EOM
 
 export PATH="$KUBEBUILDER_ASSETS:$PATH"
+export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
 $KUBEBUILDER_ASSETS/kubectl config use-context remote-minikube
