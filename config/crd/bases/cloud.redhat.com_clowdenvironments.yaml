@@ -36,52 +36,95 @@ spec:
         metadata:
           type: object
         spec:
-          description: ClowdEnvironmentSpec defines the desired state of ClowdEnvironment
+          description: A ClowdEnvironmentSpec object.
           properties:
             providers:
+              description: A ProvidersConfig object, detailing the setup and configuration
+                of all the providers used in this ClowdEnvironment.
               properties:
                 db:
+                  description: Defines the Configuration for the Clowder Database
+                    Provider.
                   properties:
                     image:
+                      description: In (*_local_*) mode, the Image field is used to
+                        define the database image for local database instances.
                       type: string
                     mode:
+                      description: 'The mode of operation of the Clowder Database
+                        Provider. Valid options are: (*_app-interface_*) where the
+                        provider will pass through database credentials found in the
+                        secret defined by the database name in the ClowdApp, and (*_local_*)
+                        where the provider will spin up a local instance of the database.'
                       enum:
                       - app-interface
                       - local
                       type: string
                     pvc:
+                      description: If using the (*_local_*) mode and PVC is set to
+                        true, this instructs the local Database instance to use a
+                        PVC instead of emptyDir for its volumes.
                       type: boolean
                   required:
                   - image
                   - mode
                   type: object
                 inMemoryDb:
+                  description: Defines the Configuration for the Clowder InMemoryDB
+                    Provider.
                   properties:
                     mode:
+                      description: 'The mode of operation of the Clowder InMemory
+                        Provider. Valid options are: (*_redis_*) where a local Minio
+                        instance will be created. This provider currently has no mode
+                        for app-interface.'
                       enum:
                       - redis
                       - app-interface
                       type: string
                     pvc:
+                      description: If using the (*_local_*) mode and PVC is set to
+                        true, this instructs the local Database instance to use a
+                        PVC instead of emptyDir for its volumes.
                       type: boolean
                   required:
                   - mode
                   type: object
                 kafka:
+                  description: Defines the Configuration for the Clowder Kafka Provider.
                   properties:
                     clusterName:
+                      description: Defines the cluster name to be used by the Kafka
+                        Provider this will be used in some modes to locate the Kafka
+                        instance.
                       type: string
                     mode:
+                      description: 'The mode of operation of the Clowder Kafka Provider.
+                        Valid options are: (*_operator_*) which expects a Strimzi
+                        Kafka instance and will configure KafkaTopic CRs and place
+                        them in the Namespace described in the configuration, (*_app-interface_*)
+                        which simple passes the topic names through to the App''s
+                        cdappconfig.json and expects app-interface to have created
+                        the relevant topics, and (*_local_*) where a small instance
+                        of Kafka is created in the Env namespace and configured to
+                        auto-create topics.'
                       enum:
                       - operator
                       - app-interface
                       - local
                       type: string
                     namespace:
+                      description: The Namespace the cluster is expected to reside
+                        in. This is only used in (*_app-interface_*) and (*_operator_*)
+                        modes.
                       type: string
                     pvc:
+                      description: If using the (*_local_*) mode and PVC is set to
+                        true, this instructs the local Kafka instance to use a PVC
+                        instead of emptyDir for its volumes.
                       type: boolean
                     suffix:
+                      description: (Unused)
                       type: string
                   required:
                   - clusterName
@@ -89,51 +132,84 @@ spec:
                   - namespace
                   type: object
                 logging:
+                  description: Defines the Configuration for the Clowder Logging Provider.
                   properties:
                     mode:
+                      description: 'The mode of operation of the Clowder Logging Provider.
+                        Valid options are: (*_app-interface_*) where the provider
+                        will pass through cloudwatch credentials to the app configuration,
+                        and (*_none_*) where no logging will be configured.'
                       type: string
                   required:
                   - mode
                   type: object
                 metrics:
+                  description: Defines the Configuration for the Clowder Metrics Provider.
                   properties:
                     mode:
+                      description: The mode of operation of the Metrics provider.
+                        The allowed modes are  (*_none_*), which disables metrics
+                        service generation, or (*_operator_*) where services and probes
+                        are generated.
                       enum:
                       - none
                       - operator
                       type: string
                     path:
+                      description: A prefix path that pods will be instructed to use
+                        when setting up their metrics server.
                       type: string
                     port:
+                      description: The port that metrics services inside ClowdApp
+                        pods should be served on. If omitted, defaults to 9000.
                       format: int32
                       type: integer
                   required:
                   - mode
                   type: object
                 objectStore:
+                  description: Defines the Configuration for the Clowder ObjectStore
+                    Provider.
                   properties:
                     mode:
+                      description: 'The mode of operation of the Clowder ObjectStore
+                        Provider. Valid options are: (*_app-interface_*) where the
+                        provider will pass through Amazon S3 credentials to the app
+                        configuration, and (*_minio_*) where a local Minio instance
+                        will be created.'
                       enum:
                       - minio
                       - app-interface
                       type: string
                     pvc:
+                      description: If using the (*_local_*) mode and PVC is set to
+                        true, this instructs the local Database instance to use a
+                        PVC instead of emptyDir for its volumes.
                       type: boolean
                     suffix:
+                      description: Currently unused.
                       type: string
                   required:
                   - mode
                   type: object
                 web:
+                  description: Defines the Configuration for the Clowder Web Provider.
                   properties:
                     apiPrefix:
+                      description: An api prefix path that pods will be instructed
+                        to use when setting up their web server.
                       type: string
                     mode:
+                      description: The mode of operation of the Web provider. The
+                        allowed modes are (*_none_*), which disables web service generation,
+                        or (*_operator_*) where services and probes are generated.
                       enum:
                       - none
                       - operator
                       type: string
                     port:
+                      description: The port that web services inside ClowdApp pods
+                        should be served on. If omitted, defaults to 8000.
                       format: int32
                       type: integer
                   required:
@@ -146,7 +222,8 @@ spec:
               - objectStore
               type: object
             resourceDefaults:
-              description: ResourceRequirements describes the compute resource requirements.
+              description: Defines the default resource requirements in standard k8s
+                format in the event that they omitted from a PodSpec inside a ClowdApp.
               properties:
                 limits:
                   additionalProperties:
@@ -172,6 +249,9 @@ spec:
                   type: object
               type: object
             targetNamespace:
+              description: TargetNamespace describes the namespace where any generated
+                environmental resources should end up, this is particularly important
+                in (*_local_*) mode.
               type: string
           required:
           - providers
@@ -187,14 +267,15 @@ spec:
                 this file'
               properties:
                 buckets:
+                  description: A list of buckets provided by the Minio instance.
                   items:
                     type: string
                   type: array
                 minio:
+                  description: A MinioStatus object.
                   properties:
                     credentials:
-                      description: SecretReference represents a Secret Reference.
-                        It has enough information to retrieve secret in any namespace
+                      description: A reference to standard k8s secret.
                       properties:
                         name:
                           description: Name is unique within a namespace to reference
@@ -206,8 +287,11 @@ spec:
                           type: string
                       type: object
                     hostname:
+                      description: The hostname of a Minio instance.
                       type: string
                     port:
+                      description: The port number the Minio instance is to be served
+                        on.
                       format: int32
                       type: integer
                   required:

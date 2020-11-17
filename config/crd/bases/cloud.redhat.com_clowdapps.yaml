@@ -36,38 +36,63 @@ spec:
         metadata:
           type: object
         spec:
+          description: A ClowdApp specification.
           properties:
             database:
+              description: The database specification defines a single database, the
+                configuration of which will be made available to all the pods in the
+                ClowdApp.
               properties:
                 name:
+                  description: Defines the Name of the datbase to be created. This
+                    will be used as the name of the logical database inside the database
+                    server in (*_local_*) mode and the name of the secret to be used
+                    for Database configuration in (*_app-interface_*) mode.
                   type: string
                 version:
+                  description: Defines the Version of the PostGreSQL database, defaults
+                    to 12.
                   format: int32
                   type: integer
               type: object
             dependencies:
+              description: A list of dependencies in the form of the name of the ClowdApps
+                that are required to be present for this ClowdApp to function.
               items:
                 type: string
               type: array
             envName:
+              description: The name of the ClowdEnvironment resource that this ClowdApp
+                will use as its base. This does not mean that the ClowdApp needs to
+                be placed in the same directory as the targetNamespace of the ClowdEnvironment.
               type: string
             inMemoryDb:
+              description: If inMemoryDb is set to true, Clowder will configure pass
+                configuration of an In Memory Database to the pods in the ClowdApp.
+                This single instance will be shared between all apps.
               type: boolean
             kafkaTopics:
+              description: A list of Kafka topics that will be created and made available
+                to all the pods listed in the ClowdApp.
               items:
                 description: KafkaTopicSpec defines the desired state of KafkaTopic
                 properties:
                   config:
                     additionalProperties:
                       type: string
+                    description: A key/value pair describing the configuration of
+                      a particular topic.
                     type: object
                   partitions:
+                    description: The requested number of partitions for this topic.
                     format: int32
                     type: integer
                   replicas:
+                    description: The requested number of replicas for this topic.
                     format: int32
                     type: integer
                   topicName:
+                    description: The topic name.
                     type: string
                 required:
                 - partitions
@@ -75,23 +100,30 @@ spec:
                 type: object
               type: array
             objectStore:
+              description: A list of string names defining storage buckets. In certain
+                modes, defined by the ClowdEnvironment, Clowder will create those
+                buckets.
               items:
                 type: string
               type: array
             pods:
-              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                Important: Run "make" to regenerate code after modifying this file'
+              description: A list of pod specs
               items:
+                description: PodSpec defines a container running inside a ClowdApp.
                 properties:
                   args:
+                    description: A list of args to be passed to the pod container.
                     items:
                       type: string
                     type: array
                   command:
+                    description: The command that will be invoked inside the pod at
+                      startup.
                     items:
                       type: string
                     type: array
                   env:
+                    description: A list of environment variables in k8s defined format.
                     items:
                       description: EnvVar represents an environment variable present
                         in a Container.
@@ -199,11 +231,152 @@ spec:
                       type: object
                     type: array
                   image:
+                    description: Image refers to the container image used to create
+                      the pod.
                     type: string
+                  initContainers:
+                    description: A list of init containers used to perform at-startup
+                      operations.
+                    items:
+                      description: InitContainer is a struct defining a k8s init container.
+                        This will be deployed along with the parent pod and is used
+                        to carry out one time initialization procedures.
+                      properties:
+                        args:
+                          description: A list of args to be passed to the init container.
+                          items:
+                            type: string
+                          type: array
+                        command:
+                          description: A list of commands to run inside the parent
+                            Pod.
+                          items:
+                            type: string
+                          type: array
+                        env:
+                          description: A list of environment variables used only by
+                            the initContainer.
+                          items:
+                            description: EnvVar represents an environment variable
+                              present in a Container.
+                            properties:
+                              name:
+                                description: Name of the environment variable. Must
+                                  be a C_IDENTIFIER.
+                                type: string
+                              value:
+                                description: 'Variable references $(VAR_NAME) are
+                                  expanded using the previous defined environment
+                                  variables in the container and any service environment
+                                  variables. If a variable cannot be resolved, the
+                                  reference in the input string will be unchanged.
+                                  The $(VAR_NAME) syntax can be escaped with a double
+                                  $$, ie: $$(VAR_NAME). Escaped references will never
+                                  be expanded, regardless of whether the variable
+                                  exists or not. Defaults to "".'
+                                type: string
+                              valueFrom:
+                                description: Source for the environment variable's
+                                  value. Cannot be used if value is not empty.
+                                properties:
+                                  configMapKeyRef:
+                                    description: Selects a key of a ConfigMap.
+                                    properties:
+                                      key:
+                                        description: The key to select.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the ConfigMap
+                                          or its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  fieldRef:
+                                    description: 'Selects a field of the pod: supports
+                                      metadata.name, metadata.namespace, metadata.labels,
+                                      metadata.annotations, spec.nodeName, spec.serviceAccountName,
+                                      status.hostIP, status.podIP, status.podIPs.'
+                                    properties:
+                                      apiVersion:
+                                        description: Version of the schema the FieldPath
+                                          is written in terms of, defaults to "v1".
+                                        type: string
+                                      fieldPath:
+                                        description: Path of the field to select in
+                                          the specified API version.
+                                        type: string
+                                    required:
+                                    - fieldPath
+                                    type: object
+                                  resourceFieldRef:
+                                    description: 'Selects a resource of the container:
+                                      only resources limits and requests (limits.cpu,
+                                      limits.memory, limits.ephemeral-storage, requests.cpu,
+                                      requests.memory and requests.ephemeral-storage)
+                                      are currently supported.'
+                                    properties:
+                                      containerName:
+                                        description: 'Container name: required for
+                                          volumes, optional for env vars'
+                                        type: string
+                                      divisor:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        description: Specifies the output format of
+                                          the exposed resources, defaults to "1"
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      resource:
+                                        description: 'Required: resource to select'
+                                        type: string
+                                    required:
+                                    - resource
+                                    type: object
+                                  secretKeyRef:
+                                    description: Selects a key of a secret in the
+                                      pod's namespace
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                            required:
+                            - name
+                            type: object
+                          type: array
+                        inheritEnv:
+                          description: If true, inheirts the environment variables
+                            from the parent pod. specification
+                          type: boolean
+                      type: object
+                    type: array
                   livenessProbe:
-                    description: Probe describes a health check to be performed against
-                      a container to determine whether it is alive or ready to receive
-                      traffic.
+                    description: A pass-through of a Liveness Probe specification
+                      in standard k8s format. If omited, a standard probe will be
+                      setup point to the webPort defined in the ClowdEnvironment and
+                      a path of /healthz. Ignored if Web is set to false.
                     properties:
                       exec:
                         description: One and only one of the following should be specified.
@@ -317,14 +490,21 @@ spec:
                         type: integer
                     type: object
                   minReplicas:
+                    description: Defines the minimum replica count for the pod.
                     format: int32
                     type: integer
                   name:
+                    description: Name defines the identifier of a Pod inside the ClowdApp.
+                      This name will be used along side the name of the ClowdApp itself
+                      to form a <app>-<pod> pattern which will be used for all other
+                      created resources and also for some labels. It must be unique
+                      within a ClowdApp.
                     type: string
                   readinessProbe:
-                    description: Probe describes a health check to be performed against
-                      a container to determine whether it is alive or ready to receive
-                      traffic.
+                    description: A pass-through of a Readiness Probe specification
+                      in standard k8s format. If omited, a standard probe will be
+                      setup point to the webPort defined in the ClowdEnvironment and
+                      a path of /healthz. Ignored if Web is set to false.
                     properties:
                       exec:
                         description: One and only one of the following should be specified.
@@ -438,8 +618,9 @@ spec:
                         type: integer
                     type: object
                   resources:
-                    description: ResourceRequirements describes the compute resource
-                      requirements.
+                    description: A pass-through of a resource requirements in k8s
+                      ResourceRequirements format. If omitted, the default resource
+                      requirements from the ClowdEnvironment will be used.
                     properties:
                       limits:
                         additionalProperties:
@@ -465,6 +646,8 @@ spec:
                         type: object
                     type: object
                   volumeMounts:
+                    description: A pass-through of a list of VolumesMounts in standa
+                      k8s format.
                     items:
                       description: VolumeMount describes a mounting of a Volume within
                         a container.
@@ -504,6 +687,8 @@ spec:
                       type: object
                     type: array
                   volumes:
+                    description: A pass-through of a list of Volumes in standa k8s
+                      format.
                     items:
                       description: Volume represents a named volume in a pod that
                         may be accessed by any container in the pod.
@@ -1754,9 +1939,11 @@ spec:
                       type: object
                     type: array
                   web:
+                    description: If set to true, creates a service on the webPort
+                      defined in the ClowdEnvironment resource, along with the relevant
+                      liveness and readiness probes.
                     type: boolean
                 required:
-                - image
                 - name
                 type: object
               type: array
