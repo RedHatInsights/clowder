@@ -37,44 +37,65 @@ spec:
           description: KafkaTopicStatus defines the observed state of KafkaTopic
           properties:
             conditions:
+              description: A list of k8s Conditions.
               items:
                 properties:
                   lastTransitionTime:
+                    description: The last transition time of the resource.
                     type: string
                   message:
+                    description: The message of the last transition.
                     type: string
                   reason:
+                    description: The Reason for hte transition change.
                     type: string
                   status:
+                    description: The status of the condition.
                     type: string
                   type:
+                    description: The type of the condition.
                     type: string
                 type: object
               type: array
             listeners:
+              description: A list of KafkaListener objects.
               items:
+                description: KafkaListener represents a configured Kafka listener
+                  instance.
                 properties:
                   addresses:
+                    description: A list of addresses that the Kafka instance is listening
+                      on.
                     items:
+                      description: Address struct represents the physical connection
+                        details of a Kafka Server.
                       properties:
                         host:
+                          description: Host defines the hostname of the Kafka server.
                           type: string
                         port:
+                          description: Port defines the port of the Kafka server.
                           format: int32
                           type: integer
                       type: object
                     type: array
                   bootstrapServers:
+                    description: A bootstrap server that the Kafka client can initially
+                      conenct to.
                     type: string
                   certificates:
+                    description: A list of certificates to be used with this Kafka
+                      instance.
                     items:
                       type: string
                     type: array
                   type:
+                    description: The Kafka server type.
                     type: string
                 type: object
               type: array
             observedGeneration:
+              description: The observed generation of the Kafka resource.
               format: int32
               type: integer
           type: object

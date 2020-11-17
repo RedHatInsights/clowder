@@ -34,19 +34,24 @@ spec:
         metadata:
           type: object
         spec:
-          description: KafkaTopicSpec defines the desired state of KafkaTopic
+          description: The KafkaTopicSpec specification defines a KafkaTopic.
           properties:
             config:
               additionalProperties:
                 type: string
+              description: A key/value pair describing the configuration of a particular
+                topic.
               type: object
             partitions:
+              description: The requested number of partitions for this topic.
               format: int32
               type: integer
             replicas:
+              description: The requested number of replicas for this topic.
               format: int32
               type: integer
             topicName:
+              description: The topic name.
               type: string
           required:
           - partitions
@@ -56,21 +61,28 @@ spec:
           description: KafkaTopicStatus defines the observed state of KafkaTopic
           properties:
             conditions:
+              description: A list of k8s Conditions.
               items:
                 properties:
                   lastTransitionTime:
+                    description: The last transition time of the resource.
                     type: string
                   message:
+                    description: The message of the last transition.
                     type: string
                   reason:
+                    description: The Reason for hte transition change.
                     type: string
                   status:
+                    description: The status of the condition.
                     type: string
                   type:
+                    description: The type of the condition.
                     type: string
                 type: object
               type: array
             observedGeneration:
+              description: The observed generation of the Kafka resource.
               format: int32
               type: integer
           type: object
