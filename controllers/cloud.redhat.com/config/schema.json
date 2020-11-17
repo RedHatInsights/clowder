@@ -1,18 +1,23 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$ref": "#/definitions/AppConfig",
+    "$id": "https://cloud.redhat.com/schemas/clowder-appconfig",
+    "title": "AppConfig",
     "definitions": {
         "AppConfig": {
             "type": "object",
-            "description": "clowdapp deployment configuration for cloud.redhat.com clowdapps",
+            "description": "ClowdApp deployment configuration for Clowder enabled apps.",
             "properties": {
                 "webPort": {
+                    "description": "Defines the web port that the app should be configured to listen on for API traffic.",
                     "type": "integer"
                 },
                 "metricsPort": {
+                    "description": "Defines the metrics port that the app should be configured to listen on for metric traffic.",
                     "type": "integer"
                 },
                 "metricsPath": {
+                    "description": "Defines the path to the metrics server that the app should be configured to listen on for metric traffic.",
                     "type": "string"
                 },
                 "logging": {
@@ -51,6 +56,7 @@
             "description": "Logging Configuration",
             "properties": {
                 "type": {
+                    "description": "Defines the type of logging configuration",
                     "type": "string"
                 },
                 "cloudwatch": {
@@ -67,15 +73,19 @@
             "description": "Cloud Watch configuration",
             "properties": {
                 "accessKeyId": {
+                    "description": "Defines the access key that the app should use for configuring CloudWatch.",
                     "type": "string"
                 },
                 "secretAccessKey": {
+                    "description": "Defines the secret key that the app should use for configuring CloudWatch.",
                     "type": "string"
                 },
                 "region": {
+                    "description": "Defines the region that the app should use for configuring CloudWatch.",
                     "type": "string"
                 },
                 "logGroup": {
+                    "description": "Defines the logGroup that the app should use for configuring CloudWatch.",
                     "type": "string"
                 }
             },
@@ -89,9 +99,10 @@
         "KafkaConfig": {
             "id": "kafkaConfig",
             "type": "object",
-            "description": "kafka configuration",
+            "description": "Kafka Configuration",
             "properties": {
                 "brokers": {
+                    "description": "Defines the brokers the app should connect to for Kafka services.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/BrokerConfig"
@@ -99,6 +110,7 @@
                 },
                 "topics": {
                     "type": "array",
+                    "description": "Defines a list of the topic configurations available to the application.",
                     "items": {
                         "$ref": "#/definitions/TopicConfig"
                     }
@@ -112,7 +124,7 @@
         "BrokerConfig": {
             "id": "brokerConfig",
             "type": "object",
-            "description": "broker configuration",
+            "description": "Broker Configuration",
             "properties": {
                 "hostname": {
                     "type": "string"
@@ -128,15 +140,18 @@
         "TopicConfig": {
             "id": "topicConfig",
             "type": "object",
-            "description": "topic configuration",
+            "description": "Topic Configuration",
             "properties": {
                 "requestedName": {
+                    "description": "The name that the app requested in the ClowdApp definition.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "The name of the actual topic on the Kafka server.",
                     "type": "string"
                 },
                 "consumerGroup": {
+                    "description": "Defines the consumer group that should be used for the topic.",
                     "type": "string"
                 }
             },
@@ -149,30 +164,38 @@
             "id": "database",
             "title": "DatabaseConfig",
             "type": "object",
-            "description": "database configuration",
+            "description": "Database Configuration",
             "properties": {
                 "name": {
+                    "description": "Defines the database name.",
                     "type": "string"
                 },
                 "username": {
+                    "description": "Defines a username with standard access to the database.",
                     "type": "string"
                 },
                 "password": {
+                    "description": "Defines the password for the standard user.",
                     "type": "string"
                 },
                 "hostname": {
+                    "description": "Defines the hostname of the database configured for the ClowdApp.",
                     "type": "string"
                 },
                 "port": {
+                    "description": "Defines the port of the database configured for the ClowdApp.",
                     "type": "integer"
                 },
                 "adminUsername": {
+                    "description": "Defines the pgAdmin username.",
                     "type": "string"
                 },
                 "adminPassword": {
+                    "description": "Defines the pgAdmin password.",
                     "type": "string"
                 },
                 "rdsCa": {
+                    "description": "Defines the CA used to access the database.",
                     "type": "string"
                 }
             },
@@ -189,18 +212,22 @@
         "ObjectStoreBucket": {
             "id": "objectStoreBucket",
             "type": "object",
-            "description": "object storage bucket",
+            "description": "Object Storage Bucket",
             "properties": {
                 "accessKey": {
+                    "description": "Defines the access key for specificed bucket.",
                     "type": "string"
                 },
                 "secretKey": {
+                    "description": "Defines the secret key for the specified bucket.",
                     "type": "string"
                 },
                 "requestedName": {
+                    "description": "The name that was requested for the bucket in the ClowdApp.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "The actual name of the bucket being accessed.",
                     "type": "string"
                 }
             },
@@ -212,7 +239,7 @@
         "ObjectStoreConfig": {
             "id": "objectStoreConfig",
             "type": "object",
-            "description": "object storage configuration",
+            "description": "Object Storage Configuration",
             "properties": {
                 "buckets": {
                     "type": "array",
@@ -221,18 +248,23 @@
                     }
                 },
                 "accessKey": {
+                    "description": "Defines the access key for the Object Storage server configuration.",
                     "type": "string"
                 },
                 "secretKey": {
+                    "description": "Defines the secret key for the Object Storage server configuration.",
                     "type": "string"
                 },
                 "hostname": {
+                    "description": "Defines the hostname for the Object Storage server configuration.",
                     "type": "string"
                 },
                 "port": {
+                    "description": "Defines the port for the Object Storage server configuration.",
                     "type": "integer"
                 },
                 "tls": {
+                    "description": "Details if the Object Server uses TLS.",
                     "type": "boolean"
                 }
             },
@@ -245,18 +277,22 @@
         "InMemoryDBConfig": {
             "id": "inMemoryDbConfig",
             "type": "object",
-            "description": "In Memory DB configuration",
+            "description": "In Memory DB Configuration",
             "properties": {
                 "hostname": {
+                    "description": "Defines the hostname for the In Memory DB server configuration.",
                     "type": "string"
                 },
                 "port": {
+                    "description": "Defines the port for the In Memory DB server configuration.",
                     "type": "integer"
                 },
                 "username": {
+                    "description": "Defines the username for the In Memory DB server configuration.",
                     "type": "string"
                 },
                 "password": {
+                    "description": "Defines the password for the In Memory DB server configuration.",
                     "type": "string"
                 }
             },
@@ -272,15 +308,19 @@
             "description": "Dependent service connection info",
             "properties": {
                 "name": {
+                    "description": "The PodSpec name of the dependent service inside the ClowdApp.",
                     "type": "string"
                 },
                 "hostname": {
+                    "description": "The hostname of the dependent service.",
                     "type": "string"
                 },
                 "port": {
+                    "description": "The port of the dependent service.",
                     "type": "integer"
                 },
                 "app": {
+                    "description": "The app name of the ClowdApp hosting the service.",
                     "type": "string"
                 }
             },

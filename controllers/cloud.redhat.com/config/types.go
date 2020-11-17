@@ -68,7 +68,7 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// clowdapp deployment configuration for cloud.redhat.com clowdapps
+// ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`
@@ -85,16 +85,19 @@ type AppConfig struct {
 	// Logging corresponds to the JSON schema field "logging".
 	Logging LoggingConfig `json:"logging"`
 
-	// MetricsPath corresponds to the JSON schema field "metricsPath".
+	// Defines the path to the metrics server that the app should be configured to
+	// listen on for metric traffic.
 	MetricsPath string `json:"metricsPath"`
 
-	// MetricsPort corresponds to the JSON schema field "metricsPort".
+	// Defines the metrics port that the app should be configured to listen on for
+	// metric traffic.
 	MetricsPort int `json:"metricsPort"`
 
 	// ObjectStore corresponds to the JSON schema field "objectStore".
 	ObjectStore *ObjectStoreConfig `json:"objectStore,omitempty"`
 
-	// WebPort corresponds to the JSON schema field "webPort".
+	// Defines the web port that the app should be configured to listen on for API
+	// traffic.
 	WebPort int `json:"webPort"`
 }
 
@@ -170,7 +173,7 @@ func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// broker configuration
+// Broker Configuration
 type BrokerConfig struct {
 	// Hostname corresponds to the JSON schema field "hostname".
 	Hostname string `json:"hostname"`
@@ -280,82 +283,82 @@ func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
 
 // Cloud Watch configuration
 type CloudWatchConfig struct {
-	// AccessKeyId corresponds to the JSON schema field "accessKeyId".
+	// Defines the access key that the app should use for configuring CloudWatch.
 	AccessKeyId string `json:"accessKeyId"`
 
-	// LogGroup corresponds to the JSON schema field "logGroup".
+	// Defines the logGroup that the app should use for configuring CloudWatch.
 	LogGroup string `json:"logGroup"`
 
-	// Region corresponds to the JSON schema field "region".
+	// Defines the region that the app should use for configuring CloudWatch.
 	Region string `json:"region"`
 
-	// SecretAccessKey corresponds to the JSON schema field "secretAccessKey".
+	// Defines the secret key that the app should use for configuring CloudWatch.
 	SecretAccessKey string `json:"secretAccessKey"`
 }
 
-// database configuration
+// Database Configuration
 type DatabaseConfig struct {
-	// AdminPassword corresponds to the JSON schema field "adminPassword".
+	// Defines the pgAdmin password.
 	AdminPassword string `json:"adminPassword"`
 
-	// AdminUsername corresponds to the JSON schema field "adminUsername".
+	// Defines the pgAdmin username.
 	AdminUsername string `json:"adminUsername"`
 
-	// Hostname corresponds to the JSON schema field "hostname".
+	// Defines the hostname of the database configured for the ClowdApp.
 	Hostname string `json:"hostname"`
 
-	// Name corresponds to the JSON schema field "name".
+	// Defines the database name.
 	Name string `json:"name"`
 
-	// Password corresponds to the JSON schema field "password".
+	// Defines the password for the standard user.
 	Password string `json:"password"`
 
-	// Port corresponds to the JSON schema field "port".
+	// Defines the port of the database configured for the ClowdApp.
 	Port int `json:"port"`
 
-	// RdsCa corresponds to the JSON schema field "rdsCa".
+	// Defines the CA used to access the database.
 	RdsCa *string `json:"rdsCa,omitempty"`
 
-	// Username corresponds to the JSON schema field "username".
+	// Defines a username with standard access to the database.
 	Username string `json:"username"`
 }
 
 // Dependent service connection info
 type DependencyEndpoint struct {
-	// App corresponds to the JSON schema field "app".
+	// The app name of the ClowdApp hosting the service.
 	App string `json:"app"`
 
-	// Hostname corresponds to the JSON schema field "hostname".
+	// The hostname of the dependent service.
 	Hostname string `json:"hostname"`
 
-	// Name corresponds to the JSON schema field "name".
+	// The PodSpec name of the dependent service inside the ClowdApp.
 	Name string `json:"name"`
 
-	// Port corresponds to the JSON schema field "port".
+	// The port of the dependent service.
 	Port int `json:"port"`
 }
 
-// In Memory DB configuration
+// In Memory DB Configuration
 type InMemoryDBConfig struct {
-	// Hostname corresponds to the JSON schema field "hostname".
+	// Defines the hostname for the In Memory DB server configuration.
 	Hostname string `json:"hostname"`
 
-	// Password corresponds to the JSON schema field "password".
+	// Defines the password for the In Memory DB server configuration.
 	Password *string `json:"password,omitempty"`
 
-	// Port corresponds to the JSON schema field "port".
+	// Defines the port for the In Memory DB server configuration.
 	Port int `json:"port"`
 
-	// Username corresponds to the JSON schema field "username".
+	// Defines the username for the In Memory DB server configuration.
 	Username *string `json:"username,omitempty"`
 }
 
-// kafka configuration
+// Kafka Configuration
 type KafkaConfig struct {
-	// Brokers corresponds to the JSON schema field "brokers".
+	// Defines the brokers the app should connect to for Kafka services.
 	Brokers []BrokerConfig `json:"brokers"`
 
-	// Topics corresponds to the JSON schema field "topics".
+	// Defines a list of the topic configurations available to the application.
 	Topics []TopicConfig `json:"topics"`
 }
 
@@ -364,55 +367,55 @@ type LoggingConfig struct {
 	// Cloudwatch corresponds to the JSON schema field "cloudwatch".
 	Cloudwatch *CloudWatchConfig `json:"cloudwatch,omitempty"`
 
-	// Type corresponds to the JSON schema field "type".
+	// Defines the type of logging configuration
 	Type string `json:"type"`
 }
 
-// object storage bucket
+// Object Storage Bucket
 type ObjectStoreBucket struct {
-	// AccessKey corresponds to the JSON schema field "accessKey".
+	// Defines the access key for specificed bucket.
 	AccessKey *string `json:"accessKey,omitempty"`
 
-	// Name corresponds to the JSON schema field "name".
+	// The actual name of the bucket being accessed.
 	Name string `json:"name"`
 
-	// RequestedName corresponds to the JSON schema field "requestedName".
+	// The name that was requested for the bucket in the ClowdApp.
 	RequestedName string `json:"requestedName"`
 
-	// SecretKey corresponds to the JSON schema field "secretKey".
+	// Defines the secret key for the specified bucket.
 	SecretKey *string `json:"secretKey,omitempty"`
 }
 
-// object storage configuration
+// Object Storage Configuration
 type ObjectStoreConfig struct {
-	// AccessKey corresponds to the JSON schema field "accessKey".
+	// Defines the access key for the Object Storage server configuration.
 	AccessKey *string `json:"accessKey,omitempty"`
 
 	// Buckets corresponds to the JSON schema field "buckets".
 	Buckets []ObjectStoreBucket `json:"buckets,omitempty"`
 
-	// Hostname corresponds to the JSON schema field "hostname".
+	// Defines the hostname for the Object Storage server configuration.
 	Hostname string `json:"hostname"`
 
-	// Port corresponds to the JSON schema field "port".
+	// Defines the port for the Object Storage server configuration.
 	Port int `json:"port"`
 
-	// SecretKey corresponds to the JSON schema field "secretKey".
+	// Defines the secret key for the Object Storage server configuration.
 	SecretKey *string `json:"secretKey,omitempty"`
 
-	// Tls corresponds to the JSON schema field "tls".
+	// Details if the Object Server uses TLS.
 	Tls bool `json:"tls"`
 }
 
-// topic configuration
+// Topic Configuration
 type TopicConfig struct {
-	// ConsumerGroup corresponds to the JSON schema field "consumerGroup".
+	// Defines the consumer group that should be used for the topic.
 	ConsumerGroup *string `json:"consumerGroup,omitempty"`
 
-	// Name corresponds to the JSON schema field "name".
+	// The name of the actual topic on the Kafka server.
 	Name string `json:"name"`
 
-	// RequestedName corresponds to the JSON schema field "requestedName".
+	// The name that the app requested in the ClowdApp definition.
 	RequestedName string `json:"requestedName"`
 }
 
