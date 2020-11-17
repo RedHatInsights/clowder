@@ -15,6 +15,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -180,7 +182,7 @@ type InMemoryDBConfig struct {
 type ClowdEnvironmentSpec struct {
 	// TargetNamespace describes the namespace where any generated environmental
 	// resources should end up, this is particularly important in (*_local_*) mode.
-	TargetNamespace string `json:"targetNamespace"`
+	TargetNamespace string `json:"targetNamespace,omitempty"`
 
 	// A ProvidersConfig object, detailing the setup and configuration of all the
 	// providers used in this ClowdEnvironment.
@@ -227,20 +229,11 @@ type MinioStatus struct {
 	Port int32 `json:"port"`
 }
 
-// ObjectStoreStatus defines the status of a Minio setup in local mode, including buckets.
-type ObjectStoreStatus struct {
-	// A MinioStatus object.
-	Minio MinioStatus `json:"minio,omitempty"`
-
-	// A list of buckets provided by the Minio instance.
-	Buckets []string `json:"buckets"`
-}
-
 // ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	ObjectStore ObjectStoreStatus `json:"objectStore"`
+	TargetNamespace string `json:"targetNamespace"`
 }
 
 // +kubebuilder:object:root=true
@@ -290,10 +283,15 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 
 // GetClowdNamespace returns the namespace of the ClowdApp object.
 func (i *ClowdEnvironment) GetClowdNamespace() string {
-	return i.Spec.TargetNamespace
+	return i.Status.TargetNamespace
 }
 
 // GetClowdName returns the name of the ClowdApp object.
 func (i *ClowdEnvironment) GetClowdName() string {
 	return i.Name
+}
+
+// GetGeneratedTargetNamespace gets a generated target namespace if one is not provided
+func (i *ClowdEnvironment) GetGeneratedTargetNamespace() string {
+	return fmt.Sprintf("clowdenv-%s", i.Name)
 }

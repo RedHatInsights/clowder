@@ -83,7 +83,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}, &env)
 
 	if err != nil {
-		r.Recorder.Eventf(&app, "warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", app.Spec.EnvName)
+		r.Recorder.Eventf(&app, "Warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", app.Spec.EnvName)
 		return ctrl.Result{}, err
 	}
 
