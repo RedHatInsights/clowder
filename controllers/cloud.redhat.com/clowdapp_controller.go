@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -36,6 +37,8 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
+
+const appFinalizer = "finalizer.app.cloud.redhat.com"
 
 // ClowdAppReconciler reconciles a ClowdApp object
 type ClowdAppReconciler struct {
@@ -97,12 +100,40 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	if err == nil {
 		r.Log.Info("Reconciliation successful", "app", app.Name)
+		if _, ok := managedApps[app.GetIdent()]; ok == false {
+			managedApps[app.GetIdent()] = true
+		}
+		managedAppsMetric.Set(float64(len(managedApps)))
 	}
 
 	requeue := errors.HandleError(ctx, err)
 	if requeue {
 		r.Log.Error(err, "Requeueing due to error")
 	}
+
+	isAppMarkedForDeletion := app.GetDeletionTimestamp() != nil
+	if isAppMarkedForDeletion {
+		if contains(app.GetFinalizers(), appFinalizer) {
+			if err := r.finalizeApp(log, &app); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			controllerutil.RemoveFinalizer(&app, appFinalizer)
+			err := r.Update(ctx, &app)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+		return ctrl.Result{}, nil
+	}
+
+	// Add finalizer for this CR
+	if !contains(app.GetFinalizers(), appFinalizer) {
+		if err := r.addFinalizer(log, &app); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
@@ -165,4 +196,36 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) []r
 	}
 
 	return reqs
+}
+
+func (r *ClowdAppReconciler) finalizeApp(reqLogger logr.Logger, a *crd.ClowdApp) error {
+
+	if _, ok := managedApps[a.GetIdent()]; ok == true {
+		delete(managedApps, a.GetIdent())
+	}
+	managedAppsMetric.Set(float64(len(managedApps)))
+	reqLogger.Info("Successfully finalized ClowdApp")
+	return nil
+}
+
+func (r *ClowdAppReconciler) addFinalizer(reqLogger logr.Logger, a *crd.ClowdApp) error {
+	reqLogger.Info("Adding Finalizer for the ClowdApp")
+	controllerutil.AddFinalizer(a, appFinalizer)
+
+	// Update CR
+	err := r.Update(context.TODO(), a)
+	if err != nil {
+		reqLogger.Error(err, "Failed to update ClowdApp with finalizer")
+		return err
+	}
+	return nil
+}
+
+func contains(list []string, s string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }

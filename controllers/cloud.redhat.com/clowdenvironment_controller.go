@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
@@ -35,6 +36,8 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
+
+const envFinalizer = "finalizer.env.cloud.redhat.com"
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
 type ClowdEnvironmentReconciler struct {
@@ -76,12 +79,40 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	if err == nil {
 		r.Log.Info("Reconciliation successful", "env", env.Name)
+		if _, ok := managedEnvironments[env.Name]; ok == false {
+			managedEnvironments[env.Name] = true
+		}
+		managedEnvsMetric.Set(float64(len(managedEnvironments)))
 	}
 
 	requeue := errors.HandleError(ctx, err)
 	if requeue {
 		r.Log.Error(err, "Requeueing due to error")
 	}
+
+	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
+	if isEnvMarkedForDeletion {
+		if contains(env.GetFinalizers(), envFinalizer) {
+			if err := r.finalizeEnvironment(log, &env); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			controllerutil.RemoveFinalizer(&env, envFinalizer)
+			err := r.Update(ctx, &env)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+		return ctrl.Result{}, nil
+	}
+
+	// Add finalizer for this CR
+	if !contains(env.GetFinalizers(), envFinalizer) {
+		if err := r.addFinalizer(log, &env); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
@@ -111,4 +142,27 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdEnvironment{}).
 		Complete(r)
+}
+
+func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, e *crd.ClowdEnvironment) error {
+
+	if _, ok := managedEnvironments[e.Name]; ok == true {
+		delete(managedEnvironments, e.Name)
+	}
+	managedEnvsMetric.Set(float64(len(managedEnvironments)))
+	reqLogger.Info("Successfully finalized ClowdEnvironment")
+	return nil
+}
+
+func (r *ClowdEnvironmentReconciler) addFinalizer(reqLogger logr.Logger, e *crd.ClowdEnvironment) error {
+	reqLogger.Info("Adding Finalizer for the ClowdEnvironment")
+	controllerutil.AddFinalizer(e, envFinalizer)
+
+	// Update CR
+	err := r.Update(context.TODO(), e)
+	if err != nil {
+		reqLogger.Error(err, "Failed to update ClowdEnvironment with finalizer")
+		return err
+	}
+	return nil
 }

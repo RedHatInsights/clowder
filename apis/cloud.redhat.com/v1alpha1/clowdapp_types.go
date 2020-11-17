@@ -200,6 +200,11 @@ func (i *ClowdApp) GetNamespacedName(pattern string) types.NamespacedName {
 	}
 }
 
+// GetIdent returns an ident <env>.<app> that should be unique across the cluster.
+func (i *ClowdApp) GetIdent() string {
+	return fmt.Sprintf("%v.%v", i.Spec.EnvName, i.Name)
+}
+
 // MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
 func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
