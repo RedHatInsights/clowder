@@ -83,12 +83,12 @@ There are new features coming up as well:
 
 ## CRD documentation
 
-[ClowdApp](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp)
-[ClowdEnvironment](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment)
+- [ClowdApp](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp)
+- [ClowdEnvironment](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment)
 
 ## AppConfig documentation
 
-[AppConfig](https://github.com/RedHatInsights/clowder/docs/appconfig/schema.md)
+- [AppConfig](https://github.com/RedHatInsights/clowder/blob/master/docs/appconfig/schema.md)
 
 ## Design
 
