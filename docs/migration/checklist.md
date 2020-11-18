@@ -1,39 +1,30 @@
 # Migration Checklist
 
+> Suggested order is top to bottom
+
+## App Changes - Settings, Config, and ClowdApp (if applicable)
+  - [ ] database (RDS) is connected via clowder config and is present in ClowdApp
+  - [ ] inMemoryDb (Redis) is connected via clowder config and is present in ClowdApp
+  - [ ] kafka is connected via clowder, topics are present in Clowdapp
+  - [ ] logging is sent to cloudwatch via clowder
+  - [ ] objectstores are connected via clowder, minio is used instead of boto
+  - [ ] webport is present in Clowdapp
+  - [ ] dependent services are present in Clowdapp
+  - [ ] CLOWDER_ENABLED can toggle backwards compatability in app config
+  - [ ] ENV_NAME is parameterized and set to required
+  - [ ] CLOWDER_ENABLED is parameterized and set to required
+  - [ ] MIN_REPLICAS is parameterized
+
 ## Build and Deploy
-  - [ ] Dockerfile
-  - [ ] build_deploy.sh
-  - [ ] pr_check.sh
-  - [ ] App interface entries for [Jenkins jobs](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-pr-check-and-build-master-jenkins-jobs-in-app-interface)
-  - [ ] saas-deploy file [for Bonfire](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-new-saas-deploy-file)
-#### Build and Deploy Parameters
-  - [ ] ENV_NAME
-  - [ ] CLOWDER_ENABLED
-  - [ ] MIN_REPLICAS
-## Code changes to conusme in [app config](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#code-changes-to-consume-configuration)
-  - [ ] Kafka topics and bootstrap url
-  - [ ] Object store buckets (minio, s3)
-  - [ ] Object store library default to minio not boto
-  - [ ] RDS Databases
-  - [ ] Redis Databases
-  - [ ] Logging via Cloudwatch
-  - [ ] Web path and port 
-  - [ ] Metrics path and port  
-  - [ ] Dependent services (rbac, etc) 
-## Clowdapp.yml resources and [types](https://github.com/RedHatInsights/clowder/blob/master/apis/cloud.redhat.com/v1alpha1/clowdapp_types.go)
-  - [ ] Image spec
-  - [ ] Resource requirements
-  - [ ] Command arguments
-  - [ ] Environment vars
-  - [ ] Liveness and Readiness probes
-  - [ ] Volumes and volume mounts
-  - [ ] Kafka topics
-  - [ ] Web port
-  - [ ] Databases
-  - [ ] In-memory Db
-  - [ ] Dependent services (rbac, etc)
+  - [ ] Dockerfile is up to date
+  - [ ] build_deploy.sh is pushing to quay
+  - [ ] pr_check.sh is building in ephemeral env and passing local tests
+  - [ ] App interface entries for [Jenkins jobs are running](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-pr-check-and-build-master-jenkins-jobs-in-app-interface)
+  - [ ] saas-deploy file [for Bonfire is enabled](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-new-saas-deploy-file)
+
 ## Backwards Compatability
-  - [ ] e2e build disabled (after build pipeline is validated)
-  - [ ] Disable 'quay copier' build config for app
-  - [ ] Update qa/smoke images to pull from quay
-  - [ ] Disable the Prod env option in your app's jenkins deploy
+  - [ ] e2e builds are disabled
+  - [ ] 'quay copier' is disabled in build config for app
+  - [ ] qa/smoke images pull from quay
+  - [ ] Prod env option is disabled in your app's jenkins deploy
+
