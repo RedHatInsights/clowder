@@ -19,4 +19,4 @@ export KUBEBUILDER_ASSETS=$PWD/kubebuilder_2.3.1_linux_amd64/bin
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push
 
-docker run -i -v $PWD:/srcroot -e IMAGE_NAME=$IMAGE_NAME -e IMAGE_TAG=$IMAGE_TAG -e QUAY_USER=$QUAY_USER -e QUAY_TOKEN=$QUAY_TOKEN -e MINIKUBE_HOST=$MINIKUBE_HOST -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR -e MINIKUBE_USER=$MINIKUBE_USER quay.io/psav/clowder_pr_check:blarg23 /srcroot/pr_check_inner.sh
+docker run -i -v $PWD:/srcroot -e IMAGE_NAME=$IMAGE_NAME -e IMAGE_TAG=$IMAGE_TAG -e QUAY_USER=$QUAY_USER -e QUAY_TOKEN=$QUAY_TOKEN -e MINIKUBE_HOST=$MINIKUBE_HOST -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR -e MINIKUBE_USER=$MINIKUBE_USER quay.io/psav/clowder_pr_check:blarg24 /srcroot/pr_check_inner.sh
