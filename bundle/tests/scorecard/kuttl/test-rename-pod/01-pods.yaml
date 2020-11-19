@@ -1,0 +1,47 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-rename-pod
+spec:
+  targetNamespace: test-rename-pod
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      namespace: kafka
+      clusterName: my-cluster
+      mode: local
+    db:
+      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+      #Possibly need to specify a port here
+    inMemoryDb:
+      mode: redis
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-rename-pod
+spec:
+  envName: test-rename-pod
+  pods:
+  - name: processor
+    image: quay.io/psav/puptoo:bf01ba0-2

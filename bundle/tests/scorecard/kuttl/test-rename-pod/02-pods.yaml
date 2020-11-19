@@ -1,0 +1,11 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-rename-pod
+spec:
+  envName: test-rename-pod
+  pods:
+  - name: processor-two
+    image: quay.io/psav/puptoo:bf01ba0-2
