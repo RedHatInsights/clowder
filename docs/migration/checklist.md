@@ -1,6 +1,7 @@
 # Migration Checklist
 
-> Suggested order is top to bottom
+> Suggested order is top to bottom. App changes with PR approved by team, Build changes with PR
+> approved by team, once validated, turn off e2e builds and setup backwards compatability
 
 ## App Changes - Settings, Config, and ClowdApp (if applicable)
   - [ ] database (RDS) is connected via clowder config and is present in ClowdApp
