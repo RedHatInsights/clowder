@@ -156,6 +156,13 @@ of the script should be left untouched.
 Both files live in the root folder of source code repo, unless overridden in the
 Jenkins job definition (see below).
 
+See examples of these files here:
+
+https://github.com/RedHatInsights/insights-ingress-go/blob/master/build_deploy.sh
+
+https://github.com/RedHatInsights/insights-ingress-go/blob/master/pr_check.sh
+
+
 Create "PR check" and "build master" Jenkins jobs in app-interface
 ------------------------------------------------------------------
 
@@ -211,7 +218,10 @@ Create new saas-deploy file
 ---------------------------
 
 The last step to enable smoke testing is to create a new saas-deploy file to
-provide `Bonfire`_ with a way to deploy the app to an ephemeral environment.
+provide `Bonfire`_ with a way to deploy the app to an ephemeral environment. This saas file should
+be separate from the existing saas file so that the template ``path`` can be different for each
+service. It should not contain any of the ``stage`` or ``prod`` deployment targets until you are
+ready to deploy the ``ClowdApp`` into those environments.
 
 Points to ensure are in place in your new saas-deploy file:
 
@@ -236,7 +246,65 @@ Once these changes are merged into app-interface, you should be able to open a
 PR against the app's source code repo and see Bonfire deploy the app, assuming
 all dependent services are also set up with Bonfire.
 
-.. _Bonfire: https://github.com/redhatinsights/bonfire 
+
+
+Testing your migration code/template changes
+-----------------------------------
+
+**Testing Without Jenkins**
+
+
+You can test the changes you are making to an application before any Jenkins jobs are wired up to
+your app's repo. This allows you to test changes before they are merged into the app's repository
+or app-interface. The only thing you *cannot* test is of course whether the Jenkins jobs work as
+expected but you could even run ``pr_check.sh`` locally if you pass all the proper environment
+variables to it.
+
+#. Create a separate branch on the app repo and add:
+    * the new deployment template defining your ``ClowdApp``
+    * whatever code changes are needed so that your app can run as a ClowdApp
+    * ``build_deploy.sh``
+    * ``pr_check.sh``
+
+#. Push your changes to git and note the git commit's hash.
+
+#. Create a separate branch in app-interface and add:
+    * an updated deploy.yaml/saas file that configures the ephemeral deployment target (make sure
+      that the template path for the app points to your new ClowdApp template)
+
+#. Clone `Bonfire`_ and install it
+
+#. | Follow `these directions <https://github.com/RedHatInsights/bonfire#running-a-local-qontract-server>`_
+    to set up your own local app-interface server and start it
+
+#. Build your app's new docker image and somehow push it to quay with a unique image tag.
+    * | You can use ``build_deploy.sh`` for this but be careful to not overwrite any tags like
+        ``latest``, ``qa``, etc. You may want to push to an entirely separate quay repo just to be
+        safe. But, you'll have to temporarily edit the ``IMAGE`` that your ``ClowdApp`` template uses
+
+#. Log in to the OpenShift cluster that ephemeral tests run against. (crcs01 for now)
+
+#. | Run `the same deploy command <https://github.com/RedHatInsights/bonfire/blob/master/cicd/deploy_ephemeral_env.sh#L15-L20>`_
+    that the ``pr_check.sh`` would run. This will reserve a namespace on the cluster and deploy your
+    app into it. Make sure you replace the needed env vars: ``APP_NAME, COMPONENT_NAME, GIT_COMMIT,
+    IMAGE, IMAGE_TAG``. The ``GIT_COMMIT` should match the commit of your PR and the ``IMAGE/IMAGE_TAG``
+    should match whatever custom image you just built for the PR.
+
+| 
+
+**Testing With Jenkins**
+
+
+#. | Get all config changes related to the Jenkins jobs and saas file updates merged into
+    app-interface so that the app has a pr_check job and an ephemeral deploy target in place. Your
+    initial update to the saas file should only add the ephemeral deploy target, since you have not
+    yet merged the new template into the app repo's ``master`` branch.
+
+#. Open the PR against the app to add your ``build_deploy.sh``, ``pr_check.sh``, ``Dockerfile``,
+    and new ClowdApp template.
+
+#. The PR check test should fire and deploy the code changes you have made within your PR.
+
 
 Disable builds in e2e-deploy
 ----------------------------
@@ -271,5 +339,8 @@ there are no regressions.
 Once the app has been sufficiently validated in stage, follow the same process
 to move the production target to the new saas-deploy file.  The only other
 difference is that the ``ref`` for production should point to a git SHA.
+
+
+.. _Bonfire: https://github.com/redhatinsights/bonfire 
 
 .. vim: tw=80 spell spelllang=en
