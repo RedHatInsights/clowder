@@ -61,8 +61,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("app", qualifiedName)
 	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
-	resTracker := ResourceTracker{}
-	proxyClient := ProxyClient{Client: r.Client, Log: log, ResourceTracker: &resTracker}
+	proxyClient := ProxyClient{Client: r.Client, Log: log, Ctx: ctx}
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
 
@@ -138,7 +137,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// Delete all resources that are not used anymore
 	if !requeue {
 		uid := app.ObjectMeta.UID
-		err := resTracker.Reconcile(uid, r.Client, ctx)
+		err := proxyClient.Reconcile(uid)
 		if err != nil {
 			return ctrl.Result{Requeue: requeue}, nil
 		}

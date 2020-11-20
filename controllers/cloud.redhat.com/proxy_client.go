@@ -13,13 +13,31 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type ResourceTracker struct {
-	data map[string]map[string]bool
+type ProxyClient struct {
+	ResourceTracker map[string]map[string]bool
+	Log             logr.Logger
+	Ctx             context.Context
+	client.Client
 }
 
-func (r *ResourceTracker) AddResource(obj runtime.Object) {
-	if r.data == nil {
-		r.data = make(map[string]map[string]bool)
+func (p ProxyClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
+	p.AddResource(obj)
+	return p.Create(ctx, obj, opts...)
+}
+
+func (p ProxyClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
+	p.AddResource(obj)
+	return p.Update(ctx, obj, opts...)
+}
+
+func (p ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
+	p.AddResource(obj)
+	return p.Patch(ctx, obj, patch, opts...)
+}
+
+func (p *ProxyClient) AddResource(obj runtime.Object) {
+	if p.ResourceTracker == nil {
+		p.ResourceTracker = make(map[string]map[string]bool)
 	}
 
 	var kind string
@@ -54,21 +72,21 @@ func (r *ResourceTracker) AddResource(obj runtime.Object) {
 		return
 	}
 
-	if _, ok := r.data[kind]; ok != true {
-		r.data[rKind] = map[string]bool{}
+	if _, ok := p.ResourceTracker[kind]; ok != true {
+		p.ResourceTracker[rKind] = map[string]bool{}
 	}
 
-	r.data[rKind][name] = true
+	p.ResourceTracker[rKind][name] = true
 }
 
-func (r *ResourceTracker) Reconcile(uid types.UID, client client.Client, ctx context.Context) error {
-	for k := range r.data {
+func (p *ProxyClient) Reconcile(uid types.UID) error {
+	for k := range p.ResourceTracker {
 		compareRef := func(name string, kind string, obj runtime.Object) error {
 			meta := obj.(metav1.Object)
 			for _, ownerRef := range meta.GetOwnerReferences() {
 				if ownerRef.UID == uid {
-					if _, ok := r.data[kind][name]; ok != true {
-						err := client.Delete(ctx, obj)
+					if _, ok := p.ResourceTracker[kind][name]; ok != true {
+						err := p.Delete(p.Ctx, obj)
 						if err != nil {
 							return err
 						}
@@ -82,7 +100,7 @@ func (r *ResourceTracker) Reconcile(uid types.UID, client client.Client, ctx con
 		case "Deployment", "*v1.Deployment":
 			kind := "Deployment"
 			objList := &apps.DeploymentList{}
-			err := client.List(ctx, objList)
+			err := p.List(p.Ctx, objList)
 			if err != nil {
 				return err
 			}
@@ -92,7 +110,7 @@ func (r *ResourceTracker) Reconcile(uid types.UID, client client.Client, ctx con
 		case "Service", "*v1.Service":
 			kind := "Service"
 			objList := &core.ServiceList{}
-			err := client.List(ctx, objList)
+			err := p.List(p.Ctx, objList)
 			if err != nil {
 				return err
 			}
@@ -102,7 +120,7 @@ func (r *ResourceTracker) Reconcile(uid types.UID, client client.Client, ctx con
 		case "PersistentVolumeClaim", "*v1.PersistentVolumeClaim":
 			kind := "PersistentVolumeClaim"
 			objList := &core.PersistentVolumeClaimList{}
-			err := client.List(ctx, objList)
+			err := p.List(p.Ctx, objList)
 			if err != nil {
 				return err
 			}
@@ -112,7 +130,7 @@ func (r *ResourceTracker) Reconcile(uid types.UID, client client.Client, ctx con
 		case "Secret", "*v1.Secret":
 			kind := "Secret"
 			objList := &core.SecretList{}
-			err := client.List(ctx, objList)
+			err := p.List(p.Ctx, objList)
 			if err != nil {
 				return err
 			}
@@ -122,25 +140,4 @@ func (r *ResourceTracker) Reconcile(uid types.UID, client client.Client, ctx con
 		}
 	}
 	return nil
-}
-
-type ProxyClient struct {
-	ResourceTracker *ResourceTracker
-	Log             logr.Logger
-	client.Client
-}
-
-func (p ProxyClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
-	p.ResourceTracker.AddResource(obj)
-	return p.Create(ctx, obj, opts...)
-}
-
-func (p ProxyClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
-	p.ResourceTracker.AddResource(obj)
-	return p.Update(ctx, obj, opts...)
-}
-
-func (p ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
-	p.ResourceTracker.AddResource(obj)
-	return p.Patch(ctx, obj, patch, opts...)
 }
