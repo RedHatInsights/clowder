@@ -22,17 +22,17 @@ type ProxyClient struct {
 
 func (p ProxyClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
 	p.AddResource(obj)
-	return p.Create(ctx, obj, opts...)
+	return p.Client.Create(ctx, obj, opts...)
 }
 
 func (p ProxyClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
 	p.AddResource(obj)
-	return p.Update(ctx, obj, opts...)
+	return p.Client.Update(ctx, obj, opts...)
 }
 
 func (p ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
 	p.AddResource(obj)
-	return p.Patch(ctx, obj, patch, opts...)
+	return p.Client.Patch(ctx, obj, patch, opts...)
 }
 
 func (p *ProxyClient) AddResource(obj runtime.Object) {
