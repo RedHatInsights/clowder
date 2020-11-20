@@ -256,54 +256,17 @@ spec:
           required:
           - providers
           - resourceDefaults
-          - targetNamespace
           type: object
         status:
           description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
           properties:
-            objectStore:
+            targetNamespace:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                 of cluster Important: Run "make" to regenerate code after modifying
                 this file'
-              properties:
-                buckets:
-                  description: A list of buckets provided by the Minio instance.
-                  items:
-                    type: string
-                  type: array
-                minio:
-                  description: A MinioStatus object.
-                  properties:
-                    credentials:
-                      description: A reference to standard k8s secret.
-                      properties:
-                        name:
-                          description: Name is unique within a namespace to reference
-                            a secret resource.
-                          type: string
-                        namespace:
-                          description: Namespace defines the space within which the
-                            secret name must be unique.
-                          type: string
-                      type: object
-                    hostname:
-                      description: The hostname of a Minio instance.
-                      type: string
-                    port:
-                      description: The port number the Minio instance is to be served
-                        on.
-                      format: int32
-                      type: integer
-                  required:
-                  - credentials
-                  - hostname
-                  - port
-                  type: object
-              required:
-              - buckets
-              type: object
+              type: string
           required:
-          - objectStore
+          - targetNamespace
           type: object
       type: object
   version: v1alpha1

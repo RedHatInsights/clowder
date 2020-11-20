@@ -18,8 +18,10 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -65,6 +67,24 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
+	}
+
+	if env.Status.TargetNamespace == "" {
+		if env.Spec.TargetNamespace != "" {
+			env.Status.TargetNamespace = env.Spec.TargetNamespace
+		} else {
+			env.Status.TargetNamespace = env.GenerateTargetNamespace()
+			namespace := &core.Namespace{}
+			namespace.SetName(env.Status.TargetNamespace)
+			err := r.Client.Create(ctx, namespace)
+			if err != nil {
+				return ctrl.Result{Requeue: true}, err
+			}
+		}
+		err := r.Client.Status().Update(ctx, &env)
+		if err != nil {
+			return ctrl.Result{Requeue: true}, err
+		}
 	}
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
@@ -157,6 +177,13 @@ func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, 
 
 	if _, ok := managedEnvironments[e.Name]; ok == true {
 		delete(managedEnvironments, e.Name)
+	}
+	if e.Spec.TargetNamespace == "" {
+		namespace := &core.Namespace{}
+		namespace.SetName(e.Status.TargetNamespace)
+		reqLogger.Info(fmt.Sprintf("Removing auto-generated namespace for %s", e.Name))
+		r.Recorder.Eventf(e, "Warning", "NamespaceDeletion", "Clowder Environment [%s] had no targetNamespace, deleting generated namespace", e.Name)
+		r.Delete(context.TODO(), namespace)
 	}
 	managedEnvsMetric.Set(float64(len(managedEnvironments)))
 	reqLogger.Info("Successfully finalized ClowdEnvironment")

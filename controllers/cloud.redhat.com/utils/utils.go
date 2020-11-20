@@ -193,7 +193,7 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.Clow
 	}
 }
 
-func getCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
+func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
 	appliedLabels := baseResource.GetLabels()
 	if labels != nil {
 		for k, v := range labels {
@@ -204,14 +204,14 @@ func getCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 }
 
 func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject) {
-	labeler := getCustomLabeler(labels, nn, baseResource)
+	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(service)
 	service.Spec.Selector = labels
 	service.Spec.Ports = ports
 }
 
 func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels map[string]string, size string, baseResource obj.ClowdObject) {
-	labeler := getCustomLabeler(labels, nn, baseResource)
+	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(pvc)
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
