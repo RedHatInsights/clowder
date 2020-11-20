@@ -4,7 +4,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +14,6 @@ import (
 
 type ProxyClient struct {
 	ResourceTracker map[string]map[string]bool
-	Log             logr.Logger
 	Ctx             context.Context
 	client.Client
 }
