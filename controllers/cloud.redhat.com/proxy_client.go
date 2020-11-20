@@ -105,7 +105,10 @@ func (p *ProxyClient) Reconcile(uid types.UID) error {
 				return err
 			}
 			for _, obj := range objList.Items {
-				compareRef(obj.Name, kind, &obj)
+				err := compareRef(obj.Name, kind, &obj)
+				if err != nil {
+					return err
+				}
 			}
 		case "Service", "*v1.Service":
 			kind := "Service"
@@ -115,7 +118,10 @@ func (p *ProxyClient) Reconcile(uid types.UID) error {
 				return err
 			}
 			for _, obj := range objList.Items {
-				compareRef(obj.Name, kind, &obj)
+				err := compareRef(obj.Name, kind, &obj)
+				if err != nil {
+					return err
+				}
 			}
 		case "PersistentVolumeClaim", "*v1.PersistentVolumeClaim":
 			kind := "PersistentVolumeClaim"
@@ -125,7 +131,10 @@ func (p *ProxyClient) Reconcile(uid types.UID) error {
 				return err
 			}
 			for _, obj := range objList.Items {
-				compareRef(obj.Name, kind, &obj)
+				err := compareRef(obj.Name, kind, &obj)
+				if err != nil {
+					return err
+				}
 			}
 		case "Secret", "*v1.Secret":
 			kind := "Secret"
@@ -135,7 +144,10 @@ func (p *ProxyClient) Reconcile(uid types.UID) error {
 				return err
 			}
 			for _, obj := range objList.Items {
-				compareRef(obj.Name, kind, &obj)
+				err := compareRef(obj.Name, kind, &obj)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
