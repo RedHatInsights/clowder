@@ -42,6 +42,10 @@ func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suf
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
 	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
 
+	if !usePVC {
+		delete(updates, pvc)
+	}
+
 	if err != nil {
 		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
 	}
