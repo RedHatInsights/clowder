@@ -90,7 +90,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	maker, err := makers.New(&makers.Maker{
 		App:     &app,
 		Env:     &env,
-		Client:  proxyClient,
+		Client:  &proxyClient,
 		Ctx:     ctx,
 		Request: &req,
 		Log:     r.Log,

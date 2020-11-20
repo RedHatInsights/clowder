@@ -71,7 +71,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	provider := providers.Provider{
 		Ctx:    ctx,
-		Client: proxyClient,
+		Client: &proxyClient,
 		Env:    &env,
 	}
 

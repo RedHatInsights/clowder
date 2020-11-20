@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/go-logr/logr"
@@ -20,17 +21,17 @@ type ProxyClient struct {
 	client.Client
 }
 
-func (p ProxyClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
+func (p *ProxyClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
 	p.AddResource(obj)
 	return p.Client.Create(ctx, obj, opts...)
 }
 
-func (p ProxyClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
+func (p *ProxyClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
 	p.AddResource(obj)
 	return p.Client.Update(ctx, obj, opts...)
 }
 
-func (p ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (p *ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
 	p.AddResource(obj)
 	return p.Client.Patch(ctx, obj, patch, opts...)
 }
@@ -80,6 +81,7 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 }
 
 func (p *ProxyClient) Reconcile(uid types.UID) error {
+	fmt.Printf(fmt.Sprintf("\n--%v--\n", p.ResourceTracker))
 	for k := range p.ResourceTracker {
 		compareRef := func(name string, kind string, obj runtime.Object) error {
 			meta := obj.(metav1.Object)
