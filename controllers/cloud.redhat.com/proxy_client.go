@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 
 	"github.com/go-logr/logr"
@@ -81,7 +80,6 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 }
 
 func (p *ProxyClient) Reconcile(uid types.UID) error {
-	fmt.Printf(fmt.Sprintf("\n--%v--\n", p.ResourceTracker))
 	for k := range p.ResourceTracker {
 		compareRef := func(name string, kind string, obj runtime.Object) error {
 			meta := obj.(metav1.Object)
