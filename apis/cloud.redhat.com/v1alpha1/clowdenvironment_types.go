@@ -16,7 +16,9 @@ package v1alpha1
 
 import (
 	"fmt"
+	"strings"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -292,6 +294,6 @@ func (i *ClowdEnvironment) GetClowdName() string {
 }
 
 // GetGeneratedTargetNamespace gets a generated target namespace if one is not provided
-func (i *ClowdEnvironment) GetGeneratedTargetNamespace() string {
-	return fmt.Sprintf("clowdenv-%s", i.Name)
+func (i *ClowdEnvironment) GenerateTargetNamespace() string {
+	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
 }

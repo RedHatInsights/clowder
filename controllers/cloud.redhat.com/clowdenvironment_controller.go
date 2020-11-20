@@ -73,17 +73,17 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		if env.Spec.TargetNamespace != "" {
 			env.Status.TargetNamespace = env.Spec.TargetNamespace
 		} else {
-			env.Status.TargetNamespace = env.GetGeneratedTargetNamespace()
+			env.Status.TargetNamespace = env.GenerateTargetNamespace()
 			namespace := &core.Namespace{}
 			namespace.SetName(env.Status.TargetNamespace)
 			err := r.Client.Create(ctx, namespace)
 			if err != nil {
-				return ctrl.Result{}, err
+				return ctrl.Result{Requeue: true}, err
 			}
 		}
 		err := r.Client.Status().Update(ctx, &env)
 		if err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
@@ -171,7 +171,7 @@ func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, 
 	}
 	if e.Spec.TargetNamespace == "" {
 		namespace := &core.Namespace{}
-		namespace.SetName(e.GetGeneratedTargetNamespace())
+		namespace.SetName(e.Status.TargetNamespace)
 		reqLogger.Info(fmt.Sprintf("Removing auto-generated namespace for %s", e.Name))
 		r.Recorder.Eventf(e, "Warning", "NamespaceDeletion", "Clowder Environment [%s] had no targetNamespace, deleting generated namespace", e.Name)
 		r.Delete(context.TODO(), namespace)

@@ -1,4 +1,4 @@
-package utils
+package utils_test
 
 import (
 	"testing"
@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -20,19 +21,19 @@ func TestKafkaReconcilerFns(t *testing.T) {
 
 func TestConverterFuncs(t *testing.T) {
 	t.Run("Test intMin", func(t *testing.T) {
-		answer, _ := IntMin([]string{"4", "6", "7"})
+		answer, _ := utils.IntMin([]string{"4", "6", "7"})
 		if answer != "4" {
 			t.Errorf("Min function should have returned 4, returned %s", answer)
 		}
 	})
 	t.Run("Test intMax", func(t *testing.T) {
-		answer, _ := IntMax([]string{"4", "6", "7"})
+		answer, _ := utils.IntMax([]string{"4", "6", "7"})
 		if answer != "7" {
 			t.Errorf("Min function should have returned 7, returned %s", answer)
 		}
 	})
 	t.Run("Test ListMerge", func(t *testing.T) {
-		answer, _ := ListMerge([]string{"4,5,6", "6", "7,2"})
+		answer, _ := utils.ListMerge([]string{"4,5,6", "6", "7,2"})
 		if answer != "2,4,5,6,7" {
 			t.Errorf("Min function should have returned 2,4,5,6,7 returned %s", answer)
 		}
@@ -76,7 +77,7 @@ func TestMakeService(t *testing.T) {
 			EnvName: "testing-env",
 		},
 	}
-	MakeService(&svc, nn, labels, ports, baseResource)
+	utils.MakeService(&svc, nn, labels, ports, baseResource)
 	assert.Equal(t, svc.Labels["app"], baseResource.Name, "should have app label")
 	assert.Equal(t, svc.Labels["customLabel"], "5", "should have custom label")
 	assert.Equal(t, svc.Spec.Ports[0], ports[0], "ports should be equal")
@@ -110,7 +111,7 @@ func TestMakePVC(t *testing.T) {
 	}
 	size := resource.MustParse("1Gi")
 
-	MakePVC(&pvc, nn, labels, "1Gi", baseResource)
+	utils.MakePVC(&pvc, nn, labels, "1Gi", baseResource)
 	assert.Equal(t, pvc.Labels["app"], baseResource.Name, "should have app label")
 	assert.Equal(t, pvc.Labels["customLabel"], "5", "should have custom label")
 	assert.Equal(t, pvc.Spec.Resources.Requests["storage"], size, "should have size set correctly")
@@ -143,7 +144,7 @@ func TestGetCustomLabeler(t *testing.T) {
 		},
 	}
 
-	labeler := getCustomLabeler(labels, nn, baseResource)
+	labeler := utils.GetCustomLabeler(labels, nn, baseResource)
 
 	pvc := &core.PersistentVolumeClaim{}
 
@@ -159,12 +160,12 @@ func TestBase64Decode(t *testing.T) {
 			"key": []byte("bnVtYmVy"),
 		},
 	}
-	decodedValue, _ := B64Decode(&s, "key")
+	decodedValue, _ := utils.B64Decode(&s, "key")
 	assert.Equal(t, decodedValue, "number", "should decode the right value")
 }
 
 func TestRandString(t *testing.T) {
-	a := RandString(12)
-	b := RandString(12)
+	a := utils.RandString(12)
+	b := utils.RandString(12)
 	assert.NotEqual(t, a, b)
 }
