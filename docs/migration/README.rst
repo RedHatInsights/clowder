@@ -281,16 +281,22 @@ variables to it.
     * | You can use ``build_deploy.sh`` for this but be careful to not overwrite any tags like
         ``latest``, ``qa``, etc. You may want to push to an entirely separate quay repo just to be
         safe. But, you'll have to temporarily edit the ``IMAGE`` that your ``ClowdApp`` template uses
+    * | If the app's quay repository is private or you do not have access rights to push to it, you
+        may want to create your own temporary quay repo to do your testing, build the Dockerfile
+        yourself, and ``docker push`` your built image to that repo. You will need to temporarily
+        edit the application template to use your repo for the ``IMAGE``.
 
-#. Log in to the OpenShift cluster that ephemeral tests run against. (crcs01 for now)
+#. Log in to the ephemeral `cluster`_ using ``oc``.
 
 #. | Run `the same deploy command <https://github.com/RedHatInsights/bonfire/blob/master/cicd/deploy_ephemeral_env.sh#L15-L20>`_
     that the ``pr_check.sh`` would run. This will reserve a namespace on the cluster and deploy your
     app into it. Make sure you replace the needed env vars: ``APP_NAME, COMPONENT_NAME, GIT_COMMIT,
-    IMAGE, IMAGE_TAG``. The ``GIT_COMMIT` should match the commit of your PR and the ``IMAGE/IMAGE_TAG``
-    should match whatever custom image you just built for the PR.
+    IMAGE, IMAGE_TAG``. The ``GIT_COMMIT`` should match the commit of your PR and the
+    ``IMAGE/IMAGE_TAG`` should match whatever custom image you just built for the PR.
 
 | 
+
+.. _cluster: https://visual-app-interface.devshift.net/clusters#/openshift/crcs01ue1/cluster.yml
 
 **Testing With Jenkins**
 
