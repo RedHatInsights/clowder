@@ -280,6 +280,7 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
+		Controller: utils.PointTrue(),
 	}
 }
 
