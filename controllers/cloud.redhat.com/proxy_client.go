@@ -4,6 +4,8 @@ import (
 	"context"
 	"reflect"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,6 +36,8 @@ func (p *ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch clien
 }
 
 func (p *ProxyClient) AddResource(obj runtime.Object) {
+	log := (*p.Ctx.Value(errors.ClowdKey("log")).(*logr.Logger)).WithName("proxy-client")
+
 	if p.ResourceTracker == nil {
 		p.ResourceTracker = make(map[string]map[string]bool)
 	}
@@ -74,16 +78,21 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 		p.ResourceTracker[rKind] = map[string]bool{}
 	}
 
+	log.Info("Tracking resource", "kind", rKind, "name", name)
 	p.ResourceTracker[rKind][name] = true
 }
 
 func (p *ProxyClient) Reconcile(uid types.UID) error {
+	log := (*p.Ctx.Value(errors.ClowdKey("log")).(*logr.Logger)).WithName("proxy-client")
 	for k := range p.ResourceTracker {
 		compareRef := func(name string, kind string, obj runtime.Object) error {
 			meta := obj.(metav1.Object)
 			for _, ownerRef := range meta.GetOwnerReferences() {
 				if ownerRef.UID == uid {
 					if _, ok := p.ResourceTracker[kind][name]; ok != true {
+						kind := obj.GetObjectKind().GroupVersionKind().Kind
+						name := meta.GetName()
+						log.Info("Deleting resource", "kind", kind, "name", name)
 						err := p.Delete(p.Ctx, obj)
 						if err != nil {
 							return err
