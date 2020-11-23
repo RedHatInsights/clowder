@@ -50,6 +50,7 @@ func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, client client.Cli
 		if err != nil {
 			return nil, err
 		}
+		client.Update(ctx, secret)
 		for k, v := range secret.Data {
 			(data)[k] = string(v)
 		}
