@@ -61,7 +61,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("app", qualifiedName)
 	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
-	proxyClient := ProxyClient{Client: r.Client, Ctx: ctx}
+	proxyClient := ProxyClient{Ctx: ctx, Client: r.Client}
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
 

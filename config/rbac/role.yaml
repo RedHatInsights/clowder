@@ -10,6 +10,7 @@ rules:
   - ""
   resources:
   - events
+  - namespaces
   - persistentvolumeclaims
   - secrets
   - services
