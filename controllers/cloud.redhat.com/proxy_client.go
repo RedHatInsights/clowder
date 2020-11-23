@@ -70,7 +70,7 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 		return
 	}
 
-	if _, ok := p.ResourceTracker[kind]; ok != true {
+	if _, ok := p.ResourceTracker[rKind]; ok != true {
 		p.ResourceTracker[rKind] = map[string]bool{}
 	}
 
