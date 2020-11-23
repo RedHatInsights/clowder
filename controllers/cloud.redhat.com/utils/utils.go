@@ -182,6 +182,12 @@ func Int32(n int) *int32 {
 	return &t
 }
 
+// PointTrue returns a pointer to True
+func PointTrue() *bool {
+	t := true
+	return &t
+}
+
 // MakeLabeler creates a function that will label objects with metadata from
 // the given namespaced name and labels
 func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.ClowdObject) func(metav1.Object) {
