@@ -39,12 +39,10 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 //DependencyMaker makes the DependencyConfig object
@@ -61,61 +59,6 @@ type Maker struct {
 	Ctx     context.Context
 	Request *ctrl.Request
 	Log     logr.Logger
-}
-
-type makerUpdater struct {
-	maker  *Maker
-	update utils.Updater
-}
-
-// MakerUpdater encapsulates saving an object
-type MakerUpdater interface {
-	Apply(obj runtime.Object) error
-	Updater() utils.Updater
-}
-
-func (mu *makerUpdater) Apply(obj runtime.Object) error {
-	return mu.update.Apply(mu.maker.Ctx, mu.maker.Client, obj)
-}
-
-func (mu *makerUpdater) Updater() utils.Updater {
-	return mu.update
-}
-
-// GetNamespacedName returns a new types.NamespacedName from the request based
-// on pattern
-func GetNamespacedName(r *reconcile.Request, pattern, namespace string) types.NamespacedName {
-	if namespace == "" {
-		namespace = r.Namespace
-	}
-	return types.NamespacedName{
-		Name:      fmt.Sprintf(pattern, r.Name),
-		Namespace: namespace,
-	}
-}
-
-// Get is a convenience wrapper for common upsert queries
-func (m *Maker) Get(nn types.NamespacedName, obj runtime.Object) (MakerUpdater, error) {
-	err := m.Client.Get(m.Ctx, nn, obj)
-	update, err := utils.UpdateOrErr(err)
-	if err != nil {
-		return nil, err
-	}
-	return &makerUpdater{
-		maker:  m,
-		update: update,
-	}, nil
-}
-
-// MakeLabeler creates a function that will label objects with metadata from
-// the given namespaced name and labels
-func (m *Maker) MakeLabeler(nn types.NamespacedName, labels map[string]string) func(metav1.Object) {
-	return func(o metav1.Object) {
-		o.SetName(nn.Name)
-		o.SetNamespace(nn.Namespace)
-		o.SetLabels(labels)
-		o.SetOwnerReferences([]metav1.OwnerReference{m.Env.MakeOwnerReference()})
-	}
 }
 
 func New(maker *Maker) (*Maker, error) {
