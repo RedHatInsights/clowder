@@ -67,7 +67,7 @@ spec:
               key: secretKey
               name: test-minio-app-minio
         image: quay.io/cloudservices/minio:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
           initialDelaySeconds: 10

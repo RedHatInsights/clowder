@@ -78,7 +78,7 @@ spec:
         - name: KAFKA_INTER_BROKER_LISTENER_NAME
           value: LOCAL
         image: quay.io/cloudservices/cp-kafka:5.3.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
           initialDelaySeconds: 15
