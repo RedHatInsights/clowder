@@ -166,7 +166,7 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: "confluentinc/cp-kafka:latest", // TODO: Pull image from quay
+		Image: "quay.io/cloudservices/cp-kafka:5.3.2",
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{
@@ -302,7 +302,7 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: "confluentinc/cp-zookeeper:5.3.2",
+		Image: "quay.io/cloudservices/cp-zookeeper:5.3.2",
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{
