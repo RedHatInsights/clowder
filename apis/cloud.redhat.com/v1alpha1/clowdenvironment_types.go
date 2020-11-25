@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -235,7 +236,9 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	TargetNamespace string `json:"targetNamespace"`
+	TargetNamespace    string `json:"targetNamespace"`
+	ManagedDeployments int32  `json:"managedDeployments"`
+	ReadyDeployments   int32  `json:"readyDeployments"`
 }
 
 // +kubebuilder:object:root=true
@@ -297,4 +300,16 @@ func (i *ClowdEnvironment) GetClowdName() string {
 // GetGeneratedTargetNamespace gets a generated target namespace if one is not provided
 func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
+}
+
+func (i *ClowdEnvironment) GetOwnedDeployments(deploymentList *apps.DeploymentList) {
+	depList := []apps.Deployment{}
+	for _, deployment := range deploymentList.Items {
+		for _, owner := range deployment.ObjectMeta.OwnerReferences {
+			if owner.UID == i.ObjectMeta.UID {
+				depList = append(depList, deployment)
+			}
+		}
+	}
+	deploymentList.Items = depList
 }
