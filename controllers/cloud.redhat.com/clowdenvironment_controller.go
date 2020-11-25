@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -36,6 +37,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -142,6 +144,28 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
+	deploymentList := apps.DeploymentList{}
+	err = proxyClient.List(ctx, &deploymentList)
+	if err != nil {
+		return ctrl.Result{Requeue: requeue}, nil
+	}
+	env.GetOwnedDeployments(&deploymentList)
+	var managedDeployments int32
+	var readyDeployments int32
+	for _, deployment := range deploymentList.Items {
+		managedDeployments++
+		if ok := utils.DeploymentStatusChecker(&deployment); ok {
+			readyDeployments++
+		}
+	}
+
+	env.Status.ManagedDeployments = managedDeployments
+	env.Status.ReadyDeployments = readyDeployments
+	err = proxyClient.Status().Update(ctx, &env)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
@@ -169,6 +193,8 @@ func runProvidersForEnv(provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 	return ctrl.NewControllerManagedBy(mgr).
+		Owns(&apps.Deployment{}).
+		Owns(&core.Service{}).
 		For(&crd.ClowdEnvironment{}).
 		Complete(r)
 }

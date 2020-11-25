@@ -17,6 +17,7 @@ import (
 
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -143,6 +144,9 @@ type ClowdAppSpec struct {
 type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
+	ManagedDeployments int32 `json:"managedDeployments"`
+	ReadyDeployments   int32 `json:"readyDeployments"`
 }
 
 // +kubebuilder:object:root=true
@@ -240,6 +244,18 @@ func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	for _, opt := range opts {
 		opt(o)
 	}
+}
+
+func (i *ClowdApp) GetOwnedDeployments(deploymentList *apps.DeploymentList) {
+	depList := []apps.Deployment{}
+	for _, deployment := range deploymentList.Items {
+		for _, owner := range deployment.ObjectMeta.OwnerReferences {
+			if owner.UID == i.ObjectMeta.UID {
+				depList = append(depList, deployment)
+			}
+		}
+	}
+	deploymentList.Items = depList
 }
 
 // Name returns a function that sets the name of an object to that of the

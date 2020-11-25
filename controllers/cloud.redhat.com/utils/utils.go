@@ -13,6 +13,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -225,4 +226,20 @@ func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels ma
 			core.ResourceName(core.ResourceStorage): resource.MustParse(size),
 		},
 	}
+}
+
+func DeploymentStatusChecker(deployment *apps.Deployment) bool {
+	if deployment.Generation <= deployment.Status.ObservedGeneration {
+		if deployment.Spec.Replicas != nil && deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas {
+			return false
+		}
+		if deployment.Status.Replicas > deployment.Status.UpdatedReplicas {
+			return false
+		}
+		if deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas {
+			return false
+		}
+		return true
+	}
+	return false
 }
