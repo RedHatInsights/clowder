@@ -431,23 +431,26 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 					if e.Name == envvar.Name {
 						found = true
 						icStruct.Env = append(icStruct.Env, core.EnvVar{
-							Name:  e.Name,
-							Value: envvar.Value,
+							Name:      e.Name,
+							Value:     envvar.Value,
+							ValueFrom: envvar.ValueFrom,
 						})
 					}
 				}
 				if !found {
 					icStruct.Env = append(icStruct.Env, core.EnvVar{
-						Name:  e.Name,
-						Value: e.Value,
+						Name:      e.Name,
+						Value:     e.Value,
+						ValueFrom: e.ValueFrom,
 					})
 				}
 			}
 		} else {
 			for _, envvar := range ic.Env {
 				icStruct.Env = append(icStruct.Env, core.EnvVar{
-					Name:  envvar.Name,
-					Value: envvar.Value,
+					Name:      envvar.Name,
+					Value:     envvar.Value,
+					ValueFrom: envvar.ValueFrom,
 				})
 			}
 		}
