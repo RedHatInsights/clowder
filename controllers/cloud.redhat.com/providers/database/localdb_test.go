@@ -92,6 +92,9 @@ func TestLocalDBService(t *testing.T) {
 	if s.Spec.Selector["service"] != "db" {
 		t.Fatal("db selector was not set")
 	}
+	if s.Spec.Selector["app"] != app.Name {
+		t.Fatal("db app name selector was not set")
+	}
 }
 
 func TestLocalDBDeployment(t *testing.T) {

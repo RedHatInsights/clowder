@@ -193,9 +193,9 @@ func makeLocalService(s *core.Service, nn types.NamespacedName, app *crd.ClowdAp
 		Port:     5432,
 		Protocol: "TCP",
 	}}
-	utils.MakeService(s, nn, p.Labels{"service": "db"}, servicePorts, app)
+	utils.MakeService(s, nn, p.Labels{"service": "db", "app": app.Name}, servicePorts, app)
 }
 
 func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, app *crd.ClowdApp) {
-	utils.MakePVC(pvc, nn, p.Labels{"service": "db"}, "1Gi", app)
+	utils.MakePVC(pvc, nn, p.Labels{"service": "db", "app": app.Name}, "1Gi", app)
 }
