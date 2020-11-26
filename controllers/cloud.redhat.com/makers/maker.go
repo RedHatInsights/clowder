@@ -562,11 +562,11 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 
 		for _, pod := range depApp.Spec.Pods {
 			if pod.Web {
-				name := fmt.Sprintf("%s-%s", app.Name, pod.Name)
+				name := fmt.Sprintf("%s-%s", depApp.Name, pod.Name)
 				depConfig = append(depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
-					Name:     name,
+					Name:     pod.Name,
 					App:      depApp.Name,
 				})
 			}
