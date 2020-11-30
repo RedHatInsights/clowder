@@ -296,7 +296,7 @@ variables to it.
 
 | 
 
-.. _cluster: https://visual-app-interface.devshift.net/clusters#/openshift/crcs01ue1/cluster.yml
+.. _cluster: https://visual-app-interface.devshift.net/clusters#/openshift/insights/c-rh-c-eph/cluster.yml
 
 **Testing With Jenkins**
 
