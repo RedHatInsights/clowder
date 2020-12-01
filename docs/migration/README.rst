@@ -18,6 +18,50 @@ This migration combines two migrations into one:
 Performing both migrations together reduces overall work, though you need to
 perform more steps before seeing results.
 
+Ensure code repo is visible
+---------------------------
+
+App SRE only supports fetching code without authentication.  This means that
+code must either be a public repo on Github or on gitlab.cee.redhat.com.  If
+your code repo is currently private on Github, it needs to either be made public
+or moved to Gitlab.  If your repo is already public on Github or Gitlab, then
+you're good to go.
+
+Open Sourcing a Project
++++++++++++++++++++++++
+
+If you choose to keep your project on Github, it must be open sourced.  This
+usually entails several things:
+
+#. Adding a license file to the root of your repository
+#. Adding a reference to the license at the top of each source file
+#. Reviewing the repo's commit history for sensitive information
+
+Moving a Project from Github to Gitlab
+++++++++++++++++++++++++++++++++++++++
+
+Moving a project from Github to Gitlab should be relatively straightforward, but
+will require some workflow changes for devs.
+
+#. Create a new repo on gitlab.cee.redhat.com.  There is already an
+   `insights-platform`_ group that can be used to house repos, but other groups
+   can be used if desired.
+#. Change your local upstream to gitlab:  Example: 
+
+       .. code:
+
+           git remote set-url upstream git@gitlab.cee.redhat.com:insights-platform/new-repo.git
+
+You shouldn't need to worry about existing CI integrations since the goal of
+this migration is to have all CI integrated into app-interface.
+
+.. _insights-platform: https://gitlab.cee.redhat.com/insights-platform/
+
+Why?
++++
+
+Because.
+
 Ensure code repo has a Dockerfile
 ---------------------------------
 
@@ -211,10 +255,8 @@ Gitlab:
 In your app's build.yml, you need to specify on which Jenkins server to have
 your jobs defined.  AppSRE provides two Jenkins servers: ``ci-int`` for projects
 hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects hosted on
-Github.  Note that private Github projects are **not supported** [1]_; if a Github
+Github.  Note that private Github projects are **not supported**; if a Github
 project must remain private, then its origin must move to gitlab.cee.redhat.com.
-
-.. [1] Footnote!
 
 Create new saas-deploy file
 ---------------------------
