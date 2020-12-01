@@ -415,8 +415,6 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
-	fmt.Printf("%+v\n", jsonContent)
-
 	cwConfigVals := map[string]string{
 		"aws_access_key_id":     jsonContent.Logging.Cloudwatch.AccessKeyId,
 		"aws_secret_access_key": jsonContent.Logging.Cloudwatch.SecretAccessKey,
