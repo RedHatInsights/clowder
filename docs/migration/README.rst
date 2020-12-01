@@ -46,11 +46,9 @@ will require some workflow changes for devs.
 #. Create a new repo on gitlab.cee.redhat.com.  There is already an
    `insights-platform`_ group that can be used to house repos, but other groups
    can be used if desired.
-#. Change your local upstream to gitlab:  Example: 
+#. Change your local upstream to gitlab.  Example::
 
-       .. code:
-
-           git remote set-url upstream git@gitlab.cee.redhat.com:insights-platform/new-repo.git
+      git remote set-url upstream git@gitlab.cee.redhat.com:insights-platform/new-repo.git
 
 You shouldn't need to worry about existing CI integrations since the goal of
 this migration is to have all CI integrated into app-interface.
