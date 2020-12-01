@@ -127,9 +127,55 @@ to configure itself on startup.
 Operating Clowder Itself
 ------------------------
 
-- OLM pipeline
-- Metrics and alerts
-- App-interface modes
-- Promoting clowder to prod
+OLM pipeline
+++++++++++++
+
+Clowder is deployed via OLM, thus the build and deploy pipeline comprises of creating and deploying
+OLM CRs: ``OperatorGroup``, ``CatalogSource``, and ``Subscription``.  To truly understand OLM is
+outside the scope of this document, but it will cover how each resource is managed. 
+
+Despite being deployed via OLM, Clowder follows a very similar build and deployment pipeline as
+other apps in app-interface, specifically all pushes to master are automatically deployed to stage,
+and an MR to app-interface is required to update the ref in production.
+
+``OperatorGroup`` and ``Subscription`` are quite static, but ``CatalogSource`` is what gets updated
+every promotion.  Before it's updated, there are three images that are pushed to Quay:  the Clowder
+application image, the Clowder OLM bundle, and the Clowder catalog image.  All three images use the
+same image tag, based off the commit hash at the tip of master.  The app image is built using
+``build_deploy.sh``, and the bundle and catalog images are built in a separate Jenkins job using
+``build_catalog.sh``.
+
+Troubleshooting
+^^^^^^^^^^^^^^^
+
+On occasion, updating the ``CatalogSource`` does not trigger OLM to deploy the latest version of
+Clowder.  If this happens, the simplest approach is to delete the ``ClusterServiceVersion`` and
+``Subscription`` resources with the name ``clowder`` from the ``clowder`` namespace.  Once they are
+removed, you should re-run the saas-deploy job for clowder, which will recreate the
+``Subscription``, which should trigger OLM to recreate the ``ClusterServiceVersion``.
+
+Metrics and alerts
+++++++++++++++++++
+
+App-interface modes
++++++++++++++++++++
+
+Promoting clowder to prod
++++++++++++++++++++++++++
+
+As stated above, promoting Clowder to production is done the same as any other app in app-interface,
+but there are additional considerations given how Clowder code changes could cause widespread
+rollouts across the target cluster. For example, if a field is added to every app's
+``cdappconfig.json``, this will trigger every deployment to rollout a new version at virtually the
+same time.  While this *shouldn't* cause a problem, promoters should be aware that such churn is
+going to happen before promoting.
+
+Another more disruptive example would be if the format of the name of services was changed.  Not
+only would this trigger a rollout of all deployments, but old pods would no longer function properly
+because the old hostname in their configuration is no longer valid.  A change like this should
+either be done in a backwards-compatible way or be done in a planned outage window.
+
+Despite those two examples, most changes to Clowder should not be very disruptive; just make sure
+that extra care is taken to review all changes before promoting to production.
 
 .. vim: tw=100
