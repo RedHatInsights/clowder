@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
@@ -22,26 +23,27 @@ func (a *appInterface) Configure(config *config.AppConfig) {
 	config.Kafka = &a.Config
 }
 
-func (a *appInterface) CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error {
-	topicName := types.NamespacedName{
-		Namespace: a.Env.Spec.Providers.Kafka.Namespace,
-		Name:      topic.TopicName,
+func (a *appInterface) CreateTopics(app *crd.ClowdApp) error {
+	for _, topic := range app.Spec.KafkaTopics {
+		topicName := types.NamespacedName{
+			Namespace: a.Env.Spec.Providers.Kafka.Namespace,
+			Name:      topic.TopicName,
+		}
+
+		err := validateKafkaTopic(a.Ctx, a.Client, topicName)
+
+		if err != nil {
+			return err
+		}
+
+		a.Config.Topics = append(
+			a.Config.Topics,
+			config.TopicConfig{
+				Name:          topic.TopicName,
+				RequestedName: topic.TopicName,
+			},
+		)
 	}
-
-	err := validateKafkaTopic(a.Ctx, a.Client, topicName)
-
-	if err != nil {
-		return err
-	}
-
-	a.Config.Topics = append(
-		a.Config.Topics,
-		config.TopicConfig{
-			Name:          topic.TopicName,
-			RequestedName: topic.TopicName,
-		},
-	)
-
 	return nil
 }
 

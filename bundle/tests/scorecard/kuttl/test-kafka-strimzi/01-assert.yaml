@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-kafka-strimzi
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-kafka-strimzi
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  labels:
+    env: test-kafka-strimzi
+    strimzi.io/cluster: my-cluster
+  name: topicone-test-kafka-strimzi-test-kafka-strimzi
+  namespace: test-kafka-strimzi-kafka
+  selfLink: /apis/kafka.strimzi.io/v1beta1/namespaces/test-kafka-strimzi-kafka/kafkatopics/topicone-test-kafka-strimzi-test-kafka-strimzi
+spec:
+  partitions: 96
+  replicas: 7
+  topicName: ""
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  labels:
+    env: test-kafka-strimzi
+    strimzi.io/cluster: my-cluster
+  name: topictwo-test-kafka-strimzi-test-kafka-strimzi
+  namespace: test-kafka-strimzi-kafka
+  selfLink: /apis/kafka.strimzi.io/v1beta1/namespaces/test-kafka-strimzi-kafka/kafkatopics/topictwo-test-kafka-strimzi-test-kafka-strimzi
+spec:
+  partitions: 128
+  replicas: 5
+  topicName: ""
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  labels:
+    env: test-kafka-strimzi
+    strimzi.io/cluster: my-cluster
+  name: topicthree-test-kafka-strimzi-test-kafka-strimzi
+  namespace: test-kafka-strimzi-kafka
+  selfLink: /apis/kafka.strimzi.io/v1beta1/namespaces/test-kafka-strimzi-kafka/kafkatopics/topicthree-test-kafka-strimzi-test-kafka-strimzi
+spec:
+  partitions: 12
+  replicas: 5
+  topicName: ""

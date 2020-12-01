@@ -4,17 +4,15 @@ import (
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // KafkaProvider is the interface for apps to use to configure kafka topics
 type KafkaProvider interface {
 	p.Configurable
-	CreateTopic(nn types.NamespacedName, topic *strimzi.KafkaTopicSpec) error
+	CreateTopics(app *crd.ClowdApp) error
 }
 
 func GetKafka(c *p.Provider) (KafkaProvider, error) {
@@ -41,17 +39,10 @@ func RunAppProvider(provider p.Provider, c *config.AppConfig, app *crd.ClowdApp)
 			return errors.Wrap("Failed to init kafka provider", err)
 		}
 
-		nn := types.NamespacedName{
-			Name:      app.Name,
-			Namespace: app.Namespace,
-		}
+		err = kafkaProvider.CreateTopics(app)
 
-		for _, topic := range app.Spec.KafkaTopics {
-			err := kafkaProvider.CreateTopic(nn, &topic)
-
-			if err != nil {
-				return errors.Wrap("Failed to init kafka topic", err)
-			}
+		if err != nil {
+			return errors.Wrap("Failed to init kafka topic", err)
 		}
 
 		kafkaProvider.Configure(c)
