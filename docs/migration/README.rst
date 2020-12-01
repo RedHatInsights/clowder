@@ -28,7 +28,7 @@ or moved to Gitlab.  If your repo is already public on Github or Gitlab, then
 you're good to go.
 
 Open Sourcing a Project
-+++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^
 
 If you choose to keep your project on Github, it must be open sourced.  This
 usually entails several things:
@@ -38,7 +38,7 @@ usually entails several things:
 #. Reviewing the repo's commit history for sensitive information
 
 Moving a Project from Github to Gitlab
-++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Moving a project from Github to Gitlab should be relatively straightforward, but
 will require some workflow changes for devs.
@@ -58,7 +58,7 @@ this migration is to have all CI integrated into app-interface.
 .. _insights-platform: https://gitlab.cee.redhat.com/insights-platform/
 
 Why?
-+++
+^^^^
 
 Because.
 
