@@ -58,7 +58,25 @@ this migration is to have all CI integrated into app-interface.
 Why?
 ^^^^
 
-Because.
+The technical reason private Github repositories are not supported is because
+Jenkins jobs managed by App SRE do not support making authenticated pulls to git
+repos.  While support for this can of course be added, no team has been able to
+justify the work to add this support.
+
+If a dev team is not comfortable making their code public to the world, then
+their interests would be better served by moving to Gitlab since it is of course
+hosted within the Red Hat internal network, thus reducing the risk of the code
+leaking publicly.
+
+If a dev team *is* comfortable making their code public, then they should go
+ahead and schedule the work to open source their app.  If this work is too
+costly, then their app should be hosted on Gitlab until the open sourcing work
+can be completed.
+
+Lastly, the Clouddot org has consistently struggled to reduce the head count
+in their Github org to reduce costs.  The primary justification for head count
+is private Github repos.  Thus by removing private Github repos, the Clouddot
+org can significantly reduce the head count in their org.
 
 Ensure code repo has a Dockerfile
 ---------------------------------
