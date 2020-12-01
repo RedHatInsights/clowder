@@ -211,8 +211,10 @@ Gitlab:
 In your app's build.yml, you need to specify on which Jenkins server to have
 your jobs defined.  AppSRE provides two Jenkins servers: ``ci-int`` for projects
 hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects hosted on
-Github.  Note that private Github projects are **not supported**; if a Github
+Github.  Note that private Github projects are **not supported** [1]_; if a Github
 project must remain private, then its origin must move to gitlab.cee.redhat.com.
+
+.. [1] Footnote!
 
 Create new saas-deploy file
 ---------------------------
