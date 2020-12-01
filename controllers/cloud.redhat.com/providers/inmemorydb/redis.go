@@ -26,6 +26,28 @@ func (r *localRedis) Configure(config *config.AppConfig) {
 func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
 	r.Config.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
 	r.Config.Port = 6379
+
+	nn := providers.GetNamespacedName(app, "redis")
+
+	configMap := &core.ConfigMap{}
+
+	err := r.Client.Get(r.Ctx, nn, configMap)
+
+	update, err := utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	labeler := utils.MakeLabeler(nn, nil, app)
+	labeler(configMap)
+
+	configMap.Data = map[string]string{"redis.conf": "stop-writes-on-bgsave-error no\n"}
+
+	err = update.Apply(r.Ctx, r.Client, configMap)
+	if err != nil {
+		return err
+	}
+
 	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis, r.Provider.Env.Spec.Providers.InMemoryDB.PVC)
 }
 
@@ -71,16 +93,35 @@ func makeLocalRedis(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 		TimeoutSeconds:      2,
 	}
 
+	dd.Spec.Template.Spec.Volumes = []core.Volume{{
+		Name: nn.Name,
+		VolumeSource: core.VolumeSource{
+			ConfigMap: &core.ConfigMapVolumeSource{
+				LocalObjectReference: core.LocalObjectReference{
+					Name: nn.Name,
+				},
+			},
+		}},
+	}
+
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
 		Image: "redis:6",
-		Env:   []core.EnvVar{},
+		Command: []string{
+			"redis-server",
+			"/usr/local/etc/redis/redis.conf",
+		},
+		Env: []core.EnvVar{},
 		Ports: []core.ContainerPort{{
 			Name:          "redis",
 			ContainerPort: 6379,
 		}},
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
+		VolumeMounts: []core.VolumeMount{{
+			Name:      nn.Name,
+			MountPath: "/usr/local/etc/redis/",
+		}},
 	}}
 
 	servicePorts := []core.ServicePort{{

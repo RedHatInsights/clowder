@@ -14,6 +14,7 @@ rules:
   - persistentvolumeclaims
   - secrets
   - services
+  - configmaps
   verbs:
   - create
   - delete

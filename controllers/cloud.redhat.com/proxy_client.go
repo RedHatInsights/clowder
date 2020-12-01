@@ -54,6 +54,10 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 	var rKind string
 
 	switch kind {
+	case "ConfigMap", "*v1.ConfigMap":
+		rKind = "ConfigMap"
+		dobj := obj.(*core.ConfigMap)
+		name = dobj.Name
 	case "Deployment", "*v1.Deployment":
 		rKind = "Deployment"
 		dobj := obj.(*apps.Deployment)
@@ -104,6 +108,19 @@ func (p *ProxyClient) Reconcile(uid types.UID) error {
 		}
 
 		switch k {
+		case "ConfigMap", "*v1.ConfigMap":
+			kind := "ConfigMap"
+			objList := &core.ConfigMapList{}
+			err := p.List(p.Ctx, objList)
+			if err != nil {
+				return err
+			}
+			for _, obj := range objList.Items {
+				err := compareRef(obj.Name, kind, &obj)
+				if err != nil {
+					return err
+				}
+			}
 		case "Deployment", "*v1.Deployment":
 			kind := "Deployment"
 			objList := &apps.DeploymentList{}
