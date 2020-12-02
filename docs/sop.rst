@@ -4,12 +4,11 @@ Operating Clowder
 Two primary aspects of operating Clowder: Operating the apps managed by Clowder and operating
 Clowder itself.
 
-Contrary to many other deployment models where apps configure themselves, an application that is
-managed by Clowder will have configuration presented to it and is expected to use it. Clowder
-governs many different aspects of an application's configuration, from defining the port it should
-listen on, to metrics, kafka topics, service hostnames, and more. In this way a common configuration
-format is presented to the application no matter the envrionment it is running in, enabling a far
-easier development experience.
+Clowder utilizes a common configuration format that is presented to each application, no matter
+the environment it is running in, enabling a far easier development experience. It governs many
+different aspects of an applications configuration from defining the port it should listen to for
+its main web service, to metrics, kafka and others. When using Clowder, the burden of identifying
+and defining dependency and core service credentials and connection information is removed.
 
 Operating Apps Managed by Clowder
 ---------------------------------
@@ -17,20 +16,20 @@ Operating Apps Managed by Clowder
 ClowdEnvironment
 ++++++++++++++++
 
-**abbreviated to ``env`` in k8s**
+**abbreviated to [env] in k8s**
 
-The ``ClowdEnvironment`` CRD is responsible for configuring the environment that the Clowder enabled
+The ``ClowdEnvironment`` CRD is responsible for configuring key infrastruture services that the Clowder enabled
 apps will interact with. It is a *cluster scoped* CRD and thus must have a unique name inside the
 k8s cluster. For production environments it is usual to have only one ``ClowdEnvironment``, whereas
-in other scenarios &mdash; such as ephemeral testing &mdash; Clowder enables the management of
+in other scenarios -- such as ephemeral testing -- Clowder enables the management of
 multiple environments that operate completely independently from each other.
 
 Providers
 ^^^^^^^^^
 
-Clowder provides a number of providers which govern the creation of services, e.g. Kafka topics,
+An environment's specification is broken into **providers**, which govern the creation of services, e.g. Kafka topics,
 object storage, etc, that applications may depend on. The ``ClowdEnvironment`` CRD configures these
-providers principally by making use of a provider's mode.
+providers principally by making use of a provider's **mode**.
 
 Modes
 ^^^^^
@@ -56,18 +55,16 @@ List of providers:
 Target Namespace
 ^^^^^^^^^^^^^^^^
 
-Clowder will provision two types of resources during operation, *environmental* and *application*
-specific. Application resources will be deployed into the same namespace the ClowdApp resides in.
 Environmental resources, such as the Kafka/Zookeeper from the exmaple in the *Modes* section, will
 be placed in the ``ClowdEnvironment``'s target namespace. This is configured by setting the
-``targetNamespace`` attribute of the ``ClowdEnvironment`` and should always be set for production
-environments. If it is omitted, a random target namespace is generated instead. The name of this
-resource can be found by inspecting the ``status.targetNamespace`` of the ClowdEnvironment resource.
+``targetNamespace`` attribute of the ``ClowdEnvironment``. If it is omitted, a random target
+namespace is generated instead. The name of this resource can be found by inspecting the
+``status.targetNamespace`` of the ClowdEnvironment resource.
 
 ClowdApp
 ++++++++
 
-**abbreviated to ``app`` in k8s**
+**abbreviated to [app] in k8s**
 
 The ``ClowdApp`` CRD is responsible for configuring an application and is namespace scoped. Any
 resources Clowder creates on behalf of the application will reside in the same namespace that the
@@ -120,9 +117,12 @@ port.
 Clowder will also set certain fields in the pod spec, inline with best practice, such as pull
 policy, and anti-affinity.
 
-Clowder will also create a ``Secret`` resource which will contain the generated configuration
+Clowder creates a ``Secret`` resource which will contain the generated configuration
 for that app. This secret will be mounted at ``/cdappconfig.json`` and will be consumed by the app
 to configure itself on startup.
+
+Secrets may also be created for application dependencies such as databases and in-memory db
+services.
 
 Operating Clowder Itself
 ------------------------
