@@ -2,6 +2,15 @@
 
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 
+while read line; do
+    if [ ${#line} -ge 100 ]; then
+        echo "Commit messages are limited to 100 characters."
+        echo "The following commit message has ${#line} characters."
+        echo "${line}"
+        exit 1
+    fi
+done <<< "$(git log --pretty=format:%s $(git merge-base master HEAD)..HEAD)"
+
 set -exv
 
 DOCKER_CONF="$PWD/.docker"
