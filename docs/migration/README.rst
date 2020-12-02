@@ -71,10 +71,10 @@ ahead and schedule the work to open source their app.  If this work is too
 costly, then their app should be hosted on Gitlab until the open sourcing work
 can be completed.
 
-Lastly, while it hasn't been strongly enforced, the Clouddot team's position has
-been that private repositories live in Gitlab and public ones live in Github.
-By reserving Github repositories for open source projects, we can better manage
-the number of Github licenses required. 
+Lastly, the Clouddot team's position has always been that private repositories
+live in Gitlab and public ones live in Github.  By reserving Github repositories
+for open source projects, we can better manage the number of Github licenses
+required. 
 
 Ensure code repo has a Dockerfile
 ---------------------------------
