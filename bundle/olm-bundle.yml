@@ -30,3 +30,16 @@ objects:
     name: clowder
     source: clowder-source
     sourceNamespace: ${TARGET_NAMESPACE}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: clowder-controller-manager
+  spec:
+    ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      control-plane: controller-manager
+      operator-name: clowder
+    type: ClusterIP

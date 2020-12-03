@@ -12,15 +12,18 @@ metadata:
   namespace: system
   labels:
     control-plane: controller-manager
+    operator-name: clowder
 spec:
   selector:
     matchLabels:
       control-plane: controller-manager
+      operator-name: clowder
   replicas: 1
   template:
     metadata:
       labels:
         control-plane: controller-manager
+        operator-name: clowder
     spec:
       containers:
       - command:
