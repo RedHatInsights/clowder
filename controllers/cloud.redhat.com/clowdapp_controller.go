@@ -144,23 +144,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	deploymentList := apps.DeploymentList{}
-	err = proxyClient.List(ctx, &deploymentList)
-	if err != nil {
-		return ctrl.Result{Requeue: requeue}, nil
-	}
-	app.GetOwnedDeployments(&deploymentList)
-	var managedDeployments int32
-	var readyDeployments int32
-	for _, deployment := range deploymentList.Items {
-		managedDeployments++
-		if ok := utils.DeploymentStatusChecker(&deployment); ok {
-			readyDeployments++
-		}
-	}
-
-	app.Status.ManagedDeployments = managedDeployments
-	app.Status.ReadyDeployments = readyDeployments
+	SetDeploymentStatus(ctx, &proxyClient, &app)
 	err = proxyClient.Status().Update(ctx, &app)
 	if err != nil {
 		return ctrl.Result{}, err

@@ -18,11 +18,12 @@ import (
 	"fmt"
 	"strings"
 
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // WebMode details the mode of operation of the Clowder Web Provider
@@ -236,9 +237,8 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	TargetNamespace    string `json:"targetNamespace"`
-	ManagedDeployments int32  `json:"managedDeployments"`
-	ReadyDeployments   int32  `json:"readyDeployments"`
+	TargetNamespace string                  `json:"targetNamespace"`
+	Deployments     common.DeploymentStatus `json:"deployments"`
 }
 
 // +kubebuilder:object:root=true
@@ -297,19 +297,17 @@ func (i *ClowdEnvironment) GetClowdName() string {
 	return i.Name
 }
 
-// GetGeneratedTargetNamespace gets a generated target namespace if one is not provided
-func (i *ClowdEnvironment) GenerateTargetNamespace() string {
-	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
+// GetUID returns ObjectMeta.UID
+func (i *ClowdEnvironment) GetUID() types.UID {
+	return i.ObjectMeta.UID
 }
 
-func (i *ClowdEnvironment) GetOwnedDeployments(deploymentList *apps.DeploymentList) {
-	depList := []apps.Deployment{}
-	for _, deployment := range deploymentList.Items {
-		for _, owner := range deployment.ObjectMeta.OwnerReferences {
-			if owner.UID == i.ObjectMeta.UID {
-				depList = append(depList, deployment)
-			}
-		}
-	}
-	deploymentList.Items = depList
+// GetDeploymentStatus returns the Status.Deployments member
+func (i *ClowdEnvironment) GetDeploymentStatus() *common.DeploymentStatus {
+	return &i.Status.Deployments
+}
+
+// GenerateTargetNamespace gets a generated target namespace if one is not provided
+func (i *ClowdEnvironment) GenerateTargetNamespace() string {
+	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
 }

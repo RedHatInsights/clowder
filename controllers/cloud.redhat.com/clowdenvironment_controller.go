@@ -37,7 +37,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -144,24 +143,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	deploymentList := apps.DeploymentList{}
-	err = proxyClient.List(ctx, &deploymentList)
-	if err != nil {
-		return ctrl.Result{Requeue: requeue}, nil
-	}
-	env.GetOwnedDeployments(&deploymentList)
-	var managedDeployments int32
-	var readyDeployments int32
-	for _, deployment := range deploymentList.Items {
-		managedDeployments++
-		if ok := utils.DeploymentStatusChecker(&deployment); ok {
-			readyDeployments++
-		}
-	}
-
-	env.Status.ManagedDeployments = managedDeployments
-	env.Status.ReadyDeployments = readyDeployments
+	SetDeploymentStatus(ctx, &proxyClient, &env)
 	err = proxyClient.Status().Update(ctx, &env)
+
 	if err != nil {
 		return ctrl.Result{}, err
 	}

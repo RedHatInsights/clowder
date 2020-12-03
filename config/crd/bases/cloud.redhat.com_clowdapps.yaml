@@ -1953,6 +1953,24 @@ spec:
           type: object
         status:
           description: ClowdAppStatus defines the observed state of ClowdApp
+          properties:
+            deployments:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file ClowdEnvironmentStatus defines the observed state of ClowdEnvironment'
+              properties:
+                managedDeployments:
+                  format: int32
+                  type: integer
+                readyDeployments:
+                  format: int32
+                  type: integer
+              required:
+              - managedDeployments
+              - readyDeployments
+              type: object
+          required:
+          - deployments
           type: object
       type: object
   version: v1alpha1

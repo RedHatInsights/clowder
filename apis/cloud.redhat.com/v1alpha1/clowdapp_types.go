@@ -15,9 +15,9 @@ package v1alpha1
 import (
 	"fmt"
 
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
-	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -145,8 +145,7 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	ManagedDeployments int32 `json:"managedDeployments"`
-	ReadyDeployments   int32 `json:"readyDeployments"`
+	Deployments common.DeploymentStatus `json:"deployments"`
 }
 
 // +kubebuilder:object:root=true
@@ -231,6 +230,16 @@ func (i *ClowdApp) GetClowdName() string {
 	return i.Name
 }
 
+// GetUID returns ObjectMeta.UID
+func (i *ClowdApp) GetUID() types.UID {
+	return i.ObjectMeta.UID
+}
+
+// GetDeploymentStatus returns the Status.Deployments member
+func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
+	return &i.Status.Deployments
+}
+
 // Omfunc is a utility function that performs an operation on a metav1.Object.
 type omfunc func(o metav1.Object)
 
@@ -244,18 +253,6 @@ func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	for _, opt := range opts {
 		opt(o)
 	}
-}
-
-func (i *ClowdApp) GetOwnedDeployments(deploymentList *apps.DeploymentList) {
-	depList := []apps.Deployment{}
-	for _, deployment := range deploymentList.Items {
-		for _, owner := range deployment.ObjectMeta.OwnerReferences {
-			if owner.UID == i.ObjectMeta.UID {
-				depList = append(depList, deployment)
-			}
-		}
-	}
-	deploymentList.Items = depList
 }
 
 // Name returns a function that sets the name of an object to that of the

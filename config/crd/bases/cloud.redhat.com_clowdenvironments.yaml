@@ -260,12 +260,26 @@ spec:
         status:
           description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
           properties:
+            deployments:
+              description: DeploymentStatus defines Overall and ready deployment counts
+              properties:
+                managedDeployments:
+                  format: int32
+                  type: integer
+                readyDeployments:
+                  format: int32
+                  type: integer
+              required:
+              - managedDeployments
+              - readyDeployments
+              type: object
             targetNamespace:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                 of cluster Important: Run "make" to regenerate code after modifying
                 this file'
               type: string
           required:
+          - deployments
           - targetNamespace
           type: object
       type: object
