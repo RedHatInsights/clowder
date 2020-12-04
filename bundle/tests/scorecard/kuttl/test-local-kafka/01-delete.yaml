@@ -4,7 +4,7 @@ kind: TestStep
 delete:
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-app
+  name: test-local-kafka
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: test-kafka-app
+  name: ephem
