@@ -22,14 +22,10 @@ spec:
       description: Kafka is the Schema for the kafkatopics API
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -60,15 +56,12 @@ spec:
             listeners:
               description: A list of KafkaListener objects.
               items:
-                description: KafkaListener represents a configured Kafka listener
-                  instance.
+                description: KafkaListener represents a configured Kafka listener instance.
                 properties:
                   addresses:
-                    description: A list of addresses that the Kafka instance is listening
-                      on.
+                    description: A list of addresses that the Kafka instance is listening on.
                     items:
-                      description: Address struct represents the physical connection
-                        details of a Kafka Server.
+                      description: Address struct represents the physical connection details of a Kafka Server.
                       properties:
                         host:
                           description: Host defines the hostname of the Kafka server.
@@ -80,12 +73,10 @@ spec:
                       type: object
                     type: array
                   bootstrapServers:
-                    description: A bootstrap server that the Kafka client can initially
-                      conenct to.
+                    description: A bootstrap server that the Kafka client can initially conenct to.
                     type: string
                   certificates:
-                    description: A list of certificates to be used with this Kafka
-                      instance.
+                    description: A list of certificates to be used with this Kafka instance.
                     items:
                       type: string
                     type: array
