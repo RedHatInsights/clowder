@@ -34,11 +34,14 @@ objects:
   kind: Service
   metadata:
     name: clowder-controller-manager
+    labels:
+      operator-name: clowder
   spec:
     ports:
     - port: 8080
       protocol: TCP
       targetPort: 8080
+      name: metrics
     selector:
       control-plane: controller-manager
       operator-name: clowder
