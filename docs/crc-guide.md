@@ -74,7 +74,7 @@ Once applied, check the terminal that is running the operator and make sure ther
 * `oc apply -f config/crd/bases/kafka.strimzi.io_kafkatopics.yaml`
 * `oc apply -f config/crd/bases/kafka.strimzi.io_kafkas.yaml`
 
-Before we add the ClowdApp, we need to port forward the minio port on your local machine with `oc port-forward svc/dev-env-minio 9000`. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio service and perform bucket operations, we'll need to forward the port. 
+Before we add the ClowdApp, we need to port forward the minio and kafka ports on your local machine with `oc port-forward svc/dev-env-minio 9000` and `oc port-forward svc/dev-env-kafka 29092`. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio and kafka services and perform bucket and topic operations, we'll need to forward the port. 
 
 Create the following file as `clowd-app.yaml` 
 

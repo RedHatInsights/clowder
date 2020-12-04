@@ -8,6 +8,7 @@ import (
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/segmentio/kafka-go"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
@@ -31,6 +32,8 @@ func (k *localKafka) Configure(config *config.AppConfig) {
 }
 
 func (k *localKafka) CreateTopics(app *crd.ClowdApp) error {
+	host := fmt.Sprintf("%s:29092", k.Config.Brokers[0].Hostname)
+
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := fmt.Sprintf(
 			"%s-%s-%s", topic.TopicName, k.Env.Name, k.Env.GetClowdNamespace(),
@@ -43,6 +46,12 @@ func (k *localKafka) CreateTopics(app *crd.ClowdApp) error {
 				RequestedName: topic.TopicName,
 			},
 		)
+
+		conn, err := kafka.DialLeader(k.Ctx, "tcp", host, topicName, 0)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
 	}
 	return nil
 }

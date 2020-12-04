@@ -10,6 +10,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/prometheus/client_golang v1.0.0
 	github.com/redhatinsights/app-common-go v0.0.0-20200907091517-7ff0d0942f17
+	github.com/segmentio/kafka-go v0.4.8
 	github.com/stretchr/testify v1.6.1
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.10.0

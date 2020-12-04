@@ -42,7 +42,9 @@ func RunAppProvider(provider p.Provider, c *config.AppConfig, app *crd.ClowdApp)
 		err = kafkaProvider.CreateTopics(app)
 
 		if err != nil {
-			return errors.Wrap("Failed to init kafka topic", err)
+			retErr := errors.Wrap("Failed to init kafka topic", err)
+			retErr.Requeue = true
+			return retErr
 		}
 
 		kafkaProvider.Configure(c)
