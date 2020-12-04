@@ -5,3 +5,10 @@ delete:
 - apiVersion: v1
   kind: Namespace
   name: test-kafka-strimzi
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-kafka-strimzi
+- apiVersion: v1
+  kind: Namespace
+  name: test-kafka-strimzi-kafka
+  

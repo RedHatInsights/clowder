@@ -9,12 +9,12 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - configmaps
   - events
   - namespaces
   - persistentvolumeclaims
   - secrets
   - services
-  - configmaps
   verbs:
   - create
   - delete

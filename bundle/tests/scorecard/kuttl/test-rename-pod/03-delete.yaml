@@ -5,3 +5,6 @@ delete:
 - apiVersion: v1
   kind: Namespace
   name: test-rename-pod
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-rename-pod
