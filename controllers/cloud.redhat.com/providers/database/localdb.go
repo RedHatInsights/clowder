@@ -55,6 +55,12 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 		}
 	}
 
+	dbImage := db.Env.Spec.Providers.Database.Image
+	imageOverride := app.Spec.Database.Image
+	if imageOverride != "" {
+		dbImage = imageOverride
+	}
+
 	secMap, err := config.MakeOrGetSecret(db.Ctx, app, db.Client, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
@@ -65,7 +71,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	db.Config = dbCfg
 
-	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Providers.Database.Image, db.Env.Spec.Providers.Database.PVC)
+	makeLocalDB(&dd, nn, app, &dbCfg, dbImage, db.Env.Spec.Providers.Database.PVC)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err

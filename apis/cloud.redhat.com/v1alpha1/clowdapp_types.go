@@ -49,6 +49,10 @@ type DatabaseSpec struct {
 	// name of the logical database inside the database server in (*_local_*) mode
 	// and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
 	Name string `json:"name,omitempty"`
+
+	// Defines the image overide for a given app. If this is not set, the app will use the DB
+	// image provided by the ClowdEnv
+	Image string `json:"image,omitempty"`
 }
 
 // PodSpec defines a container running inside a ClowdApp.
