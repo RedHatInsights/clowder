@@ -260,6 +260,22 @@ spec:
         status:
           description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
           properties:
+            appEndpoints:
+              items:
+                description: Dependent service connection info
+                properties:
+                  hostname:
+                    description: The hostname of the dependent service.
+                    type: string
+                  name:
+                    description: The PodSpec name of the dependent service inside
+                      the ClowdApp.
+                    type: string
+                required:
+                - hostname
+                - name
+                type: object
+              type: array
             deployments:
               description: DeploymentStatus defines Overall and ready deployment counts
               properties:
@@ -279,6 +295,7 @@ spec:
                 this file'
               type: string
           required:
+          - appEndpoints
           - deployments
           - targetNamespace
           type: object

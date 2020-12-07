@@ -2,6 +2,7 @@
 
 
 Licensed under the Apache License, Version 2.0 (the "License");
+	r.Log.Info("Added %s", p.Env.Status.AppEndpoints)
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -21,15 +22,16 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
@@ -38,6 +40,9 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 const envFinalizer = "finalizer.env.cloud.redhat.com"
@@ -96,8 +101,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Env:    &env,
 	}
 
+	err = r.generateAppEndpoints(provider)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
 	err = runProvidersForEnv(provider)
-
 	if err == nil {
 		r.Log.Info("Reconciliation successful", "env", env.Name)
 		if _, ok := managedEnvironments[env.Name]; ok == false {
@@ -177,10 +185,66 @@ func runProvidersForEnv(provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 	return ctrl.NewControllerManagedBy(mgr).
-		Owns(&apps.Deployment{}).
-		Owns(&core.Service{}).
 		For(&crd.ClowdEnvironment{}).
+		Watches(
+			&source.Kind{Type: &crd.ClowdApp{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
+			},
+		).
 		Complete(r)
+}
+
+func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObject) []reconcile.Request {
+	ctx := context.Background()
+	obj := types.NamespacedName{
+		Name:      a.Meta.GetName(),
+		Namespace: a.Meta.GetNamespace(),
+	}
+
+	// Get the ClowdEnvironment resource
+
+	app := crd.ClowdApp{}
+	err := r.Client.Get(ctx, obj, &app)
+
+	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return []reconcile.Request{}
+		}
+		r.Log.Error(err, "Failed to fetch ClowdApp")
+		return nil
+	}
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name: app.Spec.EnvName,
+		},
+	}}
+}
+
+func (r *ClowdEnvironmentReconciler) generateAppEndpoints(p providers.Provider) error {
+	// Get all the ClowdApp resources
+	appList := crd.ClowdAppList{}
+	r.Client.List(p.Ctx, &appList)
+
+	// Populate
+	for _, app := range appList.Items {
+		if app.Spec.EnvName == p.Env.Name {
+			name := fmt.Sprintf("%s-%s", app.Name, app.Spec.Pods[0].Name)
+			p.Env.Status.AppEndpoints = append(p.Env.Status.AppEndpoints, config.AppEndpoint{
+				Hostname: fmt.Sprintf("%s.%s.svc", name, app.Namespace),
+				Name:     app.Spec.Pods[0].Name,
+			})
+		}
+	}
+
+	err := r.Client.Status().Update(p.Ctx, p.Env)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, e *crd.ClowdEnvironment) error {

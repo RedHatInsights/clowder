@@ -157,7 +157,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
-// SetupWithManager sets up wi
+// SetupWithManager sets up with Manager
 func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager")
 	utils.Log = r.Log.WithValues("name", "util")
