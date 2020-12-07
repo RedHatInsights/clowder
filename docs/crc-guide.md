@@ -16,7 +16,7 @@ Your `etc/hosts` should now look like `127.0.0.1   localhost localhost.localdoma
 
 We're going to use Ingress as the example, so the configuration we're doing is specific to that. If you are standing up a different application, substitute your own services, or other variables. 
 
-`make instal`
+`make install`
 `make run 2>&1 | grep '^{' | jq -r .`
 
 This will start the operator on your local machine with output redirected to `jq`. The jq output is formatted and easier to read and therefore recommended. However, if don't want that, `make run` will do just fine; albeit less neat. 
