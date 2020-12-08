@@ -485,9 +485,9 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (depConfig []config.DependencyEndpoint, missingDeps []string) {
 	appMap := map[string]crd.ClowdApp{}
 
-	for _, app := range apps.Items {
-		if app.Spec.EnvName == app.Spec.EnvName {
-			appMap[app.Name] = app
+	for _, iapp := range apps.Items {
+		if iapp.Spec.EnvName == app.Spec.EnvName {
+			appMap[iapp.Name] = iapp
 		}
 	}
 
