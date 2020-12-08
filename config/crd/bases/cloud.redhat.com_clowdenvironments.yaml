@@ -262,14 +262,10 @@ spec:
           properties:
             appEndpoints:
               items:
-                description: Dependent service connection info
                 properties:
                   hostname:
-                    description: The hostname of the dependent service.
                     type: string
                   name:
-                    description: The PodSpec name of the dependent service inside
-                      the ClowdApp.
                     type: string
                 required:
                 - hostname

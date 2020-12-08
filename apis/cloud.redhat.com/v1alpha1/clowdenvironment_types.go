@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -240,7 +239,12 @@ type ClowdEnvironmentStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	TargetNamespace string                  `json:"targetNamespace"`
 	Deployments     common.DeploymentStatus `json:"deployments"`
-	AppEndpoints    []config.AppEndpoint    `json:"appEndpoints"`
+	AppEndpoints    []AppEndpoint           `json:"appEndpoints"`
+}
+
+type AppEndpoint struct {
+	Name     string `json:"name"`
+	Hostname string `json:"hostname"`
 }
 
 // +kubebuilder:object:root=true

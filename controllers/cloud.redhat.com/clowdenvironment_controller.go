@@ -31,7 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
@@ -227,18 +226,28 @@ func (r *ClowdEnvironmentReconciler) generateAppEndpoints(p providers.Provider) 
 	// Get all the ClowdApp resources
 	appList := crd.ClowdAppList{}
 	r.Client.List(p.Ctx, &appList)
+	endpoints := []crd.AppEndpoint{}
 
 	// Populate
 	for _, app := range appList.Items {
 		if app.Spec.EnvName == p.Env.Name {
-			name := fmt.Sprintf("%s-%s", app.Name, app.Spec.Pods[0].Name)
-			p.Env.Status.AppEndpoints = append(p.Env.Status.AppEndpoints, config.AppEndpoint{
-				Hostname: fmt.Sprintf("%s.%s.svc", name, app.Namespace),
-				Name:     app.Spec.Pods[0].Name,
-			})
+			for _, pod := range app.Spec.Pods {
+				if pod.Web {
+					name := fmt.Sprintf("%s-%s", app.Name, pod.Name)
+					endpoints = append(endpoints, crd.AppEndpoint{
+						Hostname: fmt.Sprintf("%s.%s.svc", name, app.Namespace),
+						Name:     pod.Name,
+					})
+				} else {
+					endpoints = append(endpoints, crd.AppEndpoint{
+						Name: pod.Name,
+					})
+				}
+			}
 		}
 	}
 
+	p.Env.Status.AppEndpoints = endpoints
 	err := r.Client.Status().Update(p.Ctx, p.Env)
 	if err != nil {
 		return err
