@@ -52,8 +52,9 @@ type DatabaseSpec struct {
 	Name string `json:"name,omitempty"`
 }
 
-// PodSpec defines a container running inside a ClowdApp.
-type PodSpec struct {
+// Deployment defines a service running inside a ClowdApp and will output a deployment resource.
+// Only one container per pod is allowed and this is defined in the PodSpec attribute.
+type Deployment struct {
 	// Name defines the identifier of a Pod inside the ClowdApp. This name will
 	// be used along side the name of the ClowdApp itself to form a <app>-<pod>
 	// pattern which will be used for all other created resources and also for
@@ -62,6 +63,18 @@ type PodSpec struct {
 
 	// Defines the minimum replica count for the pod.
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
+
+	// If set to true, creates a service on the webPort defined in
+	// the ClowdEnvironment resource, along with the relevant liveness and
+	// readiness probes.
+	Web bool `json:"web,omitempty"`
+
+	// PodSpec defines a container running inside a ClowdApp.
+	PodSpec PodSpec `json:"podSpec,omitempty"`
+}
+
+// PodSpec defines a container running inside a ClowdApp.
+type PodSpec struct {
 
 	// Image refers to the container image used to create the pod.
 	Image string `json:"image,omitempty"`
@@ -100,18 +113,32 @@ type PodSpec struct {
 
 	// A pass-through of a list of VolumesMounts in standa k8s format.
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
+}
 
-	// If set to true, creates a service on the webPort defined in
-	// the ClowdEnvironment resource, along with the relevant liveness and
-	// readiness probes.
-	Web bool `json:"web,omitempty"`
+type PodSpecDeprecated struct {
+	Name           string                  `json:"name"`
+	Web            bool                    `json:"web,omitempty"`
+	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
+	Image          string                  `json:"image,omitempty"`
+	InitContainers []InitContainer         `json:"initContainers,omitempty"`
+	Command        []string                `json:"command,omitempty"`
+	Args           []string                `json:"args,omitempty"`
+	Env            []v1.EnvVar             `json:"env,omitempty"`
+	Resources      v1.ResourceRequirements `json:"resources,omitempty"`
+	LivenessProbe  *v1.Probe               `json:"livenessProbe,omitempty"`
+	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
+	Volumes        []v1.Volume             `json:"volumes,omitempty"`
+	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
 }
 
 // ClowdAppSpec is the main specification for a single Clowder Application
 // it defines n pods along with dependencies that are shared between them.
 type ClowdAppSpec struct {
-	// A list of pod specs
-	Pods []PodSpec `json:"pods"`
+	// A list of deployments
+	Deployments []Deployment `json:"deployments,omitempty"`
+
+	// Deprecated
+	Pods []PodSpecDeprecated `json:"pods,omitempty"`
 
 	// The name of the ClowdEnvironment resource that this ClowdApp will use as
 	// its base. This does not mean that the ClowdApp needs to be placed in the
@@ -238,6 +265,31 @@ func (i *ClowdApp) GetUID() types.UID {
 // GetDeploymentStatus returns the Status.Deployments member
 func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
 	return &i.Status.Deployments
+}
+
+func (i *ClowdApp) ConvertToNewShim() {
+	deps := []Deployment{}
+	for _, pod := range i.Spec.Pods {
+		dep := Deployment{
+			Name:        pod.Name,
+			Web:         pod.Web,
+			MinReplicas: pod.MinReplicas,
+			PodSpec: PodSpec{
+				Image:          pod.Image,
+				InitContainers: pod.InitContainers,
+				Command:        pod.Command,
+				Args:           pod.Args,
+				Env:            pod.Env,
+				Resources:      pod.Resources,
+				LivenessProbe:  pod.LivenessProbe,
+				ReadinessProbe: pod.ReadinessProbe,
+				Volumes:        pod.Volumes,
+				VolumeMounts:   pod.VolumeMounts,
+			},
+		}
+		deps = append(deps, dep)
+	}
+	i.Spec.Deployments = deps
 }
 
 // Omfunc is a utility function that performs an operation on a metav1.Object.

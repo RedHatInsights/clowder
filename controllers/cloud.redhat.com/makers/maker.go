@@ -83,24 +83,24 @@ func (m *Maker) Make() error {
 		return err
 	}
 
-	for _, pod := range m.App.Spec.Pods {
+	for _, deployment := range m.App.Spec.Deployments {
 
-		if err := m.makeDeployment(pod, m.App, hash); err != nil {
+		if err := m.makeDeployment(deployment, m.App, hash); err != nil {
 			return err
 		}
 
-		if err := m.makeService(pod, m.App); err != nil {
+		if err := m.makeService(deployment, m.App); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *Maker) makeService(pod crd.PodSpec, app *crd.ClowdApp) error {
+func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error {
 
 	s := core.Service{}
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v", app.Name, pod.Name),
+		Name:      fmt.Sprintf("%v-%v", app.Name, deployment.Name),
 		Namespace: m.Request.Namespace,
 	}
 	err := m.Client.Get(m.Ctx, nn, &s)
@@ -114,7 +114,7 @@ func (m *Maker) makeService(pod crd.PodSpec, app *crd.ClowdApp) error {
 		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP"},
 	}
 
-	if pod.Web == true {
+	if deployment.Web == true {
 		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
@@ -193,10 +193,10 @@ func applyPodAntiAffinity(t *core.PodTemplateSpec) {
 
 // This should probably take arguments for addtional volumes, so that we can
 // add those and then do one Apply
-func (m *Maker) makeDeployment(pod crd.PodSpec, app *crd.ClowdApp, hash string) error {
+func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, hash string) error {
 
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v", app.Name, pod.Name),
+		Name:      fmt.Sprintf("%v-%v", app.Name, deployment.Name),
 		Namespace: m.Request.Namespace,
 	}
 
@@ -208,7 +208,7 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, app *crd.ClowdApp, hash string) 
 		return err
 	}
 
-	initDeployment(m.App, m.Env, &d, nn, pod, hash)
+	initDeployment(m.App, m.Env, &d, nn, deployment, hash)
 
 	if err := update.Apply(m.Ctx, m.Client, &d); err != nil {
 		return err
@@ -217,12 +217,14 @@ func (m *Maker) makeDeployment(pod crd.PodSpec, app *crd.ClowdApp, hash string) 
 	return nil
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, pod crd.PodSpec, hash string) {
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment, hash string) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
 
-	d.Spec.Replicas = pod.MinReplicas
+	pod := deployment.PodSpec
+
+	d.Spec.Replicas = deployment.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	d.Spec.Template.ObjectMeta.Labels = labels
 	d.Spec.Strategy = apps.DeploymentStrategy{
@@ -263,7 +265,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
-	} else if pod.Web {
+	} else if deployment.Web {
 		livenessProbe = baseProbe
 	}
 	if pod.ReadinessProbe != nil {
@@ -335,7 +337,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		c.ReadinessProbe = &readinessProbe
 	}
 
-	if pod.Web {
+	if deployment.Web {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
 			ContainerPort: env.Spec.Providers.Web.Port,
@@ -486,6 +488,11 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, iapp := range apps.Items {
+
+		if iapp.Spec.Pods != nil {
+			iapp.ConvertToNewShim()
+		}
+
 		if iapp.Spec.EnvName == app.Spec.EnvName {
 			appMap[iapp.Name] = iapp
 		}
@@ -503,13 +510,13 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 
 		// If app has public endpoint, add it to app config
 
-		for _, pod := range depApp.Spec.Pods {
-			if pod.Web {
-				name := fmt.Sprintf("%s-%s", depApp.Name, pod.Name)
+		for _, deployment := range depApp.Spec.Deployments {
+			if deployment.Web {
+				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
 				depConfig = append(depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
-					Name:     pod.Name,
+					Name:     deployment.Name,
 					App:      depApp.Name,
 				})
 			}

@@ -119,6 +119,11 @@ func (s *strimziProvider) CreateTopics(app *crd.ClowdApp) error {
 		partitionValList := []string{}
 
 		for _, iapp := range appList.Items {
+
+			if app.Spec.Pods != nil {
+				app.ConvertToNewShim()
+			}
+
 			if iapp.Spec.EnvName != app.Spec.EnvName {
 				// Only consider apps within this ClowdEnvironment
 				continue

@@ -37,7 +37,7 @@ func getBaseElements() (types.NamespacedName, crd.ClowdApp) {
 				"bopper",
 				"snapper",
 			},
-			Pods: []crd.PodSpec{{
+			Deployments: []crd.Deployment{{
 				Name: "reqapp",
 			}},
 		},
