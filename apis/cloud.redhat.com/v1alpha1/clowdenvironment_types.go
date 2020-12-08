@@ -239,12 +239,17 @@ type ClowdEnvironmentStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	TargetNamespace string                  `json:"targetNamespace"`
 	Deployments     common.DeploymentStatus `json:"deployments"`
-	AppEndpoints    []AppEndpoint           `json:"appEndpoints"`
+	Apps            []AppStatus             `json:"apps,omitempty"`
 }
 
-type AppEndpoint struct {
+type AppStatus struct {
+	Name        string             `json:"name"`
+	Deployments []DeploymentStatus `json:"deployments"`
+}
+
+type DeploymentStatus struct {
 	Name     string `json:"name"`
-	Hostname string `json:"hostname"`
+	Hostname string `json:"hostname,omitempty"`
 }
 
 // +kubebuilder:object:root=true
