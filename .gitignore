@@ -17,9 +17,13 @@ bin
 
 vendor/
 **/zz_generated.*
+bundle/manifests/*
+kubeconfig
 
 # editor and IDE paraphernalia
 .idea
 *.swp
 *.swo
 *~
+launch.json
+*.code-workspace
