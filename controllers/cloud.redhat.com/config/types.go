@@ -445,33 +445,3 @@ func (j *AppConfig) UnmarshalJSON(b []byte) error {
 	*j = AppConfig(plain)
 	return nil
 }
-
-// Dependent service connection info
-type AppEndpoint struct {
-	// The hostname of the dependent service.
-	Hostname string `json:"hostname"`
-
-	// The PodSpec name of the dependent service inside the ClowdApp.
-	Name string `json:"name"`
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *AppEndpoint) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	type Plain AppEndpoint
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = AppEndpoint(plain)
-	return nil
-}
