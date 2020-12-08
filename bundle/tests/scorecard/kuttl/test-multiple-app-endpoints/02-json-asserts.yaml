@@ -1,0 +1,22 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 10
+- script: kubectl get secret puptoo -o json -n test-multiple-app-endpoints > /tmp/test-multiple-app-endpoints
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints | base64 -d > /tmp/test-multiple-app-endpoints-json
+
+- script: kubectl get secret puptoo-b -o json -n test-multiple-app-endpoints-b > /tmp/test-multiple-app-endpoints-b
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints-b | base64 -d > /tmp/test-multiple-app-endpoints-json-b
+
+# Positive searches
+- script: jq -r '.endpoints[] | select(.app == "puptoo-2") | .name == "processor-2"' -e < /tmp/test-multiple-app-endpoints-json
+
+# Negative searches
+- script: jq -r '.endpoints | length == 1' -e < /tmp/test-multiple-app-endpoints-json
+
+# Positive searches
+- script: jq -r '.endpoints[] | select(.app == "puptoo-b-2") | .name == "processor-b-2"' -e < /tmp/test-multiple-app-endpoints-json-b
+
+# Negative searches
+- script: jq -r '.endpoints | length == 1' -e < /tmp/test-multiple-app-endpoints-json-b

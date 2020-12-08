@@ -1,0 +1,16 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+delete:
+- apiVersion: v1
+  kind: Namespace
+  name: test-multiple-app-endpoints
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-multiple-app-endpoints
+- apiVersion: v1
+  kind: Namespace
+  name: test-multiple-app-endpoints-b
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-multiple-app-endpoints-b
