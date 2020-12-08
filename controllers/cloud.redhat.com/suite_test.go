@@ -235,9 +235,11 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	app := crd.ClowdApp{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdAppSpec{
-			Pods: []crd.PodSpec{{
-				Image: "test:test",
-				Name:  "testpod",
+			Deployments: []crd.Deployment{{
+				PodSpec: crd.PodSpec{
+					Image: "test:test",
+				},
+				Name: "testpod",
 			}},
 			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
@@ -313,7 +315,7 @@ func TestCreateClowdApp(t *testing.T) {
 
 	labels := map[string]string{
 		"app": app.Name,
-		"pod": fmt.Sprintf("%s-%s", app.Name, app.Spec.Pods[0].Name),
+		"pod": fmt.Sprintf("%s-%s", app.Name, app.Spec.Deployments[0].Name),
 	}
 
 	// See if Deployment is created
@@ -321,7 +323,7 @@ func TestCreateClowdApp(t *testing.T) {
 	d := apps.Deployment{}
 
 	appnn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-%s", app.Name, app.Spec.Pods[0].Name),
+		Name:      fmt.Sprintf("%s-%s", app.Name, app.Spec.Deployments[0].Name),
 		Namespace: name.Namespace,
 	}
 	err = fetchWithDefaults(appnn, &d)
@@ -344,8 +346,8 @@ func TestCreateClowdApp(t *testing.T) {
 
 	c := d.Spec.Template.Spec.Containers[0]
 
-	if c.Image != app.Spec.Pods[0].Image {
-		t.Errorf("Bad image spec %s; expected %s", c.Image, app.Spec.Pods[0].Image)
+	if c.Image != app.Spec.Deployments[0].PodSpec.Image {
+		t.Errorf("Bad image spec %s; expected %s", c.Image, app.Spec.Deployments[0].PodSpec.Image)
 	}
 
 	// See if Secret is mounted

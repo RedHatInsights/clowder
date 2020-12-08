@@ -70,9 +70,11 @@ func TestMakeService(t *testing.T) {
 	baseResource := &crd.ClowdApp{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdAppSpec{
-			Pods: []crd.PodSpec{{
-				Image: "test:test",
-				Name:  "testpod",
+			Deployments: []crd.Deployment{{
+				PodSpec: crd.PodSpec{
+					Image: "test:test",
+				},
+				Name: "testpod",
 			}},
 			EnvName: "testing-env",
 		},
@@ -102,9 +104,11 @@ func TestMakePVC(t *testing.T) {
 	baseResource := &crd.ClowdApp{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdAppSpec{
-			Pods: []crd.PodSpec{{
-				Image: "test:test",
-				Name:  "testpod",
+			Deployments: []crd.Deployment{{
+				PodSpec: crd.PodSpec{
+					Image: "test:test",
+				},
+				Name: "testpod",
 			}},
 			EnvName: "testing-env",
 		},
@@ -136,9 +140,11 @@ func TestGetCustomLabeler(t *testing.T) {
 	baseResource := &crd.ClowdApp{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdAppSpec{
-			Pods: []crd.PodSpec{{
-				Image: "test:test",
-				Name:  "testpod",
+			Deployments: []crd.Deployment{{
+				PodSpec: crd.PodSpec{
+					Image: "test:test",
+				},
+				Name: "testpod",
 			}},
 			EnvName: "testing-env",
 		},

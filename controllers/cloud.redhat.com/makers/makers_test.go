@@ -33,7 +33,7 @@ func TestSingleDependency(t *testing.T) {
 			Dependencies: []string{
 				"bopper",
 			},
-			Pods: []crd.PodSpec{{
+			Deployments: []crd.Deployment{{
 				Name: "reqapp",
 			}},
 		},
@@ -46,7 +46,7 @@ func TestSingleDependency(t *testing.T) {
 		Items: []crd.ClowdApp{{
 			ObjectMeta: nobjMeta,
 			Spec: crd.ClowdAppSpec{
-				Pods: []crd.PodSpec{{
+				Deployments: []crd.Deployment{{
 					Web:  true,
 					Name: "bopper",
 				}}},
@@ -90,7 +90,7 @@ func TestMissingDependency(t *testing.T) {
 			Dependencies: []string{
 				"bopper",
 			},
-			Pods: []crd.PodSpec{{
+			Deployments: []crd.Deployment{{
 				Name: "reqapp",
 			}},
 		},
@@ -132,7 +132,7 @@ func TestMultiDependency(t *testing.T) {
 				"bopper",
 				"snapper",
 			},
-			Pods: []crd.PodSpec{{
+			Deployments: []crd.Deployment{{
 				Name: "service",
 			}},
 		},
@@ -149,22 +149,24 @@ func TestMultiDependency(t *testing.T) {
 			{
 				ObjectMeta: n2objMeta,
 				Spec: crd.ClowdAppSpec{
-					Pods: []crd.PodSpec{{
-						Web:  true,
-						Name: "whopper",
-					}}},
-			},
+					Deployments: []crd.Deployment{
+						{
+							Name: "whopper",
+							Web:  true,
+						},
+					},
+				}},
 			{
 				ObjectMeta: nobjMeta,
 				Spec: crd.ClowdAppSpec{
-					Pods: []crd.PodSpec{
+					Deployments: []crd.Deployment{
 						{
-							Web:  true,
 							Name: "chopper",
+							Web:  true,
 						},
 						{
-							Web:  true,
 							Name: "bopper",
+							Web:  true,
 						},
 					},
 				},
@@ -293,9 +295,11 @@ func setupResourcesForTest(params Params) (*apps.Deployment, *crd.ClowdEnvironme
 				"bopper",
 				"snapper",
 			},
-			Pods: []crd.PodSpec{{
-				Name:      "reqapp",
-				Resources: appResources,
+			Deployments: []crd.Deployment{{
+				Name: "reqapp",
+				PodSpec: crd.PodSpec{
+					Resources: appResources,
+				},
 			}},
 		},
 	}
@@ -337,14 +341,14 @@ func TestResourceDefaults(t *testing.T) {
 
 			d, env, app := setupResourcesForTest(tt.Params)
 
-			appResources := app.Spec.Pods[0].Resources
+			appResources := app.Spec.Deployments[0].PodSpec.Resources
 
 			nn := types.NamespacedName{
-				Name:      app.Spec.Pods[0].Name,
+				Name:      app.Spec.Deployments[0].Name,
 				Namespace: app.Namespace,
 			}
 
-			initDeployment(app, env, d, nn, app.Spec.Pods[0], "hihi")
+			initDeployment(app, env, d, nn, app.Spec.Deployments[0], "hihi")
 
 			var expectedLimitCPU, expectedLimitMemory, expectedRequestsCPU, expectedRequestsMemory resource.Quantity
 
