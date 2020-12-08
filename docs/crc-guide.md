@@ -10,12 +10,13 @@
 
 ## Running Clowder
 -------------------
-At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your `/etc/hosts` localhost (127.0.0.1). For this example, we are using the `dev-env-minio.clowder-system.svc` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
+At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your `/etc/hosts` localhost (127.0.0.1). For this example, we are using the `dev-env-minio.dev-env.svc` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
 
-Your `etc/hosts` should now look like `127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 dev-env-minio.clowder-system.svc`. If you are not using the ingress-env, change it to the appropriate service.
+Your `etc/hosts` should now look like `127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 dev-env-minio.dev-env.svc`. If you are not using the name dev-env, change it to the appropriate service.
 
 We're going to use Ingress as the example, so the configuration we're doing is specific to that. If you are standing up a different application, substitute your own services, or other variables. 
 
+`make install`
 `make run 2>&1 | grep '^{' | jq -r .`
 
 This will start the operator on your local machine with output redirected to `jq`. The jq output is formatted and easier to read and therefore recommended. However, if don't want that, `make run` will do just fine; albeit less neat. 
@@ -24,7 +25,7 @@ This will start the operator on your local machine with output redirected to `jq
 ---------------------------------
 Now that Clowder is running, we need to give it a `ClowdEnvironment` for Ingress to run inside. 
 
-In a new terminal, run `oc new-project clowder-dev`
+In a new terminal, run `oc new-project dev-env`
 
 Create the following as `clowd-environment.yaml`
 
@@ -143,14 +144,15 @@ spec:
 
 Finally, `oc apply -f clowd-app.yaml`
 
-If all works well you should see the operator terminal adding to the ingress namespace. Again, if you're unsure just checkout your crc in the `ingress` namespace. 
+If all works well you should see the operator terminal adding to the dev-env namespace. Again, if you're unsure just checkout your crc in the `dev-env` namespace. 
 
 ## Testing Ingress
 -------------------
 
 If you're interested in validating the new deployment, download [this tar to test it](https://gitlab.cee.redhat.com/insights-qe/iqe-core/-/blob/master/iqe/data/advisor_archives/security_low.tar.gz). 
 
-Port forward the ingress port with `oc port-forward svc/ingress 8000`
+Port forward the ingress port with `oc port-forward svc/ingress-ingress 8000`. If this returns an
+error, run `oc get svc` to find out the correct service name. 
 
 Then run `curl -F "file=<YOUR DOWNLOAD LOCATION>/security_low.tar.gz;type=application/vnd.redhat.advisor.somefile+tgz" -H "x-rh-identity: eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsICJpbnRlcm5hbCI6IHsib3JnX2lkIjogIjAwMDAwMSJ9fX0=" -H "x-rh-request_id: testtesttest" -v http://localhost:8000/api/ingress/v1/upload`
 
