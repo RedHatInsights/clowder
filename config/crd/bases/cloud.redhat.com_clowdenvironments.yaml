@@ -260,15 +260,24 @@ spec:
         status:
           description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
           properties:
-            appEndpoints:
+            apps:
               items:
                 properties:
-                  hostname:
-                    type: string
+                  deployments:
+                    items:
+                      properties:
+                        hostname:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   name:
                     type: string
                 required:
-                - hostname
+                - deployments
                 - name
                 type: object
               type: array
@@ -291,7 +300,7 @@ spec:
                 this file'
               type: string
           required:
-          - appEndpoints
+          - apps
           - deployments
           - targetNamespace
           type: object

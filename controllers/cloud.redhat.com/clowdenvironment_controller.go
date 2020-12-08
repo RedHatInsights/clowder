@@ -99,7 +99,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Env:    &env,
 	}
 
-	err = r.generateAppEndpoints(provider)
+	err = r.generateAppStatus(provider)
 	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
@@ -221,32 +221,40 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObje
 	}}
 }
 
-func (r *ClowdEnvironmentReconciler) generateAppEndpoints(p providers.Provider) error {
+func (r *ClowdEnvironmentReconciler) generateAppStatus(p providers.Provider) error {
 	// Get all the ClowdApp resources
 	appList := crd.ClowdAppList{}
 	r.Client.List(p.Ctx, &appList)
-	endpoints := []crd.AppEndpoint{}
+	apps := []crd.AppStatus{}
 
 	// Populate
 	for _, app := range appList.Items {
+
+		if app.Spec.Pods != nil {
+			app.ConvertToNewShim()
+		}
+
+		appstatus := crd.AppStatus{
+			Name:        app.Name,
+			Deployments: []crd.DeploymentStatus{},
+		}
+
 		if app.Spec.EnvName == p.Env.Name {
-			for _, pod := range app.Spec.Pods {
-				if pod.Web {
-					name := fmt.Sprintf("%s-%s", app.Name, pod.Name)
-					endpoints = append(endpoints, crd.AppEndpoint{
-						Hostname: fmt.Sprintf("%s.%s.svc", name, app.Namespace),
-						Name:     pod.Name,
-					})
-				} else {
-					endpoints = append(endpoints, crd.AppEndpoint{
-						Name: pod.Name,
-					})
+			for _, pod := range app.Spec.Deployments {
+				deploymentStatus := crd.DeploymentStatus{
+					Name: fmt.Sprintf("%s-%s", app.Name, pod.Name),
 				}
+				if pod.Web {
+					deploymentStatus.Hostname = fmt.Sprintf("%s.%s.svc", deploymentStatus.Name, app.Namespace)
+				}
+				appstatus.Deployments = append(appstatus.Deployments, deploymentStatus)
 			}
+			apps = append(apps, appstatus)
 		}
 	}
 
-	p.Env.Status.AppEndpoints = endpoints
+	fmt.Printf("\n%v\n", apps)
+	p.Env.Status.Apps = apps
 	err := r.Client.Status().Update(p.Ctx, p.Env)
 	if err != nil {
 		return err
