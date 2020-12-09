@@ -300,7 +300,6 @@ spec:
                 this file'
               type: string
           required:
-          - apps
           - deployments
           - targetNamespace
           type: object
