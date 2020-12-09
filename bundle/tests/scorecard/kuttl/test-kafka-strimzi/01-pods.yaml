@@ -42,9 +42,10 @@ metadata:
   namespace: test-kafka-strimzi
 spec:
   envName: test-kafka-strimzi
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   kafkaTopics:
     - replicas: 7
       partitions: 64
@@ -60,9 +61,10 @@ metadata:
   namespace: test-kafka-strimzi
 spec:
   envName: test-kafka-strimzi
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   kafkaTopics:
     - replicas: 3
       partitions: 96

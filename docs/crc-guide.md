@@ -88,48 +88,49 @@ metadata:
   name: ingress
 spec:
   envName: dev-env 
-  pods:
-  - image: quay.io/cloudservices/insights-ingress-go-poc:5bcb3d14
-    name: ingress
-    livenessProbe:
-      failureThreshold: 3
-      httpGet:
-        path: /api/ingress/v1/version
-        port: 8000
-        scheme: HTTP
-      initialDelaySeconds: 10
-      periodSeconds: 30
-      successThreshold: 1
-      timeoutSeconds: 1
-    readinessProbe:
-      failureThreshold: 3
-      httpGet:
-        path: /api/ingress/v1/version
-        port: 8000
-        scheme: HTTP
-      initialDelaySeconds: 10
-      periodSeconds: 30
-      successThreshold: 1
-      timeoutSeconds: 1
-    env:
-      - name: INGRESS_STAGEBUCKET
-        value: ingress-uploads-perma
-      - name: INGRESS_VALIDTOPICS
-        value: advisor
-      - name: OPENSHIFT_BUILD_COMMIT
-        value: somestring
-      - name: INGRESS_MINIODEV
-        value: "true"
-      - name: DEBUG
-        value: "true"
-    resources:
-      limits:
-        cpu: 300m
-        memory: 8192Mi
-      requests:
-        cpu: 30m
-        memory: 1024Mi
+  deployments:
+  - name: ingress
     web: true
+    podSpec:
+      image: quay.io/cloudservices/insights-ingress-go-poc:5bcb3d14
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /api/ingress/v1/version
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 1
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /api/ingress/v1/version
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 1
+      env:
+        - name: INGRESS_STAGEBUCKET
+          value: ingress-uploads-perma
+        - name: INGRESS_VALIDTOPICS
+          value: advisor
+        - name: OPENSHIFT_BUILD_COMMIT
+          value: somestring
+        - name: INGRESS_MINIODEV
+          value: "true"
+        - name: DEBUG
+          value: "true"
+      resources:
+        limits:
+          cpu: 300m
+          memory: 8192Mi
+        requests:
+          cpu: 30m
+          memory: 1024Mi
   objectStore:
     - ingress-uploads-perma
   kafkaTopics:

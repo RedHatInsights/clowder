@@ -76,9 +76,10 @@ metadata:
   namespace: test-multiple-app-endpoints
 spec:
   envName: test-multiple-app-endpoints
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
     web: True
   dependencies:
     - puptoo-2
@@ -90,9 +91,10 @@ metadata:
   namespace: test-multiple-app-endpoints
 spec:
   envName: test-multiple-app-endpoints
-  pods:
+  deployments:
   - name: processor-2
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
     web: True
   optionalDependencies:
     - puptoo
@@ -104,9 +106,10 @@ metadata:
   namespace: test-multiple-app-endpoints-b
 spec:
   envName: test-multiple-app-endpoints-b
-  pods:
+  deployments:
   - name: processor-b
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
     web: True
   dependencies:
     - puptoo-b-2
@@ -118,9 +121,10 @@ metadata:
   namespace: test-multiple-app-endpoints-b
 spec:
   envName: test-multiple-app-endpoints-b
-  pods:
+  deployments:
   - name: processor-b-2
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
     web: True
   optionalDependencies:
     - puptoo-b
