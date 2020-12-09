@@ -239,15 +239,15 @@ type ClowdEnvironmentStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	TargetNamespace string                  `json:"targetNamespace"`
 	Deployments     common.DeploymentStatus `json:"deployments"`
-	Apps            []AppStatus             `json:"apps,omitempty"`
+	Apps            []AppInfo               `json:"apps,omitempty"`
 }
 
-type AppStatus struct {
-	Name        string             `json:"name"`
-	Deployments []DeploymentStatus `json:"deployments"`
+type AppInfo struct {
+	Name        string           `json:"name"`
+	Deployments []DeploymentInfo `json:"deployments"`
 }
 
-type DeploymentStatus struct {
+type DeploymentInfo struct {
 	Name     string `json:"name"`
 	Hostname string `json:"hostname,omitempty"`
 }
