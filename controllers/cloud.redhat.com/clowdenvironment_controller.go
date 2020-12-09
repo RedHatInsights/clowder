@@ -256,6 +256,7 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 			}
 			if pod.Web {
 				deploymentStatus.Hostname = fmt.Sprintf("%s.%s.svc", deploymentStatus.Name, app.Namespace)
+				deploymentStatus.Port = p.Env.Spec.Providers.Web.Port
 			}
 			appstatus.Deployments = append(appstatus.Deployments, deploymentStatus)
 		}

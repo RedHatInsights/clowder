@@ -250,6 +250,7 @@ type AppInfo struct {
 type DeploymentInfo struct {
 	Name     string `json:"name"`
 	Hostname string `json:"hostname,omitempty"`
+	Port     int32  `json:"port,omitempty"`
 }
 
 // +kubebuilder:object:root=true

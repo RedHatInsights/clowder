@@ -270,6 +270,9 @@ spec:
                           type: string
                         name:
                           type: string
+                        port:
+                          format: int32
+                          type: integer
                       required:
                       - name
                       type: object
