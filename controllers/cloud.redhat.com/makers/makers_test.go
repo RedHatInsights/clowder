@@ -93,6 +93,9 @@ func TestMissingDependency(t *testing.T) {
 			Deployments: []crd.Deployment{{
 				Name: "reqapp",
 			}},
+			OptionalDependencies: []string{
+				"marvin",
+			},
 		},
 	}
 
@@ -109,6 +112,75 @@ func TestMissingDependency(t *testing.T) {
 
 	if missing[0] != "bopper" {
 		t.Errorf("Didn't get the right missing dep")
+	}
+}
+
+func TestOptionalDependency(t *testing.T) {
+
+	var app crd.ClowdApp
+	var apps crd.ClowdAppList
+
+	objMeta := metav1.ObjectMeta{
+		Name:      "reqapp",
+		Namespace: "default",
+		Labels: map[string]string{
+			"app": "test",
+		},
+	}
+
+	app = crd.ClowdApp{
+		ObjectMeta: objMeta,
+		Spec: crd.ClowdAppSpec{
+			Dependencies: []string{
+				"zaphod",
+			},
+			OptionalDependencies: []string{
+				"marvin",
+			},
+			Deployments: []crd.Deployment{{
+				Name: "reqapp",
+			}},
+		},
+	}
+
+	nobjMeta := objMeta
+	nobjMeta.Name = "marvin"
+	nobjMeta.Namespace = "android"
+	nobjMeta2 := objMeta
+	nobjMeta2.Name = "zaphod"
+	nobjMeta2.Namespace = "android"
+	apps = crd.ClowdAppList{
+		Items: []crd.ClowdApp{{
+			ObjectMeta: nobjMeta,
+			Spec: crd.ClowdAppSpec{
+				Deployments: []crd.Deployment{{
+					Web:  true,
+					Name: "deep",
+				}}},
+		},
+			crd.ClowdApp{
+				ObjectMeta: nobjMeta2,
+				Spec: crd.ClowdAppSpec{
+					Deployments: []crd.Deployment{{
+						Web:  true,
+						Name: "beeble",
+					}}},
+			},
+		},
+	}
+
+	deps, _ := makeDepConfig(webPort, &app, &apps)
+
+	if len(deps) != 2 {
+		t.Errorf("We didn't get the dependency")
+	}
+
+	if deps[0].App != "zaphod" {
+		t.Errorf("We didn't get the right dependency")
+	}
+
+	if deps[1].App != "marvin" {
+		t.Errorf("We didn't get the right dependency")
 	}
 }
 
