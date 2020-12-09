@@ -41,6 +41,7 @@ metadata:
   namespace: test-basic-app
 spec:
   envName: test-basic-app
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello

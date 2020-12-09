@@ -41,6 +41,7 @@ metadata:
   namespace: test-rename-pod
 spec:
   envName: test-rename-pod
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello

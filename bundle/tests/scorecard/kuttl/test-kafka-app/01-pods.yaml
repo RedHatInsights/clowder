@@ -42,9 +42,10 @@ metadata:
   namespace: test-kafka-app
 spec:
   envName: test-kafka-app
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   kafkaTopics:
     - replicas: 3
       partitions: 64
