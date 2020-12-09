@@ -477,6 +477,47 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-appinfo">AppInfo</h4>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus">ClowdEnvironmentStatus</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>name</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>deployments</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deploymentinfo">DeploymentInfo</a> array</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp">ClowdApp</h4>
 <div class="paragraph">
 <p>ClowdApp is the Schema for the clowdapps API</p>
@@ -1024,6 +1065,47 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>PodSpec defines a container running inside a ClowdApp.</p>
 </div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deploymentinfo">DeploymentInfo</h4>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-appinfo">AppInfo</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>name</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>hostname</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
@@ -2226,7 +2308,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-12-08 18:08:58 UTC
+Last updated 2020-12-09 08:19:24 UTC
 </div>
 </div>
 </body>
