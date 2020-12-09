@@ -457,8 +457,8 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 	// Return if no deps
 
 	deps := m.App.Spec.Dependencies
-
-	if deps == nil || len(deps) == 0 {
+	odeps := m.App.Spec.OptionalDependencies
+	if (deps == nil || len(deps) == 0) && (odeps == nil || len(odeps) == 0) {
 		return nil
 	}
 
@@ -498,10 +498,19 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 		}
 	}
 
-	missingDeps = []string{}
 	depConfig = []config.DependencyEndpoint{}
 
-	for _, dep := range app.Spec.Dependencies {
+	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, &depConfig, webPort)
+	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, &depConfig, webPort)
+
+	return depConfig, missingDeps
+}
+
+func processAppEndpoints(appMap map[string]crd.ClowdApp, depList []string, depConfig *[]config.DependencyEndpoint, webPort int32) (missingDeps []string) {
+
+	missingDeps = []string{}
+
+	for _, dep := range depList {
 		depApp, exists := appMap[dep]
 		if !exists {
 			missingDeps = append(missingDeps, dep)
@@ -513,7 +522,7 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 		for _, deployment := range depApp.Spec.Deployments {
 			if deployment.Web {
 				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
-				depConfig = append(depConfig, config.DependencyEndpoint{
+				*depConfig = append(*depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
 					Name:     deployment.Name,
@@ -523,5 +532,5 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 		}
 	}
 
-	return depConfig, missingDeps
+	return missingDeps
 }

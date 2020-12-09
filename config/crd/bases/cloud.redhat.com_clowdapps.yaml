@@ -2025,6 +2025,13 @@ spec:
               items:
                 type: string
               type: array
+            optionalDependencies:
+              description: A list of optional dependencies in the form of the name
+                of the ClowdApps that are will be added to the configuration when
+                present.
+              items:
+                type: string
+              type: array
             pods:
               description: Deprecated
               items:
