@@ -6,7 +6,6 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -99,10 +99,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		Env:    &env,
 	}
 
-	err = r.generateAppStatus(provider)
-	if err != nil {
-		return ctrl.Result{Requeue: true}, err
-	}
 	err = runProvidersForEnv(provider)
 	if err == nil {
 		r.Log.Info("Reconciliation successful", "env", env.Name)
@@ -149,6 +145,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
+	err = r.SetAppInfo(provider)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
 	SetDeploymentStatus(ctx, &proxyClient, &env)
 	err = proxyClient.Status().Update(ctx, &env)
 
@@ -183,13 +183,15 @@ func runProvidersForEnv(provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&crd.ClowdEnvironment{}).
+		Owns(&apps.Deployment{}).
+		Owns(&core.Service{}).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
 			},
 		).
+		For(&crd.ClowdEnvironment{}).
 		Complete(r)
 }
 
@@ -221,45 +223,44 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObje
 	}}
 }
 
-func (r *ClowdEnvironmentReconciler) generateAppStatus(p providers.Provider) error {
+func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 	// Get all the ClowdApp resources
 	appList := crd.ClowdAppList{}
 	r.Client.List(p.Ctx, &appList)
-	apps := []crd.AppStatus{}
+	apps := []crd.AppInfo{}
 
 	// Populate
 	for _, app := range appList.Items {
+		if app.Spec.EnvName != p.Env.Name {
+			continue
+		}
+
+		if app.GetDeletionTimestamp() != nil {
+			continue
+		}
 
 		if app.Spec.Pods != nil {
 			app.ConvertToNewShim()
 		}
 
-		appstatus := crd.AppStatus{
+		appstatus := crd.AppInfo{
 			Name:        app.Name,
-			Deployments: []crd.DeploymentStatus{},
+			Deployments: []crd.DeploymentInfo{},
 		}
 
-		if app.Spec.EnvName == p.Env.Name {
-			for _, pod := range app.Spec.Deployments {
-				deploymentStatus := crd.DeploymentStatus{
-					Name: fmt.Sprintf("%s-%s", app.Name, pod.Name),
-				}
-				if pod.Web {
-					deploymentStatus.Hostname = fmt.Sprintf("%s.%s.svc", deploymentStatus.Name, app.Namespace)
-				}
-				appstatus.Deployments = append(appstatus.Deployments, deploymentStatus)
+		for _, pod := range app.Spec.Deployments {
+			deploymentStatus := crd.DeploymentInfo{
+				Name: fmt.Sprintf("%s-%s", app.Name, pod.Name),
 			}
-			apps = append(apps, appstatus)
+			if pod.Web {
+				deploymentStatus.Hostname = fmt.Sprintf("%s.%s.svc", deploymentStatus.Name, app.Namespace)
+			}
+			appstatus.Deployments = append(appstatus.Deployments, deploymentStatus)
 		}
+		apps = append(apps, appstatus)
 	}
 
-	fmt.Printf("\n%v\n", apps)
 	p.Env.Status.Apps = apps
-	err := r.Client.Status().Update(p.Ctx, p.Env)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
