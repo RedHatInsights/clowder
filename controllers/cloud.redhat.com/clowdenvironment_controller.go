@@ -232,19 +232,18 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 	r.Client.List(p.Ctx, &appList)
 	apps := []crd.AppInfo{}
 
-	appMap := map[string]*crd.ClowdApp{}
+	appMap := map[string]crd.ClowdApp{}
 	names := []string{}
 
 	for _, app := range appList.Items {
 		names = append(names, app.Name)
-		appMap[app.Name] = &app
+		appMap[app.Name] = app
 	}
 
 	sort.Strings(names)
 
 	// Populate
 	for _, name := range names {
-
 		app := appMap[name]
 
 		if app.Spec.EnvName != p.Env.Name {
@@ -264,17 +263,17 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 			Deployments: []crd.DeploymentInfo{},
 		}
 
-		depMap := map[string]*crd.Deployment{}
+		depMap := map[string]crd.Deployment{}
 		depNames := []string{}
+
 		for _, pod := range app.Spec.Deployments {
 			depNames = append(depNames, pod.Name)
-			depMap[pod.Name] = &pod
+			depMap[pod.Name] = pod
 		}
 
 		sort.Strings(depNames)
 
 		for _, podName := range depNames {
-
 			pod := depMap[podName]
 
 			deploymentStatus := crd.DeploymentInfo{
