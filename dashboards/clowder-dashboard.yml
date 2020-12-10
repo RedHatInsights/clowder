@@ -25,8 +25,8 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "id": 149,
-      "iteration": 1607351557381,
+      "id": 135,
+      "iteration": 1607631374233,
       "links": [],
       "panels": [
         {
@@ -195,7 +195,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\",result=\"error\"}[1m]) / rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\"}[1m])) by (controller)",
+              "expr": "sum(rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\",result=\"error\"}[5m]) / rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\"}[5m])) by (controller)",
               "interval": "",
               "legendFormat": "5m average",
               "refId": "A"
@@ -221,7 +221,7 @@ data:
           },
           "yaxes": [
             {
-              "format": "short",
+              "format": "percentunit",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -234,7 +234,7 @@ data:
               "logBase": 1,
               "max": null,
               "min": null,
-              "show": true
+              "show": false
             }
           ],
           "yaxis": {
@@ -676,7 +676,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"clowder\", container=\"manager\"})",
+              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"clowder\", container=\"manager\"}[2m]))",
               "interval": "",
               "legendFormat": "",
               "refId": "A"
@@ -731,7 +731,7 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "crc-stg-01-prometheus",
               "value": "crc-stg-01-prometheus"
             },
@@ -758,5 +758,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 13
+      "version": 1
     }
