@@ -236,6 +236,11 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 	names := []string{}
 
 	for _, app := range appList.Items {
+
+		if app.Spec.EnvName != p.Env.Name {
+			continue
+		}
+
 		names = append(names, app.Name)
 		appMap[app.Name] = app
 	}
