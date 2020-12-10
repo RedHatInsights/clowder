@@ -195,6 +195,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			},
 		).
 		For(&crd.ClowdEnvironment{}).
+		WithEventFilter(ignoreStatusUpdatePredicate()).
 		Complete(r)
 }
 
