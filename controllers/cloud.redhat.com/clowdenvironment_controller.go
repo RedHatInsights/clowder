@@ -240,9 +240,9 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 		if app.Spec.EnvName != p.Env.Name {
 			continue
 		}
-
-		names = append(names, app.Name)
-		appMap[app.Name] = app
+		name := fmt.Sprintf("%s-%s", app.Name, app.Namespace)
+		names = append(names, name)
+		appMap[name] = app
 	}
 
 	sort.Strings(names)
