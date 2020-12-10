@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -231,8 +232,21 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 	r.Client.List(p.Ctx, &appList)
 	apps := []crd.AppInfo{}
 
-	// Populate
+	appMap := map[string]*crd.ClowdApp{}
+	names := []string{}
+
 	for _, app := range appList.Items {
+		names = append(names, app.Name)
+		appMap[app.Name] = &app
+	}
+
+	sort.Strings(names)
+
+	// Populate
+	for _, name := range names {
+
+		app := appMap[name]
+
 		if app.Spec.EnvName != p.Env.Name {
 			continue
 		}
@@ -250,7 +264,19 @@ func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
 			Deployments: []crd.DeploymentInfo{},
 		}
 
+		depMap := map[string]*crd.Deployment{}
+		depNames := []string{}
 		for _, pod := range app.Spec.Deployments {
+			depNames = append(depNames, pod.Name)
+			depMap[pod.Name] = &pod
+		}
+
+		sort.Strings(depNames)
+
+		for _, podName := range depNames {
+
+			pod := depMap[podName]
+
 			deploymentStatus := crd.DeploymentInfo{
 				Name: fmt.Sprintf("%s-%s", app.Name, pod.Name),
 			}
