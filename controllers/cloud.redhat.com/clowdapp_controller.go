@@ -17,6 +17,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -162,6 +163,11 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func ignoreStatusUpdatePredicate() predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
+			// Always update if a deployment being watched changes - this allows
+			// status rollups to occur
+			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Deployment" {
+				return true
+			}
 			// Ignore updates to CR status in which case metadata.Generation does not change
 			return e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration()
 		},
