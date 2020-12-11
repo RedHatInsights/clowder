@@ -182,6 +182,10 @@ type ClowdAppStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=app
+// +kubebuilder:printcolumn:name="Ready",type="integer",JSONPath=".status.deployments.readyDeployments"
+// +kubebuilder:printcolumn:name="Managed",type="integer",JSONPath=".status.deployments.managedDeployments"
+// +kubebuilder:printcolumn:name="EnvName",type="string",JSONPath=".spec.envName"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // ClowdApp is the Schema for the clowdapps API
 type ClowdApp struct {

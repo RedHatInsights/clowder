@@ -8,6 +8,19 @@ metadata:
   creationTimestamp: null
   name: clowdapps.cloud.redhat.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.deployments.readyDeployments
+    name: Ready
+    type: integer
+  - JSONPath: .status.deployments.managedDeployments
+    name: Managed
+    type: integer
+  - JSONPath: .spec.envName
+    name: EnvName
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: cloud.redhat.com
   names:
     kind: ClowdApp
