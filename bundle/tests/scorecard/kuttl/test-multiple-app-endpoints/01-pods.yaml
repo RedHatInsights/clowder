@@ -80,7 +80,7 @@ spec:
   envName: test-multiple-app-endpoints
   pods:
   - name: processor
-    image: quay.io/psav/puptoo:bf01ba0-2
+    image: quay.io/psav/clowder-hello
     web: True
   dependencies:
     - puptoo-2
@@ -94,7 +94,7 @@ spec:
   envName: test-multiple-app-endpoints
   pods:
   - name: processor-2
-    image: quay.io/psav/puptoo:bf01ba0-2
+    image: quay.io/psav/clowder-hello
     web: True
   optionalDependencies:
     - puptoo
@@ -108,7 +108,7 @@ spec:
   envName: test-multiple-app-endpoints-b
   pods:
   - name: processor-b
-    image: quay.io/psav/puptoo:bf01ba0-2
+    image: quay.io/psav/clowder-hello
     web: True
   dependencies:
     - puptoo-b-2
@@ -122,7 +122,7 @@ spec:
   envName: test-multiple-app-endpoints-b
   pods:
   - name: processor-b-2
-    image: quay.io/psav/puptoo:bf01ba0-2
+    image: quay.io/psav/clowder-hello
     web: True
   optionalDependencies:
     - puptoo-b

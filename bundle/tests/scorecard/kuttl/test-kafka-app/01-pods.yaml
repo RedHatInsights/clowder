@@ -44,7 +44,7 @@ spec:
   envName: test-kafka-app
   pods:
   - name: processor
-    image: quay.io/psav/puptoo:bf01ba0-2
+    image: quay.io/psav/clowder-hello
   kafkaTopics:
     - replicas: 3
       partitions: 64
