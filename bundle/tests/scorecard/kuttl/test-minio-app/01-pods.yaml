@@ -44,7 +44,7 @@ spec:
   envName: test-minio-app
   pods:
   - name: processor
-    image: quay.io/psav/puptoo:bf01ba0-2
+    image: quay.io/psav/clowder-hello
   objectStore:
     - first-bucket
     - second-bucket
