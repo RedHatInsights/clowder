@@ -115,6 +115,8 @@ There are new features coming up as well:
 
 ## Testing
 
+### Unit Testing
+
 The tests rely on the test environment set up by controller-runtime.  This enables the operator to 
 get initialized against a control plane just like it would against a real OpenShift cluster.
 
@@ -148,6 +150,30 @@ to a folder that is on your `PATH` or make sure the directory is appended to you
 
 If you're just getting started with writing tests in Go, or getting started with Go in general, take
 a look at https://quii.gitbook.io/learn-go-with-tests/
+
+### E2E Testing
+
+Clowder offers two e2e testing scripts, one for pushing up the image into quay, and one for pushing
+into a minikube local registry.
+
+For Quay based testing use something like
+
+  ```
+  IMAGE_NAME=quay.io/username/clowder KUBEBUILDER_ASSETS=path/to/kubebuilder_assets
+  ```
+
+To use local testing completely within minikube, you must first enable the local registry
+
+  ```
+  minikube addons enable registry
+  ```
+
+The minikube command is slightly different, as the minikube instance seems to only be able to use
+HTTP from 127.0.0.1.
+
+  ```
+  KUBEBUILDER_ASSETS=~/kubebuilder_2.3.1_linux_amd64/bin/ IMAGE_NAME=127.0.0.1:5000/clowder IMG_PUSH_REPO=`minikube ip`:5000/clowder ./e2e-test-local.sh
+  ```
 
 ## Developing Locally with CRC
 
