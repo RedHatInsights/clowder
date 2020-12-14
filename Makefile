@@ -72,9 +72,18 @@ generate: controller-gen
 docker-build: test
 	docker build . -t ${IMG}
 
+# Build the docker image
+docker-build-no-test:
+	docker build . -t ${IMG}
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+# Push the docker image
+docker-push-local:
+	IMAGE_TAG=`git rev-parse --short HEAD`
+	docker push ${IMG} ${IMG_PUSH_REPO}:${IMAGE_TAG} --tls-verify=false
 
 # find or download controller-gen
 # download controller-gen if necessary
