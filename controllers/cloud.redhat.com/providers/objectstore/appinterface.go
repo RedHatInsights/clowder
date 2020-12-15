@@ -46,7 +46,12 @@ func (a *AppInterfaceObjectstoreProvider) CreateBuckets(app *crd.ClowdApp) error
 		return err
 	}
 
-	resolveBucketDeps(app.Spec.ObjectStore, objStoreConfig)
+	err = resolveBucketDeps(app.Spec.ObjectStore, objStoreConfig)
+
+	if err != nil {
+		return err
+	}
+
 	a.Config = *objStoreConfig
 	return nil
 }
