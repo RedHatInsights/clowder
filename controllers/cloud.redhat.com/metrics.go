@@ -21,9 +21,23 @@ var (
 			Help: "ClowdEnv Managed Envs",
 		},
 	)
+	managedAppResourceMetric = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "clowd_app_resources",
+			Help: "Clowd App Resources",
+		},
+		[]string{"env", "app", "type"},
+	)
+	managedEnvResourceMetric = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "clowd_env_resources",
+			Help: "Clowd Env Resources",
+		},
+		[]string{"env", "type"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric)
+	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, managedAppResourceMetric, managedEnvResourceMetric)
 }

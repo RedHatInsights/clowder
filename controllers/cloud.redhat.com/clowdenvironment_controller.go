@@ -22,6 +22,7 @@ import (
 	"sort"
 
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -109,6 +110,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 			managedEnvironments[env.Name] = true
 		}
 		managedEnvsMetric.Set(float64(len(managedEnvironments)))
+
+		for k, v := range proxyClient.ResourceTracker {
+			managedEnvResourceMetric.With(prometheus.Labels{"env": env.Name, "type": k}).Set(float64(len(v)))
+		}
 	}
 
 	requeue := errors.HandleError(ctx, err)

@@ -20,6 +20,7 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -128,6 +129,11 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			managedApps[app.GetIdent()] = true
 		}
 		managedAppsMetric.Set(float64(len(managedApps)))
+
+		for k, v := range proxyClient.ResourceTracker {
+			managedAppResourceMetric.With(prometheus.Labels{"app": app.Name, "env": app.Spec.EnvName, "type": k}).Set(float64(len(v)))
+			fmt.Printf("\n%v\n", v)
+		}
 	}
 
 	requeue := errors.HandleError(ctx, err)
