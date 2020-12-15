@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-db
+  namespace: test-multi-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: registry.redhat.io/rhel8/postgresql-12:1-36
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-b-db
+  namespace: test-multi-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: registry.redhat.io/rhel8/postgresql-10:1-118

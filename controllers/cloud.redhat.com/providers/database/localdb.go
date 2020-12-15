@@ -65,7 +65,24 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 
 	db.Config = dbCfg
 
-	makeLocalDB(&dd, nn, app, &dbCfg, db.Env.Spec.Providers.Database.Image, db.Env.Spec.Providers.Database.PVC)
+	var image string
+	if db.Env.Spec.Providers.Database.Image != "" {
+		image = db.Env.Spec.Providers.Database.Image
+	} else {
+		image = ""
+		for _, img := range db.Env.Spec.Providers.Database.ImageList {
+			if *app.Spec.Database.Version == img.Version {
+				image = img.Image
+				break
+			}
+		}
+
+		if image == "" {
+			return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", app.Spec.Database.Version))
+		}
+	}
+
+	makeLocalDB(&dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err
