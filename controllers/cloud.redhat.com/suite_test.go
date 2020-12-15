@@ -374,6 +374,8 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
+	labels["deployment"] = labels["pod"]
+
 	if !mapEq(s.Labels, labels) {
 		t.Errorf("Service label mismatch %v; expected %v", s.Labels, labels)
 	}

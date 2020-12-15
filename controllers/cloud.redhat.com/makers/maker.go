@@ -119,7 +119,12 @@ func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error 
 		ports = append(ports, webPort)
 	}
 
-	utils.MakeService(&s, nn, map[string]string{"pod": nn.Name}, ports, m.App)
+	svcLabels := map[string]string{
+		"pod":        nn.Name,
+		"deployment": nn.Name,
+	}
+
+	utils.MakeService(&s, nn, svcLabels, ports, m.App)
 
 	return update.Apply(m.Ctx, m.Client, &s)
 }

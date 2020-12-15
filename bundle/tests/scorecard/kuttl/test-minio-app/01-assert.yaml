@@ -111,6 +111,7 @@ kind: Service
 metadata:
   labels:
     app: test-minio-app
+    deployment: test
     env-app: test-minio-app-minio
   name: test-minio-app-minio
   namespace: test-minio-app
@@ -127,6 +128,7 @@ spec:
     targetPort: 9000
   selector:
     app: test-minio-app
+    deployment: test
     env-app: test-minio-app-minio
   sessionAffinity: None
   type: ClusterIP

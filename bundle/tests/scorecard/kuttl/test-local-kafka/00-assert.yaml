@@ -7,6 +7,7 @@ kind: Service
 metadata:
   labels:
     app: ephem
+    deployment: ephem
     env-app: ephem-kafka
   name: ephem-kafka
   namespace: skuttl-test
@@ -23,6 +24,7 @@ spec:
     targetPort: 29092
   selector:
     app: ephem
+    deployment: ephem
     env-app: ephem-kafka
   sessionAffinity: None
   type: ClusterIP
@@ -128,6 +130,7 @@ kind: Service
 metadata:
   labels:
     app: ephem
+    deployment: ephem
     env-app: ephem-zookeeper
   name: ephem-zookeeper
   namespace: skuttl-test
@@ -152,6 +155,7 @@ spec:
     targetPort: 3888
   selector:
     app: ephem
+    deployment: ephem
     env-app: ephem-zookeeper
   sessionAffinity: None
   type: ClusterIP
