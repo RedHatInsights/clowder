@@ -1,0 +1,13 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestAssert
+---
+apiVersion: cyndi.cloud.redhat.com/v1alpha1
+kind: CyndiPipeline
+metadata:
+  name: app-name-override
+  namespace: test-cyndi-local-kafka
+spec:
+  appName: app-name-override
+  insightsOnly: true
+  connectCluster: my-connect-cluster

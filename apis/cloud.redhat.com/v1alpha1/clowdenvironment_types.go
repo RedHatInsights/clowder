@@ -85,6 +85,13 @@ type KafkaConfig struct {
 	// in (*_app-interface_*) and (*_operator_*) modes.
 	Namespace string `json:"namespace"`
 
+	// The namespace that the Kafka Connect cluster is expected to reside in. This is only used
+	// in (*_app-interface_*) and (*_operator_*) modes.
+	ConnectNamespace string `json:"connectNamespace,omitempty"`
+
+	// Defines the kafka connect cluster name that is used in this environment.
+	ConnectClusterName string `json:"connectClusterName,omitempty"`
+
 	// The mode of operation of the Clowder Kafka Provider. Valid options are:
 	// (*_operator_*) which expects a Strimzi Kafka instance and will configure
 	// KafkaTopic CRs and place them in the Namespace described in the configuration,

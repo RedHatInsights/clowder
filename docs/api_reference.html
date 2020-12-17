@@ -450,6 +450,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><a href="#k8s-api-cloud-redhat-com-v1alpha1">cloud.redhat.com/v1alpha1</a></p>
 </li>
 <li>
+<p><a href="#k8s-api-cyndi-cloud-redhat-com-v1alpha1">cyndi.cloud.redhat.com/v1alpha1</a></p>
+</li>
+<li>
 <p><a href="#k8s-api-kafka-strimzi-io-v1beta1">kafka.strimzi.io/v1beta1</a></p>
 </li>
 </ul>
@@ -750,6 +753,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>A list of optional dependencies in the form of the name of the ClowdApps that are will be added to the configuration when present.</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>cyndi</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-cyndispec">CyndiSpec</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Configures 'cyndi' database syndication for this app</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -921,6 +932,56 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.</p>
 </div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-cyndispec">CyndiSpec</h4>
+<div class="paragraph">
+<p>CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the cyndi operator and exposes a limited set of cyndi configuration options</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec">ClowdAppSpec</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>enabled</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>appName</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>insightsOnly</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
@@ -1467,6 +1528,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>connectNamespace</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (<strong><em>app-interface</em></strong>) and (<strong><em>operator</em></strong>) modes.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>connectClusterName</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the kafka connect cluster name that is used in this environment.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p><strong><code>mode</code></strong> <em>KafkaMode</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -1710,7 +1787,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of environment variables in k8s defined format.</p>
@@ -1829,7 +1906,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
@@ -1853,13 +1930,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>volumes</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core">Volume</a> array</em></p>
+<p><strong><code>volumes</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core">Volume</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>volumeMounts</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core">VolumeMount</a> array</em></p>
+<p><strong><code>volumeMounts</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core">VolumeMount</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
@@ -2014,6 +2091,215 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>The mode of operation of the Web provider. The allowed modes are (<strong><em>none</em></strong>), which disables web service generation, or (<strong><em>operator</em></strong>) where services and probes are generated.</p>
 </div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="k8s-api-cyndi-cloud-redhat-com-v1alpha1">cyndi.cloud.redhat.com/v1alpha1</h3>
+<div class="paragraph">
+<p>Package v1alpha1 contains API Schema definitions for the cyndi v1alpha1 API group</p>
+</div>
+<div class="ulist">
+<div class="title">Resource Types</div>
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline">CyndiPipeline</a></p>
+</li>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinelist">CyndiPipelineList</a></p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline">CyndiPipeline</h4>
+<div class="paragraph">
+<p>CyndiPipeline is the Schema for the cyndipipelines API</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinelist">CyndiPipelineList</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>apiVersion</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>cyndi.cloud.redhat.com/v1alpha1</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>kind</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>CyndiPipeline</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>metadata</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta">ObjectMeta</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>spec</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinespec">CyndiPipelineSpec</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinelist">CyndiPipelineList</h4>
+<div class="paragraph">
+<p>CyndiPipelineList contains a list of CyndiPipeline</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>apiVersion</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>cyndi.cloud.redhat.com/v1alpha1</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>kind</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>CyndiPipelineList</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>metadata</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta">ListMeta</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>items</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline">CyndiPipeline</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinespec">CyndiPipelineSpec</h4>
+<div class="paragraph">
+<p>CyndiPipelineSpec defines the desired state of CyndiPipeline</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline">CyndiPipeline</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>appName</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>insightsOnly</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>connectCluster</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>maxAge</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>validationThreshold</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>topic</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>dbSecret</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>inventoryDbSecret</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
@@ -2514,7 +2800,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-01-14 18:17:12 UTC
+Last updated 2021-01-18 13:26:30 -0500
 </div>
 </div>
 </body>

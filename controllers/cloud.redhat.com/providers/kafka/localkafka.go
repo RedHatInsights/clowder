@@ -28,6 +28,20 @@ type localKafka struct {
 }
 
 func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if app.Spec.Cyndi.Enabled {
+		// for now we're assuming the kafka connect cluster is already present in the namespace
+		err := createCyndiPipeline(
+			k.Ctx,
+			k.Client,
+			app,
+			getConnectNamespace(k.Env, k.Env.GetClowdNamespace()),
+			getConnectClusterName(k.Env, "kafka-connect-cluster"),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(app.Spec.KafkaTopics) == 0 {
 		return nil
 	}

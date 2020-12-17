@@ -88,6 +88,18 @@ rules:
   - patch
   - update
 - apiGroups:
+  - cyndi.cloud.redhat.com
+  resources:
+  - cyndipipelines
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - kafka.strimzi.io
   resources:
   - kafkas

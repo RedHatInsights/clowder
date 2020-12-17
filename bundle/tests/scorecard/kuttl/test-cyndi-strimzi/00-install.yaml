@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-cyndi-strimzi
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-cyndi-strimzi-kafka
+spec:
+  finalizers:
+  - kubernetes

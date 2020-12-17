@@ -1,0 +1,12 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestAssert
+---
+apiVersion: cyndi.cloud.redhat.com/v1alpha1
+kind: CyndiPipeline
+metadata:
+  name: myapp
+  namespace: test-cyndi-strimzi-kafka
+spec:
+  appName: myapp
+  connectCluster: my-connect-cluster
