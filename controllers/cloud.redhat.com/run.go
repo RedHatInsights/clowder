@@ -4,6 +4,7 @@ import (
 	"os"
 
 	cloudredhatcomv1alpha1 "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -22,6 +23,7 @@ func init() {
 
 	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(strimzi.AddToScheme(scheme))
+	utilruntime.Must(cyndi.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 

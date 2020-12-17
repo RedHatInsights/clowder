@@ -1,0 +1,51 @@
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-cyndi-strimzi
+spec:
+  targetNamespace: test-cyndi-strimzi
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      namespace: test-cyndi-strimzi-kafka
+      clusterName: my-cluster
+      connectNamespace: test-cyndi-strimzi-kafka
+      connectClusterName: my-connect-cluster
+      mode: operator
+    db:
+      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+      #Possibly need to specify a port here
+    inMemoryDb:
+      mode: redis
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: myapp
+  namespace: test-cyndi-strimzi
+spec:
+  cyndi:
+    enabled: true
+  envName: test-cyndi-strimzi
+  pods:
+  - name: processor
+    image: quay.io/psav/clowder-hello
+

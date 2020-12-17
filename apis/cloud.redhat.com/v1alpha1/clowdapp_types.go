@@ -148,6 +148,19 @@ type PodSpecDeprecated struct {
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
 }
 
+// CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the
+// cyndi operator and exposes a limited set of cyndi configuration options
+type CyndiSpec struct {
+	Enabled bool `json:"enabled,omitempty"`
+
+	// +kubebuilder:validation:MinLength:=1
+	// +kubebuilder:validation:MaxLength:=64
+	// +kubebuilder:validation:Pattern:="[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
+	AppName string `json:"appName,omitempty"`
+
+	InsightsOnly bool `json:"insightsOnly,omitempty"`
+}
+
 // ClowdAppSpec is the main specification for a single Clowder Application
 // it defines n pods along with dependencies that are shared between them.
 type ClowdAppSpec struct {
@@ -194,6 +207,9 @@ type ClowdAppSpec struct {
 	// A list of optional dependencies in the form of the name of the ClowdApps that are
 	// will be added to the configuration when present.
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
+
+	// Configures 'cyndi' database syndication for this app
+	Cyndi CyndiSpec `json:"cyndi,omitempty"`
 }
 
 // ClowdAppStatus defines the observed state of ClowdApp

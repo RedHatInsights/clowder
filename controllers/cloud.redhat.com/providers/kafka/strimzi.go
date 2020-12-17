@@ -29,7 +29,7 @@ type strimziProvider struct {
 
 func (s *strimziProvider) configureBrokers() error {
 	clusterName := types.NamespacedName{
-		Namespace: s.Env.Spec.Providers.Kafka.Namespace,
+		Namespace: getKafkaNamespace(s.Env),
 		Name:      s.Env.Spec.Providers.Kafka.ClusterName,
 	}
 
@@ -68,6 +68,19 @@ func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if app.Spec.Cyndi.Enabled {
+		err := createCyndiPipeline(
+			s.Ctx,
+			s.Client,
+			app,
+			getConnectNamespace(s.Env, getKafkaNamespace(s.Env)),
+			getConnectClusterName(s.Env, "kafka-connect-cluster"),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(app.Spec.KafkaTopics) == 0 {
 		return nil
 	}
@@ -93,7 +106,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
 
 		update, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, types.NamespacedName{
-			Namespace: s.Env.Spec.Providers.Kafka.Namespace,
+			Namespace: getKafkaNamespace(s.Env),
 			Name:      topicName,
 		}, &k))
 
@@ -109,7 +122,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		}
 
 		k.SetName(topicName)
-		k.SetNamespace(s.Env.Spec.Providers.Kafka.Namespace)
+		k.SetNamespace(getKafkaNamespace(s.Env))
 		k.SetLabels(labels)
 
 		newConfig := make(map[string]string)

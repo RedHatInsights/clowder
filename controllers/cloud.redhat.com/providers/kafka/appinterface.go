@@ -21,13 +21,25 @@ type appInterface struct {
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if app.Spec.Cyndi.Enabled {
+		err := validateCyndiPipeline(
+			a.Ctx,
+			a.Client,
+			app,
+			getConnectNamespace(a.Env, getKafkaNamespace(a.Env)),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(app.Spec.KafkaTopics) == 0 {
 		return nil
 	}
 
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := types.NamespacedName{
-			Namespace: a.Env.Spec.Providers.Kafka.Namespace,
+			Namespace: getKafkaNamespace(a.Env),
 			Name:      topic.TopicName,
 		}
 
@@ -47,7 +59,6 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	}
 
 	c.Kafka = &a.Config
-
 	return nil
 }
 
@@ -97,7 +108,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 func NewAppInterface(p *p.Provider) (providers.ClowderProvider, error) {
 	nn := types.NamespacedName{
 		Name:      p.Env.Spec.Providers.Kafka.ClusterName,
-		Namespace: p.Env.Spec.Providers.Kafka.Namespace,
+		Namespace: getKafkaNamespace(p.Env),
 	}
 
 	err := validateBrokerService(p.Ctx, p.Client, nn)

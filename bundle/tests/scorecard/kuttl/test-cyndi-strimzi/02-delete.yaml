@@ -1,0 +1,13 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+delete:
+- apiVersion: v1
+  kind: Namespace
+  name: test-cyndi-strimzi
+- apiVersion: v1
+  kind: Namespace
+  name: test-cyndi-strimzi-kafka
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-cyndi-strimzi

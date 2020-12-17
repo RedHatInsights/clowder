@@ -151,6 +151,15 @@ spec:
                         Provider this will be used in some modes to locate the Kafka
                         instance.
                       type: string
+                    connectClusterName:
+                      description: Defines the kafka connect cluster name that is
+                        used in this environment.
+                      type: string
+                    connectNamespace:
+                      description: The namespace that the Kafka Connect cluster is
+                        expected to reside in. This is only used in (*_app-interface_*)
+                        and (*_operator_*) modes.
+                      type: string
                     mode:
                       description: 'The mode of operation of the Clowder Kafka Provider.
                         Valid options are: (*_operator_*) which expects a Strimzi
