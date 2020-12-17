@@ -25,7 +25,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1608151562607,
+      "iteration": 1608176489300,
       "links": [],
       "panels": [
         {
@@ -587,7 +587,7 @@ data:
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
-              "instant": false,
+              "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
               "refId": "A"
@@ -645,7 +645,7 @@ data:
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
-              "instant": false,
+              "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
               "refId": "A"
@@ -703,7 +703,7 @@ data:
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
-              "instant": false,
+              "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
               "refId": "A"
@@ -917,8 +917,8 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "crcs02ue1-prometheus",
-              "value": "crcs02ue1-prometheus"
+              "text": "crcp01ue1-prometheus",
+              "value": "crcp01ue1-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -943,5 +943,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 1
+      "version": 3
     }
