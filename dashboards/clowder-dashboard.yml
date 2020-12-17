@@ -220,14 +220,16 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:457",
               "format": "short",
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
+              "$$hashKey": "object:458",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -253,7 +255,7 @@ data:
             },
             "overrides": []
           },
-          "fill": 1,
+          "fill": 0,
           "fillGradient": 0,
           "gridPos": {
             "h": 5,
@@ -315,14 +317,16 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:848",
               "format": "short",
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
+              "$$hashKey": "object:849",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -410,14 +414,16 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:637",
               "format": "short",
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
+              "$$hashKey": "object:638",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -511,14 +517,16 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:927",
               "format": "short",
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
+              "$$hashKey": "object:928",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -785,7 +793,7 @@ data:
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
@@ -877,14 +885,16 @@ data:
           },
           "yaxes": [
             {
+              "$$hashKey": "object:783",
               "format": "short",
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
+              "$$hashKey": "object:784",
               "format": "short",
               "label": null,
               "logBase": 1,
