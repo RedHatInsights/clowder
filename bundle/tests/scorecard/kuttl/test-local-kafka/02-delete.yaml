@@ -7,4 +7,4 @@ delete:
   name: test-local-kafka
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: ephem
+  name: test-local-kafka

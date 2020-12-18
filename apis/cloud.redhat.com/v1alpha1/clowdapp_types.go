@@ -52,6 +52,23 @@ type DatabaseSpec struct {
 	Name string `json:"name,omitempty"`
 }
 
+// Job defines either a Job to be used in creating a Job via external means, or
+// a CronJob, the difference is the presense of the schedule field.
+type Job struct {
+	// Name defines identifier of the Job. This name will be used to name the
+	// CronJob resource, the container will be name identically.
+	Name string `json:"name"`
+
+	// Defines the schedule for the job to run
+	Schedule string `json:"schedule"`
+
+	// PodSpec defines a container running inside the CronJob.
+	PodSpec PodSpec `json:"podSpec,omitempty"`
+
+	// Defines the restart policy for the CronJob, defaults to never
+	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
+}
+
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
 type Deployment struct {
@@ -136,6 +153,9 @@ type PodSpecDeprecated struct {
 type ClowdAppSpec struct {
 	// A list of deployments
 	Deployments []Deployment `json:"deployments,omitempty"`
+
+	// A list of jobs
+	Jobs []Job `json:"jobs,omitempty"`
 
 	// Deprecated
 	Pods []PodSpecDeprecated `json:"pods,omitempty"`
