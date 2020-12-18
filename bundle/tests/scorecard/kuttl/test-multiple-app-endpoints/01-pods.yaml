@@ -4,7 +4,7 @@ kind: ClowdEnvironment
 metadata:
   name: test-multiple-app-endpoints
 spec:
-  targetEnvironment: test-multiple-app-endpoints
+  targetNamespace: test-multiple-app-endpoints
   providers:
     web:
       port: 8000
@@ -40,7 +40,7 @@ kind: ClowdEnvironment
 metadata:
   name: test-multiple-app-endpoints-b
 spec:
-  targetEnvironment: test-multiple-app-endpoints-b
+  targetNamespace: test-multiple-app-endpoints-b
   providers:
     web:
       port: 8000

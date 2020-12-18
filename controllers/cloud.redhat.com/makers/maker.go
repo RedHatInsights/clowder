@@ -36,6 +36,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
+	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -93,6 +94,14 @@ func (m *Maker) Make() error {
 			return err
 		}
 	}
+
+	for _, job := range m.App.Spec.Jobs {
+
+		if err := m.makeJob(job, m.App, hash); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -191,6 +200,214 @@ func applyPodAntiAffinity(t *core.PodTemplateSpec) {
 	}}
 }
 
+func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%v-%v", app.Name, job.Name),
+		Namespace: m.Request.Namespace,
+	}
+
+	c := batch.CronJob{}
+	err := m.Client.Get(m.Ctx, nn, &c)
+
+	update, err := utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	initJob(m.App, m.Env, &c, nn, job, hash)
+
+	if err := update.Apply(m.Ctx, m.Client, &c); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func initJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, nn types.NamespacedName, job crd.Job, hash string) {
+	labels := app.GetLabels()
+	labels["pod"] = nn.Name
+	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
+
+	pod := job.PodSpec
+
+	cj.Spec.Schedule = job.Schedule
+
+	cj.Spec.JobTemplate.ObjectMeta.Labels = labels
+	cj.Spec.JobTemplate.Spec.Template.ObjectMeta.Labels = labels
+
+	if job.RestartPolicy == "" {
+		cj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
+	} else {
+		cj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
+	}
+
+	cj.Spec.JobTemplate.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
+		{Name: "quay-cloudservices-pull"},
+	}
+
+	envvar := pod.Env
+	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+
+	var livenessProbe core.Probe
+	var readinessProbe core.Probe
+
+	if pod.LivenessProbe != nil {
+		livenessProbe = *pod.LivenessProbe
+	} else {
+		livenessProbe = core.Probe{}
+	}
+	if pod.ReadinessProbe != nil {
+		readinessProbe = *pod.ReadinessProbe
+	} else {
+		readinessProbe = core.Probe{}
+	}
+
+	c := core.Container{
+		Name:         nn.Name,
+		Image:        pod.Image,
+		Command:      pod.Command,
+		Args:         pod.Args,
+		Env:          envvar,
+		Resources:    processResources(&pod, env),
+		VolumeMounts: pod.VolumeMounts,
+		Ports: []core.ContainerPort{{
+			Name:          "metrics",
+			ContainerPort: env.Spec.Providers.Metrics.Port,
+		}},
+		ImagePullPolicy: core.PullIfNotPresent,
+	}
+
+	if (core.Probe{}) != livenessProbe {
+		c.LivenessProbe = &livenessProbe
+	}
+	if (core.Probe{}) != readinessProbe {
+		c.ReadinessProbe = &readinessProbe
+	}
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
+
+	cj.Spec.JobTemplate.Spec.Template.Spec.Containers = []core.Container{c}
+
+	cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = processInitContainers(nn, &c, pod.InitContainers)
+
+	cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = pod.Volumes
+	cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
+		Name: "config-secret",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: app.ObjectMeta.Name,
+			},
+		},
+	})
+
+	applyPodAntiAffinity(&cj.Spec.JobTemplate.Spec.Template)
+
+	annotations := make(map[string]string)
+	annotations["configHash"] = hash
+	cj.Spec.JobTemplate.Spec.Template.SetAnnotations(annotations)
+}
+
+func processResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.ResourceRequirements {
+	var lcpu, lmemory, rcpu, rmemory resource.Quantity
+	nullCPU := resource.Quantity{Format: resource.DecimalSI}
+	nullMemory := resource.Quantity{Format: resource.BinarySI}
+
+	if *pod.Resources.Limits.Cpu() != nullCPU {
+		lcpu = pod.Resources.Limits["cpu"]
+	} else {
+		lcpu = env.Spec.ResourceDefaults.Limits["cpu"]
+	}
+
+	if *pod.Resources.Limits.Memory() != nullMemory {
+		lmemory = pod.Resources.Limits["memory"]
+	} else {
+		lmemory = env.Spec.ResourceDefaults.Limits["memory"]
+	}
+
+	if *pod.Resources.Requests.Cpu() != nullCPU {
+		rcpu = pod.Resources.Requests["cpu"]
+	} else {
+		rcpu = env.Spec.ResourceDefaults.Requests["cpu"]
+	}
+
+	if *pod.Resources.Requests.Memory() != nullMemory {
+		rmemory = pod.Resources.Requests["memory"]
+	} else {
+		rmemory = env.Spec.ResourceDefaults.Requests["memory"]
+	}
+
+	return core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"cpu":    lcpu,
+			"memory": lmemory,
+		},
+		Requests: core.ResourceList{
+			"cpu":    rcpu,
+			"memory": rmemory,
+		},
+	}
+}
+
+func processInitContainers(nn types.NamespacedName, c *core.Container, ics []crd.InitContainer) []core.Container {
+	if len(ics) == 0 {
+		return []core.Container{}
+	}
+	containerList := make([]core.Container, len(ics))
+
+	for i, ic := range ics {
+		icStruct := core.Container{
+			Name:            nn.Name + "-init",
+			Image:           c.Image,
+			Command:         ic.Command,
+			Args:            ic.Args,
+			Resources:       c.Resources,
+			VolumeMounts:    c.VolumeMounts,
+			ImagePullPolicy: c.ImagePullPolicy,
+		}
+
+		if ic.InheritEnv {
+			// The idea here is that you can override the inherited values by
+			// setting them on the initContainer env
+			icStruct.Env = []core.EnvVar{}
+			for _, e := range c.Env {
+				found := false
+				for _, envvar := range ic.Env {
+					if e.Name == envvar.Name {
+						found = true
+						icStruct.Env = append(icStruct.Env, core.EnvVar{
+							Name:      e.Name,
+							Value:     envvar.Value,
+							ValueFrom: envvar.ValueFrom,
+						})
+					}
+				}
+				if !found {
+					icStruct.Env = append(icStruct.Env, core.EnvVar{
+						Name:      e.Name,
+						Value:     e.Value,
+						ValueFrom: e.ValueFrom,
+					})
+				}
+			}
+		} else {
+			for _, envvar := range ic.Env {
+				icStruct.Env = append(icStruct.Env, core.EnvVar{
+					Name:      envvar.Name,
+					Value:     envvar.Value,
+					ValueFrom: envvar.ValueFrom,
+				})
+			}
+		}
+
+		containerList[i] = icStruct
+	}
+	return containerList
+}
+
 // This should probably take arguments for addtional volumes, so that we can
 // add those and then do one Apply
 func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, hash string) error {
@@ -276,52 +493,13 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	}
 
-	var lcpu, lmemory, rcpu, rmemory resource.Quantity
-	nullCPU := resource.Quantity{Format: resource.DecimalSI}
-	nullMemory := resource.Quantity{Format: resource.BinarySI}
-
-	if *pod.Resources.Limits.Cpu() != nullCPU {
-		lcpu = pod.Resources.Limits["cpu"]
-	} else {
-		lcpu = env.Spec.ResourceDefaults.Limits["cpu"]
-	}
-
-	if *pod.Resources.Limits.Memory() != nullMemory {
-		lmemory = pod.Resources.Limits["memory"]
-	} else {
-		lmemory = env.Spec.ResourceDefaults.Limits["memory"]
-	}
-
-	if *pod.Resources.Requests.Cpu() != nullCPU {
-		rcpu = pod.Resources.Requests["cpu"]
-	} else {
-		rcpu = env.Spec.ResourceDefaults.Requests["cpu"]
-	}
-
-	if *pod.Resources.Requests.Memory() != nullMemory {
-		rmemory = pod.Resources.Requests["memory"]
-	} else {
-		rmemory = env.Spec.ResourceDefaults.Requests["memory"]
-	}
-
-	resources := core.ResourceRequirements{
-		Limits: core.ResourceList{
-			"cpu":    lcpu,
-			"memory": lmemory,
-		},
-		Requests: core.ResourceList{
-			"cpu":    rcpu,
-			"memory": rmemory,
-		},
-	}
-
 	c := core.Container{
 		Name:         nn.Name,
 		Image:        pod.Image,
 		Command:      pod.Command,
 		Args:         pod.Args,
 		Env:          envvar,
-		Resources:    resources,
+		Resources:    processResources(&pod, env),
 		VolumeMounts: pod.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
@@ -351,57 +529,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
-	if len(pod.InitContainers) > 0 {
-		d.Spec.Template.Spec.InitContainers = make([]core.Container, len(pod.InitContainers))
-	}
-
-	for i, ic := range pod.InitContainers {
-		icStruct := core.Container{
-			Name:            nn.Name + "-init",
-			Image:           c.Image,
-			Command:         ic.Command,
-			Args:            ic.Args,
-			Resources:       c.Resources,
-			VolumeMounts:    c.VolumeMounts,
-			ImagePullPolicy: c.ImagePullPolicy,
-		}
-
-		if ic.InheritEnv {
-			// The idea here is that you can override the inherited values by
-			// setting them on the initContainer env
-			icStruct.Env = []core.EnvVar{}
-			for _, e := range c.Env {
-				found := false
-				for _, envvar := range ic.Env {
-					if e.Name == envvar.Name {
-						found = true
-						icStruct.Env = append(icStruct.Env, core.EnvVar{
-							Name:      e.Name,
-							Value:     envvar.Value,
-							ValueFrom: envvar.ValueFrom,
-						})
-					}
-				}
-				if !found {
-					icStruct.Env = append(icStruct.Env, core.EnvVar{
-						Name:      e.Name,
-						Value:     e.Value,
-						ValueFrom: e.ValueFrom,
-					})
-				}
-			}
-		} else {
-			for _, envvar := range ic.Env {
-				icStruct.Env = append(icStruct.Env, core.EnvVar{
-					Name:      envvar.Name,
-					Value:     envvar.Value,
-					ValueFrom: envvar.ValueFrom,
-				})
-			}
-		}
-
-		d.Spec.Template.Spec.InitContainers[i] = icStruct
-	}
+	d.Spec.Template.Spec.InitContainers = processInitContainers(nn, &c, pod.InitContainers)
 
 	d.Spec.Template.Spec.Volumes = pod.Volumes
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{

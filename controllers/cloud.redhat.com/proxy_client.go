@@ -7,6 +7,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
+	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -73,6 +74,10 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 	case "Secret", "*v1.Secret":
 		rKind = "Secret"
 		dobj := obj.(*core.Secret)
+		name = dobj.Name
+	case "CronJob", "*v1beta1.CronJob":
+		rKind = "CronJob"
+		dobj := obj.(*batch.CronJob)
 		name = dobj.Name
 	default:
 		return
@@ -163,6 +168,19 @@ func (p *ProxyClient) Reconcile(uid types.UID) error {
 		case "Secret", "*v1.Secret":
 			kind := "Secret"
 			objList := &core.SecretList{}
+			err := p.List(p.Ctx, objList)
+			if err != nil {
+				return err
+			}
+			for _, obj := range objList.Items {
+				err := compareRef(obj.Name, kind, &obj)
+				if err != nil {
+					return err
+				}
+			}
+		case "CronJob", "*v1beta1.CronJob":
+			kind := "CronJob"
+			objList := &batch.CronJobList{}
 			err := p.List(p.Ctx, objList)
 			if err != nil {
 				return err

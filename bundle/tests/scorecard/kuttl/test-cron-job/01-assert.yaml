@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-cron-job
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-cron-job
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: puptoo-job
+  namespace: test-cron-job
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: puptoo-job
+              image: quay.io/psav/clowder-hello
+          restartPolicy: Never
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: puptoo-job2
+  namespace: test-cron-job
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: puptoo-job2
+              image: quay.io/psav/clowder-hello
+          restartPolicy: OnFailure

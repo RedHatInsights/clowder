@@ -1,0 +1,64 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-cron-job
+spec:
+  targetNamespace: test-cron-job
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      namespace: kafka
+      clusterName: my-cluster
+      mode: local
+    db:
+      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+      #Possibly need to specify a port here
+    inMemoryDb:
+      mode: redis
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-cron-job
+spec:
+  envName: test-cron-job
+  deployments:
+    - name: processor
+      podSpec:
+        image: quay.io/psav/clowder-hello
+  jobs:
+    - name: job
+      schedule: "*/1 * * * *"
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo
+    - name: job2
+      schedule: "*/1 * * * *"
+      restartPolicy: OnFailure
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo

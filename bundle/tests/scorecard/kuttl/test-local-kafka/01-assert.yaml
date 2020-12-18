@@ -6,15 +6,15 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: ephem
-    env-app: ephem-kafka
-  name: ephem-kafka
-  namespace: skuttl-test
+    app: test-local-kafka
+    env-app: test-local-kafka-kafka
+  name: test-local-kafka-kafka
+  namespace: test-local-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdEnvironment
-    name: ephem
-  selfLink: /api/v1/namespaces/skuttl-test/services/ephem-kafka
+    name: test-local-kafka
+  selfLink: /api/v1/namespaces/test-local-kafka/services/test-local-kafka-kafka
 spec:
   ports:
   - name: kafka
@@ -22,8 +22,8 @@ spec:
     protocol: TCP
     targetPort: 29092
   selector:
-    app: ephem
-    env-app: ephem-kafka
+    app: test-local-kafka
+    env-app: test-local-kafka-kafka
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -32,23 +32,23 @@ kind: Deployment
 metadata:
   generation: 1
   labels:
-    app: ephem
-    env-app: ephem-kafka
-  name: ephem-kafka
-  namespace: skuttl-test
+    app: test-local-kafka
+    env-app: test-local-kafka-kafka
+  name: test-local-kafka-kafka
+  namespace: test-local-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdEnvironment
-    name: ephem
-  selfLink: /apis/apps/v1/namespaces/skuttl-test/deployments/ephem-kafka
+    name: test-local-kafka
+  selfLink: /apis/apps/v1/namespaces/test-local-kafka/deployments/test-local-kafka-kafka
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: ephem
-      env-app: ephem-kafka
+      app: test-local-kafka
+      env-app: test-local-kafka-kafka
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -58,19 +58,19 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: ephem
-        env-app: ephem-kafka
+        app: test-local-kafka
+        env-app: test-local-kafka-kafka
     spec:
       containers:
       - env:
         - name: KAFKA_ADVERTISED_LISTENERS
-          value: PLAINTEXT://ephem-kafka.skuttl-test.svc:29092, LOCAL://localhost:9092
+          value: PLAINTEXT://test-local-kafka-kafka.test-local-kafka.svc:29092, LOCAL://localhost:9092
         - name: KAFKA_BROKER_ID
           value: "1"
         - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
           value: "1"
         - name: KAFKA_ZOOKEEPER_CONNECT
-          value: ephem-zookeeper:32181
+          value: test-local-kafka-zookeeper:32181
         - name: LOG_DIR
           value: /var/lib/kafka
         - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
@@ -87,7 +87,7 @@ spec:
           tcpSocket:
             port: 9092
           timeoutSeconds: 2
-        name: ephem-kafka
+        name: test-local-kafka-kafka
         ports:
         - containerPort: 9092
           name: kafka
@@ -105,7 +105,7 @@ spec:
         terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /var/lib/kafka
-          name: ephem-kafka
+          name: test-local-kafka-kafka
         - mountPath: /etc/kafka/secrets
           name: mq-kafka-1
         - mountPath: /var/lib/kafka/data
@@ -117,7 +117,7 @@ spec:
       terminationGracePeriodSeconds: 30
       volumes:
       - emptyDir: {}
-        name: ephem-kafka
+        name: test-local-kafka-kafka
       - emptyDir: {}
         name: mq-kafka-1
       - emptyDir: {}
@@ -127,15 +127,15 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: ephem
-    env-app: ephem-zookeeper
-  name: ephem-zookeeper
-  namespace: skuttl-test
+    app: test-local-kafka
+    env-app: test-local-kafka-zookeeper
+  name: test-local-kafka-zookeeper
+  namespace: test-local-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdEnvironment
-    name: ephem
-  selfLink: /api/v1/namespaces/skuttl-test/services/ephem-zookeeper
+    name: test-local-kafka
+  selfLink: /api/v1/namespaces/test-local-kafka/services/test-local-kafka-zookeeper
 spec:
   ports:
   - name: zookeeper1
@@ -151,8 +151,8 @@ spec:
     protocol: TCP
     targetPort: 3888
   selector:
-    app: ephem
-    env-app: ephem-zookeeper
+    app: test-local-kafka
+    env-app: test-local-kafka-zookeeper
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -161,23 +161,23 @@ kind: Deployment
 metadata:
   generation: 1
   labels:
-    app: ephem
-    env-app: ephem-zookeeper
-  name: ephem-zookeeper
-  namespace: skuttl-test
+    app: test-local-kafka
+    env-app: test-local-kafka-zookeeper
+  name: test-local-kafka-zookeeper
+  namespace: test-local-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdEnvironment
-    name: ephem
-  selfLink: /apis/apps/v1/namespaces/skuttl-test/deployments/ephem-zookeeper
+    name: test-local-kafka
+  selfLink: /apis/apps/v1/namespaces/test-local-kafka/deployments/test-local-kafka-zookeeper
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: ephem
-      env-app: ephem-zookeeper
+      app: test-local-kafka
+      env-app: test-local-kafka-zookeeper
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -187,8 +187,8 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: ephem
-        env-app: ephem-zookeeper
+        app: test-local-kafka
+        env-app: test-local-kafka-zookeeper
     spec:
       containers:
       - env:
@@ -199,7 +199,7 @@ spec:
         - name: ZOOKEEPER_SERVER_ID
           value: "1"
         - name: ZOOKEEPER_SERVERS
-          value: ephem-zookeeper:32181
+          value: test-local-kafka-zookeeper:32181
         - name: ZOOKEEPER_TICK_TIME
           value: "2000"
         - name: ZOOKEEPER_SYNC_LIMIT
@@ -223,7 +223,7 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 2
-        name: ephem-zookeeper
+        name: test-local-kafka-zookeeper
         ports:
         - containerPort: 2181
           name: zookeeper
@@ -256,7 +256,7 @@ spec:
         terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /var/lib/zookeeper
-          name: ephem-zookeeper
+          name: test-local-kafka-zookeeper
         - mountPath: /etc/zookeeper/secrets
           name: mq-zookeeper-1
         - mountPath: /var/lib/zookeeper/data
@@ -270,7 +270,7 @@ spec:
       terminationGracePeriodSeconds: 30
       volumes:
       - emptyDir: {}
-        name: ephem-zookeeper
+        name: test-local-kafka-zookeeper
       - emptyDir: {}
         name: mq-zookeeper-1
       - emptyDir: {}
@@ -280,14 +280,14 @@ spec:
 ---
 apiVersion: v1
 data:
-  hostname: ZXBoZW0tbWluaW8uc2t1dHRsLXRlc3Quc3Zj
+  hostname: dGVzdC1sb2NhbC1rYWZrYS1taW5pby50ZXN0LWxvY2FsLWthZmthLnN2Yw==
   port: OTAwMA==
 kind: Secret
 metadata:
-  name: ephem-minio
-  namespace: skuttl-test
+  name: test-local-kafka-minio
+  namespace: test-local-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdEnvironment
-    name: ephem
+    name: test-local-kafka
 type: Opaque
