@@ -38,10 +38,9 @@ func TestAppInterface(t *testing.T) {
 		t.Error(err)
 	}
 
-	ai.CreateTopics(app)
-
 	c := config.AppConfig{}
-	ai.Configure(&c)
+
+	ai.Provide(app, &c)
 
 	if len(c.Kafka.Brokers) != 1 {
 		t.Errorf("Wrong number of brokers %v; expected 1", len(c.Kafka.Brokers))

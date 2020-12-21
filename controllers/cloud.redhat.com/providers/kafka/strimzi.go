@@ -9,6 +9,7 @@ import (
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"k8s.io/apimachinery/pkg/types"
@@ -24,10 +25,6 @@ var conversionMap = map[string]func([]string) (string, error){
 type strimziProvider struct {
 	p.Provider
 	Config config.KafkaConfig
-}
-
-func (s *strimziProvider) Configure(config *config.AppConfig) {
-	config.Kafka = &s.Config
 }
 
 func (s *strimziProvider) configureBrokers() error {
@@ -59,7 +56,7 @@ func (s *strimziProvider) configureBrokers() error {
 	return nil
 }
 
-func NewStrimzi(p *p.Provider) (KafkaProvider, error) {
+func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 	kafkaProvider := &strimziProvider{
 		Provider: *p,
 		Config: config.KafkaConfig{
@@ -70,7 +67,7 @@ func NewStrimzi(p *p.Provider) (KafkaProvider, error) {
 	return kafkaProvider, kafkaProvider.configureBrokers()
 }
 
-func (s *strimziProvider) CreateTopics(app *crd.ClowdApp) error {
+func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	s.Config.Topics = []config.TopicConfig{}
 
 	nn := types.NamespacedName{
@@ -214,5 +211,8 @@ func (s *strimziProvider) CreateTopics(app *crd.ClowdApp) error {
 			config.TopicConfig{Name: topicName, RequestedName: topic.TopicName},
 		)
 	}
+
+	c.Kafka = &s.Config
+
 	return nil
 }

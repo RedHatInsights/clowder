@@ -121,32 +121,6 @@ func TestMinio(t *testing.T) {
 
 	fakeError := errors.New("something very bad happened")
 
-	t.Run("configure", func(t *testing.T) {
-		testAppConfig := &config.AppConfig{}
-
-		mp := getTestMinioProvider(t)
-		mp.Config = config.ObjectStoreConfig{
-			Buckets: []config.ObjectStoreBucket{{
-				AccessKey:     p.StrPtr("bucket_access_key"),
-				Name:          "my_bucket",
-				RequestedName: "my_bucket_requested_name",
-				SecretKey:     p.StrPtr("bucket_secret_key"),
-			}},
-			Hostname:  "my.minio.com",
-			Port:      8080,
-			AccessKey: p.StrPtr("access_key"),
-			SecretKey: p.StrPtr("secret_key"),
-		}
-		mp.Configure(testAppConfig)
-		result := testAppConfig.ObjectStore
-
-		equalsErr := objectStoreEquals(result, &mp.Config)
-
-		if equalsErr != "" {
-			t.Error(equalsErr)
-		}
-	})
-
 	t.Run("createBucketsHitsCheckError", func(t *testing.T) {
 		bucketName := "testBucket"
 		mockBuckets := []mockBucket{mockBucket{
@@ -156,7 +130,8 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		gotErr := mp.CreateBuckets(app)
+		c := config.AppConfig{}
+		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
 
@@ -177,7 +152,9 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		gotErr := mp.CreateBuckets(app)
+		c := config.AppConfig{}
+
+		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCreateErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
 		assertErrorIs(t, gotErr, wantErr)
@@ -195,7 +172,9 @@ func TestMinio(t *testing.T) {
 			Exists: true,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
+		c := config.AppConfig{}
+
+		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 0)
@@ -213,7 +192,9 @@ func TestMinio(t *testing.T) {
 			Exists: false,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
+		c := config.AppConfig{}
+
+		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 1)
@@ -233,9 +214,10 @@ func TestMinio(t *testing.T) {
 			mockBucket{Name: b2, Exists: false},
 			mockBucket{Name: b3, Exists: false},
 		}
+		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
+		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
 		assert.Len(handler.MakeCalls, 3)
@@ -256,9 +238,10 @@ func TestMinio(t *testing.T) {
 			mockBucket{Name: b2, Exists: true},
 			mockBucket{Name: b3, Exists: false},
 		}
+		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
+		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
 		assert.Len(handler.MakeCalls, 1)
@@ -279,14 +262,15 @@ func TestMinio(t *testing.T) {
 			mockBucket{Name: b2, Exists: false, ExistsError: fakeError},
 			mockBucket{Name: b3, Exists: false},
 		}
+		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
+		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCheckErrorMsg, b2, fakeError)
 		assert.Error(gotErr)
 		assertErrorIs(t, wantErr, gotErr)
 
-		// CreateBuckets should have bailed early
+		// Provide should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 1)
 		assert.Len(mp.Config.Buckets, 1)
@@ -302,14 +286,15 @@ func TestMinio(t *testing.T) {
 			mockBucket{Name: b2, Exists: false, CreateError: fakeError},
 			mockBucket{Name: b3, Exists: false},
 		}
+		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		gotErr := mp.CreateBuckets(app)
+		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCreateErrorMsg, b2, fakeError)
 		assert.Error(gotErr)
 		assertErrorIs(t, wantErr, gotErr)
 
-		// CreateBuckets should have bailed early
+		// Provide should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 2)
 		assert.Len(mp.Config.Buckets, 1)

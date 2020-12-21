@@ -19,11 +19,7 @@ type localRedis struct {
 	Config config.InMemoryDBConfig
 }
 
-func (r *localRedis) Configure(config *config.AppConfig) {
-	config.InMemoryDb = &r.Config
-}
-
-func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
+func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error {
 	r.Config.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
 	r.Config.Port = 6379
 
@@ -48,10 +44,12 @@ func (r *localRedis) CreateInMemoryDB(app *crd.ClowdApp) error {
 		return err
 	}
 
+	config.InMemoryDb = &r.Config
+
 	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis, r.Provider.Env.Spec.Providers.InMemoryDB.PVC)
 }
 
-func NewLocalRedis(p *providers.Provider) (InMemoryDBProvider, error) {
+func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
 	config := config.InMemoryDBConfig{}
 
 	redisProvider := localRedis{Provider: *p, Config: config}

@@ -27,11 +27,7 @@ type localKafka struct {
 	Config config.KafkaConfig
 }
 
-func (k *localKafka) Configure(config *config.AppConfig) {
-	config.Kafka = &k.Config
-}
-
-func (k *localKafka) CreateTopics(app *crd.ClowdApp) error {
+func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	host := fmt.Sprintf("%s:29092", k.Config.Brokers[0].Hostname)
 
 	for _, topic := range app.Spec.KafkaTopics {
@@ -53,10 +49,12 @@ func (k *localKafka) CreateTopics(app *crd.ClowdApp) error {
 		}
 		defer conn.Close()
 	}
+
+	c.Kafka = &k.Config
 	return nil
 }
 
-func NewLocalKafka(p *p.Provider) (KafkaProvider, error) {
+func NewLocalKafka(p *p.Provider) (providers.ClowderProvider, error) {
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{

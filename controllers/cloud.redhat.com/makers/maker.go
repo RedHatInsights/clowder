@@ -20,16 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
-
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
 
-	//config "github.com/redhatinsights/app-common-go/pkg/api/v1" - to replace the import below at a future date
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -561,20 +554,17 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 	c.MetricsPort = int(m.Env.Spec.Providers.Metrics.Port)
 	c.MetricsPath = m.Env.Spec.Providers.Metrics.Path
 
-	if err := objectstore.RunAppProvider(provider, &c, m.App); err != nil {
-		return &c, errors.Wrap("setupenv: getobjectstore", err)
-	}
-	if err := logging.RunAppProvider(provider, &c, m.App); err != nil {
-		return &c, errors.Wrap("setupenv: logging", err)
-	}
-	if err := kafka.RunAppProvider(provider, &c, m.App); err != nil {
-		return &c, errors.Wrap("setupenv: kafka", err)
-	}
-	if err := inmemorydb.RunAppProvider(provider, &c, m.App); err != nil {
-		return &c, errors.Wrap("setupenv: inmemorydb", err)
-	}
-	if err := database.RunAppProvider(provider, &c, m.App); err != nil {
-		return &c, errors.Wrap("setupenv: database", err)
+	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		prov, err := provAcc.SetupProvider(&provider)
+		if err != nil {
+			return &c, errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
+		}
+		err = prov.Provide(m.App, &c)
+		if err != nil {
+			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
+			reterr.Requeue = provAcc.RequeueOnSetupFail
+			return &c, reterr
+		}
 	}
 
 	return &c, nil

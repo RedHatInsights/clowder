@@ -6,6 +6,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -20,17 +21,13 @@ type localDbProvider struct {
 	Config config.DatabaseConfig
 }
 
-func (db *localDbProvider) Configure(c *config.AppConfig) {
-	c.Database = &db.Config
-}
-
-func NewLocalDBProvider(p *p.Provider) (DatabaseProvider, error) {
+func NewLocalDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	return &localDbProvider{Provider: *p}, nil
 }
 
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
-func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
+func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%v-db", app.Name),
 		Namespace: app.Namespace,
@@ -115,6 +112,7 @@ func (db *localDbProvider) CreateDatabase(app *crd.ClowdApp) error {
 			return err
 		}
 	}
+	c.Database = &db.Config
 	return nil
 }
 

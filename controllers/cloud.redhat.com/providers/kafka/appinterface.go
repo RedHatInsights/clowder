@@ -8,6 +8,7 @@ import (
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -19,11 +20,7 @@ type appInterface struct {
 	Config config.KafkaConfig
 }
 
-func (a *appInterface) Configure(config *config.AppConfig) {
-	config.Kafka = &a.Config
-}
-
-func (a *appInterface) CreateTopics(app *crd.ClowdApp) error {
+func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := types.NamespacedName{
 			Namespace: a.Env.Spec.Providers.Kafka.Namespace,
@@ -44,6 +41,9 @@ func (a *appInterface) CreateTopics(app *crd.ClowdApp) error {
 			},
 		)
 	}
+
+	c.Kafka = &a.Config
+
 	return nil
 }
 
@@ -90,7 +90,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 	return nil
 }
 
-func NewAppInterface(p *p.Provider) (KafkaProvider, error) {
+func NewAppInterface(p *p.Provider) (providers.ClowderProvider, error) {
 	nn := types.NamespacedName{
 		Name:      p.Env.Spec.Providers.Kafka.ClusterName,
 		Namespace: p.Env.Spec.Providers.Kafka.Namespace,
