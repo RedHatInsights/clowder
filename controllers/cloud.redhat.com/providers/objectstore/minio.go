@@ -75,19 +75,8 @@ type minioProvider struct {
 	BucketHandler bucketHandler
 }
 
-func (m *minioProvider) Configure(c *config.AppConfig) {
-	c.ObjectStore = &config.ObjectStoreConfig{
-		Hostname:  m.Config.Hostname,
-		Port:      m.Config.Port,
-		AccessKey: m.Config.AccessKey,
-		SecretKey: m.Config.SecretKey,
-		Buckets:   m.Config.Buckets,
-		Tls:       false,
-	}
-}
-
-// CreateBuckets creates new buckets
-func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
+// Provide creates new buckets
+func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	for _, bucket := range app.Spec.ObjectStore {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
 
@@ -110,7 +99,14 @@ func (m *minioProvider) CreateBuckets(app *crd.ClowdApp) error {
 			SecretKey:     m.Config.SecretKey,
 		})
 	}
-
+	c.ObjectStore = &config.ObjectStoreConfig{
+		Hostname:  m.Config.Hostname,
+		Port:      m.Config.Port,
+		AccessKey: m.Config.AccessKey,
+		SecretKey: m.Config.SecretKey,
+		Buckets:   m.Config.Buckets,
+		Tls:       false,
+	}
 	return nil
 }
 
@@ -150,7 +146,7 @@ func createDefaultMinioSecMap(name string, namespace string) map[string]string {
 }
 
 // NewMinIO constructs a new minio for the given config
-func NewMinIO(p *p.Provider) (ObjectStoreProvider, error) {
+func NewMinIO(p *p.Provider) (providers.ClowderProvider, error) {
 	nn := providers.GetNamespacedName(p.Env, "minio")
 
 	dataInit := func() map[string]string {

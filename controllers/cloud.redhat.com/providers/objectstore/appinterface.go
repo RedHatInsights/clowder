@@ -7,6 +7,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,17 +18,13 @@ type AppInterfaceObjectstoreProvider struct {
 	Config config.ObjectStoreConfig
 }
 
-func (a *AppInterfaceObjectstoreProvider) Configure(c *config.AppConfig) {
-	c.ObjectStore = &a.Config
-}
-
-func NewAppInterfaceObjectstore(p *p.Provider) (ObjectStoreProvider, error) {
+func NewAppInterfaceObjectstore(p *p.Provider) (providers.ClowderProvider, error) {
 	provider := AppInterfaceObjectstoreProvider{Provider: *p}
 
 	return &provider, nil
 }
 
-func (a *AppInterfaceObjectstoreProvider) CreateBuckets(app *crd.ClowdApp) error {
+func (a *AppInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if len(app.Spec.ObjectStore) == 0 {
 		return nil
 	}
@@ -52,7 +49,7 @@ func (a *AppInterfaceObjectstoreProvider) CreateBuckets(app *crd.ClowdApp) error
 		return err
 	}
 
-	a.Config = *objStoreConfig
+	c.ObjectStore = objStoreConfig
 	return nil
 }
 

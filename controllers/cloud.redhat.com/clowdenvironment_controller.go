@@ -31,14 +31,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
+	// Import the providers to initialize them
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -163,22 +165,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 }
 
 func runProvidersForEnv(provider providers.Provider) error {
-	if err := objectstore.RunEnvProvider(provider); err != nil {
-		return errors.Wrap("setupenv: getobjectstore", err)
+	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		if _, err := provAcc.SetupProvider(&provider); err != nil {
+			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
+		}
 	}
-	if err := logging.RunEnvProvider(provider); err != nil {
-		return errors.Wrap("setupenv: logging", err)
-	}
-	if err := kafka.RunEnvProvider(provider); err != nil {
-		return errors.Wrap("setupenv: kafka", err)
-	}
-	if err := inmemorydb.RunEnvProvider(provider); err != nil {
-		return errors.Wrap("setupenv: inmemorydb", err)
-	}
-	if err := database.RunEnvProvider(provider); err != nil {
-		return errors.Wrap("setupenv: database", err)
-	}
-
 	return nil
 }
 

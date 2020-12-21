@@ -10,6 +10,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,10 +23,6 @@ const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bun
 type appInterface struct {
 	p.Provider
 	Config config.DatabaseConfig
-}
-
-func (a *appInterface) Configure(c *config.AppConfig) {
-	c.Database = &a.Config
 }
 
 func fetchCa() (string, error) {
@@ -56,7 +53,7 @@ func fetchCa() (string, error) {
 	return caBundle, nil
 }
 
-func NewAppInterfaceObjectstore(p *p.Provider) (DatabaseProvider, error) {
+func NewAppInterfaceObjectstore(p *p.Provider) (providers.ClowderProvider, error) {
 	provider := appInterface{Provider: *p}
 
 	if rdsCa == "" {
@@ -68,11 +65,10 @@ func NewAppInterfaceObjectstore(p *p.Provider) (DatabaseProvider, error) {
 
 		rdsCa = _rdsCa
 	}
-
 	return &provider, nil
 }
 
-func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
+func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Database.Name == "" {
 		return nil
 	}
@@ -107,6 +103,9 @@ func (a *appInterface) CreateDatabase(app *crd.ClowdApp) error {
 	matched.RdsCa = &rdsCa
 
 	a.Config = matched
+
+	c.Database = &a.Config
+
 	return nil
 }
 

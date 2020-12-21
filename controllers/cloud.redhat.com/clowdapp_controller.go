@@ -35,6 +35,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	// Import the providers to initialize them
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"

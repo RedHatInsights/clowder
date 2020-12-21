@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -16,6 +17,46 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type ProviderAccessor struct {
+	SetupProvider      func(c *Provider) (ClowderProvider, error)
+	Order              int
+	Name               string
+	RequeueOnSetupFail bool
+}
+
+type providersRegistration struct {
+	Registry []ProviderAccessor
+}
+
+func (p *providersRegistration) Len() int {
+	return len(p.Registry)
+}
+
+func (p *providersRegistration) Swap(i, j int) {
+	p.Registry[i], p.Registry[j] = p.Registry[j], p.Registry[i]
+}
+
+func (p *providersRegistration) Less(i, j int) bool {
+	return p.Registry[i].Order < p.Registry[j].Order
+}
+
+func (p *providersRegistration) Register(
+	SetupProvider func(c *Provider) (ClowderProvider, error),
+	Order int,
+	Name string,
+	RequeueOnSetupFail bool,
+) {
+	p.Registry = append(p.Registry, ProviderAccessor{
+		SetupProvider:      SetupProvider,
+		Order:              Order,
+		Name:               Name,
+		RequeueOnSetupFail: RequeueOnSetupFail,
+	})
+	sort.Sort(p)
+}
+
+var ProvidersRegistration providersRegistration
+
 type Labels map[string]string
 
 type Provider struct {
@@ -24,11 +65,8 @@ type Provider struct {
 	Env    *crd.ClowdEnvironment
 }
 
-// Configurable is responsible for applying the respective section of
-// AppConfig.  It should be called in the app reconciler after all
-// provider-specific API calls (e.g. CreateBuckets) have been made.
-type Configurable interface {
-	Configure(c *config.AppConfig)
+type ClowderProvider interface {
+	Provide(app *crd.ClowdApp, c *config.AppConfig) error
 }
 
 func StrPtr(s string) *string {
