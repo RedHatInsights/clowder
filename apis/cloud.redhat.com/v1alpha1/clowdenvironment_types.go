@@ -270,7 +270,7 @@ type DeploymentInfo struct {
 // +kubebuilder:resource:scope=Cluster,shortName=env
 // +kubebuilder:printcolumn:name="Ready",type="integer",JSONPath=".status.deployments.readyDeployments"
 // +kubebuilder:printcolumn:name="Managed",type="integer",JSONPath=".status.deployments.managedDeployments"
-// +kubebuilder:printcolumn:name="Managed",type="string",JSONPath=".status.targetNamespace"
+// +kubebuilder:printcolumn:name="Namespace",type="string",JSONPath=".status.targetNamespace"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // ClowdEnvironment is the Schema for the clowdenvironments API
