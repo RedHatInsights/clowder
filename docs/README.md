@@ -216,7 +216,7 @@ namespace.
 Changes to an ``ClowdEnvironment`` will propagate to all the associated
 ``ClowdApps``.
 
-Serivce Dependencies
+Service Dependencies
 ====================
 
 The operator will introduce the idea of service dependencies.  A ``ClowdApp``
