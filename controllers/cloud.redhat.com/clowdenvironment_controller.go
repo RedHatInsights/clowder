@@ -79,6 +79,15 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	if env.Status.TargetNamespace == "" {
 		if env.Spec.TargetNamespace != "" {
+			namespace := core.Namespace{}
+			namespaceName := types.NamespacedName{
+				Name: env.Spec.TargetNamespace,
+			}
+			err := r.Client.Get(ctx, namespaceName, &namespace)
+			if err != nil {
+				r.Recorder.Eventf(&env, "Warning", "NamespaceMissing", "Requested Target Namespace [%s] is missing", env.Spec.TargetNamespace)
+				return ctrl.Result{Requeue: true}, err
+			}
 			env.Status.TargetNamespace = env.Spec.TargetNamespace
 		} else {
 			env.Status.TargetNamespace = env.GenerateTargetNamespace()
