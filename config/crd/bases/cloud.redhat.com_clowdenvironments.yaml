@@ -16,7 +16,7 @@ spec:
     name: Managed
     type: integer
   - JSONPath: .status.targetNamespace
-    name: Managed
+    name: Namespace
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: Age
