@@ -77,6 +77,10 @@ type minioProvider struct {
 
 // Provide creates new buckets
 func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if len(app.Spec.ObjectStore) == 0 {
+		return nil
+	}
+
 	for _, bucket := range app.Spec.ObjectStore {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
 

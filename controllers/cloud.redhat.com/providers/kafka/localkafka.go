@@ -28,6 +28,10 @@ type localKafka struct {
 }
 
 func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
 	host := fmt.Sprintf("%s:29092", k.Config.Brokers[0].Hostname)
 
 	for _, topic := range app.Spec.KafkaTopics {

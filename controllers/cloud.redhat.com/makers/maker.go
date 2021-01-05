@@ -562,7 +562,7 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 		err = prov.Provide(m.App, &c)
 		if err != nil {
 			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
-			reterr.Requeue = provAcc.RequeueOnSetupFail
+			reterr.Requeue = true
 			return &c, reterr
 		}
 	}

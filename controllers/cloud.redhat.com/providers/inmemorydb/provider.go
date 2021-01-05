@@ -19,5 +19,5 @@ func GetInMemoryDB(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetInMemoryDB, 1, "inmemorydb", false)
+	p.ProvidersRegistration.Register(GetInMemoryDB, 1, "inmemorydb")
 }

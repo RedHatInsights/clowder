@@ -68,6 +68,10 @@ func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
 	s.Config.Topics = []config.TopicConfig{}
 
 	nn := types.NamespacedName{
