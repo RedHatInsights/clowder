@@ -28,6 +28,10 @@ func NewLocalDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if app.Spec.Database.Name == "" {
+		return nil
+	}
+
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%v-db", app.Name),
 		Namespace: app.Namespace,

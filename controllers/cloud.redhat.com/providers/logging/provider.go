@@ -21,5 +21,5 @@ func GetLogging(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetLogging, 1, "logging", false)
+	p.ProvidersRegistration.Register(GetLogging, 1, "logging")
 }

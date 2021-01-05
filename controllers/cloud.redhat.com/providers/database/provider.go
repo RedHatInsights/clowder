@@ -21,5 +21,5 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetDatabase, 1, "database", false)
+	p.ProvidersRegistration.Register(GetDatabase, 1, "database")
 }

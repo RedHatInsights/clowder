@@ -21,5 +21,5 @@ func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetObjectStore, 1, "objectstore", false)
+	p.ProvidersRegistration.Register(GetObjectStore, 1, "objectstore")
 }

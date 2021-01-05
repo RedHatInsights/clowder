@@ -27,5 +27,5 @@ func intPtr(i int) *int {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetKafka, 1, "kafka", true)
+	p.ProvidersRegistration.Register(GetKafka, 1, "kafka")
 }

@@ -21,6 +21,10 @@ type appInterface struct {
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := types.NamespacedName{
 			Namespace: a.Env.Spec.Providers.Kafka.Namespace,

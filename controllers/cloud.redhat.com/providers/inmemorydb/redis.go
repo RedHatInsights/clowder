@@ -20,6 +20,10 @@ type localRedis struct {
 }
 
 func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error {
+	if !app.Spec.InMemoryDB {
+		return nil
+	}
+
 	r.Config.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
 	r.Config.Port = 6379
 
