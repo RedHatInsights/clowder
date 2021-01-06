@@ -11,7 +11,12 @@ endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # Image URL to use all building/pushing image targets
+ifeq ($(findstring -minikube,${MAKECMDGOALS}), -minikube)
+IMG ?= 127.0.0.1:5000/clowder:$(shell git rev-parse --short=7 HEAD)
+else
 IMG ?= quay.io/cloudservices/clowder:$(shell git rev-parse --short=7 HEAD)
+endif
+
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -81,9 +86,11 @@ docker-push:
 	docker push ${IMG}
 
 # Push the docker image
-docker-push-local:
-	IMAGE_TAG=`git rev-parse --short HEAD`
-	docker push ${IMG} ${IMG_PUSH_REPO}:${IMAGE_TAG} --tls-verify=false
+docker-push-minikube:
+	docker push ${IMG} $(shell minikube ip):5000/clowder:$(shell git rev-parse --short=7 HEAD) --tls-verify=false
+
+deploy-minikube: bundle-verify docker-build-no-test docker-push-minikube deploy
+
 
 # find or download controller-gen
 # download controller-gen if necessary
@@ -119,7 +126,12 @@ endif
 
 # Generate bundle manifests and metadata, then validate generated files.
 .PHONY: bundle
-bundle: manifests
+bundle: manifests bundle-verify
+	docker build -f bundle.Dockerfile -t $(BUNDLE_IMAGE):$(BUNDLE_IMAGE_TAG) .
+
+bundle-verify:
+	echo ${MAKECMDGOALS}
+	echo ${IMG}
 	operator-sdk generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 ifneq ($(origin REPLACE_VERSION), undefined)
@@ -127,4 +139,3 @@ ifneq ($(origin REPLACE_VERSION), undefined)
 endif
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	operator-sdk bundle validate ./bundle
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMAGE):$(BUNDLE_IMAGE_TAG) .
