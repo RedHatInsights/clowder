@@ -106,11 +106,12 @@ spec:
                     mode:
                       description: 'The mode of operation of the Clowder InMemory
                         Provider. Valid options are: (*_redis_*) where a local Minio
-                        instance will be created. This provider currently has no mode
-                        for app-interface.'
+                        instance will be created, and (*_elasticache_*) which will
+                        search the namespace of the ClowdApp for a secret called ''elasticache'''
                       enum:
                       - redis
                       - app-interface
+                      - elasticache
                       type: string
                     pvc:
                       description: If using the (*_local_*) mode and PVC is set to

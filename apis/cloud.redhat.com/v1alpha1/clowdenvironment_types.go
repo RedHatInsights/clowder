@@ -178,15 +178,15 @@ type ObjectStoreConfig struct {
 
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB
 // Provider
-// +kubebuilder:validation:Enum=redis;app-interface
+// +kubebuilder:validation:Enum=redis;app-interface;elasticache
 type InMemoryMode string
 
 // InMemoryDBConfig configures the Clowder provider controlling the creation of
 // InMemoryDB instances.
 type InMemoryDBConfig struct {
 	// The mode of operation of the Clowder InMemory Provider. Valid options are:
-	// (*_redis_*) where a local Minio instance will be created. This provider currently
-	// has no mode for app-interface.
+	// (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)
+	// which will search the namespace of the ClowdApp for a secret called 'elasticache'
 	Mode InMemoryMode `json:"mode"`
 
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
