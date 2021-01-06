@@ -156,7 +156,9 @@ func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
-		{Name: "PGPASSWORD", Value: cfg.AdminPassword},
+		{Name: "PGPASSWORD", Value: cfg.AdminPassword}, // Legacy for old db images can likely be removed soon
+		{Name: "POSTGRESQL_MASTER_USER", Value: cfg.AdminUsername},
+		{Name: "POSTGRESQL_MASTER_PASSWORD", Value: cfg.AdminPassword},
 		// TODO: Do we need to set the DB name?
 		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
 	}

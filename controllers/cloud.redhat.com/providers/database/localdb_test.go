@@ -113,6 +113,8 @@ func TestLocalDBDeployment(t *testing.T) {
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
 		{Name: "PGPASSWORD", Value: cfg.AdminPassword},
+		{Name: "POSTGRESQL_MASTER_USER", Value: cfg.AdminUsername},
+		{Name: "POSTGRESQL_MASTER_PASSWORD", Value: cfg.AdminPassword},
 		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
 	}
 
