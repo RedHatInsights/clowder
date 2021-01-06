@@ -12,6 +12,8 @@ func GetInMemoryDB(c *p.Provider) (p.ClowderProvider, error) {
 	switch dbMode {
 	case "redis":
 		return NewLocalRedis(c)
+	case "elasticache":
+		return NewElasticache(c)
 	default:
 		errStr := fmt.Sprintf("No matching in-memory db mode for %s", dbMode)
 		return nil, errors.New(errStr)
