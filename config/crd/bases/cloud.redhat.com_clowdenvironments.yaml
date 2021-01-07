@@ -328,6 +328,8 @@ spec:
               - managedDeployments
               - readyDeployments
               type: object
+            ready:
+              type: boolean
             targetNamespace:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                 of cluster Important: Run "make" to regenerate code after modifying
@@ -335,6 +337,7 @@ spec:
               type: string
           required:
           - deployments
+          - ready
           - targetNamespace
           type: object
       type: object

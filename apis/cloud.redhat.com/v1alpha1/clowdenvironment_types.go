@@ -251,6 +251,7 @@ type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	TargetNamespace string                  `json:"targetNamespace"`
+	Ready           bool                    `json:"ready"`
 	Deployments     common.DeploymentStatus `json:"deployments"`
 	Apps            []AppInfo               `json:"apps,omitempty"`
 }

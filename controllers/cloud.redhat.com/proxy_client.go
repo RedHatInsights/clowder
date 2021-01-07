@@ -52,6 +52,7 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 	}
 
 	var name string
+	var namespace string
 	var rKind string
 
 	switch kind {
@@ -59,26 +60,32 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 		rKind = "ConfigMap"
 		dobj := obj.(*core.ConfigMap)
 		name = dobj.Name
+		namespace = dobj.Namespace
 	case "Deployment", "*v1.Deployment":
 		rKind = "Deployment"
 		dobj := obj.(*apps.Deployment)
 		name = dobj.Name
+		namespace = dobj.Namespace
 	case "Service", "*v1.Service":
 		rKind = "Service"
 		dobj := obj.(*core.Service)
 		name = dobj.Name
+		namespace = dobj.Namespace
 	case "PersistentVolumeClaim", "*v1.PersistentVolumeClaim":
 		rKind = "PersistentVolumeClaim"
 		dobj := obj.(*core.PersistentVolumeClaim)
 		name = dobj.Name
+		namespace = dobj.Namespace
 	case "Secret", "*v1.Secret":
 		rKind = "Secret"
 		dobj := obj.(*core.Secret)
 		name = dobj.Name
+		namespace = dobj.Namespace
 	case "CronJob", "*v1beta1.CronJob":
 		rKind = "CronJob"
 		dobj := obj.(*batch.CronJob)
 		name = dobj.Name
+		namespace = dobj.Namespace
 	default:
 		return
 	}
@@ -87,7 +94,7 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 		p.ResourceTracker[rKind] = map[string]bool{}
 	}
 
-	log.Info("Tracking resource", "kind", rKind, "name", name)
+	log.Info("Tracking resource", "kind", rKind, "namespace", namespace, "name", name)
 	p.ResourceTracker[rKind][name] = true
 }
 

@@ -105,7 +105,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	r.Log.Info("Reconciliation started", "app", app.Name)
+	r.Log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &app)
 
@@ -116,7 +116,13 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	if err != nil {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", app.Spec.EnvName)
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true}, err
+	}
+
+	if env.Status.Ready == false {
+		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
+		r.Log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
+		return ctrl.Result{Requeue: true}, err
 	}
 
 	maker, err := makers.New(&makers.Maker{
@@ -131,7 +137,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	err = maker.Make()
 
 	if err == nil {
-		r.Log.Info("Reconciliation successful", "app", app.Name)
+		r.Log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 		if _, ok := managedApps[app.GetIdent()]; ok == false {
 			managedApps[app.GetIdent()] = true
 		}

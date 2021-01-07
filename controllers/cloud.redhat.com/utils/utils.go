@@ -54,7 +54,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 	meta := obj.(metav1.Object)
 
 	if *u {
-		Log.Info("Updating resource", "kind", kind, "object_name", meta.GetName())
+		Log.Info("Updating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
 		err = cl.Update(ctx, obj)
 	} else {
 		if meta.GetName() == "" {
@@ -62,7 +62,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 			return nil
 		}
 
-		Log.Info("Creating resource", "kind", kind, "object_name", meta.GetName())
+		Log.Info("Creating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
 		err = cl.Create(ctx, obj)
 	}
 

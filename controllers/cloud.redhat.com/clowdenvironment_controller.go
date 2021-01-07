@@ -164,6 +164,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{Requeue: true}, err
 	}
 	SetDeploymentStatus(ctx, &proxyClient, &env)
+
+	env.Status.Ready = false
+	if env.Status.Deployments.ManagedDeployments == env.Status.Deployments.ReadyDeployments {
+		env.Status.Ready = true
+	}
+
 	err = proxyClient.Status().Update(ctx, &env)
 
 	if err != nil {
