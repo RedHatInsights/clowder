@@ -14,6 +14,8 @@ func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
 		return NewMinIO(c)
 	case "app-interface":
 		return &AppInterfaceObjectstoreProvider{Provider: *c}, nil
+	case "none":
+		return NewNoneObjectStore(c)
 	default:
 		errStr := fmt.Sprintf("No matching object store mode for %s", objectStoreMode)
 		return nil, errors.New(errStr)

@@ -16,6 +16,8 @@ func GetKafka(c *p.Provider) (p.ClowderProvider, error) {
 		return NewLocalKafka(c)
 	case "app-interface":
 		return NewAppInterface(c)
+	case "none":
+		return NewNoneKafka(c)
 	default:
 		errStr := fmt.Sprintf("No matching kafka mode for %s", kafkaMode)
 		return nil, errors.New(errStr)

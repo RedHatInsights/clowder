@@ -71,7 +71,7 @@ type MetricsConfig struct {
 // TODO: Other potential mode: saas
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
-// +kubebuilder:validation:Enum=operator;app-interface;local
+// +kubebuilder:validation:Enum=operator;app-interface;local;none
 type KafkaMode string
 
 // KafkaConfig configures the Clowder provider controlling the creation of
@@ -105,7 +105,7 @@ type KafkaConfig struct {
 // TODO: Other potential modes: RDS and Operator (e.g. CrunchyDB)
 
 // DatabaseMode details the mode of operation of the Clowder Database Provider
-// +kubebuilder:validation:Enum=app-interface;local
+// +kubebuilder:validation:Enum=app-interface;local;none
 type DatabaseMode string
 
 // DatabaseConfig configures the Clowder provider controlling the creation of
@@ -141,6 +141,7 @@ type DatabaseImage struct {
 // TODO: Other potential modes: splunk, kafka
 
 // LoggingMode details the mode of operation of the Clowder Logging Provider
+// +kubebuilder:validation:Enum=app-interface;null;none
 type LoggingMode string
 
 // LoggingConfig configures the Clowder provider controlling the creation of
@@ -156,7 +157,7 @@ type LoggingConfig struct {
 
 // ObjectStoreMode details the mode of operation of the Clowder ObjectStore
 // Provider
-// +kubebuilder:validation:Enum=minio;app-interface
+// +kubebuilder:validation:Enum=minio;app-interface;none
 type ObjectStoreMode string
 
 // ObjectStoreConfig configures the Clowder provider controlling the creation of
@@ -178,7 +179,7 @@ type ObjectStoreConfig struct {
 
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB
 // Provider
-// +kubebuilder:validation:Enum=redis;app-interface;elasticache
+// +kubebuilder:validation:Enum=redis;app-interface;elasticache;none
 type InMemoryMode string
 
 // InMemoryDBConfig configures the Clowder provider controlling the creation of

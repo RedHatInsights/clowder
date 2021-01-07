@@ -7,18 +7,18 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
-type NullLoggingProvider struct {
+type noneLoggingProvider struct {
 	p.Provider
 	Config config.LoggingConfig
 }
 
-func NewNullLogging(p *p.Provider) (providers.ClowderProvider, error) {
-	provider := NullLoggingProvider{Provider: *p}
+func NewNoneLogging(p *p.Provider) (providers.ClowderProvider, error) {
+	provider := noneLoggingProvider{Provider: *p}
 
 	return &provider, nil
 }
 
-func (a *NullLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *noneLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	c.Logging = config.LoggingConfig{
 		Cloudwatch: &config.CloudWatchConfig{
 			AccessKeyId:     "",
