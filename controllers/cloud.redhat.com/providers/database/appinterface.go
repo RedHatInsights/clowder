@@ -53,7 +53,7 @@ func fetchCa() (string, error) {
 	return caBundle, nil
 }
 
-func NewAppInterfaceObjectstore(p *p.Provider) (providers.ClowderProvider, error) {
+func NewAppInterfaceDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	provider := appInterface{Provider: *p}
 
 	if rdsCa == "" {

@@ -16,7 +16,7 @@ spec:
     kafka:
       namespace: kafka
       clusterName: my-cluster
-      mode: local
+      mode: none
     db:
       imageList: 
         - version: 12
@@ -27,10 +27,9 @@ spec:
     logging:
       mode: none
     objectStore:
-      mode: minio
-      #Possibly need to specify a port here
+      mode: none
     inMemoryDb:
-      mode: redis
+      mode: none
   resourceDefaults:
     limits:
       cpu: 400m

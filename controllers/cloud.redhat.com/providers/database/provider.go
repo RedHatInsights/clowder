@@ -13,7 +13,9 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 	case "local":
 		return NewLocalDBProvider(c)
 	case "app-interface":
-		return NewAppInterfaceObjectstore(c)
+		return NewAppInterfaceDBProvider(c)
+	case "none":
+		return NewNoneDBProvider(c)
 	default:
 		errStr := fmt.Sprintf("No matching db mode for %s", dbMode)
 		return nil, errors.New(errStr)
