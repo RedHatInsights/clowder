@@ -27,3 +27,5 @@ kubeconfig
 *~
 launch.json
 *.code-workspace
+
+docs/build

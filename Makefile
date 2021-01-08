@@ -29,6 +29,10 @@ endif
 
 all: manager
 
+api-docs:
+	./build_api_docs.sh
+	./build_config_docs.sh
+
 # Run tests
 test: generate fmt vet manifests
 	go test ./... -coverprofile cover.out
