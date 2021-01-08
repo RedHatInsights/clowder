@@ -207,20 +207,11 @@ For others, see: https://docs.asciidoctor.org/asciidoctor/latest/install/
 Build the docs using:
 
   ```
-  ./build_docs.sh
+ make api-docs
   ```
 
-Then be sure to add doc changes before committing:
+Then be sure to add doc changes before committing, e.g.:
 
   ```
   git add docs/api_reference.html`
-  ```
-
-### AppConfig
-
-The AppConfig docs are generated using the [jsonschema2md](https://github.com/adobe/jsonschema2md) tool
-by Adobe. Once installed via npm, simply run:
-
-  ```
-  ./node_modules/.bin/jsonschema2md -d workspace/clowder/controllers/cloud.redhat.com/config/ -o workspace/clowder/docs/appconfig -e json
   ```
