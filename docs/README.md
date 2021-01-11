@@ -219,16 +219,27 @@ Changes to an ``ClowdEnvironment`` will propagate to all the associated
 Service Dependencies
 ====================
 
-The operator will introduce the idea of service dependencies.  A ``ClowdApp``
+### Mandatory Dependencies
+
+The operator introduces the idea of service dependencies.  A ``ClowdApp``
 can list out a number of service dependencies.  If any of the dependencies are
 not met, then the operator will emit an event listing the missing service
 dependencies and requeue the ``ClowdApp`` for reconciliation until the
 dependencies are met.  This is similar to how Openshift already manages
-dependencies, e.g. a missing persistent volume.
+dependencies, e.g. a missing persistent volume. These are defined by the
+``dependencies`` section in the ``ClowdApp``.
 
 Service hostnames for dependent apps will be added to the JSON configuration
 mounted into an app's container; hostnames for apps that are not listed as
 dependencies will not be added to the configuration.
+
+### OptionalDependencies
+
+As well as mandatory dependencies, Clowder also supports the concept of optional
+dependencies. These will not prevent an app from being deployed and starting up
+if they do not exist at the time of reconciliation. When they do exist, the 
+configuration for the app is altered and as a consequence the app is restarted
+so that it can pick up the new configuration.
 
 Gateway
 =======
