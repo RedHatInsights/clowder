@@ -13,7 +13,7 @@ type noneDbProvider struct {
 }
 
 func NewNoneDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
-	return &localDbProvider{Provider: *p}, nil
+	return &noneDbProvider{Provider: *p}, nil
 }
 
 func (db *noneDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
