@@ -90,6 +90,7 @@ spec:
                       enum:
                       - app-interface
                       - local
+                      - none
                       type: string
                     pvc:
                       description: If using the (*_local_*) mode and PVC is set to
@@ -112,6 +113,7 @@ spec:
                       - redis
                       - app-interface
                       - elasticache
+                      - none
                       type: string
                     pvc:
                       description: If using the (*_local_*) mode and PVC is set to
@@ -143,6 +145,7 @@ spec:
                       - operator
                       - app-interface
                       - local
+                      - none
                       type: string
                     namespace:
                       description: The Namespace the cluster is expected to reside
@@ -170,6 +173,10 @@ spec:
                         Valid options are: (*_app-interface_*) where the provider
                         will pass through cloudwatch credentials to the app configuration,
                         and (*_none_*) where no logging will be configured.'
+                      enum:
+                      - app-interface
+                      - "null"
+                      - none
                       type: string
                   required:
                   - mode
@@ -211,6 +218,7 @@ spec:
                       enum:
                       - minio
                       - app-interface
+                      - none
                       type: string
                     pvc:
                       description: If using the (*_local_*) mode and PVC is set to
