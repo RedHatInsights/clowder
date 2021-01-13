@@ -546,6 +546,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
+	annotations["sidecar.istio.io/inject"] = "true"
 	d.Spec.Template.SetAnnotations(annotations)
 }
 
