@@ -366,19 +366,18 @@ func processInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 			// The idea here is that you can override the inherited values by
 			// setting them on the initContainer env
 			icStruct.Env = []core.EnvVar{}
+			usedVars := make(map[string]bool)
+
+			for _, iEnvVar := range ic.Env {
+				icStruct.Env = append(icStruct.Env, core.EnvVar{
+					Name:      iEnvVar.Name,
+					Value:     iEnvVar.Value,
+					ValueFrom: iEnvVar.ValueFrom,
+				})
+				usedVars[iEnvVar.Name] = true
+			}
 			for _, e := range c.Env {
-				found := false
-				for _, envvar := range ic.Env {
-					if e.Name == envvar.Name {
-						found = true
-						icStruct.Env = append(icStruct.Env, core.EnvVar{
-							Name:      e.Name,
-							Value:     envvar.Value,
-							ValueFrom: envvar.ValueFrom,
-						})
-					}
-				}
-				if !found {
+				if _, ok := usedVars[e.Name]; !ok {
 					icStruct.Env = append(icStruct.Env, core.EnvVar{
 						Name:      e.Name,
 						Value:     e.Value,
@@ -395,6 +394,10 @@ func processInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 				})
 			}
 		}
+
+		icStruct.Env = append(
+			icStruct.Env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
+		)
 
 		containerList[i] = icStruct
 	}
