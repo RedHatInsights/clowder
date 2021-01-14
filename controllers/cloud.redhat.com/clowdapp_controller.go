@@ -37,6 +37,7 @@ import (
 
 	// Import the providers to initialize them
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/featureflags"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"

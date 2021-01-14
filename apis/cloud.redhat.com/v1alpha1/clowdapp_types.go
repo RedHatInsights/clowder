@@ -177,10 +177,15 @@ type ClowdAppSpec struct {
 	// defined by the ClowdEnvironment, Clowder will create those buckets.
 	ObjectStore []string `json:"objectStore,omitempty"`
 
-	// If inMemoryDb is set to true, Clowder will configure pass configuration
+	// If inMemoryDb is set to true, Clowder will pass configuration
 	// of an In Memory Database to the pods in the ClowdApp. This single
 	// instance will be shared between all apps.
 	InMemoryDB bool `json:"inMemoryDb,omitempty"`
+
+	// If featureFlags is set to true, Clowder will pass configuration of a
+	// FeatureFlags instance to the pods in the ClowdApp. This single
+	// instance will be shared between all apps.
+	FeatureFlags bool `json:"featureFlags,omitempty"`
 
 	// A list of dependencies in the form of the name of the ClowdApps that are
 	// required to be present for this ClowdApp to function.

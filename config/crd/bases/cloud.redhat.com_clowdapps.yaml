@@ -1998,10 +1998,15 @@ spec:
                 will use as its base. This does not mean that the ClowdApp needs to
                 be placed in the same directory as the targetNamespace of the ClowdEnvironment.
               type: string
+            featureFlags:
+              description: If featureFlags is set to true, Clowder will pass configuration
+                of a FeatureFlags instance to the pods in the ClowdApp. This single
+                instance will be shared between all apps.
+              type: boolean
             inMemoryDb:
-              description: If inMemoryDb is set to true, Clowder will configure pass
-                configuration of an In Memory Database to the pods in the ClowdApp.
-                This single instance will be shared between all apps.
+              description: If inMemoryDb is set to true, Clowder will pass configuration
+                of an In Memory Database to the pods in the ClowdApp. This single
+                instance will be shared between all apps.
               type: boolean
             jobs:
               description: A list of jobs

@@ -13,6 +13,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	provutils "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/utils"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
 
@@ -50,7 +51,7 @@ func TestLocalDBPVC(t *testing.T) {
 	nn, app := getBaseElements()
 
 	pvc := core.PersistentVolumeClaim{}
-	makeLocalPVC(&pvc, nn, &app)
+	provutils.MakeLocalDBPVC(&pvc, nn, &app)
 
 	if pvc.Name != nn.Name {
 		t.Fatalf("Name %v did not match expected %v", pvc.Name, nn.Name)
@@ -80,7 +81,7 @@ func TestLocalDBService(t *testing.T) {
 
 	s := core.Service{}
 
-	makeLocalService(&s, nn, &app)
+	provutils.MakeLocalDBService(&s, nn, &app)
 
 	if s.Name != nn.Name {
 		t.Fatalf("Name %v did not match expected %v", s.Name, nn.Name)
@@ -122,7 +123,7 @@ func TestLocalDBDeployment(t *testing.T) {
 
 	image := "imagename:tag"
 
-	makeLocalDB(&d, nn, &app, &cfg, image, true)
+	provutils.MakeLocalDB(&d, nn, &app, &cfg, image, true, "")
 
 	if d.Spec.Template.Spec.Containers[0].Image != image {
 		t.Fatalf("Image requested %v does not match the one in spec: %v ", image, d.Spec.Template.Spec.Containers[0].Image)

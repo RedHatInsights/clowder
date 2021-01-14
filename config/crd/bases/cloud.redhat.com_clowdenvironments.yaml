@@ -100,6 +100,28 @@ spec:
                   required:
                   - mode
                   type: object
+                featureFlags:
+                  description: Defines the Configuration for the Clowder FeatureFlags
+                    Provider.
+                  properties:
+                    mode:
+                      description: 'The mode of operation of the Clowder FeatureFlag
+                        Provider. Valid options are: (*_app-interface_*) where the
+                        provider will pass through credentials to the app configuration,
+                        and (*_local_*) where a local Unleash instance will be created.'
+                      enum:
+                      - local
+                      - app-interface
+                      - none
+                      type: string
+                    pvc:
+                      description: If using the (*_local_*) mode and PVC is set to
+                        true, this instructs the local Database instance to use a
+                        PVC instead of emptyDir for its volumes.
+                      type: boolean
+                  required:
+                  - mode
+                  type: object
                 inMemoryDb:
                   description: Defines the Configuration for the Clowder InMemoryDB
                     Provider.

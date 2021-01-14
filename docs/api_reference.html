@@ -723,7 +723,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong><code>inMemoryDb</code></strong> <em>boolean</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>If inMemoryDb is set to true, Clowder will configure pass configuration of an In Memory Database to the pods in the ClowdApp. This single instance will be shared between all apps.</p>
+<p>If inMemoryDb is set to true, Clowder will pass configuration of an In Memory Database to the pods in the ClowdApp. This single instance will be shared between all apps.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>featureFlags</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>If featureFlags is set to true, Clowder will pass configuration of a FeatureFlags instance to the pods in the ClowdApp. This single instance will be shared between all apps.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1186,6 +1194,54 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </table>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-featureflagsconfig">FeatureFlagsConfig</h4>
+<div class="paragraph">
+<p>FeatureFlagsConfig configures the Clowder provider controlling the creation of FeatureFlag instances.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig">ProvidersConfig</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>mode</code></strong> <em>FeatureFlagsMode</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The mode of operation of the Clowder FeatureFlag Provider. Valid options are: (<strong><em>app-interface</em></strong>) where the provider will pass through credentials to the app configuration, and (<strong><em>local</em></strong>) where a local Unleash instance will be created.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>pvc</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>If using the (<strong><em>local</em></strong>) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig">InMemoryDBConfig</h4>
 <div class="paragraph">
 <p>InMemoryDBConfig configures the Clowder provider controlling the creation of InMemoryDB instances.</p>
@@ -1219,7 +1275,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong><code>mode</code></strong> <em>InMemoryMode</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The mode of operation of the Clowder InMemory Provider. Valid options are: (<strong><em>redis</em></strong>) where a local Minio instance will be created. This provider currently has no mode for app-interface.</p>
+<p>The mode of operation of the Clowder InMemory Provider. Valid options are: (<strong><em>redis</em></strong>) where a local Minio instance will be created, and (<strong><em>elasticache</em></strong>) which will search the namespace of the ClowdApp for a secret called 'elasticache'</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1895,6 +1951,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Defines the Configuration for the Clowder Web Provider.</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>featureFlags</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-featureflagsconfig">FeatureFlagsConfig</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the Configuration for the Clowder FeatureFlags Provider.</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2450,7 +2514,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-12-18 22:00:23 UTC
+Last updated 2021-01-14 18:17:12 UTC
 </div>
 </div>
 </body>
