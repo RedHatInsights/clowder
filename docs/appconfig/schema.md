@@ -25,17 +25,18 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig"}
 ```
 
-| Property                    | Type      | Required | Nullable       | Defined by                                                                                                                                                                  |
-| :-------------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [webPort](#webport)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-webport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/webPort")         |
-| [metricsPort](#metricsport) | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPort") |
-| [metricsPath](#metricspath) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPath") |
-| [logging](#logging)         | `object`  | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging")                        |
-| [kafka](#kafka)             | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkaconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/kafka")                            |
-| [database](#database)       | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-databaseconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/database")                      |
-| [objectStore](#objectstore) | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstoreconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore")                |
-| [inMemoryDb](#inmemorydb)   | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/inMemoryDb")                  |
-| [endpoints](#endpoints)     | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")     |
+| Property                      | Type      | Required | Nullable       | Defined by                                                                                                                                                                  |
+| :---------------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [webPort](#webport)           | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-webport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/webPort")         |
+| [metricsPort](#metricsport)   | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPort") |
+| [metricsPath](#metricspath)   | `string`  | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPath") |
+| [logging](#logging)           | `object`  | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging")                        |
+| [kafka](#kafka)               | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkaconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/kafka")                            |
+| [database](#database)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-databaseconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/database")                      |
+| [objectStore](#objectstore)   | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstoreconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore")                |
+| [inMemoryDb](#inmemorydb)     | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/inMemoryDb")                  |
+| [featureFlags](#featureflags) | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")              |
+| [endpoints](#endpoints)       | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")     |
 
 ### webPort
 
@@ -164,6 +165,22 @@ In Memory DB Configuration
 #### inMemoryDb Type
 
 `object` ([Details](schema-definitions-inmemorydbconfig.md))
+
+### featureFlags
+
+Feature Flags Configuration
+
+
+`featureFlags`
+
+-   is optional
+-   Type: `object` ([Details](schema-definitions-featureflagsconfig.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")
+
+#### featureFlags Type
+
+`object` ([Details](schema-definitions-featureflagsconfig.md))
 
 ### endpoints
 
@@ -796,6 +813,51 @@ Details if the Object Server uses TLS.
 
 `boolean`
 
+## Definitions group FeatureFlagsConfig
+
+Reference this group by using
+
+```json
+{"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig"}
+```
+
+| Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                              |
+| :---------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [hostname](#hostname-3) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/hostname") |
+| [port](#port-3)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/port")         |
+
+### hostname
+
+Defines the hostname for the FeatureFlags server
+
+
+`hostname`
+
+-   is required
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-featureflagsconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/hostname")
+
+#### hostname Type
+
+`string`
+
+### port
+
+Defines the port for the FeatureFlags server
+
+
+`port`
+
+-   is required
+-   Type: `integer`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-featureflagsconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/port")
+
+#### port Type
+
+`integer`
+
 ## Definitions group InMemoryDBConfig
 
 Reference this group by using
@@ -806,8 +868,8 @@ Reference this group by using
 
 | Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                          |
 | :---------------------- | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [hostname](#hostname-3) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/hostname") |
-| [port](#port-3)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/port")         |
+| [hostname](#hostname-4) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/hostname") |
+| [port](#port-4)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/port")         |
 | [username](#username-1) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/username") |
 | [password](#password-1) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/password") |
 
@@ -886,8 +948,8 @@ Reference this group by using
 | Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                              |
 | :---------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [name](#name-3)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
-| [hostname](#hostname-4) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
-| [port](#port-4)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
+| [hostname](#hostname-5) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
+| [port](#port-5)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
 | [app](#app)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
 
 ### name

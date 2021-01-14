@@ -277,17 +277,3 @@ spec:
         name: mq-zookeeper-2
       - emptyDir: {}
         name: mq-zookeeper-3
----
-apiVersion: v1
-data:
-  hostname: dGVzdC1sb2NhbC1rYWZrYS1taW5pby50ZXN0LWxvY2FsLWthZmthLnN2Yw==
-  port: OTAwMA==
-kind: Secret
-metadata:
-  name: test-local-kafka-minio
-  namespace: test-local-kafka
-  ownerReferences:
-  - apiVersion: cloud.redhat.com/v1alpha1
-    kind: ClowdEnvironment
-    name: test-local-kafka
-type: Opaque

@@ -23,8 +23,9 @@ spec:
       mode: none
     objectStore:
       mode: none
-      #Possibly need to specify a port here
     inMemoryDb:
+      mode: none
+    featureFlags:
       mode: none
   resourceDefaults:
     limits:

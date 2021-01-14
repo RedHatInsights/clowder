@@ -35,6 +35,9 @@
                 "inMemoryDb": {
                     "$ref": "#/definitions/InMemoryDBConfig"
                 },
+                "featureFlags": {
+                    "$ref": "#/definitions/FeatureFlagsConfig"
+                },
                 "endpoints": {
                     "id": "endpoints",
                     "type": "array",
@@ -272,6 +275,25 @@
                 "hostname",
                 "port",
                 "tls"
+            ]
+        },
+        "FeatureFlagsConfig": {
+            "id": "featureFlagsConfig",
+            "type": "object",
+            "description": "Feature Flags Configuration",
+            "properties": {
+                "hostname": {
+                    "description": "Defines the hostname for the FeatureFlags server",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "Defines the port for the FeatureFlags server",
+                    "type": "integer"
+                }
+            },
+            "required":[
+                "hostname",
+                "port"
             ]
         },
         "InMemoryDBConfig": {

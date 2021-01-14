@@ -177,6 +177,25 @@ type ObjectStoreConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
+// FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags
+// Provider
+// +kubebuilder:validation:Enum=local;app-interface;none
+type FeatureFlagsMode string
+
+// FeatureFlagsConfig configures the Clowder provider controlling the creation of
+// FeatureFlag instances.
+type FeatureFlagsConfig struct {
+	// The mode of operation of the Clowder FeatureFlag Provider. Valid options are:
+	// (*_app-interface_*) where the provider will pass through credentials
+	// to the app configuration, and (*_local_*) where a local Unleash instance will
+	// be created.
+	Mode FeatureFlagsMode `json:"mode"`
+
+	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
+	// Database instance to use a PVC instead of emptyDir for its volumes.
+	PVC bool `json:"pvc,omitempty"`
+}
+
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB
 // Provider
 // +kubebuilder:validation:Enum=redis;app-interface;elasticache;none
@@ -232,6 +251,9 @@ type ProvidersConfig struct {
 
 	// Defines the Configuration for the Clowder Web Provider.
 	Web WebConfig `json:"web,omitempty"`
+
+	// Defines the Configuration for the Clowder FeatureFlags Provider.
+	FeatureFlags FeatureFlagsConfig `json:"featureFlags,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.

@@ -26,6 +26,8 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
+    featureFlags:
+      mode: none
   resourceDefaults:
     limits:
       cpu: 400m
@@ -60,6 +62,8 @@ spec:
     objectStore:
       mode: none
     inMemoryDb:
+      mode: none
+    featureFlags:
       mode: none
   resourceDefaults:
     limits:

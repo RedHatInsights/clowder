@@ -7,12 +7,12 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	provutils "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/utils"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -83,7 +83,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 	}
 
-	makeLocalDB(&dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC)
+	provutils.MakeLocalDB(&dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err
@@ -96,7 +96,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		return err
 	}
 
-	makeLocalService(&s, nn, app)
+	provutils.MakeLocalDBService(&s, nn, app)
 
 	if err = update.Apply(db.Ctx, db.Client, &s); err != nil {
 		return err
@@ -110,7 +110,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 
-		makeLocalPVC(&pvc, nn, app)
+		provutils.MakeLocalDBPVC(&pvc, nn, app)
 
 		if err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
 			return err
@@ -118,105 +118,4 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	}
 	c.Database = &db.Config
 	return nil
-}
-
-func makeLocalDB(dd *apps.Deployment, nn types.NamespacedName, app *crd.ClowdApp, cfg *config.DatabaseConfig, image string, usePVC bool) {
-	labels := app.GetLabels()
-	labels["service"] = "db"
-	labler := utils.MakeLabeler(nn, labels, app)
-	labler(dd)
-
-	var volSource core.VolumeSource
-	if usePVC {
-		volSource = core.VolumeSource{
-			PersistentVolumeClaim: &core.PersistentVolumeClaimVolumeSource{
-				ClaimName: nn.Name,
-			},
-		}
-	} else {
-		volSource = core.VolumeSource{
-			EmptyDir: &core.EmptyDirVolumeSource{},
-		}
-	}
-
-	dd.Spec.Replicas = utils.Int32(1)
-	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	dd.Spec.Template.Spec.Volumes = []core.Volume{
-		{
-			Name:         nn.Name,
-			VolumeSource: volSource,
-		},
-	}
-	dd.Spec.Template.ObjectMeta.Labels = labels
-
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
-		Name: "quay-cloudservices-pull",
-	}}
-
-	envVars := []core.EnvVar{
-		{Name: "POSTGRESQL_USER", Value: cfg.Username},
-		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
-		{Name: "PGPASSWORD", Value: cfg.AdminPassword}, // Legacy for old db images can likely be removed soon
-		{Name: "POSTGRESQL_MASTER_USER", Value: cfg.AdminUsername},
-		{Name: "POSTGRESQL_MASTER_PASSWORD", Value: cfg.AdminPassword},
-		// TODO: Do we need to set the DB name?
-		{Name: "POSTGRESQL_DATABASE", Value: app.Spec.Database.Name},
-	}
-	ports := []core.ContainerPort{{
-		Name:          "database",
-		ContainerPort: 5432,
-	}}
-
-	probeHandler := core.Handler{
-		Exec: &core.ExecAction{
-			Command: []string{
-				"psql",
-				"-U",
-				"$(POSTGRESQL_USER)",
-				"-d",
-				"$(POSTGRESQL_DATABASE)",
-				"-c",
-				"SELECT 1",
-			},
-		},
-	}
-
-	livenessProbe := core.Probe{
-		Handler:             probeHandler,
-		InitialDelaySeconds: 15,
-		TimeoutSeconds:      2,
-	}
-	readinessProbe := core.Probe{
-		Handler:             probeHandler,
-		InitialDelaySeconds: 45,
-		TimeoutSeconds:      2,
-	}
-
-	c := core.Container{
-		Name:           nn.Name,
-		Image:          image,
-		Env:            envVars,
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
-		Ports:          ports,
-		VolumeMounts: []core.VolumeMount{{
-			Name:      nn.Name,
-			MountPath: "/var/lib/pgsql/data",
-		}},
-	}
-
-	dd.Spec.Template.Spec.Containers = []core.Container{c}
-}
-
-func makeLocalService(s *core.Service, nn types.NamespacedName, app *crd.ClowdApp) {
-	servicePorts := []core.ServicePort{{
-		Name:     "database",
-		Port:     5432,
-		Protocol: "TCP",
-	}}
-	utils.MakeService(s, nn, p.Labels{"service": "db", "app": app.Name}, servicePorts, app)
-}
-
-func makeLocalPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, app *crd.ClowdApp) {
-	utils.MakePVC(pvc, nn, p.Labels{"service": "db", "app": app.Name}, "1Gi", app)
 }

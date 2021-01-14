@@ -22,6 +22,7 @@
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-objectstore.md "Object Storage Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore`
 -   [Untitled object in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets-items.md "Object Storage Bucket") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets/items`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-inmemorydb.md "In Memory DB Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/inMemoryDb`
+-   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-featureflags.md "Feature Flags Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-endpoints-items.md "Dependent service connection info") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints/items`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig.md "Kafka Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokers-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers/items`
@@ -31,6 +32,7 @@
 -   [Untitled object in AppConfig](./schema-definitions-objectstorebucket.md "Object Storage Bucket") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket`
 -   [Untitled object in AppConfig](./schema-definitions-objectstoreconfig.md "Object Storage Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig`
 -   [Untitled object in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets-items.md "Object Storage Bucket") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets/items`
+-   [Untitled object in AppConfig](./schema-definitions-featureflagsconfig.md "Feature Flags Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig`
 -   [Untitled object in AppConfig](./schema-definitions-inmemorydbconfig.md "In Memory DB Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig`
 -   [Untitled object in AppConfig](./schema-definitions-dependencyendpoint.md "Dependent service connection info") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint`
 

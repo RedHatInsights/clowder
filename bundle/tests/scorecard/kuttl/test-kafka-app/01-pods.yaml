@@ -19,14 +19,15 @@ spec:
       mode: local
     db:
       image: "registry.redhat.io/rhel8/postgresql-12:1-36"
-      mode: local
+      mode: none
     logging:
       mode: none
     objectStore:
-      mode: minio
-      #Possibly need to specify a port here
+      mode: none
     inMemoryDb:
-      mode: redis
+      mode: none
+    featureFlags:
+      mode: none
   resourceDefaults:
     limits:
       cpu: 400m
