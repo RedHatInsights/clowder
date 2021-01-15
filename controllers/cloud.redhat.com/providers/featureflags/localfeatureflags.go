@@ -76,7 +76,7 @@ func NewLocalFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, err
 	dbCfg.AdminUsername = "postgres"
 
 	ffp.Config = config.FeatureFlagsConfig{
-		Hostname: fmt.Sprintf("featureflags.%s.svc", p.Env.Status.TargetNamespace),
+		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", p.Env.Name, p.Env.Status.TargetNamespace),
 		Port:     4242,
 	}
 
