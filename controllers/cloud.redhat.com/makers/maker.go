@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -36,7 +37,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 //DependencyMaker makes the DependencyConfig object
@@ -49,7 +49,7 @@ type DependencyMaker struct {
 type Maker struct {
 	App     *crd.ClowdApp
 	Env     *crd.ClowdEnvironment
-	Client  client.Client
+	Client  utils.PClient
 	Ctx     context.Context
 	Request *ctrl.Request
 	Log     logr.Logger
@@ -101,6 +101,7 @@ func (m *Maker) Make() error {
 func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error {
 
 	s := core.Service{}
+	sOld := core.Service{}
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%v-%v", app.Name, deployment.Name),
 		Namespace: m.Request.Namespace,
@@ -112,16 +113,30 @@ func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error 
 		return err
 	}
 
+	s.DeepCopyInto(&sOld)
+
 	ports := []core.ServicePort{
-		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP"},
+		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP", TargetPort: intstr.IntOrString{
+			Type:   intstr.Int,
+			IntVal: m.Env.Spec.Providers.Metrics.Port,
+		}},
 	}
 
 	if deployment.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
+		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP", TargetPort: intstr.IntOrString{
+			Type:   intstr.Int,
+			IntVal: m.Env.Spec.Providers.Web.Port,
+		}}
 		ports = append(ports, webPort)
 	}
 
 	utils.MakeService(&s, nn, map[string]string{"pod": nn.Name}, ports, m.App)
+
+	if reflect.DeepEqual(s.Spec, sOld.Spec) {
+		fmt.Printf("Skipping the update service here %v\n", s.ObjectMeta.Name)
+		m.Client.AddResource(&s)
+		return nil
+	}
 
 	return update.Apply(m.Ctx, m.Client, &s)
 }
@@ -414,7 +429,11 @@ func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, has
 	}
 
 	d := apps.Deployment{}
+	dOld := apps.Deployment{}
+
 	err := m.Client.Get(m.Ctx, nn, &d)
+
+	d.DeepCopyInto(&dOld)
 
 	update, err := utils.UpdateOrErr(err)
 	if err != nil {
@@ -422,6 +441,14 @@ func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, has
 	}
 
 	initDeployment(m.App, m.Env, &d, nn, deployment, hash)
+
+	fmt.Printf("\n%v\n%v\n", d.Spec, dOld.Spec)
+
+	if reflect.DeepEqual(d.Spec, dOld.Spec) {
+		fmt.Printf("Skipping the update deployment here %v\n", d.ObjectMeta.Name)
+		m.Client.AddResource(&d)
+		return nil
+	}
 
 	if err := update.Apply(m.Ctx, m.Client, &d); err != nil {
 		return err
@@ -500,8 +527,11 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
 			ContainerPort: env.Spec.Providers.Metrics.Port,
+			Protocol:      "TCP",
 		}},
-		ImagePullPolicy: core.PullIfNotPresent,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	if (core.Probe{}) != livenessProbe {
@@ -515,6 +545,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "web",
 			ContainerPort: env.Spec.Providers.Web.Port,
+			Protocol:      "TCP",
 		})
 	}
 
@@ -532,7 +563,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: app.ObjectMeta.Name,
+				DefaultMode: int32Ptr(420),
+				SecretName:  app.ObjectMeta.Name,
 			},
 		},
 	})
@@ -654,4 +686,9 @@ func processAppEndpoints(appMap map[string]crd.ClowdApp, depList []string, depCo
 	}
 
 	return missingDeps
+}
+
+func int32Ptr(i int) *int32 {
+	i32 := int32(i)
+	return &i32
 }

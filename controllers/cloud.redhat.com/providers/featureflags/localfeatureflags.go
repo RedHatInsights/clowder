@@ -165,6 +165,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Ser
 	ports := []core.ContainerPort{{
 		Name:          "service",
 		ContainerPort: port,
+		Protocol:      "TCP",
 	}}
 
 	probeHandler := core.Handler{
@@ -177,23 +178,32 @@ func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Ser
 	}
 
 	livenessProbe := core.Probe{
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 		Handler:             probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 		Handler:             probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 	}
 
 	c := core.Container{
-		Name:           nn.Name,
-		Image:          "unleashorg/unleash-server:3.9",
-		Env:            envVars,
-		Ports:          ports,
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
+		Name:                     nn.Name,
+		Image:                    "unleashorg/unleash-server:3.9",
+		Env:                      envVars,
+		Ports:                    ports,
+		LivenessProbe:            &livenessProbe,
+		ReadinessProbe:           &readinessProbe,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
@@ -203,6 +213,10 @@ func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Ser
 		Name:     "featureflags",
 		Port:     port,
 		Protocol: "TCP",
+		TargetPort: intstr.IntOrString{
+			Type:   intstr.Int,
+			IntVal: 4242,
+		},
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)

@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sort"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -14,7 +15,6 @@ import (
 	core "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ProviderAccessor struct {
@@ -57,7 +57,7 @@ var ProvidersRegistration providersRegistration
 type Labels map[string]string
 
 type Provider struct {
-	Client client.Client
+	Client utils.PClient
 	Ctx    context.Context
 	Env    *crd.ClowdEnvironment
 }
@@ -72,10 +72,15 @@ func StrPtr(s string) *string {
 
 type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool)
 
-func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suffix string, fn makeFn, usePVC bool) error {
+func MakeComponent(ctx context.Context, cl utils.PClient, o obj.ClowdObject, suffix string, fn makeFn, usePVC bool) error {
 	nn := GetNamespacedName(o, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
+	ddOld, svcOld, pvcOld := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
+
 	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
+	dd.DeepCopyInto(ddOld)
+	svc.DeepCopyInto(svcOld)
+	pvc.DeepCopyInto(pvcOld)
 
 	if !usePVC {
 		delete(updates, pvc)
@@ -86,6 +91,23 @@ func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suf
 	}
 
 	fn(o, dd, svc, pvc, usePVC)
+
+	if reflect.DeepEqual(dd.Spec, ddOld.Spec) {
+		fmt.Printf("Skipping the update deployment here %v\n", dd.ObjectMeta.Name)
+		cl.AddResource(dd)
+		delete(updates, dd)
+	}
+
+	if reflect.DeepEqual(svc.Spec, svcOld.Spec) {
+		fmt.Printf("Skipping the update service here %v\n", svc.ObjectMeta.Name)
+		cl.AddResource(svc)
+		delete(updates, svc)
+	}
+
+	if reflect.DeepEqual(pvc.Spec, pvcOld.Spec) {
+		fmt.Printf("Skipping the update persistent here %v\n", pvc.ObjectMeta.Name)
+		delete(updates, pvc)
+	}
 
 	if err = utils.ApplyAll(ctx, cl, updates); err != nil {
 		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)

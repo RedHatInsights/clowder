@@ -41,6 +41,11 @@ func RandString(n int) string {
 
 type Updater bool
 
+type PClient interface {
+	client.Client
+	AddResource(runtime.Object)
+}
+
 func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
 	var err error
 	var kind string
