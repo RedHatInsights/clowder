@@ -21,9 +21,16 @@ var (
 			Help: "ClowdEnv Managed Envs",
 		},
 	)
+	clientOpsMetric = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "clowder_api_calls",
+			Help: "Number of calls to API",
+		},
+		[]string{"operation"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric)
+	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, clientOpsMetric)
 }
