@@ -6,6 +6,7 @@ import (
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -21,19 +22,32 @@ type ProxyClient struct {
 	client.Client
 }
 
+func (p *ProxyClient) Get(ctx context.Context, key types.NamespacedName, obj runtime.Object) error {
+	clientOpsMetric.With(prometheus.Labels{"operation": "get"}).Inc()
+	return p.Client.Get(ctx, key, obj)
+}
+
 func (p *ProxyClient) Create(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error {
 	p.AddResource(obj)
+	clientOpsMetric.With(prometheus.Labels{"operation": "create"}).Inc()
 	return p.Client.Create(ctx, obj, opts...)
 }
 
 func (p *ProxyClient) Update(ctx context.Context, obj runtime.Object, opts ...client.UpdateOption) error {
 	p.AddResource(obj)
+	clientOpsMetric.With(prometheus.Labels{"operation": "update"}).Inc()
 	return p.Client.Update(ctx, obj, opts...)
 }
 
 func (p *ProxyClient) Patch(ctx context.Context, obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
 	p.AddResource(obj)
+	clientOpsMetric.With(prometheus.Labels{"operation": "patch"}).Inc()
 	return p.Client.Patch(ctx, obj, patch, opts...)
+}
+
+func (p *ProxyClient) Delete(ctx context.Context, obj runtime.Object, opts ...client.DeleteOption) error {
+	clientOpsMetric.With(prometheus.Labels{"operation": "delete"}).Inc()
+	return p.Client.Delete(ctx, obj, opts...)
 }
 
 func (p *ProxyClient) AddResource(obj runtime.Object) {
