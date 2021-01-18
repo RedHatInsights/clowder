@@ -119,8 +119,6 @@ spec:
                         true, this instructs the local Database instance to use a
                         PVC instead of emptyDir for its volumes.
                       type: boolean
-                  required:
-                  - mode
                   type: object
                 inMemoryDb:
                   description: Defines the Configuration for the Clowder InMemoryDB

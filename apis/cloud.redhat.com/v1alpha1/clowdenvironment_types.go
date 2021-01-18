@@ -180,6 +180,7 @@ type ObjectStoreConfig struct {
 // FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags
 // Provider
 // +kubebuilder:validation:Enum=local;app-interface;none
+// +kubebuilder:validation:Optional
 type FeatureFlagsMode string
 
 // FeatureFlagsConfig configures the Clowder provider controlling the creation of
@@ -189,7 +190,7 @@ type FeatureFlagsConfig struct {
 	// (*_app-interface_*) where the provider will pass through credentials
 	// to the app configuration, and (*_local_*) where a local Unleash instance will
 	// be created.
-	Mode FeatureFlagsMode `json:"mode"`
+	Mode FeatureFlagsMode `json:"mode,omitempty"`
 
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
