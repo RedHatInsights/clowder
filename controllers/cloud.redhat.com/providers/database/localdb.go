@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -81,6 +82,12 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		if image == "" {
 			return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", app.Spec.Database.Version))
 		}
+	}
+
+	if app.Spec.Cyndi.Enabled {
+		imgComponents := strings.Split(image, ":")
+		tag := "cyndi-" + imgComponents[1]
+		image = imgComponents[0] + ":" + tag
 	}
 
 	provutils.MakeLocalDB(&dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)

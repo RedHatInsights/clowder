@@ -1,0 +1,55 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-cyndi-local-db
+spec:
+  targetNamespace: test-cyndi-local-db
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      namespace: kafka
+      clusterName: my-cluster
+      mode: none 
+    db:
+      imageList: 
+        - version: 12
+          image: "quay.io/cloudservices/postgresql-rds:12-1"
+        - version: 10
+          image: "quay.io/cloudservices/postgresql-rds:10-1"
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: none 
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-a
+  namespace: test-cyndi-local-db
+spec:
+  envName: test-cyndi-local-db
+  cyndi: true
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  database:
+    name: app-a-db
+    version: 12
