@@ -1,6 +1,6 @@
 # Current Operator version
 VERSION ?= 0.0.8
-#
+
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -15,6 +15,14 @@ ifeq ($(findstring -minikube,${MAKECMDGOALS}), -minikube)
 IMG ?= 127.0.0.1:5000/clowder:$(shell git rev-parse --short=7 HEAD)
 else
 IMG ?= quay.io/cloudservices/clowder:$(shell git rev-parse --short=7 HEAD)
+endif
+
+# Use podman by default, docker as fallback
+ifeq (,$(shell which podman))
+$(info "no podman in $(PATH), using docker")
+RUNTIME ?= docker
+else
+RUNTIME ?= podman
 endif
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
@@ -79,19 +87,19 @@ generate: controller-gen
 
 # Build the docker image
 docker-build: test
-	docker build . -t ${IMG}
+	$(RUNTIME) build . -t ${IMG}
 
 # Build the docker image
 docker-build-no-test:
-	docker build . -t ${IMG}
+	$(RUNTIME) build . -t ${IMG}
 
 # Push the docker image
 docker-push:
-	docker push ${IMG}
+	$(RUNTIME) push ${IMG}
 
 # Push the docker image
 docker-push-minikube:
-	docker push ${IMG} $(shell minikube ip):5000/clowder:$(shell git rev-parse --short=7 HEAD) --tls-verify=false
+	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(shell git rev-parse --short=7 HEAD) --tls-verify=false
 
 deploy-minikube: bundle-verify docker-build-no-test docker-push-minikube deploy
 
@@ -131,7 +139,7 @@ endif
 # Generate bundle manifests and metadata, then validate generated files.
 .PHONY: bundle
 bundle: manifests bundle-verify
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMAGE):$(BUNDLE_IMAGE_TAG) .
+	$(RUNTIME) build -f bundle.Dockerfile -t $(BUNDLE_IMAGE):$(BUNDLE_IMAGE_TAG) .
 
 bundle-verify:
 	echo ${MAKECMDGOALS}

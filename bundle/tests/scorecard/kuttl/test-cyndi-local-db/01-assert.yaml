@@ -1,0 +1,26 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestAssert
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-processor
+  namespace: test-cyndi-local-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-db
+  namespace: test-cyndi-local-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-12-1
+        
