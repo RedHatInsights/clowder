@@ -45,7 +45,10 @@ metadata:
   namespace: test-cyndi-local-db
 spec:
   envName: test-cyndi-local-db
-  cyndi: true
+  cyndi:
+    enabled: true
+    appName: app-name-override
+    insights: true
   deployments:
   - name: processor
     podSpec:
