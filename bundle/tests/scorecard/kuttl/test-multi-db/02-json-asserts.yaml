@@ -1,0 +1,9 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-multi-db app-c -o json > /tmp/test-multi-db
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-db | base64 -d > /tmp/test-multi-db-json
+
+- script: jq -r '.database.hostname == "test-multi-db-app-b-db.test-multi-db.svc"' -e < /tmp/test-multi-db-json

@@ -17,6 +17,7 @@ import (
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
+	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -244,6 +245,7 @@ type ClowdApp struct {
 type ClowdAppList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
+	MultiName       string `json:"multiName,omitempty"`
 
 	// A list of ClowdApp Resources.
 	Items []ClowdApp `json:"items"`
@@ -286,14 +288,14 @@ func (i *ClowdApp) GetIdent() string {
 }
 
 // MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
-func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
-	return metav1.OwnerReference{
+func (i *ClowdApp) MakeOwnerReference() []metav1.OwnerReference {
+	return []metav1.OwnerReference{{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
 		Controller: utils.PointTrue(),
-	}
+	}}
 }
 
 // GetClowdNamespace returns the namespace of the ClowdApp object.
@@ -349,11 +351,21 @@ func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	o.SetName(i.Name)
 	o.SetNamespace(i.Namespace)
 	o.SetLabels(i.GetLabels())
-	o.SetOwnerReferences([]metav1.OwnerReference{i.MakeOwnerReference()})
+	o.SetOwnerReferences(i.MakeOwnerReference())
 
 	for _, opt := range opts {
 		opt(o)
 	}
+}
+
+func (i *ClowdApp) GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
+	appliedLabels := baseResource.GetLabels()
+	if labels != nil {
+		for k, v := range labels {
+			appliedLabels[k] = v
+		}
+	}
+	return utils.MakeLabeler(nn, appliedLabels, baseResource)
 }
 
 // Name returns a function that sets the name of an object to that of the
@@ -377,4 +389,67 @@ func Labels(labels map[string]string) omfunc {
 	return func(o metav1.Object) {
 		o.SetLabels(labels)
 	}
+}
+
+// GetLabels returns a base set of labels relating to the ClowdApp.
+func (i *ClowdAppList) GetLabels() map[string]string {
+	return map[string]string{"app": i.GetClowdName()}
+}
+
+// GetNamespacedName contructs a new namespaced name for an object from the pattern.
+func (i *ClowdAppList) GetNamespacedName(pattern string) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: i.Items[0].Namespace,
+		Name:      i.MultiName,
+	}
+}
+
+// GetIdent returns an ident <env>.<app> that should be unique across the cluster.
+func (i *ClowdAppList) GetIdent() string {
+	return i.MultiName
+}
+
+// MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
+func (i *ClowdAppList) MakeOwnerReference() []metav1.OwnerReference {
+	oRefs := []metav1.OwnerReference{}
+	for _, obj := range i.Items {
+		oRefs = append(oRefs, metav1.OwnerReference{
+			APIVersion: obj.APIVersion,
+			Kind:       obj.Kind,
+			Name:       obj.ObjectMeta.Name,
+			UID:        obj.ObjectMeta.UID,
+			Controller: utils.PointTrue(),
+		})
+	}
+	return oRefs
+}
+
+// GetClowdNamespace returns the namespace of the ClowdApp object.
+func (i *ClowdAppList) GetClowdNamespace() string {
+	return i.Items[0].Namespace
+}
+
+// GetClowdName returns the name of the ClowdApp object.
+func (i *ClowdAppList) GetClowdName() string {
+	return i.Items[0].Spec.EnvName
+}
+
+// GetUID returns ObjectMeta.UID
+func (i *ClowdAppList) GetUID() types.UID {
+	return ""
+}
+
+// GetDeploymentStatus returns the Status.Deployments member
+func (i *ClowdAppList) GetDeploymentStatus() *common.DeploymentStatus {
+	return &common.DeploymentStatus{}
+}
+
+func (i *ClowdAppList) GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
+	appliedLabels := baseResource.GetLabels()
+	if labels != nil {
+		for k, v := range labels {
+			appliedLabels[k] = v
+		}
+	}
+	return utils.MakeLabeler(nn, appliedLabels, baseResource)
 }

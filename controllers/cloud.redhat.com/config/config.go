@@ -7,7 +7,6 @@ import (
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -39,7 +38,7 @@ func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, client client.Cli
 
 		secret.Name = nn.Name
 		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
+		secret.ObjectMeta.OwnerReferences = obj.MakeOwnerReference()
 		secret.Type = core.SecretTypeOpaque
 
 		if err = secretUpdate.Apply(ctx, client, secret); err != nil {

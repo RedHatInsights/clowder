@@ -8,10 +8,11 @@ import (
 
 // ClowdObject is used to be able to treat ClowdEnv and ClowdApp as the same type
 type ClowdObject interface {
-	MakeOwnerReference() metav1.OwnerReference
+	MakeOwnerReference() []metav1.OwnerReference
 	GetLabels() map[string]string
 	GetClowdNamespace() string
 	GetClowdName() string
 	GetUID() types.UID
 	GetDeploymentStatus() *common.DeploymentStatus
+	GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource ClowdObject) func(metav1.Object)
 }

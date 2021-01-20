@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
+	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -337,14 +338,14 @@ func (i *ClowdEnvironment) GetLabels() map[string]string {
 }
 
 // MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
-func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
-	return metav1.OwnerReference{
+func (i *ClowdEnvironment) MakeOwnerReference() []metav1.OwnerReference {
+	return []metav1.OwnerReference{{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
 		Controller: utils.PointTrue(),
-	}
+	}}
 }
 
 // GetClowdNamespace returns the namespace of the ClowdApp object.
@@ -370,4 +371,14 @@ func (i *ClowdEnvironment) GetDeploymentStatus() *common.DeploymentStatus {
 // GenerateTargetNamespace gets a generated target namespace if one is not provided
 func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
+}
+
+func (i *ClowdEnvironment) GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
+	appliedLabels := baseResource.GetLabels()
+	if labels != nil {
+		for k, v := range labels {
+			appliedLabels[k] = v
+		}
+	}
+	return utils.MakeLabeler(nn, appliedLabels, baseResource)
 }

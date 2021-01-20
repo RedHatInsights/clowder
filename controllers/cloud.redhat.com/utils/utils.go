@@ -196,7 +196,7 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.Clow
 		o.SetName(nn.Name)
 		o.SetNamespace(nn.Namespace)
 		o.SetLabels(labels)
-		o.SetOwnerReferences([]metav1.OwnerReference{obj.MakeOwnerReference()})
+		o.SetOwnerReferences(obj.MakeOwnerReference())
 	}
 }
 
@@ -211,7 +211,7 @@ func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 }
 
 func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject) {
-	labeler := GetCustomLabeler(labels, nn, baseResource)
+	labeler := baseResource.GetCustomLabeler(labels, nn, baseResource)
 	labeler(service)
 	service.Spec.Selector = labels
 	service.Spec.Ports = ports

@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-multi-db
+  name: test-multi-app-interface-db
 spec:
-  targetNamespace: test-multi-db
+  targetNamespace: test-multi-app-interface-db
   providers:
     web:
       port: 8000
@@ -20,17 +20,15 @@ spec:
     db:
       imageList: 
         - version: 12
-          image: "registry.redhat.io/rhel8/postgresql-12:1-36"
+          image: "quay.io/cloudservices/postgresql-rds:12-1"
         - version: 10
-          image: "registry.redhat.io/rhel8/postgresql-10:1-118"
-      mode: local
+          image: "quay.io/cloudservices/postgresql-rds:10-1"
+      mode: app-interface
     logging:
       mode: none
     objectStore:
       mode: none
     inMemoryDb:
-      mode: none
-    featureFlags:
       mode: none
   resourceDefaults:
     limits:
@@ -43,24 +41,10 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: app-a
-  namespace: test-multi-db
-spec:
-  envName: test-multi-db
-  pods:
-  - name: processor
-    image: quay.io/psav/clowder-hello
-  database:
-    name: app-a
-    version: 12
----
-apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdApp
-metadata:
   name: app-b
-  namespace: test-multi-db
+  namespace: test-multi-app-interface-db
 spec:
-  envName: test-multi-db
+  envName: test-multi-app-interface-db
   pods:
   - name: processor
     image: quay.io/psav/clowder-hello
@@ -72,12 +56,27 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: app-c
-  namespace: test-multi-db
+  namespace: test-multi-app-interface-db
 spec:
-  envName: test-multi-db
+  envName: test-multi-app-interface-db
   pods:
   - name: processor
     image: quay.io/psav/clowder-hello
   database:
-    name: app-b
-    version: 12
+    sharedDbAppName: app-b
+    version: 10
+  dependencies:
+  - app-b
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-b-readonly-db
+  namespace: test-multi-app-interface-db
+type: Opaque
+data:
+  db.host: YXBwLWItc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com
+  db.name: ZGJuYW1l  # dbname
+  db.port: NTQzMg==  # 5432
+  db.user: dXNlcg==  # user
+  db.password:  cGFzc3dvcmQxMjM=  # password123

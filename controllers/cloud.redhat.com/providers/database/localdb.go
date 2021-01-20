@@ -9,6 +9,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	provutils "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/utils"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
@@ -33,8 +34,26 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	}
 
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-db", app.Name),
+		Name:      fmt.Sprintf("%v-%v-db", db.Env.Name, app.Spec.Database.Name),
 		Namespace: app.Namespace,
+	}
+
+	appsList := crd.ClowdAppList{}
+	sharedAppList := crd.ClowdAppList{}
+
+	db.Client.List(db.Ctx, &appsList, client.InNamespace(app.Namespace))
+
+	vList := []*int32{}
+	for _, iapp := range appsList.Items {
+		if iapp.Spec.Database.Name == app.Spec.Database.Name {
+			vList = append(vList, iapp.Spec.Database.Version)
+			sharedAppList.Items = append(sharedAppList.Items, iapp)
+		}
+	}
+
+	dbVersion, err := sliceMax(vList)
+	if err != nil {
+		return err
 	}
 
 	dd := apps.Deployment{}
@@ -72,7 +91,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	} else {
 		image = ""
 		for _, img := range db.Env.Spec.Providers.Database.ImageList {
-			if *app.Spec.Database.Version == img.Version {
+			if *dbVersion == img.Version {
 				image = img.Image
 				break
 			}
@@ -83,7 +102,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 	}
 
-	provutils.MakeLocalDB(&dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
+	provutils.MakeLocalDB(&dd, nn, &sharedAppList, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
 
 	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
 		return err
@@ -118,4 +137,20 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	}
 	c.Database = &db.Config
 	return nil
+}
+
+func sliceMax(listInts []*int32) (*int32, error) {
+	if len(listInts) == 0 {
+		return nil, fmt.Errorf("List of ints was of zero length")
+	}
+	if len(listInts) == 1 {
+		return listInts[0], nil
+	}
+	maxSoFar := listInts[0]
+	for _, i := range listInts {
+		if *i > *maxSoFar {
+			maxSoFar = i
+		}
+	}
+	return maxSoFar, nil
 }
