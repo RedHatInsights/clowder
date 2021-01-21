@@ -29,3 +29,6 @@ launch.json
 *.code-workspace
 
 docs/build
+
+# Clowder release yaml generation
+manifest.yaml
