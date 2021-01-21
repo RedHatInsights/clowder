@@ -14,6 +14,8 @@ which not only defines the pods for the application, but also requests certain
 key resources from the environment, such as Object Storage Buckets, a Database,
 Kafka Topics, or an In Memory Database.
 
+<img src="images/terminal-example.gif" alt="Animated GIF terminal example">
+
 A `ClowdEnvironment` resource is used to define how key resources, such as
 Kafka Topics and Databases are deployed. Using different providers, a single
 `ClowdEnvironment` can radically alter the way in which resources are
