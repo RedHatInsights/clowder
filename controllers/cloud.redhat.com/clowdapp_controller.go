@@ -51,6 +51,8 @@ import (
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
 
+var someIndexer client.FieldIndexer
+
 // ClowdAppReconciler reconciles a ClowdApp object
 type ClowdAppReconciler struct {
 	client.Client
@@ -195,6 +197,14 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager")
 	utils.Log = r.Log.WithValues("name", "util")
 	r.Recorder = mgr.GetEventRecorderFor("app")
+
+	cache := mgr.GetCache()
+
+	cache.IndexField(
+		context.TODO(), &crd.ClowdApp{}, "spec.envName", func(o runtime.Object) []string {
+			return []string{o.(*crd.ClowdApp).Spec.EnvName}
+		})
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdApp{}).
 		Watches(

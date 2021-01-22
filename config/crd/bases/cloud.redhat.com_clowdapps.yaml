@@ -75,6 +75,9 @@ spec:
                     server in (*_local_*) mode and the name of the secret to be used
                     for Database configuration in (*_app-interface_*) mode.
                   type: string
+                sharedDbAppName:
+                  description: Defines the Name of the app to share a database from
+                  type: string
                 version:
                   description: Defines the Version of the PostGreSQL database, defaults
                     to 12.

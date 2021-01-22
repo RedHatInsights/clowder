@@ -50,7 +50,6 @@ spec:
       clusterName: crc-cluster
       mode: local
     db:
-      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
       mode: local
     logging:
       mode: none

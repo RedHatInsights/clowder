@@ -13,6 +13,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
@@ -21,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // InitContainer is a struct defining a k8s init container. This will be
@@ -50,6 +53,9 @@ type DatabaseSpec struct {
 	// name of the logical database inside the database server in (*_local_*) mode
 	// and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
 	Name string `json:"name,omitempty"`
+
+	// Defines the Name of the app to share a database from
+	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
 }
 
 // Job defines either a Job to be used in creating a Job via external means, or
@@ -377,4 +383,34 @@ func Labels(labels map[string]string) omfunc {
 	return func(o metav1.Object) {
 		o.SetLabels(labels)
 	}
+}
+
+func GetAppInSameEnv(pClient client.Client, ctx context.Context, app *ClowdApp, appList *ClowdAppList) error {
+	err := pClient.List(ctx, appList, client.MatchingFields{"spec.envName": app.Spec.EnvName})
+
+	if err != nil {
+		return err
+		// return errors.New("Could not get app list")
+	}
+
+	return nil
+}
+
+func GetAppForDBInSameEnv(pClient client.Client, ctx context.Context, app *ClowdApp) (*ClowdApp, error) {
+	appList := &ClowdAppList{}
+	var refApp ClowdApp
+
+	err := GetAppInSameEnv(pClient, ctx, app, appList)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, iapp := range appList.Items {
+		if iapp.Name == app.Spec.Database.SharedDBAppName {
+			refApp = iapp
+			return &refApp, nil
+		}
+	}
+	return nil, errors.New("Could not get app for db in env")
 }

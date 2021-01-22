@@ -194,8 +194,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					Mode:        "operator",
 				},
 				Database: crd.DatabaseConfig{
-					Image: "registry.redhat.io/rhel8/postgresql-12:1-36",
-					Mode:  "local",
+					Mode: "local",
 				},
 				Logging: crd.LoggingConfig{
 					Mode: "app-interface",
