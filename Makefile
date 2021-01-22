@@ -68,7 +68,6 @@ deploy: manifests kustomize
 
 release: manifests kustomize controller-gen
 	cat prommie-operator-bundle.yaml > manifest.yaml
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	cat config/crd/bases/cloud.redhat.com_clowdapps.yaml >> manifest.yaml
 	cat config/crd/bases/cloud.redhat.com_clowdenvironments.yaml >> manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
