@@ -59,28 +59,6 @@ spec:
                   description: Defines the Configuration for the Clowder Database
                     Provider.
                   properties:
-                    image:
-                      description: DEPRECATED In (*_local_*) mode, the Image field
-                        is used to define the database image for local database instances.
-                      type: string
-                    imageList:
-                      description: Allows the definition of multiple versions of database
-                        images, if Image is present ImageList is ignored.
-                      items:
-                        properties:
-                          image:
-                            description: Defines the image name to be deployed.
-                            type: string
-                          version:
-                            description: Defines the major version of the postgres
-                              version to use.
-                            format: int32
-                            type: integer
-                        required:
-                        - image
-                        - version
-                        type: object
-                      type: array
                     mode:
                       description: 'The mode of operation of the Clowder Database
                         Provider. Valid options are: (*_app-interface_*) where the

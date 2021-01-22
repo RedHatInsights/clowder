@@ -124,25 +124,9 @@ type DatabaseConfig struct {
 	// where the provider will spin up a local instance of the database.
 	Mode DatabaseMode `json:"mode"`
 
-	// DEPRECATED In (*_local_*) mode, the Image field is used to define the database image
-	// for local database instances.
-	Image string `json:"image,omitempty"`
-
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
-
-	// Allows the definition of multiple versions of database images, if Image
-	// is present ImageList is ignored.
-	ImageList []DatabaseImage `json:"imageList,omitempty"`
-}
-
-type DatabaseImage struct {
-	// Defines the major version of the postgres version to use.
-	Version int32 `json:"version"`
-
-	// Defines the image name to be deployed.
-	Image string `json:"image"`
 }
 
 // TODO: Other potential modes: splunk, kafka

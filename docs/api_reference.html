@@ -1025,71 +1025,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>image</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>DEPRECATED In (<strong><em>local</em></strong>) mode, the Image field is used to define the database image for local database instances.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p><strong><code>pvc</code></strong> <em>boolean</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>If using the (<strong><em>local</em></strong>) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>imageList</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databaseimage">DatabaseImage</a> array</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Allows the definition of multiple versions of database images, if Image is present ImageList is ignored.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databaseimage">DatabaseImage</h4>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databaseconfig">DatabaseConfig</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>version</code></strong> <em>integer</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Defines the major version of the postgres version to use.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>image</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Defines the image name to be deployed.</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -1138,6 +1077,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Defines the Name of the datbase to be created. This will be used as the name of the logical database inside the database server in (<strong><em>local</em></strong>) mode and the name of the secret to be used for Database configuration in (<strong><em>app-interface</em></strong>) mode.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>sharedDbAppName</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the Name of the app to share a database from</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -1787,7 +1734,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of environment variables in k8s defined format.</p>
@@ -1906,7 +1853,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
@@ -1930,13 +1877,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>volumes</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core">Volume</a></em></p>
+<p><strong><code>volumes</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core">Volume</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>volumeMounts</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core">VolumeMount</a></em></p>
+<p><strong><code>volumeMounts</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core">VolumeMount</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
@@ -2800,7 +2747,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-01-18 13:26:30 -0500
+Last updated 2021-01-21 07:09:34 UTC
 </div>
 </div>
 </body>

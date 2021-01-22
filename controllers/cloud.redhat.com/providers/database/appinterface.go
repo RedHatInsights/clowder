@@ -69,15 +69,42 @@ func NewAppInterfaceDBProvider(p *p.Provider) (providers.ClowderProvider, error)
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	if app.Spec.Database.Name == "" {
+	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
 		return nil
 	}
 
+	if app.Spec.Database.Name != "" && app.Spec.Database.SharedDBAppName != "" {
+		return errors.New("Cannot set dbName & shared db app name")
+	}
+
+	var dbSpec crd.DatabaseSpec
+	var namespace string
+
+	if app.Spec.Database.Name != "" {
+		dbSpec = app.Spec.Database
+		namespace = app.Namespace
+	} else if app.Spec.Database.SharedDBAppName != "" {
+		err := checkDependency(app)
+		if err != nil {
+			return err
+		}
+
+		refApp, err := crd.GetAppForDBInSameEnv(a.Client, a.Ctx, app)
+
+		if err != nil {
+			return err
+		}
+
+		dbSpec = refApp.Spec.Database
+		namespace = refApp.Namespace
+
+	}
+
 	secrets := core.SecretList{}
-	err := a.Client.List(a.Ctx, &secrets, client.InNamespace(app.Namespace))
+	err := a.Client.List(a.Ctx, &secrets, client.InNamespace(namespace))
 
 	if err != nil {
-		msg := fmt.Sprintf("Failed to list secrets in %s", app.Namespace)
+		msg := fmt.Sprintf("Failed to list secrets in %s", namespace)
 		return errors.Wrap(msg, err)
 	}
 
@@ -87,7 +114,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		return err
 	}
 
-	matched := resolveDb(app.Spec.Database, dbConfigs)
+	matched := resolveDb(dbSpec, dbConfigs)
 
 	if matched == (config.DatabaseConfig{}) {
 		return &errors.MissingDependencies{

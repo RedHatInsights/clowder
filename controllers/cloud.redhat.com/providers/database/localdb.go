@@ -29,7 +29,50 @@ func NewLocalDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	if app.Spec.Database.Name == "" {
+	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
+		return nil
+	}
+
+	if app.Spec.Database.SharedDBAppName != "" {
+		err := checkDependency(app)
+
+		if err != nil {
+			return err
+		}
+
+		dbCfg := config.DatabaseConfig{}
+
+		refApp, err := crd.GetAppForDBInSameEnv(db.Client, db.Ctx, app)
+
+		if err != nil {
+			return err
+		}
+
+		secret := core.Secret{}
+
+		inn := types.NamespacedName{
+			Name:      fmt.Sprintf("%s-db", refApp.Name),
+			Namespace: refApp.Namespace,
+		}
+
+		err = db.Client.Get(db.Ctx, inn, &secret)
+
+		if err != nil {
+			return errors.Wrap("Couldn't set/get secret", err)
+		}
+
+		secMap := make(map[string]string)
+
+		for k, v := range secret.Data {
+			(secMap)[k] = string(v)
+		}
+
+		dbCfg.Populate(&secMap)
+		dbCfg.AdminUsername = "postgres"
+
+		db.Config = dbCfg
+		c.Database = &db.Config
+
 		return nil
 	}
 
@@ -68,20 +111,11 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	db.Config = dbCfg
 
 	var image string
-	if db.Env.Spec.Providers.Database.Image != "" {
-		image = db.Env.Spec.Providers.Database.Image
-	} else {
-		image = ""
-		for _, img := range db.Env.Spec.Providers.Database.ImageList {
-			if *app.Spec.Database.Version == img.Version {
-				image = img.Image
-				break
-			}
-		}
 
-		if image == "" {
-			return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", app.Spec.Database.Version))
-		}
+	image, ok := imageList[*(app.Spec.Database.Version)]
+
+	if !ok {
+		return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", app.Spec.Database.Version))
 	}
 
 	if app.Spec.Cyndi.Enabled {

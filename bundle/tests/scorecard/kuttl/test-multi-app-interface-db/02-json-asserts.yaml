@@ -1,0 +1,14 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-multi-app-interface-db app-c -o json > /tmp/test-multi-app-interface-db-c
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-app-interface-db-c | base64 -d > /tmp/test-multi-app-interface-db-json-c
+
+- script: jq -r '.database.hostname == "app-b-stage.rds.example.com"' -e < /tmp/test-multi-app-interface-db-json-c
+
+- script: kubectl get secret --namespace=test-multi-app-interface-db app-b -o json > /tmp/test-multi-app-interface-db-b
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-app-interface-db-b | base64 -d > /tmp/test-multi-app-interface-db-json-b
+
+- script: jq -r '.database.hostname == "app-b-stage.rds.example.com"' -e < /tmp/test-multi-app-interface-db-json-b
