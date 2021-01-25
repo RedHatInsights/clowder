@@ -95,13 +95,47 @@ There are new features coming up as well:
 
 [Design docs](https://github.com/RedHatInsights/clowder/tree/master/docs/)
 
-## Dependencies
+## Dev Environment Setup
 
-- [Operator SDK](https://github.com/operator-framework/operator-sdk/releases)
-- [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder/releases)
-- [kustomize](https://github.com/kubernetes-sigs/kustomize/releases)
-- Either Codeready Containers or a remote cluster where you have access to
-  create CRDs.
+* Install [operator-sdk](https://sdk.operatorframework.io/docs/installation/#install-from-github-release)
+* Install the latest [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+* Install [krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install/)
+* Install kuttl:
+  ```
+  kubectl krew install kuttl
+  ```
+* Install [kubebuilder](https://book.kubebuilder.io/quick-start.html#installation)
+
+  * Normally kubebuilder is installed to `/usr/local/kubebuilder/bin`. You should see the following
+executables in that directory:
+    ```
+    etcd  kube-apiserver  kubebuilder  kubectl
+    ```
+    You may want to append this directory to your `PATH` in your `.bashrc`, `.zshrc`, or similar.
+
+    **NOTE**: If you choose to place the kubebuilder executables in a different path, make sure to
+    use the `KUBEBUILDER_ASSETS` env var when running tests (mentioned in `Unit Tests` section below)
+
+* Install [kustomize](https://kubernetes-sigs.github.io/kustomize/installation/binaries/)
+  * The install script places a `kustomize` binary in whatever directory you ran the above script in. Move this binary to a folder that is on your `PATH` or make sure the directory is appended to your `PATH`
+
+* Install [minikube](https://minikube.sigs.k8s.io/docs/start/). The latest release we have tested with is [v1.17.0](https://github.com/kubernetes/minikube/releases/tag/v1.17.0). (**NOTE:** If you want/need to use OpenShift, you can install [Code Ready Containers](https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md), just be aware that it consumes a much larger amount of resources and our test helper scripts are designed to work with minikube.)
+
+    We haven't had much success using the docker/podman drivers, and would recommend the [kvm2 driver](https://minikube.sigs.k8s.io/docs/drivers/kvm2/) or [virtualbox driver](https://minikube.sigs.k8s.io/docs/drivers/virtualbox/)
+
+    ### **KVM2-specific notes**
+
+    * Note that `virt-host-validate` may throw errors related to cgroups on Fedora 33 -- which you can [ignore](https://gitlab.com/libvirt/libvirt/-/issues/94)
+
+    * If you don't want to enter a root password when minikube needs to modify its VM, add your user to the 'libvirt' group:
+    ```
+    sudo usermod -a -G libvirt $(whoami)
+    newgrp libvirt
+    ```
+
+    * You can set minikube to default to kvm2 with: `minikube config set driver kvm2`
+
+* Move to the `Testing` section below to see if you can successfully run unit tests and E2E tests.
 
 ## Running
 
@@ -109,8 +143,8 @@ There are new features coming up as well:
 - `make run` will build the binary and locally run the binary, connecting the
   manager to the Openshift cluster configured in your kubeconfig.
 - `make deploy` will try to run the manager in the cluster configured in your
-  kubeconfig.  You likely need to push the image to an image stream local to
-  your target namespace.
+  kubeconfig.  You likely need to push the image to a docker registry that your Kubernetes
+  cluster can access.  See `E2E Testing` below.
 - `make genconfig` (optionally) needs to be run if the specification for the config
   has been altered.
 
@@ -121,25 +155,7 @@ There are new features coming up as well:
 The tests rely on the test environment set up by controller-runtime.  This enables the operator to 
 get initialized against a control plane just like it would against a real OpenShift cluster.
 
-1. Download and install `kubebuilder`.
-[See install instructions here](https://book.kubebuilder.io/quick-start.html#installation).
-
-2. Normally kubebuilder is installed to `/usr/local/kubebuilder/bin`. You should see the following
-executables in that directory:
-    ```
-    etcd  kube-apiserver  kubebuilder  kubectl
-    ```
-    You may want to append this directory to your `PATH` in your `.bashrc`, `.zshrc`, or similar.
-
-    **NOTE**: If you choose to place the kubebuilder executables in a different path, make sure to
-    use the `KUBEBUILDER_ASSETS` env var when running tests (mentioned in step 4 below)
-
-3. Download and install `kustomize`.
-[See install instructions here](https://kubernetes-sigs.github.io/kustomize/installation/binaries/).
-This places a `kustomize` binary in whatever directory you ran the above script in. Move this binary
-to a folder that is on your `PATH` or make sure the directory is appended to your `PATH`
-
-4. Run the tests:
+To run the tests:
     ```
     make test
     ```
@@ -154,34 +170,47 @@ a look at https://quii.gitbook.io/learn-go-with-tests/
 
 ### E2E Testing
 
-Clowder offers two e2e testing scripts, one for pushing up the image into quay, and one for pushing
-into a minikube local registry.
+There are two e2e testing scripts which:
+* build your code changes into a docker image (both `podman` or `docker` supported)
+* push the image into a registry
+* deploy the operator onto a kubernetes cluster
+* run `kuttl` tests
 
-For Quay based testing use something like
+The scripts are:
+* `e2e-test.sh` -- pushes images to quay.io, used mainly for this repo's CI/CD jobs or in cases where you have
+  access to a remote cluster on which to test the operator.
+* `e2e-test-local.sh` -- pushes images to a local docker registry, meant for local testing with minikube
 
-  ```
-  IMAGE_NAME=quay.io/username/clowder KUBEBUILDER_ASSETS=path/to/kubebuilder_assets
-  ```
+You will usually want to run:
+```
+  minikube start --addons=registry
+ ./e2e-test-local.sh
+```
 
-To use local testing completely within minikube, you must first enable the local registry
+### Podman Notes
+If using podman to build the operator's docker image, ensure sub ID's for rootless mode are configured:
+Test with:
+```
+podman system migrate
+podman unshare cat /proc/self/uid_map
+```
 
-  ```
-  minikube addons enable registry
-  ```
+If those commands throw an error, you need to add entries to `/etc/subuid` and `/etc/subgid` for your user.
+The subuid range must not contain your user ID and the subgid range must not contain your group ID. Example:
 
-The minikube command is slightly different, as the minikube instance seems to only be able to use
-HTTP from 127.0.0.1.
+```
+❯ id -u
+112898
+❯ id -g
+112898
 
-  ```
-  KUBEBUILDER_ASSETS=~/kubebuilder_2.3.1_linux_amd64/bin/ IMAGE_NAME=127.0.0.1:5000/clowder IMG_PUSH_REPO=`minikube ip`:5000/clowder ./e2e-test-local.sh
-  ```
+# Use 200000-265535 since 112898 is not found in this range
+❯ sudo usermod --add-subuids 200000-265535 --add-subgids 200000-265535 $(whoami)
 
-## Developing Locally with CRC
-
-You can spin up Clowder in crc and test changes to your ClowdEnvironment and ClowdApp locally.
-
-[CRC Guide Getting Started](https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md)
-
+# Run migrate again:
+❯ podman system migrate
+❯ podman unshare cat /proc/self/uid_map
+```
 
 ## Migrating an App to Clowder
 

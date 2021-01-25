@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 export IMAGE_TAG=`git rev-parse --short HEAD`
 

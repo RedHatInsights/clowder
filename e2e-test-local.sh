@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 kubectl apply -f skuttl-namespace.yaml
 kubectl apply -f skuttl-perms.yaml

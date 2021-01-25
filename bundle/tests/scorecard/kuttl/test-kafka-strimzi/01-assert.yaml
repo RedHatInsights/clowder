@@ -26,7 +26,6 @@ metadata:
     strimzi.io/cluster: my-cluster
   name: topicone-test-kafka-strimzi-test-kafka-strimzi
   namespace: test-kafka-strimzi-kafka
-  selfLink: /apis/kafka.strimzi.io/v1beta1/namespaces/test-kafka-strimzi-kafka/kafkatopics/topicone-test-kafka-strimzi-test-kafka-strimzi
 spec:
   partitions: 96
   replicas: 7
@@ -40,7 +39,6 @@ metadata:
     strimzi.io/cluster: my-cluster
   name: topictwo-test-kafka-strimzi-test-kafka-strimzi
   namespace: test-kafka-strimzi-kafka
-  selfLink: /apis/kafka.strimzi.io/v1beta1/namespaces/test-kafka-strimzi-kafka/kafkatopics/topictwo-test-kafka-strimzi-test-kafka-strimzi
 spec:
   partitions: 128
   replicas: 5
@@ -54,7 +52,6 @@ metadata:
     strimzi.io/cluster: my-cluster
   name: topicthree-test-kafka-strimzi-test-kafka-strimzi
   namespace: test-kafka-strimzi-kafka
-  selfLink: /apis/kafka.strimzi.io/v1beta1/namespaces/test-kafka-strimzi-kafka/kafkatopics/topicthree-test-kafka-strimzi-test-kafka-strimzi
 spec:
   partitions: 12
   replicas: 5
