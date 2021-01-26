@@ -98,6 +98,11 @@ docker-build: test
 	$(RUNTIME) build . -t ${IMG}
 
 # Build the docker image
+docker-build-no-test-quick:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/manager-cgo main.go
+	$(RUNTIME) build -f Dockerfile-local . -t ${IMG}
+
+# Build the docker image
 docker-build-no-test:
 	$(RUNTIME) build . -t ${IMG}
 
@@ -110,6 +115,8 @@ docker-push-minikube:
 	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(shell git rev-parse --short=7 HEAD) --tls-verify=false
 
 deploy-minikube: bundle-verify docker-build-no-test docker-push-minikube deploy
+
+deploy-minikube-quick: bundle-verify docker-build-no-test-quick docker-push-minikube deploy
 
 
 # find or download controller-gen
