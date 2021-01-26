@@ -1,8 +1,4 @@
-# Clowder :cat: - Insights Platform Operator
-
-An operator to deploy and operate cloud.redhat.com resources for Openshift.
-
-# <img src="clowder.svg" width="150" alt="Clowder Logo">
+# <img src="clowder.svg" width="800" alt="Clowder - Clowd Platform Operator">
 ![Build Passing](https://img.shields.io/github/workflow/status/RedHatInsights/clowder/Run%20Unit%20Tests)
 ![Downloads](https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg)
 ![Release](https://img.shields.io/github/v/release/RedHatInsights/clowder)
