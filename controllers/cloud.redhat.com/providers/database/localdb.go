@@ -112,10 +112,15 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 	var image string
 
-	image, ok := imageList[*(app.Spec.Database.Version)]
+	var dbVersion int32 = 12
+	if app.Spec.Database.Version != nil {
+		dbVersion = *(app.Spec.Database.Version)
+	}
+
+	image, ok := imageList[dbVersion]
 
 	if !ok {
-		return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", app.Spec.Database.Version))
+		return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", dbVersion))
 	}
 
 	if app.Spec.Cyndi.Enabled {
