@@ -1,4 +1,4 @@
-# <img src="clowder.svg" width="800" alt="Clowder - Clowd Platform Operator">
+# <img src="docs/images/clowder.svg" width="800" alt="Clowder - Clowd Platform Operator">
 ![Build Passing](https://img.shields.io/github/workflow/status/RedHatInsights/clowder/Run%20Unit%20Tests)
 ![Downloads](https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg)
 ![Release](https://img.shields.io/github/v/release/RedHatInsights/clowder)
@@ -13,7 +13,7 @@ which not only defines the pods for the application, but also requests certain
 key resources from the environment, such as Object Storage Buckets, a Database,
 Kafka Topics, or an In Memory Database.
 
-<img src="images/terminal-example.gif" alt="Animated GIF terminal example">
+<img src="docs/images/terminal-example.gif" alt="Animated GIF terminal example">
 
 A `ClowdEnvironment` resource is used to define how key resources, such as
 Kafka Topics and Databases are deployed. Using different providers, a single
@@ -27,7 +27,7 @@ Strimzi operator to pick up and create topics.
 The diagram below shows how the two Clowder resources are used to create all
 other k8s resources.
 
-![Clowder Flow](images/clowder-flow.svg "Clowder Flow")
+![Clowder Flow](docs/images/clowder-flow.svg "Clowder Flow")
 
 Once these custom resources have been created and deployed to the k8s
 environment, the operator will create a secret with all necessary configuration
@@ -51,7 +51,7 @@ several helpers for accessing some of the more complex structures.
 
 The diagram below describes how the application accesses the configuration.
 
-!["Clowder Client"](images/clowder-new.svg "Clowder Client")
+!["Clowder Client"](docs/images/clowder-new.svg "Clowder Client")
 
 ## Why use Clowder?
 
