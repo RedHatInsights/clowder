@@ -10,7 +10,9 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
+
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -121,7 +123,7 @@ func NewAppInterface(p *p.Provider) (providers.ClowderProvider, error) {
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
 			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
-			Port:     intPtr(9092),
+			Port:     utils.IntPtr(9092),
 		}},
 	}
 

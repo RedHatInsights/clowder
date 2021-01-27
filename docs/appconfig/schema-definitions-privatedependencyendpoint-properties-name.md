@@ -1,16 +1,16 @@
-# Untitled integer in AppConfig Schema
+# Untitled string in AppConfig Schema
 
 ```txt
-https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/webPort
+https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name
 ```
 
-Deprecated: Use 'publicPort' instead.
+The PodSpec name of the dependent service inside the ClowdApp.
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
 | :------------------ | ---------- | -------------- | ----------------------- | :---------------- | --------------------- | ------------------- | ------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [schema.json\*](../../out/schema.json "open original schema") |
 
-## webPort Type
+## name Type
 
-`integer`
+`string`

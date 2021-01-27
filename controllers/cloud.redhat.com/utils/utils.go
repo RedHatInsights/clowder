@@ -243,3 +243,7 @@ func DeploymentStatusChecker(deployment *apps.Deployment) bool {
 	}
 	return false
 }
+
+func IntPtr(i int) *int {
+	return &i
+}

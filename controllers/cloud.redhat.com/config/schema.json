@@ -8,8 +8,16 @@
             "type": "object",
             "description": "ClowdApp deployment configuration for Clowder enabled apps.",
             "properties": {
+                "privatePort": {
+                    "description": "Defines the private port that the app should be configured to listen on for API traffic.",
+                    "type": "integer"
+                },
+                "publicPort": {
+                    "description": "Defines the public port that the app should be configured to listen on for API traffic.",
+                    "type": "integer"
+                },
                 "webPort": {
-                    "description": "Defines the web port that the app should be configured to listen on for API traffic.",
+                    "description": "Deprecated: Use 'publicPort' instead.",
                     "type": "integer"
                 },
                 "metricsPort": {
@@ -44,10 +52,17 @@
                     "items": {
                         "$ref": "#/definitions/DependencyEndpoint"
                     }
+                },
+                "privateEndpoints": {
+                    "id": "privateEndpoints",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PrivateDependencyEndpoint"
+                    }
                 }
+
             },
             "required": [
-                "webPort",
                 "metricsPort",
                 "metricsPath",
                 "logging"
@@ -326,6 +341,35 @@
         },
         "DependencyEndpoint": {
             "id": "dependency",
+            "type": "object",
+            "description": "Dependent service connection info",
+            "properties": {
+                "name": {
+                    "description": "The PodSpec name of the dependent service inside the ClowdApp.",
+                    "type": "string"
+                },
+                "hostname": {
+                    "description": "The hostname of the dependent service.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "The port of the dependent service.",
+                    "type": "integer"
+                },
+                "app": {
+                    "description": "The app name of the ClowdApp hosting the service.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "hostname",
+                "port",
+                "app"
+            ]
+        },
+        "PrivateDependencyEndpoint": {
+            "id": "privateDependency",
             "type": "object",
             "description": "Dependent service connection info",
             "properties": {

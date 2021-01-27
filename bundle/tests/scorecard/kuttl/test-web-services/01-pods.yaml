@@ -2,12 +2,13 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-basic-app
+  name: test-web-services
 spec:
-  targetNamespace: test-basic-app
+  targetNamespace: test-web-services
   providers:
     web:
       port: 8000
+      privatePort: 10000
       mode: operator
     metrics:
       port: 9000
@@ -18,6 +19,7 @@ spec:
       clusterName: my-cluster
       mode: none
     db:
+      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
       mode: none
     logging:
       mode: none
@@ -37,9 +39,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-basic-app
+  namespace: test-web-services
 spec:
-  envName: test-basic-app
+  envName: test-web-services
   deployments:
   - name: processor
     podSpec:
@@ -49,10 +51,8 @@ spec:
           value: env_var_1
         - name: ENV_VAR_2
           value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
-    web: True
+    webServices:
+      private:
+        enabled: True
+      public:
+        enabled: True

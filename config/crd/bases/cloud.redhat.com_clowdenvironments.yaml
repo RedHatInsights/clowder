@@ -206,11 +206,12 @@ spec:
                       type: string
                     port:
                       description: The port that metrics services inside ClowdApp
-                        pods should be served on. If omitted, defaults to 9000.
+                        pods should be served on.
                       format: int32
                       type: integer
                   required:
                   - mode
+                  - port
                   type: object
                 objectStore:
                   description: Defines the Configuration for the Clowder ObjectStore
@@ -255,11 +256,17 @@ spec:
                       type: string
                     port:
                       description: The port that web services inside ClowdApp pods
-                        should be served on. If omitted, defaults to 8000.
+                        should be served on.
+                      format: int32
+                      type: integer
+                    privatePort:
+                      description: The private port that web services inside a ClowdApp
+                        should be served on.
                       format: int32
                       type: integer
                   required:
                   - mode
+                  - port
                   type: object
               required:
               - inMemoryDb
