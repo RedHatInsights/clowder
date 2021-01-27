@@ -1,0 +1,12 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-web-services puptoo -o json > /tmp/test-web-services
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-web-services | base64 -d > /tmp/test-web-services-json
+
+- script: jq -r '.publicPort == 8000' -e < /tmp/test-web-services-json
+- script: jq -r '.metricsPort == 9000' -e < /tmp/test-web-services-json
+- script: jq -r '.privatePort == 10000' -e < /tmp/test-web-services-json
+- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-web-services-json

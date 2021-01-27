@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: puptoo
-  namespace: test-basic-app
+  namespace: test-web-services
   labels:
     app: puptoo
   ownerReferences:
@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: puptoo-processor
-  namespace: test-basic-app
+  namespace: test-web-services
 spec:
   template:
     spec:
@@ -28,20 +28,12 @@ spec:
           value: "env_var_2"
         - name: ACG_CONFIG
           value: /cdapp/cdappconfig.json
-      initContainers:
-      - env:
-        - name: ENV_VAR_1
-          value: "override_1"
-        - name: ENV_VAR_3
-          value: "env_var_3"
-        - name: ACG_CONFIG
-          value: /cdapp/cdappconfig.json
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: puptoo-processor
-  namespace: test-basic-app
+  namespace: test-web-services
 spec:
   selector:
     pod: puptoo-processor
@@ -49,6 +41,12 @@ spec:
   - port: 9000
     targetPort: 9000
     name: metrics
+    protocol: TCP
   - port: 8000
     targetPort: 8000
     name: public
+    protocol: TCP
+  - port: 10000
+    targetPort: 10000
+    name: private
+    protocol: TCP

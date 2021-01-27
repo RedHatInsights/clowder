@@ -34,8 +34,10 @@ type WebMode string
 // services and their probes.
 type WebConfig struct {
 	// The port that web services inside ClowdApp pods should be served on.
-	// If omitted, defaults to 8000.
-	Port int32 `json:"port,omitempty"`
+	Port int32 `json:"port"`
+
+	// The private port that web services inside a ClowdApp should be served on.
+	PrivatePort int32 `json:"privatePort,omitempty"`
 
 	// An api prefix path that pods will be instructed to use when setting up
 	// their web server.
@@ -55,8 +57,7 @@ type MetricsMode string
 // metrics services and their probes.
 type MetricsConfig struct {
 	// The port that metrics services inside ClowdApp pods should be served on.
-	// If omitted, defaults to 9000.
-	Port int32 `json:"port,omitempty"`
+	Port int32 `json:"port"`
 
 	// A prefix path that pods will be instructed to use when setting up their
 	// metrics server.

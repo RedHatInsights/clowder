@@ -207,7 +207,3 @@ func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Ser
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
 }
-
-func intPtr(i int) *int {
-	return &i
-}

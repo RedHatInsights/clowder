@@ -13,6 +13,7 @@ import (
 )
 
 const webPort = 8000
+const privatePort = 10000
 
 func TestSingleDependency(t *testing.T) {
 
@@ -47,14 +48,21 @@ func TestSingleDependency(t *testing.T) {
 			ObjectMeta: nobjMeta,
 			Spec: crd.ClowdAppSpec{
 				Deployments: []crd.Deployment{{
-					Web:  true,
+					WebServices: crd.WebServices{
+						Private: crd.PrivateWebService{
+							Enabled: true,
+						},
+						Public: crd.PublicWebService{
+							Enabled: true,
+						},
+					},
 					Name: "bopper",
-				}}},
-		},
-		},
+				}},
+			},
+		}},
 	}
 
-	config, missing := makeDepConfig(webPort, &app, &apps)
+	config, intConfig, missing := makeDepConfig(webPort, privatePort, &app, &apps)
 
 	if len(missing) > 0 {
 		t.Errorf("We got a missing dep when there shouldn't have been one")
@@ -68,6 +76,16 @@ func TestSingleDependency(t *testing.T) {
 	}
 	if config[0].Name != "bopper" {
 		t.Errorf("We didn't get the right service name, got %v should be %v", config[0].Name, "bopper")
+	}
+
+	if intConfig[0].Hostname != "bopper-bopper.bopperspace.svc" {
+		t.Errorf("We didn't get the right service hostname, got %v should be %v", config[1].Hostname, "bopper-bopper.bopperspace.svc")
+	}
+	if intConfig[0].Port != 10000 {
+		t.Errorf("We didn't get the right service port")
+	}
+	if intConfig[0].Name != "bopper" {
+		t.Errorf("We didn't get the right service name, got %v should be %v", config[1].Name, "bopper")
 	}
 }
 
@@ -104,7 +122,11 @@ func TestMissingDependency(t *testing.T) {
 	nobjMeta.Namespace = "bopperspace"
 	apps = crd.ClowdAppList{}
 
-	deps, missing := makeDepConfig(webPort, &app, &apps)
+	deps, privDeps, missing := makeDepConfig(webPort, privatePort, &app, &apps)
+
+	if len(privDeps) > 0 {
+		t.Errorf("We got private deps we shouldn't have")
+	}
 
 	if len(deps) > 0 {
 		t.Errorf("We got deps when we shouldn't have")
@@ -169,7 +191,11 @@ func TestOptionalDependency(t *testing.T) {
 		},
 	}
 
-	deps, _ := makeDepConfig(webPort, &app, &apps)
+	deps, privDeps, _ := makeDepConfig(webPort, privatePort, &app, &apps)
+
+	if len(privDeps) > 0 {
+		t.Errorf("We got private deps we shouldn't have")
+	}
 
 	if len(deps) != 2 {
 		t.Errorf("We didn't get the dependency")
@@ -246,7 +272,12 @@ func TestMultiDependency(t *testing.T) {
 		},
 	}
 
-	config, missing := makeDepConfig(webPort, &app, &apps)
+	config, privDeps, missing := makeDepConfig(webPort, privatePort, &app, &apps)
+
+	if len(privDeps) > 0 {
+		t.Errorf("We got private deps we shouldn't have")
+	}
+
 	if len(missing) > 0 {
 		t.Errorf("We got a missing dep error")
 	}

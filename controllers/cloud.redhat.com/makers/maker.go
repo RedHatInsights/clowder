@@ -116,8 +116,13 @@ func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error 
 		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP"},
 	}
 
-	if deployment.Web == true {
-		webPort := core.ServicePort{Name: "web", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
+	if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
+		webPort := core.ServicePort{Name: "public", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
+		ports = append(ports, webPort)
+	}
+
+	if deployment.WebServices.Private.Enabled {
+		webPort := core.ServicePort{Name: "private", Port: m.Env.Spec.Providers.Web.PrivatePort, Protocol: "TCP"}
 		ports = append(ports, webPort)
 	}
 
@@ -553,7 +558,13 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 
 	c := config.AppConfig{}
 
-	c.WebPort = int(m.Env.Spec.Providers.Web.Port)
+	c.WebPort = utils.IntPtr(int(m.Env.Spec.Providers.Web.Port))
+	c.PublicPort = utils.IntPtr(int(m.Env.Spec.Providers.Web.Port))
+	privatePort := m.Env.Spec.Providers.Web.PrivatePort
+	if privatePort == 0 {
+		privatePort = 10000
+	}
+	c.PrivatePort = utils.IntPtr(int(privatePort))
 	c.MetricsPort = int(m.Env.Spec.Providers.Metrics.Port)
 	c.MetricsPath = m.Env.Spec.Providers.Metrics.Path
 
@@ -594,7 +605,10 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 
 	// Iterate over all deps
 
-	depConfig, missingDeps := makeDepConfig(m.Env.Spec.Providers.Web.Port, m.App, &apps)
+	if m.Env.Spec.Providers.Web.PrivatePort == 0 {
+		m.Env.Spec.Providers.Web.PrivatePort = 10000
+	}
+	depConfig, privDepConfig, missingDeps := makeDepConfig(m.Env.Spec.Providers.Web.Port, m.Env.Spec.Providers.Web.PrivatePort, m.App, &apps)
 
 	if len(missingDeps) > 0 {
 		depVal := map[string][]string{"services": missingDeps}
@@ -602,10 +616,17 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 	}
 
 	c.Endpoints = depConfig
+	c.PrivateEndpoints = privDepConfig
 	return nil
 }
 
-func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (depConfig []config.DependencyEndpoint, missingDeps []string) {
+func makeDepConfig(
+	webPort int32,
+	privatePort int32,
+	app *crd.ClowdApp,
+	apps *crd.ClowdAppList,
+) (depConfig []config.DependencyEndpoint, privDepConfig []config.PrivateDependencyEndpoint, missingDeps []string) {
+
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, iapp := range apps.Items {
@@ -620,14 +641,22 @@ func makeDepConfig(webPort int32, app *crd.ClowdApp, apps *crd.ClowdAppList) (de
 	}
 
 	depConfig = []config.DependencyEndpoint{}
+	privDepConfig = []config.PrivateDependencyEndpoint{}
 
-	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, &depConfig, webPort)
-	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, &depConfig, webPort)
+	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, &depConfig, &privDepConfig, webPort, privatePort)
+	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, &depConfig, &privDepConfig, webPort, privatePort)
 
-	return depConfig, missingDeps
+	return depConfig, privDepConfig, missingDeps
 }
 
-func processAppEndpoints(appMap map[string]crd.ClowdApp, depList []string, depConfig *[]config.DependencyEndpoint, webPort int32) (missingDeps []string) {
+func processAppEndpoints(
+	appMap map[string]crd.ClowdApp,
+	depList []string,
+	depConfig *[]config.DependencyEndpoint,
+	privDepConfig *[]config.PrivateDependencyEndpoint,
+	webPort int32,
+	privatePort int32,
+) (missingDeps []string) {
 
 	missingDeps = []string{}
 
@@ -641,11 +670,20 @@ func processAppEndpoints(appMap map[string]crd.ClowdApp, depList []string, depCo
 		// If app has public endpoint, add it to app config
 
 		for _, deployment := range depApp.Spec.Deployments {
-			if deployment.Web {
+			if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
 				*depConfig = append(*depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
+					Name:     deployment.Name,
+					App:      depApp.Name,
+				})
+			}
+			if deployment.WebServices.Private.Enabled {
+				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
+				*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
+					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
+					Port:     int(privatePort),
 					Name:     deployment.Name,
 					App:      depApp.Name,
 				})

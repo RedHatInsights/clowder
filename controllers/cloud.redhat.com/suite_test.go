@@ -206,7 +206,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					Mode: "redis",
 				},
 				Web: crd.WebConfig{
-					Port: int32(8080),
+					Port: int32(8000),
 					Mode: "none",
 				},
 				Metrics: crd.MetricsConfig{

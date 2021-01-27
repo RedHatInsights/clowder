@@ -77,7 +77,7 @@ func NewLocalKafka(p *p.Provider) (providers.ClowderProvider, error) {
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
 			Hostname: fmt.Sprintf("%v-kafka.%v.svc", p.Env.Name, p.Env.GetClowdNamespace()),
-			Port:     intPtr(29092),
+			Port:     utils.IntPtr(29092),
 		}},
 	}
 

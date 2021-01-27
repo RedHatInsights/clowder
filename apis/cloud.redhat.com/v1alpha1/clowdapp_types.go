@@ -75,6 +75,40 @@ type Job struct {
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
 }
 
+// WebDeprecated defines a boolean flag to help distinguish from the newer WebServices
+type WebDeprecated bool
+
+// PublicWebService is the definition of the public web service. There can be only
+// one public service managed by Clowder.
+type PublicWebService struct {
+
+	// Enabled describes if Clowder should enable the public service and provide the
+	// configuration in the cdappconfig.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// PrivateWebService is the definition of the private web service. There can be only
+// one private service managed by Clowder.
+type PrivateWebService struct {
+	// Enabled describes if Clowder should enable the private service and provide the
+	// configuration in the cdappconfig.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// MetricsWebService is the definition of the metrics web service. This is automatically
+// enabled and the configuration here at the moment is included for completeness, as there
+// are no configurable options.
+type MetricsWebService struct {
+}
+
+// WebServices defines the structs for the three exposed web services: public,
+// private and metrics.
+type WebServices struct {
+	Public  PublicWebService  `json:"public,omitempty"`
+	Private PrivateWebService `json:"private,omitempty"`
+	Metrics MetricsWebService `json:"metrics,omitempty"`
+}
+
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
 type Deployment struct {
@@ -90,7 +124,9 @@ type Deployment struct {
 	// If set to true, creates a service on the webPort defined in
 	// the ClowdEnvironment resource, along with the relevant liveness and
 	// readiness probes.
-	Web bool `json:"web,omitempty"`
+	Web WebDeprecated `json:"web,omitempty"`
+
+	WebServices WebServices `json:"webServices,omitempty"`
 
 	// PodSpec defines a container running inside a ClowdApp.
 	PodSpec PodSpec `json:"podSpec,omitempty"`
@@ -140,7 +176,7 @@ type PodSpec struct {
 
 type PodSpecDeprecated struct {
 	Name           string                  `json:"name"`
-	Web            bool                    `json:"web,omitempty"`
+	Web            WebDeprecated           `json:"web,omitempty"`
 	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
 	Image          string                  `json:"image,omitempty"`
 	InitContainers []InitContainer         `json:"initContainers,omitempty"`
