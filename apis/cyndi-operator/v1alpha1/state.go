@@ -114,7 +114,7 @@ func TableName(pipelineVersion string) string {
 }
 
 func TableNameToConnectorName(tableName string, appName string) string {
-	return ConnectorName(string(tableName[len(tablePrefix):len(tableName)]), appName)
+	return ConnectorName(string(tableName[len(tablePrefix):]), appName)
 }
 
 func ConnectorName(pipelineVersion string, appName string) string {

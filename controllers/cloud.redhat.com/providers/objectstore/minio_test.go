@@ -123,7 +123,7 @@ func TestMinio(t *testing.T) {
 
 	t.Run("createBucketsHitsCheckError", func(t *testing.T) {
 		bucketName := "testBucket"
-		mockBuckets := []mockBucket{mockBucket{
+		mockBuckets := []mockBucket{{
 			Name:        bucketName,
 			Exists:      false,
 			ExistsError: fakeError,
@@ -145,7 +145,7 @@ func TestMinio(t *testing.T) {
 
 	t.Run("createBucketsHitsCreateError", func(t *testing.T) {
 		bucketName := "testBucket"
-		mockBuckets := []mockBucket{mockBucket{
+		mockBuckets := []mockBucket{{
 			Name:        bucketName,
 			Exists:      false,
 			CreateError: fakeError,
@@ -167,7 +167,7 @@ func TestMinio(t *testing.T) {
 
 	t.Run("createBucketsAlreadyExists", func(t *testing.T) {
 		bucketName := "testBucket"
-		mockBuckets := []mockBucket{mockBucket{
+		mockBuckets := []mockBucket{{
 			Name:   bucketName,
 			Exists: true,
 		}}
@@ -187,7 +187,7 @@ func TestMinio(t *testing.T) {
 
 	t.Run("createBucketsSuccess", func(t *testing.T) {
 		bucketName := "testBucket"
-		mockBuckets := []mockBucket{mockBucket{
+		mockBuckets := []mockBucket{{
 			Name:   bucketName,
 			Exists: false,
 		}}
@@ -210,9 +210,9 @@ func TestMinio(t *testing.T) {
 		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
 
 		mockBuckets := []mockBucket{
-			mockBucket{Name: b1, Exists: false},
-			mockBucket{Name: b2, Exists: false},
-			mockBucket{Name: b3, Exists: false},
+			{Name: b1, Exists: false},
+			{Name: b2, Exists: false},
+			{Name: b3, Exists: false},
 		}
 		c := config.AppConfig{}
 
@@ -234,9 +234,9 @@ func TestMinio(t *testing.T) {
 		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
 
 		mockBuckets := []mockBucket{
-			mockBucket{Name: b1, Exists: true},
-			mockBucket{Name: b2, Exists: true},
-			mockBucket{Name: b3, Exists: false},
+			{Name: b1, Exists: true},
+			{Name: b2, Exists: true},
+			{Name: b3, Exists: false},
 		}
 		c := config.AppConfig{}
 
@@ -258,9 +258,9 @@ func TestMinio(t *testing.T) {
 		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
 
 		mockBuckets := []mockBucket{
-			mockBucket{Name: b1, Exists: false},
-			mockBucket{Name: b2, Exists: false, ExistsError: fakeError},
-			mockBucket{Name: b3, Exists: false},
+			{Name: b1, Exists: false},
+			{Name: b2, Exists: false, ExistsError: fakeError},
+			{Name: b3, Exists: false},
 		}
 		c := config.AppConfig{}
 
@@ -282,9 +282,9 @@ func TestMinio(t *testing.T) {
 		b1, b2, b3 := "testBucket1", "testBucket2", "testBucket3"
 
 		mockBuckets := []mockBucket{
-			mockBucket{Name: b1, Exists: false},
-			mockBucket{Name: b2, Exists: false, CreateError: fakeError},
-			mockBucket{Name: b3, Exists: false},
+			{Name: b1, Exists: false},
+			{Name: b2, Exists: false, CreateError: fakeError},
+			{Name: b3, Exists: false},
 		}
 		c := config.AppConfig{}
 

@@ -49,7 +49,7 @@ type DatabaseSpec struct {
 	// Defines the Version of the PostGreSQL database, defaults to 12.
 	Version *int32 `json:"version,omitempty"`
 
-	// Defines the Name of the datbase to be created. This will be used as the
+	// Defines the Name of the database to be created. This will be used as the
 	// name of the logical database inside the database server in (*_local_*) mode
 	// and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
 	Name string `json:"name,omitempty"`
@@ -59,7 +59,7 @@ type DatabaseSpec struct {
 }
 
 // Job defines either a Job to be used in creating a Job via external means, or
-// a CronJob, the difference is the presense of the schedule field.
+// a CronJob, the difference is the presence of the schedule field.
 type Job struct {
 	// Name defines identifier of the Job. This name will be used to name the
 	// CronJob resource, the container will be name identically.
@@ -120,13 +120,13 @@ type PodSpec struct {
 	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 
 	// A pass-through of a Liveness Probe specification in standard k8s format.
-	// If omited, a standard probe will be setup point to the webPort defined
+	// If omitted, a standard probe will be setup point to the webPort defined
 	// in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to
 	// false.
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
 
 	// A pass-through of a Readiness Probe specification in standard k8s format.
-	// If omited, a standard probe will be setup point to the webPort defined
+	// If omitted, a standard probe will be setup point to the webPort defined
 	// in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to
 	// false.
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`

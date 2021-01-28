@@ -14,18 +14,22 @@ import (
 
 const webPort = 8000
 
-func TestSingleDependency(t *testing.T) {
-
-	var app crd.ClowdApp
-	var apps crd.ClowdAppList
-
-	objMeta := metav1.ObjectMeta{
+func defaultMetaObject() metav1.ObjectMeta {
+	return metav1.ObjectMeta{
 		Name:      "reqapp",
 		Namespace: "default",
 		Labels: map[string]string{
 			"app": "test",
 		},
 	}
+}
+
+func TestSingleDependency(t *testing.T) {
+
+	var app crd.ClowdApp
+	var apps crd.ClowdAppList
+
+	objMeta := defaultMetaObject()
 
 	app = crd.ClowdApp{
 		ObjectMeta: objMeta,
@@ -76,13 +80,7 @@ func TestMissingDependency(t *testing.T) {
 	var app crd.ClowdApp
 	var apps crd.ClowdAppList
 
-	objMeta := metav1.ObjectMeta{
-		Name:      "reqapp",
-		Namespace: "default",
-		Labels: map[string]string{
-			"app": "test",
-		},
-	}
+	objMeta := defaultMetaObject()
 
 	app = crd.ClowdApp{
 		ObjectMeta: objMeta,
@@ -120,13 +118,7 @@ func TestOptionalDependency(t *testing.T) {
 	var app crd.ClowdApp
 	var apps crd.ClowdAppList
 
-	objMeta := metav1.ObjectMeta{
-		Name:      "reqapp",
-		Namespace: "default",
-		Labels: map[string]string{
-			"app": "test",
-		},
-	}
+	objMeta := defaultMetaObject()
 
 	app = crd.ClowdApp{
 		ObjectMeta: objMeta,
@@ -158,7 +150,7 @@ func TestOptionalDependency(t *testing.T) {
 					Name: "deep",
 				}}},
 		},
-			crd.ClowdApp{
+			{
 				ObjectMeta: nobjMeta2,
 				Spec: crd.ClowdAppSpec{
 					Deployments: []crd.Deployment{{
@@ -189,13 +181,7 @@ func TestMultiDependency(t *testing.T) {
 	var app crd.ClowdApp
 	var apps crd.ClowdAppList
 
-	objMeta := metav1.ObjectMeta{
-		Name:      "reqapp",
-		Namespace: "default",
-		Labels: map[string]string{
-			"app": "test",
-		},
-	}
+	objMeta := defaultMetaObject()
 
 	app = crd.ClowdApp{
 		ObjectMeta: objMeta,
@@ -350,13 +336,7 @@ func createResourceRequirements(params Params) core.ResourceRequirements {
 func setupResourcesForTest(params Params) (*apps.Deployment, *crd.ClowdEnvironment, *crd.ClowdApp) {
 	var app crd.ClowdApp
 
-	objMeta := metav1.ObjectMeta{
-		Name:      "reqapp",
-		Namespace: "default",
-		Labels: map[string]string{
-			"app": "test",
-		},
-	}
+	objMeta := defaultMetaObject()
 
 	appResources := createResourceRequirements(params)
 
