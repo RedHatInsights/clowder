@@ -409,7 +409,7 @@ func processInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 	return containerList
 }
 
-// This should probably take arguments for addtional volumes, so that we can
+// This should probably take arguments for additional volumes, so that we can
 // add those and then do one Apply
 func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, hash string) error {
 

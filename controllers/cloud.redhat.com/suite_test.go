@@ -73,6 +73,11 @@ func TestMain(m *testing.M) {
 	}
 
 	err = crd.AddToScheme(clientgoscheme.Scheme)
+
+	if err != nil {
+		logger.Fatal("Failed to add scheme", zap.Error(err))
+	}
+
 	err = strimzi.AddToScheme(clientgoscheme.Scheme)
 
 	if err != nil {
