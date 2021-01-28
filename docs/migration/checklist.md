@@ -23,7 +23,7 @@
   - [ ] App interface entries for [Jenkins jobs are running](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-pr-check-and-build-master-jenkins-jobs-in-app-interface)
   - [ ] saas-deploy file [for Bonfire is enabled](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-new-saas-deploy-file)
 
-## Backwards Compatability
+## Backwards Compatibility
   - [ ] e2e builds are disabled
   - [ ] 'quay copier' is disabled in build config for app
   - [ ] qa/smoke images pull from quay
