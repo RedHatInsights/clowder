@@ -95,7 +95,7 @@ generate: controller-gen
 
 # Build the docker image
 docker-build: test
-	$(RUNTIME) build -f build/Dockerfile . -t ${IMG}
+	$(RUNTIME) build . -t ${IMG}
 
 # Build the docker image
 docker-build-no-test-quick:
@@ -104,7 +104,7 @@ docker-build-no-test-quick:
 
 # Build the docker image
 docker-build-no-test:
-	$(RUNTIME) build -f build/Dockerfile . -t ${IMG}
+	$(RUNTIME) build . -t ${IMG}
 
 # Push the docker image
 docker-push:
