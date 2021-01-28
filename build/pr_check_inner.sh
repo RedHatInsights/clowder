@@ -25,6 +25,7 @@ chmod 600 minikube-ssh-ident
 
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube delete"
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube start"
+
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube kubectl -- apply -f prommie-operator-bundle.yaml"
 
 export MINIKUBE_IP=`ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip"`
@@ -68,8 +69,8 @@ $KUBEBUILDER_ASSETS/kubectl get pods --all-namespaces=true
 
 export IMAGE_TAG=`git rev-parse --short HEAD`
 
-$KUBEBUILDER_ASSETS/kubectl apply -f skuttl-namespace.yaml
-$KUBEBUILDER_ASSETS/kubectl apply -f skuttl-perms.yaml
+$KUBEBUILDER_ASSETS/kubectl apply -f build/skuttl-namespace.yaml
+$KUBEBUILDER_ASSETS/kubectl apply -f build/skuttl-perms.yaml
 
 IMG=$IMAGE_NAME:$IMAGE_TAG make deploy
 $KUBEBUILDER_ASSETS/kubectl kuttl test --config bundle/tests/scorecard/kuttl/kuttl-test.yaml --crd-dir config/crd/bases/ bundle/tests/scorecard/kuttl/

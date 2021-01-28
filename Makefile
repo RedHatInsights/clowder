@@ -38,8 +38,8 @@ endif
 all: manager
 
 api-docs:
-	./build_api_docs.sh
-	./build_config_docs.sh
+	./build/build_api_docs.sh
+	./build/build_config_docs.sh
 
 # Run tests
 test: generate fmt vet manifests
@@ -67,7 +67,7 @@ deploy: manifests kustomize
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 release: manifests kustomize controller-gen
-	cat prommie-operator-bundle.yaml > manifest.yaml
+	cat build/prommie-operator-bundle.yaml > manifest.yaml
 	cat config/crd/bases/cloud.redhat.com_clowdapps.yaml >> manifest.yaml
 	cat config/crd/bases/cloud.redhat.com_clowdenvironments.yaml >> manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
@@ -95,16 +95,16 @@ generate: controller-gen
 
 # Build the docker image
 docker-build: test
-	$(RUNTIME) build . -t ${IMG}
+	$(RUNTIME) build -f build/Dockerfile . -t ${IMG}
 
 # Build the docker image
 docker-build-no-test-quick:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/manager-cgo main.go
-	$(RUNTIME) build -f Dockerfile-local . -t ${IMG}
+	$(RUNTIME) build -f build/Dockerfile-local . -t ${IMG}
 
 # Build the docker image
 docker-build-no-test:
-	$(RUNTIME) build . -t ${IMG}
+	$(RUNTIME) build -f build/Dockerfile . -t ${IMG}
 
 # Push the docker image
 docker-push:
