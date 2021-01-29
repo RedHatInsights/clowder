@@ -98,8 +98,8 @@ document and mounts it in the app's container.  This insulates apps from
 differences between environments, e.g. production, ephemeral, and local
 development.
 
-There is a companion client library for Clowder, currently implemented in `Go`_ and
-`Python`_, that consumes the configuration document mounted into every application
+There is a companion client library for Clowder, currently implemented in `Go`_,
+`Python`_ and `Ruby`_, that consumes the configuration document mounted into every application
 container and exposes it via an API.  This API is the recommended way to consume
 configuration that comes from Clowder.
 
@@ -134,6 +134,7 @@ compatible.  If not, changes to the app will need to be made.
 
 .. _Go: https://github.com/RedHatInsights/app-common-go
 .. _Python: https://github.com/RedHatInsights/app-common-python
+.. _Ruby: https://github.com/RedHatInsights/app-common-ruby
 .. _MinIO client library: https://github.com/minio/mc
 
 Develop ``ClowdApp`` resource for target service
