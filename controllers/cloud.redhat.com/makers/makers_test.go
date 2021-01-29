@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -202,6 +203,21 @@ func TestOptionalDependency(t *testing.T) {
 	}
 }
 
+func assertAppConfig(t *testing.T, cfg config.DependencyEndpoint, hostname string, port int, name string, app string) {
+	if cfg.Hostname != hostname {
+		t.Errorf("We didn't get the right service hostname")
+	}
+	if cfg.Port != port {
+		t.Errorf("We didn't get the right service port")
+	}
+	if cfg.Name != name {
+		t.Errorf("We didn't get the right service name")
+	}
+	if cfg.App != app {
+		t.Errorf("We didn't get the right app name")
+	}
+}
+
 func TestMultiDependency(t *testing.T) {
 
 	var app crd.ClowdApp
@@ -268,44 +284,9 @@ func TestMultiDependency(t *testing.T) {
 		t.Errorf("We got a missing dep error")
 	}
 
-	if config[0].Hostname != "bopper-chopper.bopperspace.svc" {
-		t.Errorf("We didn't get the right service hostname")
-	}
-	if config[0].Port != 8000 {
-		t.Errorf("We didn't get the right service port")
-	}
-	if config[0].Name != "chopper" {
-		t.Errorf("We didn't get the right service name")
-	}
-	if config[0].App != "bopper" {
-		t.Errorf("We didn't get the right app name")
-	}
-
-	if config[1].Hostname != "bopper-bopper.bopperspace.svc" {
-		t.Errorf("We didn't get the right service hostname")
-	}
-	if config[1].Port != 8000 {
-		t.Errorf("We didn't get the right service port")
-	}
-	if config[1].Name != "bopper" {
-		t.Errorf("We didn't get the right service name")
-	}
-	if config[1].App != "bopper" {
-		t.Errorf("We didn't get the right app name")
-	}
-
-	if config[2].Hostname != "snapper-whopper.snapperspace.svc" {
-		t.Errorf("We didn't get the right service hostname")
-	}
-	if config[2].Port != 8000 {
-		t.Errorf("We didn't get the right service port")
-	}
-	if config[2].Name != "whopper" {
-		t.Errorf("We didn't get the right service name")
-	}
-	if config[2].App != "snapper" {
-		t.Errorf("We didn't get the right app name")
-	}
+	assertAppConfig(t, config[0], "bopper-chopper.bopperspace.svc", 8000, "chopper", "bopper")
+	assertAppConfig(t, config[1], "bopper-bopper.bopperspace.svc", 8000, "bopper", "bopper")
+	assertAppConfig(t, config[2], "snapper-whopper.snapperspace.svc", 8000, "whopper", "snapper")
 
 	if len(config) != 3 {
 		t.Errorf("Wrong number of dep services")
