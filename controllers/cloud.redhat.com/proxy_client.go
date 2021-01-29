@@ -10,8 +10,9 @@ import (
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -121,106 +122,39 @@ func (p *ProxyClient) AddResource(obj runtime.Object) {
 	p.ResourceTracker[rKind][name] = true
 }
 
+var gvkMap = map[string]schema.GroupVersionKind{
+	"ConfigMap":             {Group: "", Version: "v1", Kind: "ConfigMap"},
+	"Deployment":            {Group: "apps", Version: "v1", Kind: "Deployment"},
+	"Service":               {Group: "", Version: "v1", Kind: "Service"},
+	"PersistentVolumeClaim": {Group: "", Version: "v1", Kind: "PersistentVolumeClaim"},
+	"Secret":                {Group: "", Version: "v1", Kind: "Secret"},
+	"CronJob":               {Group: "batch", Version: "v1beta1", Kind: "CronJob"},
+}
+
 // Reconcile goes through all resources in the resource tracker that still exist after a ClowdObject
 // is deleted and removes those objects. Since Clowder created them, they are assumed safe to delete.
 func (p *ProxyClient) Reconcile(uid types.UID) error {
 	log := (*p.Ctx.Value(errors.ClowdKey("log")).(*logr.Logger)).WithName("proxy-client")
 	for k := range p.ResourceTracker {
-		compareRef := func(name string, kind string, obj runtime.Object) error {
-			meta := obj.(metav1.Object)
-			for _, ownerRef := range meta.GetOwnerReferences() {
+
+		gvk := gvkMap[k]
+		nobjList := unstructured.UnstructuredList{}
+		nobjList.SetGroupVersionKind(gvk)
+
+		err := p.List(p.Ctx, &nobjList)
+		if err != nil {
+			return err
+		}
+		for _, obj := range nobjList.Items {
+			for _, ownerRef := range obj.GetOwnerReferences() {
 				if ownerRef.UID == uid {
-					if _, ok := p.ResourceTracker[kind][name]; ok != true {
-						kind := obj.GetObjectKind().GroupVersionKind().Kind
-						name := meta.GetName()
-						log.Info("Deleting resource", "kind", kind, "name", name)
-						err := p.Delete(p.Ctx, obj)
+					if _, ok := p.ResourceTracker[gvk.Kind][obj.GetName()]; ok != true {
+						log.Info("Deleting resource", "kind", gvk.Kind, "name", obj.GetName())
+						err := p.Delete(p.Ctx, &obj)
 						if err != nil {
 							return err
 						}
 					}
-				}
-			}
-			return nil
-		}
-
-		switch k {
-		case "ConfigMap", "*v1.ConfigMap":
-			kind := "ConfigMap"
-			objList := &core.ConfigMapList{}
-			err := p.List(p.Ctx, objList)
-			if err != nil {
-				return err
-			}
-			for _, obj := range objList.Items {
-				err := compareRef(obj.Name, kind, &obj)
-				if err != nil {
-					return err
-				}
-			}
-		case "Deployment", "*v1.Deployment":
-			kind := "Deployment"
-			objList := &apps.DeploymentList{}
-			err := p.List(p.Ctx, objList)
-			if err != nil {
-				return err
-			}
-			for _, obj := range objList.Items {
-				err := compareRef(obj.Name, kind, &obj)
-				if err != nil {
-					return err
-				}
-			}
-		case "Service", "*v1.Service":
-			kind := "Service"
-			objList := &core.ServiceList{}
-			err := p.List(p.Ctx, objList)
-			if err != nil {
-				return err
-			}
-			for _, obj := range objList.Items {
-				err := compareRef(obj.Name, kind, &obj)
-				if err != nil {
-					return err
-				}
-			}
-		case "PersistentVolumeClaim", "*v1.PersistentVolumeClaim":
-			kind := "PersistentVolumeClaim"
-			objList := &core.PersistentVolumeClaimList{}
-			err := p.List(p.Ctx, objList)
-			if err != nil {
-				return err
-			}
-			for _, obj := range objList.Items {
-				err := compareRef(obj.Name, kind, &obj)
-				if err != nil {
-					return err
-				}
-			}
-		case "Secret", "*v1.Secret":
-			kind := "Secret"
-			objList := &core.SecretList{}
-			err := p.List(p.Ctx, objList)
-			if err != nil {
-				return err
-			}
-			for _, obj := range objList.Items {
-				err := compareRef(obj.Name, kind, &obj)
-				if err != nil {
-					return err
-				}
-			}
-		case "CronJob", "*v1beta1.CronJob":
-			kind := "CronJob"
-			objList := &batch.CronJobList{}
-			err := p.List(p.Ctx, objList)
-			if err != nil {
-				return err
-			}
-			for _, obj := range objList.Items {
-				err := compareRef(obj.Name, kind, &obj)
-				if err != nil {
-					return err
 				}
 			}
 		}
