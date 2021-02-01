@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
@@ -39,10 +39,17 @@ func (s *strimziProvider) configureBrokers() error {
 		return err
 	}
 
+	// TODO: right now we're assuming a Kafka cluster is present. Soon if we begin creating the
+	// cluster ourselves, we'll need to loop here or start watching strimzi resources to wait for
+	// listeners to be present
+	if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
+		return nil
+	}
+
 	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type == "plain" {
+		if listener.Type != nil && *listener.Type == "plain" {
 			bc := config.BrokerConfig{
-				Hostname: listener.Addresses[0].Host,
+				Hostname: *listener.Addresses[0].Host,
 			}
 			port := listener.Addresses[0].Port
 			if port != nil {
@@ -125,7 +132,9 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		k.SetNamespace(getKafkaNamespace(s.Env))
 		k.SetLabels(labels)
 
-		newConfig := make(map[string]string)
+		k.Spec = &strimzi.KafkaTopicSpec{
+			Config: make(map[string]string),
+		}
 
 		// This can be improved from an efficiency PoV
 		// Loop through all key/value pairs in the config
@@ -148,12 +157,8 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 						// Only consider a topic that matches the name
 						continue
 					}
-					if itopic.Replicas != nil {
-						replicaValList = append(replicaValList, strconv.Itoa(int(*itopic.Replicas)))
-					}
-					if itopic.Partitions != nil {
-						partitionValList = append(partitionValList, strconv.Itoa(int(*itopic.Partitions)))
-					}
+					replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
+					partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
 				}
 			}
 		}
@@ -171,12 +176,8 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 							// Only consider a topic that matches the name
 							continue
 						}
-						if itopic.Replicas != nil {
-							replicaValList = append(replicaValList, strconv.Itoa(int(*itopic.Replicas)))
-						}
-						if itopic.Partitions != nil {
-							partitionValList = append(partitionValList, strconv.Itoa(int(*itopic.Partitions)))
-						}
+						replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
+						partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
 						if itopic.Config != nil {
 							if val, ok := itopic.Config[key]; ok {
 								valList = append(valList, val)
@@ -188,21 +189,26 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 			f, ok := conversionMap[key]
 			if ok {
 				out, _ := f(valList)
-				newConfig[key] = out
+				k.Spec.Config[key] = out
 			} else {
 				return errors.New(fmt.Sprintf("no conversion type for %s", key))
 			}
 		}
+
 		if len(replicaValList) > 0 {
 			maxReplicas, err := utils.IntMax(replicaValList)
 			if err != nil {
 				return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
 			}
-			maxReplicaString, err := strconv.Atoi(maxReplicas)
+			maxReplicasInt, err := utils.Atoi32(maxReplicas)
 			if err != nil {
-				return errors.New(fmt.Sprintf("could not convert to string %v", maxReplicas))
+				return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 			}
-			k.Spec.Replicas = utils.Int32(maxReplicaString)
+			k.Spec.Replicas = maxReplicasInt
+			if k.Spec.Replicas < int32(1) {
+				// if unset, default to 3
+				k.Spec.Replicas = int32(3)
+			}
 		}
 
 		if len(partitionValList) > 0 {
@@ -210,14 +216,16 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 			if err != nil {
 				return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
 			}
-			maxPartitionString, err := strconv.Atoi(maxPartitions)
+			maxPartitionsInt, err := utils.Atoi32(maxPartitions)
 			if err != nil {
-				return errors.New(fmt.Sprintf("could not convert to string %v", maxPartitions))
+				return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 			}
-			k.Spec.Partitions = utils.Int32(maxPartitionString)
+			k.Spec.Partitions = maxPartitionsInt
+			if k.Spec.Partitions < int32(1) {
+				// if unset, default to 3
+				k.Spec.Partitions = int32(3)
+			}
 		}
-
-		k.Spec.Config = newConfig
 
 		if err = update.Apply(s.Ctx, s.Client, &k); err != nil {
 			return err

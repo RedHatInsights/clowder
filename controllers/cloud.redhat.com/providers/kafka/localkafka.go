@@ -130,7 +130,7 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 		}
 	}
 
-	dd.Spec.Replicas = utils.Int32(1)
+	dd.Spec.Replicas = utils.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{
@@ -246,7 +246,7 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 		}
 	}
 
-	dd.Spec.Replicas = utils.Int32(1)
+	dd.Spec.Replicas = utils.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{
