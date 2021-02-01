@@ -34,6 +34,14 @@ provides a number of other benefits:
   With  Clowder, you can deploy an instance of the cloud.redhat.com platform on your
   local laptop, or in a dev cluster to use as you wish.
 
+Clowder will provision resources depending on the mode choosen for each provider,
+and will return a consistently formatted JSON configuration document for each app
+to consume, leaving teams to focus more on writing code than differences between
+environments. The Clowder config client can assist with this and currently has support
+for Python, Go, Javascript and Ruby.
+
+<img src="docs/images/config.svg" alt="Animated GIF terminal example" width="800">
+
 ## Roadmap
 
 Our current roadmap looks like this:
@@ -86,7 +94,7 @@ Example app developer workflow:
 3. Use `kubectl apply -f clowdapp.yaml` to apply a `ClowdApp` resource to the
    cluster.
 
-More details on how to do this are present in the [learning](learning) section
+More details on how to do this are present in the [learning](docs/how-to-use.md) section
 of the documentation.
 
 ## Building Clowder
