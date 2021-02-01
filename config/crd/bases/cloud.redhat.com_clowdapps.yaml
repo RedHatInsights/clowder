@@ -70,7 +70,7 @@ spec:
                 ClowdApp.
               properties:
                 name:
-                  description: Defines the Name of the datbase to be created. This
+                  description: Defines the Name of the database to be created. This
                     will be used as the name of the logical database inside the database
                     server in (*_local_*) mode and the name of the secret to be used
                     for Database configuration in (*_app-interface_*) mode.
@@ -385,7 +385,7 @@ spec:
                         type: array
                       livenessProbe:
                         description: A pass-through of a Liveness Probe specification
-                          in standard k8s format. If omited, a standard probe will
+                          in standard k8s format. If omitted, a standard probe will
                           be setup point to the webPort defined in the ClowdEnvironment
                           and a path of /healthz. Ignored if Web is set to false.
                         properties:
@@ -503,7 +503,7 @@ spec:
                         type: object
                       readinessProbe:
                         description: A pass-through of a Readiness Probe specification
-                          in standard k8s format. If omited, a standard probe will
+                          in standard k8s format. If omitted, a standard probe will
                           be setup point to the webPort defined in the ClowdEnvironment
                           and a path of /healthz. Ignored if Web is set to false.
                         properties:
@@ -2318,7 +2318,7 @@ spec:
               description: A list of jobs
               items:
                 description: Job defines either a Job to be used in creating a Job
-                  via external means, or a CronJob, the difference is the presense
+                  via external means, or a CronJob, the difference is the presence
                   of the schedule field.
                 properties:
                   name:
@@ -2603,7 +2603,7 @@ spec:
                         type: array
                       livenessProbe:
                         description: A pass-through of a Liveness Probe specification
-                          in standard k8s format. If omited, a standard probe will
+                          in standard k8s format. If omitted, a standard probe will
                           be setup point to the webPort defined in the ClowdEnvironment
                           and a path of /healthz. Ignored if Web is set to false.
                         properties:
@@ -2721,7 +2721,7 @@ spec:
                         type: object
                       readinessProbe:
                         description: A pass-through of a Readiness Probe specification
-                          in standard k8s format. If omited, a standard probe will
+                          in standard k8s format. If omitted, a standard probe will
                           be setup point to the webPort defined in the ClowdEnvironment
                           and a path of /healthz. Ignored if Web is set to false.
                         properties:
