@@ -18,8 +18,8 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
-	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -203,6 +203,37 @@ type CyndiSpec struct {
 	InsightsOnly bool `json:"insightsOnly,omitempty"`
 }
 
+// KafkaTopicSpec defines the desired state of KafkaTopic
+type KafkaTopicSpec struct {
+	// we re-define this spec rather than use strimzi.KafkaTopicSpec so that a ClowdApp's topic
+	// spec has:
+	//   * partitions optional
+	//   * replicas optional
+	//   * topicName required
+
+	// A key/value pair describing the configuration of a particular topic.
+	// +optional
+	Config strimzi.KafkaTopicSpecConfig `json:"config,omitempty"`
+
+	// The requested number of partitions for this topic. If unset, default is '3'
+	// +optional
+	// +kubebuilder:validation:Minimum:=1
+	// +kubebuilder:validation:Maximum:=200000
+	Partitions int32 `json:"partitions,omitempty"`
+
+	// The requested number of replicas for this topic. If unset, default is '3'
+	// +optional
+	// +kubebuilder:validation:Minimum:=1
+	// +kubebuilder:validation:Maximum:=32767
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// The requested name for this topic.
+	// +kubebuilder:validation:MinLength:=1
+	// +kubebuilder:validation:MaxLength:=249
+	// +kubebuilder:validation:Pattern:="[a-zA-Z0-9\\._\\-]"
+	TopicName string `json:"topicName"`
+}
+
 // ClowdAppSpec is the main specification for a single Clowder Application
 // it defines n pods along with dependencies that are shared between them.
 type ClowdAppSpec struct {
@@ -222,7 +253,7 @@ type ClowdAppSpec struct {
 
 	// A list of Kafka topics that will be created and made available to all
 	// the pods listed in the ClowdApp.
-	KafkaTopics []strimzi.KafkaTopicSpec `json:"kafkaTopics,omitempty"`
+	KafkaTopics []KafkaTopicSpec `json:"kafkaTopics,omitempty"`
 
 	// The database specification defines a single database, the configuration
 	// of which will be made available to all the pods in the ClowdApp.

@@ -73,4 +73,5 @@ $KUBEBUILDER_ASSETS/kubectl apply -f build/skuttl-namespace.yaml
 $KUBEBUILDER_ASSETS/kubectl apply -f build/skuttl-perms.yaml
 
 IMG=$IMAGE_NAME:$IMAGE_TAG make deploy
-$KUBEBUILDER_ASSETS/kubectl kuttl test --config bundle/tests/scorecard/kuttl/kuttl-test.yaml --crd-dir config/crd/bases/ bundle/tests/scorecard/kuttl/
+
+source build/run_kuttl.sh

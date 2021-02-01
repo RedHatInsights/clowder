@@ -29,7 +29,6 @@ metadata:
 spec:
   partitions: 96
   replicas: 7
-  topicName: ""
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
@@ -42,7 +41,6 @@ metadata:
 spec:
   partitions: 128
   replicas: 5
-  topicName: ""
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
@@ -55,4 +53,3 @@ metadata:
 spec:
   partitions: 12
   replicas: 5
-  topicName: ""

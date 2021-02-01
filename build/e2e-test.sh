@@ -13,5 +13,7 @@ make bundle
 make docker-build-no-test
 make docker-push
 make deploy
-kubectl kuttl test --config bundle/tests/scorecard/kuttl/kuttl-test.yaml --crd-dir config/crd/bases/ bundle/tests/scorecard/kuttl/
+
+bash build/run_kuttl.sh
+
 #operator-sdk scorecard bundle --selector=suite=kuttlsuite --verbose --namespace=skuttl-test --service-account kuttl -w 300s

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	strimzi "cloud.redhat.com/clowder/v2/apis/kafka.strimzi.io/v1beta1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
@@ -26,7 +25,7 @@ func TestAppInterface(t *testing.T) {
 
 	app := &crd.ClowdApp{
 		Spec: crd.ClowdAppSpec{
-			KafkaTopics: []strimzi.KafkaTopicSpec{{
+			KafkaTopics: []crd.KafkaTopicSpec{{
 				TopicName: topicName,
 			}},
 		},

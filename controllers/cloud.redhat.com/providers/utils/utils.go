@@ -31,7 +31,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		}
 	}
 
-	dd.Spec.Replicas = utils.Int32(1)
+	dd.Spec.Replicas = utils.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{
