@@ -97,6 +97,8 @@ Example app developer workflow:
 More details on how to do this are present in the [learning](docs/how-to-use.md) section
 of the documentation.
 
+[API Reference](https://redhatinsights.github.io/clowder/api_reference.html)
+
 ## Building Clowder
 
 If you want to run a version of Clowder other than the released version there
