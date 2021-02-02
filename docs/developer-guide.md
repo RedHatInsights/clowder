@@ -1,12 +1,3 @@
-## CRD documentation
-
-- [ClowdApp](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp)
-- [ClowdEnvironment](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment)
-
-## AppConfig documentation
-
-- [AppConfig](https://github.com/RedHatInsights/clowder/blob/master/docs/appconfig/schema.md)
-
 ## Design
 
 [Design docs](https://github.com/RedHatInsights/clowder/tree/master/docs/)

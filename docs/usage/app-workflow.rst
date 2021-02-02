@@ -1,0 +1,128 @@
+ClowdApp Workflow
+=================
+
+Deploying a ClowdApp with new changes should be easy, repeatable, and timely. In order to make the
+Clowder experience smoother, there are a few tools to know and a suggested workflow to follow.
+
+In our general experience, you'll need to make edits to a Clowdapp and your source code as you work
+through your Clowder migration. The workflow will generally follow this pattern: 
+
+  1. Make a change in the source code or Clowdapp
+  2. Deploy the new changes locally
+  3. Observe the change 
+  4. Repeat
+
+1. Making local changes
+-----------------------
+Step 1 is pretty case by case basis. Maybe your config is reading the wrong variable. Perhaps your
+ClowdApp is missing a Kafka topic. Whatever your changes may be, update the code and go on to step 2. 
+
+
+2. Deploy locally with Bonfire
+------------------------------
+
+Bonfire [1]_ is a cli tool used to deploy apps with Clowder. Bonfire comes with a local config
+option that we'll use to drop our ClowdApp into our minikube cluster. 
+
+First, `install Bonfire`_ if you don't already have it on your local machine. 
+
+We'll use our examples from the `Getting Started`_ again. First, let's make a `config.yaml`. This
+file will be used to inform Bonfire about our ClowdApp. 
+
+  Update ``$(PWD)`` to the place where your app will be stored ``/home/src/app`` for example. 
+  Save as "config.yaml"
+
+.. code-block:: yaml
+
+  envName: env-jumpstart
+  apps:
+  - name: jumpstart
+    host: local
+    repo: $(PWD)
+    path: clowdapp.yml
+    parameters:
+      IMAGE: quay.io/psav/clowder-hello
+
+Our config.yaml defines an app name, a local host (this machine), a repo to read, and a path to a
+ClowdApp in that repo. Bonfire will use this information to deploy our ClowdApp into the namespace
+declared in our ClowdApp. 
+
+Let's refer back to our example app from earlier. Now, instead of using a base App, we will use a
+Template. 
+
+Note: if your previous ClowdApp is still running, use ``oc delete app jumpstart`` to remove it. 
+
+  Save as "clowdapp.yml"
+
+.. code-block:: yaml 
+
+  ---
+  apiVersion: v1
+  kind: Template
+  metadata:
+    name: jumpstart
+  objects:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    metadata:
+      name: hello
+      namespace: jumpstart
+    spec:
+
+      # The bulk of your App. This is where your running apps will live
+      deployments:
+      - name: app
+        # Creates services based on the ports set in ClowdEnv
+        webServices:
+          public: true
+          private: false
+          metrics: true
+        # Give details about your running pod
+        podSpec:
+          image: ${IMAGE}
+
+      # The name of the ClowdEnvironment providing the services
+      envName: env-jumpstart
+      
+      # Request kafka topics for your application here
+      kafkaTopics:
+        - replicas: 3
+          partitions: 64
+          topicName: topicOne
+
+      # Creates a database if local mode, or uses RDS in production
+      database:
+        # Must specify both a name and a major postgres version
+        name: jumpstart-db
+        version: 12
+
+  parameters:
+    IMAGE: ''
+
+
+``bonfire config get -l -a jumpstart | oc apply -f -``
+
+3. Observe the changes
+----------------------
+
+Run ``oc get app`` to verify the jumpstart app has been deployed.
+
+You can do all the standard ``oc logs`` debugging to figure out if your changes are successful.
+
+4. Repeat
+---------
+Repeat until you're happy with the results. When satisfied, checkout the migration guide [2]_ to start
+your app on the jouney to ephemeral and beyond.   
+
+
+Next Steps
+==========
+
+- `Migrating a service from v3 to Clowder`_
+
+.. _install Bonfire: https://github.com/RedHatInsights/bonfire#installation
+.. _Getting Started: https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst
+.. _Migrating a service from v3 to Clowder: https://github.com/RedHatInsights/clowder/blob/master/docs/migration
+
+.. [1] https://internal.cloud.redhat.com/docs/devprod/ephemeral/ 
+.. [2] https://github.com/RedHatInsights/clowder/blob/master/docs/migration
