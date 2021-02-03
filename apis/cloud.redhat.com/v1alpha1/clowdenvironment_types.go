@@ -145,6 +145,16 @@ type LoggingConfig struct {
 	Mode LoggingMode `json:"mode"`
 }
 
+// ServiceMeshMode just determines if we enable or disable the service mesh
+// +kubebuilder:validation:Enum=enabled;disabled
+type ServiceMeshMode string
+
+// ServiceMeshConfig determines if this env should be part of a service mesh
+// and, if enabled, configures the service mesh
+type ServiceMeshConfig struct {
+	Mode ServiceMeshMode `json:"mode"`
+}
+
 // TODO: Other potential mode: ceph, S3
 
 // ObjectStoreMode details the mode of operation of the Clowder ObjectStore
@@ -247,6 +257,9 @@ type ProvidersConfig struct {
 
 	// Defines the Configuration for the Clowder FeatureFlags Provider.
 	FeatureFlags FeatureFlagsConfig `json:"featureFlags,omitempty"`
+
+	// Defines the Configuration for the Clowder ServiceMesh Provider.
+	ServiceMesh ServiceMeshConfig `json:"serviceMesh,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
