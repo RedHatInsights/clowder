@@ -1,0 +1,11 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-service-mesh
+spec:
+  template:
+    metadata:
+      annotations: 
+        sidecar.istio.io/inject: "true"

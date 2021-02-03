@@ -239,6 +239,18 @@ spec:
                   required:
                   - mode
                   type: object
+                serviceMesh:
+                  description: Defines the Configuration for the Clowder ServiceMesh
+                    Provider.
+                  properties:
+                    mode:
+                      description: ServiceMeshMode just determines if we enable or
+                        disable the service mesh
+                      enum:
+                      - enabled
+                      - disabled
+                      type: string
+                  type: object
                 web:
                   description: Defines the Configuration for the Clowder Web Provider.
                   properties:

@@ -1,0 +1,11 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-service-mesh puptoo -o json > /tmp/test-service-mesh
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-service-mesh | base64 -d > /tmp/test-service-mesh-json
+
+- script: jq -r '.webPort == 8000' -e < /tmp/test-service-mesh-json
+- script: jq -r '.metricsPort == 9000' -e < /tmp/test-service-mesh-json
+- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-service-mesh-json
