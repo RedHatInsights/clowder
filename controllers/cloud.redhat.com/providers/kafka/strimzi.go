@@ -141,90 +141,10 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		replicaValList := []string{}
 		partitionValList := []string{}
 
-		for _, iapp := range appList.Items {
+		err = processTopicValues(&k, app, appList, topic, replicaValList, partitionValList)
 
-			if app.Spec.Pods != nil {
-				app.ConvertToNewShim()
-			}
-
-			if iapp.Spec.EnvName != app.Spec.EnvName {
-				// Only consider apps within this ClowdEnvironment
-				continue
-			}
-			if iapp.Spec.KafkaTopics != nil {
-				for _, itopic := range iapp.Spec.KafkaTopics {
-					if itopic.TopicName != topic.TopicName {
-						// Only consider a topic that matches the name
-						continue
-					}
-					replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
-					partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
-				}
-			}
-		}
-
-		for key := range topic.Config {
-			valList := []string{}
-			for _, iapp := range appList.Items {
-				if iapp.Spec.EnvName != app.Spec.EnvName {
-					// Only consider apps within this ClowdEnvironment
-					continue
-				}
-				if iapp.Spec.KafkaTopics != nil {
-					for _, itopic := range app.Spec.KafkaTopics {
-						if itopic.TopicName != topic.TopicName {
-							// Only consider a topic that matches the name
-							continue
-						}
-						replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
-						partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
-						if itopic.Config != nil {
-							if val, ok := itopic.Config[key]; ok {
-								valList = append(valList, val)
-							}
-						}
-					}
-				}
-			}
-			f, ok := conversionMap[key]
-			if ok {
-				out, _ := f(valList)
-				k.Spec.Config[key] = out
-			} else {
-				return errors.New(fmt.Sprintf("no conversion type for %s", key))
-			}
-		}
-
-		if len(replicaValList) > 0 {
-			maxReplicas, err := utils.IntMax(replicaValList)
-			if err != nil {
-				return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
-			}
-			maxReplicasInt, err := utils.Atoi32(maxReplicas)
-			if err != nil {
-				return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
-			}
-			k.Spec.Replicas = maxReplicasInt
-			if k.Spec.Replicas < int32(1) {
-				// if unset, default to 3
-				k.Spec.Replicas = int32(3)
-			}
-		}
-
-		if len(partitionValList) > 0 {
-			maxPartitions, err := utils.IntMax(partitionValList)
-			if err != nil {
-				return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
-			}
-			maxPartitionsInt, err := utils.Atoi32(maxPartitions)
-			if err != nil {
-				return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
-			}
-			k.Spec.Partitions = maxPartitionsInt
-			if k.Spec.Partitions < int32(1) {
-				// if unset, default to 3
-				k.Spec.Partitions = int32(3)
-			}
+		if err != nil {
+			return err
 		}
 
 		if err = update.Apply(s.Ctx, s.Client, &k); err != nil {
@@ -238,6 +158,104 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 	}
 
 	c.Kafka = &s.Config
+
+	return nil
+}
+
+func processTopicValues(
+	k *strimzi.KafkaTopic,
+	app *crd.ClowdApp,
+	appList crd.ClowdAppList,
+	topic crd.KafkaTopicSpec,
+	replicaValList []string,
+	partitionValList []string,
+) error {
+
+	for _, iapp := range appList.Items {
+
+		if app.Spec.Pods != nil {
+			app.ConvertToNewShim()
+		}
+
+		if iapp.Spec.EnvName != app.Spec.EnvName {
+			// Only consider apps within this ClowdEnvironment
+			continue
+		}
+		if iapp.Spec.KafkaTopics != nil {
+			for _, itopic := range iapp.Spec.KafkaTopics {
+				if itopic.TopicName != topic.TopicName {
+					// Only consider a topic that matches the name
+					continue
+				}
+				replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
+				partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
+			}
+		}
+	}
+
+	for key := range topic.Config {
+		valList := []string{}
+		for _, iapp := range appList.Items {
+			if iapp.Spec.EnvName != app.Spec.EnvName {
+				// Only consider apps within this ClowdEnvironment
+				continue
+			}
+			if iapp.Spec.KafkaTopics != nil {
+				for _, itopic := range app.Spec.KafkaTopics {
+					if itopic.TopicName != topic.TopicName {
+						// Only consider a topic that matches the name
+						continue
+					}
+					replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
+					partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
+					if itopic.Config != nil {
+						if val, ok := itopic.Config[key]; ok {
+							valList = append(valList, val)
+						}
+					}
+				}
+			}
+		}
+		f, ok := conversionMap[key]
+		if ok {
+			out, _ := f(valList)
+			k.Spec.Config[key] = out
+		} else {
+			return errors.New(fmt.Sprintf("no conversion type for %s", key))
+		}
+	}
+
+	if len(replicaValList) > 0 {
+		maxReplicas, err := utils.IntMax(replicaValList)
+		if err != nil {
+			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
+		}
+		maxReplicasInt, err := utils.Atoi32(maxReplicas)
+		if err != nil {
+			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
+		}
+		k.Spec.Replicas = maxReplicasInt
+		if k.Spec.Replicas < int32(1) {
+			// if unset, default to 3
+			k.Spec.Replicas = int32(3)
+		}
+	}
+
+	if len(partitionValList) > 0 {
+		maxPartitions, err := utils.IntMax(partitionValList)
+		if err != nil {
+			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
+		}
+		maxPartitionsInt, err := utils.Atoi32(maxPartitions)
+		if err != nil {
+			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
+		}
+		k.Spec.Partitions = maxPartitionsInt
+		if k.Spec.Partitions < int32(1) {
+			// if unset, default to 3
+			k.Spec.Partitions = int32(3)
+		}
+	}
 
 	return nil
 }
