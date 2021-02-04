@@ -14,9 +14,7 @@ func GetFeatureFlags(c *p.Provider) (p.ClowderProvider, error) {
 		return NewLocalFeatureFlagsProvider(c)
 	case "app-interface":
 		return NewAppInterfaceFeatureFlagsProvider(c)
-	case "none":
-		return NewNoneFeatureFlagsProvider(c)
-	case "":
+	case "none", "":
 		return NewNoneFeatureFlagsProvider(c)
 	default:
 		errStr := fmt.Sprintf("No matching featureflags mode for %s", ffMode)
