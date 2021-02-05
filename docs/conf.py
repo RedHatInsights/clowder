@@ -39,6 +39,8 @@ html_logo = "images/clowder.svg"
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
+master_doc = 'index'
+
 #html_static_path = ["_static"]
 #html_favicon = "images/iqefavicon.ico"
 sys.path.append(abspath(join(dirname(__file__), "_ext")))
