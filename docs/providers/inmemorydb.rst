@@ -62,11 +62,13 @@ JSON structure
 
 .. code-block:: json
 
-    "inMemoryDb": {
-      "hostname": "hostname",
-      "port": 27015,
-      "username": "username",
-      "password": "password"
+    {
+      "inMemoryDb": {
+        "hostname": "hostname",
+        "port": 27015,
+        "username": "username",
+        "password": "password"
+      }
     }
 
 Client access

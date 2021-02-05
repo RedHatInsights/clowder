@@ -74,20 +74,22 @@ JSON structure
 
 .. code-block:: json
 
-    "objectStore": {
-      "hostname": "endpoint.env.svc",
-      "port": 9292,
-      "accessKey": "Testing",
-      "secretKey": "Testing",
-      "tls": false,
-      "buckets": [
-        {
-          "accessKey": "accessKey1",
-          "secretKey": "secretKey1",
-          "requestedName": "my-bucket-name",
-          "name": "my-bucket-name-663rr23"
-        }
-      ]
+    {
+      "objectStore": {
+        "hostname": "endpoint.env.svc",
+        "port": 9292,
+        "accessKey": "Testing",
+        "secretKey": "Testing",
+        "tls": false,
+        "buckets": [
+          {
+            "accessKey": "accessKey1",
+            "secretKey": "secretKey1",
+            "requestedName": "my-bucket-name",
+            "name": "my-bucket-name-663rr23"
+          }
+        ]
+      }
     }
 
 Client access

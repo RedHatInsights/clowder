@@ -44,9 +44,11 @@ JSON structure
 
 .. code-block:: json
 
-    "featureFlags": {
-      "hostname": "ff-server.server.example.com",
-      "port": 4242
+    {
+      "featureFlags": {
+        "hostname": "ff-server.server.example.com",
+        "port": 4242
+      }
     }
 
 Client access

@@ -104,20 +104,22 @@ JSON structure
 
 .. code-block:: json
 
-    "kafka": {
-        "brokers": [
-            {
-                "hostname": "broker-host",
-                "port": 27015
-            }
-        ],
-        "topics": [
-            {
-                "requestedName": "originalName",
-                "name": "someTopic",
-                "consumerGroupName": "someGroupName"
-            }
-        ]
+    {
+      "kafka": {
+          "brokers": [
+              {
+                  "hostname": "broker-host",
+                  "port": 27015
+              }
+          ],
+          "topics": [
+              {
+                  "requestedName": "originalName",
+                  "name": "someTopic",
+                  "consumerGroupName": "someGroupName"
+              }
+          ]
+      }
     }
 
 Client access

@@ -40,13 +40,15 @@ JSON structure
 
 .. code-block:: json
 
-    "logging": {
-      "type": "cloudwatch",
-      "cloudwatch": {
-        "accessKeyId": "ACCESS_KEY",
-        "secretAccessKey": "SECRET_ACCESS_KEY",
-        "region": "EU",
-        "logGroup": "base_app"
+    {
+      "logging": {
+        "type": "cloudwatch",
+        "cloudwatch": {
+          "accessKeyId": "ACCESS_KEY",
+          "secretAccessKey": "SECRET_ACCESS_KEY",
+          "region": "EU",
+          "logGroup": "base_app"
+        }
       }
     }
 
