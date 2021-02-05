@@ -46,6 +46,12 @@ that's correct. Let's see what the ClowdEnv does.
 As you can see in the output, we have providers [4]_ for the different services, but they won't
 do anything until a ClowdApp asks for them specifically. 
 
+Handling local ports
+~~~~~~~~~~~~~~~~~~~~
+If you are going to use a ClowdEnv service in your ClowdApp (Kafka, Minio, etc), we need edit to your ``/etc/hosts`` localhost (127.0.0.1). Our example uses Kafka, so we are using the ``env-jumpstart-kafka.jumpstart.svc`` service because it matches our environment's name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name. 
+
+Your ``/etc/hosts`` should now look like ``127.0.0.1   localhost ... env-jumpstart-kafka.jumpstart.svc``. If you are not using the name ``jumpstart``, change it to the appropriate service.
+
 Create your first ClowdApp
 ---------------------------
 
@@ -58,6 +64,19 @@ and use the example.
 The API docs for ClowdApps can be found on redhatinsights.github.io [5]_
 
 A fully annotated ClowdApp file can be found in the Clowder examples directory [6]_
+
+Port forwarding a localhost service
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order for the local minikube to reach your Kafka service, we'll need to port-forward it on your
+local machine using the ``/etc/hosts`` entry from earlier. 
+
+``oc port-forward svc/env-jumpstart-kafka 29092`` 
+
+You can background that with ``&`` if you'd like, or run it in a different terminal window. You only
+need to do this for local deployments. 
+
+Now let's add our ClowdApp
 
 ``oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdapp.yml``
 
@@ -81,23 +100,15 @@ That's it! You have a running ClowdApp deployed with Clowder. In the next few do
 creating a more powerful dev environment, building a more complex ClowdApp, and migrating existing
 services over to Clowder. 
 
-Next Steps
-==========
-
-- `Testing ClowdApp with Bonfire and Ephemeral Environments`_
-- `Migrating a service from v3 to Clowder`_
-
 
 .. _Bonfire: https://github.com/RedHatInsights/bonfire/
    
 .. [1] https://github.com/RedHatInsights/clowder#getting-clowder
 .. [2] https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment
 .. [3] https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdenv.yml
-.. [4] https://github.com/RedHatInsights/clowder/blob/master/docs/providers.rst
+.. [4] https://github.com/RedHatInsights/clowder/tree/master/docs/providers
 .. [5] https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp
 .. [6] https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdapp.yml
 
-.. _Testing ClowdApp with Bonfire and Ephemeral Environments: https://github.com/RedHatInsights/clowder/blob/master/docs/customizing-clowdapps.rst
-.. _Migrating a service from v3 to Clowder: https://github.com/RedHatInsights/clowder/blob/master/docs/migration
 .. _follow the developer guide: https://github.com/RedHatInsights/clowder/blob/master/docs/developer-guide.md
 
