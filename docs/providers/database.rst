@@ -71,16 +71,18 @@ JSON structure
 
 .. code-block:: json
 
-    "database": {
-      "name": "dBaseName",
-      "username": "username",
-      "password": "password",
-      "hostname": "hostname",
-      "port": 5432,
-      "pgPass": "testing",
-      "adminUsername": "adminusername",
-      "adminPassword": "adminpassword",
-      "rdsCa": "ca"
+    {
+      "database": {
+        "name": "dBaseName",
+        "username": "username",
+        "password": "password",
+        "hostname": "hostname",
+        "port": 5432,
+        "pgPass": "testing",
+        "adminUsername": "adminusername",
+        "adminPassword": "adminpassword",
+        "rdsCa": "ca"
+      }
     }
 
 
