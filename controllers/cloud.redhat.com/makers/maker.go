@@ -745,7 +745,7 @@ func processAppEndpoints(
 func (m *Maker) makeAutoScaler(deploy crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig) error {
 	pod := deploy.PodSpec
 
-	if pod.AutoScaling.Enabled == false {
+	if deploy.AutoScaling.Enabled == false {
 		return nil
 	}
 
@@ -774,11 +774,11 @@ func (m *Maker) makeAutoScaler(deploy crd.Deployment, app *crd.ClowdApp, appConf
 	} else {
 		scalerSpec.MinReplicaCount = deploy.MinReplicas
 	}
-	if pod.AutoScaling.MaxReplicas == nil {
+	if deploy.AutoScaling.MaxReplicas == nil {
 		scalerSpec.MaxReplicaCount = new(int32)
 		*scalerSpec.MaxReplicaCount = 10
 	} else {
-		scalerSpec.MaxReplicaCount = pod.AutoScaling.MaxReplicas
+		scalerSpec.MaxReplicaCount = deploy.AutoScaling.MaxReplicas
 	}
 
 	// Add a single kafka trigger with the configuration specified.
@@ -787,9 +787,9 @@ func (m *Maker) makeAutoScaler(deploy crd.Deployment, app *crd.ClowdApp, appConf
 			Type: "kafka",
 			Metadata: map[string]string{
 				"bootstrapServers": fmt.Sprintf("%s:%d", appConfig.Kafka.Brokers[0].Hostname, *appConfig.Kafka.Brokers[0].Port),
-				"consumerGroup":    pod.AutoScaling.ConsumerGroup,
-				"topic":            pod.AutoScaling.Topic,
-				"lagThreshold":     strconv.Itoa(int(*pod.AutoScaling.QueueDepth)),
+				"consumerGroup":    deploy.AutoScaling.ConsumerGroup,
+				"topic":            deploy.AutoScaling.Topic,
+				"lagThreshold":     strconv.Itoa(int(*deploy.AutoScaling.QueueDepth)),
 			},
 		},
 	}

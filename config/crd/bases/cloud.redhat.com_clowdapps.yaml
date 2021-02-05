@@ -119,6 +119,33 @@ spec:
                         items:
                           type: string
                         type: array
+                      autoScaling:
+                        description: A definition to set up autoscaling for this deployment
+                        properties:
+                          consumer_group:
+                            description: which consumer group to watch for queue depth
+                            type: string
+                          enabled:
+                            description: enable/disable autoscaling
+                            type: boolean
+                          maxReplicas:
+                            description: max number of replicas to scale up, default
+                              is 10
+                            format: int32
+                            type: integer
+                          queue_depth:
+                            description: when to trigger a scale-up event
+                            format: int32
+                            type: integer
+                          topic:
+                            description: which topic to monitor
+                            type: string
+                        required:
+                        - consumer_group
+                        - enabled
+                        - queue_depth
+                        - topic
+                        type: object
                       command:
                         description: The command that will be invoked inside the pod
                           at startup.
@@ -4560,33 +4587,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  autoScaling:
-                    description: Define AutoScaling rules for kafka-based applications
-                    properties:
-                      consumer_group:
-                        description: which consumer group to watch for queue depth
-                        type: string
-                      enabled:
-                        description: enable/disable autoscaling
-                        type: boolean
-                      maxReplicas:
-                        description: max number of replicas to scale up, default is
-                          10
-                        format: int32
-                        type: integer
-                      queue_depth:
-                        description: when to trigger a scale-up event
-                        format: int32
-                        type: integer
-                      topic:
-                        description: which topic to monitor
-                        type: string
-                    required:
-                    - consumer_group
-                    - enabled
-                    - queue_depth
-                    - topic
-                    type: object
                   command:
                     items:
                       type: string

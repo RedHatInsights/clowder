@@ -138,9 +138,12 @@ type Deployment struct {
 
 	// PodSpec defines a container running inside a ClowdApp.
 	PodSpec PodSpec `json:"podSpec"`
+
+	// A definition to set up autoscaling for this deployment
+	AutoScaling AutoScalingSpec `json:"autoScaling,omitempty"`
 }
 
-// Define AutoScaling rules for kafka-based applications
+// AutoScalingSpec defines AutoScaling rules for kafka-based applications
 type AutoScalingSpec struct {
 	// enable/disable autoscaling
 	Enabled bool `json:"enabled"`
@@ -194,9 +197,6 @@ type PodSpec struct {
 
 	// A pass-through of a list of VolumesMounts in standa k8s format.
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
-
-	// A definition to set up autoscaling for this deployment
-	AutoScaling AutoScalingSpec `json:"autoScaling,omitempty"`
 }
 
 // PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
