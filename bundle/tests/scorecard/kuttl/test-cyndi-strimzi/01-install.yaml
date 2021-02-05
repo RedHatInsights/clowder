@@ -13,10 +13,11 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      namespace: test-cyndi-strimzi-kafka
-      clusterName: my-cluster
-      connectNamespace: test-cyndi-strimzi-kafka
-      connectClusterName: my-connect-cluster
+      cluster:
+        namespace: test-cyndi-strimzi-kafka
+        name: my-cluster
+      connect:
+        name: my-connect-cluster
       mode: operator
     db:
       image: "registry.redhat.io/rhel8/postgresql-12:1-36"

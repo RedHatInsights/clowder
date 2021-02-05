@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-rename-pod
+  name: env-test-kafka-strimzi-kafka-provisioner-pvc
 spec:
-  targetNamespace: test-rename-pod
+  targetNamespace: test-kafka-strimzi-kafka-provisioner-pvc
   providers:
     web:
       port: 8000
@@ -14,7 +14,13 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      mode: none
+      cluster:
+        namespace: test-kafka-strimzi-kafka-provisioner-pvc-kafka
+        name: my-pvc-cluster
+        provisionCluster: true
+        storageSize: 100Mi
+      mode: operator
+      pvc: true
     db:
       mode: none
     logging:
@@ -32,15 +38,3 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
----
-apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdApp
-metadata:
-  name: puptoo
-  namespace: test-rename-pod
-spec:
-  envName: test-rename-pod
-  deployments:
-  - name: processor
-    podSpec:
-      image: quay.io/psav/clowder-hello

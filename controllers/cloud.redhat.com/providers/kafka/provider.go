@@ -10,6 +10,7 @@ import (
 
 // GetKafka returns the correct kafka provider based on the environment.
 func GetKafka(c *p.Provider) (p.ClowderProvider, error) {
+	c.Env.ConvertDeprecatedKafkaSpec()
 	kafkaMode := c.Env.Spec.Providers.Kafka.Mode
 	switch kafkaMode {
 	case "operator":
@@ -27,21 +28,24 @@ func GetKafka(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func getKafkaNamespace(e *crd.ClowdEnvironment) string {
-	return e.Spec.Providers.Kafka.Namespace
+	if e.Spec.Providers.Kafka.Cluster.Namespace == "" {
+		return e.Spec.TargetNamespace
+	}
+	return e.Spec.Providers.Kafka.Cluster.Namespace
 }
 
-func getConnectNamespace(env *crd.ClowdEnvironment, defaultValue string) string {
-	if env.Spec.Providers.Kafka.ConnectNamespace == "" {
-		return defaultValue
+func getConnectNamespace(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Kafka.Connect.Namespace == "" {
+		return getKafkaNamespace(env)
 	}
-	return env.Spec.Providers.Kafka.ConnectNamespace
+	return env.Spec.Providers.Kafka.Connect.Namespace
 }
 
-func getConnectClusterName(env *crd.ClowdEnvironment, defaultValue string) string {
-	if env.Spec.Providers.Kafka.ConnectClusterName == "" {
-		return defaultValue
+func getConnectClusterName(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Kafka.Connect.Name == "" {
+		return fmt.Sprintf("%s-connect", env.Spec.Providers.Kafka.Cluster.Name)
 	}
-	return env.Spec.Providers.Kafka.ConnectClusterName
+	return env.Spec.Providers.Kafka.Connect.Name
 }
 
 func init() {

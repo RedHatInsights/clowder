@@ -3,6 +3,7 @@ package kafka
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
@@ -12,6 +13,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -27,27 +29,197 @@ type strimziProvider struct {
 	Config config.KafkaConfig
 }
 
-func (s *strimziProvider) configureBrokers() error {
-	clusterName := types.NamespacedName{
+func (s *strimziProvider) configureKafkaCluster() error {
+	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
-		Name:      s.Env.Spec.Providers.Kafka.ClusterName,
+		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
 	}
-
-	kafkaResource := strimzi.Kafka{}
-
-	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterName, &kafkaResource)); err != nil {
+	k := strimzi.Kafka{}
+	updater, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &k))
+	if err != nil {
 		return err
 	}
 
-	// TODO: right now we're assuming a Kafka cluster is present. Soon if we begin creating the
-	// cluster ourselves, we'll need to loop here or start watching strimzi resources to wait for
-	// listeners to be present
-	if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
-		return nil
+	// ensure that kafka cluster of this same name but labelled for different env does not exist
+	if envLabel, ok := k.GetLabels()["env"]; ok {
+		if envLabel != s.Env.Name {
+			return fmt.Errorf(
+				"kafka cluster named '%s' found in ns '%s' but tied to env '%s'",
+				clusterNN.Name, clusterNN.Namespace, envLabel,
+			)
+		}
 	}
 
+	// populate options from the kafka provider's KafkaClusterOptions
+	replicas := s.Env.Spec.Providers.Kafka.Cluster.Replicas
+	if replicas < int32(1) {
+		replicas = int32(1)
+	}
+
+	storageSize := s.Env.Spec.Providers.Kafka.Cluster.StorageSize
+	if storageSize == "" {
+		storageSize = "1Gi"
+	}
+
+	version := s.Env.Spec.Providers.Kafka.Cluster.Version
+	if version == "" {
+		version = "2.5.0"
+	}
+
+	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
+
+	k.Spec = &strimzi.KafkaSpec{
+		Kafka: strimzi.KafkaSpecKafka{
+			Version:  &version,
+			Replicas: replicas,
+			Listeners: []strimzi.KafkaSpecKafkaListenersElem{
+				strimzi.KafkaSpecKafkaListenersElem{Name: "tcp", Type: "internal", Tls: false, Port: 9092},
+				strimzi.KafkaSpecKafkaListenersElem{Name: "tls", Type: "internal", Tls: true, Port: 9093},
+			},
+		},
+		Zookeeper: strimzi.KafkaSpecZookeeper{
+			Replicas: replicas,
+		},
+		EntityOperator: &strimzi.KafkaSpecEntityOperator{
+			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{},
+		},
+	}
+
+	if s.Env.Spec.Providers.Kafka.PVC {
+		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
+			Type:        strimzi.KafkaSpecKafkaStorageTypePersistentClaim,
+			Size:        &storageSize,
+			DeleteClaim: &deleteClaim,
+		}
+		k.Spec.Zookeeper.Storage = strimzi.KafkaSpecZookeeperStorage{
+			Type:        strimzi.KafkaSpecZookeeperStorageTypePersistentClaim,
+			Size:        &storageSize,
+			DeleteClaim: &deleteClaim,
+		}
+	} else {
+		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
+			Type: strimzi.KafkaSpecKafkaStorageTypeEphemeral,
+		}
+		k.Spec.Zookeeper.Storage = strimzi.KafkaSpecZookeeperStorage{
+			Type: strimzi.KafkaSpecZookeeperStorageTypeEphemeral,
+		}
+	}
+
+	k.SetName(s.Env.Spec.Providers.Kafka.Cluster.Name)
+	k.SetNamespace(getKafkaNamespace(s.Env))
+	k.SetLabels(p.Labels{"env": s.Env.Name})
+	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
+
+	if err := updater.Apply(s.Ctx, s.Client, &k); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *strimziProvider) getBootstrapServersString() string {
+	strArray := []string{}
+	for _, bc := range s.Config.Brokers {
+		if bc.Port != nil {
+			strArray = append(strArray, fmt.Sprintf("%s:%d", bc.Hostname, *bc.Port))
+		} else {
+			strArray = append(strArray, bc.Hostname)
+		}
+	}
+	return strings.Join(strArray, ",")
+}
+
+func (s *strimziProvider) configureKafkaConnectCluster() error {
+	clusterNN := types.NamespacedName{
+		Namespace: getConnectNamespace(s.Env),
+		Name:      getConnectClusterName(s.Env),
+	}
+	k := strimzi.KafkaConnect{}
+	updater, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &k))
+	if err != nil {
+		return err
+	}
+
+	// ensure that connect cluster of this same name but labelled for different env does not exist
+	if envLabel, ok := k.GetLabels()["env"]; ok {
+		if envLabel != s.Env.Name {
+			return fmt.Errorf(
+				"kafka connect cluster named '%s' found in ns '%s' but tied to env '%s'",
+				clusterNN.Name, clusterNN.Namespace, envLabel,
+			)
+		}
+	}
+
+	// populate options from the kafka provider's KafkaConnectClusterOptions
+	replicas := s.Env.Spec.Providers.Kafka.Connect.Replicas
+	if replicas < int32(1) {
+		replicas = int32(1)
+	}
+
+	version := s.Env.Spec.Providers.Kafka.Connect.Version
+	if version == "" {
+		version = "2.5.0"
+	}
+
+	image := s.Env.Spec.Providers.Kafka.Connect.Image
+	if image == "" {
+		image = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+	}
+
+	k.Spec = &strimzi.KafkaConnectSpec{
+		Replicas:         &replicas,
+		BootstrapServers: s.getBootstrapServersString(),
+		Version:          &version,
+		Config: map[string]string{
+			"group.id":             "connect-cluster",
+			"offset.storage.topic": "connect-cluster-offsets",
+			"config.storage.topic": "connect-cluster-configs",
+			"status.storage.topic": "connect-cluster-status",
+		},
+		Image: &image,
+	}
+
+	// configures this KafkaConnect to use KafkaConnector resources to avoid needing to call the
+	// Connect REST API directly
+	annotations := k.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	annotations["strimzi.io/use-connector-resources"] = "true"
+	k.SetAnnotations(annotations)
+	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
+	k.SetName(getConnectClusterName(s.Env))
+	k.SetNamespace(getConnectNamespace(s.Env))
+	k.SetLabels(p.Labels{"env": s.Env.Name})
+
+	if err := updater.Apply(s.Ctx, s.Client, &k); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *strimziProvider) configureListeners() error {
+	clusterNN := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
+	}
+	kafkaResource := strimzi.Kafka{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
+		return err
+	}
+
+	// Return an err if we can't obtain listener status to trigger a requeue in the env controller
+	if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
+		return fmt.Errorf(
+			"Kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
+		)
+	}
+
+	s.Config.Brokers = []config.BrokerConfig{}
+
 	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type != nil && *listener.Type == "plain" {
+		if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
 			bc := config.BrokerConfig{
 				Hostname: *listener.Addresses[0].Host,
 			}
@@ -58,6 +230,32 @@ func (s *strimziProvider) configureBrokers() error {
 			}
 			s.Config.Brokers = append(s.Config.Brokers, bc)
 		}
+	}
+
+	if len(s.Config.Brokers) < 1 {
+		return fmt.Errorf(
+			"Kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
+		)
+	}
+
+	return nil
+}
+
+func (s *strimziProvider) configureBrokers() error {
+	if err := s.configureKafkaCluster(); err != nil {
+		return errors.Wrap("failed to provision kafka cluster", err)
+	}
+
+	// Look up Kafka cluster's listeners and configure s.Config.Brokers
+	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
+	if err := s.configureListeners(); err != nil {
+		clowdErr := errors.Wrap("unable to determine kafka broker addresses", err)
+		clowdErr.Requeue = true
+		return clowdErr
+	}
+
+	if err := s.configureKafkaConnectCluster(); err != nil {
+		return errors.Wrap("failed to provision kafka connect cluster", err)
 	}
 
 	return nil
@@ -78,37 +276,38 @@ func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Cyndi.Enabled {
 		err := createCyndiPipeline(
-			s.Ctx,
-			s.Client,
-			app,
-			getConnectNamespace(s.Env, getKafkaNamespace(s.Env)),
-			getConnectClusterName(s.Env, "kafka-connect-cluster"),
+			s.Ctx, s.Client, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
 		)
 		if err != nil {
 			return err
 		}
 	}
 
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
+	// update s.Config.Topics
+	if err := s.processTopics(app); err != nil {
+		return err
 	}
 
-	s.Config.Topics = []config.TopicConfig{}
+	// set our provider's config on the AppConfig
+	c.Kafka = &s.Config
+
+	return nil
+}
+
+func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
+	topicConfig := []config.TopicConfig{}
+
+	appList := crd.ClowdAppList{}
+	if err := s.Client.List(s.Ctx, &appList); err != nil {
+		return errors.Wrap("Topic creation failed: Error listing apps", err)
+	}
 
 	nn := types.NamespacedName{
 		Name:      app.Name,
 		Namespace: app.Namespace,
 	}
 
-	appList := crd.ClowdAppList{}
-	err := s.Client.List(s.Ctx, &appList)
-
 	for _, topic := range app.Spec.KafkaTopics {
-
-		if err != nil {
-			return errors.Wrap("Topic creation failed: Error listing apps", err)
-		}
-
 		k := strimzi.KafkaTopic{}
 
 		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
@@ -123,7 +322,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		}
 
 		labels := p.Labels{
-			"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.ClusterName,
+			"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name,
 			"env":                app.Spec.EnvName,
 			// If we label it with the app name, since app names should be
 			// unique? can we use for delete selector?
@@ -131,6 +330,8 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 
 		k.SetName(topicName)
 		k.SetNamespace(getKafkaNamespace(s.Env))
+		// the ClowdEnvironment is the owner of this topic
+		k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 		k.SetLabels(labels)
 
 		k.Spec = &strimzi.KafkaTopicSpec{
@@ -152,13 +353,13 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 			return err
 		}
 
-		s.Config.Topics = append(
-			s.Config.Topics,
+		topicConfig = append(
+			topicConfig,
 			config.TopicConfig{Name: topicName, RequestedName: topic.TopicName},
 		)
 	}
 
-	c.Kafka = &s.Config
+	s.Config.Topics = topicConfig
 
 	return nil
 }

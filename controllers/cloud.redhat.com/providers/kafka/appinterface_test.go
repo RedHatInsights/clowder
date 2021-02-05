@@ -15,8 +15,11 @@ func TestAppInterface(t *testing.T) {
 			Spec: crd.ClowdEnvironmentSpec{
 				Providers: crd.ProvidersConfig{
 					Kafka: crd.KafkaConfig{
-						ClusterName: clusterName,
-						Namespace:   ns,
+						Mode: "app-interface",
+						Cluster: crd.KafkaClusterConfig{
+							Name:      clusterName,
+							Namespace: ns,
+						},
 					},
 				},
 			},

@@ -15,8 +15,6 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      namespace: kafka
-      clusterName: my-cluster
       mode: none
     db:
       image: "registry.redhat.io/rhel8/postgresql-12:1-36"

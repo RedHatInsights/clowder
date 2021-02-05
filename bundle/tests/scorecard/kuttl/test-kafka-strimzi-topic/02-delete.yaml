@@ -4,11 +4,10 @@ kind: TestStep
 delete:
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi
+  name: test-kafka-strimzi-topic
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: test-kafka-strimzi
+  name: test-kafka-strimzi-topic
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi-kafka
-  
+  name: test-kafka-strimzi-topic-kafka
