@@ -94,7 +94,7 @@ Example app developer workflow:
 3. Use `kubectl apply -f clowdapp.yaml` to apply a `ClowdApp` resource to the
    cluster.
 
-More details on how to do this are present in the [learning](docs/how-to-use.md) section
+More details on how to do this are present in the [Getting Started](https://clowder-operator.readthedocs.io/en/latest/usage/getting-started.html) section
 of the documentation.
 
 [API Reference](https://redhatinsights.github.io/clowder/api_reference.html)
