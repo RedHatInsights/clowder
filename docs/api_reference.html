@@ -452,9 +452,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li>
 <p><a href="#k8s-api-cyndi-cloud-redhat-com-v1alpha1">cyndi.cloud.redhat.com/v1alpha1</a></p>
 </li>
-<li>
-<p><a href="#k8s-api-kafka-strimzi-io-v1beta1">kafka.strimzi.io/v1beta1</a></p>
-</li>
 </ul>
 </div>
 <div class="sect2">
@@ -699,7 +696,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>kafkaTopics</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopicspec">KafkaTopicSpec</a></em></p>
+<p><strong><code>kafkaTopics</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkatopicspec">KafkaTopicSpec</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of Kafka topics that will be created and made available to all the pods listed in the ClowdApp.</p>
@@ -1076,7 +1073,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong><code>name</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Defines the Name of the datbase to be created. This will be used as the name of the logical database inside the database server in (<strong><em>local</em></strong>) mode and the name of the secret to be used for Database configuration in (<strong><em>app-interface</em></strong>) mode.</p>
+<p>Defines the Name of the database to be created. This will be used as the name of the logical database inside the database server in (<strong><em>local</em></strong>) mode and the name of the secret to be used for Database configuration in (<strong><em>app-interface</em></strong>) mode.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1373,7 +1370,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect3">
 <h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job">Job</h4>
 <div class="paragraph">
-<p>Job defines either a Job to be used in creating a Job via external means, or a CronJob, the difference is the presense of the schedule field.</p>
+<p>Job defines either a Job to be used in creating a Job via external means, or a CronJob, the difference is the presence of the schedule field.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -1517,6 +1514,70 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>If using the (<strong><em>local</em></strong>) mode and PVC is set to true, this instructs the local Kafka instance to use a PVC instead of emptyDir for its volumes.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkatopicspec">KafkaTopicSpec</h4>
+<div class="paragraph">
+<p>KafkaTopicSpec defines the desired state of KafkaTopic</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec">ClowdAppSpec</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>config</code></strong> <em>object (keys:string, values:string)</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>A key/value pair describing the configuration of a particular topic.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>partitions</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The requested number of partitions for this topic. If unset, default is '3'</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>replicas</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The requested number of replicas for this topic. If unset, default is '3'</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>topicName</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The requested name for this topic.</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -1759,7 +1820,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong><code>livenessProbe</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core">Probe</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A pass-through of a Liveness Probe specification in standard k8s format. If omited, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.</p>
+<p>A pass-through of a Liveness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1767,7 +1828,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong><code>readinessProbe</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core">Probe</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A pass-through of a Readiness Probe specification in standard k8s format. If omited, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.</p>
+<p>A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -2029,6 +2090,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Defines the Configuration for the Clowder FeatureFlags Provider.</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>serviceMesh</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig">ServiceMeshConfig</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the Configuration for the Clowder ServiceMesh Provider.</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2068,6 +2137,44 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.</p>
 </div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig">ServiceMeshConfig</h4>
+<div class="paragraph">
+<p>ServiceMeshConfig determines if this env should be part of a service mesh and, if enabled, configures the service mesh</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig">ProvidersConfig</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>mode</code></strong> <em>ServiceMeshMode</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
@@ -2396,502 +2503,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="k8s-api-kafka-strimzi-io-v1beta1">kafka.strimzi.io/v1beta1</h3>
-<div class="paragraph">
-<p>Package v1beta1 contains API Schema definitions for the kafka.strimzi.io v1beta1 API group</p>
-</div>
-<div class="ulist">
-<div class="title">Resource Types</div>
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafka">Kafka</a></p>
-</li>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkalist">KafkaList</a></p>
-</li>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopic">KafkaTopic</a></p>
-</li>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopiclist">KafkaTopicList</a></p>
-</li>
-</ul>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-address">Address</h4>
-<div class="paragraph">
-<p>Address struct represents the physical connection details of a Kafka Server.</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkalistener">KafkaListener</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>host</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Host defines the hostname of the Kafka server.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>port</code></strong> <em>integer</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Port defines the port of the Kafka server.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-condition">Condition</h4>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkastatus">KafkaStatus</a></p>
-</li>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopicstatus">KafkaTopicStatus</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>lastTransitionTime</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The last transition time of the resource.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>message</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The message of the last transition.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>reason</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The Reason for hte transition change.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>type</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The type of the condition.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafka">Kafka</h4>
-<div class="paragraph">
-<p>Kafka is the Schema for the kafkatopics API</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkalist">KafkaList</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>apiVersion</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>kafka.strimzi.io/v1beta1</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>kind</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>Kafka</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>metadata</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta">ObjectMeta</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkalist">KafkaList</h4>
-<div class="paragraph">
-<p>KafkaList contains a list of instances.</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>apiVersion</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>kafka.strimzi.io/v1beta1</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>kind</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>KafkaList</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>metadata</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta">ListMeta</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>items</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafka">Kafka</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A list of Kafka objects.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkalistener">KafkaListener</h4>
-<div class="paragraph">
-<p>KafkaListener represents a configured Kafka listener instance.</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkastatus">KafkaStatus</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>addresses</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-address">Address</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A list of addresses that the Kafka instance is listening on.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>bootstrapServers</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A bootstrap server that the Kafka client can initially conenct to.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>type</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The Kafka server type.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>certificates</code></strong> <em>string array</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A list of certificates to be used with this Kafka instance.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopic">KafkaTopic</h4>
-<div class="paragraph">
-<p>KafkaTopic is the Schema for the kafkatopics API</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopiclist">KafkaTopicList</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>apiVersion</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>kafka.strimzi.io/v1beta1</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>kind</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>KafkaTopic</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>metadata</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta">ObjectMeta</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>spec</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopicspec">KafkaTopicSpec</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The KafkaTopicSpec specification defines a KafkaTopic.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopiclist">KafkaTopicList</h4>
-<div class="paragraph">
-<p>KafkaTopicList contains a list of KafkaTopic</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>apiVersion</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>kafka.strimzi.io/v1beta1</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>kind</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>KafkaTopicList</code></p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>metadata</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta">ListMeta</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>items</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopic">KafkaTopic</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A list of KafkaTopic objects.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopicspec">KafkaTopicSpec</h4>
-<div class="paragraph">
-<p>KafkaTopicSpec defines the desired state of KafkaTopic</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec">ClowdAppSpec</a></p>
-</li>
-<li>
-<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-kafka-strimzi-io-v1beta1-kafkatopic">KafkaTopic</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>config</code></strong> <em>object (keys:string, values:string)</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>A key/value pair describing the configuration of a particular topic.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>partitions</code></strong> <em>integer</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The requested number of partitions for this topic.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>replicas</code></strong> <em>integer</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The requested number of replicas for this topic.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>topicName</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The topic name.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-01-27 15:41:31 UTC
+Last updated 2021-02-05 18:09:20 UTC
 </div>
 </div>
 </body>
