@@ -10,3 +10,4 @@ Clowder
     clowder-design
     migration/README
     providers/index
+    usage/index

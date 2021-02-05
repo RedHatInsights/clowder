@@ -116,13 +116,13 @@ your app on the jouney to ephemeral and beyond.
 
 
 Next Steps
-==========
+----------
 
 - `Migrating a service from v3 to Clowder`_
 
 .. _install Bonfire: https://github.com/RedHatInsights/bonfire#installation
 .. _Getting Started: https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst
-.. _Migrating a service from v3 to Clowder: https://github.com/RedHatInsights/clowder/blob/master/docs/migration
+.. _Migrating a service from v3 to Clowder: https://internal.cloud.redhat.com/docs/devprod/migration/
 
 .. [1] https://internal.cloud.redhat.com/docs/devprod/ephemeral/ 
-.. [2] https://github.com/RedHatInsights/clowder/blob/master/docs/migration
+.. [2] https://internal.cloud.redhat.com/docs/devprod/migration/
