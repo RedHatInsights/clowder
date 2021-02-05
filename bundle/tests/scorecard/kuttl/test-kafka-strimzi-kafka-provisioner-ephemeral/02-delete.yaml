@@ -1,0 +1,19 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: env-test-kafka-strimzi-kafka-provisioner-ephemeral
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: env-test-kafka-strimzi-kafka-provisioner-pvc
+- apiVersion: v1
+  kind: Namespace
+  name: test-kafka-strimzi-kafka-provisioner-kafka
+- apiVersion: v1
+  kind: Namespace
+  name: test-kafka-strimzi-kafka-provisioner
+- apiVersion: v1
+  kind: Namespace
+  name: test-kafka-strimzi-kafka-provisioner-kafka-connect

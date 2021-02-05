@@ -24,12 +24,7 @@ type appInterface struct {
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Cyndi.Enabled {
-		err := validateCyndiPipeline(
-			a.Ctx,
-			a.Client,
-			app,
-			getConnectNamespace(a.Env, getKafkaNamespace(a.Env)),
-		)
+		err := validateCyndiPipeline(a.Ctx, a.Client, app, getConnectNamespace(a.Env))
 		if err != nil {
 			return err
 		}
@@ -110,7 +105,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 // NewAppInterface returns a new app-interface kafka provider object.
 func NewAppInterface(p *p.Provider) (providers.ClowderProvider, error) {
 	nn := types.NamespacedName{
-		Name:      p.Env.Spec.Providers.Kafka.ClusterName,
+		Name:      p.Env.Spec.Providers.Kafka.Cluster.Name,
 		Namespace: getKafkaNamespace(p.Env),
 	}
 

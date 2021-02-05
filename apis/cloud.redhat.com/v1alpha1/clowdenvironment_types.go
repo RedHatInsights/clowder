@@ -75,39 +75,88 @@ type MetricsConfig struct {
 // +kubebuilder:validation:Enum=operator;app-interface;local;none
 type KafkaMode string
 
+// KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
+type KafkaClusterConfig struct {
+	// Defines the kafka cluster name
+	Name string `json:"name"`
+
+	// The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)
+	Namespace string `json:"namespace,omitempty"`
+
+	// The requested number of replicas for kafka/zookeeper. If unset, default is '1'
+	// +kubebuilder:validation:Minimum:=1
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// Persistent volume storage size. If unset, default is '1Gi'
+	// Only applies when KafkaConfig.PVC is set to 'true'
+	StorageSize string `json:"storageSize,omitempty"`
+
+	// Delete persistent volume claim if the Kafka cluster is deleted
+	// Only applies when KafkaConfig.PVC is set to 'true'
+	DeleteClaim bool `json:"deleteClaim,omitempty"`
+
+	// Version. If unset, default is "2.5.0"
+	Version string `json:"version,omitempty"`
+}
+
+// KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
+type KafkaConnectClusterConfig struct {
+	// Defines the kafka connect cluster name (default: "<kafka cluster's name>-connect")
+	Name string `json:"name"`
+
+	// The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace)
+	Namespace string `json:"namespace,omitempty"`
+
+	// The requested number of replicas for kafka connect. If unset, default is '1'
+	// +kubebuilder:validation:Minimum:=1
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// Version. If unset, default is "2.5.0"
+	Version string `json:"version,omitempty"`
+
+	// Image. If unset, default is "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+	Image string `json:"image,omitempty"`
+}
+
 // KafkaConfig configures the Clowder provider controlling the creation of
 // Kafka instances.
 type KafkaConfig struct {
-	// Defines the cluster name to be used by the Kafka Provider this will
+	// The mode of operation of the Clowder Kafka Provider. Valid options are:
+	// (*_operator_*) which provisions Strimzi resources and will configure
+	// KafkaTopic CRs and place them in the Kafka cluster's namespace described in the configuration,
+	// (*_app-interface_*) which simply passes the topic names through to the App's
+	// cdappconfig.json and expects app-interface to have created the relevant
+	// topics, and (*_local_*) where a small instance of Kafka is created in the desired cluster namespace
+	// and configured to auto-create topics.
+	Mode KafkaMode `json:"mode"`
+
+	// If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned
+	// Kafka instance to use a PVC instead of emptyDir for its volumes.
+	PVC bool `json:"pvc,omitempty"`
+
+	// Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode.
+	Cluster KafkaClusterConfig `json:"cluster,omitempty"`
+
+	// Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode.
+	Connect KafkaConnectClusterConfig `json:"connect,omitempty"`
+
+	// (Deprecated) Defines the cluster name to be used by the Kafka Provider this will
 	// be used in some modes to locate the Kafka instance.
-	ClusterName string `json:"clusterName"`
+	ClusterName string `json:"clusterName,omitempty"`
 
-	// The Namespace the cluster is expected to reside in. This is only used
+	// (Deprecated) The Namespace the cluster is expected to reside in. This is only used
 	// in (*_app-interface_*) and (*_operator_*) modes.
-	Namespace string `json:"namespace"`
+	Namespace string `json:"namespace,omitempty"`
 
-	// The namespace that the Kafka Connect cluster is expected to reside in. This is only used
+	// (Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used
 	// in (*_app-interface_*) and (*_operator_*) modes.
 	ConnectNamespace string `json:"connectNamespace,omitempty"`
 
-	// Defines the kafka connect cluster name that is used in this environment.
+	// (Deprecated) Defines the kafka connect cluster name that is used in this environment.
 	ConnectClusterName string `json:"connectClusterName,omitempty"`
 
-	// The mode of operation of the Clowder Kafka Provider. Valid options are:
-	// (*_operator_*) which expects a Strimzi Kafka instance and will configure
-	// KafkaTopic CRs and place them in the Namespace described in the configuration,
-	// (*_app-interface_*) which simple passes the topic names through to the App's
-	// cdappconfig.json and expects app-interface to have created the relevant
-	// topics, and (*_local_*) where a small instance of Kafka is created in the Env
-	// namespace and configured to auto-create topics.
-	Mode KafkaMode `json:"mode"`
-
-	// (Unused)
+	// (Deprecated) (Unused)
 	Suffix string `json:"suffix,omitempty"`
-
-	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
-	// Kafka instance to use a PVC instead of emptyDir for its volumes.
-	PVC bool `json:"pvc,omitempty"`
 }
 
 // TODO: Other potential modes: RDS and Operator (e.g. CrunchyDB)
@@ -372,7 +421,26 @@ func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
 }
 
-// isReady returns true when all the ManagedDeployments are Ready
+// IsReady returns true when all the ManagedDeployments are Ready
 func (i *ClowdEnvironment) IsReady() bool {
 	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+}
+
+// ConvertDeprecatedKafkaSpec converts values from the old Kafka provider spec into the new format
+func (i *ClowdEnvironment) ConvertDeprecatedKafkaSpec() {
+	if i.Spec.Providers.Kafka.ClusterName != "" {
+		i.Spec.Providers.Kafka.Cluster.Name = i.Spec.Providers.Kafka.ClusterName
+	}
+
+	if i.Spec.Providers.Kafka.Namespace != "" {
+		i.Spec.Providers.Kafka.Cluster.Namespace = i.Spec.Providers.Kafka.Namespace
+	}
+
+	if i.Spec.Providers.Kafka.ConnectNamespace != "" {
+		i.Spec.Providers.Kafka.Connect.Namespace = i.Spec.Providers.Kafka.ConnectNamespace
+	}
+
+	if i.Spec.Providers.Kafka.ConnectClusterName != "" {
+		i.Spec.Providers.Kafka.Connect.Name = i.Spec.Providers.Kafka.ConnectClusterName
+	}
 }

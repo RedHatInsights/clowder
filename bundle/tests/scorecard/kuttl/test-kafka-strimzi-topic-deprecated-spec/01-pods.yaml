@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-kafka-strimzi
+  name: test-kafka-strimzi-topic-deprecated
 spec:
-  targetNamespace: test-kafka-strimzi
+  targetNamespace: test-kafka-strimzi-topic-deprecated
   providers:
     web:
       port: 8000
@@ -14,7 +14,7 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      namespace: test-kafka-strimzi-kafka
+      namespace: test-kafka-strimzi-topic-deprecated-kafka
       clusterName: my-cluster
       mode: operator
     db:
@@ -39,9 +39,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-kafka-strimzi
+  namespace: test-kafka-strimzi-topic-deprecated
 spec:
-  envName: test-kafka-strimzi
+  envName: test-kafka-strimzi-topic-deprecated
   deployments:
   - name: processor
     podSpec:
@@ -58,9 +58,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo-two
-  namespace: test-kafka-strimzi
+  namespace: test-kafka-strimzi-topic-deprecated
 spec:
-  envName: test-kafka-strimzi
+  envName: test-kafka-strimzi-topic-deprecated
   deployments:
   - name: processor
     podSpec:

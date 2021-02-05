@@ -221,9 +221,11 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 		Spec: crd.ClowdEnvironmentSpec{
 			Providers: crd.ProvidersConfig{
 				Kafka: crd.KafkaConfig{
-					ClusterName: "kafka",
-					Namespace:   "kafka",
-					Mode:        "operator",
+					Mode: "operator",
+					Cluster: crd.KafkaClusterConfig{
+						Name:      "kafka",
+						Namespace: "kafka",
+					},
 				},
 				Database: crd.DatabaseConfig{
 					Mode: "local",
@@ -442,13 +444,13 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 
 	topicWithPartitionsReplicasName := "inventory-test-default"
 	topicWithPartitionsReplicasNamespacedName := types.NamespacedName{
-		Namespace: env.Spec.Providers.Kafka.Namespace,
+		Namespace: env.Spec.Providers.Kafka.Cluster.Namespace,
 		Name:      topicWithPartitionsReplicasName,
 	}
 
 	topicNoPartitionsReplicasName := "inventory-default-values-test-default"
 	topicNoPartitionsReplicasNamespacedName := types.NamespacedName{
-		Namespace: env.Spec.Providers.Kafka.Namespace,
+		Namespace: env.Spec.Providers.Kafka.Cluster.Namespace,
 		Name:      topicNoPartitionsReplicasName,
 	}
 

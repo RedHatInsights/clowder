@@ -124,30 +124,89 @@ spec:
                 kafka:
                   description: Defines the Configuration for the Clowder Kafka Provider.
                   properties:
+                    cluster:
+                      description: Defines options related to the Kafka cluster for
+                        this environment. Ignored for (*_local_*) mode.
+                      properties:
+                        deleteClaim:
+                          description: Delete persistent volume claim if the Kafka
+                            cluster is deleted Only applies when KafkaConfig.PVC is
+                            set to 'true'
+                          type: boolean
+                        name:
+                          description: Defines the kafka cluster name
+                          type: string
+                        namespace:
+                          description: 'The namespace the kafka cluster is expected
+                            to reside in (default: the environment''s targetNamespace)'
+                          type: string
+                        replicas:
+                          description: The requested number of replicas for kafka/zookeeper.
+                            If unset, default is '1'
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        storageSize:
+                          description: Persistent volume storage size. If unset, default
+                            is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
+                          type: string
+                        version:
+                          description: Version. If unset, default is "2.5.0"
+                          type: string
+                      required:
+                      - name
+                      type: object
                     clusterName:
-                      description: Defines the cluster name to be used by the Kafka
-                        Provider this will be used in some modes to locate the Kafka
-                        instance.
+                      description: (Deprecated) Defines the cluster name to be used
+                        by the Kafka Provider this will be used in some modes to locate
+                        the Kafka instance.
                       type: string
+                    connect:
+                      description: Defines options related to the Kafka Connect cluster
+                        for this environment. Ignored for (*_local_*) mode.
+                      properties:
+                        image:
+                          description: Image. If unset, default is "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+                          type: string
+                        name:
+                          description: 'Defines the kafka connect cluster name (default:
+                            "<kafka cluster''s name>-connect")'
+                          type: string
+                        namespace:
+                          description: 'The namespace the kafka connect cluster is
+                            expected to reside in (default: the kafka cluster''s namespace)'
+                          type: string
+                        replicas:
+                          description: The requested number of replicas for kafka
+                            connect. If unset, default is '1'
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        version:
+                          description: Version. If unset, default is "2.5.0"
+                          type: string
+                      required:
+                      - name
+                      type: object
                     connectClusterName:
-                      description: Defines the kafka connect cluster name that is
-                        used in this environment.
+                      description: (Deprecated) Defines the kafka connect cluster
+                        name that is used in this environment.
                       type: string
                     connectNamespace:
-                      description: The namespace that the Kafka Connect cluster is
-                        expected to reside in. This is only used in (*_app-interface_*)
+                      description: (Deprecated) The namespace that the Kafka Connect
+                        cluster is expected to reside in. This is only used in (*_app-interface_*)
                         and (*_operator_*) modes.
                       type: string
                     mode:
                       description: 'The mode of operation of the Clowder Kafka Provider.
-                        Valid options are: (*_operator_*) which expects a Strimzi
-                        Kafka instance and will configure KafkaTopic CRs and place
-                        them in the Namespace described in the configuration, (*_app-interface_*)
-                        which simple passes the topic names through to the App''s
-                        cdappconfig.json and expects app-interface to have created
-                        the relevant topics, and (*_local_*) where a small instance
-                        of Kafka is created in the Env namespace and configured to
-                        auto-create topics.'
+                        Valid options are: (*_operator_*) which provisions Strimzi
+                        resources and will configure KafkaTopic CRs and place them
+                        in the Kafka cluster''s namespace described in the configuration,
+                        (*_app-interface_*) which simply passes the topic names through
+                        to the App''s cdappconfig.json and expects app-interface to
+                        have created the relevant topics, and (*_local_*) where a
+                        small instance of Kafka is created in the desired cluster
+                        namespace and configured to auto-create topics.'
                       enum:
                       - operator
                       - app-interface
@@ -155,22 +214,20 @@ spec:
                       - none
                       type: string
                     namespace:
-                      description: The Namespace the cluster is expected to reside
-                        in. This is only used in (*_app-interface_*) and (*_operator_*)
-                        modes.
+                      description: (Deprecated) The Namespace the cluster is expected
+                        to reside in. This is only used in (*_app-interface_*) and
+                        (*_operator_*) modes.
                       type: string
                     pvc:
-                      description: If using the (*_local_*) mode and PVC is set to
-                        true, this instructs the local Kafka instance to use a PVC
-                        instead of emptyDir for its volumes.
+                      description: If using the (*_local_*) or (*_operator_*) mode
+                        and PVC is set to true, this sets the provisioned Kafka instance
+                        to use a PVC instead of emptyDir for its volumes.
                       type: boolean
                     suffix:
-                      description: (Unused)
+                      description: (Deprecated) (Unused)
                       type: string
                   required:
-                  - clusterName
                   - mode
-                  - namespace
                   type: object
                 logging:
                   description: Defines the Configuration for the Clowder Logging Provider.

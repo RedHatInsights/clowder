@@ -1,0 +1,78 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-kafka-strimzi-topic
+spec:
+  targetNamespace: test-kafka-strimzi-topic
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      cluster:
+        name: my-cluster
+        namespace: test-kafka-strimzi-topic-kafka
+      mode: operator
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-kafka-strimzi-topic
+spec:
+  envName: test-kafka-strimzi-topic
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  kafkaTopics:
+    - replicas: 7
+      partitions: 64
+      topicName: topicone
+    - replicas: 5
+      partitions: 32
+      topicName: topictwo
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo-two
+  namespace: test-kafka-strimzi-topic
+spec:
+  envName: test-kafka-strimzi-topic
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  kafkaTopics:
+    - replicas: 3
+      partitions: 96
+      topicName: topicone
+    - replicas: 2
+      partitions: 128
+      topicName: topictwo
+    - replicas: 5
+      partitions: 12
+      topicName: topicthree

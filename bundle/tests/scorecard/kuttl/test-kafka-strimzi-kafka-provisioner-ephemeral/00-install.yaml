@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-kafka-strimzi-kafka-provisioner-ephemeral
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-kafka-strimzi-kafka-provisioner-ephemeral-kafka
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-kafka-strimzi-kafka-provisioner-ephemeral-kafka-connect
+spec:
+  finalizers:
+  - kubernetes

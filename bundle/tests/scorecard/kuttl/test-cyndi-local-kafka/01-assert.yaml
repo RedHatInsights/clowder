@@ -10,4 +10,4 @@ metadata:
 spec:
   appName: app-name-override
   insightsOnly: true
-  connectCluster: my-connect-cluster
+  connectCluster: kafka-connect-cluster

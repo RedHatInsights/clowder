@@ -1,0 +1,52 @@
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: Kafka
+metadata:
+  name: my-pvc-cluster
+  namespace: test-kafka-strimzi-kafka-provisioner-pvc-kafka
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: env-test-kafka-strimzi-kafka-provisioner-pvc
+spec:
+  kafka:
+    version: "2.5.0"
+    replicas: 1
+    listeners:
+      - name: tcp
+        port: 9092
+        type: internal
+        tls: false
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+    storage:
+      type: persistent-claim
+      size: 100Mi
+      deleteClaim: false
+  zookeeper:
+    replicas: 1
+    storage:
+      type: persistent-claim
+      size: 100Mi
+      deleteClaim: false
+  entityOperator:
+    topicOperator: {}
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaConnect
+metadata:
+  name: my-pvc-cluster-connect
+  namespace: test-kafka-strimzi-kafka-provisioner-pvc-kafka
+  annotations:
+    strimzi.io/use-connector-resources: 'true'
+spec:
+  version: "2.5.0"
+  image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+  bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-pvc-kafka.svc:9092
+  config:
+    group.id: connect-cluster
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
