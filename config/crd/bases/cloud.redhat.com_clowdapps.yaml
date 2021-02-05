@@ -4709,8 +4709,6 @@ spec:
                       properties:
                         args:
                           description: A list of args to be passed to the init container.
-                      properties:
-                        args:
                           items:
                             type: string
                           type: array

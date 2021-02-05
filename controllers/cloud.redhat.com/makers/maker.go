@@ -86,7 +86,7 @@ func (m *Maker) Make() error {
 			return err
 		}
 
-		if err := m.makeAutoScaler(pod, m.App, c); err != nil {
+		if err := m.makeAutoScaler(deployment, m.App, c); err != nil {
 			return err
 		}
 	}
@@ -742,13 +742,15 @@ func processAppEndpoints(
 	return missingDeps
 }
 
-func (m *Maker) makeAutoScaler(pod crd.PodSpec, app *crd.ClowdApp, appConfig *config.AppConfig) error {
+func (m *Maker) makeAutoScaler(deploy crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig) error {
+	pod := deploy.PodSpec
+
 	if pod.AutoScaling.Enabled == false {
 		return nil
 	}
 
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v", app.Name, pod.Name),
+		Name:      fmt.Sprintf("%v-%v", app.Name, deploy.Name),
 		Namespace: m.Request.Namespace,
 	}
 
@@ -766,11 +768,11 @@ func (m *Maker) makeAutoScaler(pod crd.PodSpec, app *crd.ClowdApp, appConfig *co
 	// Setting the min/max replica counts with defaults
 	// since the default is `0` for minReplicas - it would scale the deployment down to 0 until there is traffic
 	// and generally we don't want that.
-	if pod.MinReplicas == nil {
+	if deploy.MinReplicas == nil {
 		scalerSpec.MinReplicaCount = new(int32)
 		*scalerSpec.MinReplicaCount = 1
 	} else {
-		scalerSpec.MinReplicaCount = pod.MinReplicas
+		scalerSpec.MinReplicaCount = deploy.MinReplicas
 	}
 	if pod.AutoScaling.MaxReplicas == nil {
 		scalerSpec.MaxReplicaCount = new(int32)

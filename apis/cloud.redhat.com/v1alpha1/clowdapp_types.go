@@ -194,6 +194,9 @@ type PodSpec struct {
 
 	// A pass-through of a list of VolumesMounts in standa k8s format.
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
+
+	// A definition to set up autoscaling for this deployment
+	AutoScaling AutoScalingSpec `json:"autoScaling,omitempty"`
 }
 
 // PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
@@ -211,7 +214,6 @@ type PodSpecDeprecated struct {
 	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
 	Volumes        []v1.Volume             `json:"volumes,omitempty"`
 	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
-	AutoScaling    AutoScalingSpec         `json:"autoScaling,omitempty"`
 }
 
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the
