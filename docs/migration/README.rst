@@ -308,7 +308,7 @@ all dependent services are also set up with Bonfire.
 
 
 Testing your migration code/template changes
------------------------------------
+--------------------------------------------
 
 **Testing Without Jenkins**
 

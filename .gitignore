@@ -32,3 +32,6 @@ docs/build
 
 # Clowder release yaml generation
 manifest.yaml
+
+.venv
+_build
