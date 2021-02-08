@@ -152,7 +152,8 @@ type ServiceMeshMode string
 // ServiceMeshConfig determines if this env should be part of a service mesh
 // and, if enabled, configures the service mesh
 type ServiceMeshConfig struct {
-	Mode ServiceMeshMode `json:"mode,omitempty"`
+	Mode      ServiceMeshMode `json:"mode,omitempty"`
+	Namespace *string         `json:"namespace,omitempty"`
 }
 
 // TODO: Other potential mode: ceph, S3

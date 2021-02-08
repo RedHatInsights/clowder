@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	maistra "cloud.redhat.com/clowder/v2/apis/maistra/v1"
 	"github.com/go-logr/logr"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -91,6 +92,14 @@ func (m *Maker) Make() error {
 	for _, job := range m.App.Spec.Jobs {
 
 		if err := m.makeJob(job, m.App, hash); err != nil {
+			return err
+		}
+	}
+
+	if m.Env.Spec.Providers.ServiceMesh.Mode == "enabled" {
+		err = m.makeMemberRoll()
+
+		if err != nil {
 			return err
 		}
 	}
@@ -697,4 +706,53 @@ func processAppEndpoints(
 	}
 
 	return missingDeps
+}
+
+func (m *Maker) makeMemberRoll() error {
+	nsMap := map[string]bool{}
+
+	appList := crd.ClowdAppList{}
+	err := m.Client.List(m.Ctx, &appList)
+
+	if err != nil {
+		return err
+	}
+
+	for _, app := range appList.Items {
+		if _, ok := nsMap[app.Namespace]; !ok {
+			nsMap[app.Namespace] = true
+		}
+	}
+
+	nsList := make([]string, len(nsMap))
+	i := 0
+	for k := range nsMap {
+		nsList[i] = k
+		i = i + 1
+	}
+
+	rollNs := m.Env.Spec.Providers.ServiceMesh.Namespace
+
+	if rollNs == nil {
+		return errors.New("Please specify a namespace in your ClowdEnvironment service mesh spec")
+	}
+
+	nn := types.NamespacedName{
+		Name:      "default",
+		Namespace: *rollNs,
+	}
+
+	memberRoll := maistra.ServiceMeshMemberRoll{}
+	err = m.Client.Get(m.Ctx, nn, &memberRoll)
+
+	update, err := utils.UpdateOrErr(err)
+	if err != nil {
+		return err
+	}
+
+	labeler := utils.GetCustomLabeler(nil, nn, m.Env)
+	labeler(&memberRoll)
+	memberRoll.Spec.Members = nsList
+
+	return update.Apply(m.Ctx, m.Client, &memberRoll)
 }
