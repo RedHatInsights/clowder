@@ -116,13 +116,24 @@ func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error 
 		{Name: "metrics", Port: m.Env.Spec.Providers.Metrics.Port, Protocol: "TCP"},
 	}
 
+	appProtocol := "http"
 	if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
-		webPort := core.ServicePort{Name: "http-public", Port: m.Env.Spec.Providers.Web.Port, Protocol: "TCP"}
+		webPort := core.ServicePort{
+			Name:        "public",
+			Port:        m.Env.Spec.Providers.Web.Port,
+			Protocol:    "TCP",
+			AppProtocol: &appProtocol,
+		}
 		ports = append(ports, webPort)
 	}
 
 	if deployment.WebServices.Private.Enabled {
-		webPort := core.ServicePort{Name: "http-private", Port: m.Env.Spec.Providers.Web.PrivatePort, Protocol: "TCP"}
+		webPort := core.ServicePort{
+			Name:        "private",
+			Port:        m.Env.Spec.Providers.Web.PrivatePort,
+			Protocol:    "TCP",
+			AppProtocol: &appProtocol,
+		}
 		ports = append(ports, webPort)
 	}
 
