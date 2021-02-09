@@ -29,6 +29,7 @@ launch.json
 *.code-workspace
 
 docs/build
+.docs/
 
 # Clowder release yaml generation
 manifest.yaml
