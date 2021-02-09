@@ -78,6 +78,22 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
+	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
+	if isEnvMarkedForDeletion {
+		if contains(env.GetFinalizers(), envFinalizer) {
+			if err := r.finalizeEnvironment(log, &env); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			controllerutil.RemoveFinalizer(&env, envFinalizer)
+			err := r.Update(ctx, &env)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+		return ctrl.Result{}, nil
+	}
+
 	if env.Status.TargetNamespace == "" {
 		if env.Spec.TargetNamespace != "" {
 			namespace := core.Namespace{}
@@ -126,22 +142,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	requeue := errors.HandleError(ctx, err)
 	if requeue {
 		r.Log.Error(err, "Requeueing due to error")
-	}
-
-	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
-	if isEnvMarkedForDeletion {
-		if contains(env.GetFinalizers(), envFinalizer) {
-			if err := r.finalizeEnvironment(log, &env); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			controllerutil.RemoveFinalizer(&env, envFinalizer)
-			err := r.Update(ctx, &env)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-		return ctrl.Result{}, nil
 	}
 
 	// Add finalizer for this CR
