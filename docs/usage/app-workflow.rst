@@ -1,11 +1,13 @@
 ClowdApp Workflow
 =================
 
-Deploying a ClowdApp with new changes should be easy, repeatable, and timely. In order to make the
-Clowder experience smoother, there are a few tools to know and a suggested workflow to follow.
+Deploying a ClowdApp with new changes should be easy, repeatable, and timely. In
+order to make the Clowder experience smoother, there are a few tools to know and
+a suggested workflow to follow.
 
-In our general experience, you'll need to make edits to a Clowdapp and your source code as you work
-through your Clowder migration. The workflow will generally follow this pattern: 
+In our general experience, you'll need to make edits to a Clowdapp and your
+source code as you work through your Clowder migration. The workflow will
+generally follow this pattern: 
 
   1. Make a change in the source code or Clowdapp
   2. Deploy the new changes locally
@@ -14,23 +16,25 @@ through your Clowder migration. The workflow will generally follow this pattern:
 
 1. Making local changes
 -----------------------
-Step 1 is pretty case by case basis. Maybe your config is reading the wrong variable. Perhaps your
-ClowdApp is missing a Kafka topic. Whatever your changes may be, update the code and go on to step 2. 
+Step 1 is pretty case by case basis. Maybe your config is reading the wrong
+variable. Perhaps your ClowdApp is missing a Kafka topic. Whatever your changes
+may be, update the code and go on to step 2. 
 
 
 2. Deploy locally with Bonfire
 ------------------------------
 
-Bonfire [1]_ is a cli tool used to deploy apps with Clowder. Bonfire comes with a local config
-option that we'll use to drop our ClowdApp into our minikube cluster. 
+Bonfire [1]_ is a cli tool used to deploy apps with Clowder. Bonfire comes with
+a local config option that we'll use to drop our ClowdApp into our minikube
+cluster. 
 
 First, `install Bonfire`_ if you don't already have it on your local machine. 
 
-We'll use our examples from the `Getting Started`_ again. First, let's make a `config.yaml`. This
-file will be used to inform Bonfire about our ClowdApp. 
+We'll use our examples from the `Getting Started`_ again. First, let's make a
+`config.yaml`. This file will be used to inform Bonfire about our ClowdApp. 
 
-  Update ``$(PWD)`` to the place where your app will be stored ``/home/src/app`` for example. 
-  Save as "config.yaml"
+  Update ``$(PWD)`` to the place where your app will be stored ``/home/src/app``
+  for example.  Save as "config.yaml"
 
 .. code-block:: yaml
 
@@ -43,14 +47,15 @@ file will be used to inform Bonfire about our ClowdApp.
     parameters:
       IMAGE: quay.io/psav/clowder-hello
 
-Our config.yaml defines an app name, a local host (this machine), a repo to read, and a path to a
-ClowdApp in that repo. Bonfire will use this information to deploy our ClowdApp into the namespace
-declared in our ClowdApp. 
+Our config.yaml defines an app name, a local host (this machine), a repo to
+read, and a path to a ClowdApp in that repo. Bonfire will use this information
+to deploy our ClowdApp into the namespace declared in our ClowdApp. 
 
-Let's refer back to our example app from earlier. Now, instead of using a base App, we will use a
-Template. 
+Let's refer back to our example app from earlier. Now, instead of using a base
+App, we will use a Template. 
 
-Note: if your previous ClowdApp is still running, use ``oc delete app jumpstart`` to remove it. 
+Note: if your previous ClowdApp is still running, use ``oc delete app
+jumpstart`` to remove it. 
 
   Save as "clowdapp.yml"
 
@@ -107,12 +112,13 @@ Note: if your previous ClowdApp is still running, use ``oc delete app jumpstart`
 
 Run ``oc get app`` to verify the jumpstart app has been deployed.
 
-You can do all the standard ``oc logs`` debugging to figure out if your changes are successful.
+You can do all the standard ``oc logs`` debugging to figure out if your changes
+are successful.
 
 4. Repeat
 ---------
-Repeat until you're happy with the results. When satisfied, checkout the migration guide [2]_ to start
-your app on the jouney to ephemeral and beyond.   
+Repeat until you're happy with the results. When satisfied, checkout the
+migration guide [2]_ to start your app on the jouney to ephemeral and beyond.   
 
 
 Next Steps
@@ -126,3 +132,5 @@ Next Steps
 
 .. [1] https://internal.cloud.redhat.com/docs/devprod/ephemeral/ 
 .. [2] https://internal.cloud.redhat.com/docs/devprod/migration/
+
+.. vim: tw=80
