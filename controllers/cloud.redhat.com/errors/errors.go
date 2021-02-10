@@ -81,9 +81,9 @@ func (e *MissingDependencies) Error() string {
 		typeList = append(typeList, fmt.Sprintf("- %s: %s", t, depList))
 	}
 
-	body := strings.Join(typeList, "\n")
+	body := strings.Join(typeList, ", ")
 
-	return fmt.Sprintf("Missing dependencies: \n%s", body)
+	return fmt.Sprintf("Missing dependencies: [%s]", body)
 }
 
 func RootCause(err error) error {
