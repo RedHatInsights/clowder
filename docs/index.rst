@@ -11,3 +11,4 @@ Clowder
     migration/README
     providers/index
     usage/index
+    contributing/index

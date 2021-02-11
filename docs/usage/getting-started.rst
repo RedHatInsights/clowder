@@ -15,7 +15,7 @@ If you would like to install Clowder manually and set up a contributing
 developer environment, `follow the developer guide`_.
 
 Create your first ``ClowdEnvironment``
-----------------------------------
+--------------------------------------
 
 Let's make a namespace to hold all the resources we'll be creating ::
 
