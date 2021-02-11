@@ -8,3 +8,4 @@ Using Clowder
 
     getting-started
     app-workflow
+    jobs
