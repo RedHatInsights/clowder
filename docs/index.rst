@@ -7,8 +7,9 @@ Clowder
 
     preprod
     sop
+    usage/index
     clowder-design
-    migration/README
     providers/index
     usage/index
     contributing/index
+    migration/index
