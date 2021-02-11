@@ -40,7 +40,7 @@ to consume, leaving teams to focus more on writing code than differences between
 environments. The Clowder config client can assist with this and currently has support
 for Python, Go, Javascript and Ruby.
 
-<img src="docs/images/config.svg" alt="Animated GIF terminal example" width="800">
+<img src="docs/images/config.svg" alt="Configuration model" width="800">
 
 ## Roadmap
 

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:ns="&amp;#38;#38;#38;ns_ai;"
-   xmlns:ns0="&amp;#38;#38;ns_ai;"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -413,7 +411,6 @@
          width="1"
          height="1" />
       <g
-         ns:extraneous="self"
          id="g2555-0"
          style="fill:#000000;fill-opacity:1">
         <g
@@ -668,7 +665,6 @@ Minio
            width="1"
            height="1" />
         <g
-           ns0:extraneous="self"
            id="g2555"
            style="fill:#000000;fill-opacity:1">
           <g
