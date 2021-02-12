@@ -42,6 +42,17 @@ for Python, Go, Javascript and Ruby.
 
 <img src="docs/images/config.svg" alt="Animated GIF terminal example" width="800">
 
+## Feature List
+
+Clowder currently features support for:
+
+- Kafka Topics
+- Object Storage
+- PostgreSQL Database
+- In-Memory DB
+- Feature Flags (development only)
+- CronJob support 
+
 ## Roadmap
 
 Our current roadmap looks like this:
