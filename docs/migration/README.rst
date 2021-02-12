@@ -99,8 +99,8 @@ differences between environments, e.g. production, ephemeral, and local
 development.
 
 There is a companion client library for Clowder, currently implemented in `Go`_,
-`Python`_ and `Ruby`_, that consumes the configuration document mounted into every application
-container and exposes it via an API.  This API is the recommended way to consume
+`Python`_ `Javascript`_ and `Ruby`_, that consumes the configuration document mounted into every application
+container and exposes it via an API.  This `API`_ is the recommended way to consume
 configuration that comes from Clowder.
 
 Until a dev team is confident an app will not need to be deployed without
@@ -135,6 +135,8 @@ compatible.  If not, changes to the app will need to be made.
 .. _Go: https://github.com/RedHatInsights/app-common-go
 .. _Python: https://github.com/RedHatInsights/app-common-python
 .. _Ruby: https://github.com/RedHatInsights/app-common-ruby
+.. _JavaScript: https://github.com/RedHatInsights/app-common-js
+.. _API: https://github.com/RedHatInsights/clowder/blob/master/docs/appconfig/schema.md
 .. _MinIO client library: https://github.com/minio/mc
 
 Develop ``ClowdApp`` resource for target service
@@ -169,9 +171,10 @@ Additional information needed to fill out the other fields:
 * Optionally request an in-memory database (i.e. Redis)
 * List other app dependencies (e.g. ``rbac``)
 
-The new ``ClowdApp`` can be validated on any cluster that has Clowder installed.
-If access to a cluster with Clowder is not available, Clowder can be `installed
-on Codeready Containers`_.
+The new ``ClowdApp`` can be validated on any cluster that has Clowder
+installed. If access to a cluster with Clowder is not available, Clowder can be
+`installed on Codeready Containers`_ or on Minikube please see the `usage guide
+<../usage/index.html>`_ for more information.
 
 .. _example: https://github.com/RedHatInsights/insights-puptoo/blob/fea32bef660802b0647f616bc211fb52f24a30e5/deployment.yaml
 .. _saas-templates: https://gitlab.cee.redhat.com/insights-platform/saas-templates/
