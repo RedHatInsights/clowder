@@ -191,8 +191,9 @@ Additional resources defined in an app's current deployment template besides
 Deployment and Service should be copied over to the new template in the app's
 source code repo.  Then the ``ClowdApp`` developed above should be added in.
 
-A ``ClowdApp`` must point to a ``ClowdEnvironment`` resource via its ``envName`` spec
-attribute, and its value should be set as the ``ENV_NAME`` template parameter.
+A ``ClowdApp`` must point to a ``ClowdEnvironment`` resource via its
+``envName`` spec attribute, and its value should be set as the ``ENV_NAME``
+template parameter.
 
 Add ``build_deploy.sh`` and ``pr_check.sh`` to source code repo
 ---------------------------------------------------------------
@@ -202,11 +203,11 @@ execute the build and tests, respectively.  There are two jobs for each app:
 "build master" and "PR check", and each job has a corresponding shell script:
 ``build_deploy.sh`` and ``pr_check.sh.``
 
-``build_deploy.sh`` builds an app's image using a Dockerfile and pushes to Quay with
-credentials provided in Jenkins job environment.  Make sure to push the ``latest``
-and ``qa`` image tags if e2e-deploy backwards compatibility is needed.  There is
-little variation in this file between projects, thus there are many examples to
-pull from.
+``build_deploy.sh`` builds an app's image using a Dockerfile and pushes to Quay
+with credentials provided in Jenkins job environment.  Make sure to push the
+``latest`` and ``qa`` image tags if e2e-deploy backwards compatibility is
+needed.  There is little variation in this file between projects, thus there
+are many examples to pull from.
 
 ``pr_check.sh`` is where an app's unit test, static code analysis, linting, and
 smoke/integration testing will be performed.  It is largely up to app owners
@@ -215,8 +216,8 @@ bonfire, and there is an example script to paste into your app's script.  There
 are a few environment variables to plug in at the top for an app, and the rest
 of the script should be left untouched.
 
-Both files live in the root folder of source code repo, unless overridden in the
-Jenkins job definition (see below).
+Both files live in the root folder of source code repo, unless overridden in
+the Jenkins job definition (see below).
 
 See examples of these files here:
 
@@ -271,19 +272,21 @@ Gitlab:
 
 
 In your app's build.yml, you need to specify on which Jenkins server to have
-your jobs defined.  AppSRE provides two Jenkins servers: ``ci-int`` for projects
-hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects hosted on
-Github.  Note that private Github projects are **not supported**; if a Github
-project must remain private, then its origin must move to gitlab.cee.redhat.com.
+your jobs defined.  AppSRE provides two Jenkins servers: ``ci-int`` for
+projects hosted on gitlab.cee.redhat.com, and ``ci-ext`` for public projects
+hosted on Github.  Note that private Github projects are **not supported**; if
+a Github project must remain private, then its origin must move to
+gitlab.cee.redhat.com.
 
 Create new saas-deploy file
 ---------------------------
 
 The last step to enable smoke testing is to create a new saas-deploy file to
-provide `Bonfire`_ with a way to deploy the app to an ephemeral environment. This saas file should
-be separate from the existing saas file so that the template ``path`` can be different for each
-service. It should not contain any of the ``stage`` or ``prod`` deployment targets until you are
-ready to deploy the ``ClowdApp`` into those environments.
+provide `Bonfire`_ with a way to deploy the app to an ephemeral environment.
+This saas file should be separate from the existing saas file so that the
+template ``path`` can be different for each service. It should not contain any
+of the ``stage`` or ``prod`` deployment targets until you are ready to deploy
+the ``ClowdApp`` into those environments.
 
 Points to ensure are in place in your new saas-deploy file:
 
