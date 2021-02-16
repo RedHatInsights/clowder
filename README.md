@@ -81,7 +81,7 @@ Clowder is developed on Fedora and the kvm driver has been found to work best
 initiated with the following options:
 
   ```
-  minikube start --cpus 4 --disk-size 36GB --memory 8000MB
+  minikube start --cpus 4 --disk-size 36GB --memory 8000MB --driver=kvm2
   ```
 
   To persist these changes for every minikube invocation, run the following:
@@ -92,6 +92,9 @@ initiated with the following options:
   minikube config set vm-driver kvm2
   ```
 
+If you encounter any kvm issues, please take a look 
+[at the troubleshooting guide](https://github.com/RedHatInsights/clowder/blob/master/docs/developer-guide.md#kvm2-specific-notes)
+
 Clowder can then be installed by visiting the 
 [latest release](https://github.com/RedHatInsights/clowder/releases/latest) 
 page copying the link to the manifest and running something similar to that
@@ -99,8 +102,9 @@ shown below:
 
   ```
   # Be sure to get the latest release in the link above!
-  minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.6.0/clowder-manifest-0.6.0.yaml --validate=false
+  minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.9.0/clowder-manifest-0.9.0.yaml --validate=false
   ```
+
 ## Usage
 
 To use Clowder to deploy an application a `ClowdEnvironment` resource must be

@@ -349,7 +349,7 @@ Appears In:
 Job 
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Job defines a CronJob as Schedule is required. In the future omitting the Schedule field will allow support for a standard Job resource.
+Job defines either a Job to be used in creating a Job via external means, or a CronJob, the difference is the presence of the schedule field.
 
 Appears In:
 :ref:`ClowdAppSpec`
@@ -365,6 +365,7 @@ Appears In:
    "``restartPolicy`` (`RestartPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core>`_)", "Defines the restart policy for the CronJob, defaults to never"
    "``concurrencyPolicy`` (`ConcurrencyPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch>`_)", "Defines the concurrency policy for the CronJob, defaults to Allow"
    "``startingDeadlineSeconds`` (integer)", "Defines the StartingDeadlineSeconds for the CronJob"
+=======
 
 
 .. _KafkaClusterConfig :

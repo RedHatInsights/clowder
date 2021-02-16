@@ -32,6 +32,9 @@ executables in that directory:
 
     ### **KVM2-specific notes**
 
+    * If you don't have virtualization enabled, follow the guide
+      on [the minikube docs](https://docs.fedoraproject.org/en-US/quick-docs/getting-started-with-virtualization/)
+
     * Note that `virt-host-validate` may throw errors related to cgroups on Fedora 33 -- which you can [ignore](https://gitlab.com/libvirt/libvirt/-/issues/94)
 
     * If you don't want to enter a root password when minikube needs to modify its VM, add your user to the 'libvirt' group:
