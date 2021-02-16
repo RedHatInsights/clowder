@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: test-cron-job
+  name: test-clowder-jobs
 spec:
   finalizers:
   - kubernetes

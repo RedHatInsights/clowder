@@ -1,0 +1,11 @@
+---
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+- script: sleep 100
+- script: kubectl get pod -l app=puptoo -l pod=puptoo-job -n test-clowder-jobs -o json > /tmp/test-clowder-jobs-job
+- script: kubectl logs `jq -r '.items[0].metadata.name' < /tmp/test-clowder-jobs-job` -n test-clowder-jobs > /tmp/test-clowder-jobs-output
+- script: grep "Hi" /tmp/test-clowder-jobs-output
+- script: kubectl get pod -l app=puptoo -l pod=puptoo-job3 -n test-clowder-jobs -o json > /tmp/test-clowder-jobs-job
+- script: kubectl logs `jq -r '.items[0].metadata.name' < /tmp/test-clowder-jobs-job` -n test-clowder-jobs > /tmp/test-clowder-jobs-output-3
+- script: grep "Hi!" /tmp/test-clowder-jobs-output-3

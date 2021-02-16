@@ -4,7 +4,6 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +28,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -212,24 +212,44 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 		Namespace: m.Request.Namespace,
 	}
 
-	c := batch.CronJob{}
-	err := m.Client.Get(m.Ctx, nn, &c)
+	if job.Schedule != "" {
 
-	update, err := utils.UpdateOrErr(err)
-	if err != nil {
-		return err
-	}
+		c := batch.CronJob{}
 
-	initJob(m.App, m.Env, &c, nn, job, hash)
+		err := m.Client.Get(m.Ctx, nn, &c)
 
-	if err := update.Apply(m.Ctx, m.Client, &c); err != nil {
-		return err
+		update, err := utils.UpdateOrErr(err)
+		if err != nil {
+			return err
+		}
+
+		applyCronJob(m.App, m.Env, &c, nn, job, hash)
+
+		if err := update.Apply(m.Ctx, m.Client, &c); err != nil {
+			return err
+		}
+	} else {
+
+		j := batchv1.Job{}
+
+		err := m.Client.Get(m.Ctx, nn, &j)
+
+		update, err := utils.UpdateOrErr(err)
+		if err != nil {
+			return err
+		}
+
+		applyOneShotJob(m.App, m.Env, &j, nn, job, hash)
+
+		if err := update.Apply(m.Ctx, m.Client, &j); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func initJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, nn types.NamespacedName, job crd.Job, hash string) {
+func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, nn types.NamespacedName, job crd.Job, hash string) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
@@ -324,6 +344,98 @@ func initJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, nn
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
 	cj.Spec.JobTemplate.Spec.Template.SetAnnotations(annotations)
+}
+
+func applyOneShotJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, j *batchv1.Job, nn types.NamespacedName, job crd.Job, hash string) {
+	labels := app.GetLabels()
+	labels["pod"] = nn.Name
+	app.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
+
+	pod := job.PodSpec
+
+	// https://kubernetes.io/docs/concepts/workloads/controllers/job/#specifying-your-own-pod-selector
+	// This is dumb, stupid, and bad. Jobs will not apply due to an error
+	// with the UID of the Job Controller. Needs more research.
+	var manual bool = true
+	j.Spec.Selector = &metav1.LabelSelector{}
+	j.Spec.ManualSelector = &manual
+
+	j.ObjectMeta.Labels = labels
+	j.Spec.Template.ObjectMeta.Labels = labels
+
+	if job.RestartPolicy == "" {
+		j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
+	} else {
+		j.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
+	}
+
+	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
+		{Name: "quay-cloudservices-pull"},
+	}
+
+	envvar := pod.Env
+	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+
+	var livenessProbe core.Probe
+	var readinessProbe core.Probe
+
+	if pod.LivenessProbe != nil {
+		livenessProbe = *pod.LivenessProbe
+	} else {
+		livenessProbe = core.Probe{}
+	}
+	if pod.ReadinessProbe != nil {
+		readinessProbe = *pod.ReadinessProbe
+	} else {
+		readinessProbe = core.Probe{}
+	}
+
+	c := core.Container{
+		Name:         nn.Name,
+		Image:        pod.Image,
+		Command:      pod.Command,
+		Args:         pod.Args,
+		Env:          envvar,
+		Resources:    processResources(&pod, env),
+		VolumeMounts: pod.VolumeMounts,
+		Ports: []core.ContainerPort{{
+			Name:          "metrics",
+			ContainerPort: env.Spec.Providers.Metrics.Port,
+		}},
+		ImagePullPolicy: core.PullIfNotPresent,
+	}
+
+	if (core.Probe{}) != livenessProbe {
+		c.LivenessProbe = &livenessProbe
+	}
+	if (core.Probe{}) != readinessProbe {
+		c.ReadinessProbe = &readinessProbe
+	}
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
+
+	j.Spec.Template.Spec.Containers = []core.Container{c}
+
+	j.Spec.Template.Spec.InitContainers = processInitContainers(nn, &c, pod.InitContainers)
+
+	j.Spec.Template.Spec.Volumes = pod.Volumes
+	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
+		Name: "config-secret",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: app.ObjectMeta.Name,
+			},
+		},
+	})
+
+	applyPodAntiAffinity(&j.Spec.Template)
+
+	annotations := make(map[string]string)
+	annotations["configHash"] = hash
+	j.Spec.Template.SetAnnotations(annotations)
 }
 
 func processResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.ResourceRequirements {

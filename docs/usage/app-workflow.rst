@@ -36,6 +36,9 @@ We'll use our examples from the `Getting Started`_ again. First, let's make a
   Update ``$(PWD)`` to the place where your app will be stored ``/home/src/app``
   for example.  Save as "config.yaml"
 
+config.yaml
+~~~~~~~~~~~
+
 .. code-block:: yaml
 
   envName: env-jumpstart

@@ -2334,6 +2334,9 @@ spec:
                       be used to name the CronJob resource, the container will be
                       name identically.
                     type: string
+                  oneshot:
+                    description: A job that is a OneShot is run on apply
+                    type: boolean
                   podSpec:
                     description: PodSpec defines a container running inside the CronJob.
                     properties:
@@ -4497,7 +4500,6 @@ spec:
                 required:
                 - name
                 - podSpec
-                - schedule
                 type: object
               type: array
             kafkaTopics:
