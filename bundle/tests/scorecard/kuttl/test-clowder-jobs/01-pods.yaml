@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-cron-job
+  name: test-clowder-jobs
 spec:
-  targetNamespace: test-cron-job
+  targetNamespace: test-clowder-jobs
   providers:
     web:
       port: 8000
@@ -39,9 +39,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-cron-job
+  namespace: test-clowder-jobs
 spec:
-  envName: test-cron-job
+  envName: test-clowder-jobs
   deployments:
     - name: processor
       podSpec:
@@ -62,3 +62,11 @@ spec:
         args:
           - ./clowder-hello
           - boo
+    - name: job3
+      oneshot: true
+      podSpec:
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - echo "Hi!"

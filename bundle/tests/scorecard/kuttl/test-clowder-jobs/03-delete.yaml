@@ -4,7 +4,7 @@ kind: TestStep
 delete:
 - apiVersion: v1
   kind: Namespace
-  name: test-cron-job
+  name: test-clowder-jobs
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: test-cron-job
+  name: test-clowder-jobs

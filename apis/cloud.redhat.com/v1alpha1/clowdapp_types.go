@@ -68,7 +68,10 @@ type Job struct {
 	Name string `json:"name"`
 
 	// Defines the schedule for the job to run
-	Schedule string `json:"schedule"`
+	Schedule string `json:"schedule,omitempty"`
+
+	// A job that is a OneShot is run on apply
+	OneShot bool `json:"oneshot,omitempty"`
 
 	// PodSpec defines a container running inside the CronJob.
 	PodSpec PodSpec `json:"podSpec"`

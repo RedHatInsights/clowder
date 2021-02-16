@@ -113,7 +113,7 @@ complex ClowdApp, and migrating existing services over to Clowder.
 
 .. _Bonfire: https://github.com/RedHatInsights/bonfire/
 .. _API docs for ClowdEnvironments: https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment
-.. _Fully annotated ClowdEnv: ../examples/clowdenv.yml
+.. _Fully annotated ClowdEnv:  https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdenv.yml
 .. _main README section: https://github.com/RedHatInsights/clowder#getting-clowder
 .. _follow the developer guide: https://github.com/RedHatInsights/clowder/blob/master/docs/developer-guide.md
 .. _providers: https://github.com/RedHatInsights/clowder/tree/master/docs/providers
