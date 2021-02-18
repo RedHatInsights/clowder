@@ -70,7 +70,7 @@ type Job struct {
 	Schedule string `json:"schedule"`
 
 	// PodSpec defines a container running inside the CronJob.
-	PodSpec PodSpec `json:"podSpec,omitempty"`
+	PodSpec PodSpec `json:"podSpec"`
 
 	// Defines the restart policy for the CronJob, defaults to never
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
@@ -130,7 +130,7 @@ type Deployment struct {
 	WebServices WebServices `json:"webServices,omitempty"`
 
 	// PodSpec defines a container running inside a ClowdApp.
-	PodSpec PodSpec `json:"podSpec,omitempty"`
+	PodSpec PodSpec `json:"podSpec"`
 }
 
 // PodSpec defines a container running inside a ClowdApp.

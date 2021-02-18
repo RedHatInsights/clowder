@@ -2300,6 +2300,7 @@ spec:
                     type: object
                 required:
                 - name
+                - podSpec
                 type: object
               type: array
             envName:
@@ -4487,6 +4488,7 @@ spec:
                     type: string
                 required:
                 - name
+                - podSpec
                 - schedule
                 type: object
               type: array
