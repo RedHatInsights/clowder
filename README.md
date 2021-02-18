@@ -89,7 +89,8 @@ page copying the link to the manifest and running something similar to that
 shown below:
 
   ```
-  minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.2.0/clowder-manifest-0.2.0.yml --validate=false
+  # Be sure to get the latest release in the link above!
+  minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.4.0/clowder-manifest-0.4.0.yaml --validate=false
   ```
 ## Usage
 
