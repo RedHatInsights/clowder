@@ -18,7 +18,7 @@ spec:
     matchLabels:
       control-plane: controller-manager
       operator-name: clowder
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
