@@ -6,7 +6,7 @@ set -e
 if [ ! -d docs/build/crd-ref-docs ]; then
 	echo "You don't have crd-ref-docs, installing it..."
 	mkdir -p docs/build/crd-ref-docs
-	git clone https://github.com/elastic/crd-ref-docs.git docs/build/crd-ref-docs
+	git clone --branch psav/add_rst_template https://github.com/psav/crd-ref-docs.git docs/build/crd-ref-docs
 	cd docs/build/crd-ref-docs
 	go install
 	cd -
@@ -28,19 +28,15 @@ if ! command -v asciidoctor; then
 fi
 
 crd-ref-docs --source-path=./apis --config=docs/build/crd-ref-docs/config.yaml \
-	--renderer=asciidoctor --templates-dir=docs/build/crd-ref-docs/templates/asciidoctor \
-	--output-path=api_reference.asciidoc
+	--renderer=restructuredtext --templates-dir=docs/build/crd-ref-docs/templates/restructuredtext \
+	--output-path=api_reference.rst
 
-asciidoctor api_reference.asciidoc
+LINES_CHANGED=$(diff api_reference.rst docs/api_reference.rst --changed-group-format='%>' --unchanged-group-format='' | wc -l)
 
-rm api_reference.asciidoc
-
-LINES_CHANGED=$(diff api_reference.html docs/api_reference.html --changed-group-format='%>' --unchanged-group-format='' | wc -l)
-
-if [ "$LINES_CHANGED" == "1" ]; then
+if [ "$LINES_CHANGED" == "0" ]; then
 	echo "API docs did not change - not updating"
-	rm api_reference.html
+	rm api_reference.rst
 else
 	echo "API docs changed - updating"
-	mv api_reference.html docs/
+	mv api_reference.rst docs/
 fi
