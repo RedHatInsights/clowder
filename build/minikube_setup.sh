@@ -4,6 +4,7 @@ set +e
 # Script you can use to set up a local minikube cluster for testing
 # It is assumed you have already run 'minikube start' and your kubectl context is using the minikube cluster
 
+# GO is required for yq, check if go is installed
 echo "*** Checking for 'go' ..."
 if ! command -v go; then
     echo "***  Go bin not found in path ***"
