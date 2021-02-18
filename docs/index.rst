@@ -13,3 +13,4 @@ Clowder
     usage/index
     contributing/index
     migration/index
+    api_reference
