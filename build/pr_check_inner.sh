@@ -2,10 +2,12 @@
 
 set -exv
 
-curl -LO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_linux_amd64.tar.gz
+# copy the workspace from the Jenkins job off the ro volume into this container
+mkdir /container_workspace
+cp -r /workspace/. /container_workspace
+cd /container_workspace
 
-tar xzvf kubebuilder_2.3.1_linux_amd64.tar.gz
-export KUBEBUILDER_ASSETS=$PWD/kubebuilder_2.3.1_linux_amd64/bin
+export KUBEBUILDER_ASSETS=/container_workspace/kubebuilder_2.3.1_linux_amd64/bin
 
 (
   cd "$(mktemp -d)" &&
@@ -19,14 +21,10 @@ export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 ls -la /dev/tty
 
-cd /srcroot
-
 chmod 600 minikube-ssh-ident
 
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube delete"
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube start"
-
-ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube kubectl -- apply -f prommie-operator-bundle.yaml"
 
 export MINIKUBE_IP=`ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip"`
 
@@ -62,16 +60,41 @@ export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
-$KUBEBUILDER_ASSETS/kubectl config use-context remote-minikube
+kubectl config use-context remote-minikube
+kubectl get pods --all-namespaces=true
 
-$KUBEBUILDER_ASSETS/kubectl krew install kuttl
-$KUBEBUILDER_ASSETS/kubectl get pods --all-namespaces=true
+source build/kube_setup.sh
 
 export IMAGE_TAG=`git rev-parse --short HEAD`
-
-$KUBEBUILDER_ASSETS/kubectl apply -f build/skuttl-namespace.yaml
-$KUBEBUILDER_ASSETS/kubectl apply -f build/skuttl-perms.yaml
-
 IMG=$IMAGE_NAME:$IMAGE_TAG make deploy
 
-source build/run_kuttl.sh
+# Wait for operator deployment...
+kubectl rollout status deployment clowder-controller-manager -n clowder-system
+
+kubectl krew install kuttl
+
+mkdir artifacts
+
+set +e
+source build/run_kuttl.sh --report xml
+KUTTL_RESULT=$?
+mv kuttl-test.xml artifacts/junit-kuttl.xml
+
+CLOWDER_PODS=$(kubectl get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}')
+for pod in $CLOWDER_PODS; do
+    kubectl logs $pod -n clowder-system > artifacts/$pod.log
+done
+
+STRIMZI_PODS=$(kubectl get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
+for pod in $STRIMZI_PODS; do
+    kubectl logs $pod -n strimzi > artifacts/$pod.log
+done
+set -e
+
+echo "Dumping logs to console ..."
+for file in artifacts/*.log; do
+    echo "############## $file ##############"
+    cat "$file"
+done
+
+exit $KUTTL_RESULT

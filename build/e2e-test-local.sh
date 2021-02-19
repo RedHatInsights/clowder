@@ -1,12 +1,8 @@
 #!/bin/bash
 set -e
 
-kubectl apply -f build/skuttl-namespace.yaml
-kubectl apply -f build/skuttl-perms.yaml
-kubectl apply -f build/prommie-operator-bundle.yaml
-
+bash build/kube_setup.sh
 make deploy-minikube
-
-bash build/run_kuttl.sh
+bash build/run_kuttl.sh $@  # pass any cli options to kuttl, such as "--test <test name>"
 
 #operator-sdk scorecard bundle --selector=suite=kuttlsuite --verbose --namespace=skuttl-test --service-account kuttl -w 300s

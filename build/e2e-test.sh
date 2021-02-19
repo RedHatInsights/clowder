@@ -3,9 +3,7 @@ set -e
 
 export IMAGE_TAG=`git rev-parse --short HEAD`
 
-kubectl apply -f build/skuttl-namespace.yaml
-kubectl apply -f build/skuttl-perms.yaml
-kubectl apply -f build/prommie-operator-bundle.yaml
+bash build/kube_setup.sh
 
 export IMG=$IMAGE_NAME:$IMAGE_TAG
 
@@ -14,6 +12,6 @@ make docker-build-no-test
 make docker-push
 make deploy
 
-bash build/run_kuttl.sh
+bash build/run_kuttl.sh $@  # pass any cli options to kuttl, such as "--test <test name>"
 
 #operator-sdk scorecard bundle --selector=suite=kuttlsuite --verbose --namespace=skuttl-test --service-account kuttl -w 300s

@@ -36,3 +36,6 @@ manifest.yaml
 
 .venv
 _build
+
+# Downloaded operator bundles
+build/operator_bundles
