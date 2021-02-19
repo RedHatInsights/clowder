@@ -2325,6 +2325,10 @@ spec:
                   via external means, or a CronJob, the difference is the presence
                   of the schedule field.
                 properties:
+                  concurrencyPolicy:
+                    description: Defines the concurrency policy for the CronJob, defaults
+                      to Forbid
+                    type: string
                   name:
                     description: Name defines identifier of the Job. This name will
                       be used to name the CronJob resource, the container will be
@@ -4486,6 +4490,11 @@ spec:
                   schedule:
                     description: Defines the schedule for the job to run
                     type: string
+                  startingDeadlineSeconds:
+                    description: Defines the StartingDeadlineSeconds for the CronJob,
+                      defaults to 0
+                    format: int64
+                    type: integer
                 required:
                 - name
                 - podSpec

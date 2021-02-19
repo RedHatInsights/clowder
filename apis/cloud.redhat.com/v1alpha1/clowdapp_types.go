@@ -20,6 +20,7 @@ import (
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	batch "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -59,8 +60,8 @@ type DatabaseSpec struct {
 	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
 }
 
-// Job defines either a Job to be used in creating a Job via external means, or
-// a CronJob, the difference is the presence of the schedule field.
+// Job defines a CronJob as Schedule is required. In the future omitting the
+// Schedule field will allow support for a standard Job resource.
 type Job struct {
 	// Name defines identifier of the Job. This name will be used to name the
 	// CronJob resource, the container will be name identically.
@@ -74,6 +75,12 @@ type Job struct {
 
 	// Defines the restart policy for the CronJob, defaults to never
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
+
+	// Defines the concurrency policy for the CronJob, defaults to Allow
+	ConcurrencyPolicy batch.ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
+
+	// Defines the StartingDeadlineSeconds for the CronJob
+	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
 }
 
 // WebDeprecated defines a boolean flag to help distinguish from the newer WebServices
