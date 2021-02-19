@@ -186,6 +186,11 @@ func Int32Ptr(n int) *int32 {
 	return &t
 }
 
+// Int64Ptr returns a pointer to an int64
+func Int64Ptr(n int64) *int64 {
+	return &n
+}
+
 // PointTrue returns a pointer to True
 func PointTrue() *bool {
 	t := true

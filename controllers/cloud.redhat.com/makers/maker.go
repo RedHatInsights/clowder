@@ -245,6 +245,16 @@ func initJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, nn
 	cj.Spec.JobTemplate.ObjectMeta.Labels = labels
 	cj.Spec.JobTemplate.Spec.Template.ObjectMeta.Labels = labels
 
+	if job.ConcurrencyPolicy == "" {
+		cj.Spec.ConcurrencyPolicy = batch.AllowConcurrent
+	} else {
+		cj.Spec.ConcurrencyPolicy = job.ConcurrencyPolicy
+	}
+
+	if job.StartingDeadlineSeconds != nil {
+		cj.Spec.StartingDeadlineSeconds = job.StartingDeadlineSeconds
+	}
+
 	if job.RestartPolicy == "" {
 		cj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 	} else {

@@ -24,6 +24,7 @@ metadata:
   name: puptoo-job
   namespace: test-cron-job
 spec:
+  concurrencyPolicy: Allow
   jobTemplate:
     spec:
       template:
