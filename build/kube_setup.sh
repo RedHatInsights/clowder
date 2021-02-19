@@ -138,7 +138,7 @@ function install_prometheus_operator {
 
 
 install_strimzi_operator
-install_prometheus_operator
+#install_prometheus_operator
 
 FAILURES=0
 if [ ${#BG_PIDS[@]} -gt 0 ]; then
