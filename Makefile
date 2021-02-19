@@ -67,8 +67,7 @@ deploy: manifests kustomize
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 release: manifests kustomize controller-gen
-	cat build/prommie-operator-bundle.yaml > manifest.yaml
-	cat config/crd/bases/cloud.redhat.com_clowdapps.yaml >> manifest.yaml
+	cat config/crd/bases/cloud.redhat.com_clowdapps.yaml > manifest.yaml
 	cat config/crd/bases/cloud.redhat.com_clowdenvironments.yaml >> manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd ../..
