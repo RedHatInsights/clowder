@@ -216,6 +216,12 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 		Namespace: m.Request.Namespace,
 	}
 
+	// Since pod templates common between cron and oneshot jobs
+	// we will build the pod template and then apply the
+	// Job or CronJob specs after
+	pt := core.PodTemplateSpec{}
+	buildPodTemplate(m.App, m.Env, &pt, nn, job, hash)
+
 	if job.Schedule != "" {
 
 		c := batch.CronJob{}
@@ -227,7 +233,7 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 			return err
 		}
 
-		applyCronJob(m.App, m.Env, &c, nn, job, hash)
+		applyCronJob(m.App, m.Env, &c, &pt, nn, job, hash)
 
 		if err := update.Apply(m.Ctx, m.Client, &c); err != nil {
 			return err
@@ -235,17 +241,9 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 	} else {
 
 		j := batchv1.Job{}
+		applyOneShotJob(m.App, m.Env, &j, &pt, nn, job, hash)
 
-		err := m.Client.Get(m.Ctx, nn, &j)
-
-		update, err := utils.UpdateOrErr(err)
-		if err != nil {
-			return err
-		}
-
-		applyOneShotJob(m.App, m.Env, &j, nn, job, hash)
-
-		if err := update.Apply(m.Ctx, m.Client, &j); err != nil {
+		if err := m.Client.Create(m.Ctx, &j); err != nil {
 			return err
 		}
 	}
@@ -253,17 +251,92 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 	return nil
 }
 
-func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, nn types.NamespacedName, job crd.Job, hash string) {
+func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.PodTemplateSpec, nn types.NamespacedName, job crd.Job, hash string) {
+	labels := app.GetLabels()
+	labels["pod"] = nn.Name
+
+	pod := job.PodSpec
+
+	pt.ObjectMeta.Labels = labels
+
+	pt.Spec.ImagePullSecrets = []core.LocalObjectReference{
+		{Name: "quay-cloudservices-pull"},
+	}
+
+	envvar := pod.Env
+	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+
+	var livenessProbe core.Probe
+	var readinessProbe core.Probe
+
+	if pod.LivenessProbe != nil {
+		livenessProbe = *pod.LivenessProbe
+	} else {
+		livenessProbe = core.Probe{}
+	}
+	if pod.ReadinessProbe != nil {
+		readinessProbe = *pod.ReadinessProbe
+	} else {
+		readinessProbe = core.Probe{}
+	}
+
+	c := core.Container{
+		Name:         nn.Name,
+		Image:        pod.Image,
+		Command:      pod.Command,
+		Args:         pod.Args,
+		Env:          envvar,
+		Resources:    processResources(&pod, env),
+		VolumeMounts: pod.VolumeMounts,
+		Ports: []core.ContainerPort{{
+			Name:          "metrics",
+			ContainerPort: env.Spec.Providers.Metrics.Port,
+		}},
+		ImagePullPolicy: core.PullIfNotPresent,
+	}
+
+	if (core.Probe{}) != livenessProbe {
+		c.LivenessProbe = &livenessProbe
+	}
+	if (core.Probe{}) != readinessProbe {
+		c.ReadinessProbe = &readinessProbe
+	}
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
+
+	pt.Spec.Containers = []core.Container{c}
+
+	pt.Spec.InitContainers = processInitContainers(nn, &c, pod.InitContainers)
+
+	pt.Spec.Volumes = pod.Volumes
+	pt.Spec.Volumes = append(pt.Spec.Volumes, core.Volume{
+		Name: "config-secret",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: app.ObjectMeta.Name,
+			},
+		},
+	})
+
+	applyPodAntiAffinity(pt)
+
+	annotations := make(map[string]string)
+	annotations["configHash"] = hash
+	pt.SetAnnotations(annotations)
+}
+
+func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, pt *core.PodTemplateSpec, nn types.NamespacedName, job crd.Job, hash string) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
 
-	pod := job.PodSpec
-
 	cj.Spec.Schedule = job.Schedule
 
 	cj.Spec.JobTemplate.ObjectMeta.Labels = labels
-	cj.Spec.JobTemplate.Spec.Template.ObjectMeta.Labels = labels
+	cj.Spec.JobTemplate.Spec.Template = *pt
 
 	if job.ConcurrencyPolicy == "" {
 		cj.Spec.ConcurrencyPolicy = batch.AllowConcurrent
@@ -281,68 +354,6 @@ func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJo
 		cj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
 	}
 
-	cj.Spec.JobTemplate.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
-		{Name: "quay-cloudservices-pull"},
-	}
-
-	envvar := pod.Env
-	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
-
-	var livenessProbe core.Probe
-	var readinessProbe core.Probe
-
-	if pod.LivenessProbe != nil {
-		livenessProbe = *pod.LivenessProbe
-	} else {
-		livenessProbe = core.Probe{}
-	}
-	if pod.ReadinessProbe != nil {
-		readinessProbe = *pod.ReadinessProbe
-	} else {
-		readinessProbe = core.Probe{}
-	}
-
-	c := core.Container{
-		Name:         nn.Name,
-		Image:        pod.Image,
-		Command:      pod.Command,
-		Args:         pod.Args,
-		Env:          envvar,
-		Resources:    processResources(&pod, env),
-		VolumeMounts: pod.VolumeMounts,
-		Ports: []core.ContainerPort{{
-			Name:          "metrics",
-			ContainerPort: env.Spec.Providers.Metrics.Port,
-		}},
-		ImagePullPolicy: core.PullIfNotPresent,
-	}
-
-	if (core.Probe{}) != livenessProbe {
-		c.LivenessProbe = &livenessProbe
-	}
-	if (core.Probe{}) != readinessProbe {
-		c.ReadinessProbe = &readinessProbe
-	}
-
-	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
-		Name:      "config-secret",
-		MountPath: "/cdapp/",
-	})
-
-	cj.Spec.JobTemplate.Spec.Template.Spec.Containers = []core.Container{c}
-
-	cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = processInitContainers(nn, &c, pod.InitContainers)
-
-	cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = pod.Volumes
-	cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
-		Name: "config-secret",
-		VolumeSource: core.VolumeSource{
-			Secret: &core.SecretVolumeSource{
-				SecretName: app.ObjectMeta.Name,
-			},
-		},
-	})
-
 	applyPodAntiAffinity(&cj.Spec.JobTemplate.Spec.Template)
 
 	annotations := make(map[string]string)
@@ -350,90 +361,20 @@ func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJo
 	cj.Spec.JobTemplate.Spec.Template.SetAnnotations(annotations)
 }
 
-func applyOneShotJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, j *batchv1.Job, nn types.NamespacedName, job crd.Job, hash string) {
+func applyOneShotJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, j *batchv1.Job, pt *core.PodTemplateSpec, nn types.NamespacedName, job crd.Job, hash string) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
-	pod := job.PodSpec
-
-	// https://kubernetes.io/docs/concepts/workloads/controllers/job/#specifying-your-own-pod-selector
-	// This is dumb, stupid, and bad. Jobs will not apply due to an error
-	// with the UID of the Job Controller. Needs more research.
-	var manual bool = true
-	j.Spec.Selector = &metav1.LabelSelector{}
-	j.Spec.ManualSelector = &manual
-
-	j.ObjectMeta.Labels = labels
+	j.Spec.Template = *pt
 	j.Spec.Template.ObjectMeta.Labels = labels
+	j.ObjectMeta.Labels = labels
 
 	if job.RestartPolicy == "" {
 		j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 	} else {
 		j.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
 	}
-
-	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
-		{Name: "quay-cloudservices-pull"},
-	}
-
-	envvar := pod.Env
-	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
-
-	var livenessProbe core.Probe
-	var readinessProbe core.Probe
-
-	if pod.LivenessProbe != nil {
-		livenessProbe = *pod.LivenessProbe
-	} else {
-		livenessProbe = core.Probe{}
-	}
-	if pod.ReadinessProbe != nil {
-		readinessProbe = *pod.ReadinessProbe
-	} else {
-		readinessProbe = core.Probe{}
-	}
-
-	c := core.Container{
-		Name:         nn.Name,
-		Image:        pod.Image,
-		Command:      pod.Command,
-		Args:         pod.Args,
-		Env:          envvar,
-		Resources:    processResources(&pod, env),
-		VolumeMounts: pod.VolumeMounts,
-		Ports: []core.ContainerPort{{
-			Name:          "metrics",
-			ContainerPort: env.Spec.Providers.Metrics.Port,
-		}},
-		ImagePullPolicy: core.PullIfNotPresent,
-	}
-
-	if (core.Probe{}) != livenessProbe {
-		c.LivenessProbe = &livenessProbe
-	}
-	if (core.Probe{}) != readinessProbe {
-		c.ReadinessProbe = &readinessProbe
-	}
-
-	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
-		Name:      "config-secret",
-		MountPath: "/cdapp/",
-	})
-
-	j.Spec.Template.Spec.Containers = []core.Container{c}
-
-	j.Spec.Template.Spec.InitContainers = processInitContainers(nn, &c, pod.InitContainers)
-
-	j.Spec.Template.Spec.Volumes = pod.Volumes
-	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
-		Name: "config-secret",
-		VolumeSource: core.VolumeSource{
-			Secret: &core.SecretVolumeSource{
-				SecretName: app.ObjectMeta.Name,
-			},
-		},
-	})
 
 	applyPodAntiAffinity(&j.Spec.Template)
 
