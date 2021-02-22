@@ -504,15 +504,14 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
-	} else if deployment.Web {
+	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		livenessProbe = baseProbe
 	}
 	if pod.ReadinessProbe != nil {
 		readinessProbe = *pod.ReadinessProbe
-	} else {
+	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		readinessProbe = baseProbe
 		readinessProbe.InitialDelaySeconds = 45
-
 	}
 
 	c := core.Container{
