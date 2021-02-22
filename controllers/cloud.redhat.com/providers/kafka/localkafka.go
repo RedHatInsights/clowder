@@ -180,12 +180,12 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	livenessProbe := core.Probe{
 		Handler:             probeHandler,
-		InitialDelaySeconds: 15,
+		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
-		InitialDelaySeconds: 45,
+		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 	}
 
@@ -316,12 +316,12 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 
 	livenessProbe := core.Probe{
 		Handler:             probeHandler,
-		InitialDelaySeconds: 15,
+		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
-		InitialDelaySeconds: 45,
+		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 	}
 
