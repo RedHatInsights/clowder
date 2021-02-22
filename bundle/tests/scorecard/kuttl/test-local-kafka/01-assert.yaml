@@ -79,7 +79,7 @@ spec:
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
-          initialDelaySeconds: 15
+          initialDelaySeconds: 10
           periodSeconds: 10
           successThreshold: 1
           tcpSocket:
@@ -92,7 +92,7 @@ spec:
           protocol: TCP
         readinessProbe:
           failureThreshold: 3
-          initialDelaySeconds: 45
+          initialDelaySeconds: 15
           periodSeconds: 10
           successThreshold: 1
           tcpSocket:
@@ -215,7 +215,7 @@ spec:
             - grep
             - imok
           failureThreshold: 3
-          initialDelaySeconds: 15
+          initialDelaySeconds: 10
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 2
@@ -243,7 +243,7 @@ spec:
             - grep
             - imok
           failureThreshold: 3
-          initialDelaySeconds: 45
+          initialDelaySeconds: 15
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 2
