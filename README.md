@@ -115,7 +115,7 @@ of the documentation.
 
 If you want to run a version of Clowder other than the released version there
 are a few prerequisites you will need. To learn about developing Clowder please
-visit the [developing clowder](page) page for more detailed instructions.
+visit the [developing clowder](docs/developer-guide.md) page for more detailed instructions.
 
 ## History
 
