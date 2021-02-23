@@ -123,7 +123,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	if env.Status.Ready == false {
+	if env.IsReady() == false {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
 		r.Log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
 		return ctrl.Result{Requeue: true}, err

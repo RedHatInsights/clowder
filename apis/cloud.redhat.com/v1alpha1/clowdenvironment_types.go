@@ -371,3 +371,8 @@ func (i *ClowdEnvironment) GetDeploymentStatus() *common.DeploymentStatus {
 func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
 }
+
+// isReady returns true when all the ManagedDeployments are Ready
+func (i *ClowdEnvironment) IsReady() bool {
+	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+}
