@@ -1,7 +1,9 @@
 package kafka
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -61,7 +63,14 @@ func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			},
 		)
 
-		conn, err := kafka.DialLeader(k.Ctx, "tcp", host, topicName, 0)
+		d := time.Now().Add(10 * time.Second)
+		ctx, cancel := context.WithDeadline(k.Ctx, d)
+
+		defer cancel()
+		// If Kafka server gets screwed up - we wait a stupidly long time for it to resolve the
+		// issue. This will happen if kafka or zookeeper is restarted. This context wait deadline
+		// prevents us waiting "minutes" and holding up the process of other apps.
+		conn, err := kafka.DialLeader(ctx, "tcp", host, topicName, 0)
 		if err != nil {
 			return err
 		}
