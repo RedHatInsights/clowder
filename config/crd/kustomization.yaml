@@ -4,7 +4,7 @@
 resources:
 - bases/cloud.redhat.com_clowdapps.yaml
 - bases/cloud.redhat.com_clowdenvironments.yaml
-- bases/cloud.redhat.com.cloud.redhat.com_jobinvocations.yaml
+- bases/cloud.redhat.com_jobinvocations.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

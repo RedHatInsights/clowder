@@ -13,6 +13,13 @@ Jobs that need to run as soon as your deployment is ready are marked by the
 ``oneshot`` field. These jobs run once and are finished forever.
 You cannot have a ``schedule`` and ``oneshot`` enabled. 
 
+Jobs that run on demand are marked by the ``onDemand`` field. 
+
+Invoking Jobs
+-------------
+Jobs can be triggered by applying a ``JobInvocation`` CRD to the cluster. 
+Clowder will read the resource, run the jobs specified, and return the 
+results in the status
 
 Triggering Jobs via App-interface
 ---------------------------------

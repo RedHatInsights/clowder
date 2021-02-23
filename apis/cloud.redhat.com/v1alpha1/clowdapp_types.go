@@ -73,6 +73,9 @@ type Job struct {
 	// A job that is a OneShot is run on apply
 	OneShot bool `json:"oneshot,omitempty"`
 
+	// A job that runs when a JobInvocation calls for it
+	OnDemand bool `json:"onDemand,omitempty"`
+
 	// PodSpec defines a container running inside the CronJob.
 	PodSpec PodSpec `json:"podSpec"`
 
@@ -303,6 +306,7 @@ type ClowdAppStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
 	Deployments common.DeploymentStatus `json:"deployments"`
+	Ready       bool                    `json:"ready"`
 }
 
 // +kubebuilder:object:root=true

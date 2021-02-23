@@ -234,14 +234,6 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 		if err := update.Apply(m.Ctx, m.Client, &c); err != nil {
 			return err
 		}
-	} else {
-
-		j := batchv1.Job{}
-		applyOneShotJob(m.App, m.Env, &j, &pt, nn, job, hash)
-
-		if err := m.Client.Create(m.Ctx, &j); err != nil {
-			return err
-		}
 	}
 
 	return nil
