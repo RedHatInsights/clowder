@@ -40,6 +40,18 @@ rules:
   - batch
   resources:
   - cronjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
   - jobs
   verbs:
   - create
@@ -85,6 +97,26 @@ rules:
   - cloud.redhat.com
   resources:
   - clowdenvironments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - jobinvocations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - jobinvocations/status
   verbs:
   - get
   - patch

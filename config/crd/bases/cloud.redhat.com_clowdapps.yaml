@@ -2334,6 +2334,9 @@ spec:
                       be used to name the CronJob resource, the container will be
                       name identically.
                     type: string
+                  onDemand:
+                    description: A job that runs when a JobInvocation calls for it
+                    type: boolean
                   oneshot:
                     description: A job that is a OneShot is run on apply
                     type: boolean
@@ -6641,8 +6644,11 @@ spec:
               - managedDeployments
               - readyDeployments
               type: object
+            ready:
+              type: boolean
           required:
           - deployments
+          - ready
           type: object
       type: object
   version: v1alpha1

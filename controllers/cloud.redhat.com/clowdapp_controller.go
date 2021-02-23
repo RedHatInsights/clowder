@@ -179,6 +179,12 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	SetDeploymentStatus(ctx, &proxyClient, &app)
+
+	app.Status.Ready = false
+	if app.Status.Deployments.ManagedDeployments == app.Status.Deployments.ReadyDeployments {
+		app.Status.Ready = true
+	}
+
 	err = proxyClient.Status().Update(ctx, &app)
 	if err != nil {
 		return ctrl.Result{}, err

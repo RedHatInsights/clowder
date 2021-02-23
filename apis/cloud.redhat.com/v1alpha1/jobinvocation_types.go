@@ -22,17 +22,23 @@ import (
 
 // JobInvocationSpec defines the desired state of JobInvocation
 type JobInvocationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Name of the ClowdApp who owns the jobs
+	AppName string `json:"appName"`
 
-	// Foo is an example field of JobInvocation. Edit JobInvocation_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Jobs is the set of jobs to be run by the invocation
+	Jobs []string `json:"jobs"`
+}
+
+type JobResult struct {
+	Name      string `json:"name"`
+	Completed bool   `json:"completed"`
+	Attempts  int    `json:"attempts"`
+	StdOut    string `json:"stdout"`
 }
 
 // JobInvocationStatus defines the observed state of JobInvocation
 type JobInvocationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Results []JobResult `json:"results"`
 }
 
 // +kubebuilder:object:root=true
