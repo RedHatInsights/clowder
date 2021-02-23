@@ -74,7 +74,7 @@ type Job struct {
 	OneShot bool `json:"oneshot,omitempty"`
 
 	// A job that runs when a JobInvocation calls for it
-	OnDemand bool `json:"onDemand,omitempty"`
+	OnRequest bool `json:"onRequest,omitempty"`
 
 	// PodSpec defines a container running inside the CronJob.
 	PodSpec PodSpec `json:"podSpec"`

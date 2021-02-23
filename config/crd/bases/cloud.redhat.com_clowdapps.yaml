@@ -2334,7 +2334,7 @@ spec:
                       be used to name the CronJob resource, the container will be
                       name identically.
                     type: string
-                  onDemand:
+                  onRequest:
                     description: A job that runs when a JobInvocation calls for it
                     type: boolean
                   oneshot:
