@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: jobinvocations.cloud.redhat.com
+  name: clowdjobinvocations.cloud.redhat.com
 spec:
   group: cloud.redhat.com
   names:
-    kind: JobInvocation
-    listKind: JobInvocationList
-    plural: jobinvocations
-    singular: jobinvocation
+    kind: ClowdJobInvocation
+    listKind: ClowdJobInvocationList
+    plural: clowdjobinvocations
+    singular: clowdjobinvocation
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: JobInvocation is the Schema for the jobinvocations API
+      description: ClowdJobInvocation is the Schema for the jobinvocations API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,7 +34,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: JobInvocationSpec defines the desired state of JobInvocation
+          description: ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
           properties:
             appName:
               description: Name of the ClowdApp who owns the jobs
@@ -49,7 +49,7 @@ spec:
           - jobs
           type: object
         status:
-          description: JobInvocationStatus defines the observed state of JobInvocation
+          description: ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
           properties:
             results:
               items:

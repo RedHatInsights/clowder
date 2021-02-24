@@ -1,7 +1,0 @@
-apiVersion: cloud.redhat.com/v1alpha1
-kind: JobInvocation
-metadata:
-  name: jobinvocation-sample
-spec:
-  # Add fields here
-  foo: bar

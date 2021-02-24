@@ -20,8 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// JobInvocationSpec defines the desired state of JobInvocation
-type JobInvocationSpec struct {
+// ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
+type ClowdJobInvocationSpec struct {
 	// Name of the ClowdApp who owns the jobs
 	AppName string `json:"appName"`
 
@@ -36,32 +36,32 @@ type JobResult struct {
 	StdOut    string `json:"stdout"`
 }
 
-// JobInvocationStatus defines the observed state of JobInvocation
-type JobInvocationStatus struct {
+// ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
+type ClowdJobInvocationStatus struct {
 	Results []JobResult `json:"results"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// JobInvocation is the Schema for the jobinvocations API
-type JobInvocation struct {
+// ClowdJobInvocation is the Schema for the jobinvocations API
+type ClowdJobInvocation struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   JobInvocationSpec   `json:"spec,omitempty"`
-	Status JobInvocationStatus `json:"status,omitempty"`
+	Spec   ClowdJobInvocationSpec   `json:"spec,omitempty"`
+	Status ClowdJobInvocationStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// JobInvocationList contains a list of JobInvocation
-type JobInvocationList struct {
+// ClowdJobInvocationList contains a list of ClowdJobInvocation
+type ClowdJobInvocationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []JobInvocation `json:"items"`
+	Items           []ClowdJobInvocation `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&JobInvocation{}, &JobInvocationList{})
+	SchemeBuilder.Register(&ClowdJobInvocation{}, &ClowdJobInvocationList{})
 }
