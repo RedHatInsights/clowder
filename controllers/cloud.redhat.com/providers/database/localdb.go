@@ -34,46 +34,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	}
 
 	if app.Spec.Database.SharedDBAppName != "" {
-		err := checkDependency(app)
-
-		if err != nil {
-			return err
-		}
-
-		dbCfg := config.DatabaseConfig{}
-
-		refApp, err := crd.GetAppForDBInSameEnv(db.Client, db.Ctx, app)
-
-		if err != nil {
-			return err
-		}
-
-		secret := core.Secret{}
-
-		inn := types.NamespacedName{
-			Name:      fmt.Sprintf("%s-db", refApp.Name),
-			Namespace: refApp.Namespace,
-		}
-
-		err = db.Client.Get(db.Ctx, inn, &secret)
-
-		if err != nil {
-			return errors.Wrap("Couldn't set/get secret", err)
-		}
-
-		secMap := make(map[string]string)
-
-		for k, v := range secret.Data {
-			(secMap)[k] = string(v)
-		}
-
-		dbCfg.Populate(&secMap)
-		dbCfg.AdminUsername = "postgres"
-
-		db.Config = dbCfg
-		c.Database = &db.Config
-
-		return nil
+		return db.processSharedDB(app, c)
 	}
 
 	nn := types.NamespacedName{
@@ -163,5 +124,48 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 	}
 	c.Database = &db.Config
+	return nil
+}
+
+func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfig) error {
+	err := checkDependency(app)
+
+	if err != nil {
+		return err
+	}
+
+	dbCfg := config.DatabaseConfig{}
+
+	refApp, err := crd.GetAppForDBInSameEnv(db.Client, db.Ctx, app)
+
+	if err != nil {
+		return err
+	}
+
+	secret := core.Secret{}
+
+	inn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-db", refApp.Name),
+		Namespace: refApp.Namespace,
+	}
+
+	err = db.Client.Get(db.Ctx, inn, &secret)
+
+	if err != nil {
+		return errors.Wrap("Couldn't set/get secret", err)
+	}
+
+	secMap := make(map[string]string)
+
+	for k, v := range secret.Data {
+		(secMap)[k] = string(v)
+	}
+
+	dbCfg.Populate(&secMap)
+	dbCfg.AdminUsername = "postgres"
+
+	db.Config = dbCfg
+	c.Database = &db.Config
+
 	return nil
 }
