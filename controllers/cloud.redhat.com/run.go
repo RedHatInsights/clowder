@@ -57,7 +57,7 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
 		os.Exit(1)
 	}
-	if err = (&JobInvocationReconciler{
+	if err = (&ClowdJobInvocationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("JobInvocation"),
 		Scheme: mgr.GetScheme(),

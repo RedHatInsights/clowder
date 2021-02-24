@@ -1,5 +1,6 @@
 domain: cloud.redhat.com
 layout: go.kubebuilder.io/v2
+multigroup: true
 projectName: clowder
 repo: cloud.redhat.com/clowder/v2
 resources:
@@ -10,9 +11,8 @@ resources:
   kind: ClowdEnvironment
   version: v1alpha1
 - group: cloud.redhat.com
-  kind: JobInvocation
+  kind: ClowdJobInvocation
   version: v1alpha1
 version: 3-alpha
-multigroup: true
 plugins:
   go.sdk.operatorframework.io/v2-alpha: {}

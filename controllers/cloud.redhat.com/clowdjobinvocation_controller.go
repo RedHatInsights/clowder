@@ -36,8 +36,8 @@ import (
 	"k8s.io/client-go/tools/record"
 )
 
-// JobInvocationReconciler reconciles a JobInvocation object
-type JobInvocationReconciler struct {
+// ClowdJobInvocationReconciler reconciles a ClowdJobInvocation object
+type ClowdJobInvocationReconciler struct {
 	client.Client
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
@@ -52,13 +52,13 @@ type JobInvocationReconciler struct {
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;create;update;watch;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 
-func (r *JobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
 	log := r.Log.WithValues("jobinvocation", qualifiedName)
 	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	//proxyClient := ProxyClient{Ctx: ctx, Client: r.Client}
-	jinv := crd.JobInvocation{}
+	jinv := crd.ClowdJobInvocation{}
 	err := r.Client.Get(ctx, req.NamespacedName, &jinv)
 
 	if err != nil {
@@ -70,7 +70,7 @@ func (r *JobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 		return ctrl.Result{}, err
 	}
 
-	r.Log.Info("Reconciliation started", "JobInvocation", fmt.Sprintf("%s:%s", jinv.Namespace, jinv.Name))
+	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", jinv.Namespace, jinv.Name))
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &jinv)
 
 	// Get the ClowdApp
@@ -116,7 +116,7 @@ func (r *JobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 	return ctrl.Result{}, nil
 }
 
-func (r *JobInvocationReconciler) InvokeJob(job crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, ctx context.Context) error {
+func (r *ClowdJobInvocationReconciler) InvokeJob(job crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, ctx context.Context) error {
 	now := time.Now()
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%v-%v-%v", app.Name, job.Name, now.Unix()),
@@ -232,9 +232,9 @@ func matchAndReturnJob(jobName string, app *crd.ClowdApp) (crd.Job, error) {
 
 }
 
-func (r *JobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("jobinvocation")
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&crd.JobInvocation{}).
+		For(&crd.ClowdJobInvocation{}).
 		Complete(r)
 }

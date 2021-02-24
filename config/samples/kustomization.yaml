@@ -2,4 +2,5 @@
 resources:
 - cloud.redhat.com_v1alpha1_clowdapp.yaml
 - cloud.redhat.com_v1alpha1_clowdenvironment.yaml
+- cloud.redhat.com_v1alpha1_clowdjobinvocation.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

@@ -1,0 +1,7 @@
+apiVersion: cloud.redhat.com.cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: clowdjobinvocation-sample
+spec:
+  # Add fields here
+  foo: bar
