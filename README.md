@@ -83,6 +83,14 @@ initiated with the following options:
   minikube start --cpus 4 --disk-size 36GB --memory 8000MB
   ```
 
+  To persist these changes for every minikube invocation, run the following:
+  ```shell
+  minikube config set cpus 4
+  minikube config set memory 8000
+  minikube config set disk-size 36GB
+  minikube config set vm-driver kvm2
+  ```
+
 Clowder can then be installed by visiting the 
 [latest release](https://github.com/RedHatInsights/clowder/releases/latest) 
 page copying the link to the manifest and running something similar to that
