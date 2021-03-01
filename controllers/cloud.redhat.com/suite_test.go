@@ -432,6 +432,12 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
+	kafkaValidation(t, env, app, jsonContent, clowdAppNN)
+
+	clowdWatchValidation(t, jsonContent, cwData)
+}
+
+func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp, jsonContent *config.AppConfig, clowdAppNN types.NamespacedName) {
 	// Kafka validation
 
 	topicWithPartitionsReplicasName := "inventory-test-default"
@@ -454,7 +460,7 @@ func TestCreateClowdApp(t *testing.T) {
 
 		actual = jsonContent.Kafka.Topics[i].Name
 		expected = fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, clowdAppNN.Name, clowdAppNN.Namespace)
-		if jsonContent.Kafka.Topics[i].Name != fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, clowdAppNN.Name, clowdAppNN.Namespace) {
+		if actual != expected {
 			t.Errorf("Wrong generated topic name set on app's config; got %s, want %s", actual, expected)
 		}
 	}
@@ -468,7 +474,7 @@ func TestCreateClowdApp(t *testing.T) {
 		fetchedTopic := strimzi.KafkaTopic{}
 
 		// fetch topic, make sure it was provisioned
-		if err = fetchWithDefaults(topic, &fetchedTopic); err != nil {
+		if err := fetchWithDefaults(topic, &fetchedTopic); err != nil {
 			t.Fatalf("error fetching topic '%s': %v", topic.Name, err)
 		}
 		if fetchedTopic.Spec == nil {
@@ -493,7 +499,9 @@ func TestCreateClowdApp(t *testing.T) {
 			t.Errorf("Bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Partitions, expectedPartitions)
 		}
 	}
+}
 
+func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData map[string]string) {
 	// Cloudwatch validation
 	cwConfigVals := map[string]string{
 		"aws_access_key_id":     jsonContent.Logging.Cloudwatch.AccessKeyId,
