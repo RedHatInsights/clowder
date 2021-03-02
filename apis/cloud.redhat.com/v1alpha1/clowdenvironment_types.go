@@ -284,11 +284,13 @@ type ClowdEnvironmentStatus struct {
 	Apps            []AppInfo               `json:"apps,omitempty"`
 }
 
+// AppInfo details information about a specific app.
 type AppInfo struct {
 	Name        string           `json:"name"`
 	Deployments []DeploymentInfo `json:"deployments"`
 }
 
+// DeploymentInfo defailts information about a specific deployment.
 type DeploymentInfo struct {
 	Name     string `json:"name"`
 	Hostname string `json:"hostname,omitempty"`

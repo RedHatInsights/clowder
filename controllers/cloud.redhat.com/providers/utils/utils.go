@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+// MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string) {
 	labels := baseResource.GetLabels()
 	labels["service"] = "db"
@@ -100,6 +101,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 }
 
+// MakeLocalDBService populates the given service object with the local DB struct.
 func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource obj.ClowdObject) {
 	servicePorts := []core.ServicePort{{
 		Name:     "database",
@@ -109,6 +111,7 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 	utils.MakeService(s, nn, p.Labels{"service": "db", "app": baseResource.GetClowdName()}, servicePorts, baseResource)
 }
 
+// MakeLocalDBPVC populates the given PVC object with the local DB struct.
 func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject) {
 	utils.MakePVC(pvc, nn, p.Labels{"service": "db", "app": baseResource.GetClowdName()}, "1Gi", baseResource)
 }
