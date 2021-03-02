@@ -130,9 +130,15 @@ func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error 
 	}
 
 	if deployment.WebServices.Private.Enabled {
+
+		privatePort := m.Env.Spec.Providers.Web.PrivatePort
+		if privatePort == 0 {
+			privatePort = 10000
+		}
+
 		webPort := core.ServicePort{
 			Name:        "private",
-			Port:        m.Env.Spec.Providers.Web.PrivatePort,
+			Port:        privatePort,
 			Protocol:    "TCP",
 			AppProtocol: &appProtocol,
 		}
