@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+// Populate sets the database configuration on the object from the passed in map.
 func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	port, _ := strconv.Atoi((*data)["port"])
 	dbc.Hostname = (*data)["hostname"]
@@ -23,6 +24,9 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	dbc.Username = (*data)["username"]
 }
 
+// MakeOrGetSecret tries to get the secret described by nn, if it exists it populates a map with the
+// key/value pairs from the secret. If it doesn't exist the dataInit function is run and the
+// resulting data is returned, as well as the secret being created.
 func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
