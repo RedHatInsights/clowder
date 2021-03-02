@@ -2,6 +2,7 @@
 ![Build Passing](https://img.shields.io/github/workflow/status/RedHatInsights/clowder/Run%20Unit%20Tests)
 ![Downloads](https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg)
 ![Release](https://img.shields.io/github/v/release/RedHatInsights/clowder)
+![Go Report Card](https://goreportcard.com/badge/github.com/RedHatInsights/clowder)
 
 ## What is Clowder?
 
