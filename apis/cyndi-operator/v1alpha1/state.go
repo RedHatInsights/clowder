@@ -8,37 +8,51 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// PipelineState describes the state of the pipeline.
 type PipelineState string
 
 const (
-	STATE_NEW          PipelineState = "NEW"
-	STATE_INITIAL_SYNC PipelineState = "INITIAL_SYNC"
-	STATE_VALID        PipelineState = "VALID"
-	STATE_INVALID      PipelineState = "INVALID"
-	STATE_REMOVED      PipelineState = "REMOVED"
-	STATE_UNKNOWN      PipelineState = "UNKNOWN"
+	// StateNew is the new state of the pipeline.
+	StateNew PipelineState = "NEW"
+
+	// StateInitialSync is the new state of the pipeline.
+	StateInitialSync PipelineState = "INITIAL_SYNC"
+
+	// StateValid is the new state of the pipeline.
+	StateValid PipelineState = "VALID"
+
+	// StateInvalid is the new state of the pipeline.
+	StateInvalid PipelineState = "INVALID"
+
+	// StateRemoved is the new state of the pipeline.
+	StateRemoved PipelineState = "REMOVED"
+
+	// StateUnknown is the new state of the pipeline.
+	StateUnknown PipelineState = "UNKNOWN"
 )
 
 const tablePrefix = "hosts_v"
 const validConditionType = "Valid"
 
+// GetState returns the state of the pipeline.
 func (instance *CyndiPipeline) GetState() PipelineState {
 	switch {
 	case instance.GetDeletionTimestamp() != nil:
-		return STATE_REMOVED
+		return StateRemoved
 	case instance.Status.PipelineVersion == "":
-		return STATE_NEW
+		return StateNew
 	case instance.IsValid():
-		return STATE_VALID
+		return StateValid
 	case instance.Status.InitialSyncInProgress == true:
-		return STATE_INITIAL_SYNC
+		return StateInitialSync
 	case instance.GetValid() == metav1.ConditionFalse:
-		return STATE_INVALID
+		return StateInvalid
 	default:
-		return STATE_UNKNOWN
+		return StateUnknown
 	}
 }
 
+// TransitionToNew transitions a pipeline to a new state.
 func (instance *CyndiPipeline) TransitionToNew() error {
 	instance.ResetValid()
 	instance.Status.InitialSyncInProgress = false
@@ -46,8 +60,9 @@ func (instance *CyndiPipeline) TransitionToNew() error {
 	return nil
 }
 
+// TransitionToInitialSync transitions a pipeline to initial sync state.
 func (instance *CyndiPipeline) TransitionToInitialSync(pipelineVersion string) error {
-	if err := instance.assertState(STATE_INITIAL_SYNC, STATE_INITIAL_SYNC, STATE_NEW); err != nil {
+	if err := instance.assertState(StateInitialSync, StateNew); err != nil {
 		return err
 	}
 
@@ -60,6 +75,7 @@ func (instance *CyndiPipeline) TransitionToInitialSync(pipelineVersion string) e
 	return nil
 }
 
+// SetValid sets the status condition on the piprline.
 func (instance *CyndiPipeline) SetValid(status metav1.ConditionStatus, reason string, message string, hostCount int64) {
 	meta.SetStatusCondition(&instance.Status.Conditions, metav1.Condition{
 		Type:    validConditionType,
@@ -81,14 +97,17 @@ func (instance *CyndiPipeline) SetValid(status metav1.ConditionStatus, reason st
 	}
 }
 
+// ResetValid resets the validation.
 func (instance *CyndiPipeline) ResetValid() {
 	instance.SetValid(metav1.ConditionUnknown, "New", "Validation not yet run", -1)
 }
 
+// IsValid checks the status condition is valid (present and equal)
 func (instance *CyndiPipeline) IsValid() bool {
 	return meta.IsStatusConditionPresentAndEqual(instance.Status.Conditions, validConditionType, metav1.ConditionTrue)
 }
 
+// GetValid returns the condition status, returning ConditionUnknown if the condition is nil.
 func (instance *CyndiPipeline) GetValid() metav1.ConditionStatus {
 	condition := meta.FindStatusCondition(instance.Status.Conditions, validConditionType)
 
@@ -109,14 +128,17 @@ func (instance *CyndiPipeline) assertState(targetState PipelineState, validState
 	return fmt.Errorf("Attempted invalid state transition from %s to %s", instance.GetState(), targetState)
 }
 
+// TableName returns a formatted table name.
 func TableName(pipelineVersion string) string {
 	return fmt.Sprintf("%s%s", tablePrefix, pipelineVersion)
 }
 
+// TableNameToConnectorName returns the connector name for the app/table supplied.
 func TableNameToConnectorName(tableName string, appName string) string {
 	return ConnectorName(string(tableName[len(tablePrefix):]), appName)
 }
 
+// ConnectorName returns the cyndi table name given the pipeline version and appName.
 func ConnectorName(pipelineVersion string, appName string) string {
 	return fmt.Sprintf("cyndi-%s-%s", appName, strings.Replace(pipelineVersion, "_", "-", 1))
 }
