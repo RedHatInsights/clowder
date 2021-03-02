@@ -290,7 +290,12 @@ type ClowdAppSpec struct {
 	// will be added to the configuration when present.
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
 
-	// Configures 'cyndi' database syndication for this app
+	// Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has
+	// the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline
+	// for this app in the environment's kafka-connect namespace. When the kafka provider is in
+	// (*_app-interface_*) mode, Clowder will check to ensure that a CyndiPipeline resource exists
+	// for the application in the environment's kafka-connect namespace. For all other kafka
+	// provider modes, this configuration option has no effect.
 	Cyndi CyndiSpec `json:"cyndi,omitempty"`
 }
 

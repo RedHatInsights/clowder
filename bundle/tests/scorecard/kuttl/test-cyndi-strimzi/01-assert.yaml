@@ -7,6 +7,30 @@ kind: CyndiPipeline
 metadata:
   name: myapp
   namespace: test-cyndi-strimzi-kafka
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-cyndi-strimzi
 spec:
   appName: myapp
   connectCluster: my-connect-cluster
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-cyndi-strimzi-host-inventory-db-cyndi
+  namespace: test-cyndi-strimzi-kafka
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-cyndi-strimzi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-cyndi-strimzi-myapp-db-cyndi
+  namespace: test-cyndi-strimzi-kafka
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-cyndi-strimzi
