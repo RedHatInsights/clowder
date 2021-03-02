@@ -12,6 +12,7 @@ type noneInMemoryDbProvider struct {
 	Config config.DatabaseConfig
 }
 
+// NewNoneInMemoryDb returns a new none in-memory DB provider object.
 func NewNoneInMemoryDb(p *p.Provider) (providers.ClowderProvider, error) {
 	return &noneInMemoryDbProvider{Provider: *p}, nil
 }

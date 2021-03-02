@@ -53,6 +53,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis, r.Provider.Env.Spec.Providers.InMemoryDB.PVC)
 }
 
+// NewLocalRedis returns a new local redis provider object.
 func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
 	config := config.InMemoryDBConfig{}
 

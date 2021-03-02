@@ -10,18 +10,19 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-type AppInterfaceLoggingProvider struct {
+type appInterfaceLoggingProvider struct {
 	p.Provider
 	Config config.LoggingConfig
 }
 
+// NewAppInterfaceLogging returns a new app-interface logging provider object.
 func NewAppInterfaceLogging(p *p.Provider) (providers.ClowderProvider, error) {
-	provider := AppInterfaceLoggingProvider{Provider: *p}
+	provider := appInterfaceLoggingProvider{Provider: *p}
 
 	return &provider, nil
 }
 
-func (a *AppInterfaceLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	c.Logging = config.LoggingConfig{}
 	return setCloudwatchSecret(app.Namespace, &a.Provider, &c.Logging)
 }

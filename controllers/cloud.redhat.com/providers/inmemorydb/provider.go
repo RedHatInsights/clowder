@@ -7,6 +7,7 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// GetInMemoryDB returns the correct in-memory DB provider based on the environment.
 func GetInMemoryDB(c *p.Provider) (p.ClowderProvider, error) {
 	dbMode := c.Env.Spec.Providers.InMemoryDB.Mode
 	switch dbMode {

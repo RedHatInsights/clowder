@@ -26,6 +26,7 @@ import (
 
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
+// Log is a null logger instance.
 var Log logr.Logger = ctrllog.NullLogger{}
 
 // RandString generates a random string of length n
@@ -39,8 +40,12 @@ func RandString(n int) string {
 	return string(b)
 }
 
+// Updater is a bool type object with functions attached that control when a resource should be
+// created or applied.
 type Updater bool
 
+// Apply will apply the resource if it already exists, and create it if it does not. This is based
+// on the bool value of the Update object.
 func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
 	var err error
 	var kind string
@@ -79,6 +84,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 	return nil
 }
 
+// UpdateOrErr returns an update object if the err supplied is nil.
 func UpdateOrErr(err error) (Updater, error) {
 	update := Updater(err == nil)
 
@@ -89,6 +95,7 @@ func UpdateOrErr(err error) (Updater, error) {
 	return update, nil
 }
 
+// UpdateAllOrErr queries the client for a range of objects and returns updater objects for each.
 func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedName, obj ...runtime.Object) (map[runtime.Object]Updater, error) {
 	updates := map[runtime.Object]Updater{}
 
@@ -105,6 +112,7 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 	return updates, nil
 }
 
+// ApplyAll applies all the update objects in the list called updates.
 func ApplyAll(ctx context.Context, cl client.Client, updates map[runtime.Object]Updater) error {
 	for resource, update := range updates {
 		if err := update.Apply(ctx, cl, resource); err != nil {
@@ -126,7 +134,7 @@ func B64Decode(s *core.Secret, key string) (string, error) {
 	return string(decoded), nil
 }
 
-func IntMinMax(listStrInts []string, max bool) (string, error) {
+func intMinMax(listStrInts []string, max bool) (string, error) {
 	var listInts []int
 	for _, strint := range listStrInts {
 		i, err := strconv.Atoi(strint)
@@ -150,14 +158,17 @@ func IntMinMax(listStrInts []string, max bool) (string, error) {
 	return strconv.Itoa(ol), nil
 }
 
+// IntMin takes a list of integers as strings and returns the minimum.
 func IntMin(listStrInts []string) (string, error) {
-	return IntMinMax(listStrInts, false)
+	return intMinMax(listStrInts, false)
 }
 
+// IntMax takes a list of integers as strings and returns the maximum.
 func IntMax(listStrInts []string) (string, error) {
-	return IntMinMax(listStrInts, true)
+	return intMinMax(listStrInts, true)
 }
 
+// ListMerge takes a list comma separated strings and performs a set union on them.
 func ListMerge(listStrs []string) (string, error) {
 	optionStrings := make(map[string]bool)
 	for _, optionsList := range listStrs {
@@ -208,6 +219,8 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.Clow
 	}
 }
 
+// GetCustomLabeler takes a set of labels and returns a labeler function that
+// will apply those labels to a reource.
 func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
 	appliedLabels := baseResource.GetLabels()
 	if labels != nil {
@@ -218,6 +231,7 @@ func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 	return MakeLabeler(nn, appliedLabels, baseResource)
 }
 
+// MakeService takes a service object and applies the correct ownership and labels to it.
 func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject) {
 	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(service)
@@ -225,6 +239,7 @@ func MakeService(service *core.Service, nn types.NamespacedName, labels map[stri
 	service.Spec.Ports = ports
 }
 
+// MakePVC takes a PVC object and applies the correct ownership and labels to it.
 func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels map[string]string, size string, baseResource obj.ClowdObject) {
 	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(pvc)
@@ -236,6 +251,8 @@ func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels ma
 	}
 }
 
+// DeploymentStatusChecker takes a deployment and returns True if it is deemed ready by the logic
+// in the function.
 func DeploymentStatusChecker(deployment *apps.Deployment) bool {
 	if deployment.Generation <= deployment.Status.ObservedGeneration {
 		if deployment.Spec.Replicas != nil && deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas {
@@ -252,6 +269,7 @@ func DeploymentStatusChecker(deployment *apps.Deployment) bool {
 	return false
 }
 
+// IntPtr returns a pointer to the passed integer.
 func IntPtr(i int) *int {
 	return &i
 }

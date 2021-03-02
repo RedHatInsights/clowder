@@ -12,6 +12,7 @@ type noneKafkaProvider struct {
 	Config config.DatabaseConfig
 }
 
+// NewNoneKafka returns a new non kafka provider object.
 func NewNoneKafka(p *p.Provider) (providers.ClowderProvider, error) {
 	return &noneKafkaProvider{Provider: *p}, nil
 }

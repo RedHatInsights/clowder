@@ -63,6 +63,7 @@ func (s *strimziProvider) configureBrokers() error {
 	return nil
 }
 
+// NewStrimzi returns a new strimzi provider object.
 func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 	kafkaProvider := &strimziProvider{
 		Provider: *p,

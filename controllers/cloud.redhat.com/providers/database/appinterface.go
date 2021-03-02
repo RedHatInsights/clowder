@@ -53,6 +53,7 @@ func fetchCa() (string, error) {
 	return caBundle, nil
 }
 
+// NewAppInterfaceDBProvider creates a new app-interface DB provider obejct.
 func NewAppInterfaceDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	provider := appInterface{Provider: *p}
 

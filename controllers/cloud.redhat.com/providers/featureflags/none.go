@@ -12,6 +12,7 @@ type noneFeatureFlagProvider struct {
 	Config config.DatabaseConfig
 }
 
+// NewNoneFeatureFlagsProvider returns a new none feature flags provider object.
 func NewNoneFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	return &noneFeatureFlagProvider{Provider: *p}, nil
 }

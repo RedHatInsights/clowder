@@ -107,6 +107,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 	return nil
 }
 
+// NewAppInterface returns a new app-interface kafka provider object.
 func NewAppInterface(p *p.Provider) (providers.ClowderProvider, error) {
 	nn := types.NamespacedName{
 		Name:      p.Env.Spec.Providers.Kafka.ClusterName,

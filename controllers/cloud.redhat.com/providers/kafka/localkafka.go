@@ -81,6 +81,7 @@ func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }
 
+// NewLocalKafka returns a new local kafka provider object.
 func NewLocalKafka(p *p.Provider) (providers.ClowderProvider, error) {
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},

@@ -7,13 +7,14 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// GetObjectStore returns the correct object store provider based on the environment.
 func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
 	objectStoreMode := c.Env.Spec.Providers.ObjectStore.Mode
 	switch objectStoreMode {
 	case "minio":
 		return NewMinIO(c)
 	case "app-interface":
-		return &AppInterfaceObjectstoreProvider{Provider: *c}, nil
+		return &appInterfaceObjectstoreProvider{Provider: *c}, nil
 	case "none", "":
 		return NewNoneObjectStore(c)
 	default:
