@@ -171,10 +171,13 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		BootstrapServers: s.getBootstrapServersString(),
 		Version:          &version,
 		Config: map[string]string{
-			"group.id":             "connect-cluster",
-			"offset.storage.topic": "connect-cluster-offsets",
-			"config.storage.topic": "connect-cluster-configs",
-			"status.storage.topic": "connect-cluster-status",
+			"group.id":                          "connect-cluster",
+			"offset.storage.topic":              "connect-cluster-offsets",
+			"config.storage.topic":              "connect-cluster-configs",
+			"status.storage.topic":              "connect-cluster-status",
+			"offset.storage.replication.factor": "1",
+			"config.storage.replication.factor": "1",
+			"status.storage.replication.factor": "1",
 		},
 		Image: &image,
 	}
@@ -276,7 +279,7 @@ func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Cyndi.Enabled {
 		err := createCyndiPipeline(
-			s.Ctx, s.Client, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
+			s.Ctx, s.Client, app, s.Env, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
 		)
 		if err != nil {
 			return err

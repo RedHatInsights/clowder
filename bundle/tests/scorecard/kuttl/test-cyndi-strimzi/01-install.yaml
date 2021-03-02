@@ -25,10 +25,9 @@ spec:
     logging:
       mode: none
     objectStore:
-      mode: minio
-      #Possibly need to specify a port here
+      mode: none
     inMemoryDb:
-      mode: redis
+      mode: none
   resourceDefaults:
     limits:
       cpu: 400m
@@ -49,4 +48,20 @@ spec:
   pods:
   - name: processor
     image: quay.io/psav/clowder-hello
-
+  database:
+    name: myapp-db
+    version: 12
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: host-inventory
+  namespace: test-cyndi-strimzi
+spec:
+  envName: test-cyndi-strimzi
+  pods:
+  - name: fake-inventory-app
+    image: quay.io/psav/clowder-hello
+  database:
+    name: host-inventory-db
+    version: 12
