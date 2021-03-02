@@ -14,11 +14,14 @@ import (
 	"k8s.io/client-go/tools/record"
 )
 
+// ClowdKey is a string determining the type of error.
 type ClowdKey string
 
 // TODO: Make this configruable
 var stacksEnabled bool = true
 
+// ClowderError is a Clwoder specific error, it has a number of functions attached to it to allow
+// for creation and checking.
 type ClowderError struct {
 	Stack   zap.Field
 	Msg     string
@@ -38,6 +41,7 @@ func (a *ClowderError) Error() string {
 	return a.Msg
 }
 
+// Is checks that a target is the same as a given error, that is, it has the same message and cause.
 func (a *ClowderError) Is(target error) bool {
 	b, ok := target.(*ClowderError)
 	if !ok {
@@ -46,6 +50,7 @@ func (a *ClowderError) Is(target error) bool {
 	return (a.Msg == b.Msg && a.Cause == b.Cause)
 }
 
+// New constructs a new ClowderError object.
 func New(msg string) *ClowderError {
 	stackField := zap.String("stack", "")
 
@@ -59,6 +64,7 @@ func New(msg string) *ClowderError {
 	}
 }
 
+// Wrap takes an existing error an wraps it, returning a ClowderError
 func Wrap(msg string, err error) *ClowderError {
 	clowderErr := New(msg)
 	clowderErr.Cause = err
@@ -69,6 +75,9 @@ func Wrap(msg string, err error) *ClowderError {
 	return clowderErr
 }
 
+// MissingDependencies is a struct containing a map of string lists, it is intended to hold
+// information about missing dependencies. The key is a resource type, or a provider as a string,
+// and the list is a list of keys or items that are missing.
 type MissingDependencies struct {
 	MissingDeps map[string][]string
 }
@@ -86,6 +95,8 @@ func (e *MissingDependencies) Error() string {
 	return fmt.Sprintf("Missing dependencies: [%s]", body)
 }
 
+// RootCause takes an error an unwraps it, if it is nil, it calls RootCause on the returned err,
+// this will recursively find an error that has an unwrapped value.
 func RootCause(err error) error {
 	cause := errlib.Unwrap(err)
 
@@ -96,6 +107,7 @@ func RootCause(err error) error {
 	return err
 }
 
+// GetRootStack will recurse through an error until it finds one with a stack string set.
 func GetRootStack(err error) string {
 	var stack string
 	var clowderErr *ClowderError
@@ -115,11 +127,13 @@ func GetRootStack(err error) string {
 	return stack
 }
 
+// LogError logs an error using the given contexts logger and a string.
 func LogError(ctx context.Context, name string, err *ClowderError) {
 	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
 	log.Error(err, err.Msg, "stack", GetRootStack(err))
 }
 
+// HandleError handles certain ClowdError types differently than normal errors.
 func HandleError(ctx context.Context, err error) bool {
 	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
 	recorder := *(ctx.Value(ClowdKey("recorder")).(*record.EventRecorder))

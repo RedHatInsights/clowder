@@ -22,6 +22,7 @@ func filterOwnedDeployments(deploymentList *apps.DeploymentList, uid types.UID) 
 	deploymentList.Items = depList
 }
 
+// SetDeploymentStatus the status on the passed ClowdObject interface.
 func SetDeploymentStatus(ctx context.Context, client client.Client, o object.ClowdObject) error {
 	deploymentList := apps.DeploymentList{}
 	err := client.List(ctx, &deploymentList)

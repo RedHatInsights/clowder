@@ -55,6 +55,8 @@ type Maker struct {
 	Log     logr.Logger
 }
 
+// New returns a new maker
+// TODO Remove this function potentially.
 func New(maker *Maker) (*Maker, error) {
 	return maker, nil
 }

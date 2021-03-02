@@ -137,7 +137,7 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfi
 
 	dbCfg := config.DatabaseConfig{}
 
-	refApp, err := crd.GetAppForDBInSameEnv(db.Client, db.Ctx, app)
+	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app)
 
 	if err != nil {
 		return err

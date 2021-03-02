@@ -182,6 +182,7 @@ type PodSpec struct {
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
+// PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
 type PodSpecDeprecated struct {
 	Name           string                  `json:"name"`
 	Web            WebDeprecated           `json:"web,omitempty"`
@@ -397,6 +398,7 @@ func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
 	return &i.Status.Deployments
 }
 
+// ConvertToNewShim converts an old "pod" based spec into the new "deployment" style.
 func (i *ClowdApp) ConvertToNewShim() {
 	deps := []Deployment{}
 	for _, pod := range i.Spec.Pods {
@@ -460,7 +462,9 @@ func Labels(labels map[string]string) omfunc {
 	}
 }
 
-func GetAppInSameEnv(pClient client.Client, ctx context.Context, app *ClowdApp, appList *ClowdAppList) error {
+// GetAppInSameEnv populates the appList with a list of all apps in the same ClowdEnvironment. The
+// environment is inferred from the given app.
+func GetAppInSameEnv(ctx context.Context, pClient client.Client, app *ClowdApp, appList *ClowdAppList) error {
 	err := pClient.List(ctx, appList, client.MatchingFields{"spec.envName": app.Spec.EnvName})
 
 	if err != nil {
@@ -471,11 +475,13 @@ func GetAppInSameEnv(pClient client.Client, ctx context.Context, app *ClowdApp, 
 	return nil
 }
 
-func GetAppForDBInSameEnv(pClient client.Client, ctx context.Context, app *ClowdApp) (*ClowdApp, error) {
+// GetAppForDBInSameEnv returns a point to a ClowdApp that has the sharedDB referenced by the given
+// ClowdApp.
+func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *ClowdApp) (*ClowdApp, error) {
 	appList := &ClowdAppList{}
 	var refApp ClowdApp
 
-	err := GetAppInSameEnv(pClient, ctx, app, appList)
+	err := GetAppInSameEnv(ctx, pClient, app, appList)
 
 	if err != nil {
 		return nil, err

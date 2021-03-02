@@ -160,7 +160,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	err = r.SetAppInfo(provider)
+	err = r.setAppInfo(provider)
 	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
@@ -234,7 +234,7 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObje
 	}}
 }
 
-func (r *ClowdEnvironmentReconciler) SetAppInfo(p providers.Provider) error {
+func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 	// Get all the ClowdApp resources
 	appList := crd.ClowdAppList{}
 	r.Client.List(p.Ctx, &appList)
