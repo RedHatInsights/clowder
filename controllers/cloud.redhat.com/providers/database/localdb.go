@@ -22,6 +22,7 @@ type localDbProvider struct {
 	Config config.DatabaseConfig
 }
 
+// NewLocalDBProvider returns a new local DB provider object.
 func NewLocalDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	return &localDbProvider{Provider: *p}, nil
 }

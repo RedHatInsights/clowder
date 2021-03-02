@@ -13,18 +13,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type AppInterfaceObjectstoreProvider struct {
+type appInterfaceObjectstoreProvider struct {
 	p.Provider
 	Config config.ObjectStoreConfig
 }
 
+// NewAppInterfaceObjectstore returns a new app-interface object store provider object.
 func NewAppInterfaceObjectstore(p *p.Provider) (providers.ClowderProvider, error) {
-	provider := AppInterfaceObjectstoreProvider{Provider: *p}
+	provider := appInterfaceObjectstoreProvider{Provider: *p}
 
 	return &provider, nil
 }
 
-func (a *AppInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *appInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if len(app.Spec.ObjectStore) == 0 {
 		return nil
 	}

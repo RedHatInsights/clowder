@@ -61,6 +61,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 	return nil
 }
 
+// NewElasticache returns a new elasticache provider object.
 func NewElasticache(p *providers.Provider) (providers.ClowderProvider, error) {
 	config := config.InMemoryDBConfig{}
 

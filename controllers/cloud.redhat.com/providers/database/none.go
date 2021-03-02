@@ -12,6 +12,7 @@ type noneDbProvider struct {
 	Config config.DatabaseConfig
 }
 
+// NewNoneDBProvider returns a new none db provider object.
 func NewNoneDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	return &noneDbProvider{Provider: *p}, nil
 }

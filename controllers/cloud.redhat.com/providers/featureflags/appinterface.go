@@ -12,6 +12,7 @@ type appInterfaceFeatureFlagProvider struct {
 	Config config.DatabaseConfig
 }
 
+// NewAppInterfaceFeatureFlagsProvider creates a new app-interface feature flags provider.
 func NewAppInterfaceFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	return &appInterfaceFeatureFlagProvider{Provider: *p}, nil
 }

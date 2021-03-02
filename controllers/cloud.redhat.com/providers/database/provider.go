@@ -10,6 +10,7 @@ import (
 
 var imageList map[int32]string
 
+// GetDatabase returns the correct database provider based on the environment.
 func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 	dbMode := c.Env.Spec.Providers.Database.Mode
 	switch dbMode {

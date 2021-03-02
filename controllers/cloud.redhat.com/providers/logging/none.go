@@ -12,6 +12,7 @@ type noneLoggingProvider struct {
 	Config config.LoggingConfig
 }
 
+// NewNoneLogging returns a new none logging provider object.
 func NewNoneLogging(p *p.Provider) (providers.ClowderProvider, error) {
 	provider := noneLoggingProvider{Provider: *p}
 

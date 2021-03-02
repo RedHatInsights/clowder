@@ -7,6 +7,7 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// GetFeatureFlags returns the correct feature flags provider based on the environment.
 func GetFeatureFlags(c *p.Provider) (p.ClowderProvider, error) {
 	ffMode := c.Env.Spec.Providers.FeatureFlags.Mode
 	switch ffMode {

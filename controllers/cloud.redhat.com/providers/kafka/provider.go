@@ -8,6 +8,7 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// GetKafka returns the correct kafka provider based on the environment.
 func GetKafka(c *p.Provider) (p.ClowderProvider, error) {
 	kafkaMode := c.Env.Spec.Providers.Kafka.Mode
 	switch kafkaMode {

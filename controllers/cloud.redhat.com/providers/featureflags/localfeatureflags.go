@@ -25,6 +25,7 @@ type localFeatureFlagsProvider struct {
 	Config config.FeatureFlagsConfig
 }
 
+// NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
 func NewLocalFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, error) {
 
 	ffp := &localFeatureFlagsProvider{Provider: *p, Config: config.FeatureFlagsConfig{}}
