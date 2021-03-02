@@ -17,14 +17,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type ProviderAccessor struct {
+type providerAccessor struct {
 	SetupProvider func(c *Provider) (ClowderProvider, error)
 	Order         int
 	Name          string
 }
 
 type providersRegistration struct {
-	Registry []ProviderAccessor
+	Registry []providerAccessor
 }
 
 func (p *providersRegistration) Len() int {
@@ -44,7 +44,7 @@ func (p *providersRegistration) Register(
 	Order int,
 	Name string,
 ) {
-	p.Registry = append(p.Registry, ProviderAccessor{
+	p.Registry = append(p.Registry, providerAccessor{
 		SetupProvider: SetupProvider,
 		Order:         Order,
 		Name:          Name,
@@ -52,26 +52,36 @@ func (p *providersRegistration) Register(
 	sort.Sort(p)
 }
 
+// ProvidersRegistration is an instance of the provider registration system. It is responsible for
+// adding new providers to the registry so that they can be executed in the correct order.
 var ProvidersRegistration providersRegistration
 
+// Labels is a map containing a key/value style map intended to hold k8s label information.
 type Labels map[string]string
 
+// Provider is a struct that holds a client/context and ClowdEnvironment object.
 type Provider struct {
 	Client client.Client
 	Ctx    context.Context
 	Env    *crd.ClowdEnvironment
 }
 
+// ClowderProvider is an interface providing a way for a provider to perform its duty.
 type ClowderProvider interface {
+	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as opposed
+	// to a ClowdEnvironment object.
 	Provide(app *crd.ClowdApp, c *config.AppConfig) error
 }
 
+// StrPtr returns a pointer to a string.
 func StrPtr(s string) *string {
 	return &s
 }
 
 type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool)
 
+// MakeComponent is a generalised function that, given a ClowdObject will make the given service,
+// deployment and PVC, based on the makeFn that is passed in.
 func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suffix string, fn makeFn, usePVC bool) error {
 	nn := GetNamespacedName(o, suffix)
 	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
@@ -94,6 +104,7 @@ func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suf
 	return nil
 }
 
+// GetNamespacedName returns a unique name of an object in the format name-suffix.
 func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%v-%v", o.GetClowdName(), suffix),
@@ -101,8 +112,13 @@ func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 	}
 }
 
+// ExtractFn is a function that can extract secret data from a function, the result
+// of this function is usually declared as part of the function so no arguments are
+// passed.
 type ExtractFn func(m map[string][]byte)
 
+// ExtractSecretData takes a list of secrets, checks that the correct 'keys' are present and then
+// runs the extract function on them.
 func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
 	for _, secret := range secrets {
 		allOk := true
