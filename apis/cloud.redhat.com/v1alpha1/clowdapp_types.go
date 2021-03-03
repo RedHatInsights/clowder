@@ -60,6 +60,10 @@ type DatabaseSpec struct {
 	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
 }
 
+// JobType determines when a job runs. On deploy or request
+// +kubebuilder:validation:Enum=request;deploy
+type JobType string
+
 // Job defines a CronJob as Schedule is required. In the future omitting the
 // Schedule field will allow support for a standard Job resource.
 type Job struct {
@@ -70,11 +74,11 @@ type Job struct {
 	// Defines the schedule for the job to run
 	Schedule string `json:"schedule,omitempty"`
 
-	// A job that is a OneShot is run on apply
-	OneShot bool `json:"oneshot,omitempty"`
-
-	// A job that runs when a JobInvocation calls for it
-	OnRequest bool `json:"onRequest,omitempty"`
+	// The type of trigger for the job. The supported types are
+	//  (*_request_*), runs a job when an Invocation asks for it, or
+	//  (*_deploy_*) runs a job when the app it belongs to is "ready".
+	// Note: CronJobs should always be of type request
+	Type JobType `json:"type"`
 
 	// PodSpec defines a container running inside the CronJob.
 	PodSpec PodSpec `json:"podSpec"`

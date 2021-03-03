@@ -2334,12 +2334,6 @@ spec:
                       be used to name the CronJob resource, the container will be
                       name identically.
                     type: string
-                  onRequest:
-                    description: A job that runs when a JobInvocation calls for it
-                    type: boolean
-                  oneshot:
-                    description: A job that is a OneShot is run on apply
-                    type: boolean
                   podSpec:
                     description: PodSpec defines a container running inside the CronJob.
                     properties:
@@ -4500,9 +4494,19 @@ spec:
                     description: Defines the StartingDeadlineSeconds for the CronJob
                     format: int64
                     type: integer
+                  type:
+                    description: 'The type of trigger for the job. The supported types
+                      are  (*_request_*), runs a job when an Invocation asks for it,
+                      or  (*_deploy_*) runs a job when the app it belongs to is "ready".
+                      Note: CronJobs should always be of type request'
+                    enum:
+                    - request
+                    - deploy
+                    type: string
                 required:
                 - name
                 - podSpec
+                - type
                 type: object
               type: array
             kafkaTopics:

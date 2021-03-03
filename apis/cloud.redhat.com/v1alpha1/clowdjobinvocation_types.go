@@ -29,20 +29,20 @@ type ClowdJobInvocationSpec struct {
 	Jobs []string `json:"jobs"`
 }
 
-type JobResult struct {
-	Name      string `json:"name"`
-	Completed bool   `json:"completed"`
-	Attempts  int    `json:"attempts"`
-	StdOut    string `json:"stdout"`
-}
-
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
 type ClowdJobInvocationStatus struct {
-	Results []JobResult `json:"results"`
+	// Completed is false and updated when all jobs have either finished
+	// successfully or failed past their backoff and retry values
+	Completed bool `json:"completed"`
+	// PodNames is a map of the job name in the Job invocation and the
+	// name of the pod responsible for that job
+	PodNames map[string]string `json:"podNames"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=cji
+// +kubebuilder:printcolumn:name="Completed",type="boolean",JSONPath=".status.completed"
 
 // ClowdJobInvocation is the Schema for the jobinvocations API
 type ClowdJobInvocation struct {

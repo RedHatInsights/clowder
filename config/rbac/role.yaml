@@ -104,7 +104,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - jobinvocations
+  - clowdjobinvocations
   verbs:
   - create
   - delete
@@ -116,7 +116,7 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
-  - jobinvocations/status
+  - clowdjobinvocations/status
   verbs:
   - get
   - patch
