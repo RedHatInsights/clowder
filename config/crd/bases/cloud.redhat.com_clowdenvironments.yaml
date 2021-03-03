@@ -327,9 +327,12 @@ spec:
           properties:
             apps:
               items:
+                description: AppInfo details information about a specific app.
                 properties:
                   deployments:
                     items:
+                      description: DeploymentInfo defailts information about a specific
+                        deployment.
                       properties:
                         hostname:
                           type: string

@@ -4553,6 +4553,8 @@ spec:
             pods:
               description: Deprecated
               items:
+                description: PodSpecDeprecated is a deprecated in favour of using
+                  the real k8s PodSpec object.
                 properties:
                   args:
                     items:
