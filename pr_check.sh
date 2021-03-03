@@ -13,6 +13,14 @@ done <<< "$(git log --pretty=format:%s $(git merge-base master HEAD)..HEAD)"
 
 set -exv
 
+python3 -m venv .venv
+source .venv/bin/activate
+pip3 install sphinx-rtd-theme
+
+cd docs && make clean && make html && cd -
+
+deactivate
+
 DOCKER_CONF="$PWD/.docker"
 mkdir -p "$DOCKER_CONF"
 docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
