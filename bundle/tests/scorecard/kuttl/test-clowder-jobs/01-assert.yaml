@@ -35,7 +35,7 @@ spec:
           restartPolicy: Never
 ---
 apiVersion: batch/v1beta1
-kind: Job
+kind: CronJob
 metadata:
   name: puptoo-restart-on-failure
   namespace: test-clowder-jobs
@@ -46,23 +46,6 @@ spec:
         - name: puptoo-restart-on-failure
           image: quay.io/psav/clowder-hello
       restartPolicy: OnFailure
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: puptoo-deploy-job
-  namespace: test-clowder-jobs
-spec:
-  template:
-    spec:
-      containers:
-        - name: puptoo-deploy-job
-          image: busybox
-          args:
-          - /bin/sh
-          - -c
-          - echo "Hi!"
-      restartPolicy: Never
 ---
 apiVersion: batch/v1
 kind: Job
