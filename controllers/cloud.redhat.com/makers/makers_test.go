@@ -67,30 +67,33 @@ func TestSingleDependency(t *testing.T) {
 		}},
 	}
 
-	config, intConfig, missing := makeDepConfig(webPort, privatePort, &app, &apps)
+	deps := []config.DependencyEndpoint{}
+	privDeps := []config.PrivateDependencyEndpoint{}
+
+	missing := makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
 
 	if len(missing) > 0 {
 		t.Errorf("We got a missing dep when there shouldn't have been one")
 	}
 
-	if config[0].Hostname != "bopper-bopper.bopperspace.svc" {
-		t.Errorf("We didn't get the right service hostname, got %v should be %v", config[0].Hostname, "bopper-bopper.bopperspace.svc")
+	if deps[0].Hostname != "bopper-bopper.bopperspace.svc" {
+		t.Errorf("We didn't get the right service hostname, got %v should be %v", deps[0].Hostname, "bopper-bopper.bopperspace.svc")
 	}
-	if config[0].Port != 8000 {
+	if deps[0].Port != 8000 {
 		t.Errorf("We didn't get the right service port")
 	}
-	if config[0].Name != "bopper" {
-		t.Errorf("We didn't get the right service name, got %v should be %v", config[0].Name, "bopper")
+	if deps[0].Name != "bopper" {
+		t.Errorf("We didn't get the right service name, got %v should be %v", deps[0].Name, "bopper")
 	}
 
-	if intConfig[0].Hostname != "bopper-bopper.bopperspace.svc" {
-		t.Errorf("We didn't get the right service hostname, got %v should be %v", config[1].Hostname, "bopper-bopper.bopperspace.svc")
+	if privDeps[0].Hostname != "bopper-bopper.bopperspace.svc" {
+		t.Errorf("We didn't get the right service hostname, got %v should be %v", privDeps[1].Hostname, "bopper-bopper.bopperspace.svc")
 	}
-	if intConfig[0].Port != 10000 {
+	if privDeps[0].Port != 10000 {
 		t.Errorf("We didn't get the right service port")
 	}
-	if intConfig[0].Name != "bopper" {
-		t.Errorf("We didn't get the right service name, got %v should be %v", config[1].Name, "bopper")
+	if privDeps[0].Name != "bopper" {
+		t.Errorf("We didn't get the right service name, got %v should be %v", privDeps[1].Name, "bopper")
 	}
 }
 
@@ -121,7 +124,10 @@ func TestMissingDependency(t *testing.T) {
 	nobjMeta.Namespace = "bopperspace"
 	apps = crd.ClowdAppList{}
 
-	deps, privDeps, missing := makeDepConfig(webPort, privatePort, &app, &apps)
+	deps := []config.DependencyEndpoint{}
+	privDeps := []config.PrivateDependencyEndpoint{}
+
+	missing := makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -184,7 +190,10 @@ func TestOptionalDependency(t *testing.T) {
 		},
 	}
 
-	deps, privDeps, _ := makeDepConfig(webPort, privatePort, &app, &apps)
+	deps := []config.DependencyEndpoint{}
+	privDeps := []config.PrivateDependencyEndpoint{}
+
+	makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -274,7 +283,10 @@ func TestMultiDependency(t *testing.T) {
 		},
 	}
 
-	config, privDeps, missing := makeDepConfig(webPort, privatePort, &app, &apps)
+	deps := []config.DependencyEndpoint{}
+	privDeps := []config.PrivateDependencyEndpoint{}
+
+	missing := makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -284,11 +296,11 @@ func TestMultiDependency(t *testing.T) {
 		t.Errorf("We got a missing dep error")
 	}
 
-	assertAppConfig(t, config[0], "bopper-chopper.bopperspace.svc", 8000, "chopper", "bopper")
-	assertAppConfig(t, config[1], "bopper-bopper.bopperspace.svc", 8000, "bopper", "bopper")
-	assertAppConfig(t, config[2], "snapper-whopper.snapperspace.svc", 8000, "whopper", "snapper")
+	assertAppConfig(t, deps[0], "bopper-chopper.bopperspace.svc", 8000, "chopper", "bopper")
+	assertAppConfig(t, deps[1], "bopper-bopper.bopperspace.svc", 8000, "bopper", "bopper")
+	assertAppConfig(t, deps[2], "snapper-whopper.snapperspace.svc", 8000, "whopper", "snapper")
 
-	if len(config) != 3 {
+	if len(deps) != 3 {
 		t.Errorf("Wrong number of dep services")
 	}
 }
