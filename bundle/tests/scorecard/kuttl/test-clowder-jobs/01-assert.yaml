@@ -21,7 +21,7 @@ metadata:
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: puptoo-job
+  name: puptoo-standard-cron
   namespace: test-clowder-jobs
 spec:
   concurrencyPolicy: Allow
@@ -30,38 +30,53 @@ spec:
       template:
         spec:
           containers:
-            - name: puptoo-job
+            - name: puptoo-standard-cron
               image: quay.io/psav/clowder-hello
           restartPolicy: Never
 ---
 apiVersion: batch/v1beta1
-kind: CronJob
-metadata:
-  name: puptoo-job2
-  namespace: test-clowder-jobs
-spec:
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-            - name: puptoo-job2
-              image: quay.io/psav/clowder-hello
-          restartPolicy: OnFailure
----
-apiVersion: batch/v1
 kind: Job
 metadata:
-  name: puptoo-job3
+  name: puptoo-restart-on-failure
   namespace: test-clowder-jobs
 spec:
   template:
     spec:
       containers:
-        - name: puptoo-job3
+        - name: puptoo-restart-on-failure
+          image: quay.io/psav/clowder-hello
+      restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: puptoo-deploy-job
+  namespace: test-clowder-jobs
+spec:
+  template:
+    spec:
+      containers:
+        - name: puptoo-deploy-job
           image: busybox
           args:
           - /bin/sh
           - -c
           - echo "Hi!"
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: puptoo-request-cji
+  namespace: test-clowder-jobs
+spec:
+  template:
+    spec:
+      containers:
+        - name: puptoo-request-cji
+          image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - echo "Hello!"
       restartPolicy: Never

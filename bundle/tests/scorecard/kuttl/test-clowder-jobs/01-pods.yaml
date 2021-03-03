@@ -45,26 +45,45 @@ spec:
       podSpec:
         image: quay.io/psav/clowder-hello
   jobs:
-    - name: job
+    - name: standard-cron
       schedule: "*/1 * * * *"
+      type: "request"
       podSpec:
         image: quay.io/psav/clowder-hello
         args:
           - ./clowder-hello
           - boo
-    - name: job2
-      schedule: "*/1 * * * *"
+    - name: restart-on-failure 
+      type: "request"
       restartPolicy: OnFailure
       podSpec:
         image: quay.io/psav/clowder-hello
         args:
           - ./clowder-hello
           - boo
-    - name: job3
-      oneshot: true
+    - name: deploy-job 
+      type: "deploy"
       podSpec:
         image: busybox
         args:
         - /bin/sh
         - -c
         - echo "Hi!"
+    - name: request-cji 
+      type: "request"
+      podSpec:
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - echo "Hello!"
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: puptoo
+  namespace: test-clowder-jobs
+spec:
+  appName: puptoo
+  jobs:
+    - request-cji
