@@ -22,6 +22,8 @@ Resource Types
 - :ref:`ClowdAppList`
 - :ref:`ClowdEnvironment`
 - :ref:`ClowdEnvironmentList`
+- :ref:`ClowdJobInvocation`
+- :ref:`ClowdJobInvocationList`
 
 
 
@@ -179,6 +181,70 @@ Appears In:
    "``targetNamespace`` (string)", "TargetNamespace describes the namespace where any generated environmental resources should end up, this is particularly important in (*_local_*) mode."
    "``providers`` (:ref:`ProvidersConfig`)", "A ProvidersConfig object, detailing the setup and configuration of all the providers used in this ClowdEnvironment."
    "``resourceDefaults`` (`ResourceRequirements <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core>`_)", "Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp."
+
+
+
+
+.. _ClowdJobInvocation :
+
+ClowdJobInvocation 
+^^^^^^^^^^^^^^^^^^^^^^
+
+ClowdJobInvocation is the Schema for the jobinvocations API
+
+Appears In:
+:ref:`ClowdJobInvocationList`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``apiVersion`` (string)", "`cloud.redhat.com/v1alpha1`"
+      "``kind`` (string)", "`ClowdJobInvocation`"
+   "``metadata`` (`ObjectMeta <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta>`_)", "Refer to Kubernetes API documentation for fields of `metadata`."
+
+   "``spec`` (:ref:`ClowdJobInvocationSpec`)", ""
+
+
+.. _ClowdJobInvocationList :
+
+ClowdJobInvocationList 
+^^^^^^^^^^^^^^^^^^^^^^
+
+ClowdJobInvocationList contains a list of ClowdJobInvocation
+
+
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``apiVersion`` (string)", "`cloud.redhat.com/v1alpha1`"
+      "``kind`` (string)", "`ClowdJobInvocationList`"
+   "``metadata`` (`ListMeta <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta>`_)", "Refer to Kubernetes API documentation for fields of `metadata`."
+
+   "``items`` (:ref:`ClowdJobInvocation`)", ""
+
+
+.. _ClowdJobInvocationSpec :
+
+ClowdJobInvocationSpec 
+^^^^^^^^^^^^^^^^^^^^^^
+
+ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
+
+Appears In:
+:ref:`ClowdJobInvocation`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``appName`` (string)", "Name of the ClowdApp who owns the jobs"
+   "``jobs`` (string array)", "Jobs is the set of jobs to be run by the invocation"
 
 
 
@@ -349,7 +415,7 @@ Appears In:
 Job 
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Job defines either a Job to be used in creating a Job via external means, or a CronJob, the difference is the presence of the schedule field.
+Job defines a CronJob as Schedule is required. In the future omitting the Schedule field will allow support for a standard Job resource.
 
 Appears In:
 :ref:`ClowdAppSpec`
@@ -361,11 +427,11 @@ Appears In:
 
    "``name`` (string)", "Name defines identifier of the Job. This name will be used to name the CronJob resource, the container will be name identically."
    "``schedule`` (string)", "Defines the schedule for the job to run"
+   "``type`` (JobType)", "The type of trigger for the job. The supported types are  (*_request_*), runs a job when an Invocation asks for it, or  (*_deploy_*) runs a job when the app it belongs to is "ready". Note: CronJobs should always be of type request"
    "``podSpec`` (:ref:`PodSpec`)", "PodSpec defines a container running inside the CronJob."
    "``restartPolicy`` (`RestartPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core>`_)", "Defines the restart policy for the CronJob, defaults to never"
    "``concurrencyPolicy`` (`ConcurrencyPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch>`_)", "Defines the concurrency policy for the CronJob, defaults to Allow"
    "``startingDeadlineSeconds`` (integer)", "Defines the StartingDeadlineSeconds for the CronJob"
-=======
 
 
 .. _KafkaClusterConfig :

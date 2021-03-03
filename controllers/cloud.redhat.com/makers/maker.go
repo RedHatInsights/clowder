@@ -28,7 +28,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
-	batchv1 "k8s.io/api/batch/v1"
 	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -347,28 +346,6 @@ func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJo
 	annotations := make(map[string]string)
 	annotations["configHash"] = hash
 	cj.Spec.JobTemplate.Spec.Template.SetAnnotations(annotations)
-}
-
-func applyOneShotJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, j *batchv1.Job, pt *core.PodTemplateSpec, nn types.NamespacedName, job crd.Job, hash string) {
-	labels := app.GetLabels()
-	labels["pod"] = nn.Name
-	app.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
-
-	j.Spec.Template = *pt
-	j.Spec.Template.ObjectMeta.Labels = labels
-	j.ObjectMeta.Labels = labels
-
-	if job.RestartPolicy == "" {
-		j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
-	} else {
-		j.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
-	}
-
-	ApplyPodAntiAffinity(&j.Spec.Template)
-
-	annotations := make(map[string]string)
-	annotations["configHash"] = hash
-	j.Spec.Template.SetAnnotations(annotations)
 }
 
 func ProcessResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.ResourceRequirements {

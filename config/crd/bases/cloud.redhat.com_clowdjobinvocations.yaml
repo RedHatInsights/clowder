@@ -8,11 +8,17 @@ metadata:
   creationTimestamp: null
   name: clowdjobinvocations.cloud.redhat.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.completed
+    name: Completed
+    type: boolean
   group: cloud.redhat.com
   names:
     kind: ClowdJobInvocation
     listKind: ClowdJobInvocationList
     plural: clowdjobinvocations
+    shortNames:
+    - cji
     singular: clowdjobinvocation
   scope: Namespaced
   subresources:
@@ -51,26 +57,19 @@ spec:
         status:
           description: ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
           properties:
-            results:
-              items:
-                properties:
-                  attempts:
-                    type: integer
-                  completed:
-                    type: boolean
-                  name:
-                    type: string
-                  stdout:
-                    type: string
-                required:
-                - attempts
-                - completed
-                - name
-                - stdout
-                type: object
-              type: array
+            completed:
+              description: Completed is false and updated when all jobs have either
+                finished successfully or failed past their backoff and retry values
+              type: boolean
+            podNames:
+              additionalProperties:
+                type: string
+              description: PodNames is a map of the job name in the Job invocation
+                and the name of the pod responsible for that job
+              type: object
           required:
-          - results
+          - completed
+          - podNames
           type: object
       type: object
   version: v1alpha1
