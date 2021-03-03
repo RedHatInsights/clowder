@@ -54,6 +54,7 @@ spec:
           - ./clowder-hello
           - boo
     - name: restart-on-failure 
+      schedule: "*/1 * * * *"
       type: "request"
       restartPolicy: OnFailure
       podSpec:
@@ -61,14 +62,6 @@ spec:
         args:
           - ./clowder-hello
           - boo
-    - name: deploy-job 
-      type: "deploy"
-      podSpec:
-        image: busybox
-        args:
-        - /bin/sh
-        - -c
-        - echo "Hi!"
     - name: request-cji 
       type: "request"
       podSpec:
