@@ -25,7 +25,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1611074192993,
+      "iteration": 1614769119977,
       "links": [],
       "panels": [
         {
@@ -696,7 +696,7 @@ data:
           "type": "stat"
         },
         {
-          "datasource": "crcs02ue1-cluster-prometheus",
+          "datasource": "crcgovp01ue1-cluster-prometheus",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -723,7 +723,7 @@ data:
             "x": 0,
             "y": 9
           },
-          "id": 19,
+          "id": 24,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -750,7 +750,7 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Stage version",
+          "title": "Fedramp Production version",
           "type": "stat"
         },
         {
@@ -781,7 +781,7 @@ data:
             "x": 0,
             "y": 12
           },
-          "id": 21,
+          "id": 19,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -808,7 +808,7 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Fedramp version",
+          "title": "Stage version",
           "type": "stat"
         },
         {
@@ -1004,6 +1004,64 @@ data:
             "align": false,
             "alignLevel": null
           }
+        },
+        {
+          "datasource": "crcgovs02ue1-cluster-prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+        }
+                ]
+        }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 7,
+            "x": 0,
+            "y": 15
+          },
+          "id": 21,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+      ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "name"
+          },
+          "pluginVersion": "7.2.1",
+          "targets": [
+            {
+              "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{version}}",
+              "refId": "A"
+            }
+      ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fedramp Stage version",
+          "type": "stat"
         }
       ],
       "schemaVersion": 26,
@@ -1040,5 +1098,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 3
+      "version": 4
     }
