@@ -79,4 +79,3 @@ spec:
           - /bin/sh
           - -c
           - echo "Hello!"
-      restartPolicy: Never
