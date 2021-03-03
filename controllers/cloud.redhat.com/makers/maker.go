@@ -39,12 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-//DependencyMaker makes the DependencyConfig object
-type DependencyMaker struct {
-	*Maker
-	config []config.DependencyEndpoint
-}
-
 //Maker struct for passing variables into SubMakers
 type Maker struct {
 	App     *crd.ClowdApp
@@ -672,6 +666,15 @@ func makeDepConfig(
 
 	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, &depConfig, &privDepConfig, webPort, privatePort)
 	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, &depConfig, &privDepConfig, webPort, privatePort)
+
+	processAppEndpoints(
+		map[string]crd.ClowdApp{app.Name: *app},
+		[]string{app.Name},
+		&(depConfig),
+		&(privDepConfig),
+		webPort,
+		privatePort,
+	)
 
 	return depConfig, privDepConfig, missingDeps
 }

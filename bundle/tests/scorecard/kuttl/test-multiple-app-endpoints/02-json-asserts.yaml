@@ -10,13 +10,15 @@ commands:
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints-b | base64 -d > /tmp/test-multiple-app-endpoints-json-b
 
 # Positive searches
+- script: jq -r '.endpoints[] | select(.app == "puptoo") | .name == "processor"' -e < /tmp/test-multiple-app-endpoints-json
 - script: jq -r '.endpoints[] | select(.app == "puptoo-2") | .name == "processor-2"' -e < /tmp/test-multiple-app-endpoints-json
 
 # Negative searches
-- script: jq -r '.endpoints | length == 1' -e < /tmp/test-multiple-app-endpoints-json
+- script: jq -r '.endpoints | length == 2' -e < /tmp/test-multiple-app-endpoints-json
 
 # Positive searches
+- script: jq -r '.endpoints[] | select(.app == "puptoo-b") | .name == "processor-b"' -e < /tmp/test-multiple-app-endpoints-json-b
 - script: jq -r '.endpoints[] | select(.app == "puptoo-b-2") | .name == "processor-b-2"' -e < /tmp/test-multiple-app-endpoints-json-b
 
 # Negative searches
-- script: jq -r '.endpoints | length == 1' -e < /tmp/test-multiple-app-endpoints-json-b
+- script: jq -r '.endpoints | length == 2' -e < /tmp/test-multiple-app-endpoints-json-b
