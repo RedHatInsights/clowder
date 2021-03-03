@@ -91,10 +91,4 @@ for pod in $STRIMZI_PODS; do
 done
 set -e
 
-echo "Dumping logs to console ..."
-for file in artifacts/*.log; do
-    echo "############## $file ##############"
-    cat "$file"
-done
-
 exit $KUTTL_RESULT

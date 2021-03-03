@@ -47,7 +47,7 @@ TEST_RESULT=$?
 
 mkdir artifacts
 
-docker cp $CONTAINER_NAME:/container_workspace/artifacts/ artifacts/
+docker cp $CONTAINER_NAME:/container_workspace/artifacts/ $PWD
 
 docker rm -f $CONTAINER_NAME
 set -e
