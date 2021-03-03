@@ -9,82 +9,108 @@ Jobs and CronJobs are split by a ``schedule`` field inside your job. If the job
 has a ``schedule``, it is assumed to be a CronJob. If not, Clowder runs your 
 job as a standard Job resource. Note that Jobs run as soon as they are applied. 
 
+Jobs are further split into two types: request and deploy.
 Jobs that need to run as soon as your deployment is ready are marked by the
-``oneshot`` field. These jobs run once and are finished forever.
-You cannot have a ``schedule`` and ``oneshot`` enabled. 
+``deploy`` type. These jobs run once and are finished forever.
+You cannot have a ``schedule`` and ``deploy`` enabled. 
 
-Jobs that run on demand are marked by the ``onDemand`` field. 
+Jobs that are of type ``deploy`` cannot be invoked by a ClowdJobInvocation.
 
-Invoking Jobs
--------------
-Jobs can be triggered by applying a ``JobInvocation`` CRD to the cluster. 
-Clowder will read the resource, run the jobs specified, and return the 
-results in the status
+Jobs that need to be run at some arbitrary point in the future are run by a 
+ClowdJobInvocation and are marked by the ``request`` type. You can have a 
+``schedule`` with a ``request`` type becuase CronJobs can be invoked outside of
+their set schedule. 
 
-Triggering Jobs via App-interface
----------------------------------
-Coming Soon!
+Invoking Jobs via ClowdJobInvocation
+------------------------------------
+Jobs can be triggered by applying a ``ClowdJobInvocation`` CRD to the cluster. 
+Clowder will read the resource and run the specified Jobs.
 
-Triggering Jobs in Ephemeral Environments
------------------------------------------
-Coming Soon!
-
-
-Ordering Jobs
--------------
-Coming Soon!
-
-Examples
---------
+Below is an example of a ClowdJobInvocation, or CJI for short. It is followed 
+by a sample ClowdApp with the definition of the "curl" job. Notice that the 
+``appName`` in the CJI matches the ``name`` of the ClowdApp. The ``jobs`` list
+also corresponds to the ``jobs`` field in the ClowdApp. ``curl`` is a job 
+hosted by the ClowdApp and the CJI will use that to find all the data it needs 
+to invoke and apply the job. 
 
 .. code-block:: yaml
 
     ---
-    apiVersion: v1
-    kind: Template
+    apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdJobInvocation
     metadata:
-      name: jobs
-    objects:
-    - apiVersion: cloud.redhat.com/v1alpha1
-      kind: ClowdApp
-      metadata:
-        name: job
-      spec:
-        envName: env-debugger
-        jobs:
-          - name: no-prio
-            schedule: "*/20 * * * *"
-            podSpec:
-              name: hello
-              image: busybox
-              imagePullPolicy: IfNotPresent
-              args:
-              - /bin/sh
-              - -c
-              - date; echo Hello from the Kubernetes cluster
-          - name: high-prio
-            podSpec:
-              name: hello
-              image: busybox
-              imagePullPolicy: IfNotPresent
-              oneshot: true
-              args:
-              - /bin/sh
-              - -c
-              - date; echo Hello from the Kubernetes cluster
-          - name: low-prio
-            podSpec:
-              name: hello
-              image: busybox
-              imagePullPolicy: IfNotPresent
-              oneshot: true
-              args:
-              - /bin/sh
-              - -c
-              - date; echo Hello from the Kubernetes cluster
-    parameters:
-      - name: LOG_LEVEL
-        value: 'INFO'
+      name: tester
+    spec:
+      appName: sample-app
+      jobs:
+        - curl
+
+.. code-block:: yaml
+
+  ---
+  apiVersion: v1
+  kind: Template
+  metadata:
+    name: sample-app
+  objects:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    metadata:
+      name: sample-app
+    spec:
+      envName: env-debugger
+      deployments:
+      - name: api
+        minReplicas: 1
+        webServices:
+          public:
+            enabled: true
+        podSpec:
+          image: quay.io/bholifie/simpleserver
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+      jobs:
+        - name: hello-twenty
+          schedule: "*/20 * * * *"
+          type: "request"
+          podSpec:
+            name: hello
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Cron Job
+        - name: curl
+          type: "request"
+          podSpec:
+            name: getter
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - wget sample-app-api.debugger.svc:8000/
+        - name: coming-soon
+          type: "deploy"
+          podSpec:
+            name: hello
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - date; echo I'm ready!
+
+To apply a CJI, run  ``oc apply -f cji.yml``
+
+A CJI can then be checked by ``oc get cji``
+
 
 .. _Clowder API reference: https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job
 .. vim: tw=80 spell spelllang=en
