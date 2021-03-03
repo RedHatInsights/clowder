@@ -124,15 +124,9 @@ func (m *Maker) makeService(deployment crd.Deployment, app *crd.ClowdApp) error 
 	}
 
 	if deployment.WebServices.Private.Enabled {
-
-		privatePort := m.Env.Spec.Providers.Web.PrivatePort
-		if privatePort == 0 {
-			privatePort = 10000
-		}
-
 		webPort := core.ServicePort{
 			Name:        "private",
-			Port:        privatePort,
+			Port:        m.Env.Spec.Providers.Web.PrivatePort,
 			Protocol:    "TCP",
 			AppProtocol: &appProtocol,
 		}
@@ -613,11 +607,29 @@ func (m *Maker) runProviders() (*config.AppConfig, error) {
 
 func (m *Maker) makeDependencies(c *config.AppConfig) error {
 
+	if m.Env.Spec.Providers.Web.PrivatePort == 0 {
+		m.Env.Spec.Providers.Web.PrivatePort = 10000
+	}
+
+	depConfig := []config.DependencyEndpoint{}
+	privDepConfig := []config.PrivateDependencyEndpoint{}
+
+	processAppEndpoints(
+		map[string]crd.ClowdApp{m.App.Name: *m.App},
+		[]string{m.App.Name},
+		&depConfig,
+		&privDepConfig,
+		m.Env.Spec.Providers.Web.Port,
+		m.Env.Spec.Providers.Web.PrivatePort,
+	)
+
 	// Return if no deps
 
 	deps := m.App.Spec.Dependencies
 	odeps := m.App.Spec.OptionalDependencies
 	if (deps == nil || len(deps) == 0) && (odeps == nil || len(odeps) == 0) {
+		c.Endpoints = depConfig
+		c.PrivateEndpoints = privDepConfig
 		return nil
 	}
 
@@ -631,11 +643,14 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 	}
 
 	// Iterate over all deps
-
-	if m.Env.Spec.Providers.Web.PrivatePort == 0 {
-		m.Env.Spec.Providers.Web.PrivatePort = 10000
-	}
-	depConfig, privDepConfig, missingDeps := makeDepConfig(m.Env.Spec.Providers.Web.Port, m.Env.Spec.Providers.Web.PrivatePort, m.App, &apps)
+	missingDeps := makeDepConfig(
+		&depConfig,
+		&privDepConfig,
+		m.Env.Spec.Providers.Web.Port,
+		m.Env.Spec.Providers.Web.PrivatePort,
+		m.App,
+		&apps,
+	)
 
 	if len(missingDeps) > 0 {
 		depVal := map[string][]string{"services": missingDeps}
@@ -648,11 +663,13 @@ func (m *Maker) makeDependencies(c *config.AppConfig) error {
 }
 
 func makeDepConfig(
+	depConfig *[]config.DependencyEndpoint,
+	privDepConfig *[]config.PrivateDependencyEndpoint,
 	webPort int32,
 	privatePort int32,
 	app *crd.ClowdApp,
 	apps *crd.ClowdAppList,
-) (depConfig []config.DependencyEndpoint, privDepConfig []config.PrivateDependencyEndpoint, missingDeps []string) {
+) (missingDeps []string) {
 
 	appMap := map[string]crd.ClowdApp{}
 
@@ -667,22 +684,10 @@ func makeDepConfig(
 		}
 	}
 
-	depConfig = []config.DependencyEndpoint{}
-	privDepConfig = []config.PrivateDependencyEndpoint{}
+	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, privatePort)
+	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webPort, privatePort)
 
-	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, &depConfig, &privDepConfig, webPort, privatePort)
-	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, &depConfig, &privDepConfig, webPort, privatePort)
-
-	processAppEndpoints(
-		map[string]crd.ClowdApp{app.Name: *app},
-		[]string{app.Name},
-		&(depConfig),
-		&(privDepConfig),
-		webPort,
-		privatePort,
-	)
-
-	return depConfig, privDepConfig, missingDeps
+	return missingDeps
 }
 
 func processAppEndpoints(
