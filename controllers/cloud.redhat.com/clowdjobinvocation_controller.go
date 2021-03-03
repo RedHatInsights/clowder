@@ -52,6 +52,7 @@ type ClowdJobInvocationReconciler struct {
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;create;update;watch;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 
+// Reconcile CJI Resources
 func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
 	log := r.Log.WithValues("jobinvocation", qualifiedName)
@@ -143,6 +144,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	return ctrl.Result{}, nil
 }
 
+// InvokeJob is responsible for applying the Job. It also updates and reports
+// the status of that job
 func (r *ClowdJobInvocationReconciler) InvokeJob(job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, jinv *crd.ClowdJobInvocation, ctx context.Context) error {
 	now := time.Now()
 	nn := types.NamespacedName{
@@ -174,6 +177,8 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(job *crd.Job, app *crd.ClowdApp
 	return nil
 }
 
+// applyJob build the k8s job resource and applies it from the Job config
+// defined in the ClowdApp
 func applyJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
@@ -262,6 +267,7 @@ func applyJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedN
 	return nil
 }
 
+// getJobFromName matches a CJI job name to an App's job definition
 func getJobFromName(jobName string, app *crd.ClowdApp, job *crd.Job) error {
 	for _, j := range app.Spec.Jobs {
 		if j.Name == jobName {
@@ -274,6 +280,7 @@ func getJobFromName(jobName string, app *crd.ClowdApp, job *crd.Job) error {
 
 }
 
+// SetupWithManager registers the CJI with the main manager process
 func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("jobinvocation")
 	return ctrl.NewControllerManagedBy(mgr).
@@ -281,6 +288,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Complete(r)
 }
 
+// setCompletedStatus will determine if a CJI has completed all needed Jobs
 func setCompletedStatus(ctx context.Context, client client.Client, jinv *crd.ClowdJobInvocation) error {
 	// Can we filter this by only jobs in this namespace?
 	jobs := batchv1.JobList{}
