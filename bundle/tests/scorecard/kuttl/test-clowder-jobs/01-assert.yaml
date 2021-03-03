@@ -40,12 +40,15 @@ metadata:
   name: puptoo-restart-on-failure
   namespace: test-clowder-jobs
 spec:
-  template:
+  concurrencyPolicy: Allow
+  jobTemplate:
     spec:
-      containers:
-        - name: puptoo-restart-on-failure
-          image: quay.io/psav/clowder-hello
-      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: puptoo-restart-on-failure
+              image: quay.io/psav/clowder-hello
+          restartPolicy: OnFailure
 ---
 apiVersion: batch/v1
 kind: Job
