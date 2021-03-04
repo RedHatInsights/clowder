@@ -85,8 +85,10 @@ func (m *Maker) Make() error {
 
 	for _, job := range m.App.Spec.Jobs {
 
-		if err := m.makeJob(job, m.App, hash); err != nil {
-			return err
+		if job.Schedule != "" {
+			if err := m.makeJob(job, m.App, hash); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -211,13 +213,10 @@ func (m *Maker) makeJob(job crd.Job, app *crd.ClowdApp, hash string) error {
 		Namespace: m.Request.Namespace,
 	}
 
-	// Since pod templates common between cron and oneshot jobs
-	// we will build the pod template and then apply the
-	// Job or CronJob specs after
-	pt := core.PodTemplateSpec{}
-	buildPodTemplate(m.App, m.Env, &pt, nn, job, hash)
-
 	if job.Schedule != "" {
+
+		pt := core.PodTemplateSpec{}
+		buildPodTemplate(m.App, m.Env, &pt, nn, job, hash)
 
 		c := batch.CronJob{}
 

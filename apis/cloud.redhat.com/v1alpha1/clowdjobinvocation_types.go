@@ -36,7 +36,7 @@ type ClowdJobInvocationStatus struct {
 	Completed bool `json:"completed"`
 	// PodNames is a map of the job name in the Job invocation and the
 	// name of the pod responsible for that job
-	PodNames map[string]string `json:"podNames"`
+	PodNames []string `json:"podNames"`
 }
 
 // +kubebuilder:object:root=true
