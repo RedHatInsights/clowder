@@ -62,7 +62,7 @@ spec:
         args:
           - ./clowder-hello
           - boo
-    - name: request-cji 
+    - name: hello-cji
       type: "request"
       podSpec:
         image: busybox
@@ -74,10 +74,9 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
 metadata:
-  name: puptoo
+  name: runner
   namespace: test-clowder-jobs
 spec:
   appName: puptoo
   jobs:
-    - request-cji
-
+    - hello-cji

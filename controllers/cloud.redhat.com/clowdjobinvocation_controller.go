@@ -19,7 +19,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"time"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	maker "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
@@ -49,7 +48,7 @@ type ClowdJobInvocationReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=configmaps;services;persistentvolumeclaims;secrets;events;namespaces,verbs=get;list;watch
-// +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;create;update;watch;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=cronjobs;jobs,verbs=get;list;create;update;watch;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 
 // Reconcile CJI Resources
@@ -67,7 +66,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 			// Must have been deleted
 			return ctrl.Result{}, nil
 		}
-
 		return ctrl.Result{}, err
 	}
 
@@ -87,12 +85,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	setCompletedStatus(ctx, r.Client, &jinv)
-	err = r.Client.Status().Update(ctx, &jinv)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
 	// Determine if the Clowapp containing the Job is ready
 	if app.Status.Ready == false {
 		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", jinv.Spec.AppName)
@@ -106,12 +98,23 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		Name: app.Spec.EnvName,
 	}, &env)
 
+	if err != nil {
+		r.Recorder.Eventf(&jinv, "Warning", "ClowdEnvMissing", "ClowdEnv [%s] is missing; Job cannot be invoked", app.Spec.EnvName)
+		return ctrl.Result{Requeue: true}, err
+	}
+
+	r.setCompletedStatus(ctx, &jinv)
+	err = r.Client.Status().Update(ctx, &jinv)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// if the Invocation is already run, don't run again
 	// May need to handle a scenario where 1 app is complete and another isn't
 	if jinv.Status.Completed {
-		r.Log.Info("Requested jobs are already completed", "jobinvocation", jinv.Name, "namespace", app.Namespace)
-		for k, v := range jinv.Status.PodNames {
-			r.Log.Info(k, " ran via ", v, "jobinvocation", jinv.Name, "namespace", app.Namespace)
+		r.Log.Info("Requested jobs are completed", "jobinvocation", jinv.Name, "namespace", app.Namespace)
+		for _, i := range jinv.Status.PodNames {
+			r.Log.Info(i, "ran via jobinvocation", jinv.Name, "namespace", app.Namespace)
 		}
 		return ctrl.Result{}, nil
 	}
@@ -127,15 +130,23 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 			return ctrl.Result{}, err
 		}
 
+		fullJobName := fmt.Sprintf("%v-%v-%v", app.Name, jobContent.Name, jinv.Name)
+
+		if contains(jinv.Status.PodNames, fullJobName) {
+			r.Log.Info("Job has already been invoked", "jobinvocation", fullJobName, "namespace", app.Namespace)
+			return ctrl.Result{Requeue: true}, nil
+		}
+
 		// We have a match that isn't duplicated and can invoke the job
 		r.Log.Info("Invoking job", "jobinvocation", jobName, "namespace", app.Namespace)
-		if err := r.InvokeJob(&jobContent, &app, &env, &jinv, ctx); err != nil {
+
+		if err := r.InvokeJob(ctx, &jobContent, &app, &env, &jinv); err != nil {
 			r.Log.Info("Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
-	setCompletedStatus(ctx, r.Client, &jinv)
+	r.setCompletedStatus(ctx, &jinv)
 	err = r.Client.Status().Update(ctx, &jinv)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -146,40 +157,40 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 // InvokeJob is responsible for applying the Job. It also updates and reports
 // the status of that job
-func (r *ClowdJobInvocationReconciler) InvokeJob(job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, jinv *crd.ClowdJobInvocation, ctx context.Context) error {
-	now := time.Now()
+func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, jinv *crd.ClowdJobInvocation) error {
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v-%v", app.Name, job.Name, now.Unix()),
+		Name:      fmt.Sprintf("%v-%v-%v", app.Name, job.Name, jinv.Name),
 		Namespace: app.Namespace,
 	}
 	j := batchv1.Job{}
 
 	jobType := job.Type
 	switch jobType {
+
 	case "request":
-		jinv.Status.PodNames = make(map[string]string)
-		applyJob(app, env, nn, job, &j)
-		jinv.Status.PodNames[job.Name] = j.ObjectMeta.Labels["pod"]
+		createJobResource(app, env, nn, job, &j)
+		if err := r.Client.Create(ctx, &j); err != nil {
+			return err
+		}
+		jinv.Status.PodNames = append(jinv.Status.PodNames, j.ObjectMeta.Labels["pod"])
+		r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
+
 	case "deploy":
 		r.Recorder.Eventf(app, "Warning", "Found a deploy type job. To Invoke a Job, ensure the type is set to request in the ClowdApp", "%s is not type request", job.Name)
 		r.Log.Info("Job of type Deploy found; skipping", "jobinvocation", job.Name, "namespace", app.Namespace)
+
 	default:
 		r.Recorder.Eventf(app, "Warning", "ClowdJobInvocationError", "ClowdJobInvocation [%s] has no type; Job cannot be invoked", app.Name)
 		r.Log.Info("Job has no type", "jobinvocation", job.Name, "namespace", app.Namespace)
 		return errors.New(fmt.Sprintf("Job has no type %s", job.Name))
 	}
 
-	if err := r.Client.Create(ctx, &j); err != nil {
-		return err
-	}
-	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
-
 	return nil
 }
 
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
-func applyJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
+func createJobResource(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
@@ -289,10 +300,15 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 }
 
 // setCompletedStatus will determine if a CJI has completed all needed Jobs
-func setCompletedStatus(ctx context.Context, client client.Client, jinv *crd.ClowdJobInvocation) error {
-	// Can we filter this by only jobs in this namespace?
+func (r *ClowdJobInvocationReconciler) setCompletedStatus(ctx context.Context, jinv *crd.ClowdJobInvocation) error {
+
+	if len(jinv.Status.PodNames) == 0 {
+		jinv.Status.PodNames = []string{}
+		return nil
+	}
+
 	jobs := batchv1.JobList{}
-	err := client.List(ctx, &jobs)
+	err := r.Client.List(ctx, &jobs, client.InNamespace(jinv.ObjectMeta.Namespace))
 	if err != nil {
 		return err
 	}
@@ -300,24 +316,15 @@ func setCompletedStatus(ctx context.Context, client client.Client, jinv *crd.Clo
 	jobsCompleted := 0
 
 	for _, j := range jobs.Items {
-		if mapContains(jinv.Status.PodNames, j.ObjectMeta.Name) {
+		if contains(jinv.Status.PodNames, j.ObjectMeta.Labels["pod"]) {
 			if j.Status.Succeeded > 0 {
 				jobsCompleted++
-
 			}
 		}
 	}
+
 	jinv.Status.Completed = completionsNeeded == jobsCompleted
 
 	return nil
 
-}
-
-func mapContains(m map[string]string, s string) bool {
-	for k, _ := range m {
-		if m[k] == s {
-			return true
-		}
-	}
-	return false
 }

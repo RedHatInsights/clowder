@@ -62,11 +62,11 @@ spec:
                 finished successfully or failed past their backoff and retry values
               type: boolean
             podNames:
-              additionalProperties:
-                type: string
               description: PodNames is a map of the job name in the Job invocation
                 and the name of the pod responsible for that job
-              type: object
+              items:
+                type: string
+              type: array
           required:
           - completed
           - podNames
