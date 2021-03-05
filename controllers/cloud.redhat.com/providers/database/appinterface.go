@@ -177,6 +177,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfig, error) {
 			Username: string(m["db.user"]),
 			Password: string(m["db.password"]),
 			Name:     string(m["db.name"]),
+			SslMode:  "verify-full",
 		}
 
 		configs = append(configs, dbConfig)

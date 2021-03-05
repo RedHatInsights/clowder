@@ -215,6 +215,10 @@
                 "rdsCa": {
                     "description": "Defines the CA used to access the database.",
                     "type": "string"
+                },
+                "sslMode": {
+                    "description": "Defines the postgres SSL mode that should be used.",
+                    "type": "string"
                 }
             },
             "required": [
@@ -224,7 +228,8 @@
                 "hostname",
                 "port",
                 "adminUsername",
-                "adminPassword"
+                "adminPassword",
+                "sslMode"
             ]
         },
         "ObjectStoreBucket": {
