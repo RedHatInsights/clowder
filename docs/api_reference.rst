@@ -507,7 +507,7 @@ Appears In:
 PodSpecDeprecated 
 ^^^^^^^^^^^^^^^^^^^^^^
 
-
+PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
 
 Appears In:
 :ref:`ClowdAppSpec`

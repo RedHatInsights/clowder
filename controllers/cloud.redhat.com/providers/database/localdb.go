@@ -69,6 +69,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 	dbCfg.Populate(secMap)
 	dbCfg.AdminUsername = "postgres"
+	dbCfg.SslMode = "disable"
 
 	db.Config = dbCfg
 
@@ -136,6 +137,7 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfi
 	}
 
 	dbCfg := config.DatabaseConfig{}
+	dbCfg.SslMode = "disable"
 
 	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app)
 

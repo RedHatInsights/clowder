@@ -543,6 +543,7 @@ Reference this group by using
 | [adminUsername](#adminusername) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername") |
 | [adminPassword](#adminpassword) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminpassword.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminPassword") |
 | [rdsCa](#rdsca)                 | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-rdsca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/rdsCa")                 |
+| [sslMode](#sslmode)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-sslmode.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/sslMode")             |
 
 ### name
 
@@ -669,6 +670,22 @@ Defines the CA used to access the database.
 -   defined in: [AppConfig](schema-definitions-databaseconfig-properties-rdsca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/rdsCa")
 
 #### rdsCa Type
+
+`string`
+
+### sslMode
+
+Defines the postgres SSL mode that should be used.
+
+
+`sslMode`
+
+-   is required
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-databaseconfig-properties-sslmode.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/sslMode")
+
+#### sslMode Type
 
 `string`
 
