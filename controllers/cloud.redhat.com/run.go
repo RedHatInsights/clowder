@@ -59,10 +59,10 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 	}
 	if err = (&ClowdJobInvocationReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("JobInvocation"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdJobInvocation"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "JobInvocation")
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdJobInvocation")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
