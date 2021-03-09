@@ -367,6 +367,29 @@ Appears In:
    "``startingDeadlineSeconds`` (integer)", "Defines the StartingDeadlineSeconds for the CronJob"
 
 
+.. _KafkaClusterConfig :
+
+KafkaClusterConfig 
+^^^^^^^^^^^^^^^^^^^^^^
+
+KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
+
+Appears In:
+:ref:`KafkaConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``name`` (string)", "Defines the kafka cluster name"
+   "``namespace`` (string)", "The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)"
+   "``replicas`` (integer)", "The requested number of replicas for kafka/zookeeper. If unset, default is '1'"
+   "``storageSize`` (string)", "Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'"
+   "``deleteClaim`` (boolean)", "Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'"
+   "``version`` (string)", "Version. If unset, default is "2.5.0""
+
+
 .. _KafkaConfig :
 
 KafkaConfig 
@@ -382,13 +405,37 @@ Appears In:
    :header: "Field", "Description"
    :widths: 10, 40
 
-   "``clusterName`` (string)", "Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance."
-   "``namespace`` (string)", "The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
-   "``connectNamespace`` (string)", "The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
-   "``connectClusterName`` (string)", "Defines the kafka connect cluster name that is used in this environment."
-   "``mode`` (KafkaMode)", "The mode of operation of the Clowder Kafka Provider. Valid options are: (*_operator_*) which expects a Strimzi Kafka instance and will configure KafkaTopic CRs and place them in the Namespace described in the configuration, (*_app-interface_*) which simple passes the topic names through to the App's cdappconfig.json and expects app-interface to have created the relevant topics, and (*_local_*) where a small instance of Kafka is created in the Env namespace and configured to auto-create topics."
-   "``suffix`` (string)", "(Unused)"
-   "``pvc`` (boolean)", "If using the (*_local_*) mode and PVC is set to true, this instructs the local Kafka instance to use a PVC instead of emptyDir for its volumes."
+   "``mode`` (KafkaMode)", "The mode of operation of the Clowder Kafka Provider. Valid options are: (*_operator_*) which provisions Strimzi resources and will configure KafkaTopic CRs and place them in the Kafka cluster's namespace described in the configuration, (*_app-interface_*) which simply passes the topic names through to the App's cdappconfig.json and expects app-interface to have created the relevant topics, and (*_local_*) where a small instance of Kafka is created in the desired cluster namespace and configured to auto-create topics."
+   "``pvc`` (boolean)", "If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned Kafka instance to use a PVC instead of emptyDir for its volumes."
+   "``cluster`` (:ref:`KafkaClusterConfig`)", "Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode."
+   "``connect`` (:ref:`KafkaConnectClusterConfig`)", "Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode."
+   "``clusterName`` (string)", "(Deprecated) Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance."
+   "``namespace`` (string)", "(Deprecated) The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
+   "``connectNamespace`` (string)", "(Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
+   "``connectClusterName`` (string)", "(Deprecated) Defines the kafka connect cluster name that is used in this environment."
+   "``suffix`` (string)", "(Deprecated) (Unused)"
+
+
+.. _KafkaConnectClusterConfig :
+
+KafkaConnectClusterConfig 
+^^^^^^^^^^^^^^^^^^^^^^
+
+KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
+
+Appears In:
+:ref:`KafkaConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``name`` (string)", "Defines the kafka connect cluster name (default: "<kafka cluster's name>-connect")"
+   "``namespace`` (string)", "The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace)"
+   "``replicas`` (integer)", "The requested number of replicas for kafka connect. If unset, default is '1'"
+   "``version`` (string)", "Version. If unset, default is "2.5.0""
+   "``image`` (string)", "Image. If unset, default is "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest""
 
 
 .. _KafkaTopicSpec :
