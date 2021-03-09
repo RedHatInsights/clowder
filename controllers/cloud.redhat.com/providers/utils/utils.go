@@ -46,6 +46,8 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		Name: "quay-cloudservices-pull",
 	}}
 
+	dd.Spec.Template.Spec.ServiceAccountName = baseResource.GetClowdSAName()
+
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},

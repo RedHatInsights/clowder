@@ -121,6 +121,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
+	//TODO: Move to new provider when resCache is ready
+	err = createServiceAccount(ctx, &proxyClient, &env, env.Spec.Providers.PullSecrets)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
 
 	provider := providers.Provider{

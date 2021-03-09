@@ -281,6 +281,9 @@ type ClowdEnvironmentSpec struct {
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 }
 
+//PullSecrets defines the pull secret to use for the created Clowder service accounts.
+type PullSecrets []string
+
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
 type ProvidersConfig struct {
 	// Defines the Configuration for the Clowder Database Provider.
@@ -309,6 +312,9 @@ type ProvidersConfig struct {
 
 	// Defines the Configuration for the Clowder ServiceMesh Provider.
 	ServiceMesh ServiceMeshConfig `json:"serviceMesh,omitempty"`
+
+	// Defines the pull secret to use for the service accounts.
+	PullSecrets PullSecrets `json:"pullSecrets,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
@@ -404,6 +410,11 @@ func (i *ClowdEnvironment) GetClowdNamespace() string {
 // GetClowdName returns the name of the ClowdApp object.
 func (i *ClowdEnvironment) GetClowdName() string {
 	return i.Name
+}
+
+// GetClowdSAName returns the ServiceAccount Name for the App
+func (i *ClowdEnvironment) GetClowdSAName() string {
+	return fmt.Sprintf("%s-env", i.GetClowdName())
 }
 
 // GetUID returns ObjectMeta.UID

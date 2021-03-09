@@ -146,6 +146,8 @@ func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Ser
 		Name: "quay-cloudservices-pull",
 	}}
 
+	dd.Spec.Template.Spec.ServiceAccountName = o.GetClowdSAName()
+
 	// get the secret
 
 	port := int32(4242)

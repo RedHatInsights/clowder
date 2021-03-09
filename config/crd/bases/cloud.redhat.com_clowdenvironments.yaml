@@ -296,6 +296,11 @@ spec:
                   required:
                   - mode
                   type: object
+                pullSecrets:
+                  description: Defines the pull secret to use for the service accounts.
+                  items:
+                    type: string
+                  type: array
                 serviceMesh:
                   description: Defines the Configuration for the Clowder ServiceMesh
                     Provider.
