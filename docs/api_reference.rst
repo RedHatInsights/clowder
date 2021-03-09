@@ -621,6 +621,7 @@ Appears In:
    "``web`` (:ref:`WebConfig`)", "Defines the Configuration for the Clowder Web Provider."
    "``featureFlags`` (:ref:`FeatureFlagsConfig`)", "Defines the Configuration for the Clowder FeatureFlags Provider."
    "``serviceMesh`` (:ref:`ServiceMeshConfig`)", "Defines the Configuration for the Clowder ServiceMesh Provider."
+   "``pullSecrets`` (string array)", "Defines the pull secret to use for the service accounts."
 
 
 .. _PublicWebService :
@@ -639,6 +640,8 @@ Appears In:
    :widths: 10, 40
 
    "``enabled`` (boolean)", "Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig."
+
+
 
 
 .. _ServiceMeshConfig :

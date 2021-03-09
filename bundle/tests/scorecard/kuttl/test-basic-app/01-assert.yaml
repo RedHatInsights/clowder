@@ -20,6 +20,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: puptoo-app
       containers:
       - env:
         - name: ENV_VAR_1
@@ -65,3 +66,11 @@ status:
       - hostname: puptoo-processor.test-basic-app.svc
         name: puptoo-processor
         port: 8000
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: puptoo-app
+  namespace: test-basic-app
+imagePullSecrets:
+  - name: test

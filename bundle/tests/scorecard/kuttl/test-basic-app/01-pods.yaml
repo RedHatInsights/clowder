@@ -23,6 +23,8 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
+    pullSecrets:
+    - test
   resourceDefaults:
     limits:
       cpu: 400m

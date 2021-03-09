@@ -398,6 +398,11 @@ func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
 	return &i.Status.Deployments
 }
 
+// GetClowdSAName returns the ServiceAccount Name for the App
+func (i *ClowdApp) GetClowdSAName() string {
+	return fmt.Sprintf("%s-app", i.GetClowdName())
+}
+
 // ConvertToNewShim converts an old "pod" based spec into the new "deployment" style.
 func (i *ClowdApp) ConvertToNewShim() {
 	deps := []Deployment{}
