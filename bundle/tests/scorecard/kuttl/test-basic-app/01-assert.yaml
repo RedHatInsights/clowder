@@ -5,7 +5,7 @@ metadata:
   name: puptoo
   namespace: test-basic-app
   labels:
-    app: puptoo
+    clowdapp: puptoo
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdApp

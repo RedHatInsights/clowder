@@ -184,7 +184,7 @@ func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 	nn := providers.GetNamespacedName(o, "minio")
 
 	labels := o.GetLabels()
-	labels["env-app"] = nn.Name
+	labels["env-clowdapp"] = nn.Name
 
 	labeler := utils.MakeLabeler(nn, labels, o)
 

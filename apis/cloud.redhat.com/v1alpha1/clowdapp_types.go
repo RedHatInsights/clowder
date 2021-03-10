@@ -347,8 +347,8 @@ func (i *ClowdApp) GetLabels() map[string]string {
 		i.Labels = map[string]string{}
 	}
 
-	if _, ok := i.Labels["app"]; !ok {
-		i.Labels["app"] = i.ObjectMeta.Name
+	if _, ok := i.Labels["clowdapp"]; !ok {
+		i.Labels["clowdapp"] = i.ObjectMeta.Name
 	}
 
 	newMap := make(map[string]string, len(i.Labels))

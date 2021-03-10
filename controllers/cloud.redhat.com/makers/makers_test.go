@@ -21,7 +21,7 @@ func defaultMetaObject() metav1.ObjectMeta {
 		Name:      "reqapp",
 		Namespace: "default",
 		Labels: map[string]string{
-			"app": "test",
+			"clowdapp": "test",
 		},
 	}
 }
