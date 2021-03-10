@@ -61,6 +61,13 @@ metadata:
   name: test-basic-app
 status:
   apps:
+    - name: livenessoverride
+      deployments:
+      - hostname: livenessoverride-service.test-basic-app.svc
+        name: livenessoverride-service
+        port: 8000
+      - name: livenessoverride-service-three
+      - name: livenessoverride-service-two
     - name: puptoo
       deployments:
       - hostname: puptoo-processor.test-basic-app.svc
@@ -74,3 +81,69 @@ metadata:
   namespace: test-basic-app
 imagePullSecrets:
   - name: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livenessoverride-service
+  namespace: test-basic-app
+spec:
+  template:
+    spec:
+      serviceAccountName: livenessoverride-app
+      containers:
+      - livenessProbe:
+          httpGet:
+            path: /notquite
+            port: public
+        readinessProbe:
+          httpGet:
+            path: /notquite
+            port: private
+        ports:
+          - name: metrics
+          - name: private
+          - name: public
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livenessoverride-service-two
+  namespace: test-basic-app
+spec:
+  template:
+    spec:
+      serviceAccountName: livenessoverride-app
+      containers:
+      - livenessProbe:
+          httpGet:
+            path: /notquite
+            port: public
+        readinessProbe:
+          httpGet:
+            path: /notquite
+            port: public
+        ports:
+          - name: metrics
+          - name: public
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livenessoverride-service-three
+  namespace: test-basic-app
+spec:
+  template:
+    spec:
+      serviceAccountName: livenessoverride-app
+      containers:
+      - livenessProbe:
+          httpGet:
+            path: /notquite
+            port: metrics
+        readinessProbe:
+          httpGet:
+            path: /notquite
+            port: metrics
+        ports:
+          - name: metrics

@@ -464,7 +464,9 @@ func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, has
 		return err
 	}
 
-	initDeployment(m.App, m.Env, &d, nn, deployment, hash)
+	if err := initDeployment(m.App, m.Env, &d, nn, deployment, hash); err != nil {
+		return err
+	}
 
 	if err := update.Apply(m.Ctx, m.Client, &d); err != nil {
 		return err
@@ -473,7 +475,61 @@ func (m *Maker) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp, has
 	return nil
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment, hash string) {
+func applyProbePort(probe *core.Probe, env *crd.ClowdEnvironment, deployment *crd.Deployment) error {
+	if (core.Handler{}) == probe.Handler {
+		return nil
+	} else if (&core.HTTPGetAction{}) == probe.Handler.HTTPGet {
+		return nil
+	}
+
+	currentPort := probe.Handler.HTTPGet.Port
+
+	// Possible values are "public", "private", "metrics, or the (correct)
+	// corresponding port number. We convert the port number to the string value.
+	// If the value specified is none of the above, the port is set to "public"
+	// if the public endpoint is enabled, otherwise it is set to "metrics".
+
+	if currentPort.String() == "private" || currentPort.IntValue() == int(env.Spec.Providers.Web.PrivatePort) {
+		if !deployment.WebServices.Private.Enabled {
+			return errors.New(fmt.Sprintf("Cannot set liveness probe to use private port for container %s", deployment.Name))
+		}
+
+		// ensure string value
+		probe.Handler.HTTPGet.Port = intstr.IntOrString{
+			Type:   intstr.String,
+			StrVal: "private",
+		}
+	} else if currentPort.String() == "metrics" || currentPort.IntValue() == int(env.Spec.Providers.Metrics.Port) {
+		// ensure string value
+		probe.Handler.HTTPGet.Port = intstr.IntOrString{
+			Type:   intstr.String,
+			StrVal: "metrics",
+		}
+	} else if currentPort.String() == "public" || currentPort.IntValue() == int(env.Spec.Providers.Web.Port) {
+		if !deployment.WebServices.Public.Enabled {
+			return errors.New(fmt.Sprintf("Cannot set liveness probe to use public port for container %s", deployment.Name))
+		}
+		// ensure string value
+		probe.Handler.HTTPGet.Port = intstr.IntOrString{
+			Type:   intstr.String,
+			StrVal: "public",
+		}
+	} else if deployment.WebServices.Public.Enabled {
+		probe.Handler.HTTPGet.Port = intstr.IntOrString{
+			Type:   intstr.String,
+			StrVal: "public",
+		}
+	} else {
+		probe.Handler.HTTPGet.Port = intstr.IntOrString{
+			Type:   intstr.String,
+			StrVal: "metrics",
+		}
+	}
+
+	return nil
+}
+
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment, hash string) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
@@ -522,11 +578,21 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
+		err := applyProbePort(&livenessProbe, env, &deployment)
+
+		if err != nil {
+			return err
+		}
 	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		livenessProbe = baseProbe
 	}
 	if pod.ReadinessProbe != nil {
 		readinessProbe = *pod.ReadinessProbe
+		err := applyProbePort(&readinessProbe, env, &deployment)
+
+		if err != nil {
+			return err
+		}
 	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		readinessProbe = baseProbe
 		readinessProbe.InitialDelaySeconds = 45
@@ -554,9 +620,16 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		c.ReadinessProbe = &readinessProbe
 	}
 
-	if deployment.Web {
+	if deployment.WebServices.Private.Enabled {
 		c.Ports = append(c.Ports, core.ContainerPort{
-			Name:          "web",
+			Name:          "private",
+			ContainerPort: env.Spec.Providers.Web.Port,
+		})
+	}
+
+	if deployment.WebServices.Public.Enabled {
+		c.Ports = append(c.Ports, core.ContainerPort{
+			Name:          "public",
 			ContainerPort: env.Spec.Providers.Web.Port,
 		})
 	}
@@ -590,6 +663,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	d.Spec.Template.SetAnnotations(annotations)
+
+	return nil
 }
 
 func (m *Maker) runProviders() (*config.AppConfig, error) {

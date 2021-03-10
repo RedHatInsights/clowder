@@ -8,6 +8,7 @@ spec:
   providers:
     web:
       port: 8000
+      privatePort: 8001
       mode: operator
     metrics:
       port: 9000
@@ -56,3 +57,53 @@ spec:
           - name: ENV_VAR_3
             value: env_var_3
     web: True
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: livenessoverride
+  namespace: test-basic-app
+spec:
+  envName: test-basic-app
+  deployments:
+  - name: service
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      livenessProbe:
+        httpGet:
+          path: /notquite
+          port: public
+      readinessProbe:
+        httpGet:
+          path: /notquite
+          port: private
+    webServices:
+      public:
+        enabled: true
+      private:
+        enabled: true
+  - name: service-two
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      livenessProbe:
+        httpGet:
+          path: /notquite
+          port: 8000
+      readinessProbe:
+        httpGet:
+          path: /notquite
+          port: busted
+    webServices:
+      public:
+        enabled: true
+  - name: service-three
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      livenessProbe:
+        httpGet:
+          path: /notquite
+          port: 9000
+      readinessProbe:
+        httpGet:
+          path: /notquite
+          port: metrics
