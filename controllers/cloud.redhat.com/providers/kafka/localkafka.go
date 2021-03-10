@@ -29,6 +29,24 @@ type localKafka struct {
 	Config config.KafkaConfig
 }
 
+// LocalKafkaDeployment identifies the main kafka deployment
+var LocalKafkaDeployment = p.NewSingleResourceIdent(ProvName, "local_kafka_deployment", &apps.Deployment{})
+
+// LocalKafkaService identifies the main kafka service
+var LocalKafkaService = p.NewSingleResourceIdent(ProvName, "local_kafka_service", &core.Service{})
+
+// LocalKafkaPVC identifies the main kafka configmap
+var LocalKafkaPVC = p.NewSingleResourceIdent(ProvName, "local_kafka_pvc", &core.PersistentVolumeClaim{})
+
+// LocalZookeeperDeployment identifies the main zookeeper deployment
+var LocalZookeeperDeployment = p.NewSingleResourceIdent(ProvName, "local_zookeeper_deployment", &apps.Deployment{})
+
+// LocalZookeeperService identifies the main zookeeper service
+var LocalZookeeperService = p.NewSingleResourceIdent(ProvName, "local_zookeeper_service", &core.Service{})
+
+// LocalZookeeperPVC identifies the main zookeeper configmap
+var LocalZookeeperPVC = p.NewSingleResourceIdent(ProvName, "local_zookeeper_pvc", &core.PersistentVolumeClaim{})
+
 func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if len(app.Spec.KafkaTopics) == 0 {
 		return nil
@@ -82,11 +100,29 @@ func NewLocalKafka(p *p.Provider) (providers.ClowderProvider, error) {
 		Config:   config,
 	}
 
-	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC); err != nil {
+	zookeeperCacheMap := []providers.ResourceIdent{
+		LocalZookeeperDeployment,
+		LocalZookeeperService,
+	}
+
+	if p.Env.Spec.Providers.Kafka.PVC {
+		zookeeperCacheMap = append(zookeeperCacheMap, LocalZookeeperPVC)
+	}
+
+	if err := providers.CachedMakeComponent(p.Cache, zookeeperCacheMap, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC); err != nil {
 		return &kafkaProvider, err
 	}
 
-	if err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC); err != nil {
+	kafkaCacheMap := []providers.ResourceIdent{
+		LocalKafkaDeployment,
+		LocalKafkaService,
+	}
+
+	if p.Env.Spec.Providers.Kafka.PVC {
+		kafkaCacheMap = append(kafkaCacheMap, LocalKafkaPVC)
+	}
+
+	if err := providers.CachedMakeComponent(p.Cache, kafkaCacheMap, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC); err != nil {
 		return &kafkaProvider, err
 	}
 
@@ -104,8 +140,11 @@ func makeEnvVars(list *[]envVar) []core.EnvVar {
 	return envVars
 }
 
-func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
+func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "kafka")
+
+	dd := objMap[LocalKafkaDeployment].(*apps.Deployment)
+	svc := objMap[LocalKafkaService].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -216,13 +255,17 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
 	if usePVC {
+		pvc := objMap[LocalKafkaPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)
 	}
 }
 
-func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
+func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
 
 	nn := providers.GetNamespacedName(o, "zookeeper")
+
+	dd := objMap[LocalZookeeperDeployment].(*apps.Deployment)
+	svc := objMap[LocalZookeeperService].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -367,6 +410,7 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
 	if usePVC {
+		pvc := objMap[LocalZookeeperPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)
 	}
 }

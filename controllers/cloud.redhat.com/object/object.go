@@ -15,4 +15,5 @@ type ClowdObject interface {
 	GetUID() types.UID
 	GetDeploymentStatus() *common.DeploymentStatus
 	GetClowdSAName() string
+	GetPrimaryLabel() string
 }

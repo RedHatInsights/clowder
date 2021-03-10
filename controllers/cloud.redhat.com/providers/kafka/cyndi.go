@@ -7,7 +7,9 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	db "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -52,6 +54,7 @@ func validateCyndiPipeline(
 func createCyndiPipeline(
 	ctx context.Context,
 	cl client.Client,
+	cache *providers.ObjectCache,
 	app *crd.ClowdApp,
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
@@ -67,12 +70,12 @@ func createCyndiPipeline(
 		appName = app.Name
 	}
 
-	inventoryDbSecret, err := createCyndiInventoryDbSecret(ctx, cl, app, env, connectClusterNamespace)
+	inventoryDbSecret, err := createCyndiInventoryDbSecret(ctx, cl, cache, app, env, connectClusterNamespace)
 	if err != nil {
 		return err
 	}
 
-	appDbSecret, err := createCyndiAppDbSecret(ctx, cl, app, env, connectClusterNamespace)
+	appDbSecret, err := createCyndiAppDbSecret(ctx, cl, cache, app, env, connectClusterNamespace)
 	if err != nil {
 		return err
 	}
@@ -82,10 +85,9 @@ func createCyndiPipeline(
 		Name:      appName,
 	}
 
-	pipeline := cyndi.CyndiPipeline{}
+	pipeline := &cyndi.CyndiPipeline{}
 
-	update, err := utils.UpdateOrErr(cl.Get(ctx, nn, &pipeline))
-	if err != nil {
+	if err := cache.Create(CyndiPipeline, nn, pipeline); err != nil {
 		return err
 	}
 
@@ -101,15 +103,14 @@ func createCyndiPipeline(
 	// are not permitted, make this owned by the ClowdEnvironment
 	pipeline.SetOwnerReferences([]metav1.OwnerReference{env.MakeOwnerReference()})
 
-	err = update.Apply(ctx, cl, &pipeline)
-	if err != nil {
+	if err := cache.Update(CyndiPipeline, pipeline); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getDbSecretInSameEnv(ctx context.Context, cl client.Client, app *crd.ClowdApp, name string) (*core.Secret, error) {
+func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *providers.ObjectCache, app *crd.ClowdApp, name string) (*core.Secret, error) {
 	// locate the clowdapp named 'name' in the same env as 'app' and return its DB secret
 	// TODO: switch this to use cache instead of getting secret out of k8s?
 	appList := &crd.ClowdAppList{}
@@ -144,10 +145,16 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, app *crd.ClowdA
 		Namespace: refApp.Namespace,
 	}
 
-	err = cl.Get(ctx, nn, dbSecret)
+	if name == "host-inventory" {
+		err = cl.Get(ctx, nn, dbSecret)
 
-	if err != nil {
-		return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+		if err != nil {
+			return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+		}
+	} else {
+		if err = cache.Get(db.LocalDBSecret, dbSecret); err != nil {
+			return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+		}
 	}
 
 	return dbSecret, nil
@@ -156,10 +163,12 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, app *crd.ClowdA
 func applySecretToConnectNamespace(
 	ctx context.Context,
 	cl client.Client,
+	cache *providers.ObjectCache,
 	env *crd.ClowdEnvironment,
 	secretName string,
 	connectClusterNamespace string,
 	secretData map[string]string,
+	resourceIdent providers.ResourceIdent,
 ) error {
 	outNN := types.NamespacedName{
 		Name:      secretName,
@@ -168,8 +177,7 @@ func applySecretToConnectNamespace(
 
 	secret := &core.Secret{}
 
-	update, err := utils.UpdateOrErr(cl.Get(ctx, outNN, secret))
-	if err != nil {
+	if err := cache.Create(resourceIdent, outNN, secret); err != nil {
 		return err
 	}
 
@@ -183,7 +191,7 @@ func applySecretToConnectNamespace(
 	// are not permitted, make this owned by the ClowdEnvironment
 	secret.SetOwnerReferences([]metav1.OwnerReference{env.MakeOwnerReference()})
 
-	if err := update.Apply(ctx, cl, secret); err != nil {
+	if err := cache.Update(resourceIdent, secret); err != nil {
 		return err
 	}
 
@@ -194,11 +202,12 @@ func applySecretToConnectNamespace(
 func createCyndiAppDbSecret(
 	ctx context.Context,
 	cl client.Client,
+	cache *providers.ObjectCache,
 	app *crd.ClowdApp,
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
 ) (string, error) {
-	dbSecret, err := getDbSecretInSameEnv(ctx, cl, app, app.Name)
+	dbSecret, err := getDbSecretInSameEnv(ctx, cl, cache, app, app.Name)
 	if err != nil {
 		return "", errors.Wrap(fmt.Sprintf("unable to get '%s' db secret", app.Name), err)
 	}
@@ -218,7 +227,7 @@ func createCyndiAppDbSecret(
 		"db.password": "cyndi",
 	}
 
-	err = applySecretToConnectNamespace(ctx, cl, env, secretName, connectClusterNamespace, secretData)
+	err = applySecretToConnectNamespace(ctx, cl, cache, env, secretName, connectClusterNamespace, secretData, CyndiAppSecret)
 	if err != nil {
 		return "", errors.Wrap("couldn't apply cyndi db secret for app", err)
 	}
@@ -230,11 +239,12 @@ func createCyndiAppDbSecret(
 func createCyndiInventoryDbSecret(
 	ctx context.Context,
 	cl client.Client,
+	cache *providers.ObjectCache,
 	app *crd.ClowdApp,
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
 ) (string, error) {
-	dbSecret, err := getDbSecretInSameEnv(ctx, cl, app, "host-inventory")
+	dbSecret, err := getDbSecretInSameEnv(ctx, cl, cache, app, "host-inventory")
 	if err != nil {
 		return "", errors.Wrap("unable to get host-inventory db secret", err)
 	}
@@ -248,7 +258,7 @@ func createCyndiInventoryDbSecret(
 		"db.user":     string(dbSecret.Data["username"]),
 		"db.password": string(dbSecret.Data["password"]),
 	}
-	err = applySecretToConnectNamespace(ctx, cl, env, secretName, connectClusterNamespace, secretData)
+	err = applySecretToConnectNamespace(ctx, cl, cache, env, secretName, connectClusterNamespace, secretData, CyndiHostInventoryAppSecret)
 	if err != nil {
 		return "", errors.Wrap("couldn't apply cyndi db secret for host-inventory", err)
 	}

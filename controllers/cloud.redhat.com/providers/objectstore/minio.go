@@ -20,6 +20,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// MinioDeployment is the resource ident for the Minio deployment object.
+var MinioDeployment = p.NewSingleResourceIdent(ProvName, "minio_db_deployment", &apps.Deployment{})
+
+// MinioService is the resource ident for the Minio service object.
+var MinioService = p.NewSingleResourceIdent(ProvName, "minio_db_service", &core.Service{})
+
+// MinioPVC is the resource ident for the Minio PVC object.
+var MinioPVC = p.NewSingleResourceIdent(ProvName, "minio_db_pvc", &core.PersistentVolumeClaim{})
+
+// MinioSecret is the resource ident for the Minio secret object.
+var MinioSecret = p.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.Secret{})
+
 const bucketCheckErrorMsg = "failed to check if bucket exists"
 const bucketCreateErrorMsg = "failed to create bucket"
 
@@ -157,7 +169,7 @@ func NewMinIO(p *p.Provider) (providers.ClowderProvider, error) {
 		return createDefaultMinioSecMap(nn.Name, nn.Namespace)
 	}
 	// MakeOrGetSecret will set data if it already exists
-	secMap, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, MinioSecret, nn, dataInit)
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't set/get secret", err)
 		raisedErr.Requeue = true
@@ -170,7 +182,16 @@ func NewMinIO(p *p.Provider) (providers.ClowderProvider, error) {
 		return nil, err
 	}
 
-	err = providers.MakeComponent(p.Ctx, p.Client, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
+	minioCacheMap := []providers.ResourceIdent{
+		MinioDeployment,
+		MinioService,
+	}
+
+	if p.Env.Spec.Providers.Kafka.PVC {
+		minioCacheMap = append(minioCacheMap, MinioPVC)
+	}
+
+	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't make component", err)
 		raisedErr.Requeue = true
@@ -180,8 +201,11 @@ func NewMinIO(p *p.Provider) (providers.ClowderProvider, error) {
 	return mp, nil
 }
 
-func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
+func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "minio")
+
+	dd := objMap[MinioDeployment].(*apps.Deployment)
+	svc := objMap[MinioService].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -300,6 +324,7 @@ func makeLocalMinIO(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 
 	utils.MakeService(svc, nn, labels, servicePorts, o)
 	if usePVC {
+		pvc := objMap[MinioPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)
 	}
 }

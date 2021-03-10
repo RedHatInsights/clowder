@@ -9,7 +9,6 @@ import (
 
 type noneObjectStoreProvider struct {
 	p.Provider
-	Config config.DatabaseConfig
 }
 
 // NewNoneObjectStore returns a new none object store provider object.

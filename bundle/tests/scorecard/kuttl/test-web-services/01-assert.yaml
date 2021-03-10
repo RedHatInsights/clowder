@@ -38,18 +38,21 @@ spec:
   selector:
     pod: puptoo-processor
   ports:
-  - port: 9000
-    targetPort: 9000
-    name: metrics
-    protocol: TCP
   - port: 8000
     targetPort: 8000
     name: public
     protocol: TCP
+    appProtocol: http
   - port: 10000
     targetPort: 10000
     name: private
     protocol: TCP
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    protocol: TCP
+    appProtocol: http
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment

@@ -9,7 +9,6 @@ import (
 
 type noneFeatureFlagProvider struct {
 	p.Provider
-	Config config.DatabaseConfig
 }
 
 // NewNoneFeatureFlagsProvider returns a new none feature flags provider object.

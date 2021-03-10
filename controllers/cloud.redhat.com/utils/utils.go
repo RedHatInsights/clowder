@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
@@ -25,6 +26,10 @@ import (
 )
 
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // Log is a null logger instance.
 var Log logr.Logger = ctrllog.NullLogger{}
@@ -59,7 +64,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 	meta := obj.(metav1.Object)
 
 	if *u {
-		Log.Info("Updating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
+		//Log.Info("Updating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
 		err = cl.Update(ctx, obj)
 	} else {
 		if meta.GetName() == "" {
@@ -67,7 +72,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 			return nil
 		}
 
-		Log.Info("Creating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
+		//Log.Info("Creating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
 		err = cl.Create(ctx, obj)
 	}
 

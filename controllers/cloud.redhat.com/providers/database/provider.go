@@ -8,6 +8,9 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// ProvName is the providers name ident.
+var ProvName = "database"
+
 var imageList map[int32]string
 
 // GetDatabase returns the correct database provider based on the environment.
@@ -27,7 +30,7 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetDatabase, 1, "database")
+	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
 	imageList = map[int32]string{
 		12: "quay.io/cloudservices/postgresql-rds:12-1",
 		10: "quay.io/cloudservices/postgresql-rds:10-1",

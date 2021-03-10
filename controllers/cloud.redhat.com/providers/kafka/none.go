@@ -9,7 +9,6 @@ import (
 
 type noneKafkaProvider struct {
 	p.Provider
-	Config config.DatabaseConfig
 }
 
 // NewNoneKafka returns a new non kafka provider object.
