@@ -50,3 +50,15 @@ spec:
     targetPort: 10000
     name: private
     protocol: TCP
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-web-services
+status:
+  apps:
+    - name: puptoo
+      deployments:
+      - hostname: puptoo-processor.test-web-services.svc
+        name: puptoo-processor
+        port: 8000

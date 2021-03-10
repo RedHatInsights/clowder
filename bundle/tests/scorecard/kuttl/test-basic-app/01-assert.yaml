@@ -53,3 +53,15 @@ spec:
     targetPort: 8000
     name: public
     appProtocol: http
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-basic-app
+status:
+  apps:
+    - name: puptoo
+      deployments:
+      - hostname: puptoo-processor.test-basic-app.svc
+        name: puptoo-processor
+        port: 8000
