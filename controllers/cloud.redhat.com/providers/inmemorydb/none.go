@@ -9,7 +9,6 @@ import (
 
 type noneInMemoryDbProvider struct {
 	p.Provider
-	Config config.DatabaseConfig
 }
 
 // NewNoneInMemoryDb returns a new none in-memory DB provider object.

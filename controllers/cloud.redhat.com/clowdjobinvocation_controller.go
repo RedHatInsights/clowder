@@ -21,11 +21,11 @@ import (
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	maker "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+
 	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	// "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -235,7 +235,7 @@ func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 		Command:      pod.Command,
 		Args:         pod.Args,
 		Env:          envvar,
-		Resources:    maker.ProcessResources(&pod, env),
+		Resources:    deployProvider.ProcessResources(&pod, env),
 		VolumeMounts: pod.VolumeMounts,
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
@@ -258,7 +258,7 @@ func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 
 	j.Spec.Template.Spec.Containers = []core.Container{c}
 
-	j.Spec.Template.Spec.InitContainers = maker.ProcessInitContainers(nn, &c, pod.InitContainers)
+	j.Spec.Template.Spec.InitContainers = deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
 
 	j.Spec.Template.Spec.Volumes = pod.Volumes
 	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{

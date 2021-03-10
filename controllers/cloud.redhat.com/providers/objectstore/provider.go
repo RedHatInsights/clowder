@@ -7,6 +7,9 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// ProvName is the providers ident.
+var ProvName = "objectstore"
+
 // GetObjectStore returns the correct object store provider based on the environment.
 func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
 	objectStoreMode := c.Env.Spec.Providers.ObjectStore.Mode
@@ -24,5 +27,5 @@ func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetObjectStore, 1, "objectstore")
+	p.ProvidersRegistration.Register(GetObjectStore, 5, ProvName)
 }

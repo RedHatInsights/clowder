@@ -17,6 +17,18 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+// LocalDBDeployment is the ident refering to the local DB deployment object.
+var LocalDBDeployment = p.NewSingleResourceIdent(ProvName, "local_db_deployment", &apps.Deployment{})
+
+// LocalDBService is the ident refering to the local DB service object.
+var LocalDBService = p.NewSingleResourceIdent(ProvName, "local_db_service", &core.Service{})
+
+// LocalDBPVC is the ident refering to the local DB PVC object.
+var LocalDBPVC = p.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.PersistentVolumeClaim{})
+
+// LocalDBSecret is the ident refering to the local DB secret object.
+var LocalDBSecret = p.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
+
 type localDbProvider struct {
 	p.Provider
 	Config config.DatabaseConfig
@@ -43,8 +55,8 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		Namespace: app.Namespace,
 	}
 
-	dd := apps.Deployment{}
-	exists, err := utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &dd))
+	dd := &apps.Deployment{}
+	err := db.Cache.Create(LocalDBDeployment, nn, dd)
 
 	if err != nil {
 		return err
@@ -62,7 +74,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 	}
 
-	secMap, err := config.MakeOrGetSecret(db.Ctx, app, db.Client, nn, dataInit)
+	secMap, err := p.MakeOrGetSecret(db.Ctx, app, db.Cache, LocalDBSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
@@ -92,36 +104,32 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		image = imgComponents[0] + ":" + tag
 	}
 
-	provutils.MakeLocalDB(&dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
+	provutils.MakeLocalDB(dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
 
-	if err = exists.Apply(db.Ctx, db.Client, &dd); err != nil {
+	if err = db.Cache.Update(LocalDBDeployment, dd); err != nil {
 		return err
 	}
 
-	s := core.Service{}
-	update, err := utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &s))
-
-	if err != nil {
+	s := &core.Service{}
+	if err := db.Cache.Create(LocalDBService, nn, s); err != nil {
 		return err
 	}
 
-	provutils.MakeLocalDBService(&s, nn, app)
+	provutils.MakeLocalDBService(s, nn, app)
 
-	if err = update.Apply(db.Ctx, db.Client, &s); err != nil {
+	if err = db.Cache.Update(LocalDBService, s); err != nil {
 		return err
 	}
 
 	if db.Env.Spec.Providers.Database.PVC {
-		pvc := core.PersistentVolumeClaim{}
-		update, err = utils.UpdateOrErr(db.Client.Get(db.Ctx, nn, &pvc))
-
-		if err != nil {
+		pvc := &core.PersistentVolumeClaim{}
+		if err := db.Cache.Create(LocalDBPVC, nn, pvc); err != nil {
 			return err
 		}
 
-		provutils.MakeLocalDBPVC(&pvc, nn, app)
+		provutils.MakeLocalDBPVC(pvc, nn, app)
 
-		if err = update.Apply(db.Ctx, db.Client, &pvc); err != nil {
+		if err = db.Cache.Update(LocalDBService, pvc); err != nil {
 			return err
 		}
 	}
@@ -152,9 +160,9 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfi
 		Namespace: refApp.Namespace,
 	}
 
-	err = db.Client.Get(db.Ctx, inn, &secret)
-
-	if err != nil {
+	// This is a REAL call here, not a cached call as the reconciliation must have been processed
+	// for the app we depend on.
+	if err = db.Client.Get(db.Ctx, inn, &secret); err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
 

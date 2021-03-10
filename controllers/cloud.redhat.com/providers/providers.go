@@ -10,10 +10,14 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -64,12 +68,13 @@ type Provider struct {
 	Client client.Client
 	Ctx    context.Context
 	Env    *crd.ClowdEnvironment
+	Cache  *ObjectCache
 }
 
 // ClowderProvider is an interface providing a way for a provider to perform its duty.
 type ClowderProvider interface {
-	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as opposed
-	// to a ClowdEnvironment object.
+	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as
+	// opposed to a ClowdEnvironment object.
 	Provide(app *crd.ClowdApp, c *config.AppConfig) error
 }
 
@@ -79,6 +84,8 @@ func StrPtr(s string) *string {
 }
 
 type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool)
+
+type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool)
 
 // MakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
@@ -104,6 +111,76 @@ func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suf
 	return nil
 }
 
+func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName) (runtime.Object, error) {
+	gvks, nok, err := cache.scheme.ObjectKinds(resourceIdent.GetType())
+
+	if err != nil {
+		return nil, err
+	}
+
+	if nok {
+		return nil, fmt.Errorf("This type is unknown")
+	}
+
+	gvk := gvks[0]
+
+	cobj, err := cache.scheme.New(gvk)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.Create(resourceIdent, nn, cobj)
+
+	if err != nil {
+		return nil, err
+	}
+	return cobj, nil
+}
+
+func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object runtime.Object) error {
+	err := cache.Update(resourceIdent, object)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ObjectMap providers a map of ResourceIdents to objects, it is used internally and for testing.
+type ObjectMap map[ResourceIdent]runtime.Object
+
+// CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
+// deployment and PVC, based on the makeFn that is passed in.
+func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool) error {
+	nn := GetNamespacedName(o, suffix)
+
+	makeFnMap := make(map[ResourceIdent]runtime.Object)
+
+	for _, v := range objList {
+		obj, err := createResource(cache, v, nn)
+
+		if err != nil {
+			return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
+		}
+
+		makeFnMap[v] = obj
+
+	}
+
+	fn(o, makeFnMap, usePVC)
+
+	for k, v := range makeFnMap {
+		err := updateResource(cache, k, v)
+
+		if err != nil {
+			return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
+		}
+	}
+
+	return nil
+}
+
 // GetNamespacedName returns a unique name of an object in the format name-suffix.
 func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 	return types.NamespacedName{
@@ -112,9 +189,8 @@ func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 	}
 }
 
-// ExtractFn is a function that can extract secret data from a function, the result
-// of this function is usually declared as part of the function so no arguments are
-// passed.
+// ExtractFn is a function that can extract secret data from a function, the result of this function
+// is usually declared as part of the function so no arguments are passed.
 type ExtractFn func(m map[string][]byte)
 
 // ExtractSecretData takes a list of secrets, checks that the correct 'keys' are present and then
@@ -133,4 +209,37 @@ func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
 			fn(secret.Data)
 		}
 	}
+}
+
+// MakeOrGetSecret tries to get the secret described by nn, if it exists it populates a map with the
+// key/value pairs from the secret. If it doesn't exist the dataInit function is run and the
+// resulting data is returned, as well as the secret being created.
+func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
+	secret := &core.Secret{}
+	if err := cache.Create(resourceIdent, nn, secret); err != nil {
+		return nil, err
+	}
+
+	data := make(map[string]string)
+
+	if len(secret.Data) == 0 {
+		data = dataInit()
+		secret.StringData = data
+
+		secret.Name = nn.Name
+		secret.Namespace = nn.Namespace
+		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
+		secret.Type = core.SecretTypeOpaque
+
+	} else {
+		for k, v := range secret.Data {
+			(data)[k] = string(v)
+		}
+	}
+
+	if err := cache.Update(resourceIdent, secret); err != nil {
+		return nil, err
+	}
+
+	return &data, nil
 }

@@ -17,6 +17,15 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+// KafkaTopic is the resource ident for a KafkaTopic object.
+var KafkaTopic = p.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{})
+
+// KafkaInstance is the resource ident for a Kafka object.
+var KafkaInstance = p.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{})
+
+// KafkaConnect is the resource ident for a KafkaConnect object.
+var KafkaConnect = p.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{})
+
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
 	"retention.bytes":       utils.IntMax,
@@ -34,9 +43,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		Namespace: getKafkaNamespace(s.Env),
 		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
 	}
-	k := strimzi.Kafka{}
-	updater, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &k))
-	if err != nil {
+	k := &strimzi.Kafka{}
+	if err := s.Cache.Create(KafkaInstance, clusterNN, k); err != nil {
 		return err
 	}
 
@@ -73,8 +81,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Version:  &version,
 			Replicas: replicas,
 			Listeners: []strimzi.KafkaSpecKafkaListenersElem{
-				strimzi.KafkaSpecKafkaListenersElem{Name: "tcp", Type: "internal", Tls: false, Port: 9092},
-				strimzi.KafkaSpecKafkaListenersElem{Name: "tls", Type: "internal", Tls: true, Port: 9093},
+				{Name: "tcp", Type: "internal", Tls: false, Port: 9092},
+				{Name: "tls", Type: "internal", Tls: true, Port: 9093},
 			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
@@ -110,7 +118,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	k.SetLabels(p.Labels{"env": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
-	if err := updater.Apply(s.Ctx, s.Client, &k); err != nil {
+	if err := s.Cache.Update(KafkaInstance, k); err != nil {
 		return err
 	}
 
@@ -134,9 +142,9 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		Namespace: getConnectNamespace(s.Env),
 		Name:      getConnectClusterName(s.Env),
 	}
-	k := strimzi.KafkaConnect{}
-	updater, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &k))
-	if err != nil {
+
+	k := &strimzi.KafkaConnect{}
+	if err := s.Cache.Create(KafkaConnect, clusterNN, k); err != nil {
 		return err
 	}
 
@@ -195,7 +203,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	k.SetNamespace(getConnectNamespace(s.Env))
 	k.SetLabels(p.Labels{"env": s.Env.Name})
 
-	if err := updater.Apply(s.Ctx, s.Client, &k); err != nil {
+	if err := s.Cache.Update(KafkaConnect, k); err != nil {
 		return err
 	}
 
@@ -203,43 +211,46 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 }
 
 func (s *strimziProvider) configureListeners() error {
-	clusterNN := types.NamespacedName{
-		Namespace: getKafkaNamespace(s.Env),
-		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
-	}
-	kafkaResource := strimzi.Kafka{}
-	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
-		return err
-	}
+	// clusterNN := types.NamespacedName{
+	// 	Namespace: getKafkaNamespace(s.Env),
+	// 	Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
+	// }
+	// kafkaResource := strimzi.Kafka{}
+	// if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
+	// 	return err
+	// }
 
-	// Return an err if we can't obtain listener status to trigger a requeue in the env controller
-	if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
-		return fmt.Errorf(
-			"Kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
-		)
-	}
+	// // Return an err if we can't obtain listener status to trigger a requeue in the env controller
+	// if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
+	// 	return fmt.Errorf(
+	// 		"Kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
+	// 	)
+	// }
 
 	s.Config.Brokers = []config.BrokerConfig{}
+	s.Config.Brokers = append(s.Config.Brokers, config.BrokerConfig{
+		Hostname: fmt.Sprintf("%s-kafka-bootstrap.%s.svc", s.Env.Spec.Providers.Kafka.Cluster.Name, getKafkaNamespace(s.Env)),
+		Port:     utils.IntPtr(9092),
+	})
+	// for _, listener := range kafkaResource.Status.Listeners {
+	// 	if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+	// 		bc := config.BrokerConfig{
+	// 			Hostname: *listener.Addresses[0].Host,
+	// 		}
+	// 		port := listener.Addresses[0].Port
+	// 		if port != nil {
+	// 			p := int(*port)
+	// 			bc.Port = &p
+	// 		}
+	// 		s.Config.Brokers = append(s.Config.Brokers, bc)
+	// 	}
+	// }
 
-	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			bc := config.BrokerConfig{
-				Hostname: *listener.Addresses[0].Host,
-			}
-			port := listener.Addresses[0].Port
-			if port != nil {
-				p := int(*port)
-				bc.Port = &p
-			}
-			s.Config.Brokers = append(s.Config.Brokers, bc)
-		}
-	}
-
-	if len(s.Config.Brokers) < 1 {
-		return fmt.Errorf(
-			"Kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
-		)
-	}
+	// if len(s.Config.Brokers) < 1 {
+	// 	return fmt.Errorf(
+	// 		"Kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
+	// 	)
+	// }
 
 	return nil
 }
@@ -279,7 +290,7 @@ func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Cyndi.Enabled {
 		err := createCyndiPipeline(
-			s.Ctx, s.Client, app, s.Env, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
+			s.Ctx, s.Client, s.Cache, app, s.Env, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
 		)
 		if err != nil {
 			return err
@@ -311,16 +322,15 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 	}
 
 	for _, topic := range app.Spec.KafkaTopics {
-		k := strimzi.KafkaTopic{}
+		k := &strimzi.KafkaTopic{}
 
 		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
-
-		update, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, types.NamespacedName{
+		knn := types.NamespacedName{
 			Namespace: getKafkaNamespace(s.Env),
 			Name:      topicName,
-		}, &k))
+		}
 
-		if err != nil {
+		if err := s.Cache.Create(KafkaTopic, knn, k); err != nil {
 			return err
 		}
 
@@ -346,13 +356,13 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		replicaValList := []string{}
 		partitionValList := []string{}
 
-		err = processTopicValues(&k, app, appList, topic, replicaValList, partitionValList)
+		err := processTopicValues(k, app, appList, topic, replicaValList, partitionValList)
 
 		if err != nil {
 			return err
 		}
 
-		if err = update.Apply(s.Ctx, s.Client, &k); err != nil {
+		if err := s.Cache.Update(KafkaTopic, k); err != nil {
 			return err
 		}
 

@@ -20,6 +20,18 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// LocalFFDBDeployment is the ident refering to the local Feature Flags DB deployment object.
+var LocalFFDBDeployment = p.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
+
+// LocalFFDBService is the ident refering to the local Feature Flags DB service object.
+var LocalFFDBService = p.NewSingleResourceIdent(ProvName, "ff_db_service", &core.Service{})
+
+// LocalFFDBPVC is the ident refering to the local Feature Flags DB PVC object.
+var LocalFFDBPVC = p.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.PersistentVolumeClaim{})
+
+// LocalFFDBSecret is the ident refering to the local Feature Flags DB secret object.
+var LocalFFDBSecret = p.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
+
 type localFeatureFlagsProvider struct {
 	p.Provider
 	Config config.FeatureFlagsConfig
@@ -38,14 +50,12 @@ func NewLocalFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, err
 	}
 
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("featureflags-db"),
+		Name:      "featureflags-db",
 		Namespace: p.Env.Status.TargetNamespace,
 	}
 
-	dd := apps.Deployment{}
-	exists, err := utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &dd))
-
-	if err != nil {
+	dd := &apps.Deployment{}
+	if err := p.Cache.Create(LocalFFDBDeployment, nn, dd); err != nil {
 		return nil, err
 	}
 
@@ -68,7 +78,7 @@ func NewLocalFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, err
 		}
 	}
 
-	secMap, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, LocalFFDBSecret, nn, dataInit)
 	if err != nil {
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
@@ -81,36 +91,32 @@ func NewLocalFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, err
 		Port:     4242,
 	}
 
-	provutils.MakeLocalDB(&dd, nn, p.Env, &dbCfg, "registry.redhat.io/rhel8/postgresql-12:1-36", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
+	provutils.MakeLocalDB(dd, nn, p.Env, &dbCfg, "registry.redhat.io/rhel8/postgresql-12:1-36", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
 
-	if err = exists.Apply(p.Ctx, p.Client, &dd); err != nil {
+	if err = p.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return nil, err
 	}
 
-	s := core.Service{}
-	update, err := utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &s))
-
-	if err != nil {
+	s := &core.Service{}
+	if err := p.Cache.Create(LocalFFDBService, nn, s); err != nil {
 		return nil, err
 	}
 
-	provutils.MakeLocalDBService(&s, nn, p.Env)
+	provutils.MakeLocalDBService(s, nn, p.Env)
 
-	if err = update.Apply(p.Ctx, p.Client, &s); err != nil {
+	if err = p.Cache.Update(LocalFFDBService, s); err != nil {
 		return nil, err
 	}
 
 	if p.Env.Spec.Providers.FeatureFlags.PVC {
-		pvc := core.PersistentVolumeClaim{}
-		update, err = utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, &pvc))
-
-		if err != nil {
+		pvc := &core.PersistentVolumeClaim{}
+		if err = p.Cache.Create(LocalFFDBPVC, nn, pvc); err != nil {
 			return nil, err
 		}
 
-		provutils.MakeLocalDBPVC(&pvc, nn, p.Env)
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env)
 
-		if err = update.Apply(p.Ctx, p.Client, &pvc); err != nil {
+		if err = p.Cache.Update(LocalFFDBPVC, pvc); err != nil {
 			return nil, err
 		}
 	}

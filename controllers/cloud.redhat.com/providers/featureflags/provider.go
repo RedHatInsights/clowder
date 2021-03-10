@@ -7,6 +7,9 @@ import (
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
+// ProvName identifies the featureflags provider.
+var ProvName = "featureflags"
+
 // GetFeatureFlags returns the correct feature flags provider based on the environment.
 func GetFeatureFlags(c *p.Provider) (p.ClowderProvider, error) {
 	ffMode := c.Env.Spec.Providers.FeatureFlags.Mode
@@ -24,5 +27,5 @@ func GetFeatureFlags(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetFeatureFlags, 1, "featureflags")
+	p.ProvidersRegistration.Register(GetFeatureFlags, 5, ProvName)
 }

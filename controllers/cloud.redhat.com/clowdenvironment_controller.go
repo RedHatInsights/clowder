@@ -32,12 +32,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	// Import the providers to initialize them
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/confighash"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/cronjob"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/dependencies"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/featureflags"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
@@ -46,6 +55,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 )
 
 const envFinalizer = "finalizer.env.cloud.redhat.com"
@@ -63,10 +74,9 @@ type ClowdEnvironmentReconciler struct {
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("env", req.Name)
+	log := r.Log.WithValues("env", req.Name).WithValues("id", utils.RandString(5))
 	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
-	proxyClient := ProxyClient{Client: r.Client, Ctx: ctx}
 	env := crd.ClowdEnvironment{}
 	err := r.Client.Get(ctx, req.NamespacedName, &env)
 
@@ -93,6 +103,15 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 		return ctrl.Result{}, nil
 	}
+
+	// Add finalizer for this CR
+	if !contains(env.GetFinalizers(), envFinalizer) {
+		if err := r.addFinalizer(log, &env); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	log.Info("Reconciliation started", "env", fmt.Sprintf("%s", env.Name))
 
 	if env.Status.TargetNamespace == "" {
 		if env.Spec.TargetNamespace != "" {
@@ -121,64 +140,79 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	//TODO: Move to new provider when resCache is ready
-	err = createServiceAccount(ctx, &proxyClient, &env, env.Spec.Providers.PullSecrets)
-	if err != nil {
-		return ctrl.Result{Requeue: true}, err
-	}
-
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
+
+	cache := providers.NewObjectCache(ctx, r.Client, scheme)
 
 	provider := providers.Provider{
 		Ctx:    ctx,
-		Client: &proxyClient,
+		Client: r.Client,
 		Env:    &env,
+		Cache:  &cache,
 	}
 
-	err = runProvidersForEnv(provider)
+	var requeue = false
+
+	provErr := runProvidersForEnv(provider)
+
+	if provErr != nil {
+		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
+			return ctrl.Result{}, provErr
+
+		} else {
+			requeue = true
+		}
+	}
+
+	cacheErr := cache.ApplyAll()
+
+	if cacheErr != nil {
+		if non_fatal := errors.HandleError(ctx, cacheErr); !non_fatal {
+			return ctrl.Result{}, cacheErr
+
+		} else {
+			requeue = true
+		}
+	}
 
 	if err == nil {
-		r.Log.Info("Reconciliation successful", "env", env.Name)
 		if _, ok := managedEnvironments[env.Name]; ok == false {
 			managedEnvironments[env.Name] = true
 		}
 		managedEnvsMetric.Set(float64(len(managedEnvironments)))
 	}
 
-	requeue := errors.HandleError(ctx, err)
-	if requeue {
-		r.Log.Error(err, "Requeueing due to error")
-	}
-
-	// Add finalizer for this CR
-	if !contains(env.GetFinalizers(), envFinalizer) {
-		if err := r.addFinalizer(log, &env); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-
-	if !requeue {
-		// Delete all resources that are not used anymore
-		uid := env.ObjectMeta.UID
-		err := proxyClient.Reconcile(uid)
-		if err != nil {
-			return ctrl.Result{Requeue: requeue}, nil
-		}
+	err = r.setAppInfo(provider)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
 	}
 
 	err = r.setAppInfo(provider)
 	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
-	SetDeploymentStatus(ctx, &proxyClient, &env)
 
-	env.Status.Ready = false
+	if statusErr := SetDeploymentStatus(ctx, r.Client, &env); statusErr != nil {
+		return ctrl.Result{}, err
+	}
+
 	env.Status.Ready = env.IsReady()
 
-	err = proxyClient.Status().Update(ctx, &env)
-
-	if err != nil {
+	if err := r.Client.Status().Update(ctx, &env); err != nil {
 		return ctrl.Result{}, err
+	}
+
+	if !requeue {
+		// Delete all resources that are not used anymore
+		r.Recorder.Eventf(&env, "Normal", "SuccessfulCreate", "created", env.GetClowdName())
+		log.Info("Reconciliation successful", "env", env.Name)
+		err := cache.Reconcile(&env)
+		if err != nil {
+			return ctrl.Result{Requeue: requeue}, nil
+		}
+	} else {
+		log.Info("Reconciliation partially successful", "env", fmt.Sprintf("%s:%s", env.Namespace, env.Name))
+		r.Recorder.Eventf(&env, "Normal", "SuccessfulPartialCreate", "requeued", env.GetClowdName())
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
@@ -199,6 +233,8 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
+		Owns(&strimzi.Kafka{}).
+		Owns(&strimzi.KafkaConnect{}).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
 			&handler.EnqueueRequestsFromMapFunc{

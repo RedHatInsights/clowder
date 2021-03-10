@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -36,22 +37,31 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	// Import the providers to initialize them
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+
+	// These imports are to register the providers with the provider registration system
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/confighash"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/cronjob"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/dependencies"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/featureflags"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/makers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
-
-var someIndexer client.FieldIndexer
 
 // ClowdAppReconciler reconciles a ClowdApp object
 type ClowdAppReconciler struct {
@@ -75,10 +85,9 @@ type ClowdAppReconciler struct {
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
-	log := r.Log.WithValues("app", qualifiedName)
+	log := r.Log.WithValues("app", qualifiedName).WithValues("id", utils.RandString(5))
 	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
-	proxyClient := ProxyClient{Ctx: ctx, Client: r.Client}
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
 
@@ -91,7 +100,6 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			// Must have been deleted
 			return ctrl.Result{}, nil
 		}
-
 		return ctrl.Result{}, err
 	}
 
@@ -111,7 +119,14 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	r.Log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+	// Add finalizer for this CR
+	if !contains(app.GetFinalizers(), appFinalizer) {
+		if err := r.addFinalizer(log, &app); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &app)
 
@@ -125,65 +140,72 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	if env.IsReady() == false {
+	if !env.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
-		r.Log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
+		log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
 		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not ready: %s", env.Name))
 	}
 
-	maker, _ := makers.New(&makers.Maker{
-		App:     &app,
-		Env:     &env,
-		Client:  &proxyClient,
-		Ctx:     ctx,
-		Request: &req,
-		Log:     r.Log,
-	})
+	cache := providers.NewObjectCache(ctx, r.Client, scheme)
 
-	//TODO: Move to new provider when resCache is ready
-	err = createServiceAccount(ctx, &proxyClient, &app, env.Spec.Providers.PullSecrets)
+	provider := providers.Provider{
+		Client: r.Client,
+		Ctx:    ctx,
+		Env:    &env,
+		Cache:  &cache,
+	}
+
+	var requeue = false
+
+	provErr := r.runProviders(&provider, &app)
+
+	if provErr != nil {
+		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
+			return ctrl.Result{}, provErr
+		} else {
+			requeue = true
+		}
+	}
+
+	cacheErr := cache.ApplyAll()
+
+	if cacheErr != nil {
+		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
+			return ctrl.Result{}, cacheErr
+		} else {
+			requeue = true
+		}
+	}
+
+	if statusErr := SetDeploymentStatus(ctx, r.Client, &app); statusErr != nil {
+		return ctrl.Result{}, err
+	}
+
+	app.Status.Ready = app.IsReady()
+
+	err = r.Client.Status().Update(ctx, &app)
 	if err != nil {
-		return ctrl.Result{Requeue: true}, err
-	}
-
-	err = maker.Make()
-
-	if err == nil {
-		r.Log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
-		if _, ok := managedApps[app.GetIdent()]; ok == false {
-			managedApps[app.GetIdent()] = true
-		}
-		managedAppsMetric.Set(float64(len(managedApps)))
-	}
-
-	requeue := errors.HandleError(ctx, err)
-	if requeue {
-		r.Log.Error(err, "Requeueing due to error")
-	}
-
-	// Add finalizer for this CR
-	if !contains(app.GetFinalizers(), appFinalizer) {
-		if err := r.addFinalizer(log, &app); err != nil {
-			return ctrl.Result{}, err
-		}
+		return ctrl.Result{}, err
 	}
 
 	// Delete all resources that are not used anymore
 	if !requeue {
-		uid := app.ObjectMeta.UID
-		err := proxyClient.Reconcile(uid)
+		r.Recorder.Eventf(&app, "Normal", "SuccessfulCreate", "created", app.GetClowdName())
+		log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+		err := cache.Reconcile(&app)
 		if err != nil {
 			return ctrl.Result{Requeue: requeue}, nil
 		}
+	} else {
+		log.Info("Reconciliation partially successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+		r.Recorder.Eventf(&app, "Normal", "SuccessfulPartialCreate", "requeued", app.GetClowdName())
 	}
 
-	SetDeploymentStatus(ctx, &proxyClient, &app)
-
-	app.Status.Ready = app.IsReady()
-
-	err = proxyClient.Status().Update(ctx, &app)
-	if err != nil {
-		return ctrl.Result{}, err
+	if err == nil {
+		if _, ok := managedApps[app.GetIdent()]; !ok {
+			managedApps[app.GetIdent()] = true
+		}
+		managedAppsMetric.Set(float64(len(managedApps)))
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
@@ -201,7 +223,15 @@ func ignoreStatusUpdatePredicate() predicate.Predicate {
 			// Allow reconciliation if the env changed status
 			if objOld, ok := e.ObjectOld.(*crd.ClowdEnvironment); ok {
 				if objNew, ok := e.ObjectNew.(*crd.ClowdEnvironment); ok {
-					if objOld.Status.Ready == false && objNew.Status.Ready == true {
+					if !objOld.Status.Ready && objNew.Status.Ready {
+						return true
+					}
+				}
+			}
+
+			if objOld, ok := e.ObjectOld.(*strimzi.Kafka); ok {
+				if objNew, ok := e.ObjectNew.(*strimzi.Kafka); ok {
+					if (objOld.Status != nil && objNew.Status != nil) && len(objOld.Status.Listeners) != len(objNew.Status.Listeners) {
 						return true
 					}
 				}
@@ -236,6 +266,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Owns(&core.ConfigMap{}).
+		Owns(&strimzi.KafkaTopic{}).
 		WithEventFilter(ignoreStatusUpdatePredicate()).
 		Complete(r)
 }
@@ -291,9 +322,8 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) []r
 
 func (r *ClowdAppReconciler) finalizeApp(reqLogger logr.Logger, a *crd.ClowdApp) error {
 
-	if _, ok := managedApps[a.GetIdent()]; ok == true {
-		delete(managedApps, a.GetIdent())
-	}
+	delete(managedApps, a.GetIdent())
+
 	managedAppsMetric.Set(float64(len(managedApps)))
 	reqLogger.Info("Successfully finalized ClowdApp")
 	return nil
@@ -319,4 +349,34 @@ func contains(list []string, s string) bool {
 		}
 	}
 	return false
+}
+
+func (r *ClowdAppReconciler) runProviders(provider *providers.Provider, a *crd.ClowdApp) error {
+
+	c := config.AppConfig{}
+
+	c.WebPort = utils.IntPtr(int(provider.Env.Spec.Providers.Web.Port))
+	c.PublicPort = utils.IntPtr(int(provider.Env.Spec.Providers.Web.Port))
+	privatePort := provider.Env.Spec.Providers.Web.PrivatePort
+	if privatePort == 0 {
+		privatePort = 10000
+	}
+	c.PrivatePort = utils.IntPtr(int(privatePort))
+	c.MetricsPort = int(provider.Env.Spec.Providers.Metrics.Port)
+	c.MetricsPath = provider.Env.Spec.Providers.Metrics.Path
+
+	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		prov, err := provAcc.SetupProvider(provider)
+		if err != nil {
+			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
+		}
+		err = prov.Provide(a, &c)
+		if err != nil {
+			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
+			reterr.Requeue = true
+			return reterr
+		}
+	}
+
+	return nil
 }

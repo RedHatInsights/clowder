@@ -42,6 +42,7 @@ import (
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	// +kubebuilder:scaffold:imports
 )
@@ -306,7 +307,7 @@ func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 	secretConfig := core.Secret{}
 	jsonContent := config.AppConfig{}
 
-	err := k8sClient.Get(context.Background(), name, &secretConfig)
+	err := fetchWithDefaults(name, &secretConfig)
 
 	if err != nil {
 		return &jsonContent, err
@@ -315,6 +316,149 @@ func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
 
 	return &jsonContent, err
+}
+
+func TestObjectCache(t *testing.T) {
+	oCache := p.NewObjectCache(context.Background(), k8sClient, scheme)
+
+	nn := types.NamespacedName{
+		Name:      "test-service",
+		Namespace: "default",
+	}
+
+	s := core.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nn.Name,
+			Namespace: nn.Namespace,
+		},
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{{
+				Name: "port-01",
+				Port: 1234,
+			}},
+		},
+	}
+
+	SingleIdent := p.ResourceIdentSingle{
+		Provider: "TEST",
+		Purpose:  "MAIN",
+		Type:     &core.Service{},
+	}
+
+	err := oCache.Create(SingleIdent, nn, &s)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	obtainedService := core.Service{}
+
+	err = oCache.Get(SingleIdent, &obtainedService)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if obtainedService.Spec.Ports[0].Port != 1234 {
+		t.Errorf("Obtained service did not have port 1234")
+		return
+	}
+
+	obtainedService.Spec.Ports[0].Port = 2345
+
+	err = oCache.Update(SingleIdent, &obtainedService)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	updatedService := core.Service{}
+
+	err = oCache.Get(SingleIdent, &updatedService)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if updatedService.Spec.Ports[0].Port != 2345 {
+		t.Errorf("Updated service port was not updated")
+		return
+	}
+
+	MultiIdent := p.ResourceIdentMulti{
+		Provider: "TEST",
+		Purpose:  "MULTI",
+		Type:     &core.Service{},
+	}
+
+	sm := core.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nn.Name + "-multi",
+			Namespace: nn.Namespace,
+		},
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{{
+				Name: "port-01",
+				Port: 5432,
+			}},
+		},
+	}
+
+	err = oCache.Create(MultiIdent, nn, &sm)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	sList := core.ServiceList{}
+	err = oCache.List(MultiIdent, &sList)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	for _, i := range sList.Items {
+		if i.Spec.Ports[0].Port != 5432 {
+			t.Errorf("Item not found in list")
+			return
+		}
+	}
+
+	err = oCache.ApplyAll()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	clientService := core.Service{}
+	if err = k8sClient.Get(context.Background(), types.NamespacedName{
+		Namespace: "default",
+		Name:      "test-service",
+	}, &clientService); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if clientService.Spec.Ports[0].Port != 2345 {
+		t.Errorf("Retrieved object has wrong port")
+		return
+	}
+
+	clientServiceMulti := core.Service{}
+	if err = k8sClient.Get(context.Background(), types.NamespacedName{
+		Namespace: "default",
+		Name:      "test-service-multi",
+	}, &clientServiceMulti); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if clientServiceMulti.Spec.Ports[0].Port != 5432 {
+		t.Errorf("Retrieved object has wrong port")
+		return
+	}
 }
 
 func TestCreateClowdApp(t *testing.T) {

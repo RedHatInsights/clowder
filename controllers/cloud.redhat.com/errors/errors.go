@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
 	"go.uber.org/zap"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -20,7 +19,7 @@ type ClowdKey string
 // TODO: Make this configruable
 var stacksEnabled bool = true
 
-// ClowderError is a Clwoder specific error, it has a number of functions attached to it to allow
+// ClowderError is a Clowder specific error, it has a number of functions attached to it to allow
 // for creation and checking.
 type ClowderError struct {
 	Stack   zap.Field
@@ -163,10 +162,6 @@ func HandleError(ctx context.Context, err error) bool {
 		}
 
 		log.Error(err, "Reconciliation failure", "stack", GetRootStack(err))
-	} else {
-		clowdObj := obj.(object.ClowdObject)
-		msg := "Successfully reconciled %s"
-		recorder.Eventf(obj, "Normal", "SuccessfulCreate", msg, clowdObj.GetClowdName())
 	}
 	return false
 }

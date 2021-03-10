@@ -9,7 +9,6 @@ import (
 
 type appInterfaceFeatureFlagProvider struct {
 	p.Provider
-	Config config.DatabaseConfig
 }
 
 // NewAppInterfaceFeatureFlagsProvider creates a new app-interface feature flags provider.

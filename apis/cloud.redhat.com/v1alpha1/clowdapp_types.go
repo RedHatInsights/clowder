@@ -384,6 +384,11 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	}
 }
 
+// GetPrimaryLabel returns the primary label name use for identification.
+func (i *ClowdApp) GetPrimaryLabel() string {
+	return "app"
+}
+
 // GetClowdNamespace returns the namespace of the ClowdApp object.
 func (i *ClowdApp) GetClowdNamespace() string {
 	return i.Namespace
@@ -404,7 +409,7 @@ func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
 	return &i.Status.Deployments
 }
 
-// isReady returns true when all the ManagedDeployments are Ready
+// IsReady returns true when all the ManagedDeployments are Ready
 func (i *ClowdApp) IsReady() bool {
 	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
 }

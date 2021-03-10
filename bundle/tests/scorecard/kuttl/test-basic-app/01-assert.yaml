@@ -47,12 +47,13 @@ spec:
   selector:
     pod: puptoo-processor
   ports:
-  - port: 9000
-    targetPort: 9000
-    name: metrics
   - port: 8000
     targetPort: 8000
     name: public
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
     appProtocol: http
 ---
 apiVersion: cloud.redhat.com/v1alpha1

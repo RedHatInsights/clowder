@@ -14,6 +14,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// RedisDeployment identifies the main redis deployment
+var RedisDeployment = p.NewSingleResourceIdent(ProvName, "redis_deployment", &apps.Deployment{})
+
+// RedisService identifies the main redis service
+var RedisService = p.NewSingleResourceIdent(ProvName, "redis_service", &core.Service{})
+
+// RedisConfigMap identifies the main redis configmap
+var RedisConfigMap = p.NewSingleResourceIdent(ProvName, "redis_config_map", &core.ConfigMap{})
+
 type localRedis struct {
 	p.Provider
 	Config config.InMemoryDBConfig
@@ -31,9 +40,8 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 
 	configMap := &core.ConfigMap{}
 
-	err := r.Client.Get(r.Ctx, nn, configMap)
+	err := r.Provider.Cache.Create(RedisConfigMap, nn, configMap)
 
-	update, err := utils.UpdateOrErr(err)
 	if err != nil {
 		return err
 	}
@@ -43,14 +51,20 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 
 	configMap.Data = map[string]string{"redis.conf": "stop-writes-on-bgsave-error no\n"}
 
-	err = update.Apply(r.Ctx, r.Client, configMap)
+	err = r.Provider.Cache.Update(RedisConfigMap, configMap)
+
 	if err != nil {
 		return err
 	}
 
 	config.InMemoryDb = &r.Config
 
-	return providers.MakeComponent(r.Ctx, r.Client, app, "redis", makeLocalRedis, r.Provider.Env.Spec.Providers.InMemoryDB.PVC)
+	objList := []providers.ResourceIdent{
+		RedisDeployment,
+		RedisService,
+	}
+
+	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false)
 }
 
 // NewLocalRedis returns a new local redis provider object.
@@ -62,8 +76,11 @@ func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &redisProvider, nil
 }
 
-func makeLocalRedis(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
+func makeLocalRedis(o obj.ClowdObject, objMap p.ObjectMap, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "redis")
+
+	dd := objMap[RedisDeployment].(*apps.Deployment)
+	svc := objMap[RedisService].(*core.Service)
 
 	oneReplica := int32(1)
 

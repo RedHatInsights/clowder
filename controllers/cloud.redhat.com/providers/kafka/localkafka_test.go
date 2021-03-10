@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +30,13 @@ func TestLocalKafka(t *testing.T) {
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
 
-	makeLocalKafka(&env, &dd, &svc, &pvc, true)
+	objMap := providers.ObjectMap{
+		LocalKafkaDeployment: &dd,
+		LocalKafkaService:    &svc,
+		LocalKafkaPVC:        &pvc,
+	}
+
+	makeLocalKafka(&env, objMap, true)
 
 	if dd.Name != "env-kafka" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-kafka")
@@ -49,7 +56,13 @@ func TestLocalZookeeper(t *testing.T) {
 
 	dd, svc, pvc := apps.Deployment{}, core.Service{}, core.PersistentVolumeClaim{}
 
-	makeLocalZookeeper(&env, &dd, &svc, &pvc, true)
+	objMap := providers.ObjectMap{
+		LocalZookeeperDeployment: &dd,
+		LocalZookeeperService:    &svc,
+		LocalZookeeperPVC:        &pvc,
+	}
+
+	makeLocalZookeeper(&env, objMap, true)
 
 	if dd.Name != "env-zookeeper" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-zookeeper")

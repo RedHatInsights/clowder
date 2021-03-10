@@ -412,6 +412,11 @@ func (i *ClowdEnvironment) GetClowdName() string {
 	return i.Name
 }
 
+// GetPrimaryLabel returns the primary label name use for igentification.
+func (i *ClowdEnvironment) GetPrimaryLabel() string {
+	return "env"
+}
+
 // GetClowdSAName returns the ServiceAccount Name for the App
 func (i *ClowdEnvironment) GetClowdSAName() string {
 	return fmt.Sprintf("%s-env", i.GetClowdName())
