@@ -80,7 +80,7 @@ func TestMakeService(t *testing.T) {
 		},
 	}
 	utils.MakeService(&svc, nn, labels, ports, baseResource)
-	assert.Equal(t, svc.Labels["app"], baseResource.Name, "should have app label")
+	assert.Equal(t, svc.Labels["clowdapp"], baseResource.Name, "should have app label")
 	assert.Equal(t, svc.Labels["customLabel"], "5", "should have custom label")
 	assert.Equal(t, svc.Spec.Ports[0], ports[0], "ports should be equal")
 	assert.Equal(t, svc.Spec.Ports[1], ports[1], "ports should be equal")
@@ -116,7 +116,7 @@ func TestMakePVC(t *testing.T) {
 	size := resource.MustParse("1Gi")
 
 	utils.MakePVC(&pvc, nn, labels, "1Gi", baseResource)
-	assert.Equal(t, pvc.Labels["app"], baseResource.Name, "should have app label")
+	assert.Equal(t, pvc.Labels["clowdapp"], baseResource.Name, "should have app label")
 	assert.Equal(t, pvc.Labels["customLabel"], "5", "should have custom label")
 	assert.Equal(t, pvc.Spec.Resources.Requests["storage"], size, "should have size set correctly")
 	assert.Equal(t, pvc.Spec.AccessModes[0], core.ReadWriteOnce, "should have rwo set")
@@ -156,7 +156,7 @@ func TestGetCustomLabeler(t *testing.T) {
 
 	labeler(pvc)
 
-	assert.Equal(t, pvc.Labels["app"], baseResource.Name, "should have app label")
+	assert.Equal(t, pvc.Labels["clowdapp"], baseResource.Name, "should have app label")
 	assert.Equal(t, pvc.Labels["customLabel"], "5", "should have custom label")
 }
 

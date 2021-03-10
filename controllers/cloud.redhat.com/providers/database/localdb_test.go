@@ -27,7 +27,7 @@ func getBaseElements() (types.NamespacedName, crd.ClowdApp) {
 		Name:      "reqapp",
 		Namespace: "default",
 		Labels: p.Labels{
-			"app": "test",
+			"clowdapp": "test",
 		},
 	}
 
@@ -93,7 +93,7 @@ func TestLocalDBService(t *testing.T) {
 	if s.Spec.Selector["service"] != "db" {
 		t.Fatal("db selector was not set")
 	}
-	if s.Spec.Selector["app"] != app.Name {
+	if s.Spec.Selector["clowdapp"] != app.Name {
 		t.Fatal("db app name selector was not set")
 	}
 }

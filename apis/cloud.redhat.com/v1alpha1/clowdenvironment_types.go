@@ -388,7 +388,7 @@ func init() {
 
 // GetLabels returns a base set of labels relating to the ClowdEnvironment.
 func (i *ClowdEnvironment) GetLabels() map[string]string {
-	return map[string]string{"app": i.ObjectMeta.Name}
+	return map[string]string{"clowdapp": i.ObjectMeta.Name}
 }
 
 // MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
