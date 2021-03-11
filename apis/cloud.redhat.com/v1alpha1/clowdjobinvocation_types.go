@@ -25,7 +25,7 @@ import (
 
 // ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 type ClowdJobInvocationSpec struct {
-	// Name of the ClowdJobInvocation who owns the jobs
+	// Name of the ClowdApp who owns the jobs
 	AppName string `json:"appName"`
 
 	// Jobs is the set of jobs to be run by the invocation
