@@ -9,17 +9,8 @@ Jobs and CronJobs are split by a ``schedule`` field inside your job. If the job
 has a ``schedule``, it is assumed to be a CronJob. If not, Clowder runs your 
 job as a standard Job resource. Note that Jobs run as soon as they are applied. 
 
-Jobs are further split into two types: request and deploy.
-Jobs that need to run as soon as your deployment is ready are marked by the
-``deploy`` type. These jobs run once and are finished forever.
-You cannot have a ``schedule`` and ``deploy`` enabled. 
-
-Jobs that are of type ``deploy`` cannot be invoked by a ClowdJobInvocation.
-
 Jobs that need to be run at some arbitrary point in the future are run by a 
-ClowdJobInvocation and are marked by the ``request`` type. You can have a 
-``schedule`` with a ``request`` type becuase CronJobs can be invoked outside of
-their set schedule. 
+ClowdJobInvocation.
 
 Invoking Jobs via ClowdJobInvocation
 ------------------------------------
@@ -80,7 +71,6 @@ to invoke and apply the job.
       jobs:
         - name: hello-twenty
           schedule: "*/20 * * * *"
-          type: "request"
           podSpec:
             name: hello
             image: busybox
@@ -89,7 +79,6 @@ to invoke and apply the job.
             - -c
             - date; echo Hello from the Cron Job
         - name: curl
-          type: "request"
           podSpec:
             name: getter
             image: busybox
@@ -98,7 +87,6 @@ to invoke and apply the job.
             - -c
             - wget sample-app-api.debugger.svc:8000/
         - name: coming-soon
-          type: "deploy"
           podSpec:
             name: hello
             image: busybox
