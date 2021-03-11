@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
-	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -231,7 +230,6 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Owns(&core.ConfigMap{}).
-		Owns(&batchv1.Job{}).
 		WithEventFilter(ignoreStatusUpdatePredicate()).
 		Complete(r)
 }

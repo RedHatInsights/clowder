@@ -43,7 +43,7 @@ spec:
           description: ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
           properties:
             appName:
-              description: Name of the ClowdApp who owns the jobs
+              description: Name of the ClowdJobInvocation who owns the jobs
               type: string
             jobs:
               description: Jobs is the set of jobs to be run by the invocation
@@ -61,15 +61,14 @@ spec:
               description: Completed is false and updated when all jobs have either
                 finished successfully or failed past their backoff and retry values
               type: boolean
-            podNames:
-              description: PodNames is a map of the job name in the Job invocation
-                and the name of the pod responsible for that job
+            jobs:
+              description: Jobs is a list of the job names run by Job invocation
               items:
                 type: string
               type: array
           required:
           - completed
-          - podNames
+          - jobs
           type: object
       type: object
   version: v1alpha1
