@@ -26,6 +26,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,6 +35,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	// "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 )
@@ -63,7 +66,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	cji := crd.ClowdJobInvocation{}
 	err := r.Client.Get(ctx, req.NamespacedName, &cji)
-
 	if err != nil {
 		if k8serr.IsNotFound(err) {
 			// Must have been deleted
@@ -71,6 +73,25 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		}
 		r.Log.Error(err, "CJI not found ")
 		return ctrl.Result{}, err
+	}
+
+	// Set the initial status to an empty list of pods and a Completed
+	// status of false. If a job has been invoked, but hasn't finished,
+	// setting the status after requeue will ensure it won't be double invoked
+	r.setCompletedStatus(ctx, &cji)
+	err = r.Client.Status().Update(ctx, &cji)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+
+	// If the status is updated to complete, don't invoke again.
+	if cji.Status.Completed {
+		return ctrl.Result{}, nil
+	}
+
+	// We have already invoked jobs and don't need to announce another reconcile run
+	if len(cji.Status.Jobs) > 0 {
+		return ctrl.Result{}, nil
 	}
 
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
@@ -108,54 +129,34 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	// Set the initial status to an empty list of pods and a Completed
-	// status of false. If a job has been invoked, but hasn't finished,
-	// setting the status after requeue will ensure it won't be double
-	// invoked
-	r.setCompletedStatus(ctx, &cji)
-	err = r.Client.Status().Update(ctx, &cji)
-	if err != nil {
-		return ctrl.Result{Requeue: true}, err
-	}
-
-	// If the status is updated to complete, don't invoke again.
-	if cji.Status.Completed {
-		r.Log.Info("Requested jobs are completed", "jobinvocation", cji.Name, "namespace", app.Namespace)
-		for _, i := range cji.Status.PodNames {
-			r.Log.Info(i, "ran via jobinvocation", cji.Name, "namespace", app.Namespace)
-		}
-		return ctrl.Result{}, nil
-	}
-
 	// Walk the job names to be invoked and match in the ClowdApp Spec
 	for _, jobName := range cji.Spec.Jobs {
 		// Match the crd.Job name to the JobTemplate in ClowdApp
-		jobContent := crd.Job{}
-		err := getJobFromName(jobName, &app, &jobContent)
+		job, err := getJobFromName(jobName, &app)
 		if err != nil {
 			r.Recorder.Eventf(&app, "Error", "JobNameMissing", "ClowdApp [%s] has no job named", cji.Spec.AppName, jobName)
 			r.Log.Info("Missing Job Definition", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
 			return ctrl.Result{}, err
 		}
 
-		fullJobName := fmt.Sprintf("%v-%v-%v", app.Name, jobContent.Name, cji.Name)
-
 		// becuase a CJI can contain > 1 job, we must handle the case
 		// where one job is done and the other is still running
-		if contains(cji.Status.PodNames, fullJobName) {
-			r.Log.Info("Job has already been invoked", "jobinvocation", fullJobName, "namespace", app.Namespace)
-			return ctrl.Result{}, nil
+		fullJobName := fmt.Sprintf("%v-%v-%v", app.Name, job.Name, cji.Name)
+		if contains(cji.Status.Jobs, fullJobName) {
+			continue
 		}
 
 		// We have a match that isn't running and can invoke the job
 		r.Log.Info("Invoking job", "jobinvocation", jobName, "namespace", app.Namespace)
 
-		if err := r.InvokeJob(ctx, &jobContent, &app, &env, &cji); err != nil {
+		if err := r.InvokeJob(ctx, &job, &app, &env, &cji); err != nil {
 			r.Log.Info("Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
+	// Short running jobs may be done by the time the loop is ranged,
+	// so we update again before the reconcile ends
 	r.setCompletedStatus(ctx, &cji)
 	err = r.Client.Status().Update(ctx, &cji)
 	if err != nil {
@@ -174,41 +175,26 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	}
 	j := batchv1.Job{}
 
-	jobType := job.Type
-	switch jobType {
-
-	case "request":
-		createJobResource(app, env, nn, job, &j)
-		if err := r.Client.Create(ctx, &j); err != nil {
-			return err
-		}
-		cji.Status.PodNames = append(cji.Status.PodNames, j.ObjectMeta.Labels["pod"])
-		r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
-
-	case "deploy":
-		r.Recorder.Eventf(app, "Warning", "Found a deploy type job. To Invoke a Job, ensure the type is set to request in the ClowdApp", "%s is not type request", job.Name)
-		r.Log.Info("Job of type Deploy found; skipping", "jobinvocation", job.Name, "namespace", app.Namespace)
-
-	default:
-		r.Recorder.Eventf(app, "Warning", "ClowdJobInvocationError", "ClowdJobInvocation [%s] has no type; Job cannot be invoked", app.Name)
-		r.Log.Info("Job has no type", "jobinvocation", job.Name, "namespace", app.Namespace)
-		return errors.New(fmt.Sprintf("Job has no type %s", job.Name))
+	createJobResource(cji, env, nn, job, &j)
+	if err := r.Client.Create(ctx, &j); err != nil {
+		return err
 	}
+	cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
+	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
 
 	return nil
 }
 
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
-func createJobResource(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
-	labels := app.GetLabels()
-	labels["pod"] = nn.Name
-	app.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
-
-	pod := job.PodSpec
+func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
+	labels := cji.GetLabels()
+	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
 	j.ObjectMeta.Labels = labels
 	j.Spec.Template.ObjectMeta.Labels = labels
+
+	pod := job.PodSpec
 
 	if job.RestartPolicy == "" {
 		j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
@@ -273,31 +259,22 @@ func createJobResource(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.Na
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: app.ObjectMeta.Name,
+				SecretName: cji.Spec.AppName,
 			},
 		},
 	})
-
-	maker.ApplyPodAntiAffinity(&j.Spec.Template)
-
-	annotations := make(map[string]string)
-	// Do we need the hash here?
-	//annotations["configHash"] = hash
-	j.Spec.Template.SetAnnotations(annotations)
 
 	return nil
 }
 
 // getJobFromName matches a CJI job name to an App's job definition
-func getJobFromName(jobName string, app *crd.ClowdApp, job *crd.Job) error {
+func getJobFromName(jobName string, app *crd.ClowdApp) (job crd.Job, err error) {
 	for _, j := range app.Spec.Jobs {
 		if j.Name == jobName {
-			// dig into pointer issues here &j not working
-			*job = j
-			return nil
+			return j, nil
 		}
 	}
-	return errors.New(fmt.Sprintf("No such job %s", jobName))
+	return crd.Job{}, errors.New(fmt.Sprintf("No such job %s", jobName))
 
 }
 
@@ -311,6 +288,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: handler.ToRequestsFunc(r.cjiToEnqueueUponJobUpdate)},
 		).
+		Owns(&batchv1.Job{}).
 		Complete(r)
 }
 
@@ -344,7 +322,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 	for _, cji := range cjiList.Items {
 		// job event triggered a reconcile, check our jobs and match
 		// to enable a requeue
-		if contains(cji.Status.PodNames, job.ObjectMeta.Labels["pod"]) {
+		if contains(cji.Status.Jobs, job.ObjectMeta.Labels["pod"]) {
 			reqs = append(reqs, reconcile.Request{
 				NamespacedName: types.NamespacedName{
 					Name:      cji.Name,
@@ -357,11 +335,12 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 	return reqs
 }
 
+// Look for completed instead of successes
 // setCompletedStatus will determine if a CJI has completed all needed Jobs
 func (r *ClowdJobInvocationReconciler) setCompletedStatus(ctx context.Context, cji *crd.ClowdJobInvocation) error {
 
-	if len(cji.Status.PodNames) == 0 {
-		cji.Status.PodNames = []string{}
+	if len(cji.Status.Jobs) == 0 {
+		cji.Status.Jobs = []string{}
 		return nil
 	}
 
@@ -373,10 +352,17 @@ func (r *ClowdJobInvocationReconciler) setCompletedStatus(ctx context.Context, c
 	completionsNeeded := len(cji.Spec.Jobs)
 	jobsCompleted := 0
 
+	// A job either completes successfully, or fails to succeed within the
+	// backoffLimit threshold. Conditions is populated only when a
+	// job has finished. Condition is only populated when the jobs have
+	// succeeded or passed the backoff limit
 	for _, j := range jobs.Items {
-		if contains(cji.Status.PodNames, j.ObjectMeta.Labels["pod"]) {
-			if j.Status.Succeeded > 0 {
-				jobsCompleted++
+		if contains(cji.Status.Jobs, j.ObjectMeta.Name) {
+			if len(j.Status.Conditions) > 0 {
+				condition := j.Status.Conditions[0].Type
+				if condition == "Complete" || condition == "Failed" {
+					jobsCompleted++
+				}
 			}
 		}
 	}

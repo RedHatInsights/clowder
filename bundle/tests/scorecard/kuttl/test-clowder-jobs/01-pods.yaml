@@ -47,7 +47,6 @@ spec:
   jobs:
     - name: standard-cron
       schedule: "*/1 * * * *"
-      type: "request"
       podSpec:
         image: quay.io/psav/clowder-hello
         args:
@@ -55,7 +54,6 @@ spec:
           - boo
     - name: restart-on-failure 
       schedule: "*/1 * * * *"
-      type: "request"
       restartPolicy: OnFailure
       podSpec:
         image: quay.io/psav/clowder-hello
@@ -63,7 +61,6 @@ spec:
           - ./clowder-hello
           - boo
     - name: hello-cji
-      type: "request"
       podSpec:
         image: busybox
         args:
