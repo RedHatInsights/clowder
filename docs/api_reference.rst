@@ -427,7 +427,6 @@ Appears In:
 
    "``name`` (string)", "Name defines identifier of the Job. This name will be used to name the CronJob resource, the container will be name identically."
    "``schedule`` (string)", "Defines the schedule for the job to run"
-   "``type`` (JobType)", "The type of trigger for the job. The supported types are  (*_request_*), runs a job when an Invocation asks for it, or  (*_deploy_*) runs a job when the app it belongs to is "ready". Note: CronJobs should always be of type request"
    "``podSpec`` (:ref:`PodSpec`)", "PodSpec defines a container running inside the CronJob."
    "``restartPolicy`` (`RestartPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core>`_)", "Defines the restart policy for the CronJob, defaults to never"
    "``concurrencyPolicy`` (`ConcurrencyPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch>`_)", "Defines the concurrency policy for the CronJob, defaults to Allow"
