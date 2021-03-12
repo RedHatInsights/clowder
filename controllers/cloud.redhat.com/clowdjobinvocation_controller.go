@@ -78,14 +78,15 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	// Set the initial status to an empty list of pods and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
 	// setting the status after requeue will ensure it won't be double invoked
-	r.setCompletedStatus(ctx, &cji)
-	err = r.Client.Status().Update(ctx, &cji)
+	err = r.setCompletedStatus(ctx, &cji)
 	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
+	err = r.Client.Status().Update(ctx, &cji)
 
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
+		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJob [%s] has completed all jobs with status [%s]", cji.Name, cji.Status.Completed)
 		return ctrl.Result{}, nil
 	}
 
@@ -111,7 +112,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	// Determine if the ClowdApp containing the Job is ready
-	if app.Status.Ready == false {
+	if !app.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 		r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
 		return ctrl.Result{Requeue: true}, err
@@ -151,13 +152,17 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 		if err := r.InvokeJob(ctx, &job, &app, &env, &cji); err != nil {
 			r.Log.Info("Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
+			r.Recorder.Eventf(&cji, "Error", "JobNotInvoked", "Job [%s] could not be invoked", jobName)
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
 	// Short running jobs may be done by the time the loop is ranged,
 	// so we update again before the reconcile ends
-	r.setCompletedStatus(ctx, &cji)
+	err = r.setCompletedStatus(ctx, &cji)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
 	err = r.Client.Status().Update(ctx, &cji)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -181,13 +186,14 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	}
 	cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
 	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
+	r.Recorder.Eventf(cji, "Normal", "JobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 
 	return nil
 }
 
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
-func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
+func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
@@ -263,8 +269,6 @@ func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 			},
 		},
 	})
-
-	return nil
 }
 
 // getJobFromName matches a CJI job name to an App's job definition

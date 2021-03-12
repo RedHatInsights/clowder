@@ -74,8 +74,8 @@ func (i *ClowdJobInvocation) GetLabels() map[string]string {
 		i.Labels = map[string]string{}
 	}
 
-	if _, ok := i.Labels["cji"]; !ok {
-		i.Labels["cji"] = i.ObjectMeta.Name
+	if _, ok := i.Labels["clowdjob"]; !ok {
+		i.Labels["clowdjob"] = i.ObjectMeta.Name
 	}
 
 	newMap := make(map[string]string, len(i.Labels))
