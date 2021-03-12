@@ -86,7 +86,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
-		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJob [%s] has completed all jobs", cji.Name)
+		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJobInvocation [%s] has completed all jobs", cji.Name)
 		return ctrl.Result{}, nil
 	}
 
@@ -186,7 +186,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	}
 	cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
 	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
-	r.Recorder.Eventf(cji, "Normal", "JobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
+	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 
 	return nil
 }
