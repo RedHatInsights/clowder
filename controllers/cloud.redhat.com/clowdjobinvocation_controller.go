@@ -86,7 +86,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
-		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJob [%s] has completed all jobs with status [%s]", cji.Name, cji.Status.Completed)
+		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJob [%s] has completed all jobs", cji.Name)
 		return ctrl.Result{}, nil
 	}
 
