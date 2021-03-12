@@ -399,6 +399,11 @@ func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
 	return &i.Status.Deployments
 }
 
+// isReady returns true when all the ManagedDeployments are Ready
+func (i *ClowdApp) IsReady() bool {
+	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+}
+
 // GetClowdSAName returns the ServiceAccount Name for the App
 func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
