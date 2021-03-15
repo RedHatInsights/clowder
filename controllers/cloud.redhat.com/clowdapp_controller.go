@@ -128,7 +128,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if env.IsReady() == false {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
 		r.Log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
-		return ctrl.Result{Requeue: true}, err
+		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not ready: %s", env.Name))
 	}
 
 	maker, _ := makers.New(&makers.Maker{
@@ -197,6 +197,16 @@ func ignoreStatusUpdatePredicate() predicate.Predicate {
 			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Deployment" {
 				return true
 			}
+
+			// Allow reconciliation if the env changed status
+			if objOld, ok := e.ObjectOld.(*crd.ClowdEnvironment); ok {
+				if objNew, ok := e.ObjectNew.(*crd.ClowdEnvironment); ok {
+					if objOld.Status.Ready == false && objNew.Status.Ready == true {
+						return true
+					}
+				}
+			}
+
 			// Ignore updates to CR status in which case metadata.Generation does not change
 			return e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration()
 		},
