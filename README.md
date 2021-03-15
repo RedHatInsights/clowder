@@ -84,6 +84,9 @@ initiated with the following options:
   minikube start --cpus 4 --disk-size 36GB --memory 8000MB --driver=kvm2
   ```
 
+Mac OS is also supported with the `virtualbox` and `hyperkit` drivers. A full
+guide [can be found here](docs/macos.md)
+
   To persist these changes for every minikube invocation, run the following:
   ```shell
   minikube config set cpus 4
