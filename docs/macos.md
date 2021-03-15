@@ -10,9 +10,13 @@ If you do not use `brew`, you can follow [this guide](https://v1-18.docs.kuberne
 ### Install HyperKit or VirtualBox
 
 Virtualbox will work, but we recommend HyperKit. It is much faster and more 
-light weight than VirtualBox, but it will also work just fine. 
+light weight than VirtualBox, but VirtualBox will also work just fine. 
 
 `brew install hyperkit`
+
+or 
+
+Install VirtualBox from [the VirtualBox site](https://www.virtualbox.org/wiki/Downloads)
 
 
 ### Running
