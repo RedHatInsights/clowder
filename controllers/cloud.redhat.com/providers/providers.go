@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -193,6 +194,9 @@ func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 // is usually declared as part of the function so no arguments are passed.
 type ExtractFn func(m map[string][]byte)
 
+// ExtractFnAnno is just like ExtractFn except it reads in the value of an annotation
+type ExtractFnAnno func(m map[string][]byte, annoVal string)
+
 // ExtractSecretData takes a list of secrets, checks that the correct 'keys' are present and then
 // runs the extract function on them.
 func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
@@ -207,6 +211,32 @@ func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
 
 		if allOk {
 			fn(secret.Data)
+		}
+	}
+}
+
+// ExtractSecretDataAnno is just like ExtractSecretData except it expects an
+// annotation to be present on the secret that will provide one of the values
+// needed to extract the data out of the secret
+func ExtractSecretDataAnno(secrets []core.Secret, fn ExtractFnAnno, annoKey string, keys ...string) {
+	for _, secret := range secrets {
+		allOk := true
+
+		if _, ok := secret.Annotations[annoKey]; !ok {
+			allOk = false
+		}
+
+		for _, key := range keys {
+			if _, ok := secret.Data[key]; !ok {
+				allOk = false
+				break
+			}
+		}
+
+		if allOk {
+			for _, value := range strings.Split(secret.Annotations[annoKey], ",") {
+				fn(secret.Data, value)
+			}
 		}
 	}
 }
