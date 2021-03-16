@@ -1,0 +1,13 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-app-interface-s3 puptoo -o json > /tmp/test-app-interface-s3
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-app-interface-s3 | base64 -d > /tmp/test-app-interface-s3-json
+
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "test-app-interface-s3") | .region == "us-east"' -e < /tmp/test-app-interface-s3-json
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "test-app-interface-s3") | .accessKey == "aws_access_key"' -e < /tmp/test-app-interface-s3-json
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "test-app-interface-s3") | .name == "test-app-interface-s3"' -e < /tmp/test-app-interface-s3-json
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "test-app-interface-s3") | .secretKey == "aws_secret_key"' -e < /tmp/test-app-interface-s3-json
+- script: jq -r '.objectStore.buckets[] | select(.requestedName == "test-app-interface-s3") | .requestedName == "test-app-interface-s3"' -e < /tmp/test-app-interface-s3-json

@@ -115,7 +115,7 @@ Appears In:
    "``featureFlags`` (boolean)", "If featureFlags is set to true, Clowder will pass configuration of a FeatureFlags instance to the pods in the ClowdApp. This single instance will be shared between all apps."
    "``dependencies`` (string array)", "A list of dependencies in the form of the name of the ClowdApps that are required to be present for this ClowdApp to function."
    "``optionalDependencies`` (string array)", "A list of optional dependencies in the form of the name of the ClowdApps that are will be added to the configuration when present."
-   "``cyndi`` (:ref:`CyndiSpec`)", "Configures 'cyndi' database syndication for this app"
+   "``cyndi`` (:ref:`CyndiSpec`)", "Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline for this app in the environment's kafka-connect namespace. When the kafka provider is in (*_app-interface_*) mode, Clowder will check to ensure that a CyndiPipeline resource exists for the application in the environment's kafka-connect namespace. For all other kafka provider modes, this configuration option has no effect."
 
 
 
