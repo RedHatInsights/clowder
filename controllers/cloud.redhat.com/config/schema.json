@@ -245,6 +245,10 @@
                     "description": "Defines the secret key for the specified bucket.",
                     "type": "string"
                 },
+                "region": {
+                    "description": "Defines the region for the specified bucket.",
+                    "type": "string"
+                },
                 "requestedName": {
                     "description": "The name that was requested for the bucket in the ClowdApp.",
                     "type": "string"

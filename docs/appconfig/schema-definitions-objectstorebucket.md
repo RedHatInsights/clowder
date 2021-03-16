@@ -21,6 +21,7 @@ Object Storage Bucket
 | :------------------------------ | -------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [accessKey](#accesskey)         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-accesskey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/accessKey")         |
 | [secretKey](#secretkey)         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-secretkey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/secretKey")         |
+| [region](#region)               | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-region.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/region")               |
 | [requestedName](#requestedname) | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-requestedname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/requestedName") |
 | [name](#name)                   | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/name")                   |
 
@@ -53,6 +54,22 @@ Defines the secret key for the specified bucket.
 -   defined in: [AppConfig](schema-definitions-objectstorebucket-properties-secretkey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/secretKey")
 
 ### secretKey Type
+
+`string`
+
+## region
+
+Defines the region for the specified bucket.
+
+
+`region`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-objectstorebucket-properties-region.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/region")
+
+### region Type
 
 `string`
 

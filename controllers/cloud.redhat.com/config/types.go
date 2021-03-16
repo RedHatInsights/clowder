@@ -455,6 +455,9 @@ type ObjectStoreBucket struct {
 	// The actual name of the bucket being accessed.
 	Name string `json:"name"`
 
+	// Defines the region for the specified bucket.
+	Region *string `json:"region,omitempty"`
+
 	// The name that was requested for the bucket in the ClowdApp.
 	RequestedName string `json:"requestedName"`
 

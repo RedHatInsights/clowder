@@ -92,6 +92,7 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 			AccessKey: p.StrPtr(string(m["aws_access_key_id"])),
 			SecretKey: p.StrPtr(string(m["aws_secret_access_key"])),
 			Name:      string(m["bucket"]),
+			Region:    p.StrPtr(string(m["aws_region"])),
 		}
 
 		if endpoint, ok := m["endpoint"]; ok {
