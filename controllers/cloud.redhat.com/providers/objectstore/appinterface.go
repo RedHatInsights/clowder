@@ -87,11 +87,11 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	buckets := []config.ObjectStoreBucket{}
 	objectStoreConfig := config.ObjectStoreConfig{Port: 443}
 
-	extractFn := func(m map[string][]byte) {
+	extractFn := func(m map[string][]byte, bucket string) {
 		bucketConfig := config.ObjectStoreBucket{
 			AccessKey: p.StrPtr(string(m["aws_access_key_id"])),
 			SecretKey: p.StrPtr(string(m["aws_secret_access_key"])),
-			Name:      string(m["bucket"]),
+			Name:      bucket,
 			Region:    p.StrPtr(string(m["aws_region"])),
 		}
 
@@ -102,8 +102,15 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 		buckets = append(buckets, bucketConfig)
 	}
 
-	keys := []string{"aws_access_key_id", "aws_secret_access_key", "bucket"}
-	p.ExtractSecretData(secrets, extractFn, keys...)
+	extractFnNoAnno := func(m map[string][]byte) {
+		extractFn(m, string(m["bucket"]))
+	}
+
+	keys := []string{"aws_access_key_id", "aws_secret_access_key"}
+	annoKey := "clowder/bucket-names"
+	p.ExtractSecretDataAnno(secrets, extractFn, annoKey, keys...)
+	keys = append(keys, "bucket")
+	p.ExtractSecretData(secrets, extractFnNoAnno, keys...)
 
 	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
 		err := errors.New("Could not find object store hostname from secrets")
