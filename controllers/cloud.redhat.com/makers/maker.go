@@ -627,7 +627,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		})
 	}
 
-	if deployment.WebServices.Public.Enabled {
+	if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "public",
 			ContainerPort: env.Spec.Providers.Web.Port,
