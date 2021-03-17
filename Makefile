@@ -69,7 +69,7 @@ deploy: manifests kustomize
 release: manifests kustomize controller-gen
 	cat config/crd/bases/cloud.redhat.com_clowdapps.yaml > manifest.yaml
 	cat config/crd/bases/cloud.redhat.com_clowdenvironments.yaml >> manifest.yaml
-	cat config/crd/bases/cloud.redhat.com_clowdjobinvocation.yaml >> manifest.yaml
+	cat config/crd/bases/cloud.redhat.com_clowdjobinvocations.yaml >> manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd ../..
 	$(KUSTOMIZE) build config/default >> manifest.yaml
