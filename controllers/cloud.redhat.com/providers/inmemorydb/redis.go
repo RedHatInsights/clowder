@@ -68,7 +68,7 @@ func makeLocalRedis(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 	oneReplica := int32(1)
 
 	labels := o.GetLabels()
-	labels["env-clowdapp"] = nn.Name
+	labels["env-app"] = nn.Name
 	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)
