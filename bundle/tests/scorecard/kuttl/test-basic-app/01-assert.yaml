@@ -102,8 +102,11 @@ spec:
             port: private
         ports:
           - name: metrics
+            containerPort: 9000
           - name: private
+            containerPort: 8001
           - name: public
+            containerPort: 8000
 ---
 apiVersion: apps/v1
 kind: Deployment

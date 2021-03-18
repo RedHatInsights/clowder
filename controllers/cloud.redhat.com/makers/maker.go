@@ -623,7 +623,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	if deployment.WebServices.Private.Enabled {
 		c.Ports = append(c.Ports, core.ContainerPort{
 			Name:          "private",
-			ContainerPort: env.Spec.Providers.Web.Port,
+			ContainerPort: env.Spec.Providers.Web.PrivatePort,
 		})
 	}
 
