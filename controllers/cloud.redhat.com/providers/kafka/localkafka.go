@@ -108,7 +108,7 @@ func makeLocalKafka(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, p
 	nn := providers.GetNamespacedName(o, "kafka")
 
 	labels := o.GetLabels()
-	labels["env-clowdapp"] = nn.Name
+	labels["env-app"] = nn.Name
 	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)
@@ -225,7 +225,7 @@ func makeLocalZookeeper(o obj.ClowdObject, dd *apps.Deployment, svc *core.Servic
 	nn := providers.GetNamespacedName(o, "zookeeper")
 
 	labels := o.GetLabels()
-	labels["env-clowdapp"] = nn.Name
+	labels["env-app"] = nn.Name
 	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)

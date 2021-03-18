@@ -354,8 +354,8 @@ func TestCreateClowdApp(t *testing.T) {
 	}
 
 	labels := map[string]string{
-		"clowdapp": app.Name,
-		"pod":      fmt.Sprintf("%s-%s", app.Name, app.Spec.Deployments[0].Name),
+		"app": app.Name,
+		"pod": fmt.Sprintf("%s-%s", app.Name, app.Spec.Deployments[0].Name),
 	}
 
 	// See if Deployment is created

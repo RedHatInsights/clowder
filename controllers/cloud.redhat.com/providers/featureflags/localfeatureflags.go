@@ -129,7 +129,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Ser
 	nn := providers.GetNamespacedName(o, "featureflags")
 
 	labels := o.GetLabels()
-	labels["env-clowdapp"] = nn.Name
+	labels["env-app"] = nn.Name
 
 	labeler := utils.MakeLabeler(nn, labels, o)
 

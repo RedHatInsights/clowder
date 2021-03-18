@@ -5,7 +5,7 @@ metadata:
   name: puptoo
   namespace: test-minio-app
   labels:
-    clowdapp: puptoo
+    app: puptoo
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdApp
@@ -22,8 +22,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    clowdapp: test-minio-app
-    env-clowdapp: test-minio-app-minio
+    app: test-minio-app
+    env-app: test-minio-app-minio
   name: test-minio-app-minio
   namespace: test-minio-app
   ownerReferences:
@@ -36,8 +36,8 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      clowdapp: test-minio-app
-      env-clowdapp: test-minio-app-minio
+      app: test-minio-app
+      env-app: test-minio-app-minio
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -47,8 +47,8 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        clowdapp: test-minio-app
-        env-clowdapp: test-minio-app-minio
+        app: test-minio-app
+        env-app: test-minio-app-minio
     spec:
       containers:
       - args:
@@ -109,8 +109,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    clowdapp: test-minio-app
-    env-clowdapp: test-minio-app-minio
+    app: test-minio-app
+    env-app: test-minio-app-minio
   name: test-minio-app-minio
   namespace: test-minio-app
   ownerReferences:
@@ -124,7 +124,7 @@ spec:
     protocol: TCP
     targetPort: 9000
   selector:
-    clowdapp: test-minio-app
-    env-clowdapp: test-minio-app-minio
+    app: test-minio-app
+    env-app: test-minio-app-minio
   sessionAffinity: None
   type: ClusterIP
