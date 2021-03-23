@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	// "encoding/json"
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -137,7 +138,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		// Match the crd.Job name to the JobTemplate in ClowdApp
 		job, err := getJobFromName(jobName, &app)
 		if err != nil {
-			r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job named", jobName)
+			r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job named", cji.Spec.AppName, jobName)
 			r.Log.Info("Missing Job Definition", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
 			return ctrl.Result{}, err
 		}
@@ -182,14 +183,16 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	}
 	j := batchv1.Job{}
 
-	appSecrets := r.gatherAppSecrets(env, ctx)
-	fmt.Printf("%+v", appSecrets)
+	appSecrets := r.gatherAppSecretsMatchingEnv(env, ctx)
+	// TODO: Wrap in err fmt
+	r.createAndApplyIqeSecret(ctx, appSecrets, cji)
 
-	// TODO: if iqe is set, trigger an iqe thing
+	// TODO: set iqe stuff instead of job
 	createJobResource(cji, env, nn, job, &j)
 	if err := r.Client.Create(ctx, &j); err != nil {
 		return err
 	}
+
 	cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
 	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
 	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
@@ -197,11 +200,8 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	return nil
 }
 
-func (r *ClowdJobInvocationReconciler) gatherAppSecrets(env *crd.ClowdEnvironment, ctx context.Context) map[string]core.Secret {
-	// get all secrets from clowdapps
-	// append to a dict as we loop
-	// mount as "iqe"
-	appSecrets := make(map[string]core.Secret)
+func (r *ClowdJobInvocationReconciler) gatherAppSecretsMatchingEnv(env *crd.ClowdEnvironment, ctx context.Context) []core.Secret {
+	appSecrets := []core.Secret{}
 
 	appList := crd.ClowdAppList{}
 	r.Client.List(ctx, &appList)
@@ -217,18 +217,49 @@ func (r *ClowdJobInvocationReconciler) gatherAppSecrets(env *crd.ClowdEnvironmen
 
 			for _, secret := range secretList.Items {
 				if secret.ObjectMeta.Name == app.Name {
-					appSecrets[app.Name] = secret
+					appSecrets = append(appSecrets, secret)
 				}
 			}
-
 		}
 	}
 	return appSecrets
 
 }
 
+func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Context, appSecrets []core.Secret, cji *crd.ClowdJobInvocation) error {
+	nsName := types.NamespacedName{
+		Name:      "iqe",
+		Namespace: cji.Namespace,
+	}
+	iqeSecret := &core.Secret{}
+
+	update, err := utils.UpdateOrErr(r.Client.Get(ctx, nsName, iqeSecret))
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch iqe secret")
+		return err
+	}
+	iqeSecret.SetName("iqe")
+	iqeSecret.SetNamespace(cji.Namespace)
+
+	// This should maybe be owned by the job
+	iqeSecret.SetOwnerReferences([]metav1.OwnerReference{cji.MakeOwnerReference()})
+
+	appData := make(map[string]string)
+	for _, s := range appSecrets {
+		appData[s.Name] = string(s.Data["cdappconfig.json"])
+	}
+
+	iqeSecret.StringData = appData
+	if err := update.Apply(ctx, r.Client, iqeSecret); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
+// TODO: Refactor createJobResource into utils package for generic podTemplates
 func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
