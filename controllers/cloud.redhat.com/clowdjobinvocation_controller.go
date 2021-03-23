@@ -182,6 +182,10 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	}
 	j := batchv1.Job{}
 
+	appSecrets := r.gatherAppSecrets(env, ctx)
+	fmt.Printf("%+v", appSecrets)
+
+	// TODO: if iqe is set, trigger an iqe thing
 	createJobResource(cji, env, nn, job, &j)
 	if err := r.Client.Create(ctx, &j); err != nil {
 		return err
@@ -191,6 +195,36 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 
 	return nil
+}
+
+func (r *ClowdJobInvocationReconciler) gatherAppSecrets(env *crd.ClowdEnvironment, ctx context.Context) map[string]core.Secret {
+	// get all secrets from clowdapps
+	// append to a dict as we loop
+	// mount as "iqe"
+	appSecrets := make(map[string]core.Secret)
+
+	appList := crd.ClowdAppList{}
+	r.Client.List(ctx, &appList)
+
+	for _, app := range appList.Items {
+		if app.Spec.Pods != nil {
+			app.ConvertToNewShim()
+		}
+
+		if app.Spec.EnvName == env.Name {
+			secretList := core.SecretList{}
+			r.Client.List(ctx, &secretList)
+
+			for _, secret := range secretList.Items {
+				if secret.ObjectMeta.Name == app.Name {
+					appSecrets[app.Name] = secret
+				}
+			}
+
+		}
+	}
+	return appSecrets
+
 }
 
 // applyJob build the k8s job resource and applies it from the Job config
@@ -333,7 +367,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 	for _, cji := range cjiList.Items {
 		// job event triggered a reconcile, check our jobs and match
 		// to enable a requeue
-		if contains(cji.Status.Jobs, job.ObjectMeta.Labels["pod"]) {
+		if contains(cji.Status.Jobs, job.ObjectMeta.Name) {
 			reqs = append(reqs, reconcile.Request{
 				NamespacedName: types.NamespacedName{
 					Name:      cji.Name,
