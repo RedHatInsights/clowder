@@ -17,7 +17,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
@@ -192,11 +191,41 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func ignoreStatusUpdatePredicate() predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
+
+			// New code for statues has a problem, unless we start adding
+			// a new label to the element/annotation, that details the
+			// purpose, we can't filter out app vs infra deployment status
+			// changes. In the new caching model, it becomes very easy
+			// to annotate EVERY item with its purpose and provider owner.
+			if newDeployment, ok := (e.ObjectNew).(*apps.Deployment); ok {
+				// If the generations are different, we should always trigger
+				// a change.
+				if e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration() {
+					return true
+				}
+
+				// This trick could prevent us from having to do horrible JSON
+				// encode/decode. Essentially we copy the status and modify it
+				// so the fields we don't care about are the same. Then we can
+				// comepare the two statuses to see if there are ANY OTHER
+				// changes.
+				oldDeployment := (e.ObjectOld).(*apps.Deployment)
+
+				oldStatus := oldDeployment.Status.DeepCopy()
+				newStatus := newDeployment.Status.DeepCopy()
+
+				newStatus.ReadyReplicas = oldStatus.ReadyReplicas
+				if newStatus == oldStatus {
+					return false
+				}
+			}
+
 			// Always update if a deployment being watched changes - this allows
 			// status rollups to occur
-			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Deployment" {
-				return true
-			}
+
+			// if reflect.TypeOf(e.ObjectNew).String() == "*v1.Deployment" {
+			// 	return true
+			// }
 
 			// Allow reconciliation if the env changed status
 			if objOld, ok := e.ObjectOld.(*crd.ClowdEnvironment); ok {
