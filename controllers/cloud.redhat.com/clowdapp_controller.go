@@ -266,7 +266,6 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Owns(&core.ConfigMap{}).
-		Owns(&strimzi.KafkaTopic{}).
 		WithEventFilter(ignoreStatusUpdatePredicate()).
 		Complete(r)
 }
