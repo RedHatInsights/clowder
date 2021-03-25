@@ -4,17 +4,44 @@ import json
 import sys
 import time
 
+levels = {
+    'error': '\033[91m',
+    'warning': '\033[93m',
+    'diff': '\033[95m',
+    'info': '',
+}
+
+cancel_colour = '\033[0m'
+
 if len(sys.argv) == 2:
     app_filter = sys.argv[1]
 else:
     app_filter = None
 
-for line in sys.stdin:
-    js = json.loads(line)
+def print_message(line):
     ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(js["ts"])))
+
+    string = ""
+    if 'level' in js:
+        string += levels[js['level']]
+    if js.get('diff') != None:
+        string += levels['diff']
+    app = "[%s]" % js["app"] if "app" in js else ""
+    string += f'[{ts}] {js["level"].upper()} {app} {js["msg"]} '
+    del(js['msg'])
+    del(js['ts'])
+    string += " ".join({f"{k}:{v}" for k, v in js.items()})
+    string += cancel_colour
+    print(string)
+
+for line in sys.stdin:
+    try:
+        js = json.loads(line)
+    except:
+        continue
     if app_filter:
-        if app_filter == js["app"]:
-            print(f'[{ts}] {js["msg"]}')
+        if app_filter == js.get("app"):
+            print_message(js)
     else:
-        app = "[%s]" % js["app"] if "app" in js else ""
-        print(f'[{ts}] {app} {js["msg"]}')
+        print_message(js)
+    sys.stdout.flush()
