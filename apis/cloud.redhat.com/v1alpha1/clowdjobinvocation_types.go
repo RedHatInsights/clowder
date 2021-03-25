@@ -30,9 +30,9 @@ type IqeJobSpec struct {
 	// Indiciates the presence of a selenium container
 	UI bool `json:"ui,omitempty"`
 	// sets the pytest -m args
-	Marker string `json:"marker,omitempty"`
+	Marker string `json:"marker"`
 	// sets value for ENV_FOR_DYNACONF
-	DynaconfEnvName string `json:"dynaconfEnvName,omitempty"`
+	DynaconfEnvName string `json:"dynaconfEnvName"`
 	// sets pytest -k args
 	Filter string `json:"filter,omitempty"`
 }

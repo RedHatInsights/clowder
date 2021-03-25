@@ -158,6 +158,14 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		}
 	}
 
+	// TODO: Find a better way to determine the existance of iqe in cji spec, nil will not match
+	// types
+	if cji.Spec.Iqe.Marker != "" {
+		// configure iqe pod template with given overrides
+		// make the secret ball if needed and mount
+		// create env vars for dynaconf
+	}
+
 	// Short running jobs may be done by the time the loop is ranged,
 	// so we update again before the reconcile ends
 	err = r.setCompletedStatus(ctx, &cji)
@@ -253,6 +261,80 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 	}
 
 	return nil
+}
+
+func createIqeJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName) {
+	j := batchv1.Job{}
+	labels := cji.GetLabels()
+	cji.SetObjectMeta(&j, crd.Name(nn.Name), crd.Labels(labels))
+
+	j.ObjectMeta.Labels = labels
+	j.Spec.Template.ObjectMeta.Labels = labels
+
+	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
+
+	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
+		{Name: "quay-cloudservices-pull"},
+	}
+	pod := core.Pod{}
+
+	envvar := pod.Env
+	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+
+	var livenessProbe core.Probe
+	var readinessProbe core.Probe
+
+	if pod.LivenessProbe != nil {
+		livenessProbe = *pod.LivenessProbe
+	} else {
+		livenessProbe = core.Probe{}
+	}
+	if pod.ReadinessProbe != nil {
+		readinessProbe = *pod.ReadinessProbe
+	} else {
+		readinessProbe = core.Probe{}
+	}
+
+	c := core.Container{
+		Name:         nn.Name,
+		Image:        pod.Image,
+		Command:      pod.Command,
+		Args:         pod.Args,
+		Env:          envvar,
+		Resources:    maker.ProcessResources(&pod, env),
+		VolumeMounts: pod.VolumeMounts,
+		Ports: []core.ContainerPort{{
+			Name:          "metrics",
+			ContainerPort: env.Spec.Providers.Metrics.Port,
+		}},
+		ImagePullPolicy: core.PullIfNotPresent,
+	}
+
+	if (core.Probe{}) != livenessProbe {
+		c.LivenessProbe = &livenessProbe
+	}
+	if (core.Probe{}) != readinessProbe {
+		c.ReadinessProbe = &readinessProbe
+	}
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "config-secret",
+		MountPath: "/cdapp/",
+	})
+
+	j.Spec.Template.Spec.Containers = []core.Container{c}
+
+	j.Spec.Template.Spec.InitContainers = maker.ProcessInitContainers(nn, &c, pod.InitContainers)
+
+	j.Spec.Template.Spec.Volumes = pod.Volumes
+	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
+		Name: "config-secret",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: cji.Spec.AppName,
+			},
+		},
+	})
 }
 
 // applyJob build the k8s job resource and applies it from the Job config
