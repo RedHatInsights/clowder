@@ -121,6 +121,38 @@ spec:
                   required:
                   - mode
                   type: object
+                iqe:
+                  description: Defines the environment for iqe/smoke testing
+                  properties:
+                    configAccess:
+                      description: 'The mode of operation for access to outside app
+                        configs. Valid options are: (*_none_*) -- no app config is
+                        mounted to the pod (*_app_*) -- only the ClowdApp''s config
+                        is mounted to the pod (*_environment_*) -- the config for
+                        all apps in the env are mounted'
+                      enum:
+                      - none
+                      - app
+                      - environment
+                      type: string
+                    imageBase:
+                      type: string
+                    k8sAccessLevel:
+                      description: 'The mode of operation of the IQE Pod. Valid options
+                        are: (*_none_*) where no access will be granted, (*_view_*)
+                        which will allow the pod to have the controlling app''s view
+                        permissions and (*_edit_*) which grants full create, and edit
+                        powers to the pod'
+                      enum:
+                      - none
+                      - view
+                      - edit
+                      type: string
+                  required:
+                  - configAccess
+                  - imageBase
+                  - k8sAccessLevel
+                  type: object
                 kafka:
                   description: Defines the Configuration for the Clowder Kafka Provider.
                   properties:

@@ -4,7 +4,6 @@ package config
 
 import "fmt"
 import "encoding/json"
-import "reflect"
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
@@ -19,6 +18,9 @@ type AppConfig struct {
 
 	// InMemoryDb corresponds to the JSON schema field "inMemoryDb".
 	InMemoryDb *InMemoryDBConfig `json:"inMemoryDb,omitempty"`
+
+	// Iqe corresponds to the JSON schema field "iqe".
+	Iqe *IqeConfig `json:"iqe,omitempty"`
 
 	// Kafka corresponds to the JSON schema field "kafka".
 	Kafka *KafkaConfig `json:"kafka,omitempty"`
@@ -54,26 +56,12 @@ type AppConfig struct {
 
 // Broker Configuration
 type BrokerConfig struct {
-	// Authtype corresponds to the JSON schema field "authtype".
-	Authtype *BrokerConfigAuthtype `json:"authtype,omitempty"`
-
-	// Cacert corresponds to the JSON schema field "cacert".
-	Cacert *string `json:"cacert,omitempty"`
-
 	// Hostname corresponds to the JSON schema field "hostname".
 	Hostname string `json:"hostname"`
 
 	// Port corresponds to the JSON schema field "port".
 	Port *int `json:"port,omitempty"`
-
-	// Sasl corresponds to the JSON schema field "sasl".
-	Sasl *KafkaSASLConfig `json:"sasl,omitempty"`
 }
-
-type BrokerConfigAuthtype string
-
-const BrokerConfigAuthtypeMtls BrokerConfigAuthtype = "mtls"
-const BrokerConfigAuthtypeSasl BrokerConfigAuthtype = "sasl"
 
 // Cloud Watch configuration
 type CloudWatchConfig struct {
@@ -159,25 +147,364 @@ type InMemoryDBConfig struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// Config for base IQE Job Settings
+type IqeConfig struct {
+	// Defines the amount of app config is mounted to the pod
+	ConfigAccess string `json:"configAccess"`
+
+	// Defines the container image the iqe pod uses
+	ImageBase string `json:"imageBase"`
+
+	// Defines the level of access the iqe pod has in the namespace
+	K8SAccessLevel string `json:"k8sAccessLevel"`
+}
+
 // Kafka Configuration
 type KafkaConfig struct {
 	// Defines the brokers the app should connect to for Kafka services.
 	Brokers []BrokerConfig `json:"brokers"`
 
-	// Defines the brokers the app should connect to for Kafka services.
-	BrokersTLS []BrokerConfig `json:"brokersTLS,omitempty"`
-
 	// Defines a list of the topic configurations available to the application.
 	Topics []TopicConfig `json:"topics"`
 }
 
-// SASL Configuration for Kafka
-type KafkaSASLConfig struct {
-	// Password corresponds to the JSON schema field "password".
-	Password *string `json:"password,omitempty"`
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *IqeConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["configAccess"]; !ok || v == nil {
+		return fmt.Errorf("field configAccess: required")
+	}
+	if v, ok := raw["imageBase"]; !ok || v == nil {
+		return fmt.Errorf("field imageBase: required")
+	}
+	if v, ok := raw["k8sAccessLevel"]; !ok || v == nil {
+		return fmt.Errorf("field k8sAccessLevel: required")
+	}
+	type Plain IqeConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = IqeConfig(plain)
+	return nil
+}
 
-	// Username corresponds to the JSON schema field "username".
-	Username *string `json:"username,omitempty"`
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	type Plain InMemoryDBConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = InMemoryDBConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	type Plain BrokerConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = BrokerConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["brokers"]; !ok || v == nil {
+		return fmt.Errorf("field brokers: required")
+	}
+	if v, ok := raw["topics"]; !ok || v == nil {
+		return fmt.Errorf("field topics: required")
+	}
+	type Plain KafkaConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = KafkaConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TopicConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["requestedName"]; !ok || v == nil {
+		return fmt.Errorf("field requestedName: required")
+	}
+	type Plain TopicConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = TopicConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DependencyEndpoint) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["app"]; !ok || v == nil {
+		return fmt.Errorf("field app: required")
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	type Plain DependencyEndpoint
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = DependencyEndpoint(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["brokers"]; !ok || v == nil {
+		return fmt.Errorf("field brokers: required")
+	}
+	if v, ok := raw["topics"]; !ok || v == nil {
+		return fmt.Errorf("field topics: required")
+	}
+	type Plain KafkaConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = KafkaConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["adminPassword"]; !ok || v == nil {
+		return fmt.Errorf("field adminPassword: required")
+	}
+	if v, ok := raw["adminUsername"]; !ok || v == nil {
+		return fmt.Errorf("field adminUsername: required")
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["password"]; !ok || v == nil {
+		return fmt.Errorf("field password: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	if v, ok := raw["sslMode"]; !ok || v == nil {
+		return fmt.Errorf("field sslMode: required")
+	}
+	if v, ok := raw["username"]; !ok || v == nil {
+		return fmt.Errorf("field username: required")
+	}
+	type Plain DatabaseConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = DatabaseConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["accessKeyId"]; !ok || v == nil {
+		return fmt.Errorf("field accessKeyId: required")
+	}
+	if v, ok := raw["logGroup"]; !ok || v == nil {
+		return fmt.Errorf("field logGroup: required")
+	}
+	if v, ok := raw["region"]; !ok || v == nil {
+		return fmt.Errorf("field region: required")
+	}
+	if v, ok := raw["secretAccessKey"]; !ok || v == nil {
+		return fmt.Errorf("field secretAccessKey: required")
+	}
+	type Plain CloudWatchConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = CloudWatchConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PrivateDependencyEndpoint) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["app"]; !ok || v == nil {
+		return fmt.Errorf("field app: required")
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	type Plain PrivateDependencyEndpoint
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = PrivateDependencyEndpoint(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	if v, ok := raw["tls"]; !ok || v == nil {
+		return fmt.Errorf("field tls: required")
+	}
+	type Plain ObjectStoreConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ObjectStoreConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	if v, ok := raw["tls"]; !ok || v == nil {
+		return fmt.Errorf("field tls: required")
+	}
+	type Plain ObjectStoreConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ObjectStoreConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObjectStoreBucket) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["requestedName"]; !ok || v == nil {
+		return fmt.Errorf("field requestedName: required")
+	}
+	type Plain ObjectStoreBucket
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ObjectStoreBucket(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *AppConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["logging"]; !ok || v == nil {
+		return fmt.Errorf("field logging: required")
+	}
+	if v, ok := raw["metricsPath"]; !ok || v == nil {
+		return fmt.Errorf("field metricsPath: required")
+	}
+	if v, ok := raw["metricsPort"]; !ok || v == nil {
+		return fmt.Errorf("field metricsPort: required")
+	}
+	type Plain AppConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = AppConfig(plain)
+	return nil
 }
 
 // Logging Configuration
@@ -243,348 +570,7 @@ type PrivateDependencyEndpoint struct {
 	Port int `json:"port"`
 }
 
-// Topic Configuration
-type TopicConfig struct {
-	// Defines the consumer group that should be used for the topic.
-	ConsumerGroup *string `json:"consumerGroup,omitempty"`
-
-	// The name of the actual topic on the Kafka server.
-	Name string `json:"name"`
-
-	// The name that the app requested in the ClowdApp definition.
-	RequestedName string `json:"requestedName"`
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *TopicConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["requestedName"]; !ok || v == nil {
-		return fmt.Errorf("field requestedName: required")
-	}
-	type Plain TopicConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = TopicConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	type Plain BrokerConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = BrokerConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["brokers"]; !ok || v == nil {
-		return fmt.Errorf("field brokers: required")
-	}
-	if v, ok := raw["topics"]; !ok || v == nil {
-		return fmt.Errorf("field topics: required")
-	}
-	type Plain KafkaConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = KafkaConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *BrokerConfigAuthtype) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_BrokerConfigAuthtype {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BrokerConfigAuthtype, v)
-	}
-	*j = BrokerConfigAuthtype(v)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["accessKeyId"]; !ok || v == nil {
-		return fmt.Errorf("field accessKeyId: required")
-	}
-	if v, ok := raw["logGroup"]; !ok || v == nil {
-		return fmt.Errorf("field logGroup: required")
-	}
-	if v, ok := raw["region"]; !ok || v == nil {
-		return fmt.Errorf("field region: required")
-	}
-	if v, ok := raw["secretAccessKey"]; !ok || v == nil {
-		return fmt.Errorf("field secretAccessKey: required")
-	}
-	type Plain CloudWatchConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = CloudWatchConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain InMemoryDBConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = InMemoryDBConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *LoggingConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
-	}
-	type Plain LoggingConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = LoggingConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *FeatureFlagsConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain FeatureFlagsConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = FeatureFlagsConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObjectStoreBucket) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["requestedName"]; !ok || v == nil {
-		return fmt.Errorf("field requestedName: required")
-	}
-	type Plain ObjectStoreBucket
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = ObjectStoreBucket(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *DependencyEndpoint) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["app"]; !ok || v == nil {
-		return fmt.Errorf("field app: required")
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain DependencyEndpoint
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = DependencyEndpoint(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	if v, ok := raw["tls"]; !ok || v == nil {
-		return fmt.Errorf("field tls: required")
-	}
-	type Plain ObjectStoreConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = ObjectStoreConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["adminPassword"]; !ok || v == nil {
-		return fmt.Errorf("field adminPassword: required")
-	}
-	if v, ok := raw["adminUsername"]; !ok || v == nil {
-		return fmt.Errorf("field adminUsername: required")
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["password"]; !ok || v == nil {
-		return fmt.Errorf("field password: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	if v, ok := raw["sslMode"]; !ok || v == nil {
-		return fmt.Errorf("field sslMode: required")
-	}
-	if v, ok := raw["username"]; !ok || v == nil {
-		return fmt.Errorf("field username: required")
-	}
-	type Plain DatabaseConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = DatabaseConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *PrivateDependencyEndpoint) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["app"]; !ok || v == nil {
-		return fmt.Errorf("field app: required")
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain PrivateDependencyEndpoint
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = PrivateDependencyEndpoint(plain)
-	return nil
-}
-
 var enumValues_BrokerConfigAuthtype = []interface{}{
 	"mtls",
 	"sasl",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *AppConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["logging"]; !ok || v == nil {
-		return fmt.Errorf("field logging: required")
-	}
-	if v, ok := raw["metricsPath"]; !ok || v == nil {
-		return fmt.Errorf("field metricsPath: required")
-	}
-	if v, ok := raw["metricsPort"]; !ok || v == nil {
-		return fmt.Errorf("field metricsPort: required")
-	}
-	type Plain AppConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = AppConfig(plain)
-	return nil
 }

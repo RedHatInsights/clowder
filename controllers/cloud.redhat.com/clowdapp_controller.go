@@ -53,6 +53,7 @@ import (
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/featureflags"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/iqe"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
