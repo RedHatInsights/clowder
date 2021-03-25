@@ -266,6 +266,31 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
+// Sets the access level the iqe job based on the mode
+// +kubebuilder:validation:Enum=none;view;edit
+type AccessLevelMode string
+
+// Describes what amount of app config is mounted to the pod
+// +kubebuilder:validation:Enum=none;app;environment
+type ConfigAccessMode string
+
+type IqeConfig struct {
+	ImageBase string `json:"imageBase"`
+
+	// The mode of operation of the IQE Pod. Valid options are:
+	// (*_none_*) where no access will be granted, (*_view_*)
+	// which will allow the pod to have the controlling app's view permissions
+	// and (*_edit_*) which grants full create, and edit powers to the pod
+	K8SAccessLevel AccessLevelMode `json:"k8sAccessLevel"`
+
+	// The mode of operation for access to outside app configs. Valid
+	// options are:
+	// (*_none_*) -- no app config is mounted to the pod
+	// (*_app_*) -- only the ClowdApp's config is mounted to the pod
+	// (*_environment_*) -- the config for all apps in the env are mounted
+	ConfigAccess ConfigAccessMode `json:"configAccess"`
+}
+
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 type ClowdEnvironmentSpec struct {
 	// TargetNamespace describes the namespace where any generated environmental
@@ -315,6 +340,9 @@ type ProvidersConfig struct {
 
 	// Defines the pull secret to use for the service accounts.
 	PullSecrets PullSecrets `json:"pullSecrets,omitempty"`
+
+	// Defines the environment for iqe/smoke testing
+	Iqe IqeConfig `json:"iqe,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
