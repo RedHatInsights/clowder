@@ -55,8 +55,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 )
 
 const envFinalizer = "finalizer.env.cloud.redhat.com"
@@ -233,8 +231,6 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
-		Owns(&strimzi.Kafka{}).
-		Owns(&strimzi.KafkaConnect{}).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
 			&handler.EnqueueRequestsFromMapFunc{
