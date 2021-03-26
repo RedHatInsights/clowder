@@ -25,7 +25,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1614769119977,
+      "iteration": 1616785517989,
       "links": [],
       "panels": [
         {
@@ -388,7 +388,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (operation) (rate(clowder_api_calls[1m]))",
+              "expr": "sum by (method) (rate(rest_client_requests_total[1m]))",
               "interval": "",
               "legendFormat": "{{operation}}",
               "refId": "A"
