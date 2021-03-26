@@ -186,7 +186,6 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) 
 		},
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
-	dd.Spec.Template.Spec.ServiceAccountName = o.GetClowdSAName()
 
 	envVars := makeEnvVars(&[]envVar{
 		{"KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://" + nn.Name + "." + nn.Namespace + ".svc:29092, LOCAL://localhost:9092"},
@@ -313,7 +312,6 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		},
 	}
 	dd.Spec.Template.ObjectMeta.Labels = labels
-	dd.Spec.Template.Spec.ServiceAccountName = o.GetClowdSAName()
 
 	envVars := makeEnvVars(&[]envVar{
 		{"ZOOKEEPER_INIT_LIMIT", "10"},

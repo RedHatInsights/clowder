@@ -354,16 +354,6 @@ func (r *ClowdAppReconciler) runProviders(provider *providers.Provider, a *crd.C
 
 	c := config.AppConfig{}
 
-	c.WebPort = utils.IntPtr(int(provider.Env.Spec.Providers.Web.Port))
-	c.PublicPort = utils.IntPtr(int(provider.Env.Spec.Providers.Web.Port))
-	privatePort := provider.Env.Spec.Providers.Web.PrivatePort
-	if privatePort == 0 {
-		privatePort = 10000
-	}
-	c.PrivatePort = utils.IntPtr(int(privatePort))
-	c.MetricsPort = int(provider.Env.Spec.Providers.Metrics.Port)
-	c.MetricsPath = provider.Env.Spec.Providers.Metrics.Path
-
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		prov, err := provAcc.SetupProvider(provider)
 		if err != nil {
