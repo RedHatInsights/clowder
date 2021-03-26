@@ -243,7 +243,6 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) 
 	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
 		Name: "quay-cloudservices-pull",
 	}}
-	dd.Spec.Template.Spec.ServiceAccountName = o.GetClowdSAName()
 
 	// get the secret
 

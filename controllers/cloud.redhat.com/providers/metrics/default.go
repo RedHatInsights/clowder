@@ -16,6 +16,9 @@ func NewMetricsProvider(p *p.Provider) (p.ClowderProvider, error) {
 
 func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
+	c.MetricsPort = int(m.Env.Spec.Providers.Metrics.Port)
+	c.MetricsPath = m.Env.Spec.Providers.Metrics.Path
+
 	for _, deployment := range app.Spec.Deployments {
 
 		if err := m.makeMetrics(&deployment, app); err != nil {
