@@ -28,7 +28,7 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	}
 
 	for _, deployment := range dList.Items {
-		annotations := deployment.GetAnnotations()
+		annotations := deployment.Spec.Template.GetAnnotations()
 		if annotations == nil {
 			annotations = make(map[string]string)
 		}
