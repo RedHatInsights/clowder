@@ -66,6 +66,9 @@ spec:
                 ui:
                   description: Indiciates the presence of a selenium container
                   type: boolean
+              required:
+              - dynaconfEnvName
+              - marker
               type: object
             jobs:
               description: Jobs is the set of jobs to be run by the invocation

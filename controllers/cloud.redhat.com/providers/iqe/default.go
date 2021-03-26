@@ -9,8 +9,6 @@ import (
 	"fmt"
 
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	//apps "k8s.io/api/apps/v1"
-	// core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -41,10 +39,11 @@ func NewIqeProvider(p *p.Provider) (providers.ClowderProvider, error) {
 		}
 	}
 
-	_, err := config.MakeOrGetSecret(p.Ctx, p.Env, p.Client, nn, iqeInit)
+	_, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, IqeSecret, nn, iqeInit)
 	if err != nil {
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
+
 	iqe.Config = config.IqeConfig{
 		ImageBase:      iqeSettings.ImageBase,
 		K8SAccessLevel: fmt.Sprintf("%s", iqeSettings.K8SAccessLevel),
