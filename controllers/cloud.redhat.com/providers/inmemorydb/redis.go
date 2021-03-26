@@ -93,7 +93,6 @@ func makeLocalRedis(o obj.ClowdObject, objMap p.ObjectMap, usePVC bool) {
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.ObjectMeta.Labels = labels
 	dd.Spec.Replicas = &oneReplica
-	dd.Spec.Template.Spec.ServiceAccountName = o.GetClowdSAName()
 
 	probeHandler := core.Handler{
 		Exec: &core.ExecAction{

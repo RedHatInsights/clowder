@@ -61,8 +61,6 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		{Name: "quay-cloudservices-pull"},
 	}
 
-	d.Spec.Template.Spec.ServiceAccountName = app.GetClowdSAName()
-
 	envvar := pod.Env
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
@@ -99,17 +97,13 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	c := core.Container{
-		Name:         nn.Name,
-		Image:        pod.Image,
-		Command:      pod.Command,
-		Args:         pod.Args,
-		Env:          envvar,
-		Resources:    ProcessResources(&pod, env),
-		VolumeMounts: pod.VolumeMounts,
-		Ports: []core.ContainerPort{{
-			Name:          "metrics",
-			ContainerPort: env.Spec.Providers.Metrics.Port,
-		}},
+		Name:            nn.Name,
+		Image:           pod.Image,
+		Command:         pod.Command,
+		Args:            pod.Args,
+		Env:             envvar,
+		Resources:       ProcessResources(&pod, env),
+		VolumeMounts:    pod.VolumeMounts,
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
 

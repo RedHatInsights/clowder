@@ -20,5 +20,5 @@ func GetServiceAccount(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetServiceAccount, 1, ProvName)
+	p.ProvidersRegistration.Register(GetServiceAccount, 97, ProvName)
 }
