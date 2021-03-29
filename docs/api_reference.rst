@@ -30,7 +30,7 @@ Resource Types
 .. _AppInfo :
 
 AppInfo 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
 
 
 
@@ -49,7 +49,7 @@ Appears In:
 .. _ClowdApp :
 
 ClowdApp 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
 
 ClowdApp is the Schema for the clowdapps API
 
@@ -71,7 +71,7 @@ Appears In:
 .. _ClowdAppList :
 
 ClowdAppList 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
 ClowdAppList contains a list of ClowdApp
 
@@ -92,7 +92,7 @@ ClowdAppList contains a list of ClowdApp
 .. _ClowdAppSpec :
 
 ClowdAppSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
 ClowdAppSpec is the main specification for a single Clowder Application it defines n pods along with dependencies that are shared between them.
 
@@ -123,7 +123,7 @@ Appears In:
 .. _ClowdEnvironment :
 
 ClowdEnvironment 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 ClowdEnvironment is the Schema for the clowdenvironments API
 
@@ -145,7 +145,7 @@ Appears In:
 .. _ClowdEnvironmentList :
 
 ClowdEnvironmentList 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 ClowdEnvironmentList contains a list of ClowdEnvironment
 
@@ -166,7 +166,7 @@ ClowdEnvironmentList contains a list of ClowdEnvironment
 .. _ClowdEnvironmentSpec :
 
 ClowdEnvironmentSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 
@@ -188,7 +188,7 @@ Appears In:
 .. _ClowdJobInvocation :
 
 ClowdJobInvocation 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 ClowdJobInvocation is the Schema for the jobinvocations API
 
@@ -252,7 +252,7 @@ Appears In:
 .. _CyndiSpec :
 
 CyndiSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
 
 CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the cyndi operator and exposes a limited set of cyndi configuration options
 
@@ -272,7 +272,7 @@ Appears In:
 .. _DatabaseConfig :
 
 DatabaseConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 DatabaseConfig configures the Clowder provider controlling the creation of Database instances.
 
@@ -291,7 +291,7 @@ Appears In:
 .. _DatabaseSpec :
 
 DatabaseSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
 DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 
@@ -311,7 +311,7 @@ Appears In:
 .. _Deployment :
 
 Deployment 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^
 
 Deployment defines a service running inside a ClowdApp and will output a deployment resource. Only one container per pod is allowed and this is defined in the PodSpec attribute.
 
@@ -333,7 +333,7 @@ Appears In:
 .. _DeploymentInfo :
 
 DeploymentInfo 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 
 
@@ -353,7 +353,7 @@ Appears In:
 .. _FeatureFlagsConfig :
 
 FeatureFlagsConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 FeatureFlagsConfig configures the Clowder provider controlling the creation of FeatureFlag instances.
 
@@ -372,7 +372,7 @@ Appears In:
 .. _InMemoryDBConfig :
 
 InMemoryDBConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 InMemoryDBConfig configures the Clowder provider controlling the creation of InMemoryDB instances.
 
@@ -391,7 +391,7 @@ Appears In:
 .. _InitContainer :
 
 InitContainer 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 InitContainer is a struct defining a k8s init container. This will be deployed along with the parent pod and is used to carry out one time initialization procedures.
 
@@ -413,7 +413,7 @@ Appears In:
 .. _Job :
 
 Job 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^
 
 Job defines a CronJob as Schedule is required. In the future omitting the Schedule field will allow support for a standard Job resource.
 
@@ -436,7 +436,7 @@ Appears In:
 .. _KafkaClusterConfig :
 
 KafkaClusterConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
 
@@ -453,13 +453,13 @@ Appears In:
    "``replicas`` (integer)", "The requested number of replicas for kafka/zookeeper. If unset, default is '1'"
    "``storageSize`` (string)", "Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'"
    "``deleteClaim`` (boolean)", "Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'"
-   "``version`` (string)", "Version. If unset, default is "2.5.0""
+   "``version`` (string)", "Version. If unset, default is '2.5.0'"
 
 
 .. _KafkaConfig :
 
 KafkaConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 KafkaConfig configures the Clowder provider controlling the creation of Kafka instances.
 
@@ -485,7 +485,7 @@ Appears In:
 .. _KafkaConnectClusterConfig :
 
 KafkaConnectClusterConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
 
@@ -497,17 +497,17 @@ Appears In:
    :header: "Field", "Description"
    :widths: 10, 40
 
-   "``name`` (string)", "Defines the kafka connect cluster name (default: "<kafka cluster's name>-connect")"
+   "``name`` (string)", "Defines the kafka connect cluster name (default: '<kafka cluster's name>-connect')"
    "``namespace`` (string)", "The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace)"
    "``replicas`` (integer)", "The requested number of replicas for kafka connect. If unset, default is '1'"
-   "``version`` (string)", "Version. If unset, default is "2.5.0""
-   "``image`` (string)", "Image. If unset, default is "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest""
+   "``version`` (string)", "Version. If unset, default is '2.5.0'"
+   "``image`` (string)", "Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'"
 
 
 .. _KafkaTopicSpec :
 
 KafkaTopicSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 KafkaTopicSpec defines the desired state of KafkaTopic
 
@@ -528,7 +528,7 @@ Appears In:
 .. _LoggingConfig :
 
 LoggingConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 LoggingConfig configures the Clowder provider controlling the creation of Logging instances.
 
@@ -546,7 +546,7 @@ Appears In:
 .. _MetricsConfig :
 
 MetricsConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 MetricsConfig configures the Clowder provider controlling the creation of metrics services and their probes.
 
@@ -570,7 +570,7 @@ Appears In:
 .. _ObjectStoreConfig :
 
 ObjectStoreConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 ObjectStoreConfig configures the Clowder provider controlling the creation of ObjectStore instances.
 
@@ -590,7 +590,7 @@ Appears In:
 .. _PodSpec :
 
 PodSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
 
 PodSpec defines a container running inside a ClowdApp.
 
@@ -618,7 +618,7 @@ Appears In:
 .. _PodSpecDeprecated :
 
 PodSpecDeprecated 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
 
@@ -648,7 +648,7 @@ Appears In:
 .. _PrivateWebService :
 
 PrivateWebService 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 PrivateWebService is the definition of the private web service. There can be only one private service managed by Clowder.
 
@@ -666,7 +666,7 @@ Appears In:
 .. _ProvidersConfig :
 
 ProvidersConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
 
@@ -693,7 +693,7 @@ Appears In:
 .. _PublicWebService :
 
 PublicWebService 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 PublicWebService is the definition of the public web service. There can be only one public service managed by Clowder.
 
@@ -713,7 +713,7 @@ Appears In:
 .. _ServiceMeshConfig :
 
 ServiceMeshConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 ServiceMeshConfig determines if this env should be part of a service mesh and, if enabled, configures the service mesh
 
@@ -731,7 +731,7 @@ Appears In:
 .. _WebConfig :
 
 WebConfig 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
 
 WebConfig configures the Clowder provider controlling the creation of web services and their probes.
 
@@ -752,7 +752,7 @@ Appears In:
 .. _WebServices :
 
 WebServices 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 WebServices defines the structs for the three exposed web services: public, private and metrics.
 
@@ -788,7 +788,7 @@ Resource Types
 .. _CyndiPipeline :
 
 CyndiPipeline 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 CyndiPipeline is the Schema for the cyndipipelines API
 
@@ -810,7 +810,7 @@ Appears In:
 .. _CyndiPipelineList :
 
 CyndiPipelineList 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 CyndiPipelineList contains a list of CyndiPipeline
 
@@ -831,7 +831,7 @@ CyndiPipelineList contains a list of CyndiPipeline
 .. _CyndiPipelineSpec :
 
 CyndiPipelineSpec 
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 CyndiPipelineSpec defines the desired state of CyndiPipeline
 
