@@ -5,8 +5,9 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	//"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	// "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"fmt"
+	// core "k8s.io/api/core/v1"
 
 	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"k8s.io/apimachinery/pkg/types"
@@ -49,6 +50,29 @@ func NewIqeProvider(p *p.Provider) (providers.ClowderProvider, error) {
 		K8SAccessLevel: fmt.Sprintf("%s", iqeSettings.K8SAccessLevel),
 		ConfigAccess:   fmt.Sprintf("%s", iqeSettings.ConfigAccess),
 	}
+
+	// sa := &core.ServiceAccount{}
+	// nn = types.NamespacedName{
+	// 	Name:      "iqe",
+	// 	Namespace: p.Env.Status.TargetNamespace,
+	// }
+	// sa.ImagePullSecrets = []core.LocalObjectReference{}
+
+	// sa.ImagePullSecrets = append(sa.ImagePullSecrets, core.LocalObjectReference{
+	// 	Name: "quay-cloudservices-pull",
+	// })
+	// update, err := utils.UpdateOrErr(p.Client.Get(p.Ctx, nn, sa))
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if err = update.Apply(p.Ctx, p.Client, sa); err != nil {
+	// 	return nil, err
+	// }
+	// if err := p.Client.Create(p.Ctx, sa); err != nil {
+	// 	return nil, err
+	// }
 
 	return iqe, nil
 }

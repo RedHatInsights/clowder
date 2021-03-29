@@ -43,7 +43,7 @@ type ClowdJobInvocationSpec struct {
 	AppName string `json:"appName"`
 
 	// Jobs is the set of jobs to be run by the invocation
-	Jobs []string `json:"jobs"`
+	Jobs []string `json:"jobs,omitempty"`
 
 	// Iqe is the job spec to override defaults from the ClowdApp's
 	// definition of the job

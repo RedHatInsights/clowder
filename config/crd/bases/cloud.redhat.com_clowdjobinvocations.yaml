@@ -77,7 +77,6 @@ spec:
               type: array
           required:
           - appName
-          - jobs
           type: object
         status:
           description: ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
