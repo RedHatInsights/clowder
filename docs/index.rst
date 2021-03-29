@@ -10,7 +10,6 @@ Clowder
     usage/index
     clowder-design
     providers/index
-    usage/index
     contributing/index
     migration/index
     api_reference

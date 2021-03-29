@@ -95,13 +95,13 @@ type KafkaClusterConfig struct {
 	// Only applies when KafkaConfig.PVC is set to 'true'
 	DeleteClaim bool `json:"deleteClaim,omitempty"`
 
-	// Version. If unset, default is "2.5.0"
+	// Version. If unset, default is '2.5.0'
 	Version string `json:"version,omitempty"`
 }
 
 // KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
 type KafkaConnectClusterConfig struct {
-	// Defines the kafka connect cluster name (default: "<kafka cluster's name>-connect")
+	// Defines the kafka connect cluster name (default: '<kafka cluster's name>-connect')
 	Name string `json:"name"`
 
 	// The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace)
@@ -111,10 +111,10 @@ type KafkaConnectClusterConfig struct {
 	// +kubebuilder:validation:Minimum:=1
 	Replicas int32 `json:"replicas,omitempty"`
 
-	// Version. If unset, default is "2.5.0"
+	// Version. If unset, default is '2.5.0'
 	Version string `json:"version,omitempty"`
 
-	// Image. If unset, default is "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+	// Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
 	Image string `json:"image,omitempty"`
 }
 
