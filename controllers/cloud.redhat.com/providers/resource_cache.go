@@ -2,12 +2,15 @@ package providers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/go-difflib/difflib"
 	"github.com/go-logr/logr"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
@@ -84,6 +87,8 @@ var scheme = runtime.NewScheme()
 
 var protectedGVKs = make(map[schema.GroupVersionKind]bool)
 
+var secretCompare schema.GroupVersionKind
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(crd.AddToScheme(scheme))
@@ -92,6 +97,8 @@ func init() {
 
 	gvk, _ := getKindFromObj(scheme, &strimzi.KafkaTopic{})
 	protectedGVKs[gvk] = true
+
+	secretCompare, _ = getKindFromObj(scheme, &core.Secret{})
 }
 
 func registerGVK(obj runtime.Object) {
@@ -136,9 +143,10 @@ type ObjectCache struct {
 }
 
 type k8sResource struct {
-	Object runtime.Object
-	Update utils.Updater
-	Status bool
+	Object   runtime.Object
+	Update   utils.Updater
+	Status   bool
+	jsonData string
 }
 
 // NewObjectCache returns an instance of the ObjectCache which defers all applys until the end of
@@ -195,10 +203,24 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 		o.data[resourceIdent] = make(map[types.NamespacedName]*k8sResource)
 	}
 
+	var jsonData []byte
+	if clowder_config.LoadedConfig.DebugOptions.Cache.Create || clowder_config.LoadedConfig.DebugOptions.Cache.Apply {
+		jsonData, _ = json.MarshalIndent(object, "", "  ")
+	}
+
 	o.data[resourceIdent][nn] = &k8sResource{
-		Object: object.DeepCopyObject(),
-		Update: update,
-		Status: false,
+		Object:   object.DeepCopyObject(),
+		Update:   update,
+		Status:   false,
+		jsonData: string(jsonData),
+	}
+
+	if clowder_config.LoadedConfig.DebugOptions.Cache.Create {
+		if object.GetObjectKind().GroupVersionKind() == secretCompare {
+			o.log.Info("CREATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", "hidden")
+		} else {
+			o.log.Info("CREATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", string(jsonData))
+		}
 	}
 
 	return nil
@@ -223,6 +245,16 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object runtime.Object)
 
 	o.data[resourceIdent][nn].Object = object.DeepCopyObject()
 
+	if clowder_config.LoadedConfig.DebugOptions.Cache.Update {
+		var jsonData []byte
+		jsonData, _ = json.MarshalIndent(o.data[resourceIdent][nn].Object, "", "  ")
+		if object.GetObjectKind().GroupVersionKind() == secretCompare {
+			o.log.Info("UPDATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", "hidden")
+		} else {
+			o.log.Info("UPDATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", string(jsonData))
+		}
+	}
+
 	return nil
 }
 
@@ -245,6 +277,7 @@ func (o *ObjectCache) Get(resourceIdent ResourceIdent, object runtime.Object, nn
 			if err := o.scheme.Convert(v.Object, object, o.ctx); err != nil {
 				return err
 			}
+			object.GetObjectKind().SetGroupVersionKind(v.Object.GetObjectKind().GroupVersionKind())
 		}
 	} else {
 		v, ok := o.data[resourceIdent][nn[0]]
@@ -254,6 +287,7 @@ func (o *ObjectCache) Get(resourceIdent ResourceIdent, object runtime.Object, nn
 		if err := o.scheme.Convert(v.Object, object, o.ctx); err != nil {
 			return err
 		}
+		object.GetObjectKind().SetGroupVersionKind(v.Object.GetObjectKind().GroupVersionKind())
 	}
 	return nil
 }
@@ -335,6 +369,22 @@ func (o *ObjectCache) ApplyAll() error {
 	for k, v := range o.data {
 		for n, i := range v {
 			o.log.Info("APPLY resource ", "namespace", n.Namespace, "name", n.Name, "provider", k.GetProvider(), "purpose", k.GetPurpose(), "kind", i.Object.GetObjectKind().GroupVersionKind().Kind, "update", i.Update)
+			if clowder_config.LoadedConfig.DebugOptions.Cache.Apply {
+				jsonData, _ := json.MarshalIndent(i.Object, "", "  ")
+				diff := difflib.UnifiedDiff{
+					A:        difflib.SplitLines(string(jsonData)),
+					B:        difflib.SplitLines(i.jsonData),
+					FromFile: "old",
+					ToFile:   "new",
+					Context:  3,
+				}
+				text, _ := difflib.GetUnifiedDiffString(diff)
+				if i.Object.GetObjectKind().GroupVersionKind() == secretCompare {
+					o.log.Info("Update diff", "diff", "hidden", "type", "update", "resType", i.Object.GetObjectKind().GroupVersionKind().Kind, "name", n.Name, "namespace", n.Namespace)
+				} else {
+					o.log.Info("Update diff", "diff", text, "type", "update", "resType", i.Object.GetObjectKind().GroupVersionKind().Kind, "name", n.Name, "namespace", n.Namespace)
+				}
+			}
 			if err := i.Update.Apply(o.ctx, o.client, i.Object); err != nil {
 				return err
 			}
