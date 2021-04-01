@@ -39,4 +39,12 @@ spec:
           requests:
             cpu: 100m
             memory: 100Mi
+        volumeMounts:
+          - mountPath: "/config/"
+            name: "config"
+      volumes:
+        - name: "config"
+          configMap:
+            optional: True
+            name: clowder-config
       terminationGracePeriodSeconds: 10

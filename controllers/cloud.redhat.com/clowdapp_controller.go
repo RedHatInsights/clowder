@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 
@@ -24,9 +25,12 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -37,6 +41,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	// Import the providers to initialize them
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 
@@ -60,6 +65,8 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+
+	"github.com/RedHatInsights/go-difflib/difflib"
 )
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
@@ -212,9 +219,58 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
-func ignoreStatusUpdatePredicate() predicate.Predicate {
+func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
+	if gvk.Kind == "ClowdEnvironment" {
+		return true
+	} else if gvk.Kind == "ClowdApp" {
+		return true
+	} else if len(meta.GetOwnerReferences()) == 0 {
+		return false
+	} else if meta.GetOwnerReferences()[0].Kind == "ClowdApp" {
+		return true
+	} else if meta.GetOwnerReferences()[0].Kind == "ClowdEnvironment" {
+		return true
+	}
+	return false
+}
+
+func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			gvk, _ := getKindFromObj(scheme, e.Object)
+			if !isOurs(e.Meta, gvk) {
+				return false
+			}
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Meta.GetName(), "namespace", e.Meta.GetNamespace())
+			return true
+		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
+			gvk, _ := getKindFromObj(scheme, e.ObjectNew)
+			if !isOurs(e.MetaNew, gvk) {
+				return false
+			}
+
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.MetaOld.GetName(), "namespace", e.MetaOld.GetNamespace())
+
+			if clowder_config.LoadedConfig.DebugOptions.Trigger.Diff {
+				if e.ObjectNew.GetObjectKind().GroupVersionKind() == secretCompare {
+					logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.MetaOld.GetName(), "namespace", e.MetaOld.GetNamespace())
+				} else {
+					oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
+					newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
+
+					diff := difflib.UnifiedDiff{
+						A:        difflib.SplitLines(string(oldObjJSON)),
+						B:        difflib.SplitLines(string(newObjJSON)),
+						FromFile: "old",
+						ToFile:   "new",
+						Context:  3,
+					}
+					text, _ := difflib.GetUnifiedDiffString(diff)
+					logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.MetaOld.GetName(), "namespace", e.MetaOld.GetNamespace())
+				}
+			}
+
 			// Always update if a deployment being watched changes - this allows
 			// status rollups to occur
 			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Deployment" {
@@ -240,6 +296,22 @@ func ignoreStatusUpdatePredicate() predicate.Predicate {
 
 			// Ignore updates to CR status in which case metadata.Generation does not change
 			return e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration()
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			gvk, _ := getKindFromObj(scheme, e.Object)
+			if !isOurs(e.Meta, gvk) {
+				return false
+			}
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk, "name", e.Meta.GetName(), "namespace", e.Meta.GetNamespace())
+			return true
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			gvk, _ := getKindFromObj(scheme, e.Object)
+			if !isOurs(e.Meta, gvk) {
+				return false
+			}
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk, "name", e.Meta.GetName(), "namespace", e.Meta.GetNamespace())
+			return true
 		},
 	}
 }
@@ -267,7 +339,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Owns(&core.ConfigMap{}).
-		WithEventFilter(ignoreStatusUpdatePredicate()).
+		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
 		Complete(r)
 }
 
