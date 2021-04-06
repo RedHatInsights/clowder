@@ -1,0 +1,12 @@
+{
+    "debugOptions": {
+        "trigger": {
+            "diff": true
+        },
+        "cache": {
+            "create": true,
+            "update": false,
+            "apply": true
+        }
+    }
+}

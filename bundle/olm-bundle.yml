@@ -9,6 +9,14 @@ parameters:
   value: quay.io/cloudservices/clowder-index
 - name: TARGET_NAMESPACE
   value: clowder
+- name: DEBUG_TRIGGERS
+  value: "false"
+- name: DEBUG_CACHE_CREATE
+  value: "false"
+- name: DEBUG_CACHE_UPDATE
+  value: "false"
+- name: DEBUG_CACHE_APPLY
+  value: "false"
 objects:
 - apiVersion: operators.coreos.com/v1alpha1
   kind: CatalogSource
@@ -46,3 +54,21 @@ objects:
       control-plane: controller-manager
       operator-name: clowder
     type: ClusterIP
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: clowder-config
+  data:
+    test_config.json: |
+      {
+          "debugOptions": {
+              "trigger": {
+                  "diff": ${DEBUG_TRIGGERS}
+              },
+              "cache": {
+                  "create": ${DEBUG_CACHE_CREATE},
+                  "update": ${DEBUG_CACHE_UPDATE},
+                  "apply": ${DEBUG_CACHE_APPLY}
+              }
+          }
+      }
