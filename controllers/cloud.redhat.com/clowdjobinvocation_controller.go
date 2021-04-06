@@ -257,6 +257,7 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 	iqeSecret.SetOwnerReferences([]metav1.OwnerReference{cji.MakeOwnerReference()})
 
 	// loop through secrets and get their appConfig
+	envConfig := make(map[string]interface{})
 	appConfigs := make(map[string]config.AppConfig)
 	for _, app := range appList.Items {
 		jsonContent, err := r.fetchConfig(types.NamespacedName{
@@ -270,9 +271,10 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 		}
 		appConfigs[app.Name] = jsonContent
 	}
+	envConfig["cdappconfigs"] = appConfigs
 
 	// Marshall the data into the top level "cdenvconfig.json" to be mounted as a single secret
-	envData, err := json.Marshal(appConfigs)
+	envData, err := json.Marshal(envConfig)
 	if err != nil {
 		r.Log.Error(err, "Failed to marshal iqe secret")
 		return err
