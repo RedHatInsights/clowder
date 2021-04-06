@@ -289,6 +289,11 @@ type IqeConfig struct {
 	// (*_app_*) -- only the ClowdApp's config is mounted to the pod
 	// (*_environment_*) -- the config for all apps in the env are mounted
 	ConfigAccess ConfigAccessMode `json:"configAccess"`
+
+	// A pass-through of a resource requirements in k8s ResourceRequirements
+	// format. If omitted, the default resource requirements from the
+	// ClowdEnvironment will be used.
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.

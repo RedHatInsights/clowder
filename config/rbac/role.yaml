@@ -9,14 +9,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - clowdenvironments
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - configmaps
   - events
   - namespaces
