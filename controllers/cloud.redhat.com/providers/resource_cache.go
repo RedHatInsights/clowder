@@ -216,11 +216,20 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 	}
 
 	if clowder_config.LoadedConfig.DebugOptions.Cache.Create {
-		if object.GetObjectKind().GroupVersionKind() == secretCompare {
-			o.log.Info("CREATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", "hidden")
-		} else {
-			o.log.Info("CREATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", string(jsonData))
+		diffVal := "hidden"
+
+		if object.GetObjectKind().GroupVersionKind() != secretCompare {
+			diffVal = string(jsonData)
 		}
+
+		o.log.Info("CREATE resource ",
+			"namespace", nn.Namespace,
+			"name", nn.Name,
+			"provider", resourceIdent.GetProvider(),
+			"purpose", resourceIdent.GetPurpose(),
+			"kind", object.GetObjectKind().GroupVersionKind().Kind,
+			"diff", diffVal,
+		)
 	}
 
 	return nil
