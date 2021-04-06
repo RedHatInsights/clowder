@@ -37,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -57,8 +58,6 @@ type ClowdJobInvocationReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch
-// +kubebuilder:rbac:groups="",resources=clowdenvironments,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=configmaps;services;persistentvolumeclaims;secrets;events;namespaces,verbs=get;list;watch
 // +kubebuilder:rbac:groups=batch,resources=cronjobs;jobs,verbs=get;list;create;update;watch;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
@@ -219,34 +218,27 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	return nil
 }
 
-func (r *ClowdJobInvocationReconciler) gatherAppSecretsMatchingEnv(env *crd.ClowdEnvironment, ctx context.Context) []core.Secret {
-	appSecrets := []core.Secret{}
+func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ctx context.Context) (config.AppConfig, error) {
+
+	secretConfig := core.Secret{}
+	jsonContent := config.AppConfig{}
+
+	err := r.Client.Get(ctx, name, &secretConfig)
+
+	if err != nil {
+		return jsonContent, err
+	}
+
+	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
+
+	return jsonContent, nil
+}
+
+func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Context, cji *crd.ClowdJobInvocation, envName string) error {
+	iqeSecret := &core.Secret{}
 
 	appList := crd.ClowdAppList{}
 	r.Client.List(ctx, &appList)
-
-	for _, app := range appList.Items {
-		if app.Spec.Pods != nil {
-			app.ConvertToNewShim()
-		}
-
-		if app.Spec.EnvName == env.Name {
-			secretList := core.SecretList{}
-			r.Client.List(ctx, &secretList)
-
-			for _, secret := range secretList.Items {
-				if secret.ObjectMeta.Name == app.Name {
-					appSecrets = append(appSecrets, secret)
-				}
-			}
-		}
-	}
-	return appSecrets
-
-}
-
-func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Context, appSecrets []core.Secret, cji *crd.ClowdJobInvocation, envName string) error {
-	iqeSecret := &core.Secret{}
 
 	nn := types.NamespacedName{
 		Name:      envName,
@@ -265,11 +257,18 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 	iqeSecret.SetOwnerReferences([]metav1.OwnerReference{cji.MakeOwnerReference()})
 
 	// loop through secrets and get their appConfig
-	appConfigs := make(map[string][]map[string]string)
-	for _, s := range appSecrets {
-		app := make(map[string]string)
-		app[s.Name] = string(s.Data["cdappconfig.json"])
-		appConfigs["cdappconfigs"] = append(appConfigs["cdappconfigs"], app)
+	appConfigs := make(map[string]config.AppConfig)
+	for _, app := range appList.Items {
+		jsonContent, err := r.fetchConfig(types.NamespacedName{
+			Name:      app.Name,
+			Namespace: app.Namespace,
+		}, ctx)
+		if err != nil {
+			r.Log.Error(err, "Failed to fetch app config for %v", app)
+			return err
+
+		}
+		appConfigs[app.Name] = jsonContent
 	}
 
 	// Marshall the data into the top level "cdenvconfig.json" to be mounted as a single secret
@@ -298,11 +297,14 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	j.ObjectMeta.Labels = labels
 	j.Spec.Template.ObjectMeta.Labels = labels
 
-	// TODO: Determine restart policy on iqe jobs
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 
 	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
 		{Name: "quay-cloudservices-pull"},
+	}
+
+	pod := crd.PodSpec{
+		Resources: env.Spec.Providers.Iqe.Resources,
 	}
 
 	envvar := []core.EnvVar{}
@@ -326,24 +328,24 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	switch accessLevel {
 	// Use edit level service account to create and delete resources
 	case "edit":
-		fmt.Println("env")
+		j.Spec.Template.Spec.ServiceAccountName = "iqe"
 	// Standard view access to the owned resources
 	case "view":
-		fmt.Println("view")
+		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-app", app.Name)
 	// Do not allow any access
 	case "none":
-		fmt.Println("meh")
+		j.Spec.Template.Spec.ServiceAccountName = "default"
 	}
 
 	constructedIqeCommand := constructIqeCommand(cji, plugin)
 
 	c := core.Container{
-		Name:    fmt.Sprintf("%s-iqe", plugin),
-		Image:   fmt.Sprintf("%s:%v", iqeImage, tag),
-		Command: constructedIqeCommand,
-		Env:     envvar,
-		// Resources:       deployProvider.ProcessResources(&pod, env),
-		Resources:       core.ResourceRequirements{},
+		Name:      fmt.Sprintf("%s-iqe", plugin),
+		Image:     fmt.Sprintf("%s:%v", iqeImage, tag),
+		Command:   constructedIqeCommand,
+		Env:       envvar,
+		Resources: deployProvider.ProcessResources(&pod, env),
+		// Resources:       core.ResourceRequirements{},
 		VolumeMounts:    []core.VolumeMount{},
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
@@ -354,8 +356,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	switch configAccess {
 	// Build cdenvconfig.json and mount it
 	case "environment":
-		appSecrets := r.gatherAppSecretsMatchingEnv(env, ctx)
-		err := r.createAndApplyIqeSecret(ctx, appSecrets, cji, env.Name)
+		err := r.createAndApplyIqeSecret(ctx, cji, env.Name)
 		if err != nil {
 			r.Log.Error(err, "Cannot apply iqe secret")
 		}
@@ -395,12 +396,10 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 		r.Log.Info("No config mounted to the iqe pod")
 	}
 
-	j.Spec.Template.Spec.ServiceAccountName = "iqe"
 	j.Spec.Template.Spec.Containers = []core.Container{c}
 
 }
 
-// TODO: populate the command when format is decided by QE
 func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) []string {
 	command := []string{}
 	command = append(command, "iqe")
