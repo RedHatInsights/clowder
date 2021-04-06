@@ -18,7 +18,8 @@ package controllers
 
 import (
 	"context"
-	// "encoding/json"
+	//"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -171,6 +172,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		}
 
 		j := batchv1.Job{}
+
 		r.createIqeJobResource(&cji, &env, &app, nn, ctx, &j)
 		if err := r.Client.Create(ctx, &j); err != nil {
 			r.Log.Info("Iqe Job encountered an error", "jobinvocation", nn.Name, err)
@@ -243,31 +245,46 @@ func (r *ClowdJobInvocationReconciler) gatherAppSecretsMatchingEnv(env *crd.Clow
 
 }
 
-func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Context, appSecrets []core.Secret, cji *crd.ClowdJobInvocation) error {
-	nsName := types.NamespacedName{
-		Name:      "iqe",
-		Namespace: cji.Namespace,
-	}
+func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Context, appSecrets []core.Secret, cji *crd.ClowdJobInvocation, envName string) error {
 	iqeSecret := &core.Secret{}
 
-	update, err := utils.UpdateOrErr(r.Client.Get(ctx, nsName, iqeSecret))
+	nn := types.NamespacedName{
+		Name:      envName,
+		Namespace: cji.Namespace,
+	}
+	update, err := utils.UpdateOrErr(r.Client.Get(ctx, nn, iqeSecret))
 	if err != nil {
-		r.Log.Error(err, "Failed to fetch iqe secret")
+		r.Log.Error(err, "Failed to check for iqe secret")
 		return err
 	}
-	iqeSecret.SetName("iqe")
-	iqeSecret.SetNamespace(cji.Namespace)
+
+	iqeSecret.SetName(nn.Name)
+	iqeSecret.SetNamespace(nn.Namespace)
 
 	// This should maybe be owned by the job
 	iqeSecret.SetOwnerReferences([]metav1.OwnerReference{cji.MakeOwnerReference()})
 
-	appData := make(map[string]string)
+	// loop through secrets and get their appConfig
+	appConfigs := make(map[string][]map[string]string)
 	for _, s := range appSecrets {
-		appData[s.Name] = string(s.Data["cdappconfig.json"])
+		app := make(map[string]string)
+		app[s.Name] = string(s.Data["cdappconfig.json"])
+		appConfigs["cdappconfigs"] = append(appConfigs["cdappconfigs"], app)
 	}
 
-	iqeSecret.StringData = appData
+	// Marshall the data into the top level "cdenvconfig.json" to be mounted as a single secret
+	envData, err := json.Marshal(appConfigs)
+	if err != nil {
+		r.Log.Error(err, "Failed to marshal iqe secret")
+		return err
+	}
+
+	cdEnv := make(map[string][]byte)
+	cdEnv["cdenvconfig.json"] = envData
+
+	iqeSecret.Data = cdEnv
 	if err := update.Apply(ctx, r.Client, iqeSecret); err != nil {
+		r.Log.Error(err, "Failed to create iqe secret")
 		return err
 	}
 
@@ -292,8 +309,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 	envvar = append(envvar, core.EnvVar{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Iqe.DynaconfEnvName})
 	envvar = append(envvar, core.EnvVar{Name: "NAMESPACE", Value: nn.Namespace})
-
-	// TODO: Determine if liveness/readiness are needed
+	envvar = append(envvar, core.EnvVar{Name: "CLOWDER_ENABLED", Value: "true"})
 
 	tag := ""
 	if cji.Spec.Iqe.ImageTag != "" {
@@ -304,8 +320,20 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	plugin := app.Spec.Iqe.Plugin
 	iqeImage := env.Spec.Providers.Iqe.ImageBase
 
-	// TODO: handle access level
-	// accessLevel := env.Spec.Providers.Iqe.K8SAccessLevel
+	accessLevel := env.Spec.Providers.Iqe.K8SAccessLevel
+
+	// TODO: implement access level with service account
+	switch accessLevel {
+	// Use edit level service account to create and delete resources
+	case "edit":
+		fmt.Println("env")
+	// Standard view access to the owned resources
+	case "view":
+		fmt.Println("view")
+	// Do not allow any access
+	case "none":
+		fmt.Println("meh")
+	}
 
 	constructedIqeCommand := constructIqeCommand(cji, plugin)
 
@@ -320,37 +348,40 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
-	j.Spec.Template.Spec.Containers = []core.Container{c}
-
-	// Setup secret based on access level requested
+	j.Spec.Template.Spec.Volumes = []core.Volume{}
 	configAccess := env.Spec.Providers.Iqe.ConfigAccess
+
 	switch configAccess {
-	// TODO: Determine how the app will read this vs cdappconfig
+	// Build cdenvconfig.json and mount it
 	case "environment":
 		appSecrets := r.gatherAppSecretsMatchingEnv(env, ctx)
-		err := r.createAndApplyIqeSecret(ctx, appSecrets, cji)
+		err := r.createAndApplyIqeSecret(ctx, appSecrets, cji, env.Name)
 		if err != nil {
 			r.Log.Error(err, "Cannot apply iqe secret")
 		}
 		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
-			Name:      "iqe-secret",
-			MountPath: "/cdapp/",
+			Name:      "cdenvconfig",
+			MountPath: "/cdenv",
 		})
+
 		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
-			Name: "iqe-secret",
+			Name: "cdenvconfig",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: "iqe",
+					SecretName: env.Name,
 				},
 			},
 		})
-	case "view":
+		// if we have env access, we also want app access as well, so also run the next case
+		fallthrough
+
+	// mount cdappconfig
+	case "app":
 		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 			Name:      "config-secret",
 			MountPath: "/cdapp/",
 		})
 
-		j.Spec.Template.Spec.Volumes = []core.Volume{}
 		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
 			Name: "config-secret",
 			VolumeSource: core.VolumeSource{
@@ -359,12 +390,14 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 				},
 			},
 		})
-	default:
-		r.Log.Info("Iqe pod instructed to mount no configuration")
 
+	case "none":
+		r.Log.Info("No config mounted to the iqe pod")
 	}
 
-	// j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-app", cji.Spec.AppName)
+	j.Spec.Template.Spec.ServiceAccountName = "iqe"
+	j.Spec.Template.Spec.Containers = []core.Container{c}
+
 }
 
 // TODO: populate the command when format is decided by QE
