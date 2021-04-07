@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	//"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -40,6 +39,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
+	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -208,7 +208,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.J
 	}
 
 	j := batchv1.Job{}
-	createJobResource(cji, env, nn, job, &j)
+	jobProvider.CreateJobResource(cji, env, nn, job, &j)
 	if err := r.Client.Create(ctx, &j); err != nil {
 		return err
 	}
@@ -262,16 +262,18 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 	envConfig := make(map[string]interface{})
 	appConfigs := make(map[string]config.AppConfig)
 	for _, app := range appList.Items {
-		jsonContent, err := r.fetchConfig(types.NamespacedName{
-			Name:      app.Name,
-			Namespace: app.Namespace,
-		}, ctx)
-		if err != nil {
-			r.Log.Error(err, "Failed to fetch app config for %v", app)
-			return err
+		if app.Spec.EnvName == envName {
+			jsonContent, err := r.fetchConfig(types.NamespacedName{
+				Name:      app.Name,
+				Namespace: app.Namespace,
+			}, ctx)
+			if err != nil {
+				r.Log.Error(err, "Failed to fetch app config for %v", app)
+				return err
 
+			}
+			appConfigs[app.Name] = jsonContent
 		}
-		appConfigs[app.Name] = jsonContent
 	}
 	envConfig["cdappconfigs"] = appConfigs
 
@@ -331,8 +333,9 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	// TODO: implement access level with service account
 	switch accessLevel {
 	// Use edit level service account to create and delete resources
+	// one per app when the app is created
 	case "edit":
-		j.Spec.Template.Spec.ServiceAccountName = "iqe"
+		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-iqe", app.Name)
 	// Standard view access to the owned resources
 	case "view":
 		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-app", app.Name)
@@ -416,87 +419,6 @@ func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) []string {
 	command = append(command, fmt.Sprintf("%v", cji.Spec.Iqe.Filter))
 
 	return command
-}
-
-// applyJob build the k8s job resource and applies it from the Job config
-// defined in the ClowdApp
-// TODO: Refactor createJobResource into utils package for generic podTemplates
-func createJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
-	labels := cji.GetLabels()
-	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
-
-	j.ObjectMeta.Labels = labels
-	j.Spec.Template.ObjectMeta.Labels = labels
-
-	pod := job.PodSpec
-
-	if job.RestartPolicy == "" {
-		j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
-	} else {
-		j.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
-	}
-
-	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
-		{Name: "quay-cloudservices-pull"},
-	}
-
-	envvar := pod.Env
-	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
-
-	var livenessProbe core.Probe
-	var readinessProbe core.Probe
-
-	if pod.LivenessProbe != nil {
-		livenessProbe = *pod.LivenessProbe
-	} else {
-		livenessProbe = core.Probe{}
-	}
-	if pod.ReadinessProbe != nil {
-		readinessProbe = *pod.ReadinessProbe
-	} else {
-		readinessProbe = core.Probe{}
-	}
-
-	c := core.Container{
-		Name:         nn.Name,
-		Image:        pod.Image,
-		Command:      pod.Command,
-		Args:         pod.Args,
-		Env:          envvar,
-		Resources:    deployProvider.ProcessResources(&pod, env),
-		VolumeMounts: pod.VolumeMounts,
-		Ports: []core.ContainerPort{{
-			Name:          "metrics",
-			ContainerPort: env.Spec.Providers.Metrics.Port,
-		}},
-		ImagePullPolicy: core.PullIfNotPresent,
-	}
-
-	if (core.Probe{}) != livenessProbe {
-		c.LivenessProbe = &livenessProbe
-	}
-	if (core.Probe{}) != readinessProbe {
-		c.ReadinessProbe = &readinessProbe
-	}
-
-	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
-		Name:      "config-secret",
-		MountPath: "/cdapp/",
-	})
-
-	j.Spec.Template.Spec.Containers = []core.Container{c}
-
-	j.Spec.Template.Spec.InitContainers = deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
-
-	j.Spec.Template.Spec.Volumes = pod.Volumes
-	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
-		Name: "config-secret",
-		VolumeSource: core.VolumeSource{
-			Secret: &core.SecretVolumeSource{
-				SecretName: cji.Spec.AppName,
-			},
-		},
-	})
 }
 
 // getJobFromName matches a CJI job name to an App's job definition
