@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -108,6 +109,10 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		msg := fmt.Sprintf("Failed to list secrets in %s", namespace)
 		return errors.Wrap(msg, err)
 	}
+
+	sort.Slice(secrets.Items, func(i, j int) bool {
+		return secrets.Items[i].Name < secrets.Items[j].Name
+	})
 
 	dbConfigs, err := genDbConfigs(secrets.Items)
 
