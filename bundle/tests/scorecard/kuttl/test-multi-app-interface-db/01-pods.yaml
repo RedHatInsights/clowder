@@ -75,3 +75,16 @@ data:
   db.port: NTQzMg==  # 5432
   db.user: dXNlcg==  # user
   db.password:  cGFzc3dvcmQxMjM=  # password123
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-c-readonly-db
+  namespace: test-multi-app-interface-db
+type: Opaque
+data:
+  db.host: YXBwLWItc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com
+  db.name: ZGJuYW1l  # dbname
+  db.port: NTQzMg==  # 5432
+  db.user: dXNlcmJhZAo=  # userbad
+  db.password:  cGFzc3dvcmQxMjM=  # password123

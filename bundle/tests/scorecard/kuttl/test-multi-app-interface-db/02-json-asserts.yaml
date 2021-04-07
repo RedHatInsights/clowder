@@ -8,6 +8,7 @@ commands:
 
 - script: jq -r '.database.hostname == "app-b-stage.rds.example.com"' -e < /tmp/test-multi-app-interface-db-json-c
 - script: jq -r '.database.sslMode == "verify-full"' -e < /tmp/test-multi-app-interface-db-json-c
+- script: jq -r '.database.username == "user"' -e < /tmp/test-multi-app-interface-db-json-c
 
 
 - script: kubectl get secret --namespace=test-multi-app-interface-db app-b -o json > /tmp/test-multi-app-interface-db-b
@@ -15,3 +16,4 @@ commands:
 
 - script: jq -r '.database.hostname == "app-b-stage.rds.example.com"' -e < /tmp/test-multi-app-interface-db-json-b
 - script: jq -r '.database.sslMode == "verify-full"' -e < /tmp/test-multi-app-interface-db-json-b
+- script: jq -r '.database.username == "user"' -e < /tmp/test-multi-app-interface-db-json-b
