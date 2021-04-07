@@ -304,6 +304,10 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 			continue
 		}
 
+		if app.Spec.Pods != nil {
+			app.ConvertToNewShim()
+		}
+
 		appstatus := crd.AppInfo{
 			Name:        app.Name,
 			Deployments: []crd.DeploymentInfo{},
@@ -325,7 +329,7 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 			deploymentStatus := crd.DeploymentInfo{
 				Name: fmt.Sprintf("%s-%s", app.Name, pod.Name),
 			}
-			if pod.WebServices.Public.Enabled {
+			if bool(pod.Web) || pod.WebServices.Public.Enabled {
 				deploymentStatus.Hostname = fmt.Sprintf("%s.%s.svc", deploymentStatus.Name, app.Namespace)
 				deploymentStatus.Port = p.Env.Spec.Providers.Web.Port
 			}

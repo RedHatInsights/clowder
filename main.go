@@ -54,5 +54,5 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(false)))
 
-	controllers.Run(metricsAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler(), true)
+	controllers.Run(metricsAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler())
 }
