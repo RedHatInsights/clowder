@@ -337,6 +337,7 @@ type ClowdEnvironmentStatus struct {
 	Ready           bool                    `json:"ready"`
 	Deployments     common.DeploymentStatus `json:"deployments"`
 	Apps            []AppInfo               `json:"apps,omitempty"`
+	Generation      int64                   `json:"generation,omitempty"`
 }
 
 // AppInfo details information about a specific app.
