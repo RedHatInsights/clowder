@@ -148,6 +148,10 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{Requeue: true}, err
 	}
 
+	if env.Generation != env.Status.Generation {
+		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
+	}
+
 	if !env.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
 		log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
@@ -198,7 +202,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// Delete all resources that are not used anymore
 	if !requeue {
-		r.Recorder.Eventf(&app, "Normal", "SuccessfulCreate", "created", app.GetClowdName())
+		r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s%]", app.GetClowdName())
 		log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 		err := cache.Reconcile(&app)
 		if err != nil {
@@ -206,7 +210,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	} else {
 		log.Info("Reconciliation partially successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
-		r.Recorder.Eventf(&app, "Normal", "SuccessfulPartialCreate", "requeued", app.GetClowdName())
+		r.Recorder.Eventf(&app, "Warning", "SuccessfulPartialReconciliation", "Clowdapp requeued [%s%]", app.GetClowdName())
 	}
 
 	if err == nil {

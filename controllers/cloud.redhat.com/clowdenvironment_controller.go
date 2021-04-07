@@ -196,22 +196,24 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	env.Status.Ready = env.IsReady()
+	env.Status.Generation = env.Generation
 
 	if err := r.Client.Status().Update(ctx, &env); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	if !requeue {
-		// Delete all resources that are not used anymore
-		r.Recorder.Eventf(&env, "Normal", "SuccessfulCreate", "created", env.GetClowdName())
+		r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
 		log.Info("Reconciliation successful", "env", env.Name)
+
+		// Delete all resources that are not used anymore
 		err := cache.Reconcile(&env)
 		if err != nil {
 			return ctrl.Result{Requeue: requeue}, nil
 		}
 	} else {
 		log.Info("Reconciliation partially successful", "env", fmt.Sprintf("%s:%s", env.Namespace, env.Name))
-		r.Recorder.Eventf(&env, "Normal", "SuccessfulPartialCreate", "requeued", env.GetClowdName())
+		r.Recorder.Eventf(&env, "Warning", "SuccessfulPartialReconciliation", "Environment requeued [%s]", env.GetClowdName())
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
