@@ -13,6 +13,9 @@ webhooks:
       namespace: system
       path: /mutate-app
   failurePolicy: Fail
+  admissionReviewVersions:
+  - "v1alpha1"
+  sideEffects: "None"
   name: clowdapp.cloud.redhat.com
   rules:
   - apiGroups:
@@ -31,6 +34,9 @@ webhooks:
       namespace: system
       path: /mutate-env
   failurePolicy: Fail
+  admissionReviewVersions:
+  - "v1alpha1"
+  sideEffects: "None"
   name: clowdenv.clowd.redhat.com
   rules:
   - apiGroups:
