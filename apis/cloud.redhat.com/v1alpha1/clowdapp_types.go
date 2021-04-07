@@ -315,7 +315,6 @@ type ClowdAppStatus struct {
 // +kubebuilder:printcolumn:name="Managed",type="integer",JSONPath=".status.deployments.managedDeployments"
 // +kubebuilder:printcolumn:name="EnvName",type="string",JSONPath=".spec.envName"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:webhook:path=/mutate-app,mutating=true,failurePolicy=fail,groups=cloud.redhat.com,resources=clowdapps,verbs=create;update,versions=v1alpha1,name=clowdapp.cloud.redhat.com
 
 // ClowdApp is the Schema for the clowdapps API
 type ClowdApp struct {
@@ -418,6 +417,32 @@ func (i *ClowdApp) IsReady() bool {
 // GetClowdSAName returns the ServiceAccount Name for the App
 func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
+}
+
+// ConvertToNewShim converts an old "pod" based spec into the new "deployment" style.
+func (i *ClowdApp) ConvertToNewShim() {
+	deps := []Deployment{}
+	for _, pod := range i.Spec.Pods {
+		dep := Deployment{
+			Name:        pod.Name,
+			Web:         pod.Web,
+			MinReplicas: pod.MinReplicas,
+			PodSpec: PodSpec{
+				Image:          pod.Image,
+				InitContainers: pod.InitContainers,
+				Command:        pod.Command,
+				Args:           pod.Args,
+				Env:            pod.Env,
+				Resources:      pod.Resources,
+				LivenessProbe:  pod.LivenessProbe,
+				ReadinessProbe: pod.ReadinessProbe,
+				Volumes:        pod.Volumes,
+				VolumeMounts:   pod.VolumeMounts,
+			},
+		}
+		deps = append(deps, dep)
+	}
+	i.Spec.Deployments = deps
 }
 
 // Omfunc is a utility function that performs an operation on a metav1.Object.

@@ -359,7 +359,6 @@ type DeploymentInfo struct {
 // +kubebuilder:printcolumn:name="Managed",type="integer",JSONPath=".status.deployments.managedDeployments"
 // +kubebuilder:printcolumn:name="Namespace",type="string",JSONPath=".status.targetNamespace"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:webhook:path=/mutate-env,mutating=true,failurePolicy=fail,groups=cloud.redhat.com,resources=clowdenvironments,verbs=create;update,versions=v1alpha1,name=clowdenv.clowd.redhat.com
 
 // ClowdEnvironment is the Schema for the clowdenvironments API
 type ClowdEnvironment struct {
@@ -441,4 +440,23 @@ func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 // IsReady returns true when all the ManagedDeployments are Ready
 func (i *ClowdEnvironment) IsReady() bool {
 	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+}
+
+// ConvertDeprecatedKafkaSpec converts values from the old Kafka provider spec into the new format
+func (i *ClowdEnvironment) ConvertDeprecatedKafkaSpec() {
+	if i.Spec.Providers.Kafka.ClusterName != "" {
+		i.Spec.Providers.Kafka.Cluster.Name = i.Spec.Providers.Kafka.ClusterName
+	}
+
+	if i.Spec.Providers.Kafka.Namespace != "" {
+		i.Spec.Providers.Kafka.Cluster.Namespace = i.Spec.Providers.Kafka.Namespace
+	}
+
+	if i.Spec.Providers.Kafka.ConnectNamespace != "" {
+		i.Spec.Providers.Kafka.Connect.Namespace = i.Spec.Providers.Kafka.ConnectNamespace
+	}
+
+	if i.Spec.Providers.Kafka.ConnectClusterName != "" {
+		i.Spec.Providers.Kafka.Connect.Name = i.Spec.Providers.Kafka.ConnectClusterName
+	}
 }

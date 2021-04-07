@@ -81,6 +81,11 @@ func makeDepConfig(
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, iapp := range apps.Items {
+
+		if iapp.Spec.Pods != nil {
+			iapp.ConvertToNewShim()
+		}
+
 		if iapp.Spec.EnvName == app.Spec.EnvName {
 			appMap[iapp.Name] = iapp
 		}
@@ -113,7 +118,7 @@ func processAppEndpoints(
 		// If app has public endpoint, add it to app config
 
 		for _, deployment := range depApp.Spec.Deployments {
-			if deployment.WebServices.Public.Enabled {
+			if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
 				*depConfig = append(*depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),

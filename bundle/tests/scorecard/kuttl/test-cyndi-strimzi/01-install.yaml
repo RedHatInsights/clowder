@@ -20,6 +20,7 @@ spec:
         name: my-connect-cluster
       mode: operator
     db:
+      image: "registry.redhat.io/rhel8/postgresql-12:1-36"
       mode: local
     logging:
       mode: none
