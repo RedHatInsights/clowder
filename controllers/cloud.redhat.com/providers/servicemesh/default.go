@@ -3,17 +3,17 @@ package servicemesh
 import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
 )
 
 type servicemeshProvider struct {
-	p.Provider
+	providers.Provider
 }
 
 // NewServiceMeshProvider returns a new End provider run at the end of the provider set.
-func NewServiceMeshProvider(p *p.Provider) (p.ClowderProvider, error) {
+func NewServiceMeshProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &servicemeshProvider{Provider: *p}, nil
 }
 

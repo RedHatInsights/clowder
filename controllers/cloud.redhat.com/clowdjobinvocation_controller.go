@@ -78,11 +78,13 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	// Set the initial status to an empty list of pods and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
 	// setting the status after requeue will ensure it won't be double invoked
-	err = r.setCompletedStatus(ctx, &cji)
-	if err != nil {
+	if err := r.setCompletedStatus(ctx, &cji); err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
-	err = r.Client.Status().Update(ctx, &cji)
+
+	if err := r.Client.Status().Update(ctx, &cji); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
 
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
@@ -309,12 +311,12 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 	}
 
 	job := batchv1.Job{}
-	err := r.Client.Get(ctx, obj, &job)
+	if err := r.Client.Get(ctx, obj, &job); err != nil {
+		r.Log.Error(err, "Failed to fetch Job")
+	}
 
 	cjiList := crd.ClowdJobInvocationList{}
-	err = r.Client.List(ctx, &cjiList)
-
-	if err != nil {
+	if err := r.Client.List(ctx, &cjiList); err != nil {
 		if k8serr.IsNotFound(err) {
 			// Must have been deleted
 			return reqs

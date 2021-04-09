@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName is the name/ident of the provider
 var ProvName = "inmemorydb"
 
 // GetInMemoryDB returns the correct in-memory DB provider based on the environment.
-func GetInMemoryDB(c *p.Provider) (p.ClowderProvider, error) {
+func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 	dbMode := c.Env.Spec.Providers.InMemoryDB.Mode
 	switch dbMode {
 	case "redis":
@@ -27,5 +27,5 @@ func GetInMemoryDB(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetInMemoryDB, 5, ProvName)
+	providers.ProvidersRegistration.Register(GetInMemoryDB, 5, ProvName)
 }

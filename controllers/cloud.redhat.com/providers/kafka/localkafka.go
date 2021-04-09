@@ -9,7 +9,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"github.com/segmentio/kafka-go"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -30,22 +29,22 @@ type localKafka struct {
 }
 
 // LocalKafkaDeployment identifies the main kafka deployment
-var LocalKafkaDeployment = p.NewSingleResourceIdent(ProvName, "local_kafka_deployment", &apps.Deployment{})
+var LocalKafkaDeployment = providers.NewSingleResourceIdent(ProvName, "local_kafka_deployment", &apps.Deployment{})
 
 // LocalKafkaService identifies the main kafka service
-var LocalKafkaService = p.NewSingleResourceIdent(ProvName, "local_kafka_service", &core.Service{})
+var LocalKafkaService = providers.NewSingleResourceIdent(ProvName, "local_kafka_service", &core.Service{})
 
 // LocalKafkaPVC identifies the main kafka configmap
-var LocalKafkaPVC = p.NewSingleResourceIdent(ProvName, "local_kafka_pvc", &core.PersistentVolumeClaim{})
+var LocalKafkaPVC = providers.NewSingleResourceIdent(ProvName, "local_kafka_pvc", &core.PersistentVolumeClaim{})
 
 // LocalZookeeperDeployment identifies the main zookeeper deployment
-var LocalZookeeperDeployment = p.NewSingleResourceIdent(ProvName, "local_zookeeper_deployment", &apps.Deployment{})
+var LocalZookeeperDeployment = providers.NewSingleResourceIdent(ProvName, "local_zookeeper_deployment", &apps.Deployment{})
 
 // LocalZookeeperService identifies the main zookeeper service
-var LocalZookeeperService = p.NewSingleResourceIdent(ProvName, "local_zookeeper_service", &core.Service{})
+var LocalZookeeperService = providers.NewSingleResourceIdent(ProvName, "local_zookeeper_service", &core.Service{})
 
 // LocalZookeeperPVC identifies the main zookeeper configmap
-var LocalZookeeperPVC = p.NewSingleResourceIdent(ProvName, "local_zookeeper_pvc", &core.PersistentVolumeClaim{})
+var LocalZookeeperPVC = providers.NewSingleResourceIdent(ProvName, "local_zookeeper_pvc", &core.PersistentVolumeClaim{})
 
 func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if len(app.Spec.KafkaTopics) == 0 {
@@ -86,7 +85,7 @@ func (k *localKafka) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 }
 
 // NewLocalKafka returns a new local kafka provider object.
-func NewLocalKafka(p *p.Provider) (providers.ClowderProvider, error) {
+func NewLocalKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	config := config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{

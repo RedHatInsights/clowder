@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName is the providers ident.
 var ProvName = "objectstore"
 
 // GetObjectStore returns the correct object store provider based on the environment.
-func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
+func GetObjectStore(c *providers.Provider) (providers.ClowderProvider, error) {
 	objectStoreMode := c.Env.Spec.Providers.ObjectStore.Mode
 	switch objectStoreMode {
 	case "minio":
@@ -27,5 +27,5 @@ func GetObjectStore(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetObjectStore, 5, ProvName)
+	providers.ProvidersRegistration.Register(GetObjectStore, 5, ProvName)
 }

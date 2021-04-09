@@ -3,15 +3,15 @@ package dependencies
 import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 type dependenciesProvider struct {
-	p.Provider
+	providers.Provider
 }
 
 // NewDependenciesProvider returns a new End provider run at the end of the provider set.
-func NewDependenciesProvider(p *p.Provider) (p.ClowderProvider, error) {
+func NewDependenciesProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &dependenciesProvider{Provider: *p}, nil
 }
 

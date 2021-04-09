@@ -7,7 +7,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -15,16 +14,16 @@ import (
 )
 
 // RedisDeployment identifies the main redis deployment
-var RedisDeployment = p.NewSingleResourceIdent(ProvName, "redis_deployment", &apps.Deployment{})
+var RedisDeployment = providers.NewSingleResourceIdent(ProvName, "redis_deployment", &apps.Deployment{})
 
 // RedisService identifies the main redis service
-var RedisService = p.NewSingleResourceIdent(ProvName, "redis_service", &core.Service{})
+var RedisService = providers.NewSingleResourceIdent(ProvName, "redis_service", &core.Service{})
 
 // RedisConfigMap identifies the main redis configmap
-var RedisConfigMap = p.NewSingleResourceIdent(ProvName, "redis_config_map", &core.ConfigMap{})
+var RedisConfigMap = providers.NewSingleResourceIdent(ProvName, "redis_config_map", &core.ConfigMap{})
 
 type localRedis struct {
-	p.Provider
+	providers.Provider
 	Config config.InMemoryDBConfig
 }
 
@@ -76,7 +75,7 @@ func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &redisProvider, nil
 }
 
-func makeLocalRedis(o obj.ClowdObject, objMap p.ObjectMap, usePVC bool) {
+func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "redis")
 
 	dd := objMap[RedisDeployment].(*apps.Deployment)

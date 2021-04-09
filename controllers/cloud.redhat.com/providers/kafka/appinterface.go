@@ -8,7 +8,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -18,7 +17,7 @@ import (
 )
 
 type appInterface struct {
-	p.Provider
+	providers.Provider
 	Config config.KafkaConfig
 }
 
@@ -103,7 +102,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 }
 
 // NewAppInterface returns a new app-interface kafka provider object.
-func NewAppInterface(p *p.Provider) (providers.ClowderProvider, error) {
+func NewAppInterface(p *providers.Provider) (providers.ClowderProvider, error) {
 	nn := types.NamespacedName{
 		Name:      p.Env.Spec.Providers.Kafka.Cluster.Name,
 		Namespace: getKafkaNamespace(p.Env),

@@ -3,15 +3,15 @@ package web
 import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 )
 
 type webProvider struct {
-	p.Provider
+	providers.Provider
 }
 
-func NewWebProvider(p *p.Provider) (p.ClowderProvider, error) {
+func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &webProvider{Provider: *p}, nil
 }
 

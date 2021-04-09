@@ -120,7 +120,7 @@ func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.Na
 	}
 
 	if nok {
-		return nil, fmt.Errorf("This type is unknown")
+		return nil, fmt.Errorf("this type is unknown")
 	}
 
 	gvk := gvks[0]

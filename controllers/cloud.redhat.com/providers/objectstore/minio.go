@@ -10,7 +10,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -21,16 +20,16 @@ import (
 )
 
 // MinioDeployment is the resource ident for the Minio deployment object.
-var MinioDeployment = p.NewSingleResourceIdent(ProvName, "minio_db_deployment", &apps.Deployment{})
+var MinioDeployment = providers.NewSingleResourceIdent(ProvName, "minio_db_deployment", &apps.Deployment{})
 
 // MinioService is the resource ident for the Minio service object.
-var MinioService = p.NewSingleResourceIdent(ProvName, "minio_db_service", &core.Service{})
+var MinioService = providers.NewSingleResourceIdent(ProvName, "minio_db_service", &core.Service{})
 
 // MinioPVC is the resource ident for the Minio PVC object.
-var MinioPVC = p.NewSingleResourceIdent(ProvName, "minio_db_pvc", &core.PersistentVolumeClaim{})
+var MinioPVC = providers.NewSingleResourceIdent(ProvName, "minio_db_pvc", &core.PersistentVolumeClaim{})
 
 // MinioSecret is the resource ident for the Minio secret object.
-var MinioSecret = p.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.Secret{})
+var MinioSecret = providers.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.Secret{})
 
 const bucketCheckErrorMsg = "failed to check if bucket exists"
 const bucketCreateErrorMsg = "failed to create bucket"
@@ -82,7 +81,7 @@ func (h *minioHandler) CreateClient(
 
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
-	p.Provider
+	providers.Provider
 	Config        config.ObjectStoreConfig
 	BucketHandler bucketHandler
 }
@@ -127,7 +126,7 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 }
 
 func createMinioProvider(
-	p *p.Provider, secMap map[string]string, handler bucketHandler,
+	p *providers.Provider, secMap map[string]string, handler bucketHandler,
 ) (*minioProvider, error) {
 	mp := &minioProvider{Provider: *p, Config: config.ObjectStoreConfig{}}
 
@@ -162,7 +161,7 @@ func createDefaultMinioSecMap(name string, namespace string) map[string]string {
 }
 
 // NewMinIO constructs a new minio for the given config
-func NewMinIO(p *p.Provider) (providers.ClowderProvider, error) {
+func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 	nn := providers.GetNamespacedName(p.Env, "minio")
 
 	dataInit := func() map[string]string {
