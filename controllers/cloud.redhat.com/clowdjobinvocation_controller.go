@@ -246,6 +246,9 @@ func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ct
 	}
 
 	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
+	if err != nil {
+		return jsonContent, err
+	}
 
 	return jsonContent, nil
 }
@@ -489,6 +492,10 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 
 	job := batchv1.Job{}
 	err := r.Client.Get(ctx, obj, &job)
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch ClowdJob")
+		return nil
+	}
 
 	cjiList := crd.ClowdJobInvocationList{}
 	err = r.Client.List(ctx, &cjiList)
