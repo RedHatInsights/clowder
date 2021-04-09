@@ -249,6 +249,9 @@ func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ct
 	}
 
 	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
+	if err != nil {
+		return jsonContent, err
+	}
 
 	return jsonContent, nil
 }
@@ -491,12 +494,9 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 	}
 
 	job := batchv1.Job{}
-	if err := r.Client.Get(ctx, obj, &job); err != nil {
-		if k8serr.IsNotFound(err) {
-			// Must have been deleted
-			return reqs
-		}
-		r.Log.Error(err, "Failed to fetch Job")
+	err := r.Client.Get(ctx, obj, &job)
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch ClowdJob")
 		return nil
 	}
 
