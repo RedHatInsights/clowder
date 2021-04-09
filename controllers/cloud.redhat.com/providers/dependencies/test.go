@@ -6,8 +6,6 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -322,35 +320,5 @@ func NewIDAndParam(ID, limitCPU, limitMemory, requestsCPU, requestsMemory string
 				"memory": requestsMemory,
 			},
 		},
-	}
-}
-
-func createResourceRequirements(params Params) core.ResourceRequirements {
-	rl := core.ResourceList{}
-	limits := params["limits"]
-
-	if limits != nil {
-		if limits["cpu"] != "" {
-			rl["cpu"] = resource.MustParse(limits["cpu"])
-		}
-		if limits["memory"] != "" {
-			rl["memory"] = resource.MustParse(limits["memory"])
-		}
-	}
-
-	rr := core.ResourceList{}
-	requests := params["requests"]
-	if requests != nil {
-		if requests["cpu"] != "" {
-			rr["cpu"] = resource.MustParse(requests["cpu"])
-		}
-		if requests["memory"] != "" {
-			rr["memory"] = resource.MustParse(requests["memory"])
-		}
-	}
-
-	return core.ResourceRequirements{
-		Limits:   rl,
-		Requests: rr,
 	}
 }

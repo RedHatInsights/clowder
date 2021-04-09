@@ -3,7 +3,7 @@ package providers
 import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -108,10 +108,10 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 		Port:     5432,
 		Protocol: "TCP",
 	}}
-	utils.MakeService(s, nn, p.Labels{"service": "db", "app": baseResource.GetClowdName()}, servicePorts, baseResource)
+	utils.MakeService(s, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, servicePorts, baseResource)
 }
 
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
 func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject) {
-	utils.MakePVC(pvc, nn, p.Labels{"service": "db", "app": baseResource.GetClowdName()}, "1Gi", baseResource)
+	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, "1Gi", baseResource)
 }

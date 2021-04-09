@@ -9,7 +9,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,9 +84,9 @@ func (c *mockBucketHandler) CreateClient(
 	return nil
 }
 
-func getTestProvider(t *testing.T) p.Provider {
+func getTestProvider(t *testing.T) providers.Provider {
 	t.Helper()
-	return p.Provider{Ctx: context.TODO()}
+	return providers.Provider{Ctx: context.TODO()}
 }
 
 func getTestMinioProvider(t *testing.T) *minioProvider {
@@ -319,8 +319,8 @@ func TestMinio(t *testing.T) {
 		assert.Equal(mp.Config.Hostname, secMap["hostname"])
 		port, _ := strconv.Atoi(secMap["port"])
 		assert.Equal(mp.Config.Port, port)
-		assert.Equal(mp.Config.AccessKey, p.StrPtr(secMap["accessKey"]))
-		assert.Equal(mp.Config.SecretKey, p.StrPtr(secMap["secretKey"]))
+		assert.Equal(mp.Config.AccessKey, providers.StrPtr(secMap["accessKey"]))
+		assert.Equal(mp.Config.SecretKey, providers.StrPtr(secMap["secretKey"]))
 		assert.Equal(mp.Ctx, tp.Ctx)
 	})
 

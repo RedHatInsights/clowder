@@ -8,23 +8,23 @@ import (
 	core "k8s.io/api/core/v1"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName is the name/ident of the provider
 var ProvName = "kafka"
 
 // CyndiPipeline identifies the main cyndi pipeline object.
-var CyndiPipeline = p.NewSingleResourceIdent(ProvName, "cyndi_pipeline", &cyndi.CyndiPipeline{})
+var CyndiPipeline = providers.NewSingleResourceIdent(ProvName, "cyndi_pipeline", &cyndi.CyndiPipeline{})
 
 // CyndiAppSecret identifies the cyndi app secret object.
-var CyndiAppSecret = p.NewSingleResourceIdent(ProvName, "cyndi_app_secret", &core.Secret{})
+var CyndiAppSecret = providers.NewSingleResourceIdent(ProvName, "cyndi_app_secret", &core.Secret{})
 
 // CyndiHostInventoryAppSecret identifies the cyndi host-inventory app secret object.
-var CyndiHostInventoryAppSecret = p.NewSingleResourceIdent(ProvName, "cyndi_host_inventory_secret", &core.Secret{})
+var CyndiHostInventoryAppSecret = providers.NewSingleResourceIdent(ProvName, "cyndi_host_inventory_secret", &core.Secret{})
 
 // GetKafka returns the correct kafka provider based on the environment.
-func GetKafka(c *p.Provider) (p.ClowderProvider, error) {
+func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 	c.Env.ConvertDeprecatedKafkaSpec()
 	kafkaMode := c.Env.Spec.Providers.Kafka.Mode
 	switch kafkaMode {
@@ -64,5 +64,5 @@ func getConnectClusterName(env *crd.ClowdEnvironment) string {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetKafka, 6, ProvName)
+	providers.ProvidersRegistration.Register(GetKafka, 6, ProvName)
 }

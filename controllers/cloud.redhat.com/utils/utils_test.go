@@ -13,8 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-const webPort = 8000
-
 func TestKafkaReconcilerFns(t *testing.T) {
 
 }

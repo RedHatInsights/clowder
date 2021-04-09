@@ -4,15 +4,14 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 type noneObjectStoreProvider struct {
-	p.Provider
+	providers.Provider
 }
 
 // NewNoneObjectStore returns a new none object store provider object.
-func NewNoneObjectStore(p *p.Provider) (providers.ClowderProvider, error) {
+func NewNoneObjectStore(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &noneObjectStoreProvider{Provider: *p}, nil
 }
 

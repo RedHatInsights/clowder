@@ -34,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -47,7 +46,6 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
-var cfg *rest.Config
 var k8sClient client.Client
 var testEnv *envtest.Environment
 var logger *zap.Logger

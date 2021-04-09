@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 // GetLogging returns the correct logging provider based on the environment.
-func GetLogging(c *p.Provider) (p.ClowderProvider, error) {
+func GetLogging(c *providers.Provider) (providers.ClowderProvider, error) {
 	logMode := c.Env.Spec.Providers.Logging.Mode
 	switch logMode {
 	case "app-interface":
@@ -22,5 +22,5 @@ func GetLogging(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetLogging, 5, "logging")
+	providers.ProvidersRegistration.Register(GetLogging, 5, "logging")
 }

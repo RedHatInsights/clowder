@@ -109,7 +109,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	log.Info("Reconciliation started", "env", fmt.Sprintf("%s", env.Name))
+	log.Info("Reconciliation started", "env", env.Name)
 
 	if env.Status.TargetNamespace == "" {
 		if env.Spec.TargetNamespace != "" {
@@ -174,7 +174,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	if err == nil {
-		if _, ok := managedEnvironments[env.Name]; ok == false {
+		if _, ok := managedEnvironments[env.Name]; !ok {
 			managedEnvironments[env.Name] = true
 		}
 		managedEnvsMetric.Set(float64(len(managedEnvironments)))
@@ -345,9 +345,8 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 
 func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, e *crd.ClowdEnvironment) error {
 
-	if _, ok := managedEnvironments[e.Name]; ok == true {
-		delete(managedEnvironments, e.Name)
-	}
+	delete(managedEnvironments, e.Name)
+
 	if e.Spec.TargetNamespace == "" {
 		namespace := &core.Namespace{}
 		namespace.SetName(e.Status.TargetNamespace)

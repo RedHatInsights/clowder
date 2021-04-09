@@ -4,15 +4,14 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 type noneFeatureFlagProvider struct {
-	p.Provider
+	providers.Provider
 }
 
 // NewNoneFeatureFlagsProvider returns a new none feature flags provider object.
-func NewNoneFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, error) {
+func NewNoneFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &noneFeatureFlagProvider{Provider: *p}, nil
 }
 

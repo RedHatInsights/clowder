@@ -228,10 +228,8 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.Clow
 // will apply those labels to a reource.
 func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
 	appliedLabels := baseResource.GetLabels()
-	if labels != nil {
-		for k, v := range labels {
-			appliedLabels[k] = v
-		}
+	for k, v := range labels {
+		appliedLabels[k] = v
 	}
 	return MakeLabeler(nn, appliedLabels, baseResource)
 }

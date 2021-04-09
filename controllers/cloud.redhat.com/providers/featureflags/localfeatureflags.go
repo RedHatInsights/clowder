@@ -16,29 +16,27 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 )
 
 // LocalFFDBDeployment is the ident refering to the local Feature Flags DB deployment object.
-var LocalFFDBDeployment = p.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
+var LocalFFDBDeployment = providers.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
 
 // LocalFFDBService is the ident refering to the local Feature Flags DB service object.
-var LocalFFDBService = p.NewSingleResourceIdent(ProvName, "ff_db_service", &core.Service{})
+var LocalFFDBService = providers.NewSingleResourceIdent(ProvName, "ff_db_service", &core.Service{})
 
 // LocalFFDBPVC is the ident refering to the local Feature Flags DB PVC object.
-var LocalFFDBPVC = p.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.PersistentVolumeClaim{})
+var LocalFFDBPVC = providers.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.PersistentVolumeClaim{})
 
 // LocalFFDBSecret is the ident refering to the local Feature Flags DB secret object.
-var LocalFFDBSecret = p.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
+var LocalFFDBSecret = providers.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
 
 type localFeatureFlagsProvider struct {
-	p.Provider
+	providers.Provider
 	Config config.FeatureFlagsConfig
 }
 
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
-func NewLocalFeatureFlagsProvider(p *p.Provider) (providers.ClowderProvider, error) {
+func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
 	ffp := &localFeatureFlagsProvider{Provider: *p, Config: config.FeatureFlagsConfig{}}
 

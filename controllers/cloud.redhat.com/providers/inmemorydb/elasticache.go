@@ -8,13 +8,12 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type elasticache struct {
-	p.Provider
+	providers.Provider
 	Config config.InMemoryDBConfig
 }
 
@@ -48,7 +47,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 		}
 	}
 
-	if found == false {
+	if !found {
 		return &errors.MissingDependencies{
 			MissingDeps: map[string][]string{
 				"in-memory-db-secret": {app.Name},

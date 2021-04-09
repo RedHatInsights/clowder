@@ -11,31 +11,30 @@ import (
 	provutils "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/utils"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 // LocalDBDeployment is the ident refering to the local DB deployment object.
-var LocalDBDeployment = p.NewSingleResourceIdent(ProvName, "local_db_deployment", &apps.Deployment{})
+var LocalDBDeployment = providers.NewSingleResourceIdent(ProvName, "local_db_deployment", &apps.Deployment{})
 
 // LocalDBService is the ident refering to the local DB service object.
-var LocalDBService = p.NewSingleResourceIdent(ProvName, "local_db_service", &core.Service{})
+var LocalDBService = providers.NewSingleResourceIdent(ProvName, "local_db_service", &core.Service{})
 
 // LocalDBPVC is the ident refering to the local DB PVC object.
-var LocalDBPVC = p.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.PersistentVolumeClaim{})
+var LocalDBPVC = providers.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.PersistentVolumeClaim{})
 
 // LocalDBSecret is the ident refering to the local DB secret object.
-var LocalDBSecret = p.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
+var LocalDBSecret = providers.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
 
 type localDbProvider struct {
-	p.Provider
+	providers.Provider
 	Config config.DatabaseConfig
 }
 
 // NewLocalDBProvider returns a new local DB provider object.
-func NewLocalDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
+func NewLocalDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &localDbProvider{Provider: *p}, nil
 }
 
@@ -74,7 +73,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 	}
 
-	secMap, err := p.MakeOrGetSecret(db.Ctx, app, db.Cache, LocalDBSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(db.Ctx, app, db.Cache, LocalDBSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}

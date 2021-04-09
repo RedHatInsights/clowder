@@ -8,18 +8,17 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type appInterfaceObjectstoreProvider struct {
-	p.Provider
+	providers.Provider
 	Config config.ObjectStoreConfig
 }
 
 // NewAppInterfaceObjectstore returns a new app-interface object store provider object.
-func NewAppInterfaceObjectstore(p *p.Provider) (providers.ClowderProvider, error) {
+func NewAppInterfaceObjectstore(p *providers.Provider) (providers.ClowderProvider, error) {
 	provider := appInterfaceObjectstoreProvider{Provider: *p}
 
 	return &provider, nil
@@ -89,10 +88,10 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 
 	extractFn := func(m map[string][]byte, bucket string) {
 		bucketConfig := config.ObjectStoreBucket{
-			AccessKey: p.StrPtr(string(m["aws_access_key_id"])),
-			SecretKey: p.StrPtr(string(m["aws_secret_access_key"])),
+			AccessKey: providers.StrPtr(string(m["aws_access_key_id"])),
+			SecretKey: providers.StrPtr(string(m["aws_secret_access_key"])),
 			Name:      bucket,
-			Region:    p.StrPtr(string(m["aws_region"])),
+			Region:    providers.StrPtr(string(m["aws_region"])),
 		}
 
 		if endpoint, ok := m["endpoint"]; ok {
@@ -108,9 +107,9 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 
 	keys := []string{"aws_access_key_id", "aws_secret_access_key"}
 	annoKey := "clowder/bucket-names"
-	p.ExtractSecretDataAnno(secrets, extractFn, annoKey, keys...)
+	providers.ExtractSecretDataAnno(secrets, extractFn, annoKey, keys...)
 	keys = append(keys, "bucket")
-	p.ExtractSecretData(secrets, extractFnNoAnno, keys...)
+	providers.ExtractSecretData(secrets, extractFnNoAnno, keys...)
 
 	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
 		err := errors.New("Could not find object store hostname from secrets")

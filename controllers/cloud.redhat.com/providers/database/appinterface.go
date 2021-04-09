@@ -11,7 +11,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -21,7 +20,7 @@ var rdsCa string
 const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
 
 type appInterface struct {
-	p.Provider
+	providers.Provider
 	Config config.DatabaseConfig
 }
 
@@ -46,15 +45,14 @@ func fetchCa() (string, error) {
 	caBundle := string(body)
 
 	if !strings.HasPrefix(caBundle, "-----BEGIN CERTIFICATE") {
-		msg := fmt.Sprintf("Invalid RDS CA bundle")
-		return "", errors.New(msg)
+		return "", errors.New("Invalid RDS CA bundle")
 	}
 
 	return caBundle, nil
 }
 
 // NewAppInterfaceDBProvider creates a new app-interface DB provider obejct.
-func NewAppInterfaceDBProvider(p *p.Provider) (providers.ClowderProvider, error) {
+func NewAppInterfaceDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	provider := appInterface{Provider: *p}
 
 	if rdsCa == "" {
@@ -184,7 +182,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfig, error) {
 	}
 
 	keys := []string{"db.host", "db.port", "db.user", "db.password", "db.name"}
-	p.ExtractSecretData(secrets, extractFn, keys...)
+	providers.ExtractSecretData(secrets, extractFn, keys...)
 
 	if err != nil {
 		return nil, err

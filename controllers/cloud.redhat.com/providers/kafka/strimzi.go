@@ -11,20 +11,19 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 // KafkaTopic is the resource ident for a KafkaTopic object.
-var KafkaTopic = p.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{})
+var KafkaTopic = providers.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{})
 
 // KafkaInstance is the resource ident for a Kafka object.
-var KafkaInstance = p.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{})
+var KafkaInstance = providers.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{})
 
 // KafkaConnect is the resource ident for a KafkaConnect object.
-var KafkaConnect = p.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{})
+var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{})
 
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
@@ -34,7 +33,7 @@ var conversionMap = map[string]func([]string) (string, error){
 }
 
 type strimziProvider struct {
-	p.Provider
+	providers.Provider
 	Config config.KafkaConfig
 }
 
@@ -115,7 +114,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.SetName(s.Env.Spec.Providers.Kafka.Cluster.Name)
 	k.SetNamespace(getKafkaNamespace(s.Env))
-	k.SetLabels(p.Labels{"env": s.Env.Name})
+	k.SetLabels(providers.Labels{"env": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
 	if err := s.Cache.Update(KafkaInstance, k); err != nil {
@@ -201,7 +200,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 	k.SetName(getConnectClusterName(s.Env))
 	k.SetNamespace(getConnectNamespace(s.Env))
-	k.SetLabels(p.Labels{"env": s.Env.Name})
+	k.SetLabels(providers.Labels{"env": s.Env.Name})
 
 	if err := s.Cache.Update(KafkaConnect, k); err != nil {
 		return err
@@ -276,7 +275,7 @@ func (s *strimziProvider) configureBrokers() error {
 }
 
 // NewStrimzi returns a new strimzi provider object.
-func NewStrimzi(p *p.Provider) (providers.ClowderProvider, error) {
+func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
 	kafkaProvider := &strimziProvider{
 		Provider: *p,
 		Config: config.KafkaConfig{
@@ -334,7 +333,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 			return err
 		}
 
-		labels := p.Labels{
+		labels := providers.Labels{
 			"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name,
 			"env":                app.Spec.EnvName,
 			// If we label it with the app name, since app names should be
