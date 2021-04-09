@@ -42,6 +42,8 @@ import (
 	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 )
@@ -81,6 +83,10 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		return ctrl.Result{}, err
 	}
 
+	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
+
+	var IqeClowdJob = providers.NewSingleResourceIdent("iqeclowdjob", "core_iqeclowdjob", &crd.ClowdJobInvocation{})
+
 	// Set the initial status to an empty list of pods and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
 	// setting the status after requeue will ensure it won't be double invoked
@@ -89,6 +95,10 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	if err := r.Client.Status().Update(ctx, &cji); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+	err = r.Client.Status().Update(ctx, &cji)
+	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
 
@@ -158,7 +168,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		// We have a match that isn't running and can invoke the job
 		r.Log.Info("Invoking job", "jobinvocation", jobName, "namespace", app.Namespace)
 
-		if err := r.InvokeJob(ctx, &job, &app, &env, &cji); err != nil {
+		if err := r.InvokeJob(&cache, &job, &app, &env, &cji); err != nil {
 			r.Log.Info("Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
 			r.Recorder.Eventf(&cji, "Warning", "JobNotInvoked", "Job [%s] could not be invoked", jobName)
 			return ctrl.Result{Requeue: true}, err
@@ -175,7 +185,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		j := batchv1.Job{}
 
 		r.createIqeJobResource(&cji, &env, &app, nn, ctx, &j)
-		if err := r.Client.Create(ctx, &j); err != nil {
+		if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
 			r.Log.Info("Iqe Job encountered an error", "jobinvocation", nn.Name, err)
 			return ctrl.Result{Requeue: true}, err
 		}
@@ -191,6 +201,11 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
+
+	cacheErr := cache.ApplyAll()
+	if cacheErr != nil {
+		return ctrl.Result{}, err
+	}
 	err = r.Client.Status().Update(ctx, &cji)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -201,15 +216,17 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 // InvokeJob is responsible for applying the Job. It also updates and reports
 // the status of that job
-func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
+func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%v-%v-%v", app.Name, job.Name, cji.Name),
 		Namespace: app.Namespace,
 	}
 
+	var ClowdJob = providers.NewMultiResourceIdent("clowdjob", "core_clowdjob", &crd.ClowdJobInvocation{})
+
 	j := batchv1.Job{}
 	jobProvider.CreateJobResource(cji, env, nn, job, &j)
-	if err := r.Client.Create(ctx, &j); err != nil {
+	if err := cache.Create(ClowdJob, nn, &j); err != nil {
 		return err
 	}
 
@@ -318,6 +335,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	envvar = append(envvar, core.EnvVar{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Iqe.DynaconfEnvName})
 	envvar = append(envvar, core.EnvVar{Name: "NAMESPACE", Value: nn.Namespace})
 	envvar = append(envvar, core.EnvVar{Name: "CLOWDER_ENABLED", Value: "true"})
+	// envvar = append(envvar, core.EnvVar{Name: "IQE_TESTS_LOCAL_CONF_PATH", Value: "/iqe_settings"})
 
 	tag := ""
 	if cji.Spec.Iqe.ImageTag != "" {
@@ -335,12 +353,13 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	// Use edit level service account to create and delete resources
 	// one per app when the app is created
 	case "edit":
+		// TODO: Create secret here
 		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-iqe", app.Name)
 	// Standard view access to the owned resources
 	case "view":
-		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-app", app.Name)
-	// Do not allow any access
-	case "none":
+		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v", app.Name)
+	// Standard access
+	case "default":
 		j.Spec.Template.Spec.ServiceAccountName = "default"
 	}
 
@@ -387,7 +406,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	case "app":
 		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 			Name:      "config-secret",
-			MountPath: "/cdapp/",
+			MountPath: "/cdapp",
 		})
 
 		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
@@ -402,6 +421,19 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	case "none":
 		r.Log.Info("No config mounted to the iqe pod")
 	}
+	// c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+	// 	Name:      "iqe-settings",
+	// 	MountPath: "/iqe_settings",
+	// })
+
+	// j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
+	// 	Name: "iqe-settings",
+	// 	VolumeSource: core.VolumeSource{
+	// 		Secret: &core.SecretVolumeSource{
+	// 			SecretName: "iqe-settings",
+	// 		},
+	// 	},
+	// })
 
 	j.Spec.Template.Spec.Containers = []core.Container{c}
 
@@ -544,6 +576,10 @@ func getJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 
 func getIqeStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 	jobCompleted := false
+	if len(cji.Status.Jobs) == 0 {
+		cji.Status.Jobs = []string{}
+		return false
+	}
 
 	if cji.Spec.Iqe.Marker != "" {
 		for _, j := range jobs.Items {
