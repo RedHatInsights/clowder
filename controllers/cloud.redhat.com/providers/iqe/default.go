@@ -19,7 +19,6 @@ type iqeProvider struct {
 	Config config.IqeConfig
 }
 
-//
 func NewIqeProvider(p *p.Provider) (providers.ClowderProvider, error) {
 	iqe := &iqeProvider{Provider: *p, Config: config.IqeConfig{}}
 	if p.Env.Spec.Providers.Iqe.ImageBase == "" {

@@ -40,7 +40,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 
@@ -72,8 +71,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 
 	cji := crd.ClowdJobInvocation{}
-	err := r.Client.Get(ctx, req.NamespacedName, &cji)
-	if err != nil {
+	if err := r.Client.Get(ctx, req.NamespacedName, &cji); err != nil {
 		if k8serr.IsNotFound(err) {
 			// Must have been deleted
 			return ctrl.Result{}, nil
@@ -92,12 +90,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	if err := r.setCompletedStatus(ctx, &cji); err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
-
 	if err := r.Client.Status().Update(ctx, &cji); err != nil {
-		return ctrl.Result{Requeue: true}, err
-	}
-	err = r.Client.Status().Update(ctx, &cji)
-	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
 
@@ -117,34 +110,34 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	// Get the ClowdApp. Used to find definition of job being invoked
 	app := crd.ClowdApp{}
-	err = r.Client.Get(ctx, types.NamespacedName{
+	appErr := r.Client.Get(ctx, types.NamespacedName{
 		Name:      cji.Spec.AppName,
 		Namespace: req.Namespace,
 	}, &app)
 
 	// Determine if the ClowdApp containing the Job exists
-	if err != nil {
+	if appErr != nil {
 		r.Recorder.Eventf(&cji, "Warning", "ClowdAppMissing", "ClowdApp [%s] is missing; Job cannot be invoked", cji.Spec.AppName)
-		return ctrl.Result{Requeue: true}, err
+		return ctrl.Result{Requeue: true}, appErr
 	}
 
 	// Determine if the ClowdApp containing the Job is ready
 	if !app.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 		r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-		return ctrl.Result{Requeue: true}, err
+		return ctrl.Result{Requeue: true}, appErr
 	}
 
 	// Get the ClowdEnv for InvokeJob. Env is needed to build out our pod
 	// template for each job
 	env := crd.ClowdEnvironment{}
-	err = r.Client.Get(ctx, types.NamespacedName{
+	envErr := r.Client.Get(ctx, types.NamespacedName{
 		Name: app.Spec.EnvName,
 	}, &env)
 
-	if err != nil {
+	if envErr != nil {
 		r.Recorder.Eventf(&cji, "Warning", "ClowdEnvMissing", "ClowdEnv [%s] is missing; Job cannot be invoked", app.Spec.EnvName)
-		return ctrl.Result{Requeue: true}, err
+		return ctrl.Result{Requeue: true}, envErr
 	}
 
 	// Walk the job names to be invoked and match in the ClowdApp Spec
@@ -183,7 +176,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 		j := batchv1.Job{}
 
-		r.createIqeJobResource(&cji, &env, &app, nn, ctx, &j)
+		r.createIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j)
 		if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
 			r.Log.Info("Iqe Job encountered an error", "jobinvocation", nn.Name, err)
 			return ctrl.Result{Requeue: true}, err
@@ -196,18 +189,16 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	// Short running jobs may be done by the time the loop is ranged,
 	// so we update again before the reconcile ends
-	err = r.setCompletedStatus(ctx, &cji)
-	if err != nil {
-		return ctrl.Result{Requeue: true}, err
+
+	if statusErr := r.setCompletedStatus(ctx, &cji); statusErr != nil {
+		return ctrl.Result{Requeue: true}, statusErr
+	}
+	if cacheErr := cache.ApplyAll(); cacheErr != nil {
+		return ctrl.Result{}, cacheErr
 	}
 
-	cacheErr := cache.ApplyAll()
-	if cacheErr != nil {
-		return ctrl.Result{}, err
-	}
-	err = r.Client.Status().Update(ctx, &cji)
-	if err != nil {
-		return ctrl.Result{}, err
+	if updateErr := r.Client.Status().Update(ctx, &cji); updateErr != nil {
+		return ctrl.Result{}, updateErr
 	}
 
 	return ctrl.Result{}, nil
@@ -241,35 +232,29 @@ func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ct
 	secretConfig := core.Secret{}
 	jsonContent := config.AppConfig{}
 
-	err := r.Client.Get(ctx, name, &secretConfig)
-
-	if err != nil {
+	if err := r.Client.Get(ctx, name, &secretConfig); err != nil {
 		return jsonContent, err
 	}
 
-	err = json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent)
-	if err != nil {
+	if err := json.Unmarshal(secretConfig.Data["cdappconfig.json"], &jsonContent); err != nil {
 		return jsonContent, err
 	}
 
 	return jsonContent, nil
 }
 
-func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Context, cji *crd.ClowdJobInvocation, envName string) error {
+func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, envName string) error {
 	iqeSecret := &core.Secret{}
 
 	appList := crd.ClowdAppList{}
 	r.Client.List(ctx, &appList)
 
 	nn := types.NamespacedName{
-		Name:      envName,
+		Name:      fmt.Sprintf("%s-iqe", cji.Spec.AppName),
 		Namespace: cji.Namespace,
 	}
-	update, err := utils.UpdateOrErr(r.Client.Get(ctx, nn, iqeSecret))
-	if err != nil {
-		r.Log.Error(err, "Failed to check for iqe secret")
-		return err
-	}
+
+	var CoreIqeSecret = providers.NewSingleResourceIdent("IqeSecret", "core_iqe_secret", &core.Secret{})
 
 	iqeSecret.SetName(nn.Name)
 	iqeSecret.SetNamespace(nn.Namespace)
@@ -279,10 +264,11 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 
 	// loop through secrets and get their appConfig
 	envConfig := make(map[string]interface{})
+	// because we want a list of appConfigs, we need to nest this under the envConfig
 	appConfigs := make(map[string]config.AppConfig)
 	for _, app := range appList.Items {
 		if app.Spec.EnvName == envName {
-			jsonContent, err := r.fetchConfig(types.NamespacedName{
+			appConfig, err := r.fetchConfig(types.NamespacedName{
 				Name:      app.Name,
 				Namespace: app.Namespace,
 			}, ctx)
@@ -291,31 +277,32 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(ctx context.Conte
 				return err
 
 			}
-			appConfigs[app.Name] = jsonContent
+			appConfigs[app.Name] = appConfig
 		}
 	}
 	envConfig["cdappconfigs"] = appConfigs
 
 	// Marshall the data into the top level "cdenvconfig.json" to be mounted as a single secret
+	// with the appconfigs list embedded
 	envData, err := json.Marshal(envConfig)
 	if err != nil {
 		r.Log.Error(err, "Failed to marshal iqe secret")
 		return err
 	}
 
+	// and finally cast all these configs and create the secret
 	cdEnv := make(map[string][]byte)
 	cdEnv["cdenvconfig.json"] = envData
-
 	iqeSecret.Data = cdEnv
-	if err := update.Apply(ctx, r.Client, iqeSecret); err != nil {
-		r.Log.Error(err, "Failed to create iqe secret")
+	if err := cache.Create(CoreIqeSecret, nn, iqeSecret); err != nil {
+		r.Log.Error(err, "Failed to check for iqe secret")
 		return err
 	}
 
 	return nil
 }
 
-func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job) {
+func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job) {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
@@ -356,24 +343,23 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	// one per app when the app is created
 	case "edit":
 		// TODO: Create secret here
-		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v-iqe", app.Name)
+		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%s-iqe", app.Name)
 	// Standard view access to the owned resources
 	case "view":
-		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%v", app.Name)
+		j.Spec.Template.Spec.ServiceAccountName = app.Name
 	// Standard access
 	case "default":
-		j.Spec.Template.Spec.ServiceAccountName = "default"
+		r.Log.Info("No additional service account requested")
 	}
 
 	constructedIqeCommand := constructIqeCommand(cji, plugin)
 
 	c := core.Container{
-		Name:      fmt.Sprintf("%s-iqe", plugin),
-		Image:     fmt.Sprintf("%s:%v", iqeImage, tag),
-		Command:   constructedIqeCommand,
-		Env:       envvar,
-		Resources: deployProvider.ProcessResources(&pod, env),
-		// Resources:       core.ResourceRequirements{},
+		Name:            fmt.Sprintf("%s-iqe", plugin),
+		Image:           fmt.Sprintf("%s:%s", iqeImage, tag),
+		Command:         constructedIqeCommand,
+		Env:             envvar,
+		Resources:       deployProvider.ProcessResources(&pod, env),
 		VolumeMounts:    []core.VolumeMount{},
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
@@ -384,9 +370,8 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 	switch configAccess {
 	// Build cdenvconfig.json and mount it
 	case "environment":
-		err := r.createAndApplyIqeSecret(ctx, cji, env.Name)
-		if err != nil {
-			r.Log.Error(err, "Cannot apply iqe secret")
+		if secretErr := r.createAndApplyIqeSecret(cache, ctx, cji, env.Name); secretErr != nil {
+			r.Log.Error(secretErr, "Cannot apply iqe secret")
 		}
 		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 			Name:      "cdenvconfig",
@@ -397,7 +382,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 			Name: "cdenvconfig",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: env.Name,
+					SecretName: fmt.Sprintf("%s-iqe", cji.Spec.AppName),
 				},
 			},
 		})
@@ -442,16 +427,12 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cji *crd.ClowdJobInv
 }
 
 func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) []string {
-	command := []string{}
-	command = append(command, "iqe")
-	command = append(command, "tests")
-	command = append(command, "plugin")
-	command = append(command, fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")))
-	command = append(command, "-m")
-	command = append(command, fmt.Sprintf("%v", cji.Spec.Iqe.Marker))
-	command = append(command, "-k")
-	command = append(command, fmt.Sprintf("%v", cji.Spec.Iqe.Filter))
-
+	command := []string{
+		"iqe", "tests", "plugin",
+		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),
+		"-m", cji.Spec.Iqe.Marker,
+		"-k", cji.Spec.Iqe.Filter,
+	}
 	return command
 }
 
@@ -493,19 +474,18 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 	}
 
 	job := batchv1.Job{}
-	err := r.Client.Get(ctx, obj, &job)
-	if err != nil {
-		r.Log.Error(err, "Failed to fetch ClowdJob")
+	if cjErr := r.Client.Get(ctx, obj, &job); cjErr != nil {
+		r.Log.Error(cjErr, "Failed to fetch ClowdJob")
 		return nil
 	}
 
 	cjiList := crd.ClowdJobInvocationList{}
-	if err := r.Client.List(ctx, &cjiList); err != nil {
-		if k8serr.IsNotFound(err) {
+	if cjiErr := r.Client.List(ctx, &cjiList); cjiErr != nil {
+		if k8serr.IsNotFound(cjiErr) {
 			// Must have been deleted
 			return reqs
 		}
-		r.Log.Error(err, "Failed to fetch ClowdJobInvocation")
+		r.Log.Error(cjiErr, "Failed to fetch ClowdJobInvocation")
 		return nil
 	}
 
@@ -530,8 +510,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 func (r *ClowdJobInvocationReconciler) setCompletedStatus(ctx context.Context, cji *crd.ClowdJobInvocation) error {
 
 	jobs := batchv1.JobList{}
-	err := r.Client.List(ctx, &jobs, client.InNamespace(cji.ObjectMeta.Namespace))
-	if err != nil {
+	if err := r.Client.List(ctx, &jobs, client.InNamespace(cji.ObjectMeta.Namespace)); err != nil {
 		return err
 	}
 	jobsFinished := getJobStatus(&jobs, cji)

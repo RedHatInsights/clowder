@@ -12,7 +12,6 @@ import (
 
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
-// TODO: Refactor createJobResource into utils package for generic podTemplates
 func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
