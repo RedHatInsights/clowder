@@ -328,6 +328,7 @@ Appears In:
    "``web`` (WebDeprecated)", "If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes."
    "``webServices`` (:ref:`WebServices`)", ""
    "``podSpec`` (:ref:`PodSpec`)", "PodSpec defines a container running inside a ClowdApp."
+   "``k8sAccessLevel`` (K8sAccessLevel)", "K8sAccessLevel defines the level of access for this deployment"
 
 
 .. _DeploymentInfo :

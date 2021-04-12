@@ -117,6 +117,10 @@ type WebServices struct {
 	Metrics MetricsWebService `json:"metrics,omitempty"`
 }
 
+// K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'
+// +kubebuilder:validation:Enum=default;view;edit
+type K8sAccessLevel string
+
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
 type Deployment struct {
@@ -138,6 +142,9 @@ type Deployment struct {
 
 	// PodSpec defines a container running inside a ClowdApp.
 	PodSpec PodSpec `json:"podSpec"`
+
+	// K8sAccessLevel defines the level of access for this deployment
+	K8sAccessLevel K8sAccessLevel `json:"k8sAccessLevel,omitempty"`
 }
 
 // PodSpec defines a container running inside a ClowdApp.
@@ -407,6 +414,14 @@ func (i *ClowdApp) GetUID() types.UID {
 // GetDeploymentStatus returns the Status.Deployments member
 func (i *ClowdApp) GetDeploymentStatus() *common.DeploymentStatus {
 	return &i.Status.Deployments
+}
+
+// GetDeploymentStatus returns the Status.Deployments member
+func (i *ClowdApp) GetDeploymentNamespacedName(d *Deployment) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      fmt.Sprintf("%s-%s", i.Name, d.Name),
+		Namespace: i.Namespace,
+	}
 }
 
 // IsReady returns true when all the ManagedDeployments are Ready

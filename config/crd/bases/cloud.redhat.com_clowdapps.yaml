@@ -107,6 +107,14 @@ spec:
                   and will output a deployment resource. Only one container per pod
                   is allowed and this is defined in the PodSpec attribute.
                 properties:
+                  k8sAccessLevel:
+                    description: K8sAccessLevel defines the level of access for this
+                      deployment
+                    enum:
+                    - default
+                    - view
+                    - edit
+                    type: string
                   minReplicas:
                     description: Defines the minimum replica count for the pod.
                     format: int32

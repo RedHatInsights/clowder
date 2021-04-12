@@ -1,27 +1,17 @@
 package web
 
 import (
-	"fmt"
-
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
-
-func GetServiceName(app *crd.ClowdApp, deployment *crd.Deployment) string {
-	return fmt.Sprintf("%s-%s", app.Name, deployment.Name)
-}
 
 func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdApp) error {
 
 	s := &core.Service{}
-	nn := types.NamespacedName{
-		Name:      GetServiceName(app, deployment),
-		Namespace: app.Namespace,
-	}
+	nn := app.GetDeploymentNamespacedName(deployment)
 
 	if err := web.Cache.Create(CoreService, nn, s); err != nil {
 		return err
@@ -29,10 +19,7 @@ func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdAp
 
 	d := &apps.Deployment{}
 
-	web.Cache.Get(deployProvider.CoreDeployment, d, types.NamespacedName{
-		Name:      deployProvider.GetDeploymentName(app, deployment),
-		Namespace: app.GetNamespace(),
-	})
+	web.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment))
 
 	servicePorts := []core.ServicePort{}
 	containerPorts := []core.ContainerPort{}

@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-default
+  namespace: test-k8s-access
+spec:
+  template:
+    spec:
+      serviceAccountName: puptoo-default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: puptoo-default
+  namespace: test-k8s-access
+imagePullSecrets:
+  - name: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-view
+  namespace: test-k8s-access
+spec:
+  template:
+    spec:
+      serviceAccountName: puptoo-view
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: puptoo-view
+  namespace: test-k8s-access
+imagePullSecrets:
+  - name: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-edit
+  namespace: test-k8s-access
+spec:
+  template:
+    spec:
+      serviceAccountName: puptoo-edit
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: puptoo-edit
+  namespace: test-k8s-access
+imagePullSecrets:
+  - name: test
