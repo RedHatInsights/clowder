@@ -82,7 +82,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
 
-	var IqeClowdJob = providers.NewSingleResourceIdent("iqeclowdjob", "core_iqeclowdjob", &crd.ClowdJobInvocation{})
+	var IqeClowdJob = providers.NewSingleResourceIdent("iqeclowdjob", "core_iqeclowdjob", &batchv1.Job{})
 
 	// Set the initial status to an empty list of pods and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
