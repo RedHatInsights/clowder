@@ -12,7 +12,9 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
+	rbac "k8s.io/api/rbac/v1"
 )
 
 type serviceaccountProvider struct {
@@ -21,7 +23,7 @@ type serviceaccountProvider struct {
 
 func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	if err := createServiceAccount(p.Cache, CoreEnvServiceAccount, p.Env, p.Env.Spec.Providers.PullSecrets); err != nil {
+	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env, p.Env.Spec.Providers.PullSecrets); err != nil {
 		return nil, err
 	}
 
@@ -52,7 +54,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 
 func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
-	if err := createServiceAccount(sa.Cache, CoreAppServiceAccount, app, sa.Env.Spec.Providers.PullSecrets); err != nil {
+	if err := createServiceAccountForClowdObj(sa.Cache, CoreAppServiceAccount, app, sa.Env.Spec.Providers.PullSecrets); err != nil {
 		return err
 	}
 
@@ -76,13 +78,54 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 		}
 	}
 
-	dList := &apps.DeploymentList{}
-	if err := sa.Cache.List(deployment.CoreDeployment, dList); err != nil {
-		return err
-	}
-	for _, d := range dList.Items {
-		d.Spec.Template.Spec.ServiceAccountName = app.GetClowdSAName()
-		if err := sa.Cache.Update(deployment.CoreDeployment, &d); err != nil {
+	for _, dep := range app.Spec.Deployments {
+		d := &apps.Deployment{}
+		if err := sa.Cache.Get(deployment.CoreDeployment, d, app.GetDeploymentNamespacedName(&dep)); err != nil {
+			return err
+		}
+
+		nn := app.GetDeploymentNamespacedName(&dep)
+
+		labeler := utils.GetCustomLabeler(nil, nn, app)
+
+		if err := CreateServiceAccount(sa.Cache, CoreDeploymentServiceAccount, sa.Env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+			return err
+		}
+
+		d.Spec.Template.Spec.ServiceAccountName = nn.Name
+		if err := sa.Cache.Update(deployment.CoreDeployment, d); err != nil {
+			return err
+		}
+
+		if dep.K8sAccessLevel == "default" || dep.K8sAccessLevel == "" {
+			continue
+		}
+
+		rb := &rbac.RoleBinding{}
+
+		if err := sa.Cache.Create(CoreDeploymentRoleBinding, nn, rb); err != nil {
+			return err
+		}
+
+		labeler(rb)
+
+		rb.Subjects = []rbac.Subject{{
+			Kind:      "ServiceAccount",
+			Name:      app.GetDeploymentNamespacedName(&dep).Name,
+			Namespace: app.GetDeploymentNamespacedName(&dep).Namespace,
+		}}
+		rb.RoleRef = rbac.RoleRef{
+			Kind: "ClusterRole",
+		}
+
+		switch dep.K8sAccessLevel {
+		case "view":
+			rb.RoleRef.Name = "view"
+		case "edit":
+			rb.RoleRef.Name = "edit"
+		}
+
+		if err := sa.Cache.Update(CoreDeploymentRoleBinding, rb); err != nil {
 			return err
 		}
 	}

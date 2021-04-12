@@ -1,8 +1,6 @@
 package deployment
 
 import (
-	"fmt"
-
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
@@ -13,17 +11,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func GetDeploymentName(app *crd.ClowdApp, deployment *crd.Deployment) string {
-	return fmt.Sprintf("%s-%s", app.Name, deployment.Name)
-}
-
 func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
 
 	d := &apps.Deployment{}
-	nn := types.NamespacedName{
-		Name:      GetDeploymentName(app, &deployment),
-		Namespace: app.Namespace,
-	}
+	nn := app.GetDeploymentNamespacedName(&deployment)
 
 	if err := dp.Cache.Create(CoreDeployment, nn, d); err != nil {
 		return err

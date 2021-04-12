@@ -6,26 +6,19 @@ import (
 	webProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 func (m *metricsProvider) makeMetrics(deployment *crd.Deployment, app *crd.ClowdApp) error {
 
 	s := &core.Service{}
 
-	if err := m.Cache.Get(webProvider.CoreService, s, types.NamespacedName{
-		Name:      webProvider.GetServiceName(app, deployment),
-		Namespace: app.GetNamespace(),
-	}); err != nil {
+	if err := m.Cache.Get(webProvider.CoreService, s, app.GetDeploymentNamespacedName(deployment)); err != nil {
 		return err
 	}
 
 	d := &apps.Deployment{}
 
-	if err := m.Cache.Get(deployProvider.CoreDeployment, d, types.NamespacedName{
-		Name:      deployProvider.GetDeploymentName(app, deployment),
-		Namespace: app.GetNamespace(),
-	}); err != nil {
+	if err := m.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
 		return err
 	}
 

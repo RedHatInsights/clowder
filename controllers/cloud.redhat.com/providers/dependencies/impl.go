@@ -8,10 +8,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 )
 
-func GetDeploymentName(app *crd.ClowdApp, deployment *crd.Deployment) string {
-	return fmt.Sprintf("%s-%s", app.Name, deployment.Name)
-}
-
 func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	if dep.Provider.Env.Spec.Providers.Web.PrivatePort == 0 {
@@ -119,7 +115,7 @@ func processAppEndpoints(
 
 		for _, deployment := range depApp.Spec.Deployments {
 			if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
-				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
+				name := depApp.GetDeploymentNamespacedName(&deployment).Name
 				*depConfig = append(*depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
@@ -128,7 +124,7 @@ func processAppEndpoints(
 				})
 			}
 			if deployment.WebServices.Private.Enabled {
-				name := fmt.Sprintf("%s-%s", depApp.Name, deployment.Name)
+				name := depApp.GetDeploymentNamespacedName(&deployment).Name
 				*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(privatePort),

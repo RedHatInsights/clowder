@@ -20,7 +20,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: puptoo-app
+      serviceAccountName: puptoo-processor
       containers:
       - env:
         - name: ENV_VAR_1
@@ -71,7 +71,7 @@ status:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: puptoo-app
+  name: puptoo-processor
   namespace: test-basic-app
 imagePullSecrets:
   - name: test

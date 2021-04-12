@@ -163,10 +163,7 @@ cache.
 .. code-block:: go
 
     d := &apps.Deployment{}
-    nn := types.NamespacedName{
-        Name:      GetDeploymentName(app, &deployment),
-        Namespace: app.Namespace,
-    }
+    nn := app.GetDeploymentNamespacedName(&deployment)
 
     if err := dp.Cache.Create(CoreDeployment, nn, d); err != nil {
         return err
