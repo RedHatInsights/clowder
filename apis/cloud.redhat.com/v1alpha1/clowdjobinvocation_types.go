@@ -17,15 +17,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"fmt"
+
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 type IqeJobSpec struct {
 	// By default, Clowder will set the image on the ClowdJob to be the
-	// baseImage:name-of-iqe-plugin, but can be overridden here
+	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
 	ImageTag string `json:"imageTag,omitempty"`
 	// Indiciates the presence of a selenium container
 	UI bool `json:"ui,omitempty"`
