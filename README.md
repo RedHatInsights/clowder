@@ -105,7 +105,7 @@ shown below:
 
   ```
   # Be sure to get the latest release in the link above!
-  minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.10.0/clowder-manifest-0.10.0.yaml --validate=false
+  minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.12.0/clowder-manifest-0.12.0.yaml --validate=false
   ```
 
 ## Usage
