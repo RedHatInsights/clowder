@@ -107,14 +107,16 @@ of testing on their local machine. Using ClowdJobsInvocations, developers can
 now run smoke tests locally and on a remote cluster. In order to get everything
 setup correctly for the full smoke tests, we need to do the following:
 
-1. Run ``bonfire`` with the ``--get-dependencies`` flag enabled. This will
+1. Ensure your app's iqe plugin is configured to read from cdappconfig. Please feel free to use 
+   this `inventory MR as a reference`_. 
+2. Run ``bonfire`` with the ``--get-dependencies`` flag enabled. This will
    install the ClowdApp along with any apps listed as dependencies; optional or
    otherwise.
-2. Define the ``iqe`` pod parameters in the ClowdJobInvocation. Note: The
+3. Define the ``iqe`` pod parameters in the ClowdJobInvocation. Note: The
    example below specifies overrides for the already set App and Env definitions
    of an IQE job.
 
-    .. code-block:: yaml
+  .. code-block:: yaml
 
     --- 
     apiVersion: cloud.redhat.com/v1alpha1
@@ -137,8 +139,6 @@ setup correctly for the full smoke tests, we need to do the following:
       filter: "some_test"  # sets pytest -k argument
 
 
-
-
-
 .. _Clowder API reference: https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job
+.. _inventory MR as a reference: https://gitlab.cee.redhat.com/insights-qe/iqe-host-inventory-plugin/-/merge_requests/514/diffs 
 .. vim: tw=80 spell spelllang=en
