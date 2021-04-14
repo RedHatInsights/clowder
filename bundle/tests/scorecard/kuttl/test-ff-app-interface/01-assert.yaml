@@ -1,0 +1,77 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-ff-app-interface
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-ff-app-interface
+spec:
+  template:
+    spec:
+      serviceAccountName: puptoo-app
+      containers:
+      - env:
+        - name: ENV_VAR_1
+          value: "env_var_1"
+        - name: ENV_VAR_2
+          value: "env_var_2"
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+      initContainers:
+      - env:
+        - name: ENV_VAR_1
+          value: "override_1"
+        - name: ENV_VAR_3
+          value: "env_var_3"
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-processor
+  namespace: test-ff-app-interface
+spec:
+  selector:
+    pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    appProtocol: http
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ff-app-interface
+status:
+  apps:
+    - name: puptoo
+      deployments:
+      - hostname: puptoo-processor.test-ff-app-interface.svc
+        name: puptoo-processor
+        port: 8000
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: puptoo-app
+  namespace: test-ff-app-interface
+imagePullSecrets:
+  - name: test

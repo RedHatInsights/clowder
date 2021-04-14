@@ -1,0 +1,58 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ff-app-interface
+spec:
+  targetNamespace: test-ff-app-interface
+  providers:
+    featureflags:
+      mode: app-interface
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    pullSecrets:
+    - test
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-ff-app-interface
+spec:
+  envName: test-ff-app-interface
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ff-server
+  namespace: test-ff-app-interface-ff-location
+type: Opaque
+data:
+  hostname: YXBwLWItc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com
+  token: bXktYXdlc29tZS10b2tlbg==  # my-awesome-token
