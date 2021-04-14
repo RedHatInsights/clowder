@@ -8,10 +8,14 @@ levels = {
     'error': '\033[91m',
     'warning': '\033[93m',
     'diff': '\033[95m',
-    'info': '',
+    'key': '\033[97m',
+    'info': '\033[0m',
 }
 
 cancel_colour = '\033[0m'
+
+def col_wrap(stri, collev):
+    return levels["key"] + stri + collev
 
 if len(sys.argv) == 2:
     app_filter = sys.argv[1]
@@ -23,16 +27,27 @@ def print_message(line):
 
     string = ""
     if 'level' in js:
-        string += levels[js['level']]
-    if js.get('diff') != None:
-        string += levels['diff']
+        collev = levels[js['level']]
+    elif js.get('diff') != None:
+        collev = levels['diff']
+    else:
+        collev = cancel_colour
+
+    string += collev
+
     app = "[%s]" % js["app"] if "app" in js else ""
-    string += f'[{ts}] {js["level"].upper()} {app} {js["msg"]} '
+    string += f'[{ts}] {js["level"].upper()} {js.get("ctrl", "").upper()} {app} {js["msg"]} '
     del(js['msg'])
     del(js['ts'])
-    string += " ".join({f"{k}:{v}" for k, v in js.items()})
+    del(js['level'])
+    if 'ctrl' in js:
+        del(js['ctrl'])
+    del(js['logger'])
+    s_key = sorted(js.keys())
+    string += " ".join([f"{col_wrap(k, collev)}:{js[k]}" for k in s_key])
     string += cancel_colour
     print(string)
+
 
 for line in sys.stdin:
     try:
