@@ -63,6 +63,7 @@ type ClowdJobWorker struct {
 }
 
 var IqeClowdJob = providers.NewSingleResourceIdent("iqeclowdjob", "core_iqeclowdjob", &batchv1.Job{})
+var ClowdJob = providers.NewMultiResourceIdent("clowdjob", "core_clowdjob", &crd.ClowdJobInvocation{})
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
@@ -222,8 +223,6 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, j
 		Name:      fmt.Sprintf("%v-%v-%v", app.Name, job.Name, cji.Name),
 		Namespace: app.Namespace,
 	}
-
-	var ClowdJob = providers.NewMultiResourceIdent("clowdjob", "core_clowdjob", &crd.ClowdJobInvocation{})
 
 	j := batchv1.Job{}
 	jobProvider.CreateJobResource(cji, env, nn, job, &j)
