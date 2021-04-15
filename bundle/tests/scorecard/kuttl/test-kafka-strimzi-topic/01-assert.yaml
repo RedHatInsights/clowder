@@ -65,3 +65,72 @@ metadata:
 spec:
   partitions: 12
   replicas: 5
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  labels:
+    app: test-kafka-strimzi-topic
+    strimzi.io/cluster: my-cluster
+  name: test-kafka-strimzi-topic-puptoo
+  namespace: test-kafka-strimzi-topic-kafka
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-kafka-strimzi-topic
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    acls:
+    - host: '*'
+      operation: All
+      resource:
+        name: topicone-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        patternType: literal
+        type: topic
+    - host: '*'
+      operation: All
+      resource:
+        name: topictwo-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        patternType: literal
+        type: topic
+    type: simple
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  labels:
+    app: test-kafka-strimzi-topic
+    strimzi.io/cluster: my-cluster
+  name: test-kafka-strimzi-topic-puptoo-two
+  namespace: test-kafka-strimzi-topic-kafka
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-kafka-strimzi-topic
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    acls:
+    - host: '*'
+      operation: All
+      resource:
+        name: topicone-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        patternType: literal
+        type: topic
+    - host: '*'
+      operation: All
+      resource:
+        name: topictwo-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        patternType: literal
+        type: topic
+    - host: '*'
+      operation: All
+      resource:
+        name: topicthree-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        patternType: literal
+        type: topic
+    type: simple

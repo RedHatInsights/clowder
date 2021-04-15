@@ -44,7 +44,7 @@ metadata:
 spec:
   version: "2.5.0"
   image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
-  bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-pvc-kafka.svc:9092
+  bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-pvc-kafka.svc:9092,my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-pvc-kafka.svc:9093
   config:
     group.id: connect-cluster
     offset.storage.topic: connect-cluster-offsets
