@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/strimzi-client-go v0.21.1-3
+	github.com/RedHatInsights/strimzi-client-go v0.21.1-4
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
