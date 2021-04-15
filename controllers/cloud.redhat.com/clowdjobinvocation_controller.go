@@ -312,7 +312,12 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 
 	job := batchv1.Job{}
 	if err := r.Client.Get(ctx, obj, &job); err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return reqs
+		}
 		r.Log.Error(err, "Failed to fetch Job")
+		return nil
 	}
 
 	cjiList := crd.ClowdJobInvocationList{}
