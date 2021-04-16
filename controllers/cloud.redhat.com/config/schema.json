@@ -126,6 +126,14 @@
                         "$ref": "#/definitions/BrokerConfig"
                     }
                 },
+                "brokersTLS": {
+                    "id": "brokersTLS",
+                    "description": "Defines the brokers the app should connect to for Kafka services.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/BrokerConfig"
+                    }
+                },
                 "topics": {
                     "type": "array",
                     "description": "Defines a list of the topic configurations available to the application.",
@@ -139,6 +147,19 @@
                 "topics"
             ]
         },
+        "KafkaSASLConfig":{
+            "id": "kafkaSASLConfig",
+            "type": "object",
+            "description": "SASL Configuration for Kafka",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "BrokerConfig": {
             "id": "brokerConfig",
             "type": "object",
@@ -149,6 +170,17 @@
                 },
                 "port": {
                     "type": "integer"
+                },
+                "cacert": {
+                    "type": "string"
+                },
+                "authtype": {
+                    "type": "string",
+                    "enum": ["mtls", "sasl"]
+                },
+                "sasl": {
+                    "type": "object",
+                    "$ref": "#/definitions/KafkaSASLConfig"
                 }
             },
             "required": [
