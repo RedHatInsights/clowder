@@ -360,13 +360,15 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	}
 
 	c := core.Container{
-		Name:            fmt.Sprintf("%s-iqe", plugin),
-		Image:           fmt.Sprintf("%s:%s", iqeImage, tag),
-		Command:         constructedIqeCommand,
-		Env:             envvar,
-		Resources:       deployProvider.ProcessResources(&pod, env),
-		VolumeMounts:    []core.VolumeMount{},
-		ImagePullPolicy: core.PullIfNotPresent,
+		Name:         fmt.Sprintf("%s-iqe", plugin),
+		Image:        fmt.Sprintf("%s:%s", iqeImage, tag),
+		Command:      constructedIqeCommand,
+		Env:          envvar,
+		Resources:    deployProvider.ProcessResources(&pod, env),
+		VolumeMounts: []core.VolumeMount{},
+		// Because the tags on iqe plugins are not commit based, we need to pull everytime we run.
+		// A leftover tag from a previous run is never guaranteed to be up to date
+		ImagePullPolicy: core.PullAlways,
 	}
 
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
