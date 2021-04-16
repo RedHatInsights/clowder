@@ -80,11 +80,11 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 
 	for _, dep := range app.Spec.Deployments {
 		d := &apps.Deployment{}
-		if err := sa.Cache.Get(deployment.CoreDeployment, d, app.GetDeploymentNamespacedName(&dep)); err != nil {
+		nn := app.GetDeploymentNamespacedName(&dep)
+
+		if err := sa.Cache.Get(deployment.CoreDeployment, d, nn); err != nil {
 			return err
 		}
-
-		nn := app.GetDeploymentNamespacedName(&dep)
 
 		labeler := utils.GetCustomLabeler(nil, nn, app)
 
@@ -111,8 +111,8 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 
 		rb.Subjects = []rbac.Subject{{
 			Kind:      "ServiceAccount",
-			Name:      app.GetDeploymentNamespacedName(&dep).Name,
-			Namespace: app.GetDeploymentNamespacedName(&dep).Namespace,
+			Name:      nn.Name,
+			Namespace: nn.Namespace,
 		}}
 		rb.RoleRef = rbac.RoleRef{
 			Kind: "ClusterRole",
