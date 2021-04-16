@@ -33,10 +33,4 @@ crd-ref-docs --source-path=./apis --config=docs/build/crd-ref-docs/config.yaml \
 
 LINES_CHANGED=$(diff api_reference.rst docs/api_reference.rst --changed-group-format='%>' --unchanged-group-format='' | wc -l)
 
-if [ "$LINES_CHANGED" == "0" ]; then
-	echo "API docs did not change - not updating"
-	rm api_reference.rst
-else
-	echo "API docs changed - updating"
-	mv api_reference.rst docs/
-fi
+mv api_reference.rst docs/
