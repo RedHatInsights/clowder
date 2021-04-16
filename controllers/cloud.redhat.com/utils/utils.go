@@ -254,22 +254,43 @@ func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels ma
 	}
 }
 
-// DeploymentStatusChecker takes a deployment and returns True if it is deemed ready by the logic
-// in the function.
+// DeploymentStatusChecker takes a deployment and returns True if it is deemed
+// ready by the logic in the function.
 func DeploymentStatusChecker(deployment *apps.Deployment) bool {
-	if deployment.Generation <= deployment.Status.ObservedGeneration {
-		if deployment.Spec.Replicas != nil && deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas {
-			return false
-		}
-		if deployment.Status.Replicas > deployment.Status.UpdatedReplicas {
-			return false
-		}
-		if deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas {
-			return false
-		}
-		return true
+	if deployment.Generation > deployment.Status.ObservedGeneration {
+		// The deployment controller still needs to reconcile
+		return false
 	}
-	return false
+
+	if deployment.Spec.Replicas != nil {
+		if *deployment.Spec.Replicas == 0 {
+			// Since there's no replicas, there's nothing to do to get ready
+			return true
+		}
+
+		if deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas {
+			// This indicates that the deployment has not completed rolling out
+			// the new ReplicaSet
+			return false
+		}
+	}
+
+	// At this point we know all pods in the new ReplicaSet have been created.
+	// Therefore deployment.Status.UpdatedReplicas is used as the "actual
+	// replica count for pods that we care about".
+
+	if deployment.Status.Replicas > deployment.Status.UpdatedReplicas {
+		// This indicates there is at least one replica still remaining from
+		// an old ReplicaSet
+		return false
+	}
+
+	if deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas {
+		// One or more pods in the new ReplicaSet aren't ready yet
+		return false
+	}
+
+	return true
 }
 
 // IntPtr returns a pointer to the passed integer.
