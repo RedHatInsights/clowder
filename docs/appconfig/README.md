@@ -18,6 +18,9 @@
 -   [Untitled object in AppConfig](./schema-definitions-appconfig.md "ClowdApp deployment configuration for Clowder enabled apps") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-kafka.md "Kafka Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/kafka`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokers-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers/items`
+-   [Untitled object in AppConfig](./schema-definitions-brokerconfig-properties-sasl.md "SASL Configuration for Kafka") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl`
+-   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokerstls-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS/items`
+-   [Untitled object in AppConfig](./schema-definitions-brokerconfig-properties-sasl.md "SASL Configuration for Kafka") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-topics-items.md "Topic Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics/items`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-objectstore.md "Object Storage Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore`
 -   [Untitled object in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets-items.md "Object Storage Bucket") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets/items`
@@ -27,8 +30,13 @@
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-privateendpoints-items.md "Dependent service connection info") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints/items`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig.md "Kafka Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokers-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers/items`
+-   [Untitled object in AppConfig](./schema-definitions-brokerconfig-properties-sasl.md "SASL Configuration for Kafka") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl`
+-   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokerstls-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS/items`
+-   [Untitled object in AppConfig](./schema-definitions-brokerconfig-properties-sasl.md "SASL Configuration for Kafka") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-topics-items.md "Topic Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics/items`
+-   [Untitled object in AppConfig](./schema-definitions-kafkasaslconfig.md "SASL Configuration for Kafka") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig`
 -   [Untitled object in AppConfig](./schema-definitions-brokerconfig.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig`
+-   [Untitled object in AppConfig](./schema-definitions-brokerconfig-properties-sasl.md "SASL Configuration for Kafka") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl`
 -   [Untitled object in AppConfig](./schema-definitions-topicconfig.md "Topic Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig`
 -   [Untitled object in AppConfig](./schema-definitions-objectstorebucket.md "Object Storage Bucket") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket`
 -   [Untitled object in AppConfig](./schema-definitions-objectstoreconfig.md "Object Storage Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig`
@@ -41,11 +49,13 @@
 ### Arrays
 
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokers.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers`
+-   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokerstls.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`
 -   [Untitled array in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets`
 -   [Untitled array in AppConfig](./schema-definitions-appconfig-properties-endpoints.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints`
 -   [Untitled array in AppConfig](./schema-definitions-appconfig-properties-privateendpoints.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokers.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers`
+-   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokerstls.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`
 -   [Untitled array in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets`
 
