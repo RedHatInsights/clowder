@@ -40,6 +40,8 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
+	svcAccounts "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 
@@ -173,7 +175,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	if cji.Spec.Iqe != emptyIqe {
 
 		nn := types.NamespacedName{
-			Name:      fmt.Sprintf("%v-%v", app.Name, "iqe"),
+			Name:      fmt.Sprintf("%s-iqe", app.Name),
 			Namespace: app.Namespace,
 		}
 
@@ -341,13 +343,16 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 
 	accessLevel := env.Spec.Providers.Iqe.K8SAccessLevel
 
-	// TODO: implement access level with service account
 	switch accessLevel {
 	// Use edit level service account to create and delete resources
 	// one per app when the app is created
 	case "edit":
-		// TODO: Create secret here
-		j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("%s-iqe", app.Name)
+		// TODO: Create custom labeler without using app
+		labeler := utils.GetCustomLabeler(nil, nn, app)
+		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+			return err
+		}
+		j.Spec.Template.Spec.ServiceAccountName = nn.Name
 	// Standard view access to the owned resources
 	case "view":
 		j.Spec.Template.Spec.ServiceAccountName = app.Name
