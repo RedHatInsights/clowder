@@ -381,10 +381,11 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig"}
 ```
 
-| Property            | Type    | Required | Nullable       | Defined by                                                                                                                                                              |
-| :------------------ | ------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [brokers](#brokers) | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-brokers.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers") |
-| [topics](#topics)   | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-topics.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics")   |
+| Property                  | Type    | Required | Nullable       | Defined by                                                                                                                                                                    |
+| :------------------------ | ------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [brokers](#brokers)       | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-brokers.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers")       |
+| [brokersTLS](#brokerstls) | `array` | Optional | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-brokerstls.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS") |
+| [topics](#topics)         | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-topics.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics")         |
 
 ### brokers
 
@@ -399,6 +400,22 @@ Defines the brokers the app should connect to for Kafka services.
 -   defined in: [AppConfig](schema-definitions-kafkaconfig-properties-brokers.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers")
 
 #### brokers Type
+
+`object[]` ([Details](schema-definitions-brokerconfig.md))
+
+### brokersTLS
+
+Defines the brokers the app should connect to for Kafka services.
+
+
+`brokersTLS`
+
+-   is optional
+-   Type: `object[]` ([Details](schema-definitions-brokerconfig.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkaconfig-properties-brokerstls.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS")
+
+#### brokersTLS Type
 
 `object[]` ([Details](schema-definitions-brokerconfig.md))
 
@@ -418,6 +435,51 @@ Defines a list of the topic configurations available to the application.
 
 `object[]` ([Details](schema-definitions-topicconfig.md))
 
+## Definitions group KafkaSASLConfig
+
+Reference this group by using
+
+```json
+{"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig"}
+```
+
+| Property              | Type     | Required | Nullable       | Defined by                                                                                                                                                                        |
+| :-------------------- | -------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [username](#username) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/username") |
+| [password](#password) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/password") |
+
+### username
+
+
+
+
+`username`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkasaslconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/username")
+
+#### username Type
+
+`string`
+
+### password
+
+
+
+
+`password`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkasaslconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/password")
+
+#### password Type
+
+`string`
+
 ## Definitions group BrokerConfig
 
 Reference this group by using
@@ -430,6 +492,9 @@ Reference this group by using
 | :-------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [hostname](#hostname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname") |
 | [port](#port)         | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")         |
+| [cacert](#cacert)     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")     |
+| [authtype](#authtype) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype") |
+| [sasl](#sasl)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")                      |
 
 ### hostname
 
@@ -462,6 +527,63 @@ Reference this group by using
 #### port Type
 
 `integer`
+
+### cacert
+
+
+
+
+`cacert`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")
+
+#### cacert Type
+
+`string`
+
+### authtype
+
+
+
+
+`authtype`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype")
+
+#### authtype Type
+
+`string`
+
+#### authtype Constraints
+
+**enum**: the value of this property must be equal to one of the following values:
+
+| Value    | Explanation |
+| :------- | ----------- |
+| `"mtls"` |             |
+| `"sasl"` |             |
+
+### sasl
+
+SASL Configuration for Kafka
+
+
+`sasl`
+
+-   is optional
+-   Type: `object` ([Details](schema-definitions-kafkasaslconfig.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkasaslconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")
+
+#### sasl Type
+
+`object` ([Details](schema-definitions-kafkasaslconfig.md))
 
 ## Definitions group TopicConfig
 
@@ -536,8 +658,8 @@ Reference this group by using
 | Property                        | Type      | Required | Nullable       | Defined by                                                                                                                                                                                |
 | :------------------------------ | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [name](#name-1)                 | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")                   |
-| [username](#username)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
-| [password](#password)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
+| [username](#username-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
+| [password](#password-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
 | [hostname](#hostname-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")           |
 | [port](#port-1)                 | `integer` | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/port")                   |
 | [adminUsername](#adminusername) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername") |
@@ -955,8 +1077,8 @@ Reference this group by using
 | :---------------------- | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [hostname](#hostname-4) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/hostname") |
 | [port](#port-4)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/port")         |
-| [username](#username-1) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/username") |
-| [password](#password-1) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/password") |
+| [username](#username-2) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/username") |
+| [password](#password-2) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/password") |
 
 ### hostname
 
