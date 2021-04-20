@@ -165,7 +165,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		r.Log.Info("Invoking job", "jobinvocation", jobName, "namespace", app.Namespace)
 
 		if err := r.InvokeJob(&cache, &job, &app, &env, &cji); err != nil {
-			r.Log.Info("Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
+			r.Log.Error(err, "Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
 			r.Recorder.Eventf(&cji, "Warning", "JobNotInvoked", "Job [%s] could not be invoked", jobName)
 			return ctrl.Result{Requeue: true}, err
 		}
@@ -176,28 +176,29 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("%s-iqe", app.Name),
-			Namespace: app.Namespace,
+			Namespace: cji.Namespace,
 		}
 
 		j := batchv1.Job{}
 
 		if err := r.createIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j); err != nil {
-			r.Log.Info("Iqe Job creation encountered an error", "jobinvocation", nn.Name, err)
+			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
+			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
 			return ctrl.Result{Requeue: true}, err
 		}
 		if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
-			r.Log.Info("Iqe Job encountered an error", "jobinvocation", nn.Name, err)
+			r.Log.Error(err, "Iqe Job could not update via cache", "jobinvocation", nn.Name)
+			r.Recorder.Eventf(&cji, "Warning", "IQECacheUpdateFailed", "Job [%s] could not update", j.ObjectMeta.Name)
 			return ctrl.Result{Requeue: true}, err
 		}
 
 		cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
 		r.Log.Info("Iqe Job Invoked Successfully", "jobinvocation", nn.Name, "namespace", app.Namespace)
-		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
+		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 	}
 
 	// Short running jobs may be done by the time the loop is ranged,
 	// so we update again before the reconcile ends
-
 	if statusErr := r.setCompletedStatus(ctx, &cji); statusErr != nil {
 		return ctrl.Result{Requeue: true}, statusErr
 	}
@@ -234,7 +235,6 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, j
 }
 
 func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ctx context.Context) (config.AppConfig, error) {
-
 	secretConfig := core.Secret{}
 	cfg := config.AppConfig{}
 

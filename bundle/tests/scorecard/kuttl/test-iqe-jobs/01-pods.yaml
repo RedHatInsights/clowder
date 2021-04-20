@@ -8,7 +8,7 @@ spec:
   providers:
     iqe:
       # Base image for iqe-tests
-      imageBase: "quay.io/cloudservices/iqe-tests"
+      imageBase: "quay.io/psav/clowder-hello"
       # Level of access this pod has in the namespace
       k8sAccessLevel: edit
       # gather configuraiton for the specified environment
@@ -69,7 +69,7 @@ metadata:
 spec:
   appName: host-inventory 
   iqe:
-    imageTag: host-inventory
+    imageTag: latest 
     ui: false
     marker: "smoke"
     dynaconfEnvName: "clowder_smoke"

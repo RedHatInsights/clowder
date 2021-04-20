@@ -28,7 +28,8 @@ spec:
     spec:
       containers:
         - name: host-inventory-iqe
-          image: quay.io/cloudservices/iqe-tests:host-inventory
+          # image: quay.io/cloudservices/iqe-tests:host-inventory
+          image: quay.io/psav/clowder-hello:latest
           command:
           - "iqe"
           - "tests"
@@ -50,4 +51,4 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: host-inventory-iqe
-  namespace: test-iqe-job
+  namespace: test-iqe-jobs
