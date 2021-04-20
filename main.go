@@ -19,6 +19,9 @@ package main
 import (
 	"flag"
 	"log"
+
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"runtime/pprof"
 
@@ -27,11 +30,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	controllers "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	// +kubebuilder:scaffold:imports
 )
 
 var setupLog = ctrl.Log.WithName("setup")
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
 
@@ -43,8 +46,8 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
 
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
+	if clowder_config.LoadedConfig.DebugOptions.Pprof.CpuFile != "" {
+		f, err := os.Create(clowder_config.LoadedConfig.DebugOptions.Pprof.CpuFile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -54,5 +57,8 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(false)))
 
+	if clowder_config.LoadedConfig.DebugOptions.Pprof.Enable {
+		go http.ListenAndServe("localhost:8000", nil)
+	}
 	controllers.Run(metricsAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler())
 }
