@@ -1,0 +1,8 @@
+{
+    "debugOptions": {
+        "pprof": {
+            "enable": true,
+            "cpuFile": "testcpu"
+        }
+    } 
+}
