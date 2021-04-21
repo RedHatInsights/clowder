@@ -1,4 +1,5 @@
 resources:
+- clowder_prometheus.yaml
 - role.yaml
 - role_binding.yaml
 - role_binding_admin.yaml
@@ -9,5 +10,6 @@ resources:
 # which protects your /metrics endpoint.
 - auth_proxy_service.yaml
 - auth_proxy_role.yaml
+- auth_proxy_reader.yaml
 - auth_proxy_role_binding.yaml
 - auth_proxy_client_clusterrole.yaml

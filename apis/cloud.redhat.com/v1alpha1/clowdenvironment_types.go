@@ -50,8 +50,13 @@ type WebConfig struct {
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider
-// +kubebuilder:validation:Enum=none;operator
+// +kubebuilder:validation:Enum=none;operator;app-interface
 type MetricsMode string
+
+type PrometheusConfig struct {
+	// Determines whether to deploy prometheus in operator mode
+	Deploy bool `json:"deploy,omitempty"`
+}
 
 // MetricsConfig configures the Clowder provider controlling the creation of
 // metrics services and their probes.
@@ -66,7 +71,11 @@ type MetricsConfig struct {
 	// The mode of operation of the Metrics provider. The allowed modes are
 	//  (*_none_*), which disables metrics service generation, or
 	// (*_operator_*) where services and probes are generated.
+	// (*_app-interface_*) where services and probes are generated for app-interface.
 	Mode MetricsMode `json:"mode"`
+
+	// Prometheus specific configuration
+	Prometheus PrometheusConfig `json:"prometheus,omitempty"`
 }
 
 // TODO: Other potential mode: saas
@@ -392,7 +401,9 @@ func init() {
 
 // GetLabels returns a base set of labels relating to the ClowdEnvironment.
 func (i *ClowdEnvironment) GetLabels() map[string]string {
-	return map[string]string{"app": i.ObjectMeta.Name}
+	return map[string]string{
+		"app": i.ObjectMeta.Name,
+	}
 }
 
 // MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
