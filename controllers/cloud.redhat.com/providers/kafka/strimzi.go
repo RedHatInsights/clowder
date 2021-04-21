@@ -255,32 +255,12 @@ func (s *strimziProvider) configureListeners() error {
 	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
 
 	s.Config.Brokers = []config.BrokerConfig{}
+	s.Config.BrokersTLS = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			authType := config.BrokerConfigAuthtypeSasl
-			bc := config.BrokerConfig{
-				Sasl:     &config.KafkaSASLConfig{},
-				Cacert:   &kafkaCACert,
-				Hostname: *listener.Addresses[0].Host,
-				Authtype: &authType,
-			}
-			port := listener.Addresses[0].Port
-			if port != nil {
-				p := int(*port)
-				bc.Port = &p
-			}
-			s.Config.BrokersTLS = append(s.Config.BrokersTLS, bc)
-
+			s.Config.BrokersTLS = append(s.Config.BrokersTLS, buildTlsBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			bc := config.BrokerConfig{
-				Hostname: *listener.Addresses[0].Host,
-			}
-			port := listener.Addresses[0].Port
-			if port != nil {
-				p := int(*port)
-				bc.Port = &p
-			}
-			s.Config.Brokers = append(s.Config.Brokers, bc)
+			s.Config.Brokers = append(s.Config.Brokers, buildTcpBrokerConfig(listener))
 		}
 	}
 
@@ -291,6 +271,34 @@ func (s *strimziProvider) configureListeners() error {
 	}
 
 	return nil
+}
+
+func buildTcpBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.BrokerConfig {
+	bc := config.BrokerConfig{
+		Hostname: *listener.Addresses[0].Host,
+	}
+	port := listener.Addresses[0].Port
+	if port != nil {
+		p := int(*port)
+		bc.Port = &p
+	}
+	return bc
+}
+
+func buildTlsBrokerConfig(listener strimzi.KafkaStatusListenersElem, caCert string) config.BrokerConfig {
+	authType := config.BrokerConfigAuthtypeSasl
+	bc := config.BrokerConfig{
+		Sasl:     &config.KafkaSASLConfig{},
+		Cacert:   &caCert,
+		Hostname: *listener.Addresses[0].Host,
+		Authtype: &authType,
+	}
+	port := listener.Addresses[0].Port
+	if port != nil {
+		p := int(*port)
+		bc.Port = &p
+	}
+	return bc
 }
 
 func (s *strimziProvider) configureBrokers() error {
@@ -335,36 +343,21 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		}
 	}
 
-	ku := &strimzi.KafkaUser{}
-	nn := types.NamespacedName{
-		Name:      getKafkaUsername(s.Env, app),
-		Namespace: getKafkaNamespace(s.Env),
-	}
-
-	s.Cache.Create(KafkaUser, nn, ku)
-	labeler := utils.GetCustomLabeler(
-		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, nn, s.Env,
-	)
-
-	labeler(ku)
-
-	ku.Spec = &strimzi.KafkaUserSpec{
-		Authentication: &strimzi.KafkaUserSpecAuthentication{
-			Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
-		},
-		Authorization: &strimzi.KafkaUserSpecAuthorization{
-			Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
-			Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
-		},
-	}
-
-	// update s.Config.Topics
-	if err := s.processTopics(app, ku); err != nil {
+	if err := s.createKafkaUser(app); err != nil {
 		return err
 	}
 
-	s.Cache.Update(KafkaUser, ku)
+	if err := s.setBrokerCredentials(app); err != nil {
+		return err
+	}
 
+	// set our provider's config on the AppConfig
+	c.Kafka = &s.Config
+
+	return nil
+}
+
+func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
 	for _, broker := range s.Config.BrokersTLS {
 		if broker.Authtype == nil {
 			continue
@@ -409,9 +402,43 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 			broker.Sasl.Password = &password
 		}
 	}
+	return nil
+}
 
-	// set our provider's config on the AppConfig
-	c.Kafka = &s.Config
+func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
+	ku := &strimzi.KafkaUser{}
+	nn := types.NamespacedName{
+		Name:      getKafkaUsername(s.Env, app),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+
+	if err := s.Cache.Create(KafkaUser, nn, ku); err != nil {
+		return err
+	}
+	labeler := utils.GetCustomLabeler(
+		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, nn, s.Env,
+	)
+
+	labeler(ku)
+
+	ku.Spec = &strimzi.KafkaUserSpec{
+		Authentication: &strimzi.KafkaUserSpecAuthentication{
+			Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
+		},
+		Authorization: &strimzi.KafkaUserSpecAuthorization{
+			Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
+			Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
+		},
+	}
+
+	// update s.Config.Topics
+	if err := s.processTopics(app, ku); err != nil {
+		return err
+	}
+
+	if err := s.Cache.Update(KafkaUser, ku); err != nil {
+		return err
+	}
 
 	return nil
 }
