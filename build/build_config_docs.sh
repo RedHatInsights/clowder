@@ -9,7 +9,7 @@ if [ ! -f docs/build/node_modules/.bin/jsonschema2md ]; then
 	if [ ! -d node_modules ]; then
 		mkdir node_modules
 	fi
-	npm install @adobe/jsonschema2md
+	npm install @adobe/jsonschema2md@4.2.2
 	cd -
 fi
 
