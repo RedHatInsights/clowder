@@ -20,7 +20,7 @@ type ClowderConfig struct {
 }
 
 func getConfig() ClowderConfig {
-	jsonData, err := ioutil.ReadFile("/config/test")
+	jsonData, err := ioutil.ReadFile("/config/clowder_config.json")
 
 	if err != nil {
 		fmt.Printf("Config file not found")
