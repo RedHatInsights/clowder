@@ -1054,7 +1054,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "expr": "avg(container_memory_working_set_bytes{namespace=\"clowder\", container=\"manager\"})",
               "interval": "",
               "legendFormat": "Usage",
               "refId": "A"
@@ -1209,5 +1209,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 5
+      "version": 6
     }
