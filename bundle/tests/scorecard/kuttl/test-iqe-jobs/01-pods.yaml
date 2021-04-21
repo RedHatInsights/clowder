@@ -6,20 +6,21 @@ metadata:
 spec:
   targetNamespace: test-iqe-jobs
   providers:
-    iqe:
-      # Base image for iqe-tests
-      imageBase: "quay.io/psav/clowder-hello"
+    testing:
       # Level of access this pod has in the namespace
       k8sAccessLevel: edit
       # gather configuraiton for the specified environment
       configAccess: environment
-      resources:
-        limits:
-          cpu: 2
-          memory: 600Mi
-        requests:
-          cpu: 200m
-          memory: 256Mi
+      iqe:
+        # Base image for iqe-tests
+        imageBase: "quay.io/psav/clowder-hello"
+        resources:
+          limits:
+            cpu: 2
+            memory: 600Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
     web:
       port: 8000
       mode: operator
@@ -53,8 +54,8 @@ metadata:
   name: host-inventory
   namespace: test-iqe-jobs
 spec:
-  iqe:
-    plugin: host-inventory 
+  testing:
+    iqe-plugin: host-inventory 
   envName: test-iqe-jobs
   deployments:
     - name: service
@@ -64,13 +65,15 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
 metadata:
-  name: host-inventory-iqe 
+  name: host-inventory-smoke 
   namespace: test-iqe-jobs
 spec:
   appName: host-inventory 
-  iqe:
-    imageTag: latest 
-    ui: false
-    marker: "smoke"
-    dynaconfEnvName: "clowder_smoke"
-    filter: "test_plugin_accessible"
+  testing:
+    iqe:
+      imageTag: latest 
+      ui: 
+        enabled: false
+      marker: "smoke"
+      dynaconfEnvName: "clowder_smoke"
+      filter: "test_plugin_accessible"

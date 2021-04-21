@@ -274,8 +274,9 @@ type AccessLevelMode string
 // +kubebuilder:validation:Enum=none;app;environment
 type ConfigAccessMode string
 
-type IqeConfig struct {
-	ImageBase string `json:"imageBase"`
+type TestingConfig struct {
+	// Defines the environment for iqe/smoke testing
+	Iqe IqeConfig `json:"iqe,omitempty"`
 
 	// The mode of operation of the IQE Pod. Valid options are:
 	// (*_none_*) where no access will be granted, (*_view_*)
@@ -289,6 +290,15 @@ type IqeConfig struct {
 	// (*_app_*) -- only the ClowdApp's config is mounted to the pod
 	// (*_environment_*) -- the config for all apps in the env are mounted
 	ConfigAccess ConfigAccessMode `json:"configAccess"`
+
+	// A pass-through of a resource requirements in k8s ResourceRequirements
+	// format. If omitted, the default resource requirements from the
+	// ClowdEnvironment will be used.
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+}
+
+type IqeConfig struct {
+	ImageBase string `json:"imageBase"`
 
 	// A pass-through of a resource requirements in k8s ResourceRequirements
 	// format. If omitted, the default resource requirements from the
@@ -347,7 +357,7 @@ type ProvidersConfig struct {
 	PullSecrets PullSecrets `json:"pullSecrets,omitempty"`
 
 	// Defines the environment for iqe/smoke testing
-	Iqe IqeConfig `json:"iqe,omitempty"`
+	Testing TestingConfig `json:"testing,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.

@@ -2333,14 +2333,6 @@ spec:
                 of an In Memory Database to the pods in the ClowdApp. This single
                 instance will be shared between all apps.
               type: boolean
-            iqe:
-              description: Iqe plugin and other specifics
-              properties:
-                plugin:
-                  type: string
-              required:
-              - plugin
-              type: object
             jobs:
               description: A list of jobs
               items:
@@ -6640,6 +6632,14 @@ spec:
                 - name
                 type: object
               type: array
+            testing:
+              description: Iqe plugin and other specifics
+              properties:
+                iqe-plugin:
+                  type: string
+              required:
+              - iqe-plugin
+              type: object
           required:
           - envName
           type: object

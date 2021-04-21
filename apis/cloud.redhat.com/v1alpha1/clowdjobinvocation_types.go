@@ -24,18 +24,29 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type JobTestingSpec struct {
+	// Iqe is the job spec to override defaults from the ClowdApp's
+	// definition of the job
+	Iqe IqeJobSpec `json:"iqe,omitempty"`
+}
+
 type IqeJobSpec struct {
 	// By default, Clowder will set the image on the ClowdJob to be the
 	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
 	ImageTag string `json:"imageTag,omitempty"`
 	// Indiciates the presence of a selenium container
-	UI bool `json:"ui,omitempty"`
+	UI UiSpec `json:"ui,omitempty"`
 	// sets the pytest -m args
 	Marker string `json:"marker"`
 	// sets value for ENV_FOR_DYNACONF
 	DynaconfEnvName string `json:"dynaconfEnvName"`
 	// sets pytest -k args
 	Filter string `json:"filter,omitempty"`
+}
+
+type UiSpec struct {
+	// Indiciates the presence of a selenium container
+	Enabled bool `json:"enabled"`
 }
 
 // ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
@@ -46,9 +57,8 @@ type ClowdJobInvocationSpec struct {
 	// Jobs is the set of jobs to be run by the invocation
 	Jobs []string `json:"jobs,omitempty"`
 
-	// Iqe is the job spec to override defaults from the ClowdApp's
-	// definition of the job
-	Iqe IqeJobSpec `json:"iqe,omitempty"`
+	// Testing is the struct for building out test jobs (iqe, etc) in a CJI
+	Testing JobTestingSpec `json:"testing,omitempty"`
 }
 
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation

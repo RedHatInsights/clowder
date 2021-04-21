@@ -121,67 +121,6 @@ spec:
                   required:
                   - mode
                   type: object
-                iqe:
-                  description: Defines the environment for iqe/smoke testing
-                  properties:
-                    configAccess:
-                      description: 'The mode of operation for access to outside app
-                        configs. Valid options are: (*_none_*) -- no app config is
-                        mounted to the pod (*_app_*) -- only the ClowdApp''s config
-                        is mounted to the pod (*_environment_*) -- the config for
-                        all apps in the env are mounted'
-                      enum:
-                      - none
-                      - app
-                      - environment
-                      type: string
-                    imageBase:
-                      type: string
-                    k8sAccessLevel:
-                      description: 'The mode of operation of the IQE Pod. Valid options
-                        are: (*_none_*) where no access will be granted, (*_view_*)
-                        which will allow the pod to have the controlling app''s view
-                        permissions and (*_edit_*) which grants full create, and edit
-                        powers to the pod'
-                      enum:
-                      - none
-                      - view
-                      - edit
-                      type: string
-                    resources:
-                      description: A pass-through of a resource requirements in k8s
-                        ResourceRequirements format. If omitted, the default resource
-                        requirements from the ClowdEnvironment will be used.
-                      properties:
-                        limits:
-                          additionalProperties:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                            x-kubernetes-int-or-string: true
-                          description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                          type: object
-                        requests:
-                          additionalProperties:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                            x-kubernetes-int-or-string: true
-                          description: 'Requests describes the minimum amount of compute
-                            resources required. If Requests is omitted for a container,
-                            it defaults to Limits if that is explicitly specified,
-                            otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                          type: object
-                      type: object
-                  required:
-                  - configAccess
-                  - imageBase
-                  - k8sAccessLevel
-                  type: object
                 kafka:
                   description: Defines the Configuration for the Clowder Kafka Provider.
                   properties:
@@ -373,6 +312,102 @@ spec:
                       - enabled
                       - disabled
                       type: string
+                  type: object
+                testing:
+                  description: Defines the environment for iqe/smoke testing
+                  properties:
+                    configAccess:
+                      description: 'The mode of operation for access to outside app
+                        configs. Valid options are: (*_none_*) -- no app config is
+                        mounted to the pod (*_app_*) -- only the ClowdApp''s config
+                        is mounted to the pod (*_environment_*) -- the config for
+                        all apps in the env are mounted'
+                      enum:
+                      - none
+                      - app
+                      - environment
+                      type: string
+                    iqe:
+                      description: Defines the environment for iqe/smoke testing
+                      properties:
+                        imageBase:
+                          type: string
+                        resources:
+                          description: A pass-through of a resource requirements in
+                            k8s ResourceRequirements format. If omitted, the default
+                            resource requirements from the ClowdEnvironment will be
+                            used.
+                          properties:
+                            limits:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: 'Limits describes the maximum amount of
+                                compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                              type: object
+                            requests:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: 'Requests describes the minimum amount
+                                of compute resources required. If Requests is omitted
+                                for a container, it defaults to Limits if that is
+                                explicitly specified, otherwise to an implementation-defined
+                                value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                              type: object
+                          type: object
+                      required:
+                      - imageBase
+                      type: object
+                    k8sAccessLevel:
+                      description: 'The mode of operation of the IQE Pod. Valid options
+                        are: (*_none_*) where no access will be granted, (*_view_*)
+                        which will allow the pod to have the controlling app''s view
+                        permissions and (*_edit_*) which grants full create, and edit
+                        powers to the pod'
+                      enum:
+                      - none
+                      - view
+                      - edit
+                      type: string
+                    resources:
+                      description: A pass-through of a resource requirements in k8s
+                        ResourceRequirements format. If omitted, the default resource
+                        requirements from the ClowdEnvironment will be used.
+                      properties:
+                        limits:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: 'Limits describes the maximum amount of compute
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                          type: object
+                        requests:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: 'Requests describes the minimum amount of compute
+                            resources required. If Requests is omitted for a container,
+                            it defaults to Limits if that is explicitly specified,
+                            otherwise to an implementation-defined value. More info:
+                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                          type: object
+                      type: object
+                  required:
+                  - configAccess
+                  - k8sAccessLevel
                   type: object
                 web:
                   description: Defines the Configuration for the Clowder Web Provider.

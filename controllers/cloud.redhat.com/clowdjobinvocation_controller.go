@@ -171,11 +171,13 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		}
 	}
 
-	var emptyIqe crd.IqeJobSpec
-	if cji.Spec.Iqe != emptyIqe {
+	// Check IQE struct to see if we need to invoke an IQE Job
+	// In the future, we'll need ot handle other types, but this will suffice since testing only has iqe.
+	var emptyTesting crd.IqeJobSpec
+	if cji.Spec.Testing.Iqe != emptyTesting {
 
 		nn := types.NamespacedName{
-			Name:      fmt.Sprintf("%s-iqe", app.Name),
+			Name:      fmt.Sprintf("%s-iqe", cji.Name),
 			Namespace: cji.Namespace,
 		}
 
@@ -262,7 +264,7 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.
 	}
 
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-iqe", app.Name),
+		Name:      fmt.Sprintf("%s-iqe", cji.Name),
 		Namespace: cji.Namespace,
 	}
 
@@ -327,25 +329,25 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	}
 
 	pod := crd.PodSpec{
-		Resources: env.Spec.Providers.Iqe.Resources,
+		Resources: env.Spec.Providers.Testing.Iqe.Resources,
 	}
 
 	envvar := []core.EnvVar{}
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
-	envvar = append(envvar, core.EnvVar{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Iqe.DynaconfEnvName})
+	envvar = append(envvar, core.EnvVar{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName})
 	envvar = append(envvar, core.EnvVar{Name: "NAMESPACE", Value: nn.Namespace})
 	envvar = append(envvar, core.EnvVar{Name: "CLOWDER_ENABLED", Value: "true"})
 
 	tag := ""
-	if cji.Spec.Iqe.ImageTag != "" {
-		tag = cji.Spec.Iqe.ImageTag
+	if cji.Spec.Testing.Iqe.ImageTag != "" {
+		tag = cji.Spec.Testing.Iqe.ImageTag
 	} else {
-		tag = app.Spec.Iqe.Plugin
+		tag = app.Spec.Testing.IqePlugin
 	}
-	plugin := app.Spec.Iqe.Plugin
-	iqeImage := env.Spec.Providers.Iqe.ImageBase
+	plugin := app.Spec.Testing.IqePlugin
+	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
 
-	accessLevel := env.Spec.Providers.Iqe.K8SAccessLevel
+	accessLevel := env.Spec.Providers.Testing.K8SAccessLevel
 
 	switch accessLevel {
 	// Use edit level service account to create and delete resources
@@ -369,7 +371,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	}
 
 	c := core.Container{
-		Name:         fmt.Sprintf("%s-iqe", plugin),
+		Name:         nn.Name,
 		Image:        fmt.Sprintf("%s:%s", iqeImage, tag),
 		Command:      constructedIqeCommand,
 		Env:          envvar,
@@ -381,7 +383,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	}
 
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
-	configAccess := env.Spec.Providers.Iqe.ConfigAccess
+	configAccess := env.Spec.Providers.Testing.ConfigAccess
 
 	switch configAccess {
 	// Build cdenvconfig.json and mount it
@@ -399,7 +401,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 			Name: "cdenvconfig",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: fmt.Sprintf("%s-iqe", cji.Spec.AppName),
+					SecretName: nn.Name,
 				},
 			},
 		})
@@ -435,11 +437,11 @@ func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) ([]string, 
 	command := []string{
 		"iqe", "tests", "plugin",
 		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),
-		"-m", cji.Spec.Iqe.Marker,
+		"-m", cji.Spec.Testing.Iqe.Marker,
 	}
-	if cji.Spec.Iqe.Filter != "" {
+	if cji.Spec.Testing.Iqe.Filter != "" {
 		// Note: go can append multiple values to a slice
-		command = append(command, "-k", cji.Spec.Iqe.Filter)
+		command = append(command, "-k", cji.Spec.Testing.Iqe.Filter)
 	}
 	return command, nil
 }

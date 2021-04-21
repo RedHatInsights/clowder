@@ -250,8 +250,8 @@ type KafkaTopicSpec struct {
 	TopicName string `json:"topicName"`
 }
 
-type IqeSpec struct {
-	Plugin string `json:"plugin"`
+type TestingSpec struct {
+	IqePlugin string `json:"iqe-plugin"`
 }
 
 // ClowdAppSpec is the main specification for a single Clowder Application
@@ -302,7 +302,7 @@ type ClowdAppSpec struct {
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
 
 	// Iqe plugin and other specifics
-	Iqe IqeSpec `json:"iqe,omitempty"`
+	Testing TestingSpec `json:"testing,omitempty"`
 
 	// Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has
 	// the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline
