@@ -149,7 +149,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		// Match the crd.Job name to the JobTemplate in ClowdApp
 		job, err := getJobFromName(jobName, &app)
 		if err != nil {
-			r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job named", cji.Spec.AppName, jobName)
+			r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job named", jobName)
 			r.Log.Info("Missing Job Definition", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
 			return ctrl.Result{}, err
 		}

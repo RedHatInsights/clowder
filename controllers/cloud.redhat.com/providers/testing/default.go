@@ -1,4 +1,4 @@
-package iqe
+package testing
 
 import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
