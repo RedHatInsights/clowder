@@ -343,6 +343,10 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		}
 	}
 
+	if err := s.processTopics(app); err != nil {
+		return err
+	}
+
 	if err := s.createKafkaUser(app); err != nil {
 		return err
 	}
@@ -431,9 +435,21 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		},
 	}
 
-	// update s.Config.Topics
-	if err := s.processTopics(app, ku); err != nil {
-		return err
+	address := "*"
+	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
+
+	for _, topic := range app.Spec.KafkaTopics {
+		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, app.Namespace)
+
+		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+			Host:      &address,
+			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+				Name:        &topicName,
+				PatternType: &patternType,
+				Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
+			},
+		})
 	}
 
 	if err := s.Cache.Update(KafkaUser, ku); err != nil {
@@ -443,7 +459,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	return nil
 }
 
-func (s *strimziProvider) processTopics(app *crd.ClowdApp, ku *strimzi.KafkaUser) error {
+func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 	topicConfig := []config.TopicConfig{}
 
 	appList := crd.ClowdAppList{}
@@ -505,17 +521,6 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp, ku *strimzi.KafkaUser
 			topicConfig,
 			config.TopicConfig{Name: topicName, RequestedName: topic.TopicName},
 		)
-		address := "*"
-		patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
-		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
-			Host:      &address,
-			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
-			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
-				Name:        &topicName,
-				PatternType: &patternType,
-				Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
-			},
-		})
 	}
 
 	s.Config.Topics = topicConfig
