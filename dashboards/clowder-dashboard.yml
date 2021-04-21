@@ -25,7 +25,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1618919454614,
+      "iteration": 1618995511996,
       "links": [],
       "panels": [
         {
@@ -1054,10 +1054,22 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"clowder\", container=\"manager\"})",
               "interval": "",
-              "legendFormat": "Memory Usage",
+              "legendFormat": "Usage",
               "refId": "A"
+            },
+            {
+              "expr": "avg(kube_pod_container_resource_requests_memory_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "interval": "",
+              "legendFormat": "Request",
+              "refId": "B"
+            },
+            {
+              "expr": "avg(kube_pod_container_resource_limits_memory_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "interval": "",
+              "legendFormat": "Limit",
+              "refId": "C"
             }
           ],
           "thresholds": [],
@@ -1085,7 +1097,7 @@ data:
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
