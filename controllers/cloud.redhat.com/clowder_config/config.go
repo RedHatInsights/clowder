@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 type ClowderConfig struct {
@@ -20,10 +21,18 @@ type ClowderConfig struct {
 }
 
 func getConfig() ClowderConfig {
-	jsonData, err := ioutil.ReadFile("/config/clowder_config.json")
+	configPath := "/config/clowder_config.json"
+
+	if path := os.Getenv("CLOWDER_CONFIG_PATH"); path != "" {
+		configPath = path
+	}
+
+	fmt.Printf("Loading config from: %s\n", configPath)
+
+	jsonData, err := ioutil.ReadFile(configPath)
 
 	if err != nil {
-		fmt.Printf("Config file not found")
+		fmt.Printf("Config file not found\n")
 		return ClowderConfig{}
 	}
 
@@ -31,7 +40,7 @@ func getConfig() ClowderConfig {
 	err = json.Unmarshal(jsonData, &clowderConfig)
 
 	if err != nil {
-		fmt.Printf("Couldn't parse json")
+		fmt.Printf("Couldn't parse json\n")
 		return ClowderConfig{}
 	}
 
