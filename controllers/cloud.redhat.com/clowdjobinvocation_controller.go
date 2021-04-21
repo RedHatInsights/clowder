@@ -288,6 +288,7 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.
 			Namespace: app.Namespace,
 		}, ctx)
 		if err != nil {
+			r.Recorder.Eventf(&app, "Warning", "AppConfigMissing", "app config [%s] missing", app.Name)
 			r.Log.Error(err, "Failed to fetch app config for app", app.Name)
 			return err
 		}
@@ -353,9 +354,9 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	// Use edit level service account to create and delete resources
 	// one per app when the app is created
 	case "edit":
-		// TODO: Create custom labeler without using app
 		labeler := utils.GetCustomLabeler(nil, nn, app)
 		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", nn.Name)
 			return err
 		}
 		j.Spec.Template.Spec.ServiceAccountName = nn.Name

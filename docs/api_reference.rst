@@ -809,7 +809,6 @@ Appears In:
    "``iqe`` (:ref:`IqeConfig`)", "Defines the environment for iqe/smoke testing"
    "``k8sAccessLevel`` (AccessLevelMode)", "The mode of operation of the IQE Pod. Valid options are: (*_none_*) where no access will be granted, (*_view_*) which will allow the pod to have the controlling app's view permissions and (*_edit_*) which grants full create, and edit powers to the pod"
    "``configAccess`` (ConfigAccessMode)", "The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted"
-   "``resources`` (`ResourceRequirements <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core>`_)", "A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used."
 
 
 .. _TestingSpec :

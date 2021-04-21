@@ -21,14 +21,13 @@ metadata:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: host-inventory-iqe
+  name: host-inventory-smoke-iqe
   namespace: test-iqe-jobs 
 spec:
   template:
     spec:
       containers:
         - name: host-inventory-smoke-iqe
-          # image: quay.io/cloudservices/iqe-tests:host-inventory
           image: quay.io/psav/clowder-hello:latest
           command:
           - "iqe"
@@ -41,7 +40,7 @@ spec:
           - "test_plugin_accessible"
           resources:
             limits:
-              cpu: 2
+              cpu: "2"
               memory: 600Mi
             requests:
               cpu: 200m
