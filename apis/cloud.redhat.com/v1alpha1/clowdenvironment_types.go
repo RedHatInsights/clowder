@@ -130,6 +130,9 @@ type KafkaConfig struct {
 	// and configured to auto-create topics.
 	Mode KafkaMode `json:"mode"`
 
+	// EnableLegacyStrimzi disables TLS + user auth
+	EnableLegacyStrimzi bool `json:"enableLegacyStrimzi,omitempty"`
+
 	// If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned
 	// Kafka instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`

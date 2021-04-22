@@ -17,11 +17,10 @@ Kafka Configuration
 
 # undefined Properties
 
-| Property                  | Type    | Required | Nullable       | Defined by                                                                                                                                                                    |
-| :------------------------ | ------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [brokers](#brokers)       | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-brokers.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers")       |
-| [brokersTLS](#brokerstls) | `array` | Optional | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-brokerstls.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS") |
-| [topics](#topics)         | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-topics.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics")         |
+| Property            | Type    | Required | Nullable       | Defined by                                                                                                                                                              |
+| :------------------ | ------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [brokers](#brokers) | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-brokers.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers") |
+| [topics](#topics)   | `array` | Required | cannot be null | [AppConfig](schema-definitions-kafkaconfig-properties-topics.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics")   |
 
 ## brokers
 
@@ -36,22 +35,6 @@ Defines the brokers the app should connect to for Kafka services.
 -   defined in: [AppConfig](schema-definitions-kafkaconfig-properties-brokers.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers")
 
 ### brokers Type
-
-`object[]` ([Details](schema-definitions-brokerconfig.md))
-
-## brokersTLS
-
-Defines the brokers the app should connect to for Kafka services.
-
-
-`brokersTLS`
-
--   is optional
--   Type: `object[]` ([Details](schema-definitions-brokerconfig.md))
--   cannot be null
--   defined in: [AppConfig](schema-definitions-kafkaconfig-properties-brokerstls.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokersTLS")
-
-### brokersTLS Type
 
 `object[]` ([Details](schema-definitions-brokerconfig.md))
 

@@ -473,6 +473,7 @@ Appears In:
    :widths: 10, 40
 
    "``mode`` (KafkaMode)", "The mode of operation of the Clowder Kafka Provider. Valid options are: (*_operator_*) which provisions Strimzi resources and will configure KafkaTopic CRs and place them in the Kafka cluster's namespace described in the configuration, (*_app-interface_*) which simply passes the topic names through to the App's cdappconfig.json and expects app-interface to have created the relevant topics, and (*_local_*) where a small instance of Kafka is created in the desired cluster namespace and configured to auto-create topics."
+   "``enableLegacyStrimzi`` (boolean)", "EnableLegacyStrimzi disables TLS + user auth"
    "``pvc`` (boolean)", "If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned Kafka instance to use a PVC instead of emptyDir for its volumes."
    "``cluster`` (:ref:`KafkaClusterConfig`)", "Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode."
    "``connect`` (:ref:`KafkaConnectClusterConfig`)", "Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode."

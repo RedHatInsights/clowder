@@ -126,14 +126,6 @@
                         "$ref": "#/definitions/BrokerConfig"
                     }
                 },
-                "brokersTLS": {
-                    "id": "brokersTLS",
-                    "description": "Defines the brokers the app should connect to for Kafka services.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/BrokerConfig"
-                    }
-                },
                 "topics": {
                     "type": "array",
                     "description": "Defines a list of the topic configurations available to the application.",

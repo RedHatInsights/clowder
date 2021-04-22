@@ -8,7 +8,3 @@ commands:
 
 - script: jq -r '.kafka.brokers[0].hostname == "my-cluster-kafka-bootstrap.test-kafka-strimzi-topic-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-json
 - script: jq -r '.kafka.brokers[0].port == 9092' -e < /tmp/test-kafka-strimzi-topic-json
-
-- script: jq -r '.kafka.brokersTLS[0].hostname == "my-cluster-kafka-bootstrap.test-kafka-strimzi-topic-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-json
-- script: jq -r '.kafka.brokersTLS[0].port == 9093' -e < /tmp/test-kafka-strimzi-topic-json
-- script: jq -r '.kafka.brokersTLS[0].sasl.username == "test-kafka-strimzi-topic-puptoo"' -e < /tmp/test-kafka-strimzi-topic-json
