@@ -122,21 +122,23 @@ setup correctly for the full smoke tests, we need to do the following:
     apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdJobInvocation
     metadata:
-    name: my-job-invocation
-    namespace: ${NAMESPACE}
+      name: my-job-invocation
+      namespace: ${NAMESPACE}
     spec:
-    appName: host-inventory
-    iqe:
-      # by default, Clowder will set the image on the ClowdJob to be
-      # "baseImage:<name of the iqe plugin set on ClowdApp>", but you
-      # can override the image tag here:
-      imageTag: "my-custom-image-tag"
+      appName: host-inventory
+      testing:
+        iqe:
+          # by default, Clowder will set the image on the ClowdJob to be
+          # "baseImage:<name of the iqe plugin set on ClowdApp>", but you
+          # can override the image tag here:
+          imageTag: "my-custom-image-tag"
 
-      # override the environment's default test run options
-      ui: true  # indicates whether a selenium container should be included in the pod
-      marker: "smoke AND (something) AND (my other marker)"  # sets pytest -m argument
-      dynaconfEnvName: "my_env_override"  # sets value for ENV_FOR_DYNACONF
-      filter: "some_test"  # sets pytest -k argument
+          # override the environment's default test run options
+          ui: 
+            enabled: true  # indicates whether a selenium container should be included in the pod
+          marker: "smoke AND (something) AND (my other marker)"  # sets pytest -m argument
+          dynaconfEnvName: "my_env_override"  # sets value for ENV_FOR_DYNACONF
+          filter: "some_test"  # sets pytest -k argument
 
 
 .. _Clowder API reference: https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job

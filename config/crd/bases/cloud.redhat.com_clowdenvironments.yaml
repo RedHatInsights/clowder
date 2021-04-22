@@ -367,12 +367,9 @@ spec:
                       type: object
                     k8sAccessLevel:
                       description: 'The mode of operation of the IQE Pod. Valid options
-                        are: (*_none_*) where no access will be granted, (*_view_*)
-                        which will allow the pod to have the controlling app''s view
-                        permissions and (*_edit_*) which grants full create, and edit
-                        powers to the pod'
+                        are: ''default'', ''view'' or ''edit'''
                       enum:
-                      - none
+                      - default
                       - view
                       - edit
                       type: string

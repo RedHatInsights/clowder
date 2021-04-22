@@ -57,9 +57,9 @@ type ClowdJobInvocationReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var IqeClowdJob = providers.NewSingleResourceIdent("iqeclowdjob", "core_iqe_clowdjob", &batchv1.Job{})
-var ClowdJob = providers.NewMultiResourceIdent("clowdjob", "core_clowdjob", &crd.ClowdJobInvocation{})
-var CoreIqeSecret = providers.NewSingleResourceIdent("coreiqesecret", "core_iqe_secret", &core.Secret{})
+var IqeClowdJob = providers.NewSingleResourceIdent("cji", "core_iqe_clowdjob", &batchv1.Job{})
+var ClowdJob = providers.NewMultiResourceIdent("cji", "core_clowdjob", &crd.ClowdJobInvocation{})
+var CoreIqeSecret = providers.NewSingleResourceIdent("cji", "core_iqe_secret", &core.Secret{})
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
@@ -82,7 +82,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 			// Must have been deleted
 			return ctrl.Result{}, nil
 		}
-		r.Log.Error(err, "CJI not found", "clowdjobinvocation")
+		r.Log.Error(err, "CJI not found")
 		return ctrl.Result{}, err
 	}
 
@@ -182,16 +182,20 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		}
 
 		j := batchv1.Job{}
+		if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
+			r.Log.Error(err, "Iqe Job could not be created via cache", "jobinvocation", nn.Name)
+			return ctrl.Result{}, err
+		}
 
 		if err := r.createIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
 			return ctrl.Result{Requeue: true}, err
 		}
-		if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
+
+		if err := cache.Update(IqeClowdJob, &j); err != nil {
 			r.Log.Error(err, "Iqe Job could not update via cache", "jobinvocation", nn.Name)
-			r.Recorder.Eventf(&cji, "Warning", "IQECacheUpdateFailed", "Job [%s] could not update", j.ObjectMeta.Name)
-			return ctrl.Result{Requeue: true}, err
+			return ctrl.Result{}, err
 		}
 
 		cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
@@ -199,13 +203,14 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 	}
 
+	if cacheErr := cache.ApplyAll(); cacheErr != nil {
+		return ctrl.Result{}, cacheErr
+	}
+
 	// Short running jobs may be done by the time the loop is ranged,
 	// so we update again before the reconcile ends
 	if statusErr := r.setCompletedStatus(ctx, &cji); statusErr != nil {
 		return ctrl.Result{Requeue: true}, statusErr
-	}
-	if cacheErr := cache.ApplyAll(); cacheErr != nil {
-		return ctrl.Result{}, cacheErr
 	}
 
 	if updateErr := r.Client.Status().Update(ctx, &cji); updateErr != nil {
@@ -224,8 +229,13 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, j
 	}
 
 	j := batchv1.Job{}
-	jobProvider.CreateJobResource(cji, env, nn, job, &j)
 	if err := cache.Create(ClowdJob, nn, &j); err != nil {
+		return err
+	}
+
+	jobProvider.CreateJobResource(cji, env, nn, job, &j)
+
+	if err := cache.Update(ClowdJob, &j); err != nil {
 		return err
 	}
 
@@ -362,13 +372,22 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 		j.Spec.Template.Spec.ServiceAccountName = nn.Name
 	// Standard view access to the owned resources
 	case "view":
-		j.Spec.Template.Spec.ServiceAccountName = app.Name
+		appNn := types.NamespacedName{
+			Name:      fmt.Sprintf("%s-app", app.Name),
+			Namespace: app.Namespace,
+		}
+		labeler := utils.GetCustomLabeler(nil, appNn, app)
+		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, appNn, labeler); err != nil {
+			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", appNn.Name)
+			return err
+		}
+		j.Spec.Template.Spec.ServiceAccountName = appNn.Name
 	}
 
 	// var constructedIqeCommand []string
 	constructedIqeCommand, err := constructIqeCommand(cji, plugin)
 	if err != nil {
-		return errors.New("IQE Marker must be set")
+		return err
 	}
 
 	c := core.Container{
@@ -435,6 +454,12 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 }
 
 func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) ([]string, error) {
+	if plugin == "" {
+		return []string{}, errors.New("iqe-plugin is missing from ClowdApp")
+	}
+	if cji.Spec.Testing.Iqe.Marker == "" {
+		return []string{}, errors.New("Marker is missing from ClowdJobInvocation")
+	}
 	command := []string{
 		"iqe", "tests", "plugin",
 		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),
