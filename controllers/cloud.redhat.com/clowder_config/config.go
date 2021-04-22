@@ -8,6 +8,9 @@ import (
 )
 
 type ClowderConfig struct {
+	Webhooks struct {
+		Disable bool `json:"disable"`
+	} `json:"webhooks"`
 	DebugOptions struct {
 		Trigger struct {
 			Diff bool `json:"diff"`

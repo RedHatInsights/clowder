@@ -7,6 +7,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 
 	cloudredhatcomv1alpha1 "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -51,7 +52,7 @@ func init() {
 }
 
 // Run inits the manager and controllers and then starts the manager
-func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, signalHandler <-chan struct{}) {
+func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, signalHandler <-chan struct{}, enableWebHooks bool) {
 	setupLog.Info("Loaded config", "config", clowder_config.LoadedConfig)
 
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
@@ -91,6 +92,13 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
+
+	if enableWebHooks {
+		if err = (&crd.ClowdApp{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Captain")
+			os.Exit(1)
+		}
+	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(signalHandler); err != nil {

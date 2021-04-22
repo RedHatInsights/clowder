@@ -60,5 +60,5 @@ func main() {
 	if clowder_config.LoadedConfig.DebugOptions.Pprof.Enable {
 		go http.ListenAndServe("localhost:8000", nil)
 	}
-	controllers.Run(metricsAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler())
+	controllers.Run(metricsAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler(), !clowder_config.LoadedConfig.Webhooks.Disable)
 }
