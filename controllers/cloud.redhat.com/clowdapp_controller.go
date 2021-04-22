@@ -57,6 +57,7 @@ import (
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/pullsecrets"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
@@ -439,6 +440,7 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
 		err = prov.Provide(a, &c)
+		// log.Info("running provider: mipoint", "name", provAcc.Name, "order", provAcc.Order)
 		if err != nil {
 			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
 			reterr.Requeue = true

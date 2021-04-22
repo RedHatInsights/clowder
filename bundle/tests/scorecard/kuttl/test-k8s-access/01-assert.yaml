@@ -15,7 +15,7 @@ metadata:
   name: puptoo-default
   namespace: test-k8s-access
 imagePullSecrets:
-  - name: test
+  - name: test-k8s-access-clowder-copy
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,7 +33,7 @@ metadata:
   name: puptoo-view
   namespace: test-k8s-access
 imagePullSecrets:
-  - name: test
+  - name: test-k8s-access-clowder-copy
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -65,7 +65,7 @@ metadata:
   name: puptoo-edit
   namespace: test-k8s-access
 imagePullSecrets:
-  - name: test
+  - name: test-k8s-access-clowder-copy
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

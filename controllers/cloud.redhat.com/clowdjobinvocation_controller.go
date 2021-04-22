@@ -333,10 +333,6 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 
-	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
-		{Name: "quay-cloudservices-pull"},
-	}
-
 	pod := crd.PodSpec{
 		Resources: env.Spec.Providers.Testing.Iqe.Resources,
 	}
