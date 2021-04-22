@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-kafka-strimzi-topic-auth
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-kafka-strimzi-topic-auth-kafka
+spec:
+  finalizers:
+  - kubernetes

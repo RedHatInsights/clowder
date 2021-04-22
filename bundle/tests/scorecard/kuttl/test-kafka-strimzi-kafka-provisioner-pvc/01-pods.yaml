@@ -21,6 +21,7 @@ spec:
         storageSize: 100Mi
       mode: operator
       pvc: true
+      enableLegacyStrimzi: true
     db:
       mode: none
     logging:

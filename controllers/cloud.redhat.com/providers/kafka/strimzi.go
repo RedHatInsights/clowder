@@ -81,17 +81,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Authorization: &strimzi.KafkaSpecKafkaAuthorization{
-				Type: strimzi.KafkaSpecKafkaAuthorizationTypeSimple,
-			},
 			Version:  &version,
 			Replicas: replicas,
-			Listeners: []strimzi.KafkaSpecKafkaListenersElem{
-				{Name: "tcp", Type: "internal", Tls: false, Port: 9092},
-				{Name: "tls", Type: "internal", Tls: true, Port: 9093, Authentication: &strimzi.KafkaSpecKafkaListenersElemAuthentication{
-					Type: strimzi.KafkaSpecKafkaListenersElemAuthenticationTypeScramSha512,
-				}},
-			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
@@ -101,6 +92,28 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			UserOperator:  &strimzi.KafkaSpecEntityOperatorUserOperator{},
 		},
 	}
+
+	listener := strimzi.KafkaSpecKafkaListenersElem{
+		Type: "internal",
+	}
+
+	if s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		listener.Port = 9092
+		listener.Tls = false
+		listener.Name = "tcp"
+	} else {
+		listener.Port = 9092
+		listener.Tls = true
+		listener.Name = "tls"
+		listener.Authentication = &strimzi.KafkaSpecKafkaListenersElemAuthentication{
+			Type: strimzi.KafkaSpecKafkaListenersElemAuthenticationTypeScramSha512,
+		}
+		k.Spec.Kafka.Authorization = &strimzi.KafkaSpecKafkaAuthorization{
+			Type: strimzi.KafkaSpecKafkaAuthorizationTypeSimple,
+		}
+	}
+
+	k.Spec.Kafka.Listeners = []strimzi.KafkaSpecKafkaListenersElem{listener}
 
 	if s.Env.Spec.Providers.Kafka.PVC {
 		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
@@ -137,13 +150,6 @@ func (s *strimziProvider) configureKafkaCluster() error {
 func (s *strimziProvider) getBootstrapServersString() string {
 	strArray := []string{}
 	for _, bc := range s.Config.Brokers {
-		if bc.Port != nil {
-			strArray = append(strArray, fmt.Sprintf("%s:%d", bc.Hostname, *bc.Port))
-		} else {
-			strArray = append(strArray, bc.Hostname)
-		}
-	}
-	for _, bc := range s.Config.BrokersTLS {
 		if bc.Port != nil {
 			strArray = append(strArray, fmt.Sprintf("%s:%d", bc.Hostname, *bc.Port))
 		} else {
@@ -239,7 +245,7 @@ func (s *strimziProvider) configureListeners() error {
 	// Return an err if we can't obtain listener status to trigger a requeue in the env controller
 	if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
 		return fmt.Errorf(
-			"Kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
+			"kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
 		)
 	}
 
@@ -255,16 +261,15 @@ func (s *strimziProvider) configureListeners() error {
 	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
 
 	s.Config.Brokers = []config.BrokerConfig{}
-	s.Config.BrokersTLS = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			s.Config.BrokersTLS = append(s.Config.BrokersTLS, buildTlsBrokerConfig(listener, kafkaCACert))
+			s.Config.Brokers = append(s.Config.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
 			s.Config.Brokers = append(s.Config.Brokers, buildTcpBrokerConfig(listener))
 		}
 	}
 
-	if (len(s.Config.Brokers) + len(s.Config.BrokersTLS)) < 1 {
+	if len(s.Config.Brokers) < 1 {
 		return fmt.Errorf(
 			"kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
 		)
@@ -362,7 +367,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 }
 
 func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
-	for _, broker := range s.Config.BrokersTLS {
+	for _, broker := range s.Config.Brokers {
 		if broker.Authtype == nil {
 			continue
 		}

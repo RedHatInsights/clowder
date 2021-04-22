@@ -17,10 +17,6 @@ spec:
         port: 9092
         type: internal
         tls: false
-      - name: tls
-        port: 9093
-        type: internal
-        tls: true
     storage:
       type: ephemeral
   zookeeper:
@@ -40,7 +36,7 @@ metadata:
 spec:
   version: "2.5.0"
   image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
-  bootstrapServers: my-ephemeral-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-ephemeral-kafka.svc:9092,my-ephemeral-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-ephemeral-kafka.svc:9093
+  bootstrapServers: my-ephemeral-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-ephemeral-kafka.svc:9092
   config:
     group.id: connect-cluster
     offset.storage.topic: connect-cluster-offsets

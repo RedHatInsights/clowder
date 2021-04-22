@@ -22,6 +22,7 @@ spec:
         namespace: test-kafka-strimzi-kafka-provisioner-ephemeral-kafka-connect
       mode: operator
       pvc: false
+      enableLegacyStrimzi: true
     db:
       mode: none
     logging:

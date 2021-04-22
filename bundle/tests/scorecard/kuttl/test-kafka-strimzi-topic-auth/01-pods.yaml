@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-kafka-strimzi-topic
+  name: test-kafka-strimzi-topic-auth
 spec:
-  targetNamespace: test-kafka-strimzi-topic
+  targetNamespace: test-kafka-strimzi-topic-auth
   providers:
     web:
       port: 8000
@@ -16,9 +16,8 @@ spec:
     kafka:
       cluster:
         name: my-cluster
-        namespace: test-kafka-strimzi-topic-kafka
+        namespace: test-kafka-strimzi-topic-auth-kafka
       mode: operator
-      enableLegacyStrimzi: true
     db:
       mode: none
     logging:
@@ -41,9 +40,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-kafka-strimzi-topic
+  namespace: test-kafka-strimzi-topic-auth
 spec:
-  envName: test-kafka-strimzi-topic
+  envName: test-kafka-strimzi-topic-auth
   deployments:
   - name: processor
     podSpec:
@@ -60,9 +59,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo-two
-  namespace: test-kafka-strimzi-topic
+  namespace: test-kafka-strimzi-topic-auth
 spec:
-  envName: test-kafka-strimzi-topic
+  envName: test-kafka-strimzi-topic-auth
   deployments:
   - name: processor
     podSpec:
