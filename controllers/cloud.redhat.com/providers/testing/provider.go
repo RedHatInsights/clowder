@@ -7,8 +7,8 @@ import (
 var ProvName = "testing"
 
 // GetTestingProvider returns the iqe details for a pod
-func GetTestingProvider(c *providers.Provider) (providers.ClowderProvider, error) {
-	return NewTestingProvider(c)
+func GetTestingProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	return NewTestingProvider(p)
 }
 
 func init() {

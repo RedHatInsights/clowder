@@ -12,23 +12,12 @@ type testingProvider struct {
 }
 
 func NewTestingProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	testing := &testingProvider{Provider: *p, Config: config.TestingConfig{}}
-
-	testingSettings := p.Env.Spec.Providers.Testing
-
-	iqeSettings := p.Env.Spec.Providers.Testing.Iqe
-	testing.Config = config.TestingConfig{
-		K8SAccessLevel: string(testingSettings.K8SAccessLevel),
-		ConfigAccess:   string(testingSettings.ConfigAccess),
-		Iqe: &config.IqeConfig{
-			ImageBase: iqeSettings.ImageBase,
-		},
-	}
-
-	return testing, nil
+	return &testingProvider{Provider: *p, Config: config.TestingConfig{}}, nil
 }
 
-func (tp *testingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	c.Testing = &tp.Config
+func (t *testingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if err := t.MakeTestingConfig(app, c); err != nil {
+		return err
+	}
 	return nil
 }
