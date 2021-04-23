@@ -382,6 +382,9 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 			return err
 		}
 		j.Spec.Template.Spec.ServiceAccountName = appNn.Name
+
+	default:
+		r.Log.Info("default access been selected in the clowdenvironment", "clowdjobinvocation")
 	}
 
 	// var constructedIqeCommand []string
@@ -444,7 +447,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 			},
 		})
 
-	case "none":
+	default:
 		r.Log.Info("No config mounted to the iqe pod", "clowdjobinvocation")
 	}
 

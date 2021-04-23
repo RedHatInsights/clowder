@@ -118,7 +118,7 @@ type WebServices struct {
 }
 
 // K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'
-// +kubebuilder:validation:Enum=default;view;edit
+// +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
@@ -536,5 +536,5 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 			return &refApp, nil
 		}
 	}
-	return nil, errors.New("Could not get app for db in env")
+	return nil, errors.New("could not get app for db in env")
 }

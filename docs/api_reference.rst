@@ -808,7 +808,7 @@ Appears In:
    :widths: 10, 40
 
    "``iqe`` (:ref:`IqeConfig`)", "Defines the environment for iqe/smoke testing"
-   "``k8sAccessLevel`` (AccessLevelMode)", "The mode of operation of the IQE Pod. Valid options are: (*_none_*) where no access will be granted, (*_view_*) which will allow the pod to have the controlling app's view permissions and (*_edit_*) which grants full create, and edit powers to the pod"
+   "``k8sAccessLevel`` (K8sAccessLevel)", "The mode of operation of the IQE Pod. Valid options are: 'default', 'view' or 'edit'"
    "``configAccess`` (ConfigAccessMode)", "The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted"
 
 

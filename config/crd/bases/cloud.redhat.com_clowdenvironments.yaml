@@ -328,6 +328,7 @@ spec:
                       enum:
                       - none
                       - app
+                      - ""
                       - environment
                       type: string
                     iqe:
@@ -374,6 +375,7 @@ spec:
                       enum:
                       - default
                       - view
+                      - ""
                       - edit
                       type: string
                   required:

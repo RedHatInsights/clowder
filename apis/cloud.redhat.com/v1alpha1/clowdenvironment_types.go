@@ -270,7 +270,7 @@ type InMemoryDBConfig struct {
 }
 
 // Describes what amount of app config is mounted to the pod
-// +kubebuilder:validation:Enum=none;app;environment
+// +kubebuilder:validation:Enum={"none", "app", "", "environment"}
 type ConfigAccessMode string
 
 type TestingConfig struct {
