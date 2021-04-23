@@ -517,9 +517,6 @@ type KafkaConfig struct {
 	// Defines the brokers the app should connect to for Kafka services.
 	Brokers []BrokerConfig `json:"brokers"`
 
-	// Defines the brokers the app should connect to for Kafka services.
-	BrokersTLS []BrokerConfig `json:"brokersTLS,omitempty"`
-
 	// Defines a list of the topic configurations available to the application.
 	Topics []TopicConfig `json:"topics"`
 }

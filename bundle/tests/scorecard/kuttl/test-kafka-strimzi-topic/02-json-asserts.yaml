@@ -1,0 +1,10 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-kafka-strimzi-topic puptoo -o json > /tmp/test-kafka-strimzi-topic
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-strimzi-topic | base64 -d > /tmp/test-kafka-strimzi-topic-json
+
+- script: jq -r '.kafka.brokers[0].hostname == "my-cluster-kafka-bootstrap.test-kafka-strimzi-topic-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-json
+- script: jq -r '.kafka.brokers[0].port == 9092' -e < /tmp/test-kafka-strimzi-topic-json

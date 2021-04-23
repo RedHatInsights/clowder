@@ -12,6 +12,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -24,6 +25,9 @@ var KafkaInstance = providers.NewSingleResourceIdent(ProvName, "kafka_instance",
 
 // KafkaConnect is the resource ident for a KafkaConnect object.
 var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{})
+
+// KafkaUser is the resource ident for a KafkaUser object.
+var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{})
 
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
@@ -79,18 +83,37 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		Kafka: strimzi.KafkaSpecKafka{
 			Version:  &version,
 			Replicas: replicas,
-			Listeners: []strimzi.KafkaSpecKafkaListenersElem{
-				{Name: "tcp", Type: "internal", Tls: false, Port: 9092},
-				{Name: "tls", Type: "internal", Tls: true, Port: 9093},
-			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
 		},
 		EntityOperator: &strimzi.KafkaSpecEntityOperator{
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{},
+			UserOperator:  &strimzi.KafkaSpecEntityOperatorUserOperator{},
 		},
 	}
+
+	listener := strimzi.KafkaSpecKafkaListenersElem{
+		Type: "internal",
+	}
+
+	if s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		listener.Port = 9092
+		listener.Tls = false
+		listener.Name = "tcp"
+	} else {
+		listener.Port = 9092
+		listener.Tls = true
+		listener.Name = "tls"
+		listener.Authentication = &strimzi.KafkaSpecKafkaListenersElemAuthentication{
+			Type: strimzi.KafkaSpecKafkaListenersElemAuthenticationTypeScramSha512,
+		}
+		k.Spec.Kafka.Authorization = &strimzi.KafkaSpecKafkaAuthorization{
+			Type: strimzi.KafkaSpecKafkaAuthorizationTypeSimple,
+		}
+	}
+
+	k.Spec.Kafka.Listeners = []strimzi.KafkaSpecKafkaListenersElem{listener}
 
 	if s.Env.Spec.Providers.Kafka.PVC {
 		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
@@ -210,48 +233,77 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 }
 
 func (s *strimziProvider) configureListeners() error {
-	// clusterNN := types.NamespacedName{
-	// 	Namespace: getKafkaNamespace(s.Env),
-	// 	Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
-	// }
-	// kafkaResource := strimzi.Kafka{}
-	// if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
-	// 	return err
-	// }
+	clusterNN := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
+	}
+	kafkaResource := strimzi.Kafka{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
+		return err
+	}
 
-	// // Return an err if we can't obtain listener status to trigger a requeue in the env controller
-	// if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
-	// 	return fmt.Errorf(
-	// 		"Kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
-	// 	)
-	// }
+	// Return an err if we can't obtain listener status to trigger a requeue in the env controller
+	if kafkaResource.Status == nil || kafkaResource.Status.Listeners == nil {
+		return fmt.Errorf(
+			"kafka cluster '%s' in ns '%s' has no listener status", clusterNN.Name, clusterNN.Namespace,
+		)
+	}
+
+	kafkaCASecName := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", s.Env.Spec.Providers.Kafka.Cluster.Name),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+	kafkaCASecret := core.Secret{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+		return err
+	}
+
+	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
 
 	s.Config.Brokers = []config.BrokerConfig{}
-	s.Config.Brokers = append(s.Config.Brokers, config.BrokerConfig{
-		Hostname: fmt.Sprintf("%s-kafka-bootstrap.%s.svc", s.Env.Spec.Providers.Kafka.Cluster.Name, getKafkaNamespace(s.Env)),
-		Port:     utils.IntPtr(9092),
-	})
-	// for _, listener := range kafkaResource.Status.Listeners {
-	// 	if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-	// 		bc := config.BrokerConfig{
-	// 			Hostname: *listener.Addresses[0].Host,
-	// 		}
-	// 		port := listener.Addresses[0].Port
-	// 		if port != nil {
-	// 			p := int(*port)
-	// 			bc.Port = &p
-	// 		}
-	// 		s.Config.Brokers = append(s.Config.Brokers, bc)
-	// 	}
-	// }
+	for _, listener := range kafkaResource.Status.Listeners {
+		if listener.Type != nil && *listener.Type == "tls" {
+			s.Config.Brokers = append(s.Config.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+			s.Config.Brokers = append(s.Config.Brokers, buildTcpBrokerConfig(listener))
+		}
+	}
 
-	// if len(s.Config.Brokers) < 1 {
-	// 	return fmt.Errorf(
-	// 		"Kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
-	// 	)
-	// }
+	if len(s.Config.Brokers) < 1 {
+		return fmt.Errorf(
+			"kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
+		)
+	}
 
 	return nil
+}
+
+func buildTcpBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.BrokerConfig {
+	bc := config.BrokerConfig{
+		Hostname: *listener.Addresses[0].Host,
+	}
+	port := listener.Addresses[0].Port
+	if port != nil {
+		p := int(*port)
+		bc.Port = &p
+	}
+	return bc
+}
+
+func buildTlsBrokerConfig(listener strimzi.KafkaStatusListenersElem, caCert string) config.BrokerConfig {
+	authType := config.BrokerConfigAuthtypeSasl
+	bc := config.BrokerConfig{
+		Sasl:     &config.KafkaSASLConfig{},
+		Cacert:   &caCert,
+		Hostname: *listener.Addresses[0].Host,
+		Authtype: &authType,
+	}
+	port := listener.Addresses[0].Port
+	if port != nil {
+		p := int(*port)
+		bc.Port = &p
+	}
+	return bc
 }
 
 func (s *strimziProvider) configureBrokers() error {
@@ -296,13 +348,118 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		}
 	}
 
-	// update s.Config.Topics
 	if err := s.processTopics(app); err != nil {
+		return err
+	}
+
+	if err := s.createKafkaUser(app); err != nil {
+		return err
+	}
+
+	if err := s.setBrokerCredentials(app); err != nil {
 		return err
 	}
 
 	// set our provider's config on the AppConfig
 	c.Kafka = &s.Config
+
+	return nil
+}
+
+func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
+	for _, broker := range s.Config.Brokers {
+		if broker.Authtype == nil {
+			continue
+		}
+		if *broker.Authtype == config.BrokerConfigAuthtypeSasl {
+			ku := &strimzi.KafkaUser{}
+			nn := types.NamespacedName{
+				Name:      getKafkaUsername(s.Env, app),
+				Namespace: getKafkaNamespace(s.Env),
+			}
+
+			err := s.Client.Get(s.Ctx, nn, ku)
+			if err != nil {
+				return err
+			}
+
+			if ku.Status == nil || ku.Status.Username == nil {
+				return errors.New("no username in kafkauser status")
+			}
+			broker.Sasl.Username = ku.Status.Username
+
+			if ku.Status.Secret == nil {
+				return errors.New("no secret in kafkauser status")
+			}
+
+			secnn := types.NamespacedName{
+				Name:      *ku.Status.Secret,
+				Namespace: getKafkaNamespace(s.Env),
+			}
+
+			kafkaSecret := &core.Secret{}
+
+			err = s.Client.Get(s.Ctx, secnn, kafkaSecret)
+			if err != nil {
+				return err
+			}
+
+			if kafkaSecret.Data["password"] == nil {
+				return errors.New("no password in kafkauser secret")
+			}
+			password := string(kafkaSecret.Data["password"])
+			broker.Sasl.Password = &password
+		}
+	}
+	return nil
+}
+
+func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
+	ku := &strimzi.KafkaUser{}
+	nn := types.NamespacedName{
+		Name:      getKafkaUsername(s.Env, app),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+
+	if err := s.Cache.Create(KafkaUser, nn, ku); err != nil {
+		return err
+	}
+	labeler := utils.GetCustomLabeler(
+		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, nn, s.Env,
+	)
+
+	labeler(ku)
+
+	ku.Spec = &strimzi.KafkaUserSpec{
+		Authentication: &strimzi.KafkaUserSpecAuthentication{
+			Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
+		},
+		Authorization: &strimzi.KafkaUserSpecAuthorization{
+			Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
+			Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
+		},
+	}
+
+	address := "*"
+	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
+
+	for _, topic := range app.Spec.KafkaTopics {
+		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, app.Namespace)
+
+		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+			Host:      &address,
+			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+				Name:        &topicName,
+				PatternType: &patternType,
+				Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
+			},
+		})
+	}
+
+	if err := s.Cache.Update(KafkaUser, ku); err != nil {
+		return err
+	}
 
 	return nil
 }

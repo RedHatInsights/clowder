@@ -197,6 +197,9 @@ spec:
                         cluster is expected to reside in. This is only used in (*_app-interface_*)
                         and (*_operator_*) modes.
                       type: string
+                    enableLegacyStrimzi:
+                      description: EnableLegacyStrimzi disables TLS + user auth
+                      type: boolean
                     mode:
                       description: 'The mode of operation of the Clowder Kafka Provider.
                         Valid options are: (*_operator_*) which provisions Strimzi
