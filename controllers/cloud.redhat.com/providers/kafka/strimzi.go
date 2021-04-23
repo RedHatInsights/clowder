@@ -102,7 +102,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		listener.Tls = false
 		listener.Name = "tcp"
 	} else {
-		listener.Port = 9092
+		listener.Port = 9093
 		listener.Tls = true
 		listener.Name = "tls"
 		listener.Authentication = &strimzi.KafkaSpecKafkaListenersElemAuthentication{
@@ -348,6 +348,10 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		}
 	}
 
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
 	if err := s.processTopics(app); err != nil {
 		return err
 	}
@@ -415,6 +419,7 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
 }
 
 func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
+
 	ku := &strimzi.KafkaUser{}
 	nn := types.NamespacedName{
 		Name:      getKafkaUsername(s.Env, app),
