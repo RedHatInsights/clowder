@@ -35,9 +35,10 @@ type IqeJobSpec struct {
 	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
 	ImageTag string `json:"imageTag,omitempty"`
 	// Indiciates the presence of a selenium container
+	// Note: currently not implemented
 	UI UiSpec `json:"ui,omitempty"`
 	// sets the pytest -m args
-	Marker string `json:"marker"`
+	Marker string `json:"marker,omitempty"`
 	// sets value for ENV_FOR_DYNACONF
 	DynaconfEnvName string `json:"dynaconfEnvName"`
 	// sets pytest -k args

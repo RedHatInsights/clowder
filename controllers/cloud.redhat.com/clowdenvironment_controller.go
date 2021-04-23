@@ -45,7 +45,6 @@ import (
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
-	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/testing"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 

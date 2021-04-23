@@ -73,7 +73,8 @@ spec:
                       description: sets the pytest -m args
                       type: string
                     ui:
-                      description: Indiciates the presence of a selenium container
+                      description: 'Indiciates the presence of a selenium container
+                        Note: currently not implemented'
                       properties:
                         enabled:
                           description: Indiciates the presence of a selenium container
@@ -83,7 +84,6 @@ spec:
                       type: object
                   required:
                   - dynaconfEnvName
-                  - marker
                   type: object
               type: object
           required:

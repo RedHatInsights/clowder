@@ -26,6 +26,7 @@ import (
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,9 +58,11 @@ type ClowdJobInvocationReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var IqeClowdJob = providers.NewSingleResourceIdent("cji", "core_iqe_clowdjob", &batchv1.Job{})
-var ClowdJob = providers.NewMultiResourceIdent("cji", "core_clowdjob", &crd.ClowdJobInvocation{})
-var CoreIqeSecret = providers.NewSingleResourceIdent("cji", "core_iqe_secret", &core.Secret{})
+var IqeClowdJob = providers.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
+var ClowdJob = providers.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
+var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
+var IqeRoleBinding = providers.NewSingleResourceIdent("cji", "iqe_role_binding", &rbac.RoleBinding{})
+var IqeServiceAccount = providers.NewSingleResourceIdent("cji", "iqe_service_account", &core.ServiceAccount{})
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
@@ -172,7 +175,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	// Check IQE struct to see if we need to invoke an IQE Job
-	// In the future, we'll need ot handle other types, but this will suffice since testing only has iqe.
+	// In the future, we'll need to handle other types, but this will suffice since testing only has iqe.
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
 
@@ -251,13 +254,13 @@ func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ct
 	cfg := config.AppConfig{}
 
 	if err := r.Client.Get(ctx, name, &secretConfig); err != nil {
-		r.Log.Error(err, "Failed to get app secret", name)
+		r.Log.Error(err, "Failed to get app secret")
 		r.Recorder.Eventf(&secretConfig, "Warning", "SecretMissing", "secret [%s] missing", name)
 		return cfg, err
 	}
 
 	if err := json.Unmarshal(secretConfig.Data["cdappconfig.json"], &cfg); err != nil {
-		r.Log.Error(err, "Could not unmarshall json for cdappconfig", name)
+		r.Log.Error(err, "Could not unmarshall json for cdappconfig")
 		r.Recorder.Eventf(&secretConfig, "Warning", "UnmarshallError", "app config [%s] not unmarshalled", name)
 		return cfg, err
 	}
@@ -278,8 +281,8 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.
 		Namespace: cji.Namespace,
 	}
 
-	if err := cache.Create(CoreIqeSecret, nn, iqeSecret); err != nil {
-		r.Log.Error(err, "Failed to check for iqe secret", "clowdjobinvocation")
+	if err := cache.Create(IqeSecret, nn, iqeSecret); err != nil {
+		r.Log.Error(err, "Failed to check for iqe secret")
 		return err
 	}
 	iqeSecret.SetName(nn.Name)
@@ -299,7 +302,7 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.
 		}, ctx)
 		if err != nil {
 			r.Recorder.Eventf(&app, "Warning", "AppConfigMissing", "app config [%s] missing", app.Name)
-			r.Log.Error(err, "Failed to fetch app config for app", app.Name)
+			r.Log.Error(err, "Failed to fetch app config for app")
 			return err
 		}
 		appConfigs[app.Name] = appConfig
@@ -310,7 +313,7 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.
 	// with the appconfigs list embedded
 	envData, err := json.Marshal(envConfig)
 	if err != nil {
-		r.Log.Error(err, "Failed to marshal iqe secret", "clowdjobinvocation")
+		r.Log.Error(err, "Failed to marshal iqe secret")
 		return err
 	}
 
@@ -318,8 +321,8 @@ func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.
 	cdEnv := make(map[string][]byte)
 	cdEnv["cdenvconfig.json"] = envData
 	iqeSecret.Data = cdEnv
-	if err := cache.Update(CoreIqeSecret, iqeSecret); err != nil {
-		r.Log.Error(err, "Failed to check for iqe secret", "clowdjobinvoaction")
+	if err := cache.Update(IqeSecret, iqeSecret); err != nil {
+		r.Log.Error(err, "Failed to check for iqe secret")
 		return err
 	}
 
@@ -343,11 +346,12 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 		Resources: env.Spec.Providers.Testing.Iqe.Resources,
 	}
 
-	envvar := []core.EnvVar{}
-	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
-	envvar = append(envvar, core.EnvVar{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName})
-	envvar = append(envvar, core.EnvVar{Name: "NAMESPACE", Value: nn.Namespace})
-	envvar = append(envvar, core.EnvVar{Name: "CLOWDER_ENABLED", Value: "true"})
+	envvar := []core.EnvVar{
+		{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
+		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
+		{Name: "NAMESPACE", Value: nn.Namespace},
+		{Name: "CLOWDER_ENABLED", Value: "true"},
+	}
 
 	tag := ""
 	if cji.Spec.Testing.Iqe.ImageTag != "" {
@@ -365,8 +369,12 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	// one per app when the app is created
 	case "edit":
 		labeler := utils.GetCustomLabeler(nil, nn, app)
-		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+		if err := svcAccounts.CreateServiceAccount(cache, IqeServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
 			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", nn.Name)
+			return err
+		}
+		if err := svcAccounts.CreateRoleBinding(cache, IqeRoleBinding, nn, labeler, accessLevel); err != nil {
+			r.Recorder.Eventf(cji, "Warning", "RoleBindingNotCreated", "Unable to create role binding [%s]", nn.Name)
 			return err
 		}
 		j.Spec.Template.Spec.ServiceAccountName = nn.Name
@@ -379,6 +387,10 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 		labeler := utils.GetCustomLabeler(nil, appNn, app)
 		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, appNn, labeler); err != nil {
 			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", appNn.Name)
+			return err
+		}
+		if err := svcAccounts.CreateRoleBinding(cache, IqeRoleBinding, appNn, labeler, accessLevel); err != nil {
+			r.Recorder.Eventf(cji, "Warning", "RoleBindingNotCreated", "Unable to create role binding [%s]", appNn.Name)
 			return err
 		}
 		j.Spec.Template.Spec.ServiceAccountName = appNn.Name
@@ -412,7 +424,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	// Build cdenvconfig.json and mount it
 	case "environment":
 		if secretErr := r.createAndApplyIqeSecret(cache, ctx, cji, app, env.Name); secretErr != nil {
-			r.Log.Error(secretErr, "Cannot apply iqe secret", "clowdjobinvocation")
+			r.Log.Error(secretErr, "Cannot apply iqe secret")
 			return secretErr
 		}
 		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
@@ -460,13 +472,12 @@ func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) ([]string, 
 	if plugin == "" {
 		return []string{}, errors.New("iqe-plugin is missing from ClowdApp")
 	}
-	if cji.Spec.Testing.Iqe.Marker == "" {
-		return []string{}, errors.New("Marker is missing from ClowdJobInvocation")
-	}
 	command := []string{
 		"iqe", "tests", "plugin",
 		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),
-		"-m", cji.Spec.Testing.Iqe.Marker,
+	}
+	if cji.Spec.Testing.Iqe.Marker != "" {
+		command = append(command, "-m", cji.Spec.Testing.Iqe.Marker)
 	}
 	if cji.Spec.Testing.Iqe.Filter != "" {
 		// Note: go can append multiple values to a slice
@@ -517,7 +528,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 			// Must have been deleted
 			return reqs
 		}
-		r.Log.Error(cjErr, "Failed to fetch ClowdJob", "clowdjobinvocation")
+		r.Log.Error(cjErr, "Failed to fetch ClowdJob")
 		return nil
 	}
 
@@ -527,7 +538,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapOb
 			// Must have been deleted
 			return reqs
 		}
-		r.Log.Error(cjiErr, "Failed to fetch ClowdJobInvocation", "clowdjobinvocation")
+		r.Log.Error(cjiErr, "Failed to fetch ClowdJobInvocation")
 		return nil
 	}
 

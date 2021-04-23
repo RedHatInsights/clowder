@@ -14,7 +14,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
-	rbac "k8s.io/api/rbac/v1"
 )
 
 type serviceaccountProvider struct {
@@ -97,37 +96,10 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 			return err
 		}
 
-		if dep.K8sAccessLevel == "default" || dep.K8sAccessLevel == "" {
-			continue
-		}
-
-		rb := &rbac.RoleBinding{}
-
-		if err := sa.Cache.Create(CoreDeploymentRoleBinding, nn, rb); err != nil {
+		if err := CreateRoleBinding(sa.Cache, CoreDeploymentRoleBinding, nn, labeler, dep.K8sAccessLevel); err != nil {
 			return err
 		}
 
-		labeler(rb)
-
-		rb.Subjects = []rbac.Subject{{
-			Kind:      "ServiceAccount",
-			Name:      nn.Name,
-			Namespace: nn.Namespace,
-		}}
-		rb.RoleRef = rbac.RoleRef{
-			Kind: "ClusterRole",
-		}
-
-		switch dep.K8sAccessLevel {
-		case "view":
-			rb.RoleRef.Name = "view"
-		case "edit":
-			rb.RoleRef.Name = "edit"
-		}
-
-		if err := sa.Cache.Update(CoreDeploymentRoleBinding, rb); err != nil {
-			return err
-		}
 	}
 
 	return nil

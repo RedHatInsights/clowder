@@ -448,7 +448,7 @@ Appears In:
    :widths: 10, 40
 
    "``imageTag`` (string)", "By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here"
-   "``ui`` (:ref:`UiSpec`)", "Indiciates the presence of a selenium container"
+   "``ui`` (:ref:`UiSpec`)", "Indiciates the presence of a selenium container Note: currently not implemented"
    "``marker`` (string)", "sets the pytest -m args"
    "``dynaconfEnvName`` (string)", "sets value for ENV_FOR_DYNACONF"
    "``filter`` (string)", "sets pytest -k args"

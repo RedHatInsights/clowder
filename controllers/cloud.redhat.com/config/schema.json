@@ -46,9 +46,6 @@
                 "featureFlags": {
                     "$ref": "#/definitions/FeatureFlagsConfig"
                 },
-                "testing": {
-                    "$ref": "#/definitions/TestingConfig"
-                },
                 "endpoints": {
                     "id": "endpoints",
                     "type": "array",
@@ -69,44 +66,6 @@
                 "metricsPort",
                 "metricsPath",
                 "logging"
-            ]
-        },
-        "TestingConfig": {
-            "title": "TestingConfig",
-            "type": "object",
-            "description": "Config for Testing Spec in Job Settings",
-            "properties": {
-                "k8sAccessLevel": {
-                    "description": "Defines the level of access the iqe pod has in the namespace",
-                    "type": "string"
-                },
-                "configAccess": {
-                    "description": "Defines the amount of app config is mounted to the pod",
-                    "type": "string"
-                },
-                "iqe": {
-                    "type": "object",
-                    "description": "Defines the Config for an IqeJob",
-                    "$ref": "#/definitions/IqeConfig"
-                }
-            },
-            "required": [
-                "k8sAccessLevel",
-                "configAccess"
-            ]
-        },
-        "IqeConfig": {
-            "title": "IqeConfig",
-            "type": "object",
-            "description": "Config for IqeJob Settings",
-            "properties": {
-                "imageBase": {
-                    "description": "Defines the base image used for iqe testing",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "imageBase"
             ]
         },
         "LoggingConfig": {

@@ -30,7 +30,6 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [objectStore](#objectstore)           | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstoreconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore")                          |
 | [inMemoryDb](#inmemorydb)             | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/inMemoryDb")                            |
 | [featureFlags](#featureflags)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")                        |
-| [testing](#testing)                   | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-testingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/testing")                                  |
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
 
@@ -209,22 +208,6 @@ Feature Flags Configuration
 ### featureFlags Type
 
 `object` ([Details](schema-definitions-featureflagsconfig.md))
-
-## testing
-
-Config for Testing Spec in Job Settings
-
-
-`testing`
-
--   is optional
--   Type: `object` ([TestingConfig](schema-definitions-testingconfig.md))
--   cannot be null
--   defined in: [AppConfig](schema-definitions-testingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/testing")
-
-### testing Type
-
-`object` ([TestingConfig](schema-definitions-testingconfig.md))
 
 ## endpoints
 
