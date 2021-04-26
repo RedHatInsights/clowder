@@ -6636,10 +6636,10 @@ spec:
             testing:
               description: Iqe plugin and other specifics
               properties:
-                iqe-plugin:
+                iqePlugin:
                   type: string
               required:
-              - iqe-plugin
+              - iqePlugin
               type: object
           required:
           - envName

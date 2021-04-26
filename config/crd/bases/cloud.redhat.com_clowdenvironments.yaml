@@ -370,8 +370,8 @@ spec:
                       - imageBase
                       type: object
                     k8sAccessLevel:
-                      description: 'The mode of operation of the IQE Pod. Valid options
-                        are: ''default'', ''view'' or ''edit'''
+                      description: 'The mode of operation of the testing Pod. Valid
+                        options are: ''default'', ''view'' or ''edit'''
                       enum:
                       - default
                       - view

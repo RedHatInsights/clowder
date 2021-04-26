@@ -55,7 +55,7 @@ metadata:
   namespace: test-iqe-jobs
 spec:
   testing:
-    iqe-plugin: host-inventory 
+    iqePlugin: host-inventory 
   envName: test-iqe-jobs
   deployments:
     - name: service
