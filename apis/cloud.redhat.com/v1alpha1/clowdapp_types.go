@@ -251,7 +251,7 @@ type KafkaTopicSpec struct {
 }
 
 type TestingSpec struct {
-	IqePlugin string `json:"iqe-plugin"`
+	IqePlugin string `json:"iqePlugin"`
 }
 
 // ClowdAppSpec is the main specification for a single Clowder Application

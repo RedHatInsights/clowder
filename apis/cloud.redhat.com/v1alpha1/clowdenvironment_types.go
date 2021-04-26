@@ -277,7 +277,7 @@ type TestingConfig struct {
 	// Defines the environment for iqe/smoke testing
 	Iqe IqeConfig `json:"iqe,omitempty"`
 
-	// The mode of operation of the IQE Pod. Valid options are:
+	// The mode of operation of the testing Pod. Valid options are:
 	// 'default', 'view' or 'edit'
 	K8SAccessLevel K8sAccessLevel `json:"k8sAccessLevel"`
 

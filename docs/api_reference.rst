@@ -808,7 +808,7 @@ Appears In:
    :widths: 10, 40
 
    "``iqe`` (:ref:`IqeConfig`)", "Defines the environment for iqe/smoke testing"
-   "``k8sAccessLevel`` (K8sAccessLevel)", "The mode of operation of the IQE Pod. Valid options are: 'default', 'view' or 'edit'"
+   "``k8sAccessLevel`` (K8sAccessLevel)", "The mode of operation of the testing Pod. Valid options are: 'default', 'view' or 'edit'"
    "``configAccess`` (ConfigAccessMode)", "The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted"
 
 
@@ -827,7 +827,7 @@ Appears In:
    :header: "Field", "Description"
    :widths: 10, 40
 
-   "``iqe-plugin`` (string)", ""
+   "``iqePlugin`` (string)", ""
 
 
 .. _UiSpec :
