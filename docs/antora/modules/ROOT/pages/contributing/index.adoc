@@ -1,5 +1,0 @@
-= Contributing
-
-- link:developing.html[Developing]
-- link:prflow.html[PR Flow]
-- link:testing.html[Testing]

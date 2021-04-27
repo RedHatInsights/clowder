@@ -1,5 +1,5 @@
 name: clowder
 title: Clowder
-version: master
+version: dev
 nav:
-- modules/ROOT/index.adoc
+- modules/ROOT/nav.adoc

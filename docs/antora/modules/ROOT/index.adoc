@@ -1,4 +1,0 @@
-= Main docs
-
-- link:pages/contributing/index.html[Contributing]
-- link:pages/providers/index.html[Providers]

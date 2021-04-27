@@ -1,4 +1,4 @@
 = Main docs
 
-- link:contributing/index.html[Contributing]
+- xref:contributing.adoc[Contributing]
 - link:providers/index.html[Providers]
