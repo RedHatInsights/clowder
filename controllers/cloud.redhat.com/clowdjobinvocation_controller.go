@@ -368,7 +368,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	// Use edit level service account to create and delete resources
 	// one per app when the app is created
 	case "edit":
-		labeler := utils.GetCustomLabeler(nil, nn, app)
+		labeler := utils.GetCustomLabeler(nil, nn, cji)
 		if err := svcAccounts.CreateServiceAccount(cache, IqeServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
 			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", nn.Name)
 			return err
@@ -384,11 +384,12 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 			Name:      fmt.Sprintf("%s-app", app.Name),
 			Namespace: app.Namespace,
 		}
-		labeler := utils.GetCustomLabeler(nil, appNn, app)
+		labeler := utils.GetCustomLabeler(nil, appNn, cji)
 		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, appNn, labeler); err != nil {
 			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", appNn.Name)
 			return err
 		}
+
 		if err := svcAccounts.CreateRoleBinding(cache, IqeRoleBinding, appNn, labeler, accessLevel); err != nil {
 			r.Recorder.Eventf(cji, "Warning", "RoleBindingNotCreated", "Unable to create role binding [%s]", appNn.Name)
 			return err

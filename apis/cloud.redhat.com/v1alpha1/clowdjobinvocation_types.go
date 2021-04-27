@@ -146,6 +146,11 @@ func (i *ClowdJobInvocation) GetClowdName() string {
 	return i.Name
 }
 
+// GetClowdName returns the name of the ClowdJobInvocation object.
+func (i *ClowdJobInvocation) GetClowdSAName() string {
+	return fmt.Sprintf("%s-cji", i.Name)
+}
+
 // GetUID returns ObjectMeta.UID
 func (i *ClowdJobInvocation) GetUID() types.UID {
 	return i.ObjectMeta.UID
