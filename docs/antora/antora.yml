@@ -1,0 +1,5 @@
+name: clowder
+title: Clowder
+version: master
+nav:
+- modules/ROOT/index.adoc

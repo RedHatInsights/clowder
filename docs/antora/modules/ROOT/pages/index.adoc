@@ -1,0 +1,4 @@
+= Main docs
+
+- link:contributing/index.html[Contributing]
+- link:providers/index.html[Providers]
