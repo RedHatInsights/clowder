@@ -27,7 +27,7 @@ name: Submit docs
 'on':
   push:
     branches: 
-    - gh_pages
+    - master
 
 jobs:
   docs_build:
@@ -37,13 +37,13 @@ jobs:
         uses: actions/checkout@v2
         with: 
           ref: gh_pages
+      - uses: actions/setup-node@v2
       - name: Install packages and deps
         run: |
-          sudo apt-get install npm
-          npm install -g @antora/cli @antora/site-generator-default
-          antora playbook.yml
+          npm install @antora/cli @antora/site-generator-default
+          ./node_modules/.bin/antora playbook.yml
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add build/*
-          git commit -m 'Updated pages for $GITHUB_SHA'
+          git add docs/*
+          git commit -m "Updated pages for $GITHUB_SHA"
           git push
