@@ -13,4 +13,5 @@ ui:
     snapshot: true
 runtime:
   fetch: true
-
+output:
+  dir: docs
