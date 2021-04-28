@@ -20,3 +20,30 @@ jobs:
           make
       - name: Run Tests
         run: KUBEBUILDER_ASSETS=$PWD/kubebuilder/kubebuilder_2.3.1_linux_amd64/bin go test -v ./controllers/...
+
+---
+name: Submit docs
+
+'on':
+  push:
+    branches: 
+    - gh_pages
+
+jobs:
+  docs_build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+        with: 
+          ref: gh_pages
+      - name: Install packages and deps
+        run: |
+          sudo apt-get install npm
+          npm install -g @antora/cli @antora/site-generator-default
+          antora playbook.yml
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add build/*
+          git commit -m 'Updated pages for $GITHUB_SHA'
+          git push
