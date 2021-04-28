@@ -79,6 +79,11 @@ kind: Secret
 metadata:
   name: test-basic-app-clowder-copy
   namespace: test-basic-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-basic-app
 type: Opaque
 ---
 apiVersion: v1

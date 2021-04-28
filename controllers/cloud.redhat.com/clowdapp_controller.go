@@ -440,7 +440,6 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
 		err = prov.Provide(a, &c)
-		// log.Info("running provider: mipoint", "name", provAcc.Name, "order", provAcc.Order)
 		if err != nil {
 			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
 			reterr.Requeue = true
