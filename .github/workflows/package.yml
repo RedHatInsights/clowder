@@ -14,9 +14,9 @@ jobs:
         uses: actions/checkout@v2
         with: 
           ref: gh_pages
+      - uses: actions/setup-node@v2
       - name: Install packages and deps
         run: |
-          sudo apt-get install npm
           npm install -g @antora/cli @antora/site-generator-default
           antora playbook.yml
           git config user.name github-actions
