@@ -1,6 +1,6 @@
 site:
   title: Clowder Documentation
-  url: https://redhatinsights.github.io/clowder/
+  url: /clowder
   start_page: clowder::index.adoc
 content:
   sources:
