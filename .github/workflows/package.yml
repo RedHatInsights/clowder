@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v2
       - name: Install packages and deps
         run: |
-          npm install -g @antora/cli @antora/site-generator-default
+          npm install @antora/cli @antora/site-generator-default
           antora playbook.yml
           git config user.name github-actions
           git config user.email github-actions@github.com
