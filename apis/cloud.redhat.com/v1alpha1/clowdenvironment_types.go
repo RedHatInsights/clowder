@@ -15,15 +15,18 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // WebMode details the mode of operation of the Clowder Web Provider
@@ -463,4 +466,16 @@ func (i *ClowdEnvironment) ConvertDeprecatedKafkaSpec() {
 	if i.Spec.Providers.Kafka.ConnectClusterName != "" {
 		i.Spec.Providers.Kafka.Connect.Name = i.Spec.Providers.Kafka.ConnectClusterName
 	}
+}
+
+// GetAppInSameEnv populates the appList with a list of all apps in the same ClowdEnvironment. The
+// environment is inferred from the given app.
+func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Client, appList *ClowdAppList) error {
+	err := pClient.List(ctx, appList, client.MatchingFields{"spec.envName": i.Name})
+
+	if err != nil {
+		return errors.Wrap("could not list apps", err)
+	}
+
+	return nil
 }
