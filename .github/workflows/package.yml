@@ -21,6 +21,6 @@ jobs:
           ./node_modules/.bin/antora playbook.yml
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add build/*
+          git add docs/*
           git commit -m 'Updated pages for $GITHUB_SHA'
           git push
