@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Feature Flags Provider :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/featureflags.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="web.html">Web</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Clowder</a></li>
+    <li><a href="index.html">Providers</a></li>
+    <li><a href="featureflags.html">Feature Flags</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/providers/featureflags.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Feature Flags Provider</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>Feature Flags Provider</strong> is responsible for providing access to a feature
+flags server.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_clowdapp_configuration"><a class="anchor" href="#_clowdapp_configuration"></a>ClowdApp Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To request a Feature Flags server, a <code>ClowdApp</code> would use the <code>featureFlags</code>
+stanza, an example of which is shown below.</p>
+</div>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>code-block:: yaml</p>
+<div class="literalblock">
+<div class="content">
+<pre>apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: myapp
+spec:
+  featureFlags: true</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_feature_flags_modes"><a class="anchor" href="#_feature_flags_modes"></a>Feature Flags Modes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_local"><a class="anchor" href="#_local"></a>local</h3>
+<div class="paragraph">
+<p>In local mode, the <strong>Feature Flags Provider</strong> will provision an Unleash server. This
+instance will be created when the <code>ClowdEnv</code> is deployed.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_generated_app_configuration"><a class="anchor" href="#_generated_app_configuration"></a>Generated App Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Feature Flags configuration appears in the cdappconfig.json with the
+following structure.</p>
+</div>
+<div class="sect2">
+<h3 id="_json_structure"><a class="anchor" href="#_json_structure"></a>JSON structure</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "featureFlags": {
+    "hostname": "ff-server.server.example.com",
+    "port": 4242
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_client_access"><a class="anchor" href="#_client_access"></a>Client access</h3>
+<div class="paragraph">
+<p>For supported languages, the feature flags configuration is access via the
+following attribute names.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Language</th>
+<th class="tableblock halign-left valign-top">Attribute Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Python</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.featureFlags</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Go</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.featureFlags</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Javscript</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.featureFlags</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ruby</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.featureFlags</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_clowdenv_configuration"><a class="anchor" href="#_clowdenv_configuration"></a>ClowdEnv Configuration</h3>
+<div class="paragraph">
+<p>Configuring the <strong>Feature Flags Provider</strong> is done by providing the follow JSON
+structure to the <code>ClowdEnv</code> resource. Further details of the options
+available can be found in the API reference. A minimal example is shown below
+for the <code>local</code> mode. Different modes can use different configuration
+options, more information can be found in the API reference.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvivonment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    featureFlags:
+      mode: local
+      pvc: false</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../../_/js/site.js"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
