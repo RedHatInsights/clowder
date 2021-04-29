@@ -45,9 +45,15 @@ func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdAp
 	}
 
 	if deployment.WebServices.Private.Enabled {
+		privatePort := web.Env.Spec.Providers.Web.PrivatePort
+
+		if privatePort == 0 {
+			privatePort = 10000
+		}
+
 		webPort := core.ServicePort{
 			Name:        "private",
-			Port:        web.Env.Spec.Providers.Web.PrivatePort,
+			Port:        privatePort,
 			Protocol:    "TCP",
 			AppProtocol: &appProtocol,
 		}
@@ -57,7 +63,7 @@ func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdAp
 		containerPorts = append(containerPorts,
 			core.ContainerPort{
 				Name:          "private",
-				ContainerPort: web.Env.Spec.Providers.Web.PrivatePort,
+				ContainerPort: privatePort,
 			},
 		)
 	}
