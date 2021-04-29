@@ -193,7 +193,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		if err := r.createIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
-			return ctrl.Result{Requeue: true}, err
+			return ctrl.Result{}, err
 		}
 
 		if err := cache.Update(IqeClowdJob, &j); err != nil {
@@ -362,6 +362,11 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 	plugin := app.Spec.Testing.IqePlugin
 	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
 
+	constructedIqeCommand, err := constructIqeCommand(cji, plugin)
+	if err != nil {
+		return err
+	}
+
 	accessLevel := env.Spec.Providers.Testing.K8SAccessLevel
 
 	switch accessLevel {
@@ -397,13 +402,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 		j.Spec.Template.Spec.ServiceAccountName = appNn.Name
 
 	default:
-		r.Log.Info("default access been selected in the clowdenvironment", "clowdjobinvocation")
-	}
-
-	// var constructedIqeCommand []string
-	constructedIqeCommand, err := constructIqeCommand(cji, plugin)
-	if err != nil {
-		return err
+		r.Log.Info("default access been selected in the clowdenvironment")
 	}
 
 	c := core.Container{
@@ -461,7 +460,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 		})
 
 	default:
-		r.Log.Info("No config mounted to the iqe pod", "clowdjobinvocation")
+		r.Log.Info("No config mounted to the iqe pod")
 	}
 
 	j.Spec.Template.Spec.Containers = []core.Container{c}
