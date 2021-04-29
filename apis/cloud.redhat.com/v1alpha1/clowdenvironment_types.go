@@ -72,7 +72,7 @@ type MetricsConfig struct {
 // TODO: Other potential mode: saas
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
-// +kubebuilder:validation:Enum=operator;app-interface;local;none
+// +kubebuilder:validation:Enum=managed;operator;app-interface;local;none
 type KafkaMode string
 
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
@@ -118,6 +118,14 @@ type KafkaConnectClusterConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
+type NamespacedName struct {
+	// Name defines the Name of a resource.
+	Name string `json:"name"`
+
+	// Namespace defines the Namespace of a resource.
+	Namespace string `json:"namespace"`
+}
+
 // KafkaConfig configures the Clowder provider controlling the creation of
 // Kafka instances.
 type KafkaConfig struct {
@@ -142,6 +150,9 @@ type KafkaConfig struct {
 
 	// Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode.
 	Connect KafkaConnectClusterConfig `json:"connect,omitempty"`
+
+	// Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode.
+	ManagedSecretRef NamespacedName `json:"managedSecretRef,omitempty"`
 
 	// (Deprecated) Defines the cluster name to be used by the Kafka Provider this will
 	// be used in some modes to locate the Kafka instance.

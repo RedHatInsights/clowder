@@ -34,6 +34,8 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewLocalKafka(c)
 	case "app-interface":
 		return NewAppInterface(c)
+	case "managed":
+		return NewManagedKafka(c)
 	case "none", "":
 		return NewNoneKafka(c)
 	default:

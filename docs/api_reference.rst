@@ -477,6 +477,7 @@ Appears In:
    "``pvc`` (boolean)", "If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned Kafka instance to use a PVC instead of emptyDir for its volumes."
    "``cluster`` (:ref:`KafkaClusterConfig`)", "Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode."
    "``connect`` (:ref:`KafkaConnectClusterConfig`)", "Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode."
+   "``managedSecretRef`` (:ref:`NamespacedName`)", "Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode."
    "``clusterName`` (string)", "(Deprecated) Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance."
    "``namespace`` (string)", "(Deprecated) The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
    "``connectNamespace`` (string)", "(Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
@@ -567,6 +568,25 @@ Appears In:
 
 
 
+
+
+.. _NamespacedName :
+
+NamespacedName 
+^^^^^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`KafkaConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``name`` (string)", "Name defines the Name of a resource."
+   "``namespace`` (string)", "Namespace defines the Namespace of a resource."
 
 
 .. _ObjectStoreConfig :
