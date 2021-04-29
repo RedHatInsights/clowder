@@ -50,9 +50,44 @@ spec:
               items:
                 type: string
               type: array
+            testing:
+              description: Testing is the struct for building out test jobs (iqe,
+                etc) in a CJI
+              properties:
+                iqe:
+                  description: Iqe is the job spec to override defaults from the ClowdApp's
+                    definition of the job
+                  properties:
+                    dynaconfEnvName:
+                      description: sets value for ENV_FOR_DYNACONF
+                      type: string
+                    filter:
+                      description: sets pytest -k args
+                      type: string
+                    imageTag:
+                      description: By default, Clowder will set the image on the ClowdJob
+                        to be the baseImage:name-of-iqe-plugin, but only the tag can
+                        be overridden here
+                      type: string
+                    marker:
+                      description: sets the pytest -m args
+                      type: string
+                    ui:
+                      description: 'Indiciates the presence of a selenium container
+                        Note: currently not implemented'
+                      properties:
+                        enabled:
+                          description: Indiciates the presence of a selenium container
+                          type: boolean
+                      required:
+                      - enabled
+                      type: object
+                  required:
+                  - dynaconfEnvName
+                  type: object
+              type: object
           required:
           - appName
-          - jobs
           type: object
         status:
           description: ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation

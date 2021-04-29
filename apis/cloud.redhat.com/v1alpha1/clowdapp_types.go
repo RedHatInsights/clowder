@@ -118,7 +118,7 @@ type WebServices struct {
 }
 
 // K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'
-// +kubebuilder:validation:Enum=default;view;edit
+// +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
@@ -250,6 +250,10 @@ type KafkaTopicSpec struct {
 	TopicName string `json:"topicName"`
 }
 
+type TestingSpec struct {
+	IqePlugin string `json:"iqePlugin"`
+}
+
 // ClowdAppSpec is the main specification for a single Clowder Application
 // it defines n pods along with dependencies that are shared between them.
 type ClowdAppSpec struct {
@@ -296,6 +300,9 @@ type ClowdAppSpec struct {
 	// A list of optional dependencies in the form of the name of the ClowdApps that are
 	// will be added to the configuration when present.
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
+
+	// Iqe plugin and other specifics
+	Testing TestingSpec `json:"testing,omitempty"`
 
 	// Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has
 	// the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline
@@ -529,5 +536,5 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 			return &refApp, nil
 		}
 	}
-	return nil, errors.New("Could not get app for db in env")
+	return nil, errors.New("could not get app for db in env")
 }
