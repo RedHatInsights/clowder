@@ -200,6 +200,20 @@ spec:
                     enableLegacyStrimzi:
                       description: EnableLegacyStrimzi disables TLS + user auth
                       type: boolean
+                    managedSecretRef:
+                      description: Defines the secret reference for the Managed Kafka
+                        mode. Only used in (*_managed_*) mode.
+                      properties:
+                        name:
+                          description: Name defines the Name of a resource.
+                          type: string
+                        namespace:
+                          description: Namespace defines the Namespace of a resource.
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
                     mode:
                       description: 'The mode of operation of the Clowder Kafka Provider.
                         Valid options are: (*_operator_*) which provisions Strimzi
@@ -211,6 +225,7 @@ spec:
                         small instance of Kafka is created in the desired cluster
                         namespace and configured to auto-create topics.'
                       enum:
+                      - managed
                       - operator
                       - app-interface
                       - local
