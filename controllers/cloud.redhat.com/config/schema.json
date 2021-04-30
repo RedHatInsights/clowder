@@ -171,7 +171,6 @@
                     "enum": ["mtls", "sasl"]
                 },
                 "sasl": {
-                    "type": "object",
                     "$ref": "#/definitions/KafkaSASLConfig"
                 }
             },
