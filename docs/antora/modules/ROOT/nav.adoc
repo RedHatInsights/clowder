@@ -14,3 +14,4 @@
 ** xref:providers/serviceaccount.adoc[Service Accounts]
 ** xref:providers/servicemesh.adoc[Service Mesh]
 ** xref:providers/web.adoc[Web]
+* xref:api_reference.adoc[API Reference]
