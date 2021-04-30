@@ -242,9 +242,6 @@ type PrivateDependencyEndpoint struct {
 
 // Topic Configuration
 type TopicConfig struct {
-	// Defines the consumer group that should be used for the topic.
-	ConsumerGroup *string `json:"consumerGroup,omitempty"`
-
 	// The name of the actual topic on the Kafka server.
 	Name string `json:"name"`
 
