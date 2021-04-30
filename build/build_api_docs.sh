@@ -6,7 +6,7 @@ set -e
 if [ ! -d docs/build/crd-ref-docs ]; then
 	echo "You don't have crd-ref-docs, installing it..."
 	mkdir -p docs/build/crd-ref-docs
-	git clone --branch psav/add_rst_template https://github.com/psav/crd-ref-docs.git docs/build/crd-ref-docs
+	git clone https://github.com/elastic/crd-ref-docs.git docs/build/crd-ref-docs
 	cd docs/build/crd-ref-docs
 	go install
 	cd -
@@ -28,9 +28,5 @@ if ! command -v asciidoctor; then
 fi
 
 crd-ref-docs --source-path=./apis --config=docs/build/crd-ref-docs/config.yaml \
-	--renderer=restructuredtext --templates-dir=docs/build/crd-ref-docs/templates/restructuredtext \
-	--output-path=api_reference.rst
-
-LINES_CHANGED=$(diff api_reference.rst docs/api_reference.rst --changed-group-format='%>' --unchanged-group-format='' | wc -l)
-
-mv api_reference.rst docs/
+	--renderer=asciidoctor --templates-dir=docs/build/crd-ref-docs/templates/asciidoctor \
+	--output-path=docs/antora/modules/ROOT/pages/api_reference.adoc
