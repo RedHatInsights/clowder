@@ -23,18 +23,20 @@ var CoreConfigSecret = providers.NewSingleResourceIdent(ProvName, "core_config_s
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	appList := &crd.ClowdAppList{}
-	if err := p.Env.GetAppsInEnv(p.Ctx, p.Client, appList); err != nil {
+	var appList *crd.ClowdAppList
+	var err error
+
+	if appList, err = p.Env.GetAppsInEnv(p.Ctx, p.Client); err != nil {
 		return nil, err
 	}
 
-	namespaceList := map[string]bool{}
+	namespaceSet := map[string]bool{}
 
 	for _, app := range appList.Items {
-		namespaceList[app.Namespace] = true
+		namespaceSet[app.Namespace] = true
 	}
 
-	secList, err := copyPullSecrets(p, namespaceList)
+	secList, err := copyPullSecrets(p, namespaceSet)
 
 	if err != nil {
 		return nil, err
@@ -58,30 +60,26 @@ func copyPullSecrets(prov *providers.Provider, namespaceList map[string]bool) ([
 	var secList []string
 
 	for _, pullSecretName := range prov.Env.Spec.Providers.PullSecrets {
-		for namespace := range namespaceList {
-			if namespace == pullSecretName.Namespace {
-				secList = append(secList, pullSecretName.Name)
-				continue
-			}
 
-			sourcePullSecObj := &core.Secret{}
-			if err := prov.Client.Get(prov.Ctx, types.NamespacedName{
-				Name:      pullSecretName.Name,
-				Namespace: pullSecretName.Namespace,
-			}, sourcePullSecObj); err != nil {
-				return nil, err
-			}
+		sourcePullSecObj := &core.Secret{}
+		if err := prov.Client.Get(prov.Ctx, types.NamespacedName{
+			Name:      pullSecretName.Name,
+			Namespace: pullSecretName.Namespace,
+		}, sourcePullSecObj); err != nil {
+			return nil, err
+		}
+
+		secName := fmt.Sprintf("%s-%s-clowder-copy", prov.Env.Name, pullSecretName.Name)
+		secList = append(secList, secName)
+
+		for namespace := range namespaceList {
 
 			newPullSecObj := &core.Secret{}
-
-			secName := fmt.Sprintf("%s-clowder-copy", pullSecretName.Name)
 
 			newSecNN := types.NamespacedName{
 				Name:      secName,
 				Namespace: namespace,
 			}
-
-			secList = append(secList, secName)
 
 			labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
 
