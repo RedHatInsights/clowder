@@ -26,7 +26,6 @@ import (
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
-	rbac "k8s.io/api/rbac/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,8 +40,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
-	svcAccounts "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 
@@ -61,8 +58,6 @@ type ClowdJobInvocationReconciler struct {
 var IqeClowdJob = providers.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
 var ClowdJob = providers.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
 var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
-var IqeRoleBinding = providers.NewSingleResourceIdent("cji", "iqe_role_binding", &rbac.RoleBinding{})
-var IqeServiceAccount = providers.NewSingleResourceIdent("cji", "iqe_service_account", &core.ServiceAccount{})
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
@@ -367,43 +362,7 @@ func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.Obj
 		return err
 	}
 
-	accessLevel := env.Spec.Providers.Testing.K8SAccessLevel
-
-	switch accessLevel {
-	// Use edit level service account to create and delete resources
-	// one per app when the app is created
-	case "edit":
-		labeler := utils.GetCustomLabeler(nil, nn, cji)
-		if err := svcAccounts.CreateServiceAccount(cache, IqeServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
-			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", nn.Name)
-			return err
-		}
-		if err := svcAccounts.CreateRoleBinding(cache, IqeRoleBinding, nn, labeler, accessLevel); err != nil {
-			r.Recorder.Eventf(cji, "Warning", "RoleBindingNotCreated", "Unable to create role binding [%s]", nn.Name)
-			return err
-		}
-		j.Spec.Template.Spec.ServiceAccountName = nn.Name
-	// Standard view access to the owned resources
-	case "view":
-		appNn := types.NamespacedName{
-			Name:      fmt.Sprintf("%s-app", app.Name),
-			Namespace: app.Namespace,
-		}
-		labeler := utils.GetCustomLabeler(nil, appNn, cji)
-		if err := svcAccounts.CreateServiceAccount(cache, svcAccounts.CoreAppServiceAccount, env.Spec.Providers.PullSecrets, appNn, labeler); err != nil {
-			r.Recorder.Eventf(cji, "Warning", "ServiceAccountNotCreated", "Unable to create service account [%s]", appNn.Name)
-			return err
-		}
-
-		if err := svcAccounts.CreateRoleBinding(cache, IqeRoleBinding, appNn, labeler, accessLevel); err != nil {
-			r.Recorder.Eventf(cji, "Warning", "RoleBindingNotCreated", "Unable to create role binding [%s]", appNn.Name)
-			return err
-		}
-		j.Spec.Template.Spec.ServiceAccountName = appNn.Name
-
-	default:
-		r.Log.Info("default access been selected in the clowdenvironment")
-	}
+	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
 
 	c := core.Container{
 		Name:         nn.Name,

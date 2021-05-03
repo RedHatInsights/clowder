@@ -21,6 +21,12 @@ var CoreAppServiceAccount = providers.NewSingleResourceIdent(ProvName, "core_app
 // CoreEnvServiceAccount is the serviceaccount for the env.
 var CoreEnvServiceAccount = providers.NewSingleResourceIdent(ProvName, "core_env_service_account", &core.ServiceAccount{})
 
+// CoreEnvServiceAccount is the serviceaccount for the env.
+var IQEServiceAccount = providers.NewMultiResourceIdent(ProvName, "iqe_service_account", &core.ServiceAccount{})
+
+// CoreEnvServiceAccount is the serviceaccount for the env.
+var IQERoleBinding = providers.NewMultiResourceIdent(ProvName, "iqe_role_binding", &core.ServiceAccount{})
+
 // GetEnd returns the correct end provider.
 func GetServiceAccount(c *providers.Provider) (providers.ClowderProvider, error) {
 	return NewServiceAccountProvider(c)
