@@ -53,6 +53,19 @@ func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, er
 		return nil, err
 	}
 
+	iqeServiceAccounts := &core.ServiceAccountList{}
+	if err := p.Cache.List(serviceaccount.IQEServiceAccount, iqeServiceAccounts); err != nil {
+		return nil, err
+	}
+
+	for _, iqeSA := range iqeServiceAccounts.Items {
+		addAllSecrets(secList, &iqeSA)
+
+		if err := p.Cache.Update(serviceaccount.IQEServiceAccount, &iqeSA); err != nil {
+			return nil, err
+		}
+	}
+
 	return &pullsecretProvider{Provider: *p}, nil
 }
 

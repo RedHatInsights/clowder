@@ -121,6 +121,15 @@ type KafkaConnectClusterConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
+// NamespacedName type to represent a real Namespaced Name
+type NamespacedName struct {
+	// Name defines the Name of a resource.
+	Name string `json:"name"`
+
+	// Namespace defines the Namespace of a resource.
+	Namespace string `json:"namespace"`
+}
+
 // KafkaConfig configures the Clowder provider controlling the creation of
 // Kafka instances.
 type KafkaConfig struct {
@@ -317,15 +326,6 @@ type ClowdEnvironmentSpec struct {
 	// Defines the default resource requirements in standard k8s format in the
 	// event that they omitted from a PodSpec inside a ClowdApp.
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
-}
-
-// NamespacedName type to represent a real Namespaced Name
-type NamespacedName struct {
-	// Name defines the Name of a resource.
-	Name string `json:"name"`
-
-	// Namespace defines the Namespace of a resource.
-	Namespace string `json:"namespace"`
 }
 
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.

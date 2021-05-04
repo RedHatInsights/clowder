@@ -88,8 +88,8 @@ type: Opaque
 ---
 apiVersion: v1
 imagePullSecrets:
-- name: test-basic-app-clowder-copy
-- name: test-basic-app-same-ns
+- name: test-basic-app-test-basic-app-clowder-copy
+- name: test-basic-app-test-basic-app-same-ns-clowder-copy
 kind: ServiceAccount
 metadata:
   labels:
