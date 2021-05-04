@@ -43,8 +43,22 @@ var _ webhook.Validator = &ClowdApp{}
 func (r *ClowdApp) ValidateCreate() error {
 	clowdapplog.Info("validate create", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object creation.
-	return nil
+	var allErrs field.ErrorList
+
+	if r.Spec.Database.Name != "" && r.Spec.Database.SharedDBAppName != "" {
+		allErrs = append(allErrs, field.Forbidden(
+			field.NewPath("spec.Database.Name", "spec.Database.SharedDBAppName"), "cannot set db name and sharedDbApp Name together"),
+		)
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{Group: "cloud.redhat.com", Kind: "ClowdApp"},
+		r.Name, allErrs,
+	)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type

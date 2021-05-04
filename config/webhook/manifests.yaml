@@ -13,7 +13,7 @@ webhooks:
       namespace: system
       path: /validate-cloud-redhat-com-v1alpha1-clowdapp
   failurePolicy: Fail
-  name: vclowdapp.kb.io
+  name: vclowdapp.cloud.redhat.com
   rules:
   - apiGroups:
     - cloud.redhat.com

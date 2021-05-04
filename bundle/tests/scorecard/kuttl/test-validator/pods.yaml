@@ -1,0 +1,15 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-validator
+spec:
+  envName: test-validator
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  database:
+    name: billy
+    sharedDbAppName: bobby

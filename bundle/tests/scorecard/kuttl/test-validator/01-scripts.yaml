@@ -1,0 +1,7 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl apply -f pods.yaml --namespace=test-validator 2>&1 | grep "Error from server"
+- script: sleep 20
