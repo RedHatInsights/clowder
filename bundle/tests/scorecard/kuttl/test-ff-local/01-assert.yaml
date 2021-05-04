@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-ff-local
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: featureflags-db
+  namespace: test-ff-local
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ff-local-featureflags
+  namespace: test-ff-local
