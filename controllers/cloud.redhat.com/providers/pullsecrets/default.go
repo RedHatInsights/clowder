@@ -116,21 +116,18 @@ func copyPullSecrets(prov *providers.Provider, namespaceList map[string]bool) ([
 	return secList, nil
 }
 
-func (ps *pullsecretProvider) getSecretList(app *crd.ClowdApp) []string {
+func (ps *pullsecretProvider) getSecretList() []string {
 	secList := []string{}
-	for _, secret := range ps.Env.Spec.Providers.PullSecrets {
-		if secret.Namespace == app.Namespace {
-			secList = append(secList, secret.Name)
-		} else {
-			secList = append(secList, fmt.Sprintf("%s-clowder-copy", secret.Name))
-		}
+	for _, pullSecretName := range ps.Env.Spec.Providers.PullSecrets {
+		secName := fmt.Sprintf("%s-%s-clowder-copy", ps.Env.Name, pullSecretName.Name)
+		secList = append(secList, secName)
 	}
 	return secList
 }
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
-	if err := ps.annotateServiceAccounts(ps.getSecretList(app)); err != nil {
+	if err := ps.annotateServiceAccounts(ps.getSecretList()); err != nil {
 		return err
 	}
 
