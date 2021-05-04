@@ -151,7 +151,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	var requeue = false
 
-	provErr := runProvidersForEnv(provider)
+	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
@@ -218,11 +218,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
-func runProvidersForEnv(provider providers.Provider) error {
+func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		if _, err := provAcc.SetupProvider(&provider); err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order)
 	}
 	return nil
 }
