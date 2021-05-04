@@ -69,6 +69,7 @@ type ClowdEnvironmentReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=serviceaccounts;configmaps;services;persistentvolumeclaims;secrets;events;namespaces,verbs=get;list;watch;create;update;patch;delete
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -241,9 +242,41 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
 			},
 		).
+		Watches(
+			&source.Kind{Type: &core.ConfigMap{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: handler.ToRequestsFunc(r.envConfigMapsUpdated),
+			},
+		).
 		For(&crd.ClowdEnvironment{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "env")).
 		Complete(r)
+}
+
+func (r *ClowdEnvironmentReconciler) envConfigMapsUpdated(a handler.MapObject) []reconcile.Request {
+	ctx := context.Background()
+	apps := &crd.ClowdAppList{}
+
+	options := []client.ListOption{
+		client.InNamespace(a.Meta.GetNamespace()),
+	}
+
+	if err := r.Client.List(ctx, apps, options...); err != nil {
+		return nil
+	}
+
+	requests := []reconcile.Request{}
+
+	for _, app := range apps.Items {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      app.Name,
+				Namespace: app.Namespace,
+			},
+		})
+	}
+
+	return requests
 }
 
 func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObject) []reconcile.Request {
