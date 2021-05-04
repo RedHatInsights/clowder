@@ -1,6 +1,7 @@
 package serviceaccount
 
 import (
+	"fmt"
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -14,6 +15,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type serviceaccountProvider struct {
@@ -21,6 +23,10 @@ type serviceaccountProvider struct {
 }
 
 func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+
+	if err := createIQEServiceAccounts(p, p.Env); err != nil {
+		return nil, err
+	}
 
 	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env, p.Env.Spec.Providers.PullSecrets); err != nil {
 		return nil, err
@@ -102,5 +108,41 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 
 	}
 
+	return nil
+}
+
+func createIQEServiceAccounts(p *providers.Provider, env *crd.ClowdEnvironment) error {
+
+	accessLevel := env.Spec.Providers.Testing.K8SAccessLevel
+
+	namespaces, err := env.GetNamespacesInEnv(p.Ctx, p.Client)
+
+	if err != nil {
+		return err
+	}
+
+	for _, namespace := range namespaces {
+
+		nn := types.NamespacedName{
+			Name:      fmt.Sprintf("iqe-%s", env.Name),
+			Namespace: namespace,
+		}
+
+		labeler := utils.GetCustomLabeler(nil, nn, p.Env)
+		if err := CreateServiceAccount(p.Cache, IQEServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+			return err
+		}
+
+		switch accessLevel {
+		// Use edit level service account to create and delete resources
+		// one per app when the app is created
+		case "edit", "view":
+			if err := CreateRoleBinding(p.Cache, IQERoleBinding, nn, labeler, accessLevel); err != nil {
+				return err
+			}
+
+		default:
+		}
+	}
 	return nil
 }

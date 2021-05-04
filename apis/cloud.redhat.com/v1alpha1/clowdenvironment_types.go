@@ -511,14 +511,41 @@ func (i *ClowdEnvironment) ConvertDeprecatedKafkaSpec() {
 	}
 }
 
-// GetAppInSameEnv populates the appList with a list of all apps in the same ClowdEnvironment. The
-// environment is inferred from the given app.
-func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Client, appList *ClowdAppList) error {
+// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Client) (*ClowdAppList, error) {
+
+	appList := &ClowdAppList{}
+
 	err := pClient.List(ctx, appList, client.MatchingFields{"spec.envName": i.Name})
 
 	if err != nil {
-		return errors.Wrap("could not list apps", err)
+		return appList, errors.Wrap("could not list apps", err)
 	}
 
-	return nil
+	return appList, nil
+}
+
+// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
+
+	var err error
+	var appList *ClowdAppList
+
+	if appList, err = i.GetAppsInEnv(ctx, pClient); err != nil {
+		return nil, err
+	}
+
+	tmpNamespace := map[string]bool{}
+
+	for _, app := range appList.Items {
+		tmpNamespace[app.Namespace] = true
+	}
+
+	namespaceList := []string{}
+
+	for namespace, _ := range tmpNamespace {
+		namespaceList = append(namespaceList, namespace)
+	}
+
+	return namespaceList, nil
 }
