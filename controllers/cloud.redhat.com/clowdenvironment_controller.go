@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -241,19 +242,13 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
 			},
-		).
-		Watches(
-			&source.Kind{Type: &core.ConfigMap{}},
-			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(r.envConfigMapsUpdated),
-			},
+			builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "env")),
 		).
 		For(&crd.ClowdEnvironment{}).
-		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "env")).
 		Complete(r)
 }
 
-func (r *ClowdEnvironmentReconciler) envConfigMapsUpdated(a handler.MapObject) []reconcile.Request {
+func (r *ClowdAppReconciler) envConfigMapsUpdated(a handler.MapObject) []reconcile.Request {
 	ctx := context.Background()
 	apps := &crd.ClowdAppList{}
 
@@ -275,6 +270,7 @@ func (r *ClowdEnvironmentReconciler) envConfigMapsUpdated(a handler.MapObject) [
 			},
 		})
 	}
+	fmt.Printf("TRIGGERING ALLLL Y'ALL APPS %v", requests)
 
 	return requests
 }
