@@ -89,7 +89,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		Port:     4242,
 	}
 
-	provutils.MakeLocalDB(dd, nn, p.Env, &dbCfg, "registry.redhat.io/rhel8/postgresql-12:1-36", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
+	provutils.MakeLocalDB(dd, nn, p.Env, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-1", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
 
 	if err = p.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return nil, err

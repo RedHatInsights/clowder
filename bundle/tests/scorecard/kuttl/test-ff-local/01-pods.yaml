@@ -2,13 +2,12 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-web-services
+  name: test-ff-local
 spec:
-  targetNamespace: test-web-services
+  targetNamespace: test-ff-local
   providers:
     web:
       port: 8000
-      privatePort: 10000
       mode: operator
     metrics:
       port: 9000
@@ -24,6 +23,10 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
+    pullSecrets:
+    - test
+    featureFlags:
+      mode: local
   resourceDefaults:
     limits:
       cpu: 400m
@@ -36,20 +39,11 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-web-services
+  namespace: test-ff-local
 spec:
-  envName: test-web-services
+  envName: test-ff-local
   deployments:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-    webServices:
-      private:
-        enabled: True
-      public:
-        enabled: True
+  featureFlags: true
