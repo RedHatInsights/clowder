@@ -34,6 +34,11 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 		Name:      p.Env.Name,
 		Namespace: p.Env.Status.TargetNamespace,
 	}
+
+	if err := createPrometheusServiceAccount(p.Cache, p.Env); err != nil {
+		return nil, err
+	}
+
 	if err := p.Cache.Create(PrometheusInstance, nn, promObj); err != nil {
 		return nil, err
 	}
@@ -67,10 +72,6 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return err
 	}
 
-	if err := createPrometheusServiceAccount(m.Cache, app); err != nil {
-		return err
-	}
-
 	if err := createPrometheusRoleBinding(m.Cache, app, m.Env); err != nil {
 		return err
 	}
@@ -78,20 +79,20 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 	return nil
 }
 
-func createPrometheusServiceAccount(cache *providers.ObjectCache, app *crd.ClowdApp) error {
+func createPrometheusServiceAccount(cache *providers.ObjectCache, env *crd.ClowdEnvironment) error {
 
 	cr := &core.ServiceAccount{}
 
 	nn := types.NamespacedName{
 		Name:      "prometheus",
-		Namespace: app.Namespace,
+		Namespace: env.Status.TargetNamespace,
 	}
 
 	if err := cache.Create(PrometheusServiceAccount, nn, cr); err != nil {
 		return err
 	}
 
-	labeler := utils.GetCustomLabeler(map[string]string{}, nn, app)
+	labeler := utils.GetCustomLabeler(map[string]string{}, nn, env)
 	labeler(cr)
 
 	if err := cache.Update(PrometheusServiceAccount, cr); err != nil {
@@ -123,7 +124,7 @@ func createPrometheusRoleBinding(cache *providers.ObjectCache, app *crd.ClowdApp
 	crb.Subjects = []rbac.Subject{{
 		Kind:      rbac.ServiceAccountKind,
 		Name:      "prometheus",
-		Namespace: app.GetClowdNamespace(),
+		Namespace: env.GetClowdNamespace(),
 	}}
 
 	labeler := utils.GetCustomLabeler(map[string]string{}, nn, app)
