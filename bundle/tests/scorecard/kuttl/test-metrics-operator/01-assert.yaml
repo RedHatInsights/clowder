@@ -55,7 +55,7 @@ metadata:
   name: puptoo-processor
   namespace: test-metrics-operator
   labels:
-    app: puptoo
+    app: test-metrics-operator
     prometheus: test-metrics-operator
 spec:
   endpoints:
