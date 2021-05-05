@@ -1,0 +1,938 @@
+// Generated documentation. Please do not edit.
+:anchor_prefix: k8s-api
+
+[id="{p}-api-reference"]
+== API Reference
+
+.Packages
+- xref:{anchor_prefix}-cloud-redhat-com-v1alpha1[$$cloud.redhat.com/v1alpha1$$]
+- xref:{anchor_prefix}-cyndi-cloud-redhat-com-v1alpha1[$$cyndi.cloud.redhat.com/v1alpha1$$]
+
+
+[id="{anchor_prefix}-cloud-redhat-com-v1alpha1"]
+=== cloud.redhat.com/v1alpha1
+
+Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alpha1 API group
+
+.Resource Types
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp[$$ClowdApp$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist[$$ClowdAppList$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment[$$ClowdEnvironment$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentlist[$$ClowdEnvironmentList$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation[$$ClowdJobInvocation$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationlist[$$ClowdJobInvocationList$$]
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-appinfo"]
+==== AppInfo 
+
+AppInfo details information about a specific app.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus[$$ClowdEnvironmentStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | 
+| *`deployments`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deploymentinfo[$$DeploymentInfo$$] array__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp"]
+==== ClowdApp 
+
+ClowdApp is the Schema for the clowdapps API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist[$$ClowdAppList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `ClowdApp`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]__ | A ClowdApp specification.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist"]
+==== ClowdAppList 
+
+ClowdAppList contains a list of ClowdApp
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `ClowdAppList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp[$$ClowdApp$$]__ | A list of ClowdApp Resources.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec"]
+==== ClowdAppSpec 
+
+ClowdAppSpec is the main specification for a single Clowder Application it defines n pods along with dependencies that are shared between them.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp[$$ClowdApp$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`deployments`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]__ | A list of deployments
+| *`jobs`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job[$$Job$$]__ | A list of jobs
+| *`pods`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspecdeprecated[$$PodSpecDeprecated$$]__ | Deprecated
+| *`envName`* __string__ | The name of the ClowdEnvironment resource that this ClowdApp will use as its base. This does not mean that the ClowdApp needs to be placed in the same directory as the targetNamespace of the ClowdEnvironment.
+| *`kafkaTopics`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkatopicspec[$$KafkaTopicSpec$$]__ | A list of Kafka topics that will be created and made available to all the pods listed in the ClowdApp.
+| *`database`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databasespec[$$DatabaseSpec$$]__ | The database specification defines a single database, the configuration of which will be made available to all the pods in the ClowdApp.
+| *`objectStore`* __string array__ | A list of string names defining storage buckets. In certain modes, defined by the ClowdEnvironment, Clowder will create those buckets.
+| *`inMemoryDb`* __boolean__ | If inMemoryDb is set to true, Clowder will pass configuration of an In Memory Database to the pods in the ClowdApp. This single instance will be shared between all apps.
+| *`featureFlags`* __boolean__ | If featureFlags is set to true, Clowder will pass configuration of a FeatureFlags instance to the pods in the ClowdApp. This single instance will be shared between all apps.
+| *`dependencies`* __string array__ | A list of dependencies in the form of the name of the ClowdApps that are required to be present for this ClowdApp to function.
+| *`optionalDependencies`* __string array__ | A list of optional dependencies in the form of the name of the ClowdApps that are will be added to the configuration when present.
+| *`testing`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingspec[$$TestingSpec$$]__ | Iqe plugin and other specifics
+| *`cyndi`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-cyndispec[$$CyndiSpec$$]__ | Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline for this app in the environment's kafka-connect namespace. When the kafka provider is in (*_app-interface_*) mode, Clowder will check to ensure that a CyndiPipeline resource exists for the application in the environment's kafka-connect namespace. For all other kafka provider modes, this configuration option has no effect.
+|===
+
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment"]
+==== ClowdEnvironment 
+
+ClowdEnvironment is the Schema for the clowdenvironments API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentlist[$$ClowdEnvironmentList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `ClowdEnvironment`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentspec[$$ClowdEnvironmentSpec$$]__ | A ClowdEnvironmentSpec object.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentlist"]
+==== ClowdEnvironmentList 
+
+ClowdEnvironmentList contains a list of ClowdEnvironment
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `ClowdEnvironmentList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment[$$ClowdEnvironment$$]__ | A list of ClowdEnvironment objects.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentspec"]
+==== ClowdEnvironmentSpec 
+
+ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment[$$ClowdEnvironment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`targetNamespace`* __string__ | TargetNamespace describes the namespace where any generated environmental resources should end up, this is particularly important in (*_local_*) mode.
+| *`providers`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]__ | A ProvidersConfig object, detailing the setup and configuration of all the providers used in this ClowdEnvironment.
+| *`resourceDefaults`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.
+|===
+
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation"]
+==== ClowdJobInvocation 
+
+ClowdJobInvocation is the Schema for the jobinvocations API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationlist[$$ClowdJobInvocationList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `ClowdJobInvocation`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationspec[$$ClowdJobInvocationSpec$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationlist"]
+==== ClowdJobInvocationList 
+
+ClowdJobInvocationList contains a list of ClowdJobInvocation
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `ClowdJobInvocationList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation[$$ClowdJobInvocation$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationspec"]
+==== ClowdJobInvocationSpec 
+
+ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation[$$ClowdJobInvocation$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`appName`* __string__ | Name of the ClowdApp who owns the jobs
+| *`jobs`* __string array__ | Jobs is the set of jobs to be run by the invocation
+| *`testing`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-jobtestingspec[$$JobTestingSpec$$]__ | Testing is the struct for building out test jobs (iqe, etc) in a CJI
+|===
+
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-cyndispec"]
+==== CyndiSpec 
+
+CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the cyndi operator and exposes a limited set of cyndi configuration options
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | 
+| *`appName`* __string__ | 
+| *`insightsOnly`* __boolean__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databaseconfig"]
+==== DatabaseConfig 
+
+DatabaseConfig configures the Clowder provider controlling the creation of Database instances.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __DatabaseMode__ | The mode of operation of the Clowder Database Provider. Valid options are: (*_app-interface_*) where the provider will pass through database credentials found in the secret defined by the database name in the ClowdApp, and (*_local_*) where the provider will spin up a local instance of the database.
+| *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databasespec"]
+==== DatabaseSpec 
+
+DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`version`* __integer__ | Defines the Version of the PostGreSQL database, defaults to 12.
+| *`name`* __string__ | Defines the Name of the database to be created. This will be used as the name of the logical database inside the database server in (*_local_*) mode and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
+| *`sharedDbAppName`* __string__ | Defines the Name of the app to share a database from
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deployment"]
+==== Deployment 
+
+Deployment defines a service running inside a ClowdApp and will output a deployment resource. Only one container per pod is allowed and this is defined in the PodSpec attribute.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Name defines the identifier of a Pod inside the ClowdApp. This name will be used along side the name of the ClowdApp itself to form a <app>-<pod> pattern which will be used for all other created resources and also for some labels. It must be unique within a ClowdApp.
+| *`minReplicas`* __integer__ | Defines the minimum replica count for the pod.
+| *`web`* __WebDeprecated__ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+| *`webServices`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
+| *`podSpec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
+| *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deploymentinfo"]
+==== DeploymentInfo 
+
+DeploymentInfo defailts information about a specific deployment.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-appinfo[$$AppInfo$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | 
+| *`hostname`* __string__ | 
+| *`port`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-featureflagsconfig"]
+==== FeatureFlagsConfig 
+
+FeatureFlagsConfig configures the Clowder provider controlling the creation of FeatureFlag instances.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __FeatureFlagsMode__ | The mode of operation of the Clowder FeatureFlag Provider. Valid options are: (*_app-interface_*) where the provider will pass through credentials to the app configuration, and (*_local_*) where a local Unleash instance will be created.
+| *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig"]
+==== InMemoryDBConfig 
+
+InMemoryDBConfig configures the Clowder provider controlling the creation of InMemoryDB instances.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __InMemoryMode__ | The mode of operation of the Clowder InMemory Provider. Valid options are: (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*) which will search the namespace of the ClowdApp for a secret called 'elasticache'
+| *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-initcontainer"]
+==== InitContainer 
+
+InitContainer is a struct defining a k8s init container. This will be deployed along with the parent pod and is used to carry out one time initialization procedures.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspecdeprecated[$$PodSpecDeprecated$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`command`* __string array__ | A list of commands to run inside the parent Pod.
+| *`args`* __string array__ | A list of args to be passed to the init container.
+| *`inheritEnv`* __boolean__ | If true, inheirts the environment variables from the parent pod. specification
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables used only by the initContainer.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-iqeconfig"]
+==== IqeConfig 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`imageBase`* __string__ | 
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-iqejobspec"]
+==== IqeJobSpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-jobtestingspec[$$JobTestingSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`imageTag`* __string__ | By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here
+| *`ui`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-uispec[$$UiSpec$$]__ | Indiciates the presence of a selenium container Note: currently not implemented
+| *`marker`* __string__ | sets the pytest -m args
+| *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
+| *`filter`* __string__ | sets pytest -k args
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job"]
+==== Job 
+
+Job defines a CronJob as Schedule is required. In the future omitting the Schedule field will allow support for a standard Job resource.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Name defines identifier of the Job. This name will be used to name the CronJob resource, the container will be name identically.
+| *`schedule`* __string__ | Defines the schedule for the job to run
+| *`podSpec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside the CronJob.
+| *`restartPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core[$$RestartPolicy$$]__ | Defines the restart policy for the CronJob, defaults to never
+| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow
+| *`startingDeadlineSeconds`* __integer__ | Defines the StartingDeadlineSeconds for the CronJob
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-jobtestingspec"]
+==== JobTestingSpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationspec[$$ClowdJobInvocationSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`iqe`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-iqejobspec[$$IqeJobSpec$$]__ | Iqe is the job spec to override defaults from the ClowdApp's definition of the job
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaclusterconfig"]
+==== KafkaClusterConfig 
+
+KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig[$$KafkaConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Defines the kafka cluster name
+| *`namespace`* __string__ | The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)
+| *`replicas`* __integer__ | The requested number of replicas for kafka/zookeeper. If unset, default is '1'
+| *`storageSize`* __string__ | Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
+| *`deleteClaim`* __boolean__ | Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'
+| *`version`* __string__ | Version. If unset, default is '2.5.0'
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig"]
+==== KafkaConfig 
+
+KafkaConfig configures the Clowder provider controlling the creation of Kafka instances.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __KafkaMode__ | The mode of operation of the Clowder Kafka Provider. Valid options are: (*_operator_*) which provisions Strimzi resources and will configure KafkaTopic CRs and place them in the Kafka cluster's namespace described in the configuration, (*_app-interface_*) which simply passes the topic names through to the App's cdappconfig.json and expects app-interface to have created the relevant topics, and (*_local_*) where a small instance of Kafka is created in the desired cluster namespace and configured to auto-create topics.
+| *`enableLegacyStrimzi`* __boolean__ | EnableLegacyStrimzi disables TLS + user auth
+| *`pvc`* __boolean__ | If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned Kafka instance to use a PVC instead of emptyDir for its volumes.
+| *`cluster`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaclusterconfig[$$KafkaClusterConfig$$]__ | Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode.
+| *`connect`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconnectclusterconfig[$$KafkaConnectClusterConfig$$]__ | Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode.
+| *`managedSecretRef`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode.
+| *`clusterName`* __string__ | (Deprecated) Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance.
+| *`namespace`* __string__ | (Deprecated) The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
+| *`connectNamespace`* __string__ | (Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
+| *`connectClusterName`* __string__ | (Deprecated) Defines the kafka connect cluster name that is used in this environment.
+| *`suffix`* __string__ | (Deprecated) (Unused)
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconnectclusterconfig"]
+==== KafkaConnectClusterConfig 
+
+KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig[$$KafkaConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Defines the kafka connect cluster name (default: '<kafka cluster's name>-connect')
+| *`namespace`* __string__ | The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace)
+| *`replicas`* __integer__ | The requested number of replicas for kafka connect. If unset, default is '1'
+| *`version`* __string__ | Version. If unset, default is '2.5.0'
+| *`image`* __string__ | Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkatopicspec"]
+==== KafkaTopicSpec 
+
+KafkaTopicSpec defines the desired state of KafkaTopic
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`config`* __object (keys:string, values:string)__ | A key/value pair describing the configuration of a particular topic.
+| *`partitions`* __integer__ | The requested number of partitions for this topic. If unset, default is '3'
+| *`replicas`* __integer__ | The requested number of replicas for this topic. If unset, default is '3'
+| *`topicName`* __string__ | The requested name for this topic.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-loggingconfig"]
+==== LoggingConfig 
+
+LoggingConfig configures the Clowder provider controlling the creation of Logging instances.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __LoggingMode__ | The mode of operation of the Clowder Logging Provider. Valid options are: (*_app-interface_*) where the provider will pass through cloudwatch credentials to the app configuration, and (*_none_*) where no logging will be configured.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-metricsconfig"]
+==== MetricsConfig 
+
+MetricsConfig configures the Clowder provider controlling the creation of metrics services and their probes.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`port`* __integer__ | The port that metrics services inside ClowdApp pods should be served on.
+| *`path`* __string__ | A prefix path that pods will be instructed to use when setting up their metrics server.
+| *`mode`* __MetricsMode__ | The mode of operation of the Metrics provider. The allowed modes are  (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated.
+|===
+
+
+
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname"]
+==== NamespacedName 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig[$$KafkaConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Name defines the Name of a resource.
+| *`namespace`* __string__ | Namespace defines the Namespace of a resource.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-objectstoreconfig"]
+==== ObjectStoreConfig 
+
+ObjectStoreConfig configures the Clowder provider controlling the creation of ObjectStore instances.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __ObjectStoreMode__ | The mode of operation of the Clowder ObjectStore Provider. Valid options are: (*_app-interface_*) where the provider will pass through Amazon S3 credentials to the app configuration, and (*_minio_*) where a local Minio instance will be created.
+| *`suffix`* __string__ | Currently unused.
+| *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspec"]
+==== PodSpec 
+
+PodSpec defines a container running inside a ClowdApp.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job[$$Job$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`image`* __string__ | Image refers to the container image used to create the pod.
+| *`initContainers`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$]__ | A list of init containers used to perform at-startup operations.
+| *`command`* __string array__ | The command that will be invoked inside the pod at startup.
+| *`args`* __string array__ | A list of args to be passed to the pod container.
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$]__ | A list of environment variables in k8s defined format.
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
+| *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Liveness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
+| *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
+| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core[$$Volume$$] array__ | A pass-through of a list of Volumes in standa k8s format.
+| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspecdeprecated"]
+==== PodSpecDeprecated 
+
+PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | 
+| *`web`* __WebDeprecated__ | 
+| *`minReplicas`* __integer__ | 
+| *`image`* __string__ | 
+| *`initContainers`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$]__ | 
+| *`command`* __string array__ | 
+| *`args`* __string array__ | 
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$]__ | 
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | 
+| *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | 
+| *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | 
+| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core[$$Volume$$]__ | 
+| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core[$$VolumeMount$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-privatewebservice"]
+==== PrivateWebService 
+
+PrivateWebService is the definition of the private web service. There can be only one private service managed by Clowder.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Enabled describes if Clowder should enable the private service and provide the configuration in the cdappconfig.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig"]
+==== ProvidersConfig 
+
+ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentspec[$$ClowdEnvironmentSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`db`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-databaseconfig[$$DatabaseConfig$$]__ | Defines the Configuration for the Clowder Database Provider.
+| *`inMemoryDb`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig[$$InMemoryDBConfig$$]__ | Defines the Configuration for the Clowder InMemoryDB Provider.
+| *`kafka`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig[$$KafkaConfig$$]__ | Defines the Configuration for the Clowder Kafka Provider.
+| *`logging`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-loggingconfig[$$LoggingConfig$$]__ | Defines the Configuration for the Clowder Logging Provider.
+| *`metrics`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-metricsconfig[$$MetricsConfig$$]__ | Defines the Configuration for the Clowder Metrics Provider.
+| *`objectStore`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-objectstoreconfig[$$ObjectStoreConfig$$]__ | Defines the Configuration for the Clowder ObjectStore Provider.
+| *`web`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]__ | Defines the Configuration for the Clowder Web Provider.
+| *`featureFlags`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-featureflagsconfig[$$FeatureFlagsConfig$$]__ | Defines the Configuration for the Clowder FeatureFlags Provider.
+| *`serviceMesh`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig[$$ServiceMeshConfig$$]__ | Defines the Configuration for the Clowder ServiceMesh Provider.
+| *`pullSecrets`* __string array__ | Defines the pull secret to use for the service accounts.
+| *`testing`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]__ | Defines the environment for iqe/smoke testing
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-publicwebservice"]
+==== PublicWebService 
+
+PublicWebService is the definition of the public web service. There can be only one public service managed by Clowder.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
+|===
+
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig"]
+==== ServiceMeshConfig 
+
+ServiceMeshConfig determines if this env should be part of a service mesh and, if enabled, configures the service mesh
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __ServiceMeshMode__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingconfig"]
+==== TestingConfig 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`iqe`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-iqeconfig[$$IqeConfig$$]__ | Defines the environment for iqe/smoke testing
+| *`k8sAccessLevel`* __K8sAccessLevel__ | The mode of operation of the testing Pod. Valid options are: 'default', 'view' or 'edit'
+| *`configAccess`* __ConfigAccessMode__ | The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingspec"]
+==== TestingSpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`iqePlugin`* __string__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-uispec"]
+==== UiSpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-iqejobspec[$$IqeJobSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Indiciates the presence of a selenium container
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webconfig"]
+==== WebConfig 
+
+WebConfig configures the Clowder provider controlling the creation of web services and their probes.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`port`* __integer__ | The port that web services inside ClowdApp pods should be served on.
+| *`privatePort`* __integer__ | The private port that web services inside a ClowdApp should be served on.
+| *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.
+| *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*), which disables web service generation, or (*_operator_*) where services and probes are generated.
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webservices"]
+==== WebServices 
+
+WebServices defines the structs for the three exposed web services: public, private and metrics.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`public`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-publicwebservice[$$PublicWebService$$]__ | 
+| *`private`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-privatewebservice[$$PrivateWebService$$]__ | 
+| *`metrics`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-metricswebservice[$$MetricsWebService$$]__ | 
+|===
+
+
+
+[id="{anchor_prefix}-cyndi-cloud-redhat-com-v1alpha1"]
+=== cyndi.cloud.redhat.com/v1alpha1
+
+Package v1alpha1 contains API Schema definitions for the cyndi v1alpha1 API group
+
+.Resource Types
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline[$$CyndiPipeline$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinelist[$$CyndiPipelineList$$]
+
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline"]
+==== CyndiPipeline 
+
+CyndiPipeline is the Schema for the cyndipipelines API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinelist[$$CyndiPipelineList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cyndi.cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `CyndiPipeline`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinespec[$$CyndiPipelineSpec$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinelist"]
+==== CyndiPipelineList 
+
+CyndiPipelineList contains a list of CyndiPipeline
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `cyndi.cloud.redhat.com/v1alpha1`
+| *`kind`* __string__ | `CyndiPipelineList`
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline[$$CyndiPipeline$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipelinespec"]
+==== CyndiPipelineSpec 
+
+CyndiPipelineSpec defines the desired state of CyndiPipeline
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cyndi-operator-v1alpha1-cyndipipeline[$$CyndiPipeline$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`appName`* __string__ | 
+| *`insightsOnly`* __boolean__ | 
+| *`connectCluster`* __string__ | 
+| *`maxAge`* __integer__ | 
+| *`validationThreshold`* __integer__ | 
+| *`topic`* __string__ | 
+| *`dbSecret`* __string__ | 
+| *`inventoryDbSecret`* __string__ | 
+|===
+
+
+
+

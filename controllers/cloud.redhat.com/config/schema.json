@@ -171,7 +171,6 @@
                     "enum": ["mtls", "sasl"]
                 },
                 "sasl": {
-                    "type": "object",
                     "$ref": "#/definitions/KafkaSASLConfig"
                 }
             },
@@ -190,10 +189,6 @@
                 },
                 "name": {
                     "description": "The name of the actual topic on the Kafka server.",
-                    "type": "string"
-                },
-                "consumerGroup": {
-                    "description": "Defines the consumer group that should be used for the topic.",
                     "type": "string"
                 }
             },

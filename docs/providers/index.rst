@@ -16,9 +16,17 @@ properly.
     :caption: Reference Guides
     :maxdepth: 1
 
-    kafka
+    confighash
+    cronjob
     database
+    dependencies
+    deployment
+    kafka
     featureflags
     inmemorydb
     logging
+    metrics
     objectstore
+    serviceaccount
+    servicemesh
+    web

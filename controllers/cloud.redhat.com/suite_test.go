@@ -250,6 +250,13 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 				FeatureFlags: crd.FeatureFlagsConfig{
 					Mode: "none",
 				},
+				Testing: crd.TestingConfig{
+					ConfigAccess:   "environment",
+					K8SAccessLevel: "edit",
+					Iqe: crd.IqeConfig{
+						ImageBase: "quay.io/cloudservices/iqe-tests",
+					},
+				},
 			},
 			TargetNamespace: objMeta.Namespace,
 		},

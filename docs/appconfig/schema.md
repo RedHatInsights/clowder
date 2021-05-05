@@ -580,7 +580,6 @@ Reference this group by using
 | :------------------------------ | -------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [requestedName](#requestedname) | `string` | Required | cannot be null | [AppConfig](schema-definitions-topicconfig-properties-requestedname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/requestedName") |
 | [name](#name)                   | `string` | Required | cannot be null | [AppConfig](schema-definitions-topicconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/name")                   |
-| [consumerGroup](#consumergroup) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-topicconfig-properties-consumergroup.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/consumerGroup") |
 
 ### requestedName
 
@@ -611,22 +610,6 @@ The name of the actual topic on the Kafka server.
 -   defined in: [AppConfig](schema-definitions-topicconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/name")
 
 #### name Type
-
-`string`
-
-### consumerGroup
-
-Defines the consumer group that should be used for the topic.
-
-
-`consumerGroup`
-
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-topicconfig-properties-consumergroup.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/consumerGroup")
-
-#### consumerGroup Type
 
 `string`
 

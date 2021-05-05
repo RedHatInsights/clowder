@@ -115,6 +115,7 @@ Appears In:
    "``featureFlags`` (boolean)", "If featureFlags is set to true, Clowder will pass configuration of a FeatureFlags instance to the pods in the ClowdApp. This single instance will be shared between all apps."
    "``dependencies`` (string array)", "A list of dependencies in the form of the name of the ClowdApps that are required to be present for this ClowdApp to function."
    "``optionalDependencies`` (string array)", "A list of optional dependencies in the form of the name of the ClowdApps that are will be added to the configuration when present."
+   "``testing`` (:ref:`TestingSpec`)", "Iqe plugin and other specifics"
    "``cyndi`` (:ref:`CyndiSpec`)", "Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline for this app in the environment's kafka-connect namespace. When the kafka provider is in (*_app-interface_*) mode, Clowder will check to ensure that a CyndiPipeline resource exists for the application in the environment's kafka-connect namespace. For all other kafka provider modes, this configuration option has no effect."
 
 
@@ -245,6 +246,7 @@ Appears In:
 
    "``appName`` (string)", "Name of the ClowdApp who owns the jobs"
    "``jobs`` (string array)", "Jobs is the set of jobs to be run by the invocation"
+   "``testing`` (:ref:`JobTestingSpec`)", "Testing is the struct for building out test jobs (iqe, etc) in a CJI"
 
 
 
@@ -411,6 +413,47 @@ Appears In:
    "``env`` (`EnvVar <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core>`_ array)", "A list of environment variables used only by the initContainer."
 
 
+.. _IqeConfig :
+
+IqeConfig 
+^^^^^^^^^
+
+
+
+Appears In:
+:ref:`TestingConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``imageBase`` (string)", ""
+   "``resources`` (`ResourceRequirements <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core>`_)", "A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used."
+
+
+.. _IqeJobSpec :
+
+IqeJobSpec 
+^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`JobTestingSpec`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``imageTag`` (string)", "By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here"
+   "``ui`` (:ref:`UiSpec`)", "Indiciates the presence of a selenium container Note: currently not implemented"
+   "``marker`` (string)", "sets the pytest -m args"
+   "``dynaconfEnvName`` (string)", "sets value for ENV_FOR_DYNACONF"
+   "``filter`` (string)", "sets pytest -k args"
+
+
 .. _Job :
 
 Job 
@@ -432,6 +475,24 @@ Appears In:
    "``restartPolicy`` (`RestartPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core>`_)", "Defines the restart policy for the CronJob, defaults to never"
    "``concurrencyPolicy`` (`ConcurrencyPolicy <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch>`_)", "Defines the concurrency policy for the CronJob, defaults to Allow"
    "``startingDeadlineSeconds`` (integer)", "Defines the StartingDeadlineSeconds for the CronJob"
+
+
+.. _JobTestingSpec :
+
+JobTestingSpec 
+^^^^^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`ClowdJobInvocationSpec`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``iqe`` (:ref:`IqeJobSpec`)", "Iqe is the job spec to override defaults from the ClowdApp's definition of the job"
 
 
 .. _KafkaClusterConfig :
@@ -477,6 +538,7 @@ Appears In:
    "``pvc`` (boolean)", "If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned Kafka instance to use a PVC instead of emptyDir for its volumes."
    "``cluster`` (:ref:`KafkaClusterConfig`)", "Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode."
    "``connect`` (:ref:`KafkaConnectClusterConfig`)", "Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode."
+   "``managedSecretRef`` (:ref:`NamespacedName`)", "Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode."
    "``clusterName`` (string)", "(Deprecated) Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance."
    "``namespace`` (string)", "(Deprecated) The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
    "``connectNamespace`` (string)", "(Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes."
@@ -568,6 +630,25 @@ Appears In:
 
 
 
+
+
+.. _NamespacedName :
+
+NamespacedName 
+^^^^^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`KafkaConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``name`` (string)", "Name defines the Name of a resource."
+   "``namespace`` (string)", "Namespace defines the Namespace of a resource."
 
 
 .. _ObjectStoreConfig :
@@ -709,6 +790,7 @@ Appears In:
    "``featureFlags`` (:ref:`FeatureFlagsConfig`)", "Defines the Configuration for the Clowder FeatureFlags Provider."
    "``serviceMesh`` (:ref:`ServiceMeshConfig`)", "Defines the Configuration for the Clowder ServiceMesh Provider."
    "``pullSecrets`` (string array)", "Defines the pull secret to use for the service accounts."
+   "``testing`` (:ref:`TestingConfig`)", "Defines the environment for iqe/smoke testing"
 
 
 .. _PublicWebService :
@@ -747,6 +829,62 @@ Appears In:
    :widths: 10, 40
 
    "``mode`` (ServiceMeshMode)", ""
+
+
+.. _TestingConfig :
+
+TestingConfig 
+^^^^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`ProvidersConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``iqe`` (:ref:`IqeConfig`)", "Defines the environment for iqe/smoke testing"
+   "``k8sAccessLevel`` (K8sAccessLevel)", "The mode of operation of the testing Pod. Valid options are: 'default', 'view' or 'edit'"
+   "``configAccess`` (ConfigAccessMode)", "The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted"
+
+
+.. _TestingSpec :
+
+TestingSpec 
+^^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`ClowdAppSpec`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``iqePlugin`` (string)", ""
+
+
+.. _UiSpec :
+
+UiSpec 
+^^^^^^
+
+
+
+Appears In:
+:ref:`IqeJobSpec`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``enabled`` (boolean)", "Indiciates the presence of a selenium container"
 
 
 .. _WebConfig :

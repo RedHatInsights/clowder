@@ -113,6 +113,7 @@ spec:
                     enum:
                     - default
                     - view
+                    - ""
                     - edit
                     type: string
                   minReplicas:
@@ -6632,6 +6633,14 @@ spec:
                 - name
                 type: object
               type: array
+            testing:
+              description: Iqe plugin and other specifics
+              properties:
+                iqePlugin:
+                  type: string
+              required:
+              - iqePlugin
+              type: object
           required:
           - envName
           type: object

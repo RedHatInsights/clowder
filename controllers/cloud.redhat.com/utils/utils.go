@@ -215,7 +215,7 @@ func PointTrue() *bool {
 
 // MakeLabeler creates a function that will label objects with metadata from
 // the given namespaced name and labels
-func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.ClowdObject) func(metav1.Object) {
+func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.LabeledClowdObject) func(metav1.Object) {
 	return func(o metav1.Object) {
 		o.SetName(nn.Name)
 		o.SetNamespace(nn.Namespace)
@@ -226,7 +226,7 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.Clow
 
 // GetCustomLabeler takes a set of labels and returns a labeler function that
 // will apply those labels to a reource.
-func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
+func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.LabeledClowdObject) func(metav1.Object) {
 	appliedLabels := baseResource.GetLabels()
 	for k, v := range labels {
 		appliedLabels[k] = v

@@ -171,7 +171,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	var requeue = false
 
-	provErr := r.runProviders(&provider, &app)
+	provErr := r.runProviders(log, &provider, &app)
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
@@ -429,11 +429,12 @@ func contains(list []string, s string) bool {
 	return false
 }
 
-func (r *ClowdAppReconciler) runProviders(provider *providers.Provider, a *crd.ClowdApp) error {
+func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.Provider, a *crd.ClowdApp) error {
 
 	c := config.AppConfig{}
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		prov, err := provAcc.SetupProvider(provider)
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
@@ -444,6 +445,7 @@ func (r *ClowdAppReconciler) runProviders(provider *providers.Provider, a *crd.C
 			reterr.Requeue = true
 			return reterr
 		}
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order)
 	}
 
 	return nil
