@@ -20,7 +20,7 @@ func (m *appinterfaceMetricsProvider) Provide(app *crd.ClowdApp, c *config.AppCo
 		return err
 	}
 
-	if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, "app-sre", "openshift-customer-monitoring", true); err != nil {
+	if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, "app-sre", "openshift-customer-monitoring"); err != nil {
 		return err
 	}
 

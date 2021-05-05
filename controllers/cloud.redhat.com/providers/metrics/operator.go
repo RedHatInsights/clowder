@@ -68,7 +68,7 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return err
 	}
 
-	if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, m.Env.Name, app.Namespace, false); err != nil {
+	if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
 		return err
 	}
 

@@ -69,7 +69,7 @@ func createMetricsOnDeployments(cache *providers.ObjectCache, env *crd.ClowdEnvi
 	return nil
 }
 
-func createServiceMonitorObjects(cache *providers.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig, promLabel string, namespace string, envOwned bool) error {
+func createServiceMonitorObjects(cache *providers.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig, promLabel string, namespace string) error {
 	for _, deployment := range app.Spec.Deployments {
 		sm := &prom.ServiceMonitor{}
 		name := fmt.Sprintf("%s-%s", app.Name, deployment.Name)
@@ -100,11 +100,7 @@ func createServiceMonitorObjects(cache *providers.ObjectCache, env *crd.ClowdEnv
 
 		var labeler func(v1.Object)
 
-		if envOwned {
-			labeler = utils.GetCustomLabeler(map[string]string{"prometheus": promLabel}, nn, env)
-		} else {
-			labeler = utils.GetCustomLabeler(map[string]string{"prometheus": promLabel}, nn, app)
-		}
+		labeler = utils.GetCustomLabeler(map[string]string{"prometheus": promLabel}, nn, env)
 		labeler(sm)
 
 		sm.SetNamespace(namespace)
