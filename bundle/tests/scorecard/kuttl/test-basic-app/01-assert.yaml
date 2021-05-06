@@ -77,7 +77,25 @@ data:
   endpoint: dGVzdC1lbmRwb2ludA==
 kind: Secret
 metadata:
-  name: test-basic-app-clowder-copy
+  name: test-basic-app-test-basic-app-clowder-copy
+  namespace: test-basic-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-basic-app
+type: Opaque
+---
+apiVersion: v1
+data:
+  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
+  aws_region: dXMtZWFzdA==
+  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
+  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
+  endpoint: dGVzdC1lbmRwb2ludA==
+kind: Secret
+metadata:
+  name: test-basic-app-test-basic-app-same-ns-clowder-copy
   namespace: test-basic-app
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
