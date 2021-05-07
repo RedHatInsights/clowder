@@ -8,7 +8,7 @@ require (
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
-	github.com/prometheus/client_golang v1.0.0
+	github.com/prometheus/client_golang v1.7.1
 	github.com/segmentio/kafka-go v0.4.8
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.10.0
