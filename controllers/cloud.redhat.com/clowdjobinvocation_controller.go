@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/iqe"
 	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -180,7 +181,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 			return ctrl.Result{}, err
 		}
 
-		if err := jobProvider.CreateIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j, r.Log, r.Client); err != nil {
+		if err := iqe.CreateIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j, r.Log, r.Client); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
 			return ctrl.Result{}, err
