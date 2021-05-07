@@ -2,4 +2,4 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestSuite
 startControlPlane: false
 timeout: 600
-parallel: 4
+parallel: 3
