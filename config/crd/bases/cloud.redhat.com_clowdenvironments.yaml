@@ -128,11 +128,48 @@ spec:
                       description: Defines options related to the Kafka cluster for
                         this environment. Ignored for (*_local_*) mode.
                       properties:
+                        config:
+                          additionalProperties:
+                            type: string
+                          description: Config full options
+                          type: object
                         deleteClaim:
                           description: Delete persistent volume claim if the Kafka
                             cluster is deleted Only applies when KafkaConfig.PVC is
                             set to 'true'
                           type: boolean
+                        jvmOptions:
+                          description: JVM Options
+                          properties:
+                            -XX:
+                              additionalProperties:
+                                type: string
+                              description: A map of -XX options to the JVM.
+                              type: object
+                            -Xms:
+                              description: -Xms option to to the JVM.
+                              type: string
+                            -Xmx:
+                              description: -Xmx option to to the JVM.
+                              type: string
+                            gcLoggingEnabled:
+                              description: Specifies whether the Garbage Collection
+                                logging is enabled. The default is false.
+                              type: boolean
+                            javaSystemProperties:
+                              description: A map of additional system properties which
+                                will be passed using the `-D` option to the JVM.
+                              items:
+                                properties:
+                                  name:
+                                    description: The system property name.
+                                    type: string
+                                  value:
+                                    description: The system property value.
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
                         name:
                           description: Defines the kafka cluster name
                           type: string
@@ -146,6 +183,22 @@ spec:
                           format: int32
                           minimum: 1
                           type: integer
+                        resources:
+                          description: Resource Limits
+                          properties:
+                            limits:
+                              additionalProperties:
+                                type: string
+                              description: Limits corresponds to the JSON schema field
+                                "limits".
+                              type: object
+                            requests:
+                              additionalProperties:
+                                type: string
+                              description: Requests corresponds to the JSON schema
+                                field "requests".
+                              type: object
+                          type: object
                         storageSize:
                           description: Persistent volume storage size. If unset, default
                             is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
