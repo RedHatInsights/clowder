@@ -94,8 +94,6 @@ func copyPullSecrets(prov *providers.Provider, namespaceList map[string]bool) ([
 				Namespace: namespace,
 			}
 
-			labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
-
 			if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
 				return nil, err
 			}
@@ -103,6 +101,7 @@ func copyPullSecrets(prov *providers.Provider, namespaceList map[string]bool) ([
 			newPullSecObj.Data = sourcePullSecObj.Data
 			newPullSecObj.Type = sourcePullSecObj.Type
 
+			labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
 			labeler(newPullSecObj)
 
 			newPullSecObj.Name = newSecNN.Name
@@ -126,15 +125,8 @@ func (ps *pullsecretProvider) getSecretList() []string {
 }
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	secList := ps.getSecretList()
 
-	if err := ps.annotateServiceAccounts(ps.getSecretList()); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (ps *pullsecretProvider) annotateServiceAccounts(secList []string) error {
 	saList := &core.ServiceAccountList{}
 	if err := ps.Cache.List(serviceaccount.CoreDeploymentServiceAccount, saList); err != nil {
 		return err
