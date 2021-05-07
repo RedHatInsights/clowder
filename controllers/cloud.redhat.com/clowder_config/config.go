@@ -22,6 +22,9 @@ type ClowderConfig struct {
 			CpuFile string `json:"cpuFile"`
 		} `json:"pprof"`
 	} `json:"debugOptions"`
+	Features struct {
+		DisableCreateServiceMonitor bool `json:"disableCreateServiceMonitor"`
+	} `json:"features"`
 }
 
 func getConfig() ClowderConfig {
