@@ -70,7 +70,7 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return err
 	}
 
-	if !clowder_config.LoadedConfig.Features.DisableCreateServiceMonitor {
+	if clowder_config.LoadedConfig.Features.CreateServiceMonitor {
 		if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
 			return err
 		}
