@@ -673,7 +673,7 @@ func fetchWithDefaults(name types.NamespacedName, resource runtime.Object) error
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	return fetch(ctx, name, resource, 20, 100*time.Millisecond)
+	return fetch(ctx, name, resource, 20, 500*time.Millisecond)
 }
 
 func fetch(ctx context.Context, name types.NamespacedName, resource runtime.Object, retryCount int, sleepTime time.Duration) error {
