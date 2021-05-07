@@ -30,5 +30,5 @@ func GetMetrics(c *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func init() {
-	providers.ProvidersRegistration.Register(GetMetrics, 1, ProvName)
+	providers.ProvidersRegistration.Register(GetMetrics, 2, ProvName)
 }

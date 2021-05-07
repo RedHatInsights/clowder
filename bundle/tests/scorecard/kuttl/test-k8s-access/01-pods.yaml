@@ -24,7 +24,8 @@ spec:
     inMemoryDb:
       mode: none
     pullSecrets:
-    - test
+    - name: test-k8s-access
+      namespace: test-k8s-access-secret
   resourceDefaults:
     limits:
       cpu: 400m
@@ -32,6 +33,7 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
+
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -52,3 +54,16 @@ spec:
     podSpec:
       image: quay.io/psav/clowder-hello
     k8sAccessLevel: view
+---
+apiVersion: v1
+data:
+  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
+  aws_region: dXMtZWFzdA==
+  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
+  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
+  endpoint: dGVzdC1lbmRwb2ludA==
+kind: Secret
+metadata:
+  name: test-k8s-access
+  namespace: test-k8s-access-secret
+type: Opaque

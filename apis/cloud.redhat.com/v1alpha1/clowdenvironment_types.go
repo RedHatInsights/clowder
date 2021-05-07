@@ -130,6 +130,7 @@ type KafkaConnectClusterConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
+// NamespacedName type to represent a real Namespaced Name
 type NamespacedName struct {
 	// Name defines the Name of a resource.
 	Name string `json:"name"`
@@ -336,9 +337,6 @@ type ClowdEnvironmentSpec struct {
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 }
 
-//PullSecrets defines the pull secret to use for the created Clowder service accounts.
-type PullSecrets []string
-
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
 type ProvidersConfig struct {
 	// Defines the Configuration for the Clowder Database Provider.
@@ -369,7 +367,7 @@ type ProvidersConfig struct {
 	ServiceMesh ServiceMeshConfig `json:"serviceMesh,omitempty"`
 
 	// Defines the pull secret to use for the service accounts.
-	PullSecrets PullSecrets `json:"pullSecrets,omitempty"`
+	PullSecrets []NamespacedName `json:"pullSecrets,omitempty"`
 
 	// Defines the environment for iqe/smoke testing
 	Testing TestingConfig `json:"testing,omitempty"`
