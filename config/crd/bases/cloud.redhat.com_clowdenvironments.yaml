@@ -370,7 +370,19 @@ spec:
                 pullSecrets:
                   description: Defines the pull secret to use for the service accounts.
                   items:
-                    type: string
+                    description: NamespacedName type to represent a real Namespaced
+                      Name
+                    properties:
+                      name:
+                        description: Name defines the Name of a resource.
+                        type: string
+                      namespace:
+                        description: Namespace defines the Namespace of a resource.
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
                   type: array
                 serviceMesh:
                   description: Defines the Configuration for the Clowder ServiceMesh

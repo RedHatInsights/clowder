@@ -57,6 +57,7 @@ import (
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/pullsecrets"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"

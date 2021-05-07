@@ -28,7 +28,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 		return nil, err
 	}
 
-	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env, p.Env.Spec.Providers.PullSecrets); err != nil {
+	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env); err != nil {
 		return nil, err
 	}
 
@@ -59,7 +59,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 
 func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
-	if err := createServiceAccountForClowdObj(sa.Cache, CoreAppServiceAccount, app, sa.Env.Spec.Providers.PullSecrets); err != nil {
+	if err := createServiceAccountForClowdObj(sa.Cache, CoreAppServiceAccount, app); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 
 		labeler := utils.GetCustomLabeler(nil, nn, app)
 
-		if err := CreateServiceAccount(sa.Cache, CoreDeploymentServiceAccount, sa.Env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+		if err := CreateServiceAccount(sa.Cache, CoreDeploymentServiceAccount, nn, labeler); err != nil {
 			return err
 		}
 
@@ -129,7 +129,7 @@ func createIQEServiceAccounts(p *providers.Provider, env *crd.ClowdEnvironment) 
 		}
 
 		labeler := utils.GetCustomLabeler(nil, nn, p.Env)
-		if err := CreateServiceAccount(p.Cache, IQEServiceAccount, env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+		if err := CreateServiceAccount(p.Cache, IQEServiceAccount, nn, labeler); err != nil {
 			return err
 		}
 
