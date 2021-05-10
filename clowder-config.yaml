@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  clowder-config.json: |-
+    {
+        "features": {
+            "createServiceMonitor": true
+        } 
+    }
+kind: ConfigMap
+metadata:
+  name: clowder-config
