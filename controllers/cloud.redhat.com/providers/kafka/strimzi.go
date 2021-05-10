@@ -30,6 +30,9 @@ var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &
 // KafkaUser is the resource ident for a KafkaUser object.
 var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{})
 
+// KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
+var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{})
+
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
 	"retention.bytes":       utils.IntMax,
@@ -49,6 +52,11 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 	k := &strimzi.Kafka{}
 	if err := s.Cache.Create(KafkaInstance, clusterNN, k); err != nil {
+		return err
+	}
+
+	cmnn, err := s.createKafkaMetricsConfigMap()
+	if err != nil {
 		return err
 	}
 
@@ -105,7 +113,18 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	metrics.UnmarshalJSON(metricsData)
 
-	k.Spec.Kafka.Metrics = &metrics
+	metricsConfig := strimzi.KafkaSpecKafkaMetricsConfig{
+		Type: "jmxPrometheusExporter",
+		ValueFrom: strimzi.KafkaSpecKafkaMetricsConfigValueFrom{
+			ConfigMapKeyRef: &strimzi.KafkaSpecKafkaMetricsConfigValueFromConfigMapKeyRef{
+				Key:      utils.PointString("metrics"),
+				Name:     utils.PointString(cmnn.Name),
+				Optional: utils.PointFalse(),
+			},
+		},
+	}
+
+	k.Spec.Kafka.MetricsConfig = &metricsConfig
 	k.Spec.Kafka.Resources = &s.Env.Spec.Providers.Kafka.Cluster.Resources
 
 	listener := strimzi.KafkaSpecKafkaListenersElem{
@@ -160,6 +179,31 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 
 	return nil
+}
+
+func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, error) {
+	cm := &core.ConfigMap{}
+	nn := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      fmt.Sprintf("%s-metrics", s.Env.Spec.Providers.Kafka.Cluster.Name),
+	}
+
+	if err := s.Cache.Create(KafkaMetricsConfigMap, nn, cm); err != nil {
+		return types.NamespacedName{}, err
+	}
+
+	cm.Data = map[string]string{"metrics": string(metricsData)}
+
+	cm.SetName(nn.Name)
+	cm.SetNamespace(nn.Namespace)
+	cm.SetLabels(providers.Labels{"env": s.Env.Name})
+	cm.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
+
+	if err := s.Cache.Update(KafkaMetricsConfigMap, cm); err != nil {
+		return types.NamespacedName{}, err
+	}
+
+	return nn, nil
 }
 
 func (s *strimziProvider) getBootstrapServersString() string {
