@@ -22,6 +22,8 @@ import (
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -109,6 +111,15 @@ type KafkaClusterConfig struct {
 
 	// Version. If unset, default is '2.5.0'
 	Version string `json:"version,omitempty"`
+
+	// Config full options
+	Config strimzi.KafkaSpecKafkaConfig `json:"config,omitempty"`
+
+	// JVM Options
+	JVMOptions strimzi.KafkaSpecKafkaJvmOptions `json:"jvmOptions,omitempty"`
+
+	// Resource Limits
+	Resources strimzi.KafkaSpecKafkaResources `json:"resources,omitempty"`
 }
 
 // KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder

@@ -13,6 +13,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -90,8 +91,22 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		EntityOperator: &strimzi.KafkaSpecEntityOperator{
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{},
 			UserOperator:  &strimzi.KafkaSpecEntityOperatorUserOperator{},
+			TlsSidecar:    &strimzi.KafkaSpecEntityOperatorTlsSidecar{},
 		},
 	}
+
+	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil {
+		k.Spec.Kafka.Config = s.Env.Spec.Providers.Kafka.Cluster.Config
+	}
+
+	k.Spec.Kafka.JvmOptions = &s.Env.Spec.Providers.Kafka.Cluster.JVMOptions
+
+	var metrics apiextensions.JSON
+
+	metrics.UnmarshalJSON(metricsData)
+
+	k.Spec.Kafka.Metrics = &metrics
+	k.Spec.Kafka.Resources = &s.Env.Spec.Providers.Kafka.Cluster.Resources
 
 	listener := strimzi.KafkaSpecKafkaListenersElem{
 		Type: "internal",
