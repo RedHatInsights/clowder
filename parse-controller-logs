@@ -50,6 +50,10 @@ for line in sys.stdin:
     try:
         js = json.loads(line)
     except:
+        string = levels['error']
+        string += line
+        string += cancel_colour
+        print(string)
         continue
     skip_flag = False
     for k, v in filters.items():
