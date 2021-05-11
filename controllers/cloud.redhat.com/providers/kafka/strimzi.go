@@ -631,6 +631,22 @@ func processTopicValues(
 		}
 	}
 
+	if len(replicaValList) > 0 {
+		maxReplicas, err := utils.IntMax(replicaValList)
+		if err != nil {
+			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
+		}
+		maxReplicasInt, err := utils.Atoi32(maxReplicas)
+		if err != nil {
+			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
+		}
+		k.Spec.Replicas = maxReplicasInt
+		if k.Spec.Replicas < int32(1) {
+			// if unset, default to 3
+			k.Spec.Replicas = int32(3)
+		}
+	}
+
 	if len(partitionValList) > 0 {
 		maxPartitions, err := utils.IntMax(partitionValList)
 		if err != nil {
@@ -647,9 +663,10 @@ func processTopicValues(
 		}
 	}
 
-	k.Spec.Replicas = env.Spec.Providers.Kafka.Cluster.Replicas
 	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
 		k.Spec.Replicas = 1
+	} else if env.Spec.Providers.Kafka.Cluster.Replicas < k.Spec.Replicas {
+		k.Spec.Replicas = env.Spec.Providers.Kafka.Cluster.Replicas
 	}
 
 	return nil
