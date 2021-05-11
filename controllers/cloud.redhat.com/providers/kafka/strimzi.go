@@ -90,6 +90,9 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
+			Config: map[string]string{
+				"offsets.topic.replication.factor": strconv.Itoa(int(replicas)),
+			},
 			Version:  &version,
 			Replicas: replicas,
 		},
@@ -378,9 +381,9 @@ func (s *strimziProvider) configureBrokers() error {
 		return clowdErr
 	}
 
-	if err := s.configureKafkaConnectCluster(); err != nil {
-		return errors.Wrap("failed to provision kafka connect cluster", err)
-	}
+	// if err := s.configureKafkaConnectCluster(); err != nil {
+	// 	return errors.Wrap("failed to provision kafka connect cluster", err)
+	// }
 
 	return nil
 }
@@ -521,6 +524,17 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		})
 	}
 
+	group := "*"
+	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+		Host:      &address,
+		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+			Name:        &group,
+			PatternType: &patternType,
+			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeGroup,
+		},
+	})
+
 	if err := s.Cache.Update(KafkaUser, ku); err != nil {
 		return err
 	}
@@ -576,7 +590,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		replicaValList := []string{}
 		partitionValList := []string{}
 
-		err := processTopicValues(k, app, appList, topic, replicaValList, partitionValList)
+		err := processTopicValues(k, s.Env, app, appList, topic, replicaValList, partitionValList)
 
 		if err != nil {
 			return err
@@ -599,6 +613,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 
 func processTopicValues(
 	k *strimzi.KafkaTopic,
+	env *crd.ClowdEnvironment,
 	app *crd.ClowdApp,
 	appList crd.ClowdAppList,
 	topic crd.KafkaTopicSpec,
@@ -660,22 +675,6 @@ func processTopicValues(
 		}
 	}
 
-	if len(replicaValList) > 0 {
-		maxReplicas, err := utils.IntMax(replicaValList)
-		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
-		}
-		maxReplicasInt, err := utils.Atoi32(maxReplicas)
-		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
-		}
-		k.Spec.Replicas = maxReplicasInt
-		if k.Spec.Replicas < int32(1) {
-			// if unset, default to 3
-			k.Spec.Replicas = int32(3)
-		}
-	}
-
 	if len(partitionValList) > 0 {
 		maxPartitions, err := utils.IntMax(partitionValList)
 		if err != nil {
@@ -690,6 +689,11 @@ func processTopicValues(
 			// if unset, default to 3
 			k.Spec.Partitions = int32(3)
 		}
+	}
+
+	k.Spec.Replicas = env.Spec.Providers.Kafka.Cluster.Replicas
+	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
+		k.Spec.Replicas = 1
 	}
 
 	return nil
