@@ -337,9 +337,9 @@ func (s *strimziProvider) configureBrokers() error {
 		return clowdErr
 	}
 
-	// if err := s.configureKafkaConnectCluster(); err != nil {
-	// 	return errors.Wrap("failed to provision kafka connect cluster", err)
-	// }
+	if err := s.configureKafkaConnectCluster(); err != nil {
+		return errors.Wrap("failed to provision kafka connect cluster", err)
+	}
 
 	return nil
 }
