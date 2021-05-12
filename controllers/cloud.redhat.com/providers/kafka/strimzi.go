@@ -86,7 +86,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Cluster.Version
 	if version == "" {
-		version = "2.5.0"
+		version = "2.7.0"
 	}
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
@@ -317,7 +317,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "2.5.0"
+		version = "2.7.0"
 	}
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
