@@ -18,6 +18,8 @@ type elasticache struct {
 }
 
 func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error {
+	secretName := "in-memory-db"
+
 	if !app.Spec.InMemoryDB {
 		return nil
 	}
@@ -33,11 +35,14 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 	found := false
 
 	for _, secret := range secrets.Items {
-		if secret.Name == "in-memory-db" {
+		if secret.Name == secretName {
 			port, err := strconv.Atoi(string(secret.Data["db.port"]))
 
 			if err != nil {
-				return errors.Wrap("Failed to parse im-memory-db port", err)
+				return errors.Wrap(
+					fmt.Sprintf("failed to parse port from secret '%s' in namespace '%s'", secretName, app.Namespace),
+					err
+				)
 			}
 
 			e.Config.Hostname = string(secret.Data["db.endpoint"])
@@ -50,7 +55,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 	if !found {
 		return &errors.MissingDependencies{
 			MissingDeps: map[string][]string{
-				"in-memory-db-secret": {app.Name},
+				"secret": {fmt.Sprintf("name: %s, namespace: %s", secretName, app.Namespace)}
 			},
 		}
 	}
