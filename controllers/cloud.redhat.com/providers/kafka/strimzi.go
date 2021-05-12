@@ -30,6 +30,9 @@ var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &
 // KafkaUser is the resource ident for a KafkaUser object.
 var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{})
 
+// KafkaUser is the resource ident for a KafkaUser object.
+var KafkaConnectUser = providers.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{})
+
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
 var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{})
 
@@ -221,10 +224,74 @@ func (s *strimziProvider) getBootstrapServersString() string {
 	return strings.Join(strArray, ",")
 }
 
+func (s *strimziProvider) createKafkaConnectUser() error {
+
+	clusterNN := types.NamespacedName{
+		Namespace: getConnectNamespace(s.Env),
+		Name:      getConnectClusterUserName(s.Env),
+	}
+
+	ku := &strimzi.KafkaUser{}
+	if err := s.Cache.Create(KafkaConnectUser, clusterNN, ku); err != nil {
+		return err
+	}
+
+	labeler := utils.GetCustomLabeler(
+		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, clusterNN, s.Env,
+	)
+
+	labeler(ku)
+
+	ku.Spec = &strimzi.KafkaUserSpec{
+		Authentication: &strimzi.KafkaUserSpecAuthentication{
+			Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
+		},
+		Authorization: &strimzi.KafkaUserSpecAuthorization{
+			Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
+			Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
+		},
+	}
+
+	address := "*"
+	topic := "*"
+	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
+
+	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+		Host:      &address,
+		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+			Name:        &topic,
+			PatternType: &patternType,
+			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
+		},
+	})
+
+	group := "*"
+	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+		Host:      &address,
+		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+			Name:        &group,
+			PatternType: &patternType,
+			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeGroup,
+		},
+	})
+
+	if err := s.Cache.Update(KafkaConnectUser, ku); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *strimziProvider) configureKafkaConnectCluster() error {
 	clusterNN := types.NamespacedName{
 		Namespace: getConnectNamespace(s.Env),
 		Name:      getConnectClusterName(s.Env),
+	}
+
+	if err := s.createKafkaConnectUser(); err != nil {
+		return err
 	}
 
 	k := &strimzi.KafkaConnect{}
@@ -258,6 +325,8 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		image = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
 	}
 
+	username := getConnectClusterUserName(s.Env)
+
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: s.getBootstrapServersString(),
@@ -272,6 +341,20 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 			"status.storage.replication.factor": "1",
 		},
 		Image: &image,
+		Tls: &strimzi.KafkaConnectSpecTls{
+			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
+				Certificate: "ca.crt",
+				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", s.Env.Spec.Providers.Kafka.Cluster.Name),
+			}},
+		},
+		Authentication: &strimzi.KafkaConnectSpecAuthentication{
+			PasswordSecret: &strimzi.KafkaConnectSpecAuthenticationPasswordSecret{
+				Password:   "password",
+				SecretName: username,
+			},
+			Type:     "scram-sha-512",
+			Username: &username,
+		},
 	}
 
 	// configures this KafkaConnect to use KafkaConnector resources to avoid needing to call the
