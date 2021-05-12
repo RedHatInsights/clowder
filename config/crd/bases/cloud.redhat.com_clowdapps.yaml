@@ -91,6 +91,7 @@ spec:
                   enum:
                   - 10
                   - 12
+                  - 13
                   format: int32
                   type: integer
               type: object
