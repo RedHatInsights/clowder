@@ -14,6 +14,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -161,9 +162,23 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Size:        &storageSize,
 			DeleteClaim: &deleteClaim,
 		}
+
+		zkStorageSize := "50Gi"
+
+		kQuantity, err := resource.ParseQuantity(storageSize)
+
+		if err == nil {
+			zkQuantity, err := resource.ParseQuantity("50Gi")
+
+			if err == nil && kQuantity.Cmp(zkQuantity) < 0 {
+				// Kafka storage size is less than zkStorageSize
+				zkStorageSize = storageSize
+			}
+		}
+
 		k.Spec.Zookeeper.Storage = strimzi.KafkaSpecZookeeperStorage{
 			Type:        strimzi.KafkaSpecZookeeperStorageTypePersistentClaim,
-			Size:        &storageSize,
+			Size:        &zkStorageSize,
 			DeleteClaim: &deleteClaim,
 		}
 	} else {
