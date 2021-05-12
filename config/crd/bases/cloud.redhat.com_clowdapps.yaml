@@ -6664,9 +6664,6 @@ spec:
               type: object
             ready:
               type: boolean
-          required:
-          - deployments
-          - ready
           type: object
       type: object
   version: v1alpha1

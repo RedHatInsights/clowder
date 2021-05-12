@@ -318,8 +318,8 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments common.DeploymentStatus `json:"deployments"`
-	Ready       bool                    `json:"ready"`
+	Deployments common.DeploymentStatus `json:"deployments,omitempty"`
+	Ready       bool                    `json:"ready,omitempty"`
 }
 
 // +kubebuilder:object:root=true
