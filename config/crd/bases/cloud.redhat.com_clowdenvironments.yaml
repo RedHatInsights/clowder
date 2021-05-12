@@ -1,26 +1,13 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   name: clowdenvironments.cloud.redhat.com
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.deployments.readyDeployments
-    name: Ready
-    type: integer
-  - JSONPath: .status.deployments.managedDeployments
-    name: Managed
-    type: integer
-  - JSONPath: .status.targetNamespace
-    name: Namespace
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    name: Age
-    type: date
   group: cloud.redhat.com
   names:
     kind: ClowdEnvironment
@@ -30,232 +17,369 @@ spec:
     - env
     singular: clowdenvironment
   scope: Cluster
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: ClowdEnvironment is the Schema for the clowdenvironments API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: A ClowdEnvironmentSpec object.
-          properties:
-            providers:
-              description: A ProvidersConfig object, detailing the setup and configuration
-                of all the providers used in this ClowdEnvironment.
-              properties:
-                db:
-                  description: Defines the Configuration for the Clowder Database
-                    Provider.
-                  properties:
-                    mode:
-                      description: 'The mode of operation of the Clowder Database
-                        Provider. Valid options are: (*_app-interface_*) where the
-                        provider will pass through database credentials found in the
-                        secret defined by the database name in the ClowdApp, and (*_local_*)
-                        where the provider will spin up a local instance of the database.'
-                      enum:
-                      - app-interface
-                      - local
-                      - none
-                      type: string
-                    pvc:
-                      description: If using the (*_local_*) mode and PVC is set to
-                        true, this instructs the local Database instance to use a
-                        PVC instead of emptyDir for its volumes.
-                      type: boolean
-                  required:
-                  - mode
-                  type: object
-                featureFlags:
-                  description: Defines the Configuration for the Clowder FeatureFlags
-                    Provider.
-                  properties:
-                    mode:
-                      description: 'The mode of operation of the Clowder FeatureFlag
-                        Provider. Valid options are: (*_app-interface_*) where the
-                        provider will pass through credentials to the app configuration,
-                        and (*_local_*) where a local Unleash instance will be created.'
-                      enum:
-                      - local
-                      - app-interface
-                      - none
-                      type: string
-                    pvc:
-                      description: If using the (*_local_*) mode and PVC is set to
-                        true, this instructs the local Database instance to use a
-                        PVC instead of emptyDir for its volumes.
-                      type: boolean
-                  type: object
-                inMemoryDb:
-                  description: Defines the Configuration for the Clowder InMemoryDB
-                    Provider.
-                  properties:
-                    mode:
-                      description: 'The mode of operation of the Clowder InMemory
-                        Provider. Valid options are: (*_redis_*) where a local Minio
-                        instance will be created, and (*_elasticache_*) which will
-                        search the namespace of the ClowdApp for a secret called ''elasticache'''
-                      enum:
-                      - redis
-                      - app-interface
-                      - elasticache
-                      - none
-                      type: string
-                    pvc:
-                      description: If using the (*_local_*) mode and PVC is set to
-                        true, this instructs the local Database instance to use a
-                        PVC instead of emptyDir for its volumes.
-                      type: boolean
-                  required:
-                  - mode
-                  type: object
-                kafka:
-                  description: Defines the Configuration for the Clowder Kafka Provider.
-                  properties:
-                    cluster:
-                      description: Defines options related to the Kafka cluster for
-                        this environment. Ignored for (*_local_*) mode.
-                      properties:
-                        config:
-                          additionalProperties:
-                            type: string
-                          description: Config full options
-                          type: object
-                        deleteClaim:
-                          description: Delete persistent volume claim if the Kafka
-                            cluster is deleted Only applies when KafkaConfig.PVC is
-                            set to 'true'
-                          type: boolean
-                        jvmOptions:
-                          description: JVM Options
-                          properties:
-                            -XX:
-                              additionalProperties:
-                                type: string
-                              description: A map of -XX options to the JVM.
-                              type: object
-                            -Xms:
-                              description: -Xms option to to the JVM.
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.deployments.readyDeployments
+      name: Ready
+      type: integer
+    - jsonPath: .status.deployments.managedDeployments
+      name: Managed
+      type: integer
+    - jsonPath: .status.targetNamespace
+      name: Namespace
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ClowdEnvironment is the Schema for the clowdenvironments API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: A ClowdEnvironmentSpec object.
+            properties:
+              providers:
+                description: A ProvidersConfig object, detailing the setup and configuration
+                  of all the providers used in this ClowdEnvironment.
+                properties:
+                  db:
+                    description: Defines the Configuration for the Clowder Database
+                      Provider.
+                    properties:
+                      mode:
+                        description: 'The mode of operation of the Clowder Database
+                          Provider. Valid options are: (*_app-interface_*) where the
+                          provider will pass through database credentials found in
+                          the secret defined by the database name in the ClowdApp,
+                          and (*_local_*) where the provider will spin up a local
+                          instance of the database.'
+                        enum:
+                        - app-interface
+                        - local
+                        - none
+                        type: string
+                      pvc:
+                        description: If using the (*_local_*) mode and PVC is set
+                          to true, this instructs the local Database instance to use
+                          a PVC instead of emptyDir for its volumes.
+                        type: boolean
+                    required:
+                    - mode
+                    type: object
+                  featureFlags:
+                    description: Defines the Configuration for the Clowder FeatureFlags
+                      Provider.
+                    properties:
+                      mode:
+                        description: 'The mode of operation of the Clowder FeatureFlag
+                          Provider. Valid options are: (*_app-interface_*) where the
+                          provider will pass through credentials to the app configuration,
+                          and (*_local_*) where a local Unleash instance will be created.'
+                        enum:
+                        - local
+                        - app-interface
+                        - none
+                        type: string
+                      pvc:
+                        description: If using the (*_local_*) mode and PVC is set
+                          to true, this instructs the local Database instance to use
+                          a PVC instead of emptyDir for its volumes.
+                        type: boolean
+                    type: object
+                  inMemoryDb:
+                    description: Defines the Configuration for the Clowder InMemoryDB
+                      Provider.
+                    properties:
+                      mode:
+                        description: 'The mode of operation of the Clowder InMemory
+                          Provider. Valid options are: (*_redis_*) where a local Minio
+                          instance will be created, and (*_elasticache_*) which will
+                          search the namespace of the ClowdApp for a secret called
+                          ''elasticache'''
+                        enum:
+                        - redis
+                        - app-interface
+                        - elasticache
+                        - none
+                        type: string
+                      pvc:
+                        description: If using the (*_local_*) mode and PVC is set
+                          to true, this instructs the local Database instance to use
+                          a PVC instead of emptyDir for its volumes.
+                        type: boolean
+                    required:
+                    - mode
+                    type: object
+                  kafka:
+                    description: Defines the Configuration for the Clowder Kafka Provider.
+                    properties:
+                      cluster:
+                        description: Defines options related to the Kafka cluster
+                          for this environment. Ignored for (*_local_*) mode.
+                        properties:
+                          config:
+                            additionalProperties:
                               type: string
-                            -Xmx:
-                              description: -Xmx option to to the JVM.
-                              type: string
-                            gcLoggingEnabled:
-                              description: Specifies whether the Garbage Collection
-                                logging is enabled. The default is false.
-                              type: boolean
-                            javaSystemProperties:
-                              description: A map of additional system properties which
-                                will be passed using the `-D` option to the JVM.
-                              items:
-                                properties:
-                                  name:
-                                    description: The system property name.
-                                    type: string
-                                  value:
-                                    description: The system property value.
-                                    type: string
+                            description: Config full options
+                            type: object
+                          deleteClaim:
+                            description: Delete persistent volume claim if the Kafka
+                              cluster is deleted Only applies when KafkaConfig.PVC
+                              is set to 'true'
+                            type: boolean
+                          jvmOptions:
+                            description: JVM Options
+                            properties:
+                              -XX:
+                                additionalProperties:
+                                  type: string
+                                description: A map of -XX options to the JVM.
                                 type: object
-                              type: array
-                          type: object
-                        name:
-                          description: Defines the kafka cluster name
-                          type: string
-                        namespace:
-                          description: 'The namespace the kafka cluster is expected
-                            to reside in (default: the environment''s targetNamespace)'
-                          type: string
-                        replicas:
-                          description: The requested number of replicas for kafka/zookeeper.
-                            If unset, default is '1'
-                          format: int32
-                          minimum: 1
-                          type: integer
-                        resources:
-                          description: Resource Limits
-                          properties:
-                            limits:
-                              additionalProperties:
+                              -Xms:
+                                description: -Xms option to to the JVM.
                                 type: string
-                              description: Limits corresponds to the JSON schema field
-                                "limits".
-                              type: object
-                            requests:
-                              additionalProperties:
+                              -Xmx:
+                                description: -Xmx option to to the JVM.
                                 type: string
-                              description: Requests corresponds to the JSON schema
-                                field "requests".
-                              type: object
-                          type: object
-                        storageSize:
-                          description: Persistent volume storage size. If unset, default
-                            is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
-                          type: string
-                        version:
-                          description: Version. If unset, default is '2.5.0'
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    clusterName:
-                      description: (Deprecated) Defines the cluster name to be used
-                        by the Kafka Provider this will be used in some modes to locate
-                        the Kafka instance.
-                      type: string
-                    connect:
-                      description: Defines options related to the Kafka Connect cluster
-                        for this environment. Ignored for (*_local_*) mode.
-                      properties:
-                        image:
-                          description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
-                          type: string
-                        name:
-                          description: 'Defines the kafka connect cluster name (default:
-                            ''<kafka cluster''s name>-connect'')'
-                          type: string
-                        namespace:
-                          description: 'The namespace the kafka connect cluster is
-                            expected to reside in (default: the kafka cluster''s namespace)'
-                          type: string
-                        replicas:
-                          description: The requested number of replicas for kafka
-                            connect. If unset, default is '1'
-                          format: int32
-                          minimum: 1
-                          type: integer
-                        version:
-                          description: Version. If unset, default is '2.5.0'
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    connectClusterName:
-                      description: (Deprecated) Defines the kafka connect cluster
-                        name that is used in this environment.
-                      type: string
-                    connectNamespace:
-                      description: (Deprecated) The namespace that the Kafka Connect
-                        cluster is expected to reside in. This is only used in (*_app-interface_*)
-                        and (*_operator_*) modes.
-                      type: string
-                    enableLegacyStrimzi:
-                      description: EnableLegacyStrimzi disables TLS + user auth
-                      type: boolean
-                    managedSecretRef:
-                      description: Defines the secret reference for the Managed Kafka
-                        mode. Only used in (*_managed_*) mode.
+                              gcLoggingEnabled:
+                                description: Specifies whether the Garbage Collection
+                                  logging is enabled. The default is false.
+                                type: boolean
+                              javaSystemProperties:
+                                description: A map of additional system properties
+                                  which will be passed using the `-D` option to the
+                                  JVM.
+                                items:
+                                  properties:
+                                    name:
+                                      description: The system property name.
+                                      type: string
+                                    value:
+                                      description: The system property value.
+                                      type: string
+                                  type: object
+                                type: array
+                            type: object
+                          name:
+                            description: Defines the kafka cluster name
+                            type: string
+                          namespace:
+                            description: 'The namespace the kafka cluster is expected
+                              to reside in (default: the environment''s targetNamespace)'
+                            type: string
+                          replicas:
+                            description: The requested number of replicas for kafka/zookeeper.
+                              If unset, default is '1'
+                            format: int32
+                            minimum: 1
+                            type: integer
+                          resources:
+                            description: Resource Limits
+                            properties:
+                              limits:
+                                additionalProperties:
+                                  type: string
+                                description: Limits corresponds to the JSON schema
+                                  field "limits".
+                                type: object
+                              requests:
+                                additionalProperties:
+                                  type: string
+                                description: Requests corresponds to the JSON schema
+                                  field "requests".
+                                type: object
+                            type: object
+                          storageSize:
+                            description: Persistent volume storage size. If unset,
+                              default is '1Gi' Only applies when KafkaConfig.PVC is
+                              set to 'true'
+                            type: string
+                          version:
+                            description: Version. If unset, default is '2.5.0'
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      clusterName:
+                        description: (Deprecated) Defines the cluster name to be used
+                          by the Kafka Provider this will be used in some modes to
+                          locate the Kafka instance.
+                        type: string
+                      connect:
+                        description: Defines options related to the Kafka Connect
+                          cluster for this environment. Ignored for (*_local_*) mode.
+                        properties:
+                          image:
+                            description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+                            type: string
+                          name:
+                            description: 'Defines the kafka connect cluster name (default:
+                              ''<kafka cluster''s name>-connect'')'
+                            type: string
+                          namespace:
+                            description: 'The namespace the kafka connect cluster
+                              is expected to reside in (default: the kafka cluster''s
+                              namespace)'
+                            type: string
+                          replicas:
+                            description: The requested number of replicas for kafka
+                              connect. If unset, default is '1'
+                            format: int32
+                            minimum: 1
+                            type: integer
+                          version:
+                            description: Version. If unset, default is '2.5.0'
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      connectClusterName:
+                        description: (Deprecated) Defines the kafka connect cluster
+                          name that is used in this environment.
+                        type: string
+                      connectNamespace:
+                        description: (Deprecated) The namespace that the Kafka Connect
+                          cluster is expected to reside in. This is only used in (*_app-interface_*)
+                          and (*_operator_*) modes.
+                        type: string
+                      enableLegacyStrimzi:
+                        description: EnableLegacyStrimzi disables TLS + user auth
+                        type: boolean
+                      managedSecretRef:
+                        description: Defines the secret reference for the Managed
+                          Kafka mode. Only used in (*_managed_*) mode.
+                        properties:
+                          name:
+                            description: Name defines the Name of a resource.
+                            type: string
+                          namespace:
+                            description: Namespace defines the Namespace of a resource.
+                            type: string
+                        required:
+                        - name
+                        - namespace
+                        type: object
+                      mode:
+                        description: 'The mode of operation of the Clowder Kafka Provider.
+                          Valid options are: (*_operator_*) which provisions Strimzi
+                          resources and will configure KafkaTopic CRs and place them
+                          in the Kafka cluster''s namespace described in the configuration,
+                          (*_app-interface_*) which simply passes the topic names
+                          through to the App''s cdappconfig.json and expects app-interface
+                          to have created the relevant topics, and (*_local_*) where
+                          a small instance of Kafka is created in the desired cluster
+                          namespace and configured to auto-create topics.'
+                        enum:
+                        - managed
+                        - operator
+                        - app-interface
+                        - local
+                        - none
+                        type: string
+                      namespace:
+                        description: (Deprecated) The Namespace the cluster is expected
+                          to reside in. This is only used in (*_app-interface_*) and
+                          (*_operator_*) modes.
+                        type: string
+                      pvc:
+                        description: If using the (*_local_*) or (*_operator_*) mode
+                          and PVC is set to true, this sets the provisioned Kafka
+                          instance to use a PVC instead of emptyDir for its volumes.
+                        type: boolean
+                      suffix:
+                        description: (Deprecated) (Unused)
+                        type: string
+                    required:
+                    - mode
+                    type: object
+                  logging:
+                    description: Defines the Configuration for the Clowder Logging
+                      Provider.
+                    properties:
+                      mode:
+                        description: 'The mode of operation of the Clowder Logging
+                          Provider. Valid options are: (*_app-interface_*) where the
+                          provider will pass through cloudwatch credentials to the
+                          app configuration, and (*_none_*) where no logging will
+                          be configured.'
+                        enum:
+                        - app-interface
+                        - "null"
+                        - none
+                        type: string
+                    required:
+                    - mode
+                    type: object
+                  metrics:
+                    description: Defines the Configuration for the Clowder Metrics
+                      Provider.
+                    properties:
+                      mode:
+                        description: The mode of operation of the Metrics provider.
+                          The allowed modes are  (*_none_*), which disables metrics
+                          service generation, or (*_operator_*) where services and
+                          probes are generated.
+                        enum:
+                        - none
+                        - operator
+                        type: string
+                      path:
+                        description: A prefix path that pods will be instructed to
+                          use when setting up their metrics server.
+                        type: string
+                      port:
+                        description: The port that metrics services inside ClowdApp
+                          pods should be served on.
+                        format: int32
+                        type: integer
+                    required:
+                    - mode
+                    - port
+                    type: object
+                  objectStore:
+                    description: Defines the Configuration for the Clowder ObjectStore
+                      Provider.
+                    properties:
+                      mode:
+                        description: 'The mode of operation of the Clowder ObjectStore
+                          Provider. Valid options are: (*_app-interface_*) where the
+                          provider will pass through Amazon S3 credentials to the
+                          app configuration, and (*_minio_*) where a local Minio instance
+                          will be created.'
+                        enum:
+                        - minio
+                        - app-interface
+                        - none
+                        type: string
+                      pvc:
+                        description: If using the (*_local_*) mode and PVC is set
+                          to true, this instructs the local Database instance to use
+                          a PVC instead of emptyDir for its volumes.
+                        type: boolean
+                      suffix:
+                        description: Currently unused.
+                        type: string
+                    required:
+                    - mode
+                    type: object
+                  pullSecrets:
+                    description: Defines the pull secret to use for the service accounts.
+                    items:
+                      description: NamespacedName type to represent a real Namespaced
+                        Name
                       properties:
                         name:
                           description: Name defines the Name of a resource.
@@ -267,332 +391,218 @@ spec:
                       - name
                       - namespace
                       type: object
-                    mode:
-                      description: 'The mode of operation of the Clowder Kafka Provider.
-                        Valid options are: (*_operator_*) which provisions Strimzi
-                        resources and will configure KafkaTopic CRs and place them
-                        in the Kafka cluster''s namespace described in the configuration,
-                        (*_app-interface_*) which simply passes the topic names through
-                        to the App''s cdappconfig.json and expects app-interface to
-                        have created the relevant topics, and (*_local_*) where a
-                        small instance of Kafka is created in the desired cluster
-                        namespace and configured to auto-create topics.'
-                      enum:
-                      - managed
-                      - operator
-                      - app-interface
-                      - local
-                      - none
-                      type: string
-                    namespace:
-                      description: (Deprecated) The Namespace the cluster is expected
-                        to reside in. This is only used in (*_app-interface_*) and
-                        (*_operator_*) modes.
-                      type: string
-                    pvc:
-                      description: If using the (*_local_*) or (*_operator_*) mode
-                        and PVC is set to true, this sets the provisioned Kafka instance
-                        to use a PVC instead of emptyDir for its volumes.
-                      type: boolean
-                    suffix:
-                      description: (Deprecated) (Unused)
-                      type: string
-                  required:
-                  - mode
-                  type: object
-                logging:
-                  description: Defines the Configuration for the Clowder Logging Provider.
-                  properties:
-                    mode:
-                      description: 'The mode of operation of the Clowder Logging Provider.
-                        Valid options are: (*_app-interface_*) where the provider
-                        will pass through cloudwatch credentials to the app configuration,
-                        and (*_none_*) where no logging will be configured.'
-                      enum:
-                      - app-interface
-                      - "null"
-                      - none
-                      type: string
-                  required:
-                  - mode
-                  type: object
-                metrics:
-                  description: Defines the Configuration for the Clowder Metrics Provider.
-                  properties:
-                    mode:
-                      description: The mode of operation of the Metrics provider.
-                        The allowed modes are  (*_none_*), which disables metrics
-                        service generation, or (*_operator_*) where services and probes
-                        are generated.
-                      enum:
-                      - none
-                      - operator
-                      type: string
-                    path:
-                      description: A prefix path that pods will be instructed to use
-                        when setting up their metrics server.
-                      type: string
-                    port:
-                      description: The port that metrics services inside ClowdApp
-                        pods should be served on.
-                      format: int32
-                      type: integer
-                  required:
-                  - mode
-                  - port
-                  type: object
-                objectStore:
-                  description: Defines the Configuration for the Clowder ObjectStore
-                    Provider.
-                  properties:
-                    mode:
-                      description: 'The mode of operation of the Clowder ObjectStore
-                        Provider. Valid options are: (*_app-interface_*) where the
-                        provider will pass through Amazon S3 credentials to the app
-                        configuration, and (*_minio_*) where a local Minio instance
-                        will be created.'
-                      enum:
-                      - minio
-                      - app-interface
-                      - none
-                      type: string
-                    pvc:
-                      description: If using the (*_local_*) mode and PVC is set to
-                        true, this instructs the local Database instance to use a
-                        PVC instead of emptyDir for its volumes.
-                      type: boolean
-                    suffix:
-                      description: Currently unused.
-                      type: string
-                  required:
-                  - mode
-                  type: object
-                pullSecrets:
-                  description: Defines the pull secret to use for the service accounts.
-                  items:
-                    description: NamespacedName type to represent a real Namespaced
-                      Name
+                    type: array
+                  serviceMesh:
+                    description: Defines the Configuration for the Clowder ServiceMesh
+                      Provider.
                     properties:
-                      name:
-                        description: Name defines the Name of a resource.
+                      mode:
+                        description: ServiceMeshMode just determines if we enable
+                          or disable the service mesh
+                        enum:
+                        - enabled
+                        - disabled
                         type: string
-                      namespace:
-                        description: Namespace defines the Namespace of a resource.
+                    type: object
+                  testing:
+                    description: Defines the environment for iqe/smoke testing
+                    properties:
+                      configAccess:
+                        description: 'The mode of operation for access to outside
+                          app configs. Valid options are: (*_none_*) -- no app config
+                          is mounted to the pod (*_app_*) -- only the ClowdApp''s
+                          config is mounted to the pod (*_environment_*) -- the config
+                          for all apps in the env are mounted'
+                        enum:
+                        - none
+                        - app
+                        - ""
+                        - environment
+                        type: string
+                      iqe:
+                        description: Defines the environment for iqe/smoke testing
+                        properties:
+                          imageBase:
+                            type: string
+                          resources:
+                            description: A pass-through of a resource requirements
+                              in k8s ResourceRequirements format. If omitted, the
+                              default resource requirements from the ClowdEnvironment
+                              will be used.
+                            properties:
+                              limits:
+                                additionalProperties:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                description: 'Limits describes the maximum amount
+                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                type: object
+                              requests:
+                                additionalProperties:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                description: 'Requests describes the minimum amount
+                                  of compute resources required. If Requests is omitted
+                                  for a container, it defaults to Limits if that is
+                                  explicitly specified, otherwise to an implementation-defined
+                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                type: object
+                            type: object
+                        required:
+                        - imageBase
+                        type: object
+                      k8sAccessLevel:
+                        description: 'The mode of operation of the testing Pod. Valid
+                          options are: ''default'', ''view'' or ''edit'''
+                        enum:
+                        - default
+                        - view
+                        - ""
+                        - edit
                         type: string
                     required:
-                    - name
-                    - namespace
+                    - configAccess
+                    - k8sAccessLevel
                     type: object
-                  type: array
-                serviceMesh:
-                  description: Defines the Configuration for the Clowder ServiceMesh
-                    Provider.
-                  properties:
-                    mode:
-                      description: ServiceMeshMode just determines if we enable or
-                        disable the service mesh
-                      enum:
-                      - enabled
-                      - disabled
-                      type: string
-                  type: object
-                testing:
-                  description: Defines the environment for iqe/smoke testing
-                  properties:
-                    configAccess:
-                      description: 'The mode of operation for access to outside app
-                        configs. Valid options are: (*_none_*) -- no app config is
-                        mounted to the pod (*_app_*) -- only the ClowdApp''s config
-                        is mounted to the pod (*_environment_*) -- the config for
-                        all apps in the env are mounted'
-                      enum:
-                      - none
-                      - app
-                      - ""
-                      - environment
-                      type: string
-                    iqe:
-                      description: Defines the environment for iqe/smoke testing
-                      properties:
-                        imageBase:
-                          type: string
-                        resources:
-                          description: A pass-through of a resource requirements in
-                            k8s ResourceRequirements format. If omitted, the default
-                            resource requirements from the ClowdEnvironment will be
-                            used.
-                          properties:
-                            limits:
-                              additionalProperties:
-                                anyOf:
-                                - type: integer
-                                - type: string
-                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                                x-kubernetes-int-or-string: true
-                              description: 'Limits describes the maximum amount of
-                                compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                              type: object
-                            requests:
-                              additionalProperties:
-                                anyOf:
-                                - type: integer
-                                - type: string
-                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                                x-kubernetes-int-or-string: true
-                              description: 'Requests describes the minimum amount
-                                of compute resources required. If Requests is omitted
-                                for a container, it defaults to Limits if that is
-                                explicitly specified, otherwise to an implementation-defined
-                                value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                              type: object
-                          type: object
-                      required:
-                      - imageBase
-                      type: object
-                    k8sAccessLevel:
-                      description: 'The mode of operation of the testing Pod. Valid
-                        options are: ''default'', ''view'' or ''edit'''
-                      enum:
-                      - default
-                      - view
-                      - ""
-                      - edit
-                      type: string
-                  required:
-                  - configAccess
-                  - k8sAccessLevel
-                  type: object
-                web:
-                  description: Defines the Configuration for the Clowder Web Provider.
-                  properties:
-                    apiPrefix:
-                      description: An api prefix path that pods will be instructed
-                        to use when setting up their web server.
-                      type: string
-                    mode:
-                      description: The mode of operation of the Web provider. The
-                        allowed modes are (*_none_*), which disables web service generation,
-                        or (*_operator_*) where services and probes are generated.
-                      enum:
-                      - none
-                      - operator
-                      type: string
-                    port:
-                      description: The port that web services inside ClowdApp pods
-                        should be served on.
-                      format: int32
-                      type: integer
-                    privatePort:
-                      description: The private port that web services inside a ClowdApp
-                        should be served on.
-                      format: int32
-                      type: integer
-                  required:
-                  - mode
-                  - port
-                  type: object
-              required:
-              - inMemoryDb
-              - kafka
-              - logging
-              - objectStore
-              type: object
-            resourceDefaults:
-              description: Defines the default resource requirements in standard k8s
-                format in the event that they omitted from a PodSpec inside a ClowdApp.
-              properties:
-                limits:
-                  additionalProperties:
-                    anyOf:
-                    - type: integer
-                    - type: string
-                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                    x-kubernetes-int-or-string: true
-                  description: 'Limits describes the maximum amount of compute resources
-                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                  type: object
-                requests:
-                  additionalProperties:
-                    anyOf:
-                    - type: integer
-                    - type: string
-                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                    x-kubernetes-int-or-string: true
-                  description: 'Requests describes the minimum amount of compute resources
-                    required. If Requests is omitted for a container, it defaults
-                    to Limits if that is explicitly specified, otherwise to an implementation-defined
-                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                  type: object
-              type: object
-            targetNamespace:
-              description: TargetNamespace describes the namespace where any generated
-                environmental resources should end up, this is particularly important
-                in (*_local_*) mode.
-              type: string
-          required:
-          - providers
-          - resourceDefaults
-          type: object
-        status:
-          description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-          properties:
-            apps:
-              items:
-                description: AppInfo details information about a specific app.
-                properties:
-                  deployments:
-                    items:
-                      description: DeploymentInfo defailts information about a specific
-                        deployment.
-                      properties:
-                        hostname:
-                          type: string
-                        name:
-                          type: string
-                        port:
-                          format: int32
-                          type: integer
-                      required:
-                      - name
-                      type: object
-                    type: array
-                  name:
-                    type: string
+                  web:
+                    description: Defines the Configuration for the Clowder Web Provider.
+                    properties:
+                      apiPrefix:
+                        description: An api prefix path that pods will be instructed
+                          to use when setting up their web server.
+                        type: string
+                      mode:
+                        description: The mode of operation of the Web provider. The
+                          allowed modes are (*_none_*), which disables web service
+                          generation, or (*_operator_*) where services and probes
+                          are generated.
+                        enum:
+                        - none
+                        - operator
+                        type: string
+                      port:
+                        description: The port that web services inside ClowdApp pods
+                          should be served on.
+                        format: int32
+                        type: integer
+                      privatePort:
+                        description: The private port that web services inside a ClowdApp
+                          should be served on.
+                        format: int32
+                        type: integer
+                    required:
+                    - mode
+                    - port
+                    type: object
                 required:
-                - deployments
-                - name
+                - inMemoryDb
+                - kafka
+                - logging
+                - objectStore
                 type: object
-              type: array
-            deployments:
-              description: DeploymentStatus defines Overall and ready deployment counts
-              properties:
-                managedDeployments:
-                  format: int32
-                  type: integer
-                readyDeployments:
-                  format: int32
-                  type: integer
-              required:
-              - managedDeployments
-              - readyDeployments
-              type: object
-            generation:
-              format: int64
-              type: integer
-            ready:
-              type: boolean
-            targetNamespace:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                of cluster Important: Run "make" to regenerate code after modifying
-                this file'
-              type: string
-          type: object
-      type: object
-  version: v1alpha1
-  versions:
-  - name: v1alpha1
+              resourceDefaults:
+                description: Defines the default resource requirements in standard
+                  k8s format in the event that they omitted from a PodSpec inside
+                  a ClowdApp.
+                properties:
+                  limits:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: 'Limits describes the maximum amount of compute resources
+                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                    type: object
+                  requests:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: 'Requests describes the minimum amount of compute
+                      resources required. If Requests is omitted for a container,
+                      it defaults to Limits if that is explicitly specified, otherwise
+                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                    type: object
+                type: object
+              targetNamespace:
+                description: TargetNamespace describes the namespace where any generated
+                  environmental resources should end up, this is particularly important
+                  in (*_local_*) mode.
+                type: string
+            required:
+            - providers
+            - resourceDefaults
+            type: object
+          status:
+            description: ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
+            properties:
+              apps:
+                items:
+                  description: AppInfo details information about a specific app.
+                  properties:
+                    deployments:
+                      items:
+                        description: DeploymentInfo defailts information about a specific
+                          deployment.
+                        properties:
+                          hostname:
+                            type: string
+                          name:
+                            type: string
+                          port:
+                            format: int32
+                            type: integer
+                        required:
+                        - name
+                        type: object
+                      type: array
+                    name:
+                      type: string
+                  required:
+                  - deployments
+                  - name
+                  type: object
+                type: array
+              deployments:
+                description: DeploymentStatus defines Overall and ready deployment
+                  counts
+                properties:
+                  managedDeployments:
+                    format: int32
+                    type: integer
+                  readyDeployments:
+                    format: int32
+                    type: integer
+                required:
+                - managedDeployments
+                - readyDeployments
+                type: object
+              generation:
+                format: int64
+                type: integer
+              ready:
+                type: boolean
+              targetNamespace:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "make" to regenerate code after modifying
+                  this file'
+                type: string
+            type: object
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

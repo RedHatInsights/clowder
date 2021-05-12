@@ -41,7 +41,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 			if err != nil {
 				return errors.Wrap(
 					fmt.Sprintf("failed to parse port from secret '%s' in namespace '%s'", secretName, app.Namespace),
-					err
+					err,
 				)
 			}
 
@@ -55,7 +55,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 	if !found {
 		return &errors.MissingDependencies{
 			MissingDeps: map[string][]string{
-				"secret": {fmt.Sprintf("name: %s, namespace: %s", secretName, app.Namespace)}
+				"secret": {fmt.Sprintf("name: %s, namespace: %s", secretName, app.Namespace)},
 			},
 		}
 	}
