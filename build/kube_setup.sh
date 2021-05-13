@@ -141,8 +141,6 @@ function install_cyndi_operator {
     OPERATOR_NS=cyndi-operator
     DEPLOYMENT=cyndi-operator-controller-manager
 
-    LATEST_MANIFEST=$(curl -sL https://api.github.com/repos/RedHatInsights/cyndi-operator/releases/latest | jq -r '.assets[].browser_download_url')
-
     if [ $REINSTALL -ne 1 ]; then
         OPERATOR_DEPLOYMENT=$(kubectl get deployment $DEPLOYMENT -n $OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
         if [ ! -z "$OPERATOR_DEPLOYMENT" ]; then
