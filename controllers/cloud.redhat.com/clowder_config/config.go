@@ -9,7 +9,8 @@ import (
 
 type ClowderConfig struct {
 	DebugOptions struct {
-		Trigger struct {
+		NodePort bool `json:"nodePort"`
+		Trigger  struct {
 			Diff bool `json:"diff"`
 		} `json:"trigger"`
 		Cache struct {

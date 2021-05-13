@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
@@ -252,6 +253,9 @@ func MakeService(service *core.Service, nn types.NamespacedName, labels map[stri
 	labeler(service)
 	service.Spec.Selector = labels
 	service.Spec.Ports = ports
+	if clowder_config.LoadedConfig.DebugOptions.NodePort {
+		service.Spec.Type = "NodePort"
+	}
 }
 
 // MakePVC takes a PVC object and applies the correct ownership and labels to it.
