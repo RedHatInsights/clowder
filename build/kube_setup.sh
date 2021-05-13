@@ -160,7 +160,6 @@ function install_cyndi_operator {
     curl -LsS $LATEST_MANIFEST -o cyndi-operator-manifest.yaml
 
     echo "*** Applying cyndi-operator manifest ..."
-    kubectl create ns cyndi-operator || echo " ... ignoring that error"  # work-around since the manifest defines an incorrect namespace
     kubectl apply -f cyndi-operator-manifest.yaml
 
     echo "*** Will wait for cyndi-operator to come up in background"
