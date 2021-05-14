@@ -48,6 +48,13 @@ func getKafkaUsername(env *crd.ClowdEnvironment, app *crd.ClowdApp) string {
 	return fmt.Sprintf("%s-%s", env.Name, app.Name)
 }
 
+func getKafkaName(e *crd.ClowdEnvironment) string {
+	if e.Spec.Providers.Kafka.Cluster.Name == "" {
+		return e.Name
+	}
+	return e.Spec.Providers.Kafka.Cluster.Name
+}
+
 func getKafkaNamespace(e *crd.ClowdEnvironment) string {
 	if e.Spec.Providers.Kafka.Cluster.Namespace == "" {
 		return e.Status.TargetNamespace

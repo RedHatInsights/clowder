@@ -6,6 +6,6 @@ commands:
 - script: kubectl get secret --namespace=test-kafka-strimzi-topic-auth puptoo -o json > /tmp/test-kafka-strimzi-topic-auth
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-strimzi-topic-auth | base64 -d > /tmp/test-kafka-strimzi-topic-auth-json
 
-- script: jq -r '.kafka.brokers[0].hostname == "my-cluster-kafka-bootstrap.test-kafka-strimzi-topic-auth-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-auth-json
+- script: jq -r '.kafka.brokers[0].hostname == "test-kafka-strimzi-topic-auth-kafka-bootstrap.test-kafka-strimzi-topic-auth-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-auth-json
 - script: jq -r '.kafka.brokers[0].port == 9093' -e < /tmp/test-kafka-strimzi-topic-auth-json
 - script: jq -r '.kafka.brokers[0].sasl.username == "test-kafka-strimzi-topic-auth-puptoo"' -e < /tmp/test-kafka-strimzi-topic-auth-json

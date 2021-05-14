@@ -52,7 +52,7 @@ type strimziProvider struct {
 func (s *strimziProvider) configureKafkaCluster() error {
 	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
-		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
+		Name:      getKafkaName(s.Env),
 	}
 	k := &strimzi.Kafka{}
 	if err := s.Cache.Create(KafkaInstance, clusterNN, k); err != nil {
@@ -190,7 +190,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		}
 	}
 
-	k.SetName(s.Env.Spec.Providers.Kafka.Cluster.Name)
+	k.SetName(getKafkaName(s.Env))
 	k.SetNamespace(getKafkaNamespace(s.Env))
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
@@ -206,7 +206,7 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	cm := &core.ConfigMap{}
 	nn := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
-		Name:      fmt.Sprintf("%s-metrics", s.Env.Spec.Providers.Kafka.Cluster.Name),
+		Name:      fmt.Sprintf("%s-metrics", getKafkaName(s.Env)),
 	}
 
 	if err := s.Cache.Create(KafkaMetricsConfigMap, nn, cm); err != nil {
@@ -252,7 +252,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 	}
 
 	labeler := utils.GetCustomLabeler(
-		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, clusterNN, s.Env,
+		map[string]string{"strimzi.io/cluster": getKafkaName(s.Env)}, clusterNN, s.Env,
 	)
 
 	labeler(ku)
@@ -359,7 +359,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		Tls: &strimzi.KafkaConnectSpecTls{
 			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
 				Certificate: "ca.crt",
-				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", s.Env.Spec.Providers.Kafka.Cluster.Name),
+				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
 			}},
 		},
 		Authentication: &strimzi.KafkaConnectSpecAuthentication{
@@ -395,7 +395,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 func (s *strimziProvider) configureListeners() error {
 	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
-		Name:      s.Env.Spec.Providers.Kafka.Cluster.Name,
+		Name:      getKafkaName(s.Env),
 	}
 	kafkaResource := strimzi.Kafka{}
 	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
@@ -410,7 +410,7 @@ func (s *strimziProvider) configureListeners() error {
 	}
 
 	kafkaCASecName := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-cluster-ca-cert", s.Env.Spec.Providers.Kafka.Cluster.Name),
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
 		Namespace: getKafkaNamespace(s.Env),
 	}
 	kafkaCASecret := core.Secret{}
@@ -590,7 +590,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		return err
 	}
 	labeler := utils.GetCustomLabeler(
-		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, nn, s.Env,
+		map[string]string{"strimzi.io/cluster": getKafkaName(s.Env)}, nn, s.Env,
 	)
 
 	labeler(ku)
@@ -658,7 +658,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 
 		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
 		knn := types.NamespacedName{
-			Namespace: getKafkaNamespace(s.Env),
+			Namespace: getKafkaName(s.Env),
 			Name:      topicName,
 		}
 
@@ -667,7 +667,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		}
 
 		labels := providers.Labels{
-			"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name,
+			"strimzi.io/cluster": getKafkaName(s.Env),
 			"env":                app.Spec.EnvName,
 			// If we label it with the app name, since app names should be
 			// unique? can we use for delete selector?
