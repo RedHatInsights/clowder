@@ -125,7 +125,7 @@ function install_prometheus_operator {
     echo "*** Unpacking .tar.gz ..."
     tar xzf ${PROM_TARFILE}
 
-    echo "*** Installing Prometheus operator bundle..."
+    echo "*** Applying prometheus operator manifest ..."
     cd prometheus-operator-${PROM_VERSION}
     kubectl apply -f bundle.yaml
 
@@ -137,8 +137,40 @@ function install_prometheus_operator {
 }
 
 
+function install_cyndi_operator {
+    OPERATOR_NS=cyndi-operator
+    DEPLOYMENT=cyndi-operator-controller-manager
+
+    if [ $REINSTALL -ne 1 ]; then
+        OPERATOR_DEPLOYMENT=$(kubectl get deployment $DEPLOYMENT -n $OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
+        if [ ! -z "$OPERATOR_DEPLOYMENT" ]; then
+            echo "*** cyndi-operator deployment found, skipping install ..."
+            return 0
+        fi
+    fi
+
+    echo "*** Installing cyndi-operator ..."
+    cd "$DOWNLOAD_DIR"
+
+    echo "*** Looking up latest release ..."
+    LATEST_MANIFEST=$(curl -sL https://api.github.com/repos/RedHatInsights/cyndi-operator/releases/latest | jq -r '.assets[].browser_download_url')
+    echo "*** Downloading $LATEST_MANIFEST ..."
+    curl -LsS $LATEST_MANIFEST -o cyndi-operator-manifest.yaml
+
+    echo "*** Applying cyndi-operator manifest ..."
+    kubectl apply -f cyndi-operator-manifest.yaml
+
+    echo "*** Will wait for cyndi-operator to come up in background"
+    kubectl rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[cyndi-operator] /" &
+    BG_PIDS+=($!)
+
+    cd "$ROOT_DIR"
+}
+
+
 install_strimzi_operator
 #install_prometheus_operator
+install_cyndi_operator
 
 FAILURES=0
 if [ ${#BG_PIDS[@]} -gt 0 ]; then
