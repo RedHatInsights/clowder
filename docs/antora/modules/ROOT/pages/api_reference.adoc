@@ -167,6 +167,7 @@ ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 | *`targetNamespace`* __string__ | TargetNamespace describes the namespace where any generated environmental resources should end up, this is particularly important in (*_local_*) mode.
 | *`providers`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]__ | A ProvidersConfig object, detailing the setup and configuration of all the providers used in this ClowdEnvironment.
 | *`resourceDefaults`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.
+| *`nodePort`* __boolean__ | Node port enables the node port for clowder created services
 |===
 
 
@@ -483,6 +484,9 @@ KafkaClusterConfig defines options related to the Kafka cluster managed/monitore
 | *`storageSize`* __string__ | Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
 | *`deleteClaim`* __boolean__ | Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'
 | *`version`* __string__ | Version. If unset, default is '2.5.0'
+| *`config`* __object (keys:string, values:string)__ | Config full options
+| *`jvmOptions`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkajvmoptions[$$KafkaSpecKafkaJvmOptions$$]__ | JVM Options
+| *`resources`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkaresources[$$KafkaSpecKafkaResources$$]__ | Resource Limits
 |===
 
 
@@ -597,11 +601,12 @@ MetricsConfig configures the Clowder provider controlling the creation of metric
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname"]
 ==== NamespacedName 
 
-
+NamespacedName type to represent a real Namespaced Name
 
 .Appears In:
 ****
 - xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig[$$KafkaConfig$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -726,7 +731,7 @@ ProvidersConfig defines a group of providers configuration for a ClowdEnvironmen
 | *`web`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]__ | Defines the Configuration for the Clowder Web Provider.
 | *`featureFlags`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-featureflagsconfig[$$FeatureFlagsConfig$$]__ | Defines the Configuration for the Clowder FeatureFlags Provider.
 | *`serviceMesh`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig[$$ServiceMeshConfig$$]__ | Defines the Configuration for the Clowder ServiceMesh Provider.
-| *`pullSecrets`* __string array__ | Defines the pull secret to use for the service accounts.
+| *`pullSecrets`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the pull secret to use for the service accounts.
 | *`testing`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]__ | Defines the environment for iqe/smoke testing
 |===
 
@@ -746,8 +751,6 @@ PublicWebService is the definition of the public web service. There can be only 
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
 |===
-
-
 
 
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig"]
