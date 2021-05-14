@@ -190,7 +190,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		minioCacheMap = append(minioCacheMap, MinioPVC)
 	}
 
-	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
+	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.Spec.NodePort)
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't make component", err)
 		raisedErr.Requeue = true
@@ -200,7 +200,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 	return mp, nil
 }
 
-func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
+func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "minio")
 
 	dd := objMap[MinioDeployment].(*apps.Deployment)
@@ -320,7 +320,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) 
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 	if usePVC {
 		pvc := objMap[MinioPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)

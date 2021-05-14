@@ -337,6 +337,9 @@ type ClowdEnvironmentSpec struct {
 	// Defines the default resource requirements in standard k8s format in the
 	// event that they omitted from a PodSpec inside a ClowdApp.
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
+
+	// Node port enables the node port for clowder created services
+	NodePort bool `json:"nodePort,omitempty"`
 }
 
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.

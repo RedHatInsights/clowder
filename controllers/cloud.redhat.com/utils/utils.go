@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
@@ -248,13 +247,15 @@ func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 }
 
 // MakeService takes a service object and applies the correct ownership and labels to it.
-func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject) {
+func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject, nodePort bool) {
 	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(service)
 	service.Spec.Selector = labels
 	service.Spec.Ports = ports
-	if clowder_config.LoadedConfig.DebugOptions.NodePort {
+	if nodePort {
 		service.Spec.Type = "NodePort"
+	} else {
+		service.Spec.Type = "ClusterIP"
 	}
 }
 

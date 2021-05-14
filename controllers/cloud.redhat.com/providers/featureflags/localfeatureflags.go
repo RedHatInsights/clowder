@@ -51,7 +51,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		LocalFFService,
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "featureflags", makeLocalFeatureFlags, false); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "featureflags", makeLocalFeatureFlags, false, p.Env.Spec.NodePort); err != nil {
 		return nil, err
 	}
 
@@ -137,7 +137,7 @@ func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp, c *config.AppCon
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
+func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "featureflags")
 
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
@@ -221,5 +221,5 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 }

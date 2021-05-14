@@ -63,7 +63,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 		RedisService,
 	}
 
-	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false)
+	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false, r.Env.Spec.NodePort)
 }
 
 // NewLocalRedis returns a new local redis provider object.
@@ -75,7 +75,7 @@ func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &redisProvider, nil
 }
 
-func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
+func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "redis")
 
 	dd := objMap[RedisDeployment].(*apps.Deployment)
@@ -149,5 +149,5 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) 
 		Protocol: "TCP",
 	}}
 
-	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 }

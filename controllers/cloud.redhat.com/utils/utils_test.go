@@ -77,7 +77,7 @@ func TestMakeService(t *testing.T) {
 			EnvName: "testing-env",
 		},
 	}
-	utils.MakeService(&svc, nn, labels, ports, baseResource)
+	utils.MakeService(&svc, nn, labels, ports, baseResource, false)
 	assert.Equal(t, svc.Labels["app"], baseResource.Name, "should have app label")
 	assert.Equal(t, svc.Labels["customLabel"], "5", "should have custom label")
 	assert.Equal(t, svc.Spec.Ports[0], ports[0], "ports should be equal")
