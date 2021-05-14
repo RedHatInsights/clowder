@@ -18,6 +18,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// LocalFFDeployment is the ident refering to the local Feature Flags deployment object.
+var LocalFFDeployment = providers.NewSingleResourceIdent(ProvName, "ff_deployment", &apps.Deployment{})
+
+// LocalFFService is the ident refering to the local Feature Flags service object.
+var LocalFFService = providers.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
+
 // LocalFFDBDeployment is the ident refering to the local Feature Flags DB deployment object.
 var LocalFFDBDeployment = providers.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
 
@@ -40,11 +46,13 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 
 	ffp := &localFeatureFlagsProvider{Provider: *p, Config: config.FeatureFlagsConfig{}}
 
-	err := providers.MakeComponent(p.Ctx, p.Client, p.Env, "featureflags", makeLocalFeatureFlags, false)
-	if err != nil {
-		raisedErr := errors.Wrap("Couldn't make component", err)
-		raisedErr.Requeue = true
-		return nil, raisedErr
+	objList := []providers.ResourceIdent{
+		LocalFFDeployment,
+		LocalFFService,
+	}
+
+	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "featureflags", makeLocalFeatureFlags, false); err != nil {
+		return nil, err
 	}
 
 	nn := types.NamespacedName{
@@ -129,8 +137,11 @@ func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp, c *config.AppCon
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool) {
+func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
 	nn := providers.GetNamespacedName(o, "featureflags")
+
+	dd := objMap[LocalFFDeployment].(*apps.Deployment)
+	svc := objMap[LocalFFService].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
