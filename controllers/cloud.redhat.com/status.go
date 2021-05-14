@@ -13,7 +13,7 @@ import (
 
 func filterOwnedObjects(objectList *client.ObjectList, uid types.UID) {
 	filteredObjects := []client.ObjectList{}
-	for _, obj := range ObjectList.Items {
+	for _, obj := range objectList.Items {
 		for _, owner := range obj.ObjectMeta.OwnerReferences {
 			if owner.UID == uid {
 				filteredObjects = append(filteredObjects, obj)
