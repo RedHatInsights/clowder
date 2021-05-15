@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func filterOwnedObjects(objectList unstructured.UnstructuredList, uid types.UID) {
+func filterOwnedObjects(objectList *unstructured.UnstructuredList, uid types.UID) {
 	filteredObjects := []unstructured.Unstructured{}
 	for _, obj := range objectList.Items {
 		for _, owner := range obj.GetOwnerReferences() {
@@ -102,7 +102,7 @@ func SetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 			return err
 		}
 
-		filterOwnedObjects(objectList, o.GetUID())
+		filterOwnedObjects(&objectList, o.GetUID())
 		err, managedDeployments, readyDeployments := parseObjects(objectList)
 
 		if err != nil {
