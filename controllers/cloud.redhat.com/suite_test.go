@@ -160,6 +160,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 			continue
 		}
 
+		// TODO: set kafka status to 'Ready' here
 		if cluster.Name == "kafka" {
 			cluster.Status = &strimzi.KafkaStatus{
 				Listeners: []strimzi.KafkaStatusListenersElem{{

@@ -76,7 +76,6 @@ func parseObjects(objectList unstructured.UnstructuredList) (error, int32, int32
 			// List of Kafka/KafkaConnect resources
 			managedDeployments++
 			if ok := statusConditionPresent(content, "Ready"); ok {
-				// TODO: actually check for ready
 				readyDeployments++
 			}
 		} else {
@@ -84,7 +83,6 @@ func parseObjects(objectList unstructured.UnstructuredList) (error, int32, int32
 		}
 	}
 
-	fmt.Println("***************", managedDeployments, readyDeployments)
 	return nil, managedDeployments, readyDeployments
 }
 
@@ -116,8 +114,6 @@ func SetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 	status := o.GetDeploymentStatus()
 	status.ManagedDeployments = totalManagedDeployments
 	status.ReadyDeployments = totalReadyDeployments
-
-	fmt.Println("*************** TOTAL:", totalManagedDeployments, totalReadyDeployments)
 
 	return nil
 }
