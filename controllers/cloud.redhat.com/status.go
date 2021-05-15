@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -59,31 +60,31 @@ func parseObjects(objectList unstructured.UnstructuredList) (error, int32, int32
 	var managedDeployments int32
 	var readyDeployments int32
 
-	gvk := objectList.GroupVersionKind()
-
 	for _, obj := range objectList.Items {
+		gvk := obj.GroupVersionKind()
 		content := obj.UnstructuredContent()
 
-		// List of deployments
-		if gvk == gvksForStatus["deployments"] {
+		if gvk == gvksForType["deployment"].Single {
+			// List of deployments
 			deployment := apps.Deployment{}
 			runtime.DefaultUnstructuredConverter.FromUnstructured(content, &deployment)
 			managedDeployments++
 			if ok := utils.DeploymentStatusChecker(&deployment); ok {
 				readyDeployments++
 			}
-		}
-
-		// List of Kafka/KafkaConnect resources
-		if gvk == gvksForStatus["kafkas"] || gvk == gvksForStatus["kafkaconnects"] {
+		} else if gvk == gvksForType["kafka"].Single || gvk == gvksForType["kafkaconnect"].Single {
+			// List of Kafka/KafkaConnect resources
 			managedDeployments++
 			if ok := statusConditionPresent(content, "Ready"); ok {
 				// TODO: actually check for ready
 				readyDeployments++
 			}
+		} else {
+			return fmt.Errorf("unable to parse status for gvk: %s", gvk), 0, 0
 		}
 	}
 
+	fmt.Println("***************", managedDeployments, readyDeployments)
 	return nil, managedDeployments, readyDeployments
 }
 
@@ -92,9 +93,9 @@ func SetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
 
-	for _, gvk := range gvksForStatus {
+	for _, gvks := range gvksForType {
 		objectList := unstructured.UnstructuredList{}
-		objectList.SetGroupVersionKind(gvk)
+		objectList.SetGroupVersionKind(gvks.List)
 		err := client.List(ctx, &objectList)
 
 		if err != nil {
@@ -115,6 +116,8 @@ func SetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 	status := o.GetDeploymentStatus()
 	status.ManagedDeployments = totalManagedDeployments
 	status.ReadyDeployments = totalReadyDeployments
+
+	fmt.Println("*************** TOTAL:", totalManagedDeployments, totalReadyDeployments)
 
 	return nil
 }
