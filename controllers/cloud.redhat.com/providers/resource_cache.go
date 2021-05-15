@@ -97,14 +97,14 @@ func init() {
 	utilruntime.Must(cyndi.AddToScheme(scheme))
 	utilruntime.Must(prom.AddToScheme(scheme))
 
-	gvk, _ := getKindFromObj(scheme, &strimzi.KafkaTopic{})
+	gvk, _ := utils.GetKindFromObj(scheme, &strimzi.KafkaTopic{})
 	protectedGVKs[gvk] = true
 
-	secretCompare, _ = getKindFromObj(scheme, &core.Secret{})
+	secretCompare, _ = utils.GetKindFromObj(scheme, &core.Secret{})
 }
 
 func registerGVK(obj runtime.Object) {
-	gvk, _ := getKindFromObj(scheme, obj)
+	gvk, _ := utils.GetKindFromObj(scheme, obj)
 	if _, ok := protectedGVKs[gvk]; !ok {
 		if _, ok := possibleGVKs[gvk]; !ok {
 			possibleGVKs[gvk] = true
@@ -190,11 +190,11 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 	}
 
 	var gvk, obGVK schema.GroupVersionKind
-	if gvk, err = getKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
+	if gvk, err = utils.getKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
 		return err
 	}
 
-	if obGVK, err = getKindFromObj(o.scheme, object); err != nil {
+	if obGVK, err = utils.getKindFromObj(o.scheme, object); err != nil {
 		return err
 	}
 
@@ -516,18 +516,4 @@ func getNamespacedNameFromRuntime(object runtime.Object) (types.NamespacedName, 
 	}
 
 	return nn, nil
-}
-
-func getKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.GroupVersionKind, error) {
-	gvks, nok, err := scheme.ObjectKinds(object)
-
-	if err != nil {
-		return schema.EmptyObjectKind.GroupVersionKind(), err
-	}
-
-	if nok {
-		return schema.EmptyObjectKind.GroupVersionKind(), fmt.Errorf("object type is unknown")
-	}
-
-	return gvks[0], nil
 }

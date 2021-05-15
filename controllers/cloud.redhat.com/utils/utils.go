@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
@@ -274,4 +275,19 @@ func DeploymentStatusChecker(deployment *apps.Deployment) bool {
 // IntPtr returns a pointer to the passed integer.
 func IntPtr(i int) *int {
 	return &i
+}
+
+// GetKindFromObj retrieves GVK associated with registered runtime.Object
+func GetKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.GroupVersionKind, error) {
+	gvks, nok, err := scheme.ObjectKinds(object)
+
+	if err != nil {
+		return schema.EmptyObjectKind.GroupVersionKind(), err
+	}
+
+	if nok {
+		return schema.EmptyObjectKind.GroupVersionKind(), fmt.Errorf("object type is unknown")
+	}
+
+	return gvks[0], nil
 }

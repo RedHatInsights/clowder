@@ -5,16 +5,17 @@ import (
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	apps "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func filterOwnedObjects(objectList *client.ObjectList, uid types.UID) {
-	filteredObjects := []client.ObjectList{}
+func filterOwnedObjects(objectList unstructured.UnstructuredList, uid types.UID) {
+	filteredObjects := []unstructured.Unstructured{}
 	for _, obj := range objectList.Items {
-		for _, owner := range obj.ObjectMeta.OwnerReferences {
+		for _, owner := range obj.GetOwnerReferences() {
 			if owner.UID == uid {
 				filteredObjects = append(filteredObjects, obj)
 			}
@@ -23,35 +24,64 @@ func filterOwnedObjects(objectList *client.ObjectList, uid types.UID) {
 	objectList.Items = filteredObjects
 }
 
-func getDeploymentStatus(ctx context.Context, client client.Client, o object.ClowdObject) (error, int32, int32) {
-	objectList := client.ObjectList{}
-	err := client.List(ctx, &objectList)
-
-	if err != nil {
-		return err, 0, 0
+func statusConditionPresent(content map[string]interface{}, desiredStatusType string) bool {
+	conditions, found, err := unstructured.NestedSlice(content, "status", "conditions")
+	if err != nil || !found {
+		return false
 	}
 
-	filterOwnedObjects(objectList, o.GetUID())
+	for _, condition := range conditions {
+		// NestedSlice returns each condition item as an interface{}, we know it should be a map[string]interface{}
+		c, ok := condition.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		isStatus, found, err := unstructured.NestedString(c, "status")
+		if err != nil || !found || isStatus != "True" {
+			continue
+		}
+
+		conditionType, found, err := unstructured.NestedString(c, "type")
+		if err != nil || !found {
+			continue
+		}
+
+		if conditionType == desiredStatusType {
+			return true
+		}
+	}
+
+	return false
+}
+
+func parseObjects(objectList unstructured.UnstructuredList) (error, int32, int32) {
 	var managedDeployments int32
 	var readyDeployments int32
 
+	gvk := objectList.GroupVersionKind()
+
 	for _, obj := range objectList.Items {
-		switch t := obj.(type) {
-		case apps.Deployment:
+		content := obj.UnstructuredContent()
+
+		// List of deployments
+		if gvk == gvksForStatus["deployments"] {
+			deployment := apps.Deployment{}
+			runtime.DefaultUnstructuredConverter.FromUnstructured(content, &deployment)
 			managedDeployments++
-			if ok := utils.DeploymentStatusChecker(&obj.(apps.Deployment)); ok {
+			if ok := utils.DeploymentStatusChecker(&deployment); ok {
 				readyDeployments++
 			}
-		case strimzi.Kafka:
-			managedDeployments++
-			// TODO: actually check for ready
-			readyDeployments++
-		case strimzi.KafkaConnect:
-			managedDeployments++
-			// TODO: actually check for ready
-			readyDeployments++
 		}
 
+		// List of Kafka/KafkaConnect resources
+		if gvk == gvksForStatus["kafkas"] || gvk == gvksForStatus["kafkaconnects"] {
+			managedDeployments++
+			if ok := statusConditionPresent(content, "Ready"); ok {
+				// TODO: actually check for ready
+				readyDeployments++
+			}
+		}
 	}
 
 	return nil, managedDeployments, readyDeployments
@@ -59,14 +89,32 @@ func getDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 
 // SetDeploymentStatus the status on the passed ClowdObject interface.
 func SetDeploymentStatus(ctx context.Context, client client.Client, o object.ClowdObject) error {
-	err, managedDeployments, readyDeployments := getDeploymentStatus(ctx, client, o)
-	if err != nil {
-		return err
+	var totalManagedDeployments int32
+	var totalReadyDeployments int32
+
+	for _, gvk := range gvksForStatus {
+		objectList := unstructured.UnstructuredList{}
+		objectList.SetGroupVersionKind(gvk)
+		err := client.List(ctx, &objectList)
+
+		if err != nil {
+			return err
+		}
+
+		filterOwnedObjects(objectList, o.GetUID())
+		err, managedDeployments, readyDeployments := parseObjects(objectList)
+
+		if err != nil {
+			return err
+		}
+
+		totalManagedDeployments += managedDeployments
+		totalReadyDeployments += readyDeployments
 	}
 
 	status := o.GetDeploymentStatus()
-	status.ManagedDeployments = managedDeployments
-	status.ReadyDeployments = readyDeployments
+	status.ManagedDeployments = totalManagedDeployments
+	status.ReadyDeployments = totalReadyDeployments
 
 	return nil
 }
