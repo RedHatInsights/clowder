@@ -10,7 +10,6 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -20,15 +19,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-type gvks struct {
-	List   schema.GroupVersionKind
-	Single schema.GroupVersionKind
-}
-
 var (
-	scheme      = runtime.NewScheme()
-	setupLog    = ctrl.Log.WithName("setup")
-	gvksForType = make(map[string]gvks)
+	scheme   = runtime.NewScheme()
+	setupLog = ctrl.Log.WithName("setup")
 )
 
 var secretCompare schema.GroupVersionKind
@@ -42,19 +35,6 @@ func init() {
 	// +kubebuilder:scaffold:scheme
 
 	secretCompare, _ = utils.GetKindFromObj(scheme, &core.Secret{})
-
-	// Get GVKs for types we are interested in tracking status of
-	listGVK, _ := utils.GetKindFromObj(scheme, &apps.DeploymentList{})
-	gvk, _ := utils.GetKindFromObj(scheme, &apps.Deployment{})
-	gvksForType["deployment"] = gvks{List: listGVK, Single: gvk}
-
-	listGVK, _ = utils.GetKindFromObj(scheme, &strimzi.KafkaList{})
-	gvk, _ = utils.GetKindFromObj(scheme, &strimzi.Kafka{})
-	gvksForType["kafka"] = gvks{List: listGVK, Single: gvk}
-
-	listGVK, _ = utils.GetKindFromObj(scheme, &strimzi.KafkaConnectList{})
-	gvk, _ = utils.GetKindFromObj(scheme, &strimzi.KafkaConnect{})
-	gvksForType["kafkaconnect"] = gvks{List: listGVK, Single: gvk}
 }
 
 // Run inits the manager and controllers and then starts the manager

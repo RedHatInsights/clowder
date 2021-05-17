@@ -5,50 +5,19 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	apps "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func filterOwnedObjects(objectList *unstructured.UnstructuredList, uid types.UID) {
-	filteredObjects := []unstructured.Unstructured{}
-	for _, obj := range objectList.Items {
-		for _, owner := range obj.GetOwnerReferences() {
-			if owner.UID == uid {
-				filteredObjects = append(filteredObjects, obj)
-			}
-		}
-	}
-	objectList.Items = filteredObjects
-}
-
-func statusConditionPresent(content map[string]interface{}, desiredStatusType string) bool {
-	conditions, found, err := unstructured.NestedSlice(content, "status", "conditions")
-	if err != nil || !found {
+func deploymentStatusChecker(deployment apps.Deployment) bool {
+	if deployment.Generation > deployment.Status.ObservedGeneration {
+		// The status on this resource needs to update
 		return false
 	}
 
-	for _, condition := range conditions {
-		// NestedSlice returns each condition item as an interface{}, we know it should be a map[string]interface{}
-		c, ok := condition.(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		isStatus, found, err := unstructured.NestedString(c, "status")
-		if err != nil || !found || isStatus != "True" {
-			continue
-		}
-
-		conditionType, found, err := unstructured.NestedString(c, "type")
-		if err != nil || !found {
-			continue
-		}
-
-		if conditionType == desiredStatusType {
+	for _, condition := range deployment.Status.Conditions {
+		if condition.Type == "Available" && condition.Status == "True" {
 			return true
 		}
 	}
@@ -56,30 +25,118 @@ func statusConditionPresent(content map[string]interface{}, desiredStatusType st
 	return false
 }
 
-func parseObjects(objectList unstructured.UnstructuredList) (error, int32, int32) {
+func kafkaStatusChecker(kafka strimzi.Kafka) bool {
+	// nil checks needed since these are all pointers in strimzi-client-go
+	if kafka.Status == nil {
+		return false
+	}
+
+	if kafka.Status.ObservedGeneration != nil && kafka.Generation > int64(*kafka.Status.ObservedGeneration) {
+		// The status on this resource needs to update
+		return false
+	}
+
+	for _, condition := range kafka.Status.Conditions {
+		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func kafkaConnectStatusChecker(kafkaConnect strimzi.KafkaConnect) bool {
+	// nil checks needed since these are all pointers in strimzi-client-go
+	if kafkaConnect.Status == nil {
+		return false
+	}
+
+	if kafkaConnect.Status.ObservedGeneration != nil && kafkaConnect.Generation > int64(*kafkaConnect.Status.ObservedGeneration) {
+		// The status on this resource needs to update
+		return false
+	}
+
+	for _, condition := range kafkaConnect.Status.Conditions {
+		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func countDeployments(ctx context.Context, client client.Client, o object.ClowdObject) (error, int32, int32) {
 	var managedDeployments int32
 	var readyDeployments int32
 
-	for _, obj := range objectList.Items {
-		gvk := obj.GroupVersionKind()
-		content := obj.UnstructuredContent()
+	deployments := apps.DeploymentList{}
+	err := client.List(ctx, &deployments)
+	if err != nil {
+		return err, 0, 0
+	}
 
-		if gvk == gvksForType["deployment"].Single {
-			// List of deployments
-			deployment := apps.Deployment{}
-			runtime.DefaultUnstructuredConverter.FromUnstructured(content, &deployment)
-			managedDeployments++
-			if ok := utils.DeploymentStatusChecker(&deployment); ok {
-				readyDeployments++
+	// filter for resources owned by the ClowdObject and check their status
+	for _, deployment := range deployments.Items {
+		for _, owner := range deployment.GetOwnerReferences() {
+			if owner.UID == o.GetUID() {
+				managedDeployments++
+				if ok := deploymentStatusChecker(deployment); ok {
+					readyDeployments++
+				}
+				break
 			}
-		} else if gvk == gvksForType["kafka"].Single || gvk == gvksForType["kafkaconnect"].Single {
-			// List of Kafka/KafkaConnect resources
-			managedDeployments++
-			if ok := statusConditionPresent(content, "Ready"); ok {
-				readyDeployments++
+		}
+	}
+
+	return nil, managedDeployments, readyDeployments
+}
+
+func countKafkas(ctx context.Context, client client.Client, o object.ClowdObject) (error, int32, int32) {
+	var managedDeployments int32
+	var readyDeployments int32
+
+	kafkas := strimzi.KafkaList{}
+	err := client.List(ctx, &kafkas)
+	if err != nil {
+		return err, 0, 0
+	}
+
+	// filter for resources owned by the ClowdObject and check their status
+	for _, kafka := range kafkas.Items {
+		for _, owner := range kafka.GetOwnerReferences() {
+			if owner.UID == o.GetUID() {
+				managedDeployments++
+				if ok := kafkaStatusChecker(kafka); ok {
+					readyDeployments++
+				}
+				break
 			}
-		} else {
-			return fmt.Errorf("unable to parse status for gvk: %s", gvk), 0, 0
+		}
+	}
+
+	return nil, managedDeployments, readyDeployments
+}
+
+func countKafkaConnects(ctx context.Context, client client.Client, o object.ClowdObject) (error, int32, int32) {
+	var managedDeployments int32
+	var readyDeployments int32
+
+	kafkaConnects := strimzi.KafkaConnectList{}
+	err := client.List(ctx, &kafkaConnects)
+	if err != nil {
+		return err, 0, 0
+	}
+
+	// filter for resources owned by the ClowdObject and check their status
+	for _, kafkaConnect := range kafkaConnects.Items {
+		for _, owner := range kafkaConnect.GetOwnerReferences() {
+			if owner.UID == o.GetUID() {
+				managedDeployments++
+				if ok := kafkaConnectStatusChecker(kafkaConnect); ok {
+					readyDeployments++
+				}
+				break
+			}
 		}
 	}
 
@@ -91,25 +148,33 @@ func SetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
 
-	for _, gvks := range gvksForType {
-		objectList := unstructured.UnstructuredList{}
-		objectList.SetGroupVersionKind(gvks.List)
-		err := client.List(ctx, &objectList)
+	fmt.Println("******************")
 
-		if err != nil {
-			return err
-		}
-
-		filterOwnedObjects(&objectList, o.GetUID())
-		err, managedDeployments, readyDeployments := parseObjects(objectList)
-
-		if err != nil {
-			return err
-		}
-
-		totalManagedDeployments += managedDeployments
-		totalReadyDeployments += readyDeployments
+	err, managedDeployments, readyDeployments := countDeployments(ctx, client, o)
+	if err != nil {
+		return err
 	}
+	totalManagedDeployments += managedDeployments
+	totalReadyDeployments += readyDeployments
+	fmt.Println(managedDeployments, readyDeployments)
+
+	err, managedDeployments, readyDeployments = countKafkas(ctx, client, o)
+	if err != nil {
+		return err
+	}
+	totalManagedDeployments += managedDeployments
+	totalReadyDeployments += readyDeployments
+	fmt.Println(managedDeployments, readyDeployments)
+
+	err, managedDeployments, readyDeployments = countKafkaConnects(ctx, client, o)
+	if err != nil {
+		return err
+	}
+	totalManagedDeployments += managedDeployments
+	totalReadyDeployments += readyDeployments
+	fmt.Println(managedDeployments, readyDeployments)
+
+	fmt.Println("******************")
 
 	status := o.GetDeploymentStatus()
 	status.ManagedDeployments = totalManagedDeployments
