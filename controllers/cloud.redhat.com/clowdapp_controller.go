@@ -368,9 +368,9 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				ToRequests: handler.ToRequestsFunc(r.appsToEnqueueUponEnvUpdate)},
 			builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app")),
 		).
-		Owns(&apps.Deployment{}).
-		Owns(&core.Service{}).
-		Owns(&core.ConfigMap{}).
+		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
+		Owns(&core.ConfigMap{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
 		Watches(
 			&source.Kind{Type: &core.ConfigMap{}},
 			&handler.EnqueueRequestsFromMapFunc{

@@ -235,8 +235,8 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 	return ctrl.NewControllerManagedBy(mgr).
-		Owns(&apps.Deployment{}).
-		Owns(&core.Service{}).
+		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
 			&handler.EnqueueRequestsFromMapFunc{
