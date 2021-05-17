@@ -2,7 +2,7 @@ package deployment
 
 import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -46,7 +46,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
 		},
 	}
-	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
+	d.Spec.ProgressDeadlineSeconds = common.Int32Ptr(600)
 
 	d.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
 		{Name: "quay-cloudservices-pull"},

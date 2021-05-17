@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	batch "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
@@ -394,7 +393,7 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: utils.PointTrue(),
+		Controller: common.TruePtr(),
 	}
 }
 
