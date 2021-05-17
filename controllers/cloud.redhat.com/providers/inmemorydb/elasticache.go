@@ -55,7 +55,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 	if !found {
 		return &errors.MissingDependencies{
 			MissingDeps: map[string][]string{
-				"secret": {fmt.Sprintf("name: %s, namespace: %s", secretName, app.Namespace)},
+				"in-memory-db-secret": {fmt.Sprintf("name: %s, namespace: %s", secretName, app.Namespace)},
 			},
 		}
 	}
