@@ -105,14 +105,6 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		c.ReadinessProbe = &readinessProbe
 	}
 
-	// TODO: THIS NEEDS TO GO IN SERVICE
-	if deployment.Web {
-		c.Ports = append(c.Ports, core.ContainerPort{
-			Name:          "web",
-			ContainerPort: env.Spec.Providers.Web.Port,
-		})
-	}
-
 	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 		Name:      "config-secret",
 		MountPath: "/cdapp/",
