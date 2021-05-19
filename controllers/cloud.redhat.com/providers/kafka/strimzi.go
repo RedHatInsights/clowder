@@ -658,7 +658,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 
 		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
 		knn := types.NamespacedName{
-			Namespace: getKafkaName(s.Env),
+			Namespace: getKafkaNamespace(s.Env),
 			Name:      topicName,
 		}
 
