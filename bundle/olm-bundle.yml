@@ -17,6 +17,8 @@ parameters:
   value: "false"
 - name: DEBUG_CACHE_APPLY
   value: "false"
+- name: CREATE_SERVICE_MONITORS
+  value: "false"
 objects:
 - apiVersion: operators.coreos.com/v1alpha1
   kind: CatalogSource
@@ -59,7 +61,7 @@ objects:
   metadata:
     name: clowder-config
   data:
-    test_config.json: |
+    clowder_config.json: |
       {
           "debugOptions": {
               "trigger": {
@@ -70,5 +72,8 @@ objects:
                   "update": ${DEBUG_CACHE_UPDATE},
                   "apply": ${DEBUG_CACHE_APPLY}
               }
+          },
+          "features": {
+              "createServiceMonitor": ${CREATE_SERVICE_MONITORS}
           }
       }
