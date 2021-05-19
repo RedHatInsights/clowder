@@ -48,7 +48,7 @@ type InitContainer struct {
 // DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 type DatabaseSpec struct {
 	// Defines the Version of the PostGreSQL database, defaults to 12.
-	// +kubebuilder:validation:Enum:=10;12
+	// +kubebuilder:validation:Enum:=10;12;13
 	Version *int32 `json:"version,omitempty"`
 
 	// Defines the Name of the database to be created. This will be used as the
@@ -318,8 +318,8 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments common.DeploymentStatus `json:"deployments"`
-	Ready       bool                    `json:"ready"`
+	Deployments common.DeploymentStatus `json:"deployments,omitempty"`
+	Ready       bool                    `json:"ready,omitempty"`
 }
 
 // +kubebuilder:object:root=true

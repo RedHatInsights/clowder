@@ -69,6 +69,10 @@ func getConnectClusterName(env *crd.ClowdEnvironment) string {
 	return env.Spec.Providers.Kafka.Connect.Name
 }
 
+func getConnectClusterUserName(env *crd.ClowdEnvironment) string {
+	return fmt.Sprintf("%s-connect", env.Name)
+}
+
 func init() {
 	providers.ProvidersRegistration.Register(GetKafka, 6, ProvName)
 }

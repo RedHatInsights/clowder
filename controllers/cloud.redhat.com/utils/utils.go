@@ -213,6 +213,18 @@ func PointTrue() *bool {
 	return &t
 }
 
+// PointTrue returns a pointer to True
+func PointFalse() *bool {
+	f := false
+	return &f
+}
+
+// PointTrue returns a pointer to True
+func PointString(str string) *string {
+	s := str
+	return &s
+}
+
 // MakeLabeler creates a function that will label objects with metadata from
 // the given namespaced name and labels
 func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.LabeledClowdObject) func(metav1.Object) {

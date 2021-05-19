@@ -91,6 +91,7 @@ spec:
                   enum:
                   - 10
                   - 12
+                  - 13
                   format: int32
                   type: integer
               type: object
@@ -6664,9 +6665,6 @@ spec:
               type: object
             ready:
               type: boolean
-          required:
-          - deployments
-          - ready
           type: object
       type: object
   version: v1alpha1
