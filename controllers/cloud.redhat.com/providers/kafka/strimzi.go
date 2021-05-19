@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -124,9 +125,9 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		Type: "jmxPrometheusExporter",
 		ValueFrom: strimzi.KafkaSpecKafkaMetricsConfigValueFrom{
 			ConfigMapKeyRef: &strimzi.KafkaSpecKafkaMetricsConfigValueFromConfigMapKeyRef{
-				Key:      utils.PointString("metrics"),
-				Name:     utils.PointString(cmnn.Name),
-				Optional: utils.PointFalse(),
+				Key:      common.StringPtr("metrics"),
+				Name:     common.StringPtr(cmnn.Name),
+				Optional: common.FalsePtr(),
 			},
 		},
 	}
@@ -778,7 +779,7 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
-		maxReplicasInt, err := utils.Atoi32(maxReplicas)
+		maxReplicasInt, err := common.Atoi32(maxReplicas)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
@@ -794,7 +795,7 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
-		maxPartitionsInt, err := utils.Atoi32(maxPartitions)
+		maxPartitionsInt, err := common.Atoi32(maxPartitions)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}

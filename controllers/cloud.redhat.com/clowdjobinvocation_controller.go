@@ -18,9 +18,7 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -28,7 +26,6 @@ import (
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,9 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/iqe"
 	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -185,7 +181,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 			return ctrl.Result{}, err
 		}
 
-		if err := r.createIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j); err != nil {
+		if err := iqe.CreateIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j, r.Log, r.Client); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
 			return ctrl.Result{}, err
@@ -194,8 +190,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 		if err := cache.Update(IqeClowdJob, &j); err != nil {
 			r.Log.Error(err, "Iqe Job could not update via cache", "jobinvocation", nn.Name)
 			return ctrl.Result{}, err
-		}
 
+		}
 		cji.Status.Jobs = append(cji.Status.Jobs, j.ObjectMeta.Name)
 		r.Log.Info("Iqe Job Invoked Successfully", "jobinvocation", nn.Name, "namespace", app.Namespace)
 		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
@@ -242,207 +238,6 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, j
 	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 
 	return nil
-}
-
-func (r *ClowdJobInvocationReconciler) fetchConfig(name types.NamespacedName, ctx context.Context) (config.AppConfig, error) {
-	secretConfig := core.Secret{}
-	cfg := config.AppConfig{}
-
-	if err := r.Client.Get(ctx, name, &secretConfig); err != nil {
-		r.Log.Error(err, "Failed to get app secret")
-		r.Recorder.Eventf(&secretConfig, "Warning", "SecretMissing", "secret [%s] missing", name)
-		return cfg, err
-	}
-
-	if err := json.Unmarshal(secretConfig.Data["cdappconfig.json"], &cfg); err != nil {
-		r.Log.Error(err, "Could not unmarshall json for cdappconfig")
-		r.Recorder.Eventf(&secretConfig, "Warning", "UnmarshallError", "app config [%s] not unmarshalled", name)
-		return cfg, err
-	}
-
-	return cfg, nil
-}
-
-func (r *ClowdJobInvocationReconciler) createAndApplyIqeSecret(cache *providers.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string) error {
-	iqeSecret := &core.Secret{}
-
-	appList := crd.ClowdAppList{}
-	if err := crd.GetAppInSameEnv(ctx, r.Client, app, &appList); err != nil {
-		return err
-	}
-
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-iqe", cji.Name),
-		Namespace: cji.Namespace,
-	}
-
-	if err := cache.Create(IqeSecret, nn, iqeSecret); err != nil {
-		r.Log.Error(err, "Failed to check for iqe secret")
-		return err
-	}
-	iqeSecret.SetName(nn.Name)
-	iqeSecret.SetNamespace(nn.Namespace)
-
-	// This should maybe be owned by the job
-	iqeSecret.SetOwnerReferences([]metav1.OwnerReference{cji.MakeOwnerReference()})
-
-	// loop through secrets and get their appConfig
-	envConfig := make(map[string]interface{})
-	// because we want a list of appConfigs, we need to nest this under the envConfig
-	appConfigs := make(map[string]config.AppConfig)
-	for _, app := range appList.Items {
-		appConfig, err := r.fetchConfig(types.NamespacedName{
-			Name:      app.Name,
-			Namespace: app.Namespace,
-		}, ctx)
-		if err != nil {
-			r.Recorder.Eventf(&app, "Warning", "AppConfigMissing", "app config [%s] missing", app.Name)
-			r.Log.Error(err, "Failed to fetch app config for app")
-			return err
-		}
-		appConfigs[app.Name] = appConfig
-	}
-	envConfig["cdappconfigs"] = appConfigs
-
-	// Marshall the data into the top level "cdenvconfig.json" to be mounted as a single secret
-	// with the appconfigs list embedded
-	envData, err := json.Marshal(envConfig)
-	if err != nil {
-		r.Log.Error(err, "Failed to marshal iqe secret")
-		return err
-	}
-
-	// and finally cast all these configs and create the secret
-	cdEnv := make(map[string][]byte)
-	cdEnv["cdenvconfig.json"] = envData
-	iqeSecret.Data = cdEnv
-	if err := cache.Update(IqeSecret, iqeSecret); err != nil {
-		r.Log.Error(err, "Failed to check for iqe secret")
-		return err
-	}
-
-	return nil
-}
-
-func (r *ClowdJobInvocationReconciler) createIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job) error {
-	labels := cji.GetLabels()
-	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
-
-	j.ObjectMeta.Labels = labels
-	j.Spec.Template.ObjectMeta.Labels = labels
-
-	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
-
-	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
-		{Name: "quay-cloudservices-pull"},
-	}
-
-	pod := crd.PodSpec{
-		Resources: env.Spec.Providers.Testing.Iqe.Resources,
-	}
-
-	envvar := []core.EnvVar{
-		{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
-		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
-		{Name: "NAMESPACE", Value: nn.Namespace},
-		{Name: "CLOWDER_ENABLED", Value: "true"},
-	}
-
-	tag := ""
-	if cji.Spec.Testing.Iqe.ImageTag != "" {
-		tag = cji.Spec.Testing.Iqe.ImageTag
-	} else {
-		tag = app.Spec.Testing.IqePlugin
-	}
-	plugin := app.Spec.Testing.IqePlugin
-	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
-
-	constructedIqeCommand, err := constructIqeCommand(cji, plugin)
-	if err != nil {
-		return err
-	}
-
-	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
-
-	c := core.Container{
-		Name:         nn.Name,
-		Image:        fmt.Sprintf("%s:%s", iqeImage, tag),
-		Command:      constructedIqeCommand,
-		Env:          envvar,
-		Resources:    deployProvider.ProcessResources(&pod, env),
-		VolumeMounts: []core.VolumeMount{},
-		// Because the tags on iqe plugins are not commit based, we need to pull everytime we run.
-		// A leftover tag from a previous run is never guaranteed to be up to date
-		ImagePullPolicy: core.PullAlways,
-	}
-
-	j.Spec.Template.Spec.Volumes = []core.Volume{}
-	configAccess := env.Spec.Providers.Testing.ConfigAccess
-
-	switch configAccess {
-	// Build cdenvconfig.json and mount it
-	case "environment":
-		if secretErr := r.createAndApplyIqeSecret(cache, ctx, cji, app, env.Name); secretErr != nil {
-			r.Log.Error(secretErr, "Cannot apply iqe secret")
-			return secretErr
-		}
-		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
-			Name:      "cdenvconfig",
-			MountPath: "/cdenv",
-		})
-
-		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
-			Name: "cdenvconfig",
-			VolumeSource: core.VolumeSource{
-				Secret: &core.SecretVolumeSource{
-					SecretName: nn.Name,
-				},
-			},
-		})
-		// if we have env access, we also want app access as well, so also run the next case
-		fallthrough
-
-	// mount cdappconfig
-	case "app":
-		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
-			Name:      "config-secret",
-			MountPath: "/cdapp",
-		})
-
-		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
-			Name: "config-secret",
-			VolumeSource: core.VolumeSource{
-				Secret: &core.SecretVolumeSource{
-					SecretName: cji.Spec.AppName,
-				},
-			},
-		})
-
-	default:
-		r.Log.Info("No config mounted to the iqe pod")
-	}
-
-	j.Spec.Template.Spec.Containers = []core.Container{c}
-
-	return nil
-}
-
-func constructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) ([]string, error) {
-	if plugin == "" {
-		return []string{}, errors.New("iqe-plugin is missing from ClowdApp")
-	}
-	command := []string{
-		"iqe", "tests", "plugin",
-		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),
-	}
-	if cji.Spec.Testing.Iqe.Marker != "" {
-		command = append(command, "-m", cji.Spec.Testing.Iqe.Marker)
-	}
-	if cji.Spec.Testing.Iqe.Filter != "" {
-		// Note: go can append multiple values to a slice
-		command = append(command, "-k", cji.Spec.Testing.Iqe.Filter)
-	}
-	return command, nil
 }
 
 // getJobFromName matches a CJI job name to an App's job definition

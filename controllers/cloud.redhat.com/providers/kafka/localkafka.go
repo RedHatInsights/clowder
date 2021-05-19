@@ -6,6 +6,7 @@ import (
 	"time"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -164,7 +165,7 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) 
 		}
 	}
 
-	dd.Spec.Replicas = utils.Int32Ptr(1)
+	dd.Spec.Replicas = common.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{
@@ -284,7 +285,7 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		}
 	}
 
-	dd.Spec.Replicas = utils.Int32Ptr(1)
+	dd.Spec.Replicas = common.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{
