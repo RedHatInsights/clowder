@@ -624,7 +624,8 @@ Appears In:
 
    "``port`` (integer)", "The port that metrics services inside ClowdApp pods should be served on."
    "``path`` (string)", "A prefix path that pods will be instructed to use when setting up their metrics server."
-   "``mode`` (MetricsMode)", "The mode of operation of the Metrics provider. The allowed modes are  (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated."
+   "``mode`` (MetricsMode)", "The mode of operation of the Metrics provider. The allowed modes are  (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated. (*_app-interface_*) where services and probes are generated for app-interface."
+   "``prometheus`` (:ref:`PrometheusConfig`)", "Prometheus specific configuration"
 
 
 
@@ -744,6 +745,24 @@ Appears In:
    :widths: 10, 40
 
    "``enabled`` (boolean)", "Enabled describes if Clowder should enable the private service and provide the configuration in the cdappconfig."
+
+
+.. _PrometheusConfig :
+
+PrometheusConfig 
+^^^^^^^^^^^^^^^^
+
+
+
+Appears In:
+:ref:`MetricsConfig`
+
+
+.. csv-table:: 
+   :header: "Field", "Description"
+   :widths: 10, 40
+
+   "``deploy`` (boolean)", "Determines whether to deploy prometheus in operator mode"
 
 
 .. _ProvidersConfig :

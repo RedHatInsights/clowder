@@ -66,6 +66,10 @@ kubectl get pods --all-namespaces=true
 source build/kube_setup.sh
 
 export IMAGE_TAG=`git rev-parse --short HEAD`
+
+kubectl create namespace clowder-system
+kubectl apply -f clowder-config.yaml -n clowder-system
+
 IMG=$IMAGE_NAME:$IMAGE_TAG make deploy
 
 # Wait for operator deployment...

@@ -22,6 +22,9 @@ type ClowderConfig struct {
 			CpuFile string `json:"cpuFile"`
 		} `json:"pprof"`
 	} `json:"debugOptions"`
+	Features struct {
+		CreateServiceMonitor bool `json:"createServiceMonitor"`
+	} `json:"features"`
 }
 
 func getConfig() ClowderConfig {

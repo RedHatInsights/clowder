@@ -169,7 +169,7 @@ function install_cyndi_operator {
 
 
 install_strimzi_operator
-#install_prometheus_operator
+install_prometheus_operator
 install_cyndi_operator
 
 FAILURES=0

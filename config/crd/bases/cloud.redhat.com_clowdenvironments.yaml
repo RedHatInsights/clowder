@@ -323,10 +323,12 @@ spec:
                       description: The mode of operation of the Metrics provider.
                         The allowed modes are  (*_none_*), which disables metrics
                         service generation, or (*_operator_*) where services and probes
-                        are generated.
+                        are generated. (*_app-interface_*) where services and probes
+                        are generated for app-interface.
                       enum:
                       - none
                       - operator
+                      - app-interface
                       type: string
                     path:
                       description: A prefix path that pods will be instructed to use
@@ -337,6 +339,14 @@ spec:
                         pods should be served on.
                       format: int32
                       type: integer
+                    prometheus:
+                      description: Prometheus specific configuration
+                      properties:
+                        deploy:
+                          description: Determines whether to deploy prometheus in
+                            operator mode
+                          type: boolean
+                      type: object
                   required:
                   - mode
                   - port

@@ -18,6 +18,7 @@ import (
 
 	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -94,6 +95,7 @@ func init() {
 	utilruntime.Must(crd.AddToScheme(scheme))
 	utilruntime.Must(strimzi.AddToScheme(scheme))
 	utilruntime.Must(cyndi.AddToScheme(scheme))
+	utilruntime.Must(prom.AddToScheme(scheme))
 
 	gvk, _ := getKindFromObj(scheme, &strimzi.KafkaTopic{})
 	protectedGVKs[gvk] = true
@@ -106,7 +108,7 @@ func registerGVK(obj runtime.Object) {
 	if _, ok := protectedGVKs[gvk]; !ok {
 		if _, ok := possibleGVKs[gvk]; !ok {
 			possibleGVKs[gvk] = true
-			fmt.Println("Registered type ", gvk.Group, gvk.Kind, gvk.Version)
+			fmt.Println("Registered type: ", gvk.Group, gvk.Kind, gvk.Version)
 		}
 	}
 }
@@ -187,10 +189,17 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 		return fmt.Errorf("cannot create: ident store [%s] already has item named [%s]", resourceIdent, nn)
 	}
 
-	gvk, err := getKindFromObj(o.scheme, resourceIdent.GetType())
-
-	if err != nil {
+	var gvk, obGVK schema.GroupVersionKind
+	if gvk, err = getKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
 		return err
+	}
+
+	if obGVK, err = getKindFromObj(o.scheme, object); err != nil {
+		return err
+	}
+
+	if gvk != obGVK {
+		return fmt.Errorf("create: resourceIdent type does not match runtime object [%s] [%s] [%s]", nn, gvk, obGVK)
 	}
 
 	if _, ok := o.resourceTracker[gvk]; !ok {
@@ -250,6 +259,19 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object runtime.Object)
 
 	if _, ok := o.data[resourceIdent][nn]; !ok {
 		return fmt.Errorf("object not found in cache, cannot update")
+	}
+
+	var gvk, obGVK schema.GroupVersionKind
+	if gvk, err = getKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
+		return err
+	}
+
+	if obGVK, err = getKindFromObj(o.scheme, object); err != nil {
+		return err
+	}
+
+	if gvk != obGVK {
+		return fmt.Errorf("create: resourceIdent type does not match runtime object [%s] [%s] [%s]", nn, gvk, obGVK)
 	}
 
 	o.data[resourceIdent][nn].Object = object.DeepCopyObject()
