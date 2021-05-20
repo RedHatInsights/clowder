@@ -147,7 +147,8 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 	listenerType := "plain"
 	kport := int32(9092)
 
-	for i := 1; i < 60; i++ {
+	// this loop will run for 60sec max
+	for i := 1; i < 1200; i++ {
 		if t.Failed() {
 			break
 		}
