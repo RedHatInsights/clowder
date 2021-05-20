@@ -71,7 +71,7 @@ func getConnectNamespace(env *crd.ClowdEnvironment) string {
 
 func getConnectClusterName(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Kafka.Connect.Name == "" {
-		return fmt.Sprintf("%s-connect", env.Spec.Providers.Kafka.Cluster.Name)
+		return fmt.Sprintf("%s-connect", getKafkaName(env))
 	}
 	return env.Spec.Providers.Kafka.Connect.Name
 }

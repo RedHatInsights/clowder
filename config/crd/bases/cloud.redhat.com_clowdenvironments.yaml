@@ -206,8 +206,6 @@ spec:
                         version:
                           description: Version. If unset, default is '2.5.0'
                           type: string
-                      required:
-                      - name
                       type: object
                     clusterName:
                       description: (Deprecated) Defines the cluster name to be used
