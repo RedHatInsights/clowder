@@ -210,6 +210,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 		err := cache.Reconcile(&app)
 		if err != nil {
+			log.Info("Reconcile error", "error", err)
 			return ctrl.Result{Requeue: requeue}, nil
 		}
 	} else {
