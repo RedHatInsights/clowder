@@ -357,22 +357,20 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 			"status.storage.replication.factor": "1",
 		},
 		Image: &image,
-	}
-	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
-		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
+		Tls: &strimzi.KafkaConnectSpecTls{
 			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
 				Certificate: "ca.crt",
 				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", s.Env.Spec.Providers.Kafka.Cluster.Name),
 			}},
-		}
-		k.Spec.Authentication = &strimzi.KafkaConnectSpecAuthentication{
+		},
+		Authentication: &strimzi.KafkaConnectSpecAuthentication{
 			PasswordSecret: &strimzi.KafkaConnectSpecAuthenticationPasswordSecret{
 				Password:   "password",
 				SecretName: username,
 			},
 			Type:     "scram-sha-512",
 			Username: &username,
-		}
+		},
 	}
 
 	// configures this KafkaConnect to use KafkaConnector resources to avoid needing to call the

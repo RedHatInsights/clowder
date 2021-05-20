@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"sort"
 
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -29,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -237,18 +235,16 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 	return ctrl.NewControllerManagedBy(mgr).
-		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-		Owns(&strimzi.Kafka{}).
-		Owns(&strimzi.KafkaConnect{}).
+		Owns(&apps.Deployment{}).
+		Owns(&core.Service{}).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
 			},
-			builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "env")),
 		).
 		For(&crd.ClowdEnvironment{}).
+		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "env")).
 		Complete(r)
 }
 

@@ -1,13 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"os"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 
 	cloudredhatcomv1alpha1 "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -26,15 +26,30 @@ var (
 
 var secretCompare schema.GroupVersionKind
 
+func getKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.GroupVersionKind, error) {
+	gvks, nok, err := scheme.ObjectKinds(object)
+
+	if err != nil {
+		return schema.EmptyObjectKind.GroupVersionKind(), err
+	}
+
+	if nok {
+		return schema.EmptyObjectKind.GroupVersionKind(), fmt.Errorf("object type is unknown")
+	}
+
+	return gvks[0], nil
+}
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+
 	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(strimzi.AddToScheme(scheme))
 	utilruntime.Must(cyndi.AddToScheme(scheme))
 	utilruntime.Must(prom.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 
-	secretCompare, _ = utils.GetKindFromObj(scheme, &core.Secret{})
+	secretCompare, _ = getKindFromObj(scheme, &core.Secret{})
 }
 
 // Run inits the manager and controllers and then starts the manager

@@ -14,12 +14,12 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
@@ -234,22 +234,44 @@ func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels ma
 	}
 }
 
+// DeploymentStatusChecker takes a deployment and returns True if it is deemed ready by the logic in
+// the function.
+func DeploymentStatusChecker(deployment *apps.Deployment) bool {
+	if deployment.Generation > deployment.Status.ObservedGeneration {
+		// The deployment controller still needs to reconcile
+		return false
+	}
+
+	if deployment.Spec.Replicas != nil {
+		if *deployment.Spec.Replicas == 0 {
+			// Since there's no replicas, there's nothing to do to get ready
+			return true
+		}
+
+		if deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas {
+			// This indicates that the deployment has not completed rolling out the new ReplicaSet
+			return false
+		}
+	}
+
+	// At this point we know all pods in the new ReplicaSet have been created.  Therefore
+	// deployment.Status.UpdatedReplicas is used as the "actual replica count for pods that we care
+	// about".
+
+	if deployment.Status.Replicas > deployment.Status.UpdatedReplicas {
+		// This indicates there is at least one replica still remaining from an old ReplicaSet
+		return false
+	}
+
+	if deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas {
+		// One or more pods in the new ReplicaSet aren't ready yet
+		return false
+	}
+
+	return true
+}
+
 // IntPtr returns a pointer to the passed integer.
 func IntPtr(i int) *int {
 	return &i
-}
-
-// GetKindFromObj retrieves GVK associated with registered runtime.Object
-func GetKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.GroupVersionKind, error) {
-	gvks, nok, err := scheme.ObjectKinds(object)
-
-	if err != nil {
-		return schema.EmptyObjectKind.GroupVersionKind(), err
-	}
-
-	if nok {
-		return schema.EmptyObjectKind.GroupVersionKind(), fmt.Errorf("object type is unknown")
-	}
-
-	return gvks[0], nil
 }

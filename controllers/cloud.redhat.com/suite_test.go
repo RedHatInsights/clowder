@@ -26,7 +26,6 @@ import (
 	"testing"
 	"time"
 
-	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -147,15 +146,12 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 	listenerType := "plain"
 	kport := int32(9092)
 
-	// this loop will run for 60sec max
-	for i := 1; i < 1200; i++ {
+	for {
 		if t.Failed() {
 			break
 		}
 		t.Logf("Loop in applyKafkaStatus")
 		time.Sleep(50 * time.Millisecond)
-
-		// set a mock status on strimzi Kafka cluster
 		cluster := strimzi.Kafka{}
 		err := k8sClient.Get(ctx, nn, &cluster)
 
@@ -164,55 +160,26 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 			continue
 		}
 
-		cluster.Status = &strimzi.KafkaStatus{
-			Conditions: []strimzi.KafkaStatusConditionsElem{{
-				Status: common.StringPtr("True"),
-				Type:   common.StringPtr("Ready"),
-			}},
-			Listeners: []strimzi.KafkaStatusListenersElem{{
-				Type: &listenerType,
-				Addresses: []strimzi.KafkaStatusListenersElemAddressesElem{{
-					Host: &host,
-					Port: &kport,
+		if cluster.Name == "kafka" {
+			cluster.Status = &strimzi.KafkaStatus{
+				Listeners: []strimzi.KafkaStatusListenersElem{{
+					Type: &listenerType,
+					Addresses: []strimzi.KafkaStatusListenersElemAddressesElem{{
+						Host: &host,
+						Port: &kport,
+					}},
 				}},
-			}},
-		}
-		t.Logf("Applying kafka status")
-		err = k8sClient.Status().Update(ctx, &cluster)
+			}
+			t.Logf("Applying kafka status")
+			err = k8sClient.Status().Update(ctx, &cluster)
 
-		if err != nil {
-			t.Logf(err.Error())
-			continue
-		}
+			if err != nil {
+				t.Logf(err.Error())
+				continue
+			}
 
-		// set a mock status on strimzi KafkaConnect cluster
-		connectCluster := strimzi.KafkaConnect{}
-		nn := types.NamespacedName{
-			Name:      "kafka-connect",
-			Namespace: "kafka",
+			break
 		}
-		err = k8sClient.Get(ctx, nn, &connectCluster)
-
-		if err != nil {
-			t.Logf(err.Error())
-			continue
-		}
-
-		connectCluster.Status = &strimzi.KafkaConnectStatus{
-			Conditions: []strimzi.KafkaConnectStatusConditionsElem{{
-				Status: common.StringPtr("True"),
-				Type:   common.StringPtr("Ready"),
-			}},
-		}
-		t.Logf("Applying kafka connect status")
-		err = k8sClient.Status().Update(ctx, &connectCluster)
-
-		if err != nil {
-			t.Logf(err.Error())
-			continue
-		}
-
-		break
 	}
 
 	ch <- 0
