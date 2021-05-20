@@ -24,7 +24,6 @@ type ClowderConfig struct {
 	} `json:"debugOptions"`
 	Features struct {
 		CreateServiceMonitor bool `json:"createServiceMonitor"`
-		Webhooks             bool `json:"webhooks"`
 	} `json:"features"`
 }
 
