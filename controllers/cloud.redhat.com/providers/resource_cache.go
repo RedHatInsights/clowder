@@ -190,11 +190,11 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 	}
 
 	var gvk, obGVK schema.GroupVersionKind
-	if gvk, err = utils.getKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
+	if gvk, err = utils.GetKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
 		return err
 	}
 
-	if obGVK, err = utils.getKindFromObj(o.scheme, object); err != nil {
+	if obGVK, err = utils.GetKindFromObj(o.scheme, object); err != nil {
 		return err
 	}
 
@@ -262,11 +262,11 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object runtime.Object)
 	}
 
 	var gvk, obGVK schema.GroupVersionKind
-	if gvk, err = getKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
+	if gvk, err = utils.GetKindFromObj(o.scheme, resourceIdent.GetType()); err != nil {
 		return err
 	}
 
-	if obGVK, err = getKindFromObj(o.scheme, object); err != nil {
+	if obGVK, err = utils.GetKindFromObj(o.scheme, object); err != nil {
 		return err
 	}
 
