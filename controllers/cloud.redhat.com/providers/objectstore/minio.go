@@ -190,7 +190,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		minioCacheMap = append(minioCacheMap, MinioPVC)
 	}
 
-	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.Spec.NodePort)
+	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.IsNodePort())
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't make component", err)
 		raisedErr.Requeue = true

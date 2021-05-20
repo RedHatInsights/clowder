@@ -108,7 +108,7 @@ func NewLocalKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 		zookeeperCacheMap = append(zookeeperCacheMap, LocalZookeeperPVC)
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, zookeeperCacheMap, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC, p.Env.Spec.NodePort); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, zookeeperCacheMap, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC, p.Env.IsNodePort()); err != nil {
 		return &kafkaProvider, err
 	}
 
@@ -121,7 +121,7 @@ func NewLocalKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 		kafkaCacheMap = append(kafkaCacheMap, LocalKafkaPVC)
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, kafkaCacheMap, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC, p.Env.Spec.NodePort); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, kafkaCacheMap, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC, p.Env.IsNodePort()); err != nil {
 		return &kafkaProvider, err
 	}
 

@@ -63,7 +63,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 		RedisService,
 	}
 
-	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false, r.Env.Spec.NodePort)
+	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false, r.Env.IsNodePort())
 }
 
 // NewLocalRedis returns a new local redis provider object.

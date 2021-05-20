@@ -68,7 +68,7 @@ func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdAp
 		)
 	}
 
-	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, web.Env.Spec.NodePort)
+	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, web.Env.IsNodePort())
 
 	d.Spec.Template.Spec.Containers[0].Ports = containerPorts
 

@@ -51,7 +51,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		LocalFFService,
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "featureflags", makeLocalFeatureFlags, false, p.Env.Spec.NodePort); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "featureflags", makeLocalFeatureFlags, false, p.Env.IsNodePort()); err != nil {
 		return nil, err
 	}
 

@@ -324,6 +324,12 @@ type IqeConfig struct {
 	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
+// ServiceConfig provides options for k8s Service resources
+type ServiceConfig struct {
+	// +kubebuilder:validation:Enum=ClusterIP,NodePort
+	Type string `json:"type"`
+}
+
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 type ClowdEnvironmentSpec struct {
 	// TargetNamespace describes the namespace where any generated environmental
@@ -338,8 +344,7 @@ type ClowdEnvironmentSpec struct {
 	// event that they omitted from a PodSpec inside a ClowdApp.
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 
-	// Node port enables the node port for clowder created services
-	NodePort bool `json:"nodePort,omitempty"`
+	ServiceConfig ServiceConfig `json:"serviceConfig,omitempty"`
 }
 
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
@@ -560,4 +565,9 @@ func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient clien
 	}
 
 	return namespaceList, nil
+}
+
+// IsNodePort indicates whether or not services are configured as NodePort or not
+func (i *ClowdEnvironment) IsNodePort() bool {
+	return i.Spec.ServiceConfig.Type == "NodePort"
 }
