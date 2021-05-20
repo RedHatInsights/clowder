@@ -186,7 +186,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		MinioService,
 	}
 
-	if p.Env.Spec.Providers.Kafka.PVC {
+	if p.Env.Spec.Providers.ObjectStore.PVC {
 		minioCacheMap = append(minioCacheMap, MinioPVC)
 	}
 

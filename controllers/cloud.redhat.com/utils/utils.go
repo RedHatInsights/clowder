@@ -193,29 +193,9 @@ func ListMerge(listStrs []string) (string, error) {
 	return strings.Join(keys, ","), nil
 }
 
-// Int32Ptr returns a pointer to an int32 version of n
-func Int32Ptr(n int) *int32 {
-	t, err := Int32(n)
-	if err != nil {
-		panic(err)
-	}
-	return &t
-}
-
-// Int64Ptr returns a pointer to an int64
-func Int64Ptr(n int64) *int64 {
-	return &n
-}
-
-// PointTrue returns a pointer to True
-func PointTrue() *bool {
-	t := true
-	return &t
-}
-
 // MakeLabeler creates a function that will label objects with metadata from
 // the given namespaced name and labels
-func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.ClowdObject) func(metav1.Object) {
+func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.LabeledClowdObject) func(metav1.Object) {
 	return func(o metav1.Object) {
 		o.SetName(nn.Name)
 		o.SetNamespace(nn.Namespace)
@@ -226,7 +206,7 @@ func MakeLabeler(nn types.NamespacedName, labels map[string]string, obj obj.Clow
 
 // GetCustomLabeler takes a set of labels and returns a labeler function that
 // will apply those labels to a reource.
-func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.ClowdObject) func(metav1.Object) {
+func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseResource obj.LabeledClowdObject) func(metav1.Object) {
 	appliedLabels := baseResource.GetLabels()
 	for k, v := range labels {
 		appliedLabels[k] = v

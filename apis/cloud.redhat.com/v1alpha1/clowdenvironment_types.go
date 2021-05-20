@@ -22,6 +22,8 @@ import (
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,8 +55,13 @@ type WebConfig struct {
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider
-// +kubebuilder:validation:Enum=none;operator
+// +kubebuilder:validation:Enum=none;operator;app-interface
 type MetricsMode string
+
+type PrometheusConfig struct {
+	// Determines whether to deploy prometheus in operator mode
+	Deploy bool `json:"deploy,omitempty"`
+}
 
 // MetricsConfig configures the Clowder provider controlling the creation of
 // metrics services and their probes.
@@ -69,13 +76,17 @@ type MetricsConfig struct {
 	// The mode of operation of the Metrics provider. The allowed modes are
 	//  (*_none_*), which disables metrics service generation, or
 	// (*_operator_*) where services and probes are generated.
+	// (*_app-interface_*) where services and probes are generated for app-interface.
 	Mode MetricsMode `json:"mode"`
+
+	// Prometheus specific configuration
+	Prometheus PrometheusConfig `json:"prometheus,omitempty"`
 }
 
 // TODO: Other potential mode: saas
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
-// +kubebuilder:validation:Enum=operator;app-interface;local;none
+// +kubebuilder:validation:Enum=managed;operator;app-interface;local;none
 type KafkaMode string
 
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
@@ -100,6 +111,15 @@ type KafkaClusterConfig struct {
 
 	// Version. If unset, default is '2.5.0'
 	Version string `json:"version,omitempty"`
+
+	// Config full options
+	Config strimzi.KafkaSpecKafkaConfig `json:"config,omitempty"`
+
+	// JVM Options
+	JVMOptions strimzi.KafkaSpecKafkaJvmOptions `json:"jvmOptions,omitempty"`
+
+	// Resource Limits
+	Resources strimzi.KafkaSpecKafkaResources `json:"resources,omitempty"`
 }
 
 // KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
@@ -119,6 +139,15 @@ type KafkaConnectClusterConfig struct {
 
 	// Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
 	Image string `json:"image,omitempty"`
+}
+
+// NamespacedName type to represent a real Namespaced Name
+type NamespacedName struct {
+	// Name defines the Name of a resource.
+	Name string `json:"name"`
+
+	// Namespace defines the Namespace of a resource.
+	Namespace string `json:"namespace"`
 }
 
 // KafkaConfig configures the Clowder provider controlling the creation of
@@ -145,6 +174,9 @@ type KafkaConfig struct {
 
 	// Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode.
 	Connect KafkaConnectClusterConfig `json:"connect,omitempty"`
+
+	// Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode.
+	ManagedSecretRef NamespacedName `json:"managedSecretRef,omitempty"`
 
 	// (Deprecated) Defines the cluster name to be used by the Kafka Provider this will
 	// be used in some modes to locate the Kafka instance.
@@ -272,6 +304,35 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
+// Describes what amount of app config is mounted to the pod
+// +kubebuilder:validation:Enum={"none", "app", "", "environment"}
+type ConfigAccessMode string
+
+type TestingConfig struct {
+	// Defines the environment for iqe/smoke testing
+	Iqe IqeConfig `json:"iqe,omitempty"`
+
+	// The mode of operation of the testing Pod. Valid options are:
+	// 'default', 'view' or 'edit'
+	K8SAccessLevel K8sAccessLevel `json:"k8sAccessLevel"`
+
+	// The mode of operation for access to outside app configs. Valid
+	// options are:
+	// (*_none_*) -- no app config is mounted to the pod
+	// (*_app_*) -- only the ClowdApp's config is mounted to the pod
+	// (*_environment_*) -- the config for all apps in the env are mounted
+	ConfigAccess ConfigAccessMode `json:"configAccess"`
+}
+
+type IqeConfig struct {
+	ImageBase string `json:"imageBase"`
+
+	// A pass-through of a resource requirements in k8s ResourceRequirements
+	// format. If omitted, the default resource requirements from the
+	// ClowdEnvironment will be used.
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+}
+
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 type ClowdEnvironmentSpec struct {
 	// TargetNamespace describes the namespace where any generated environmental
@@ -286,9 +347,6 @@ type ClowdEnvironmentSpec struct {
 	// event that they omitted from a PodSpec inside a ClowdApp.
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 }
-
-//PullSecrets defines the pull secret to use for the created Clowder service accounts.
-type PullSecrets []string
 
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
 type ProvidersConfig struct {
@@ -320,7 +378,10 @@ type ProvidersConfig struct {
 	ServiceMesh ServiceMeshConfig `json:"serviceMesh,omitempty"`
 
 	// Defines the pull secret to use for the service accounts.
-	PullSecrets PullSecrets `json:"pullSecrets,omitempty"`
+	PullSecrets []NamespacedName `json:"pullSecrets,omitempty"`
+
+	// Defines the environment for iqe/smoke testing
+	Testing TestingConfig `json:"testing,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
@@ -339,9 +400,9 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	TargetNamespace string                  `json:"targetNamespace"`
-	Ready           bool                    `json:"ready"`
-	Deployments     common.DeploymentStatus `json:"deployments"`
+	TargetNamespace string                  `json:"targetNamespace,omitempty"`
+	Ready           bool                    `json:"ready,omitempty"`
+	Deployments     common.DeploymentStatus `json:"deployments,omitempty"`
 	Apps            []AppInfo               `json:"apps,omitempty"`
 	Generation      int64                   `json:"generation,omitempty"`
 }
@@ -395,7 +456,9 @@ func init() {
 
 // GetLabels returns a base set of labels relating to the ClowdEnvironment.
 func (i *ClowdEnvironment) GetLabels() map[string]string {
-	return map[string]string{"app": i.ObjectMeta.Name}
+	return map[string]string{
+		"app": i.ObjectMeta.Name,
+	}
 }
 
 // MakeOwnerReference defines the owner reference pointing to the ClowdApp resource.
@@ -405,7 +468,7 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: utils.PointTrue(),
+		Controller: common.TruePtr(),
 	}
 }
 
@@ -468,14 +531,41 @@ func (i *ClowdEnvironment) ConvertDeprecatedKafkaSpec() {
 	}
 }
 
-// GetAppInSameEnv populates the appList with a list of all apps in the same ClowdEnvironment. The
-// environment is inferred from the given app.
-func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Client, appList *ClowdAppList) error {
+// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Client) (*ClowdAppList, error) {
+
+	appList := &ClowdAppList{}
+
 	err := pClient.List(ctx, appList, client.MatchingFields{"spec.envName": i.Name})
 
 	if err != nil {
-		return errors.Wrap("could not list apps", err)
+		return appList, errors.Wrap("could not list apps", err)
 	}
 
-	return nil
+	return appList, nil
+}
+
+// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
+
+	var err error
+	var appList *ClowdAppList
+
+	if appList, err = i.GetAppsInEnv(ctx, pClient); err != nil {
+		return nil, err
+	}
+
+	tmpNamespace := map[string]bool{}
+
+	for _, app := range appList.Items {
+		tmpNamespace[app.Namespace] = true
+	}
+
+	namespaceList := []string{}
+
+	for namespace, _ := range tmpNamespace {
+		namespaceList = append(namespaceList, namespace)
+	}
+
+	return namespaceList, nil
 }

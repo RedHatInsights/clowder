@@ -39,10 +39,12 @@ import (
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/featureflags"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/iqe"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/pullsecrets"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
@@ -151,7 +153,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 
 	var requeue = false
 
-	provErr := runProvidersForEnv(provider)
+	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
@@ -218,11 +220,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
-func runProvidersForEnv(provider providers.Provider) error {
+func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		if _, err := provAcc.SetupProvider(&provider); err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order)
 	}
 	return nil
 }

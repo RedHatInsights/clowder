@@ -27,6 +27,7 @@ kubeconfig
 *~
 launch.json
 *.code-workspace
+.vimrc
 
 docs/build
 .docs/

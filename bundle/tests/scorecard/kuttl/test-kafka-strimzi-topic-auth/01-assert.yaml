@@ -32,7 +32,7 @@ metadata:
     name: test-kafka-strimzi-topic-auth
 spec:
   partitions: 96
-  replicas: 7
+  replicas: 1
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
@@ -48,7 +48,7 @@ metadata:
     name: test-kafka-strimzi-topic-auth
 spec:
   partitions: 128
-  replicas: 5
+  replicas: 1
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
@@ -64,7 +64,7 @@ metadata:
     name: test-kafka-strimzi-topic-auth
 spec:
   partitions: 12
-  replicas: 5
+  replicas: 1
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
@@ -95,6 +95,12 @@ spec:
         name: topictwo-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
         patternType: literal
         type: topic
+    - host: '*'
+      operation: All
+      resource:
+        name: '*'
+        patternType: literal
+        type: group
     type: simple
 ---
 apiVersion: kafka.strimzi.io/v1beta1
@@ -133,4 +139,10 @@ spec:
         name: topicthree-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
         patternType: literal
         type: topic
+    - host: '*'
+      operation: All
+      resource:
+        name: '*'
+        patternType: literal
+        type: group
     type: simple

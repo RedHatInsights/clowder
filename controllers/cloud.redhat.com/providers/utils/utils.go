@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -32,7 +33,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		}
 	}
 
-	dd.Spec.Replicas = utils.Int32Ptr(1)
+	dd.Spec.Replicas = common.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{

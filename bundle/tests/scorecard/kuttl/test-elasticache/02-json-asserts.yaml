@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 1
+- script: sleep 5
 - script: kubectl get secret --namespace=test-elasticache puptoo -o json > /tmp/test-elasticache
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-elasticache | base64 -d > /tmp/test-elasticache-json
 

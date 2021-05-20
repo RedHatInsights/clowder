@@ -136,63 +136,53 @@ func TestMain(m *testing.M) {
 	os.Exit(retCode)
 }
 
-func createKafkaCluster(t *testing.T) error {
+func applyKafkaStatus(t *testing.T, ch chan int) {
 	ctx := context.Background()
+	nn := types.NamespacedName{
+		Name:      "kafka",
+		Namespace: "kafka",
+	}
 	host := "kafka-bootstrap.kafka.svc"
 	listenerType := "plain"
 	kport := int32(9092)
 
-	cluster := strimzi.Kafka{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kafka",
-			Namespace: "kafka",
-		},
-		Spec: &strimzi.KafkaSpec{
-			Kafka: strimzi.KafkaSpecKafka{
-				Replicas: int32(1),
-				Storage: strimzi.KafkaSpecKafkaStorage{
-					Type: "ephemeral",
-				},
-				Listeners: []strimzi.KafkaSpecKafkaListenersElem{{
-					Name: "kafka",
-					Port: kport,
-					Tls:  false,
-					Type: "internal",
+	for {
+		if t.Failed() {
+			break
+		}
+		t.Logf("Loop in applyKafkaStatus")
+		time.Sleep(50 * time.Millisecond)
+		cluster := strimzi.Kafka{}
+		err := k8sClient.Get(ctx, nn, &cluster)
+
+		if err != nil {
+			t.Logf(err.Error())
+			continue
+		}
+
+		if cluster.Name == "kafka" {
+			cluster.Status = &strimzi.KafkaStatus{
+				Listeners: []strimzi.KafkaStatusListenersElem{{
+					Type: &listenerType,
+					Addresses: []strimzi.KafkaStatusListenersElemAddressesElem{{
+						Host: &host,
+						Port: &kport,
+					}},
 				}},
-			},
-			Zookeeper: strimzi.KafkaSpecZookeeper{
-				Replicas: int32(1),
-				Storage: strimzi.KafkaSpecZookeeperStorage{
-					Type: "ephemeral",
-				},
-			},
-		},
-		Status: &strimzi.KafkaStatus{
-			Listeners: []strimzi.KafkaStatusListenersElem{{
-				Type: &listenerType,
-				Addresses: []strimzi.KafkaStatusListenersElemAddressesElem{{
-					Host: &host,
-					Port: &kport,
-				}},
-			}},
-		},
+			}
+			t.Logf("Applying kafka status")
+			err = k8sClient.Status().Update(ctx, &cluster)
+
+			if err != nil {
+				t.Logf(err.Error())
+				continue
+			}
+
+			break
+		}
 	}
 
-	t.Logf("Creating test kafka.strimzi.io/Kafka resource")
-	err := k8sClient.Create(ctx, &cluster)
-
-	if err != nil {
-		return err
-	}
-
-	t.Logf("Getting updated status for kafka cluster")
-	err = k8sClient.Status().Update(ctx, &cluster)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	ch <- 0
 }
 
 func createCloudwatchSecret(cwData *map[string]string) error {
@@ -224,6 +214,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					Cluster: crd.KafkaClusterConfig{
 						Name:      "kafka",
 						Namespace: "kafka",
+						Replicas:  5,
 					},
 				},
 				Database: crd.DatabaseConfig{
@@ -249,6 +240,13 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 				},
 				FeatureFlags: crd.FeatureFlagsConfig{
 					Mode: "none",
+				},
+				Testing: crd.TestingConfig{
+					ConfigAccess:   "environment",
+					K8SAccessLevel: "edit",
+					Iqe: crd.IqeConfig{
+						ImageBase: "quay.io/cloudservices/iqe-tests",
+					},
 				},
 			},
 			TargetNamespace: objMeta.Namespace,
@@ -481,12 +479,9 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
-	err = createKafkaCluster(t)
+	ch := make(chan int)
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	go applyKafkaStatus(t, ch)
 
 	env, app, err := createCRs(clowdAppNN)
 
@@ -494,6 +489,8 @@ func TestCreateClowdApp(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	<-ch // wait for kafka status to be applied
 
 	labels := map[string]string{
 		"app": app.Name,
@@ -629,7 +626,7 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 		expectedReplicas := int32(0)
 		expectedPartitions := int32(0)
 		if topic.Name == topicWithPartitionsReplicasName {
-			expectedReplicas = int32(32)
+			expectedReplicas = int32(5)
 			expectedPartitions = int32(5)
 		}
 		if topic.Name == topicNoPartitionsReplicasName {

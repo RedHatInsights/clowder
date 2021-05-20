@@ -1,0 +1,14 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-ff-local puptoo -o json > /tmp/test-ff-local
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-ff-local | base64 -d > /tmp/test-ff-local-json
+
+- script: jq -r '.webPort == 8000' -e < /tmp/test-ff-local-json
+- script: jq -r '.metricsPort == 9000' -e < /tmp/test-ff-local-json
+- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-ff-local-json
+
+- script: jq -r '.featureFlags.hostname == "test-ff-local-featureflags.test-ff-local.svc"' -e < /tmp/test-ff-local-json
+- script: jq -r '.featureFlags.port == 4242' -e < /tmp/test-ff-local-json

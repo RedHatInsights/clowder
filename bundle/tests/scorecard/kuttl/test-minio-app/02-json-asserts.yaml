@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 1
+- script: sleep 5
 - script: kubectl get secret --namespace=test-minio-app puptoo -o json > /tmp/test-minio-app
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-minio-app | base64 -d > /tmp/test-minio-app-json
 

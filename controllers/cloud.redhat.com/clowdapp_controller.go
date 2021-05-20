@@ -53,10 +53,12 @@ import (
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/featureflags"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/inmemorydb"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/iqe"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/kafka"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/logging"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/metrics"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
+	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/pullsecrets"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
@@ -89,7 +91,8 @@ type ClowdAppReconciler struct {
 // +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkaconnects,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkaconnectors,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cyndi.cloud.redhat.com,resources=cyndipipelines,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings;roles,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=prometheuses;servicemonitors,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -170,7 +173,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	var requeue = false
 
-	provErr := r.runProviders(&provider, &app)
+	provErr := r.runProviders(log, &provider, &app)
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
@@ -207,6 +210,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 		err := cache.Reconcile(&app)
 		if err != nil {
+			log.Info("Reconcile error", "error", err)
 			return ctrl.Result{Requeue: requeue}, nil
 		}
 	} else {
@@ -219,6 +223,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			managedApps[app.GetIdent()] = true
 		}
 		managedAppsMetric.Set(float64(len(managedApps)))
+		log.Info("Metric contents", "apps", managedApps)
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
@@ -428,11 +433,12 @@ func contains(list []string, s string) bool {
 	return false
 }
 
-func (r *ClowdAppReconciler) runProviders(provider *providers.Provider, a *crd.ClowdApp) error {
+func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.Provider, a *crd.ClowdApp) error {
 
 	c := config.AppConfig{}
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		prov, err := provAcc.SetupProvider(provider)
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
@@ -443,6 +449,7 @@ func (r *ClowdAppReconciler) runProviders(provider *providers.Provider, a *crd.C
 			reterr.Requeue = true
 			return reterr
 		}
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order)
 	}
 
 	return nil

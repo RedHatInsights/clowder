@@ -34,6 +34,8 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewLocalKafka(c)
 	case "app-interface":
 		return NewAppInterface(c)
+	case "managed":
+		return NewManagedKafka(c)
 	case "none", "":
 		return NewNoneKafka(c)
 	default:
@@ -48,7 +50,7 @@ func getKafkaUsername(env *crd.ClowdEnvironment, app *crd.ClowdApp) string {
 
 func getKafkaNamespace(e *crd.ClowdEnvironment) string {
 	if e.Spec.Providers.Kafka.Cluster.Namespace == "" {
-		return e.Spec.TargetNamespace
+		return e.Status.TargetNamespace
 	}
 	return e.Spec.Providers.Kafka.Cluster.Namespace
 }
@@ -65,6 +67,10 @@ func getConnectClusterName(env *crd.ClowdEnvironment) string {
 		return fmt.Sprintf("%s-connect", env.Spec.Providers.Kafka.Cluster.Name)
 	}
 	return env.Spec.Providers.Kafka.Connect.Name
+}
+
+func getConnectClusterUserName(env *crd.ClowdEnvironment) string {
+	return fmt.Sprintf("%s-connect", env.Name)
 }
 
 func init() {

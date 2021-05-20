@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	batch "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
@@ -48,7 +47,7 @@ type InitContainer struct {
 // DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 type DatabaseSpec struct {
 	// Defines the Version of the PostGreSQL database, defaults to 12.
-	// +kubebuilder:validation:Enum:=10;12
+	// +kubebuilder:validation:Enum:=10;12;13
 	Version *int32 `json:"version,omitempty"`
 
 	// Defines the Name of the database to be created. This will be used as the
@@ -118,7 +117,7 @@ type WebServices struct {
 }
 
 // K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'
-// +kubebuilder:validation:Enum=default;view;edit
+// +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
@@ -250,6 +249,10 @@ type KafkaTopicSpec struct {
 	TopicName string `json:"topicName"`
 }
 
+type TestingSpec struct {
+	IqePlugin string `json:"iqePlugin"`
+}
+
 // ClowdAppSpec is the main specification for a single Clowder Application
 // it defines n pods along with dependencies that are shared between them.
 type ClowdAppSpec struct {
@@ -297,6 +300,9 @@ type ClowdAppSpec struct {
 	// will be added to the configuration when present.
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
 
+	// Iqe plugin and other specifics
+	Testing TestingSpec `json:"testing,omitempty"`
+
 	// Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has
 	// the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline
 	// for this app in the environment's kafka-connect namespace. When the kafka provider is in
@@ -311,8 +317,8 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments common.DeploymentStatus `json:"deployments"`
-	Ready       bool                    `json:"ready"`
+	Deployments common.DeploymentStatus `json:"deployments,omitempty"`
+	Ready       bool                    `json:"ready,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -387,7 +393,7 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: utils.PointTrue(),
+		Controller: common.TruePtr(),
 	}
 }
 
@@ -529,5 +535,5 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 			return &refApp, nil
 		}
 	}
-	return nil, errors.New("Could not get app for db in env")
+	return nil, errors.New("could not get app for db in env")
 }

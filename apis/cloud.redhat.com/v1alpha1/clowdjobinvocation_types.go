@@ -17,11 +17,38 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	"fmt"
+
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
+
+type JobTestingSpec struct {
+	// Iqe is the job spec to override defaults from the ClowdApp's
+	// definition of the job
+	Iqe IqeJobSpec `json:"iqe,omitempty"`
+}
+
+type IqeJobSpec struct {
+	// By default, Clowder will set the image on the ClowdJob to be the
+	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
+	ImageTag string `json:"imageTag,omitempty"`
+	// Indiciates the presence of a selenium container
+	// Note: currently not implemented
+	UI UiSpec `json:"ui,omitempty"`
+	// sets the pytest -m args
+	Marker string `json:"marker,omitempty"`
+	// sets value for ENV_FOR_DYNACONF
+	DynaconfEnvName string `json:"dynaconfEnvName"`
+	// sets pytest -k args
+	Filter string `json:"filter,omitempty"`
+}
+
+type UiSpec struct {
+	// Indiciates the presence of a selenium container
+	Enabled bool `json:"enabled"`
+}
 
 // ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 type ClowdJobInvocationSpec struct {
@@ -29,7 +56,10 @@ type ClowdJobInvocationSpec struct {
 	AppName string `json:"appName"`
 
 	// Jobs is the set of jobs to be run by the invocation
-	Jobs []string `json:"jobs"`
+	Jobs []string `json:"jobs,omitempty"`
+
+	// Testing is the struct for building out test jobs (iqe, etc) in a CJI
+	Testing JobTestingSpec `json:"testing,omitempty"`
 }
 
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
@@ -102,7 +132,7 @@ func (i *ClowdJobInvocation) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: utils.PointTrue(),
+		Controller: common.TruePtr(),
 	}
 }
 
@@ -114,6 +144,11 @@ func (i *ClowdJobInvocation) GetClowdNamespace() string {
 // GetClowdName returns the name of the ClowdJobInvocation object.
 func (i *ClowdJobInvocation) GetClowdName() string {
 	return i.Name
+}
+
+// GetClowdName returns the name of the ClowdJobInvocation object.
+func (i *ClowdJobInvocation) GetClowdSAName() string {
+	return fmt.Sprintf("%s-cji", i.Name)
 }
 
 // GetUID returns ObjectMeta.UID

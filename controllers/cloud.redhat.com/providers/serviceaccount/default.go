@@ -1,6 +1,7 @@
 package serviceaccount
 
 import (
+	"fmt"
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -14,7 +15,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/objectstore"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
-	rbac "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type serviceaccountProvider struct {
@@ -23,7 +24,11 @@ type serviceaccountProvider struct {
 
 func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env, p.Env.Spec.Providers.PullSecrets); err != nil {
+	if err := createIQEServiceAccounts(p, p.Env); err != nil {
+		return nil, err
+	}
+
+	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env); err != nil {
 		return nil, err
 	}
 
@@ -54,7 +59,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 
 func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
-	if err := createServiceAccountForClowdObj(sa.Cache, CoreAppServiceAccount, app, sa.Env.Spec.Providers.PullSecrets); err != nil {
+	if err := createServiceAccountForClowdObj(sa.Cache, CoreAppServiceAccount, app); err != nil {
 		return err
 	}
 
@@ -88,7 +93,7 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 
 		labeler := utils.GetCustomLabeler(nil, nn, app)
 
-		if err := CreateServiceAccount(sa.Cache, CoreDeploymentServiceAccount, sa.Env.Spec.Providers.PullSecrets, nn, labeler); err != nil {
+		if err := CreateServiceAccount(sa.Cache, CoreDeploymentServiceAccount, nn, labeler); err != nil {
 			return err
 		}
 
@@ -97,38 +102,47 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 			return err
 		}
 
-		if dep.K8sAccessLevel == "default" || dep.K8sAccessLevel == "" {
-			continue
-		}
-
-		rb := &rbac.RoleBinding{}
-
-		if err := sa.Cache.Create(CoreDeploymentRoleBinding, nn, rb); err != nil {
+		if err := CreateRoleBinding(sa.Cache, CoreDeploymentRoleBinding, nn, labeler, dep.K8sAccessLevel); err != nil {
 			return err
 		}
 
-		labeler(rb)
-
-		rb.Subjects = []rbac.Subject{{
-			Kind:      "ServiceAccount",
-			Name:      nn.Name,
-			Namespace: nn.Namespace,
-		}}
-		rb.RoleRef = rbac.RoleRef{
-			Kind: "ClusterRole",
-		}
-
-		switch dep.K8sAccessLevel {
-		case "view":
-			rb.RoleRef.Name = "view"
-		case "edit":
-			rb.RoleRef.Name = "edit"
-		}
-
-		if err := sa.Cache.Update(CoreDeploymentRoleBinding, rb); err != nil {
-			return err
-		}
 	}
 
+	return nil
+}
+
+func createIQEServiceAccounts(p *providers.Provider, env *crd.ClowdEnvironment) error {
+
+	accessLevel := env.Spec.Providers.Testing.K8SAccessLevel
+
+	namespaces, err := env.GetNamespacesInEnv(p.Ctx, p.Client)
+
+	if err != nil {
+		return err
+	}
+
+	for _, namespace := range namespaces {
+
+		nn := types.NamespacedName{
+			Name:      fmt.Sprintf("iqe-%s", env.Name),
+			Namespace: namespace,
+		}
+
+		labeler := utils.GetCustomLabeler(nil, nn, p.Env)
+		if err := CreateServiceAccount(p.Cache, IQEServiceAccount, nn, labeler); err != nil {
+			return err
+		}
+
+		switch accessLevel {
+		// Use edit level service account to create and delete resources
+		// one per app when the app is created
+		case "edit", "view":
+			if err := CreateRoleBinding(p.Cache, IQERoleBinding, nn, labeler, accessLevel); err != nil {
+				return err
+			}
+
+		default:
+		}
+	}
 	return nil
 }

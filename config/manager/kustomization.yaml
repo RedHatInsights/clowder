@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: 127.0.0.1:5000/clowder
-  newTag: 7248ca5
+  newTag: d778ee9

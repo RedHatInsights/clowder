@@ -1,0 +1,14 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 1
+- script: kubectl get secret --namespace=test-kafka-managed puptoo -o json > /tmp/test-kafka-managed
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed | base64 -d > /tmp/test-kafka-managed-json
+
+- script: jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < /tmp/test-kafka-managed-json
+- script: jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < /tmp/test-kafka-managed-json
+- script: jq -r '.kafka.brokers[].hostname == "kafka-host-name"' -e < /tmp/test-kafka-managed-json
+- script: jq -r '.kafka.brokers[].port == 27015' -e < /tmp/test-kafka-managed-json
+- script: jq -r '.kafka.brokers[].sasl.username == "kafka-username"' -e < /tmp/test-kafka-managed-json
+- script: jq -r '.kafka.brokers[].sasl.password == "kafka-password"' -e < /tmp/test-kafka-managed-json

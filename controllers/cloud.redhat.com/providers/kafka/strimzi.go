@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -13,6 +14,8 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -28,6 +31,12 @@ var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &
 
 // KafkaUser is the resource ident for a KafkaUser object.
 var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{})
+
+// KafkaUser is the resource ident for a KafkaUser object.
+var KafkaConnectUser = providers.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{})
+
+// KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
+var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{})
 
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
@@ -48,6 +57,11 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 	k := &strimzi.Kafka{}
 	if err := s.Cache.Create(KafkaInstance, clusterNN, k); err != nil {
+		return err
+	}
+
+	cmnn, err := s.createKafkaMetricsConfigMap()
+	if err != nil {
 		return err
 	}
 
@@ -74,13 +88,16 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Cluster.Version
 	if version == "" {
-		version = "2.5.0"
+		version = "2.7.0"
 	}
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
+			Config: map[string]string{
+				"offsets.topic.replication.factor": strconv.Itoa(int(replicas)),
+			},
 			Version:  &version,
 			Replicas: replicas,
 		},
@@ -90,8 +107,33 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		EntityOperator: &strimzi.KafkaSpecEntityOperator{
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{},
 			UserOperator:  &strimzi.KafkaSpecEntityOperatorUserOperator{},
+			TlsSidecar:    &strimzi.KafkaSpecEntityOperatorTlsSidecar{},
 		},
 	}
+
+	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil {
+		k.Spec.Kafka.Config = s.Env.Spec.Providers.Kafka.Cluster.Config
+	}
+
+	k.Spec.Kafka.JvmOptions = &s.Env.Spec.Providers.Kafka.Cluster.JVMOptions
+
+	var metrics apiextensions.JSON
+
+	metrics.UnmarshalJSON(metricsData)
+
+	metricsConfig := strimzi.KafkaSpecKafkaMetricsConfig{
+		Type: "jmxPrometheusExporter",
+		ValueFrom: strimzi.KafkaSpecKafkaMetricsConfigValueFrom{
+			ConfigMapKeyRef: &strimzi.KafkaSpecKafkaMetricsConfigValueFromConfigMapKeyRef{
+				Key:      common.StringPtr("metrics"),
+				Name:     common.StringPtr(cmnn.Name),
+				Optional: common.FalsePtr(),
+			},
+		},
+	}
+
+	k.Spec.Kafka.MetricsConfig = &metricsConfig
+	k.Spec.Kafka.Resources = &s.Env.Spec.Providers.Kafka.Cluster.Resources
 
 	listener := strimzi.KafkaSpecKafkaListenersElem{
 		Type: "internal",
@@ -121,9 +163,23 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Size:        &storageSize,
 			DeleteClaim: &deleteClaim,
 		}
+
+		zkStorageSize := "50Gi"
+
+		kQuantity, err := resource.ParseQuantity(storageSize)
+
+		if err == nil {
+			zkQuantity, err := resource.ParseQuantity("50Gi")
+
+			if err == nil && kQuantity.Cmp(zkQuantity) < 0 {
+				// Kafka storage size is less than zkStorageSize
+				zkStorageSize = storageSize
+			}
+		}
+
 		k.Spec.Zookeeper.Storage = strimzi.KafkaSpecZookeeperStorage{
 			Type:        strimzi.KafkaSpecZookeeperStorageTypePersistentClaim,
-			Size:        &storageSize,
+			Size:        &zkStorageSize,
 			DeleteClaim: &deleteClaim,
 		}
 	} else {
@@ -147,6 +203,31 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	return nil
 }
 
+func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, error) {
+	cm := &core.ConfigMap{}
+	nn := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      fmt.Sprintf("%s-metrics", s.Env.Spec.Providers.Kafka.Cluster.Name),
+	}
+
+	if err := s.Cache.Create(KafkaMetricsConfigMap, nn, cm); err != nil {
+		return types.NamespacedName{}, err
+	}
+
+	cm.Data = map[string]string{"metrics": string(metricsData)}
+
+	cm.SetName(nn.Name)
+	cm.SetNamespace(nn.Namespace)
+	cm.SetLabels(providers.Labels{"env": s.Env.Name})
+	cm.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
+
+	if err := s.Cache.Update(KafkaMetricsConfigMap, cm); err != nil {
+		return types.NamespacedName{}, err
+	}
+
+	return nn, nil
+}
+
 func (s *strimziProvider) getBootstrapServersString() string {
 	strArray := []string{}
 	for _, bc := range s.Config.Brokers {
@@ -159,10 +240,74 @@ func (s *strimziProvider) getBootstrapServersString() string {
 	return strings.Join(strArray, ",")
 }
 
+func (s *strimziProvider) createKafkaConnectUser() error {
+
+	clusterNN := types.NamespacedName{
+		Namespace: getConnectNamespace(s.Env),
+		Name:      getConnectClusterUserName(s.Env),
+	}
+
+	ku := &strimzi.KafkaUser{}
+	if err := s.Cache.Create(KafkaConnectUser, clusterNN, ku); err != nil {
+		return err
+	}
+
+	labeler := utils.GetCustomLabeler(
+		map[string]string{"strimzi.io/cluster": s.Env.Spec.Providers.Kafka.Cluster.Name}, clusterNN, s.Env,
+	)
+
+	labeler(ku)
+
+	ku.Spec = &strimzi.KafkaUserSpec{
+		Authentication: &strimzi.KafkaUserSpecAuthentication{
+			Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
+		},
+		Authorization: &strimzi.KafkaUserSpecAuthorization{
+			Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
+			Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
+		},
+	}
+
+	address := "*"
+	topic := "*"
+	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
+
+	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+		Host:      &address,
+		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+			Name:        &topic,
+			PatternType: &patternType,
+			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
+		},
+	})
+
+	group := "*"
+	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+		Host:      &address,
+		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+			Name:        &group,
+			PatternType: &patternType,
+			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeGroup,
+		},
+	})
+
+	if err := s.Cache.Update(KafkaConnectUser, ku); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *strimziProvider) configureKafkaConnectCluster() error {
 	clusterNN := types.NamespacedName{
 		Namespace: getConnectNamespace(s.Env),
 		Name:      getConnectClusterName(s.Env),
+	}
+
+	if err := s.createKafkaConnectUser(); err != nil {
+		return err
 	}
 
 	k := &strimzi.KafkaConnect{}
@@ -188,13 +333,15 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "2.5.0"
+		version = "2.7.0"
 	}
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
 		image = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
 	}
+
+	username := getConnectClusterUserName(s.Env)
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
@@ -210,6 +357,20 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 			"status.storage.replication.factor": "1",
 		},
 		Image: &image,
+		Tls: &strimzi.KafkaConnectSpecTls{
+			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
+				Certificate: "ca.crt",
+				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", s.Env.Spec.Providers.Kafka.Cluster.Name),
+			}},
+		},
+		Authentication: &strimzi.KafkaConnectSpecAuthentication{
+			PasswordSecret: &strimzi.KafkaConnectSpecAuthenticationPasswordSecret{
+				Password:   "password",
+				SecretName: username,
+			},
+			Type:     "scram-sha-512",
+			Username: &username,
+		},
 	}
 
 	// configures this KafkaConnect to use KafkaConnector resources to avoid needing to call the
@@ -462,6 +623,17 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		})
 	}
 
+	group := "*"
+	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+		Host:      &address,
+		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+			Name:        &group,
+			PatternType: &patternType,
+			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeGroup,
+		},
+	})
+
 	if err := s.Cache.Update(KafkaUser, ku); err != nil {
 		return err
 	}
@@ -517,7 +689,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		replicaValList := []string{}
 		partitionValList := []string{}
 
-		err := processTopicValues(k, app, appList, topic, replicaValList, partitionValList)
+		err := processTopicValues(k, s.Env, app, appList, topic, replicaValList, partitionValList)
 
 		if err != nil {
 			return err
@@ -540,6 +712,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 
 func processTopicValues(
 	k *strimzi.KafkaTopic,
+	env *crd.ClowdEnvironment,
 	app *crd.ClowdApp,
 	appList crd.ClowdAppList,
 	topic crd.KafkaTopicSpec,
@@ -606,7 +779,7 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
-		maxReplicasInt, err := utils.Atoi32(maxReplicas)
+		maxReplicasInt, err := common.Atoi32(maxReplicas)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
@@ -622,7 +795,7 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
-		maxPartitionsInt, err := utils.Atoi32(maxPartitions)
+		maxPartitionsInt, err := common.Atoi32(maxPartitions)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
@@ -631,6 +804,12 @@ func processTopicValues(
 			// if unset, default to 3
 			k.Spec.Partitions = int32(3)
 		}
+	}
+
+	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
+		k.Spec.Replicas = 1
+	} else if env.Spec.Providers.Kafka.Cluster.Replicas < k.Spec.Replicas {
+		k.Spec.Replicas = env.Spec.Providers.Kafka.Cluster.Replicas
 	}
 
 	return nil

@@ -91,6 +91,7 @@ spec:
                   enum:
                   - 10
                   - 12
+                  - 13
                   format: int32
                   type: integer
               type: object
@@ -113,6 +114,7 @@ spec:
                     enum:
                     - default
                     - view
+                    - ""
                     - edit
                     type: string
                   minReplicas:
@@ -6632,6 +6634,14 @@ spec:
                 - name
                 type: object
               type: array
+            testing:
+              description: Iqe plugin and other specifics
+              properties:
+                iqePlugin:
+                  type: string
+              required:
+              - iqePlugin
+              type: object
           required:
           - envName
           type: object
@@ -6655,9 +6665,6 @@ spec:
               type: object
             ready:
               type: boolean
-          required:
-          - deployments
-          - ready
           type: object
       type: object
   version: v1alpha1

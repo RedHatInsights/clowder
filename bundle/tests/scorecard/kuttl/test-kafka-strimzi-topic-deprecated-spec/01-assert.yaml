@@ -32,7 +32,7 @@ metadata:
     name: test-kafka-strimzi-topic-deprecated
 spec:
   partitions: 96
-  replicas: 7
+  replicas: 1
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
@@ -48,7 +48,7 @@ metadata:
     name: test-kafka-strimzi-topic-deprecated
 spec:
   partitions: 128
-  replicas: 5
+  replicas: 1
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
@@ -64,4 +64,4 @@ metadata:
     name: test-kafka-strimzi-topic-deprecated
 spec:
   partitions: 12
-  replicas: 5
+  replicas: 1

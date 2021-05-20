@@ -128,11 +128,48 @@ spec:
                       description: Defines options related to the Kafka cluster for
                         this environment. Ignored for (*_local_*) mode.
                       properties:
+                        config:
+                          additionalProperties:
+                            type: string
+                          description: Config full options
+                          type: object
                         deleteClaim:
                           description: Delete persistent volume claim if the Kafka
                             cluster is deleted Only applies when KafkaConfig.PVC is
                             set to 'true'
                           type: boolean
+                        jvmOptions:
+                          description: JVM Options
+                          properties:
+                            -XX:
+                              additionalProperties:
+                                type: string
+                              description: A map of -XX options to the JVM.
+                              type: object
+                            -Xms:
+                              description: -Xms option to to the JVM.
+                              type: string
+                            -Xmx:
+                              description: -Xmx option to to the JVM.
+                              type: string
+                            gcLoggingEnabled:
+                              description: Specifies whether the Garbage Collection
+                                logging is enabled. The default is false.
+                              type: boolean
+                            javaSystemProperties:
+                              description: A map of additional system properties which
+                                will be passed using the `-D` option to the JVM.
+                              items:
+                                properties:
+                                  name:
+                                    description: The system property name.
+                                    type: string
+                                  value:
+                                    description: The system property value.
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
                         name:
                           description: Defines the kafka cluster name
                           type: string
@@ -146,6 +183,22 @@ spec:
                           format: int32
                           minimum: 1
                           type: integer
+                        resources:
+                          description: Resource Limits
+                          properties:
+                            limits:
+                              additionalProperties:
+                                type: string
+                              description: Limits corresponds to the JSON schema field
+                                "limits".
+                              type: object
+                            requests:
+                              additionalProperties:
+                                type: string
+                              description: Requests corresponds to the JSON schema
+                                field "requests".
+                              type: object
+                          type: object
                         storageSize:
                           description: Persistent volume storage size. If unset, default
                             is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
@@ -200,6 +253,20 @@ spec:
                     enableLegacyStrimzi:
                       description: EnableLegacyStrimzi disables TLS + user auth
                       type: boolean
+                    managedSecretRef:
+                      description: Defines the secret reference for the Managed Kafka
+                        mode. Only used in (*_managed_*) mode.
+                      properties:
+                        name:
+                          description: Name defines the Name of a resource.
+                          type: string
+                        namespace:
+                          description: Namespace defines the Namespace of a resource.
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
                     mode:
                       description: 'The mode of operation of the Clowder Kafka Provider.
                         Valid options are: (*_operator_*) which provisions Strimzi
@@ -211,6 +278,7 @@ spec:
                         small instance of Kafka is created in the desired cluster
                         namespace and configured to auto-create topics.'
                       enum:
+                      - managed
                       - operator
                       - app-interface
                       - local
@@ -255,10 +323,12 @@ spec:
                       description: The mode of operation of the Metrics provider.
                         The allowed modes are  (*_none_*), which disables metrics
                         service generation, or (*_operator_*) where services and probes
-                        are generated.
+                        are generated. (*_app-interface_*) where services and probes
+                        are generated for app-interface.
                       enum:
                       - none
                       - operator
+                      - app-interface
                       type: string
                     path:
                       description: A prefix path that pods will be instructed to use
@@ -269,6 +339,14 @@ spec:
                         pods should be served on.
                       format: int32
                       type: integer
+                    prometheus:
+                      description: Prometheus specific configuration
+                      properties:
+                        deploy:
+                          description: Determines whether to deploy prometheus in
+                            operator mode
+                          type: boolean
+                      type: object
                   required:
                   - mode
                   - port
@@ -302,7 +380,19 @@ spec:
                 pullSecrets:
                   description: Defines the pull secret to use for the service accounts.
                   items:
-                    type: string
+                    description: NamespacedName type to represent a real Namespaced
+                      Name
+                    properties:
+                      name:
+                        description: Name defines the Name of a resource.
+                        type: string
+                      namespace:
+                        description: Namespace defines the Namespace of a resource.
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
                   type: array
                 serviceMesh:
                   description: Defines the Configuration for the Clowder ServiceMesh
@@ -315,6 +405,72 @@ spec:
                       - enabled
                       - disabled
                       type: string
+                  type: object
+                testing:
+                  description: Defines the environment for iqe/smoke testing
+                  properties:
+                    configAccess:
+                      description: 'The mode of operation for access to outside app
+                        configs. Valid options are: (*_none_*) -- no app config is
+                        mounted to the pod (*_app_*) -- only the ClowdApp''s config
+                        is mounted to the pod (*_environment_*) -- the config for
+                        all apps in the env are mounted'
+                      enum:
+                      - none
+                      - app
+                      - ""
+                      - environment
+                      type: string
+                    iqe:
+                      description: Defines the environment for iqe/smoke testing
+                      properties:
+                        imageBase:
+                          type: string
+                        resources:
+                          description: A pass-through of a resource requirements in
+                            k8s ResourceRequirements format. If omitted, the default
+                            resource requirements from the ClowdEnvironment will be
+                            used.
+                          properties:
+                            limits:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: 'Limits describes the maximum amount of
+                                compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                              type: object
+                            requests:
+                              additionalProperties:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
+                              description: 'Requests describes the minimum amount
+                                of compute resources required. If Requests is omitted
+                                for a container, it defaults to Limits if that is
+                                explicitly specified, otherwise to an implementation-defined
+                                value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                              type: object
+                          type: object
+                      required:
+                      - imageBase
+                      type: object
+                    k8sAccessLevel:
+                      description: 'The mode of operation of the testing Pod. Valid
+                        options are: ''default'', ''view'' or ''edit'''
+                      enum:
+                      - default
+                      - view
+                      - ""
+                      - edit
+                      type: string
+                  required:
+                  - configAccess
+                  - k8sAccessLevel
                   type: object
                 web:
                   description: Defines the Configuration for the Clowder Web Provider.
@@ -440,10 +596,6 @@ spec:
                 of cluster Important: Run "make" to regenerate code after modifying
                 this file'
               type: string
-          required:
-          - deployments
-          - ready
-          - targetNamespace
           type: object
       type: object
   version: v1alpha1

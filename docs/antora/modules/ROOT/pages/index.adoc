@@ -1,4 +1,5 @@
 = Main docs
 
 - xref:contributing.adoc[Contributing]
-- link:providers/index.html[Providers]
+- xref:providers/index.adoc[Providers]
+- xref:api_reference.adoc[API Reference]

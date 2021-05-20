@@ -10,9 +10,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -84,33 +82,7 @@ func StrPtr(s string) *string {
 	return &s
 }
 
-type makeFn func(o obj.ClowdObject, dd *apps.Deployment, svc *core.Service, pvc *core.PersistentVolumeClaim, usePVC bool)
-
 type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool)
-
-// MakeComponent is a generalised function that, given a ClowdObject will make the given service,
-// deployment and PVC, based on the makeFn that is passed in.
-func MakeComponent(ctx context.Context, cl client.Client, o obj.ClowdObject, suffix string, fn makeFn, usePVC bool) error {
-	nn := GetNamespacedName(o, suffix)
-	dd, svc, pvc := &apps.Deployment{}, &core.Service{}, &core.PersistentVolumeClaim{}
-	updates, err := utils.UpdateAllOrErr(ctx, cl, nn, svc, pvc, dd)
-
-	if !usePVC {
-		delete(updates, pvc)
-	}
-
-	if err != nil {
-		return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
-	}
-
-	fn(o, dd, svc, pvc, usePVC)
-
-	if err = utils.ApplyAll(ctx, cl, updates); err != nil {
-		return errors.Wrap(fmt.Sprintf("make-%s: upsert", suffix), err)
-	}
-
-	return nil
-}
 
 func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName) (runtime.Object, error) {
 	gvks, nok, err := cache.scheme.ObjectKinds(resourceIdent.GetType())

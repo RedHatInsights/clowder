@@ -10,6 +10,7 @@ import (
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -46,6 +47,7 @@ func init() {
 	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(strimzi.AddToScheme(scheme))
 	utilruntime.Must(cyndi.AddToScheme(scheme))
+	utilruntime.Must(prom.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 
 	secretCompare, _ = getKindFromObj(scheme, &core.Secret{})

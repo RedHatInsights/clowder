@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 1
+- script: sleep 5
 - script: kubectl get secret --namespace=test-web-services puptoo -o json > /tmp/test-web-services
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-web-services | base64 -d > /tmp/test-web-services-json
 

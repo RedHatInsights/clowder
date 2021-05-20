@@ -95,8 +95,6 @@ spec:
         - mountPath: /storage
           name: test-minio-app-minio
       dnsPolicy: ClusterFirst
-      imagePullSecrets:
-      - name: quay-cloudservices-pull
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
