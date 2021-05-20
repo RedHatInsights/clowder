@@ -502,7 +502,9 @@ func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
 		},
 	}
 
-	createNetworkPolicies(p)
+	if err := createNetworkPolicies(p); err != nil {
+		return nil, err
+	}
 
 	return kafkaProvider, kafkaProvider.configureBrokers()
 }
