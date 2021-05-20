@@ -247,7 +247,7 @@ func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
 func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			gvk, _ := getKindFromObj(scheme, e.Object)
+			gvk, _ := utils.GetKindFromObj(scheme, e.Object)
 			if !isOurs(e.Object, gvk) {
 				return false
 			}
@@ -255,7 +255,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			gvk, _ := getKindFromObj(scheme, e.ObjectNew)
+			gvk, _ := utils.GetKindFromObj(scheme, e.ObjectNew)
 			if !isOurs(e.ObjectNew, gvk) {
 				return false
 			}
@@ -308,7 +308,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			gvk, _ := getKindFromObj(scheme, e.Object)
+			gvk, _ := utils.GetKindFromObj(scheme, e.Object)
 			if !isOurs(e.Object, gvk) {
 				return false
 			}
@@ -316,7 +316,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			return true
 		},
 		GenericFunc: func(e event.GenericEvent) bool {
-			gvk, _ := getKindFromObj(scheme, e.Object)
+			gvk, _ := utils.GetKindFromObj(scheme, e.Object)
 			if !isOurs(e.Object, gvk) {
 				return false
 			}

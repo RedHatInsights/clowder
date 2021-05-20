@@ -19,6 +19,8 @@ parameters:
   value: "false"
 - name: CREATE_SERVICE_MONITORS
   value: "false"
+- name: WATCH_STRIMZI_RESOURCES
+  value: "false"
 objects:
 - apiVersion: operators.coreos.com/v1alpha1
   kind: CatalogSource
@@ -74,6 +76,7 @@ objects:
               }
           },
           "features": {
-              "createServiceMonitor": ${CREATE_SERVICE_MONITORS}
+              "createServiceMonitor": ${CREATE_SERVICE_MONITORS},
+              "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES}
           }
       }

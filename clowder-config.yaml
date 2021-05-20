@@ -3,7 +3,8 @@ data:
   clowder_config.json: |-
     {
         "features": {
-            "createServiceMonitor": true
+            "createServiceMonitor": true,
+            "watchStrimziResources": true
         } 
     }
 kind: ConfigMap
