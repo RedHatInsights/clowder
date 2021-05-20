@@ -222,6 +222,7 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			managedApps[app.GetIdent()] = true
 		}
 		managedAppsMetric.Set(float64(len(managedApps)))
+		log.Info("Metric contents", "apps", managedApps)
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
