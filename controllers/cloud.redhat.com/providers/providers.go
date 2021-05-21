@@ -82,7 +82,7 @@ func StrPtr(s string) *string {
 	return &s
 }
 
-type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool)
+type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool)
 
 func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName) (runtime.Object, error) {
 	gvks, nok, err := cache.scheme.ObjectKinds(resourceIdent.GetType())
@@ -125,7 +125,7 @@ type ObjectMap map[ResourceIdent]runtime.Object
 
 // CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
-func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool) error {
+func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
 	nn := GetNamespacedName(o, suffix)
 
 	makeFnMap := make(map[ResourceIdent]runtime.Object)
@@ -141,7 +141,7 @@ func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.Clow
 
 	}
 
-	fn(o, makeFnMap, usePVC)
+	fn(o, makeFnMap, usePVC, nodePort)
 
 	for k, v := range makeFnMap {
 		err := updateResource(cache, k, v)

@@ -36,7 +36,7 @@ func TestLocalKafka(t *testing.T) {
 		LocalKafkaPVC:        &pvc,
 	}
 
-	makeLocalKafka(&env, objMap, true)
+	makeLocalKafka(&env, objMap, true, false)
 
 	if dd.Name != "env-kafka" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-kafka")
@@ -62,7 +62,7 @@ func TestLocalZookeeper(t *testing.T) {
 		LocalZookeeperPVC:        &pvc,
 	}
 
-	makeLocalZookeeper(&env, objMap, true)
+	makeLocalZookeeper(&env, objMap, true, false)
 
 	if dd.Name != "env-zookeeper" {
 		t.Errorf("Wrong deployment name %s; expected %s", dd.Name, "env-zookeeper")

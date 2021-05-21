@@ -109,7 +109,7 @@ func NewLocalKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 		zookeeperCacheMap = append(zookeeperCacheMap, LocalZookeeperPVC)
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, zookeeperCacheMap, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, zookeeperCacheMap, p.Env, "zookeeper", makeLocalZookeeper, p.Env.Spec.Providers.Kafka.PVC, p.Env.IsNodePort()); err != nil {
 		return &kafkaProvider, err
 	}
 
@@ -122,7 +122,7 @@ func NewLocalKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 		kafkaCacheMap = append(kafkaCacheMap, LocalKafkaPVC)
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, kafkaCacheMap, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, kafkaCacheMap, p.Env, "kafka", makeLocalKafka, p.Env.Spec.Providers.Kafka.PVC, p.Env.IsNodePort()); err != nil {
 		return &kafkaProvider, err
 	}
 
@@ -140,7 +140,7 @@ func makeEnvVars(list *[]envVar) []core.EnvVar {
 	return envVars
 }
 
-func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
+func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "kafka")
 
 	dd := objMap[LocalKafkaDeployment].(*apps.Deployment)
@@ -252,14 +252,14 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) 
 
 	servicePorts := []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
 
-	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 	if usePVC {
 		pvc := objMap[LocalKafkaPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)
 	}
 }
 
-func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool) {
+func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 
 	nn := providers.GetNamespacedName(o, "zookeeper")
 
@@ -406,7 +406,7 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		},
 	}
 
-	utils.MakeService(svc, nn, labels, servicePorts, o)
+	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 	if usePVC {
 		pvc := objMap[LocalZookeeperPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)

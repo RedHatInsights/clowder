@@ -534,6 +534,18 @@ spec:
                     value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   type: object
               type: object
+            serviceConfig:
+              description: ServiceConfig provides options for k8s Service resources
+              properties:
+                type:
+                  enum:
+                  - ClusterIP
+                  - NodePort
+                  - ""
+                  type: string
+              required:
+              - type
+              type: object
             targetNamespace:
               description: TargetNamespace describes the namespace where any generated
                 environmental resources should end up, this is particularly important

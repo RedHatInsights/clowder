@@ -109,7 +109,7 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 		Port:     5432,
 		Protocol: "TCP",
 	}}
-	utils.MakeService(s, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, servicePorts, baseResource)
+	utils.MakeService(s, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, servicePorts, baseResource, false)
 }
 
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.

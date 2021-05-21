@@ -215,11 +215,16 @@ func GetCustomLabeler(labels map[string]string, nn types.NamespacedName, baseRes
 }
 
 // MakeService takes a service object and applies the correct ownership and labels to it.
-func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject) {
+func MakeService(service *core.Service, nn types.NamespacedName, labels map[string]string, ports []core.ServicePort, baseResource obj.ClowdObject, nodePort bool) {
 	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(service)
 	service.Spec.Selector = labels
 	service.Spec.Ports = ports
+	if nodePort {
+		service.Spec.Type = "NodePort"
+	} else {
+		service.Spec.Type = "ClusterIP"
+	}
 }
 
 // MakePVC takes a PVC object and applies the correct ownership and labels to it.
