@@ -5,6 +5,7 @@ kind: CustomResourceDefinition
 metadata:
   name: clowdenvironments.cloud.redhat.com.cloud.redhat.com
 spec:
+  preserveUnknownFields: false
   conversion:
     strategy: Webhook
     webhookClientConfig:

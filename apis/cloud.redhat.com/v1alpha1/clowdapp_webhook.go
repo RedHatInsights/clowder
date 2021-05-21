@@ -35,8 +35,6 @@ func (r *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/validate-cloud-redhat-com-v1alpha1-clowdapp,mutating=false,sideEffects=None,failurePolicy=fail,groups=cloud.redhat.com,resources=clowdapps,versions=v1alpha1,name=vclowdapp.cloud.redhat.com,admissionReviewVersions=v1alpha1
-
 var _ webhook.Validator = &ClowdApp{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
