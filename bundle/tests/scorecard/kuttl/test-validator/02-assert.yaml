@@ -1,7 +1,5 @@
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: clowdenvironment-sample
-spec:
-  # Add fields here
-  foo: bar
+  name: test-validator

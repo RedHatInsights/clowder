@@ -1,7 +1,6 @@
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: clowdapp-sample
-spec:
-  # Add fields here
-  foo: bar
+  name: puptoo
+  namespace: test-validator

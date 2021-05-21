@@ -1,8 +1,17 @@
 {
     "debugOptions": {
+        "trigger": false,
+        "cache": {
+            "create": false,
+            "update": false,
+            "apply": false
+        },
         "pprof": {
             "enable": true,
             "cpuFile": "testcpu"
         }
-    } 
+    },
+    "webhooks": {
+        "disable": true
+    }
 }
