@@ -4,7 +4,6 @@ kind: ClowdEnvironment
 metadata:
   name: test-node-port
 spec:
-  nodePort: true
   targetNamespace: test-node-port
   providers:
     web:

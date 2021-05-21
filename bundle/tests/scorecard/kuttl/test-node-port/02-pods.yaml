@@ -4,7 +4,6 @@ kind: ClowdEnvironment
 metadata:
   name: test-node-port
 spec:
-  nodePort: false
   targetNamespace: test-node-port
   providers:
     web:
@@ -31,3 +30,5 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
+  serviceConfig:
+    type: ClusterIP
