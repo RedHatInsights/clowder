@@ -312,13 +312,43 @@ type ClowdAppSpec struct {
 	Cyndi CyndiSpec `json:"cyndi,omitempty"`
 }
 
+type ClowdAppConditionType string
+
+const (
+	// Ready means all the deployments are ready
+	DeploymentsReady ClowdAppConditionType = "DeploymentsReady"
+	// ReconciliationSuccessful represents status of successful reconciliation
+	ReconciliationSuccessful ClowdAppConditionType = "ReconciliationSuccessful"
+	// ReconciliationPartiallySuccessful means the reconciliation is in a partial success state
+	ReconciliationPartiallySuccessful ClowdAppConditionType = "ReconciliationPartiallySuccessful"
+	// ReconciliationFailed means the reconciliation failed
+	ReconciliationFailed ClowdAppConditionType = "ReconciliationFailed"
+)
+
+type ClowdAppCondition struct {
+	// Type is the type of the condition.
+	Type ClowdAppConditionType `json:"type"`
+	// Status is the status of the condition.
+	// Can be True, False, Unknown.
+	Status v1.ConditionStatus `json:"status"`
+	// Last time we probed the condition.
+	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty"`
+	// Last time the condition transitioned from one status to another.
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+	// Unique, one-word, CamelCase reason for the condition's last transition.
+	Reason string `json:"reason,omitempty"`
+	// Human-readable message indicating details about last transition.
+	Message string `json:"message,omitempty"`
+}
+
 // ClowdAppStatus defines the observed state of ClowdApp
 type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
 	Deployments common.DeploymentStatus `json:"deployments,omitempty"`
-	Ready       bool                    `json:"ready,omitempty"`
+	Ready       bool                    `json:"ready"`
+	Conditions  []ClowdAppCondition     `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

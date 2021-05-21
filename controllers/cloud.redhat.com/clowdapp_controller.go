@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	"github.com/go-logr/logr"
@@ -30,9 +31,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -151,14 +154,19 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if err != nil {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", app.Spec.EnvName)
+		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
 		return ctrl.Result{Requeue: true}, err
 	}
 
 	if env.Generation != env.Status.Generation {
+		err := errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
+		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
 		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
 	}
 
 	if !env.IsReady() {
+		err := errors.New(fmt.Sprintf("Clowd Environment not ready: %s", env.Name))
+		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
 		log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
 		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not ready: %s", env.Name))
@@ -179,6 +187,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
+			SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr)
 			return ctrl.Result{}, provErr
 		} else {
 			requeue = true
@@ -189,6 +198,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if cacheErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
+			SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, cacheErr)
 			return ctrl.Result{}, cacheErr
 		} else {
 			requeue = true
@@ -196,13 +206,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if statusErr := SetDeploymentStatus(ctx, r.Client, &app); statusErr != nil {
-		return ctrl.Result{}, err
-	}
-
-	app.Status.Ready = app.IsReady()
-
-	err = r.Client.Status().Update(ctx, &app)
-	if err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -215,9 +218,17 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			log.Info("Reconcile error", "error", err)
 			return ctrl.Result{Requeue: requeue}, nil
 		}
+		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil)
 	} else {
+		var err error
+		if provErr != nil {
+			err = provErr
+		} else if cacheErr != nil {
+			err = cacheErr
+		}
 		log.Info("Reconciliation partially successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 		r.Recorder.Eventf(&app, "Warning", "SuccessfulPartialReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
+		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationPartiallySuccessful, err)
 	}
 
 	if err == nil {
@@ -351,6 +362,9 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&core.Service{}).
 		Owns(&core.ConfigMap{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
+		WithOptions(controller.Options{
+			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(10*time.Second), time.Duration(10*time.Second)),
+		}).
 		Complete(r)
 }
 
