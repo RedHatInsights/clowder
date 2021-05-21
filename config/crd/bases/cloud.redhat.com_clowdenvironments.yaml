@@ -51,9 +51,6 @@ spec:
         spec:
           description: A ClowdEnvironmentSpec object.
           properties:
-            nodePort:
-              description: Node port enables the node port for clowder created services
-              type: boolean
             providers:
               description: A ProvidersConfig object, detailing the setup and configuration
                 of all the providers used in this ClowdEnvironment.
@@ -526,6 +523,17 @@ spec:
                     to Limits if that is explicitly specified, otherwise to an implementation-defined
                     value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   type: object
+              type: object
+            serviceConfig:
+              description: ServiceConfig provides options for k8s Service resources
+              properties:
+                type:
+                  enum:
+                  - ClusterIP
+                  - NodePort
+                  type: string
+              required:
+              - type
               type: object
             targetNamespace:
               description: TargetNamespace describes the namespace where any generated

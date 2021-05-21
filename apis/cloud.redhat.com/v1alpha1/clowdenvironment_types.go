@@ -326,7 +326,7 @@ type IqeConfig struct {
 
 // ServiceConfig provides options for k8s Service resources
 type ServiceConfig struct {
-	// +kubebuilder:validation:Enum=ClusterIP,NodePort
+	// +kubebuilder:validation:Enum=ClusterIP;NodePort
 	Type string `json:"type"`
 }
 
