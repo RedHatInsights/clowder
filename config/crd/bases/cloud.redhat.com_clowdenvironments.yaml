@@ -531,6 +531,7 @@ spec:
                   enum:
                   - ClusterIP
                   - NodePort
+                  - ""
                   type: string
               required:
               - type
