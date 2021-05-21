@@ -668,6 +668,14 @@
 <p>Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>nodePort</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Node port enables the node port for clowder created services</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1590,6 +1598,30 @@
 <p>Version. If unset, default is '2.5.0'</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>config</code></strong> <em>object (keys:string, values:string)</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Config full options</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>jvmOptions</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkajvmoptions">KafkaSpecKafkaJvmOptions</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>JVM Options</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>resources</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkaresources">KafkaSpecKafkaResources</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Resource Limits</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1947,6 +1979,9 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname"><a class="anchor" href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname"></a>NamespacedName</h4>
+<div class="paragraph">
+<p>NamespacedName type to represent a real Namespaced Name</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -1954,6 +1989,9 @@
 <ul>
 <li>
 <p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig">KafkaConfig</a></p>
+</li>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig">ProvidersConfig</a></p>
 </li>
 </ul>
 </div>
@@ -2414,7 +2452,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>pullSecrets</code></strong> <em>string array</em></p>
+<p><strong><code>pullSecrets</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname">NamespacedName</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Defines the pull secret to use for the service accounts.</p>
