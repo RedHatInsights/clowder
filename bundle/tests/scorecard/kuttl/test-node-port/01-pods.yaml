@@ -31,6 +31,8 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
+  serviceConfig:
+    type: NodePort
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
