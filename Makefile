@@ -99,7 +99,7 @@ docker-build: test
 
 # Build the docker image
 docker-build-no-test-quick:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/manager-cgo main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o bin/manager-cgo main.go
 	$(RUNTIME) build -f build/Dockerfile-local . -t ${IMG}
 
 # Build the docker image
