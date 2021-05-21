@@ -23,7 +23,7 @@ kind: KafkaTopic
 metadata:
   labels:
     env: test-kafka-strimzi-topic-auth
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: topicone-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
@@ -39,7 +39,7 @@ kind: KafkaTopic
 metadata:
   labels:
     env: test-kafka-strimzi-topic-auth
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: topictwo-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
@@ -55,7 +55,7 @@ kind: KafkaTopic
 metadata:
   labels:
     env: test-kafka-strimzi-topic-auth
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: topicthree-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
@@ -71,7 +71,7 @@ kind: KafkaUser
 metadata:
   labels:
     app: test-kafka-strimzi-topic-auth
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: test-kafka-strimzi-topic-auth-puptoo
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
@@ -108,7 +108,7 @@ kind: KafkaUser
 metadata:
   labels:
     app: test-kafka-strimzi-topic-auth
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: test-kafka-strimzi-topic-auth-puptoo-two
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
