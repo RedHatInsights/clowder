@@ -8,3 +8,6 @@ delete:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
   name: test-basic-app
+- apiVersion: v1
+  kind: Namespace
+  name: test-basic-app-secret

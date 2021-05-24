@@ -4,7 +4,7 @@ kind: TestStep
 delete:
 - apiVersion: v1
   kind: Namespace
-  name: test-clowder-jobs
+  name: test-iqe-jobs
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: test-clowder-jobs
+  name: test-iqe-jobs
