@@ -23,7 +23,8 @@ type ClowderConfig struct {
 		} `json:"pprof"`
 	} `json:"debugOptions"`
 	Features struct {
-		CreateServiceMonitor bool `json:"createServiceMonitor"`
+		CreateServiceMonitor  bool `json:"createServiceMonitor"`
+		WatchStrimziResources bool `json:"watchStrimziResources"`
 	} `json:"features"`
 }
 

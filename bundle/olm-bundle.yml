@@ -74,6 +74,7 @@ objects:
               }
           },
           "features": {
-              "createServiceMonitor": ${CREATE_SERVICE_MONITORS}
+              "createServiceMonitor": ${CREATE_SERVICE_MONITORS},
+              "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES}
           }
       }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	apps "k8s.io/api/apps/v1"
@@ -154,19 +155,21 @@ func SetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 	totalManagedDeployments += managedDeployments
 	totalReadyDeployments += readyDeployments
 
-	err, managedDeployments, readyDeployments = countKafkas(ctx, client, o)
-	if err != nil {
-		return err
-	}
-	totalManagedDeployments += managedDeployments
-	totalReadyDeployments += readyDeployments
+	if clowder_config.LoadedConfig.Features.WatchStrimziResources {
+		err, managedDeployments, readyDeployments = countKafkas(ctx, client, o)
+		if err != nil {
+			return err
+		}
+		totalManagedDeployments += managedDeployments
+		totalReadyDeployments += readyDeployments
 
-	err, managedDeployments, readyDeployments = countKafkaConnects(ctx, client, o)
-	if err != nil {
-		return err
+		err, managedDeployments, readyDeployments = countKafkaConnects(ctx, client, o)
+		if err != nil {
+			return err
+		}
+		totalManagedDeployments += managedDeployments
+		totalReadyDeployments += readyDeployments
 	}
-	totalManagedDeployments += managedDeployments
-	totalReadyDeployments += readyDeployments
 
 	status := o.GetDeploymentStatus()
 	status.ManagedDeployments = totalManagedDeployments
