@@ -50,8 +50,9 @@ for line in sys.stdin:
     try:
         js = json.loads(line)
     except:
+        nline = line.strip("\n")
         string = levels['error']
-        string += line
+        string += nline
         string += cancel_colour
         print(string)
         continue
