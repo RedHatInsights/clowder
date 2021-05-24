@@ -26,4 +26,5 @@ webhooks:
     - clowdapps
   sideEffects: None
   admissionReviewVersions:
-    - "v1alpha1"
+    - v1alpha1
+    - v1beta1
