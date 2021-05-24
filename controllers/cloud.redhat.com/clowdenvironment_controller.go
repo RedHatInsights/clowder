@@ -238,35 +238,24 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
+	controller := ctrl.NewControllerManagedBy(mgr).
+		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
+		Watches(
+			&source.Kind{Type: &crd.ClowdApp{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
+			},
+			builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "env")),
+		).
+		For(&crd.ClowdEnvironment{})
+
 	if clowder_config.LoadedConfig.Features.WatchStrimziResources {
-		return ctrl.NewControllerManagedBy(mgr).
-			Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-			Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-			Owns(&strimzi.Kafka{}).
-			Owns(&strimzi.KafkaConnect{}).
-			Watches(
-				&source.Kind{Type: &crd.ClowdApp{}},
-				&handler.EnqueueRequestsFromMapFunc{
-					ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
-				},
-				builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "env")),
-			).
-			For(&crd.ClowdEnvironment{}).
-			Complete(r)
-	} else {
-		return ctrl.NewControllerManagedBy(mgr).
-			Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-			Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-			Watches(
-				&source.Kind{Type: &crd.ClowdApp{}},
-				&handler.EnqueueRequestsFromMapFunc{
-					ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
-				},
-				builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "env")),
-			).
-			For(&crd.ClowdEnvironment{}).
-			Complete(r)
+		controller.Owns(&strimzi.Kafka{})
+		controller.Owns(&strimzi.KafkaConnect{})
 	}
+
+	return controller.Complete(r)
 }
 
 func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObject) []reconcile.Request {
