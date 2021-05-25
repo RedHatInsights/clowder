@@ -75,6 +75,15 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 		ImagePullPolicy: core.PullAlways,
 	}
 
+	if cji.Spec.Debug {
+		c.Name = fmt.Sprintf("%s-debug", nn.Name)
+		c.Command = []string{"/bin/sh", "-c", "while true; do sleep 1; done"}
+		if len(cji.Spec.DebugCommand) > 0 {
+			c.Command = cji.Spec.DebugCommand
+		}
+		c.Args = []string{}
+	}
+
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
 	configAccess := env.Spec.Providers.Testing.ConfigAccess
 
@@ -130,6 +139,7 @@ func ConstructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) ([]string, 
 	if plugin == "" {
 		return []string{}, errors.New("iqe-plugin is missing from ClowdApp")
 	}
+
 	command := []string{
 		"iqe", "tests", "plugin",
 		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),

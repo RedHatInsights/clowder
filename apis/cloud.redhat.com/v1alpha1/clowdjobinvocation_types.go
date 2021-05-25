@@ -60,6 +60,12 @@ type ClowdJobInvocationSpec struct {
 
 	// Testing is the struct for building out test jobs (iqe, etc) in a CJI
 	Testing JobTestingSpec `json:"testing,omitempty"`
+
+	// invokes the job pods in "debug" mode -- i.e., command is swapped to the debugCommand
+	Debug bool `json:"debug,omitempty"`
+
+	// indicates pod command to run when in debug mode (default: "/bin/sh -c 'while true; do sleep 1; done'")
+	DebugCommand []string `json:"debugCommand,omitempty"`
 }
 
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation

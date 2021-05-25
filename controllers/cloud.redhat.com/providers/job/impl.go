@@ -1,6 +1,8 @@
 package job
 
 import (
+	"fmt"
+
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -14,6 +16,7 @@ import (
 // defined in the ClowdApp
 func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
 	labels := cji.GetLabels()
+
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
 	j.ObjectMeta.Labels = labels
@@ -21,7 +24,8 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 
 	pod := job.PodSpec
 
-	if job.RestartPolicy == "" {
+	// set restart policy to Never by default, OR if in debug mode
+	if job.RestartPolicy == "" || cji.Spec.Debug {
 		j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 	} else {
 		j.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
@@ -63,6 +67,15 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
+	if cji.Spec.Debug {
+		c.Name = fmt.Sprintf("%s-debug", nn.Name)
+		c.Command = []string{"/bin/sh", "-c", "while true; do sleep 1; done"}
+		if len(cji.Spec.DebugCommand) > 0 {
+			c.Command = cji.Spec.DebugCommand
+		}
+		c.Args = []string{}
+	}
+
 	if (core.Probe{}) != livenessProbe {
 		c.LivenessProbe = &livenessProbe
 	}
@@ -77,7 +90,10 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 
 	j.Spec.Template.Spec.Containers = []core.Container{c}
 
-	j.Spec.Template.Spec.InitContainers = deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
+	// Do not configure init containers in debug mode
+	if !cji.Spec.Debug {
+		j.Spec.Template.Spec.InitContainers = deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
+	}
 
 	j.Spec.Template.Spec.Volumes = pod.Volumes
 	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
