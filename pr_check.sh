@@ -52,7 +52,7 @@ docker run -i \
     -e MINIKUBE_HOST=$MINIKUBE_HOST \
     -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR \
     -e MINIKUBE_USER=$MINIKUBE_USER \
-    quay.io/psav/clowder_pr_check:blarg24 \
+    quay.io/psav/clowder_pr_check:v2.5 \
     /workspace/build/pr_check_inner.sh
 TEST_RESULT=$?
 
