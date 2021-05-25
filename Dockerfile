@@ -9,10 +9,17 @@ COPY go.sum go.sum
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
 
+USER 0
+COPY Makefile Makefile
+RUN make test-setup
+
 # Copy the go source
 COPY main.go main.go
 COPY apis/ apis/
 COPY controllers/ controllers/
+COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
+
+RUN make test
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
