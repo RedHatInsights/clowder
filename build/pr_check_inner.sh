@@ -7,7 +7,7 @@ mkdir /container_workspace
 cp -r /workspace/. /container_workspace
 cd /container_workspace
 
-export KUBEBUILDER_ASSETS=/container_workspace/kubebuilder_2.3.1_linux_amd64/bin
+export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
 (
   cd "$(mktemp -d)" &&
@@ -18,8 +18,6 @@ export KUBEBUILDER_ASSETS=/container_workspace/kubebuilder_2.3.1_linux_amd64/bin
 )
 
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-
-ls -la /dev/tty
 
 chmod 600 minikube-ssh-ident
 
@@ -70,14 +68,18 @@ export IMAGE_TAG=`git rev-parse --short HEAD`
 kubectl create namespace clowder-system
 kubectl apply -f clowder-config.yaml -n clowder-system
 
-IMG=$IMAGE_NAME:$IMAGE_TAG make deploy
+mkdir artifacts
+
+cat manifest.yaml > artifacts/manifest.yaml
+
+sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
+
+kubectl apply -f manifest.yaml --validate=false
 
 # Wait for operator deployment...
 kubectl rollout status deployment clowder-controller-manager -n clowder-system
 
 kubectl krew install kuttl
-
-mkdir artifacts
 
 set +e
 source build/run_kuttl.sh --report xml

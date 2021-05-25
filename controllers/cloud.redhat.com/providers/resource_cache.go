@@ -35,7 +35,7 @@ import (
 type ResourceIdent interface {
 	GetProvider() string
 	GetPurpose() string
-	GetType() runtime.Object
+	GetType() client.Object
 }
 
 // ResourceIdent is a simple struct declaring a providers identifier and the type of resource to be
@@ -45,7 +45,7 @@ type ResourceIdent interface {
 type ResourceIdentSingle struct {
 	Provider string
 	Purpose  string
-	Type     runtime.Object
+	Type     client.Object
 }
 
 func (r ResourceIdentSingle) GetProvider() string {
@@ -56,7 +56,7 @@ func (r ResourceIdentSingle) GetPurpose() string {
 	return r.Purpose
 }
 
-func (r ResourceIdentSingle) GetType() runtime.Object {
+func (r ResourceIdentSingle) GetType() client.Object {
 	return r.Type
 }
 
@@ -67,7 +67,7 @@ func (r ResourceIdentSingle) GetType() runtime.Object {
 type ResourceIdentMulti struct {
 	Provider string
 	Purpose  string
-	Type     runtime.Object
+	Type     client.Object
 }
 
 func (r ResourceIdentMulti) GetProvider() string {
@@ -78,7 +78,7 @@ func (r ResourceIdentMulti) GetPurpose() string {
 	return r.Purpose
 }
 
-func (r ResourceIdentMulti) GetType() runtime.Object {
+func (r ResourceIdentMulti) GetType() client.Object {
 	return r.Type
 }
 
@@ -103,7 +103,7 @@ func init() {
 	secretCompare, _ = getKindFromObj(scheme, &core.Secret{})
 }
 
-func registerGVK(obj runtime.Object) {
+func registerGVK(obj client.Object) {
 	gvk, _ := getKindFromObj(scheme, obj)
 	if _, ok := protectedGVKs[gvk]; !ok {
 		if _, ok := possibleGVKs[gvk]; !ok {
@@ -114,7 +114,7 @@ func registerGVK(obj runtime.Object) {
 }
 
 // NewResourceIdent is a helper function that returns a ResourceIdent object.
-func NewSingleResourceIdent(provider string, purpose string, object runtime.Object) ResourceIdentSingle {
+func NewSingleResourceIdent(provider string, purpose string, object client.Object) ResourceIdentSingle {
 	registerGVK(object)
 	return ResourceIdentSingle{
 		Provider: provider,
@@ -124,7 +124,7 @@ func NewSingleResourceIdent(provider string, purpose string, object runtime.Obje
 }
 
 // NewResourceIdent is a helper function that returns a ResourceIdent object.
-func NewMultiResourceIdent(provider string, purpose string, object runtime.Object) ResourceIdentMulti {
+func NewMultiResourceIdent(provider string, purpose string, object client.Object) ResourceIdentMulti {
 	registerGVK(object)
 	return ResourceIdentMulti{
 		Provider: provider,
@@ -145,7 +145,7 @@ type ObjectCache struct {
 }
 
 type k8sResource struct {
-	Object   runtime.Object
+	Object   client.Object
 	Update   utils.Updater
 	Status   bool
 	jsonData string
@@ -177,7 +177,7 @@ func NewObjectCache(ctx context.Context, kclient client.Client, scheme *runtime.
 // Create first attempts to fetch the object from k8s for initial population. If this fails, the
 // blank object is stored in the cache it is imperitive that the user of this function call Create
 // before modifying the obejct they wish to be placed in the cache.
-func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedName, object runtime.Object) error {
+func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedName, object client.Object) error {
 
 	update, err := utils.UpdateOrErr(o.client.Get(o.ctx, nn, object))
 
@@ -218,7 +218,7 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 	}
 
 	o.data[resourceIdent][nn] = &k8sResource{
-		Object:   object.DeepCopyObject(),
+		Object:   object.DeepCopyObject().(client.Object),
 		Update:   update,
 		Status:   false,
 		jsonData: string(jsonData),
@@ -246,7 +246,7 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 
 // Update takes the item and tries to update the version in the cache. This will fail if the item is
 // not in the cache. A previous provider should have "created" the item before it can be updated.
-func (o *ObjectCache) Update(resourceIdent ResourceIdent, object runtime.Object) error {
+func (o *ObjectCache) Update(resourceIdent ResourceIdent, object client.Object) error {
 	if _, ok := o.data[resourceIdent]; !ok {
 		return fmt.Errorf("object cache not found, cannot update")
 	}
@@ -274,7 +274,7 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object runtime.Object)
 		return fmt.Errorf("create: resourceIdent type does not match runtime object [%s] [%s] [%s]", nn, gvk, obGVK)
 	}
 
-	o.data[resourceIdent][nn].Object = object.DeepCopyObject()
+	o.data[resourceIdent][nn].Object = object.DeepCopyObject().(client.Object)
 
 	if clowder_config.LoadedConfig.DebugOptions.Cache.Update {
 		var jsonData []byte
@@ -293,7 +293,7 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object runtime.Object)
 // the items are of different types and also if the item is not in the cache. A get should be used
 // by a downstream provider. If modifications are made to the object, it should be updated using the
 // Update call.
-func (o *ObjectCache) Get(resourceIdent ResourceIdent, object runtime.Object, nn ...types.NamespacedName) error {
+func (o *ObjectCache) Get(resourceIdent ResourceIdent, object client.Object, nn ...types.NamespacedName) error {
 	if _, ok := o.data[resourceIdent]; !ok {
 		return fmt.Errorf("object cache not found, cannot get")
 	}
@@ -377,7 +377,7 @@ func (o *ObjectCache) List(resourceIdent ResourceIdentMulti, object runtime.Obje
 }
 
 // Status marks the object for having a status update
-func (o *ObjectCache) Status(resourceIdent ResourceIdent, object runtime.Object) error {
+func (o *ObjectCache) Status(resourceIdent ResourceIdent, object client.Object) error {
 	if _, ok := o.data[resourceIdent]; !ok {
 		return fmt.Errorf("object cache not found, cannot update")
 	}
@@ -503,7 +503,7 @@ func (o *ObjectCache) Reconcile(clowdObj object.ClowdObject) error {
 	return nil
 }
 
-func getNamespacedNameFromRuntime(object runtime.Object) (types.NamespacedName, error) {
+func getNamespacedNameFromRuntime(object client.Object) (types.NamespacedName, error) {
 	om, err := meta.Accessor(object)
 
 	if err != nil {
@@ -518,7 +518,7 @@ func getNamespacedNameFromRuntime(object runtime.Object) (types.NamespacedName, 
 	return nn, nil
 }
 
-func getKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.GroupVersionKind, error) {
+func getKindFromObj(scheme *runtime.Scheme, object client.Object) (schema.GroupVersionKind, error) {
 	gvks, nok, err := scheme.ObjectKinds(object)
 
 	if err != nil {

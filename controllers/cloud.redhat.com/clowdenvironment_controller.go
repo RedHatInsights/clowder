@@ -73,9 +73,9 @@ type ClowdEnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
 
 //Reconcile fn
-func (r *ClowdEnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("env", req.Name).WithValues("id", utils.RandString(5))
-	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
+	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	env := crd.ClowdEnvironment{}
 	err := r.Client.Get(ctx, req.NamespacedName, &env)
@@ -239,20 +239,18 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&core.Service{}).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
-			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(r.envToEnqueueUponAppUpdate),
-			},
+			handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
 		).
 		For(&crd.ClowdEnvironment{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "env")).
 		Complete(r)
 }
 
-func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a handler.MapObject) []reconcile.Request {
+func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a client.Object) []reconcile.Request {
 	ctx := context.Background()
 	obj := types.NamespacedName{
-		Name:      a.Meta.GetName(),
-		Namespace: a.Meta.GetNamespace(),
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
 	}
 
 	// Get the ClowdEnvironment resource

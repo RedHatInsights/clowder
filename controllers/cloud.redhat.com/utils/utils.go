@@ -19,7 +19,6 @@ import (
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
@@ -51,7 +50,7 @@ type Updater bool
 
 // Apply will apply the resource if it already exists, and create it if it does not. This is based
 // on the bool value of the Update object.
-func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Object) error {
+func (u *Updater) Apply(ctx context.Context, cl client.Client, obj client.Object) error {
 	var err error
 	var kind string
 
@@ -101,8 +100,8 @@ func UpdateOrErr(err error) (Updater, error) {
 }
 
 // UpdateAllOrErr queries the client for a range of objects and returns updater objects for each.
-func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedName, obj ...runtime.Object) (map[runtime.Object]Updater, error) {
-	updates := map[runtime.Object]Updater{}
+func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedName, obj ...client.Object) (map[client.Object]Updater, error) {
+	updates := map[client.Object]Updater{}
 
 	for _, resource := range obj {
 		update, err := UpdateOrErr(cl.Get(ctx, nn, resource))
@@ -118,7 +117,7 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 }
 
 // ApplyAll applies all the update objects in the list called updates.
-func ApplyAll(ctx context.Context, cl client.Client, updates map[runtime.Object]Updater) error {
+func ApplyAll(ctx context.Context, cl client.Client, updates map[client.Object]Updater) error {
 	for resource, update := range updates {
 		if err := update.Apply(ctx, cl, resource); err != nil {
 			return err

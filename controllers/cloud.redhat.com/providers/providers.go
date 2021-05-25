@@ -14,7 +14,6 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -84,7 +83,7 @@ func StrPtr(s string) *string {
 
 type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool)
 
-func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName) (runtime.Object, error) {
+func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName) (client.Object, error) {
 	gvks, nok, err := cache.scheme.ObjectKinds(resourceIdent.GetType())
 
 	if err != nil {
@@ -98,20 +97,21 @@ func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.Na
 	gvk := gvks[0]
 
 	cobj, err := cache.scheme.New(gvk)
+	nobj := cobj.(client.Object)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = cache.Create(resourceIdent, nn, cobj)
+	err = cache.Create(resourceIdent, nn, nobj)
 
 	if err != nil {
 		return nil, err
 	}
-	return cobj, nil
+	return nobj, nil
 }
 
-func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object runtime.Object) error {
+func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object client.Object) error {
 	err := cache.Update(resourceIdent, object)
 
 	if err != nil {
@@ -121,14 +121,14 @@ func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object runt
 }
 
 // ObjectMap providers a map of ResourceIdents to objects, it is used internally and for testing.
-type ObjectMap map[ResourceIdent]runtime.Object
+type ObjectMap map[ResourceIdent]client.Object
 
 // CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
 func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
 	nn := GetNamespacedName(o, suffix)
 
-	makeFnMap := make(map[ResourceIdent]runtime.Object)
+	makeFnMap := make(map[ResourceIdent]client.Object)
 
 	for _, v := range objList {
 		obj, err := createResource(cache, v, nn)

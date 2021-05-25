@@ -1,18 +1,41 @@
 domain: cloud.redhat.com
-layout: go.kubebuilder.io/v2
+layout:
+- go.kubebuilder.io/v3
 multigroup: true
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
 projectName: clowder
 repo: cloud.redhat.com/clowder/v2
 resources:
-- group: cloud.redhat.com
-  kind: ClowdApp
-  version: v1alpha1
-- group: cloud.redhat.com
+- api:
+    crdVersion: v1
+    namespaced: false
+  controller: true
+  domain: cloud.redhat.com
+  group: cloud.redhat.com
   kind: ClowdEnvironment
+  path: cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1
   version: v1alpha1
-- group: cloud.redhat.com
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cloud.redhat.com
+  group: cloud.redhat.com
   kind: ClowdJobInvocation
+  path: cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1
   version: v1alpha1
-version: 3-alpha
-plugins:
-  go.sdk.operatorframework.io/v2-alpha: {}
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cloud.redhat.com
+  group: cloud.redhat.com
+  kind: ClowdApp
+  path: cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1
+  version: v1alpha1
+  webhooks:
+    validation: true
+    webhookVersion: v1
+version: "3"

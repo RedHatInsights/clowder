@@ -9,8 +9,8 @@ import (
 	"github.com/go-logr/logr"
 	"go.uber.org/zap"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ClowdKey is a string determining the type of error.
@@ -136,7 +136,7 @@ func LogError(ctx context.Context, name string, err *ClowderError) {
 func HandleError(ctx context.Context, err error) bool {
 	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
 	recorder := *(ctx.Value(ClowdKey("recorder")).(*record.EventRecorder))
-	obj := ctx.Value(ClowdKey("obj")).(runtime.Object)
+	obj := ctx.Value(ClowdKey("obj")).(client.Object)
 
 	if err != nil {
 		var depErr *MissingDependencies
