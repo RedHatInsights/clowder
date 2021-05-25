@@ -31,7 +31,6 @@ import (
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -103,8 +102,8 @@ func TestMain(m *testing.M) {
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
 	k8sClient.Create(ctx, nsSpec)
 
-	stopManager := make(chan struct{})
-	go Run(":8080", false, testEnv.Config, stopManager, false)
+	stopManager, cancel := context.WithCancel(context.Background())
+	go Run(":8080", ":8081", false, testEnv.Config, stopManager, false)
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
@@ -127,7 +126,7 @@ func TestMain(m *testing.M) {
 
 	retCode := m.Run()
 	logger.Info("Stopping test env...")
-	close(stopManager)
+	cancel()
 	err = testEnv.Stop()
 
 	if err != nil {
@@ -659,14 +658,14 @@ func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData ma
 	}
 }
 
-func fetchWithDefaults(name types.NamespacedName, resource runtime.Object) error {
+func fetchWithDefaults(name types.NamespacedName, resource client.Object) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	return fetch(ctx, name, resource, 20, 500*time.Millisecond)
 }
 
-func fetch(ctx context.Context, name types.NamespacedName, resource runtime.Object, retryCount int, sleepTime time.Duration) error {
+func fetch(ctx context.Context, name types.NamespacedName, resource client.Object, retryCount int, sleepTime time.Duration) error {
 	var err error
 
 	for i := 1; i <= retryCount; i++ {

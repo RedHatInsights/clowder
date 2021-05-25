@@ -64,10 +64,10 @@ var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secr
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 
 // Reconcile CJI Resources
-func (r *ClowdJobInvocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
 	log := r.Log.WithValues("jobinvocation", qualifiedName)
-	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
+	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 
 	cji := crd.ClowdJobInvocation{}
@@ -257,8 +257,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		For(&crd.ClowdJobInvocation{}).
 		Watches(
 			&source.Kind{Type: &batchv1.Job{}},
-			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(r.cjiToEnqueueUponJobUpdate)},
+			handler.EnqueueRequestsFromMapFunc(r.cjiToEnqueueUponJobUpdate),
 		).
 		Owns(&batchv1.Job{}).
 		Complete(r)
@@ -268,12 +267,12 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 // ClowdJobInvocationReconciler is updated. Rather than constantly requeue
 // in order to update a cji status, we can trigger a queue up a single reconcile
 // when a watched job updates
-func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a handler.MapObject) []reconcile.Request {
+func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object) []reconcile.Request {
 	reqs := []reconcile.Request{}
 	ctx := context.Background()
 	obj := types.NamespacedName{
-		Name:      a.Meta.GetName(),
-		Namespace: a.Meta.GetNamespace(),
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
 	}
 
 	job := batchv1.Job{}

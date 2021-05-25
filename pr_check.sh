@@ -1,5 +1,7 @@
 #!/bin/bash
 
+go version
+
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 
 while read line; do
@@ -28,13 +30,18 @@ docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 export IMAGE_TAG=`git rev-parse --short HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-curl -LO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_linux_amd64.tar.gz
-
-tar xzvf kubebuilder_2.3.1_linux_amd64.tar.gz
-export KUBEBUILDER_ASSETS=$PWD/kubebuilder_2.3.1_linux_amd64/bin
+export ENVTEST_ASSETS_DIR=$PWD/testbin
+mkdir -p $ENVTEST_ASSETS_DIR
+test -f $ENVTEST_ASSETS_DIR/setup-envtest.sh || curl -sSLo $ENVTEST_ASSETS_DIR/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
+source $ENVTEST_ASSETS_DIR/setup-envtest.sh; fetch_envtest_tools $ENVTEST_ASSETS_DIR; setup_envtest_env $ENVTEST_ASSETS_DIR;
 
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push
+
+docker rm clowdercopy || true
+docker create --name clowdercopy $IMAGE_NAME:$IMAGE_TAG
+docker cp clowdercopy:/manifest.yaml .
+docker rm clowdercopy || true
 
 CONTAINER_NAME="clowder-pr-check-$ghprbPullId"
 # NOTE: Make sure this volume is mounted 'ro', otherwise Jenkins cannot clean up the workspace due to file permission errors
@@ -49,7 +56,7 @@ docker run -i \
     -e MINIKUBE_HOST=$MINIKUBE_HOST \
     -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR \
     -e MINIKUBE_USER=$MINIKUBE_USER \
-    quay.io/psav/clowder_pr_check:blarg24 \
+    quay.io/psav/clowder_pr_check:v2.5 \
     /workspace/build/pr_check_inner.sh
 TEST_RESULT=$?
 

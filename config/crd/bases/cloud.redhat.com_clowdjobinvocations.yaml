@@ -1,17 +1,13 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: clowdjobinvocations.cloud.redhat.com
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.completed
-    name: Completed
-    type: boolean
   group: cloud.redhat.com
   names:
     kind: ClowdJobInvocation
@@ -21,96 +17,99 @@ spec:
     - cji
     singular: clowdjobinvocation
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: ClowdJobInvocation is the Schema for the jobinvocations API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
-          properties:
-            appName:
-              description: Name of the ClowdApp who owns the jobs
-              type: string
-            jobs:
-              description: Jobs is the set of jobs to be run by the invocation
-              items:
-                type: string
-              type: array
-            testing:
-              description: Testing is the struct for building out test jobs (iqe,
-                etc) in a CJI
-              properties:
-                iqe:
-                  description: Iqe is the job spec to override defaults from the ClowdApp's
-                    definition of the job
-                  properties:
-                    dynaconfEnvName:
-                      description: sets value for ENV_FOR_DYNACONF
-                      type: string
-                    filter:
-                      description: sets pytest -k args
-                      type: string
-                    imageTag:
-                      description: By default, Clowder will set the image on the ClowdJob
-                        to be the baseImage:name-of-iqe-plugin, but only the tag can
-                        be overridden here
-                      type: string
-                    marker:
-                      description: sets the pytest -m args
-                      type: string
-                    ui:
-                      description: 'Indiciates the presence of a selenium container
-                        Note: currently not implemented'
-                      properties:
-                        enabled:
-                          description: Indiciates the presence of a selenium container
-                          type: boolean
-                      required:
-                      - enabled
-                      type: object
-                  required:
-                  - dynaconfEnvName
-                  type: object
-              type: object
-          required:
-          - appName
-          type: object
-        status:
-          description: ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
-          properties:
-            completed:
-              description: Completed is false and updated when all jobs have either
-                finished successfully or failed past their backoff and retry values
-              type: boolean
-            jobs:
-              description: Jobs is a list of the job names run by Job invocation
-              items:
-                type: string
-              type: array
-          required:
-          - completed
-          - jobs
-          type: object
-      type: object
-  version: v1alpha1
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.completed
+      name: Completed
+      type: boolean
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ClowdJobInvocation is the Schema for the jobinvocations API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
+            properties:
+              appName:
+                description: Name of the ClowdApp who owns the jobs
+                type: string
+              jobs:
+                description: Jobs is the set of jobs to be run by the invocation
+                items:
+                  type: string
+                type: array
+              testing:
+                description: Testing is the struct for building out test jobs (iqe,
+                  etc) in a CJI
+                properties:
+                  iqe:
+                    description: Iqe is the job spec to override defaults from the
+                      ClowdApp's definition of the job
+                    properties:
+                      dynaconfEnvName:
+                        description: sets value for ENV_FOR_DYNACONF
+                        type: string
+                      filter:
+                        description: sets pytest -k args
+                        type: string
+                      imageTag:
+                        description: By default, Clowder will set the image on the
+                          ClowdJob to be the baseImage:name-of-iqe-plugin, but only
+                          the tag can be overridden here
+                        type: string
+                      marker:
+                        description: sets the pytest -m args
+                        type: string
+                      ui:
+                        description: 'Indiciates the presence of a selenium container
+                          Note: currently not implemented'
+                        properties:
+                          enabled:
+                            description: Indiciates the presence of a selenium container
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
+                    required:
+                    - dynaconfEnvName
+                    type: object
+                type: object
+            required:
+            - appName
+            type: object
+          status:
+            description: ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
+            properties:
+              completed:
+                description: Completed is false and updated when all jobs have either
+                  finished successfully or failed past their backoff and retry values
+                type: boolean
+              jobs:
+                description: Jobs is a list of the job names run by Job invocation
+                items:
+                  type: string
+                type: array
+            required:
+            - completed
+            - jobs
+            type: object
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

@@ -12,26 +12,39 @@ metadata:
   namespace: system
   labels:
     control-plane: controller-manager
-    operator-name: clowder
 spec:
   selector:
     matchLabels:
       control-plane: controller-manager
-      operator-name: clowder
   replicas: 1
   template:
     metadata:
       labels:
         control-plane: controller-manager
-        operator-name: clowder
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - command:
         - /manager
         args:
-        - --enable-leader-election
+        - --leader-elect
         image: controller:latest
         name: manager
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
         resources:
           limits:
             cpu: 500m
@@ -47,4 +60,5 @@ spec:
           configMap:
             optional: True
             name: clowder-config
+      serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
