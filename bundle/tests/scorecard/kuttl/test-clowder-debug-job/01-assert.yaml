@@ -1,0 +1,69 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowder-debug-job
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-clowder-debug-job
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: puptoo-standard-cron
+  namespace: test-clowder-debug-job
+spec:
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: puptoo-standard-cron
+              image: quay.io/psav/clowder-hello
+          restartPolicy: Never
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: puptoo-restart-on-failure
+  namespace: test-clowder-debug-job
+spec:
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: puptoo-restart-on-failure
+              image: quay.io/psav/clowder-hello
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: puptoo-hello-cji-runner
+  namespace: test-clowder-debug-job
+spec:
+  restartPolicy: Never
+  template:
+    spec:
+      containers:
+        - name: puptoo-hello-cji-runner-debug
+          image: busybox
+          command:
+          - "/bin/sh"
+          - "-c"
+          - "while true; do sleep 1; done"
+      initContainers: []
