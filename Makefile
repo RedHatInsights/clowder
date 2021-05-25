@@ -132,7 +132,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 # Build the docker image
-docker-build: test
+docker-build:
 	$(RUNTIME) build . -t ${IMG}
 
 # Build the docker image
