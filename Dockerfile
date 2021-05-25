@@ -1,7 +1,6 @@
 # Build the manager binary
-FROM registry.access.redhat.com/ubi8/go-toolset:1.14.12 as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.15.7 as builder
 
-USER 0
 WORKDIR /workspace
 # Copy the Go Modules manifests
 COPY go.mod go.mod
@@ -14,10 +13,6 @@ RUN go mod download
 COPY main.go main.go
 COPY apis/ apis/
 COPY controllers/ controllers/
-COPY Makefile Makefile
-COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
-
-RUN make generate
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
@@ -27,6 +22,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
-USER nonroot:nonroot
+USER 65532:65532
 
 ENTRYPOINT ["/manager"]

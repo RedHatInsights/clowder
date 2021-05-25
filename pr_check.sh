@@ -1,5 +1,7 @@
 #!/bin/bash
 
+go version
+
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 
 while read line; do
@@ -28,10 +30,11 @@ docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 export IMAGE_TAG=`git rev-parse --short HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-curl -LO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_linux_amd64.tar.gz
+curl -LO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v3.0.0/kubebuilder_linux_amd64
 
-tar xzvf kubebuilder_2.3.1_linux_amd64.tar.gz
-export KUBEBUILDER_ASSETS=$PWD/kubebuilder_2.3.1_linux_amd64/bin
+mkdir -p $PWD/kubebuilder_3.0.0_amd64/bin
+mv kubebuilder_linux_amd64 $PWD/kubebuilder_3.0.0_amd64/bin
+export KUBEBUILDER_ASSETS=$PWD/kubebuilder_3.0.0_linux_amd64/bin
 
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push

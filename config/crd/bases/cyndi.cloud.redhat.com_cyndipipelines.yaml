@@ -1,38 +1,13 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: cyndipipelines.cyndi.cloud.redhat.com
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .spec.appName
-    name: App
-    type: string
-  - JSONPath: .spec.insightsOnly
-    name: Insights only
-    type: boolean
-  - JSONPath: .status.activeTableName
-    name: Active table
-    type: string
-  - JSONPath: .status.conditions[?(@.type == "Valid")].status
-    name: Valid
-    type: string
-  - JSONPath: .status.hostCount
-    name: Host Count
-    type: integer
-  - JSONPath: .status.initialSyncInProgress
-    name: Initial sync
-    type: boolean
-  - JSONPath: .status.validationFailedCount
-    name: Validation failure count
-    type: integer
-  - JSONPath: .metadata.creationTimestamp
-    name: Age
-    type: date
   group: cyndi.cloud.redhat.com
   names:
     categories:
@@ -44,164 +19,189 @@ spec:
     - cyndi
     singular: cyndipipeline
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: CyndiPipeline is the Schema for the cyndipipelines API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: CyndiPipelineSpec defines the desired state of CyndiPipeline
-          properties:
-            appName:
-              maxLength: 64
-              minLength: 1
-              type: string
-            connectCluster:
-              minLength: 1
-              type: string
-            dbSecret:
-              minLength: 1
-              type: string
-            insightsOnly:
-              type: boolean
-            inventoryDbSecret:
-              minLength: 1
-              type: string
-            maxAge:
-              format: int64
-              type: integer
-            topic:
-              minLength: 1
-              type: string
-            validationThreshold:
-              format: int64
-              type: integer
-          required:
-          - appName
-          type: object
-        status:
-          description: CyndiPipelineStatus defines the observed state of CyndiPipeline
-          properties:
-            activeTableName:
-              description: Name of the database table that is currently backing the
-                "inventory.hosts" view May differ from TableName e.g. during a refresh
-              type: string
-            conditions:
-              items:
-                description: "Condition contains details for one aspect of the current
-                  state of this API Resource. --- This struct is intended for direct
-                  use as an array at the field path .status.conditions.  For example,
-                  type FooStatus struct{     // Represents the observations of a foo's
-                  current state.     // Known .status.conditions.type are: \"Available\",
-                  \"Progressing\", and \"Degraded\"     // +patchMergeKey=type     //
-                  +patchStrategy=merge     // +listType=map     // +listMapKey=type
-                  \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                  patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
-                  \n     // other fields }"
-                properties:
-                  lastTransitionTime:
-                    description: lastTransitionTime is the last time the condition
-                      transitioned from one status to another. This should be when
-                      the underlying condition changed.  If that is not known, then
-                      using the time when the API field changed is acceptable.
-                    format: date-time
-                    type: string
-                  message:
-                    description: message is a human readable message indicating details
-                      about the transition. This may be an empty string.
-                    maxLength: 32768
-                    type: string
-                  observedGeneration:
-                    description: observedGeneration represents the .metadata.generation
-                      that the condition was set based upon. For instance, if .metadata.generation
-                      is currently 12, but the .status.conditions[x].observedGeneration
-                      is 9, the condition is out of date with respect to the current
-                      state of the instance.
-                    format: int64
-                    minimum: 0
-                    type: integer
-                  reason:
-                    description: reason contains a programmatic identifier indicating
-                      the reason for the condition's last transition. Producers of
-                      specific condition types may define expected values and meanings
-                      for this field, and whether the values are considered a guaranteed
-                      API. The value should be a CamelCase string. This field may
-                      not be empty.
-                    maxLength: 1024
-                    minLength: 1
-                    pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
-                    type: string
-                  status:
-                    description: status of the condition, one of True, False, Unknown.
-                    enum:
-                    - "True"
-                    - "False"
-                    - Unknown
-                    type: string
-                  type:
-                    description: type of condition in CamelCase or in foo.example.com/CamelCase.
-                      --- Many .condition.type values are consistent across resources
-                      like Available, but because arbitrary conditions can be useful
-                      (see .node.status.conditions), the ability to deconflict is
-                      important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
-                    maxLength: 316
-                    pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
-                    type: string
-                required:
-                - lastTransitionTime
-                - message
-                - reason
-                - status
-                - type
-                type: object
-              type: array
-            cyndiConfigVersion:
-              type: string
-            cyndiPipelineName:
-              type: string
-            hostCount:
-              format: int64
-              type: integer
-            initialSyncInProgress:
-              type: boolean
-            pipelineVersion:
-              type: string
-            tableName:
-              type: string
-            validationFailedCount:
-              format: int64
-              minimum: 0
-              type: integer
-          required:
-          - activeTableName
-          - conditions
-          - cyndiConfigVersion
-          - cyndiPipelineName
-          - hostCount
-          - initialSyncInProgress
-          - pipelineVersion
-          - tableName
-          - validationFailedCount
-          type: object
-      type: object
-  version: v1alpha1
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.appName
+      name: App
+      type: string
+    - jsonPath: .spec.insightsOnly
+      name: Insights only
+      type: boolean
+    - jsonPath: .status.activeTableName
+      name: Active table
+      type: string
+    - jsonPath: .status.conditions[?(@.type == "Valid")].status
+      name: Valid
+      type: string
+    - jsonPath: .status.hostCount
+      name: Host Count
+      type: integer
+    - jsonPath: .status.initialSyncInProgress
+      name: Initial sync
+      type: boolean
+    - jsonPath: .status.validationFailedCount
+      name: Validation failure count
+      type: integer
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CyndiPipeline is the Schema for the cyndipipelines API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CyndiPipelineSpec defines the desired state of CyndiPipeline
+            properties:
+              appName:
+                maxLength: 64
+                minLength: 1
+                type: string
+              connectCluster:
+                minLength: 1
+                type: string
+              dbSecret:
+                minLength: 1
+                type: string
+              insightsOnly:
+                type: boolean
+              inventoryDbSecret:
+                minLength: 1
+                type: string
+              maxAge:
+                format: int64
+                type: integer
+              topic:
+                minLength: 1
+                type: string
+              validationThreshold:
+                format: int64
+                type: integer
+            required:
+            - appName
+            type: object
+          status:
+            description: CyndiPipelineStatus defines the observed state of CyndiPipeline
+            properties:
+              activeTableName:
+                description: Name of the database table that is currently backing
+                  the "inventory.hosts" view May differ from TableName e.g. during
+                  a refresh
+                type: string
+              conditions:
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource. --- This struct is intended for direct
+                    use as an array at the field path .status.conditions.  For example,
+                    type FooStatus struct{     // Represents the observations of a
+                    foo's current state.     // Known .status.conditions.type are:
+                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
+                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
+                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
+                    \n     // other fields }"
+                  properties:
+                    lastTransitionTime:
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              cyndiConfigVersion:
+                type: string
+              cyndiPipelineName:
+                type: string
+              hostCount:
+                format: int64
+                type: integer
+              initialSyncInProgress:
+                type: boolean
+              pipelineVersion:
+                type: string
+              tableName:
+                type: string
+              validationFailedCount:
+                format: int64
+                minimum: 0
+                type: integer
+            required:
+            - activeTableName
+            - conditions
+            - cyndiConfigVersion
+            - cyndiPipelineName
+            - hostCount
+            - initialSyncInProgress
+            - pipelineVersion
+            - tableName
+            - validationFailedCount
+            type: object
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

@@ -1,0 +1,20 @@
+# permissions for end users to view clowdenvironments.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clowdenvironment-viewer-role
+rules:
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - clowdenvironments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - clowdenvironments/status
+  verbs:
+  - get

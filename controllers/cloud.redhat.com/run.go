@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -18,6 +19,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 )
 
 var (
@@ -27,7 +30,7 @@ var (
 
 var secretCompare schema.GroupVersionKind
 
-func getKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.GroupVersionKind, error) {
+func getKindFromObj(scheme *runtime.Scheme, object client.Object) (schema.GroupVersionKind, error) {
 	gvks, nok, err := scheme.ObjectKinds(object)
 
 	if err != nil {
@@ -54,15 +57,16 @@ func init() {
 }
 
 // Run inits the manager and controllers and then starts the manager
-func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, signalHandler <-chan struct{}, enableWebHooks bool) {
+func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config *rest.Config, signalHandler context.Context, enableWebHooks bool) {
 	setupLog.Info("Loaded config", "config", clowder_config.LoadedConfig)
 
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		Port:               9443,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "068b0003.cloud.redhat.com",
+		Scheme:                 scheme,
+		MetricsBindAddress:     metricsAddr,
+		Port:                   9443,
+		HealthProbeBindAddress: probeAddr,
+		LeaderElection:         enableLeaderElection,
+		LeaderElectionID:       "068b0003.cloud.redhat.com",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -100,6 +104,15 @@ func Run(metricsAddr string, enableLeaderElection bool, config *rest.Config, sig
 			setupLog.Error(err, "unable to create webhook", "webhook", "Captain")
 			os.Exit(1)
 		}
+	}
+
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up health check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
 	}
 
 	setupLog.Info("starting manager")
