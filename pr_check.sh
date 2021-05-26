@@ -38,6 +38,7 @@ source $ENVTEST_ASSETS_DIR/setup-envtest.sh; fetch_envtest_tools $ENVTEST_ASSETS
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push
 
+docker rm clowdercopy
 docker create --name clowdercopy $IMAGE_NAME:$IMAGE_TAG
 docker cp clowdercopy:/manifest.yaml .
 docker rm clowdercopy
