@@ -38,10 +38,10 @@ source $ENVTEST_ASSETS_DIR/setup-envtest.sh; fetch_envtest_tools $ENVTEST_ASSETS
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push
 
-docker rm clowdercopy -i
+docker rm clowdercopy --ignore
 docker create --name clowdercopy $IMAGE_NAME:$IMAGE_TAG
 docker cp clowdercopy:/manifest.yaml .
-docker rm clowdercopy -i
+docker rm clowdercopy --ignore
 
 CONTAINER_NAME="clowder-pr-check-$ghprbPullId"
 # NOTE: Make sure this volume is mounted 'ro', otherwise Jenkins cannot clean up the workspace due to file permission errors
