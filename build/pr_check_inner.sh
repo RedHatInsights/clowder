@@ -68,6 +68,8 @@ export IMAGE_TAG=`git rev-parse --short HEAD`
 kubectl create namespace clowder-system
 kubectl apply -f clowder-config.yaml -n clowder-system
 
+mkdir artifacts
+
 cat manifest.yaml > artifacts/manifest.yaml
 
 sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
@@ -78,8 +80,6 @@ kubectl apply -f manifest.yaml --validate=false
 kubectl rollout status deployment clowder-controller-manager -n clowder-system
 
 kubectl krew install kuttl
-
-mkdir artifacts
 
 set +e
 source build/run_kuttl.sh --report xml
