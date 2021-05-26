@@ -30,11 +30,10 @@ docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 export IMAGE_TAG=`git rev-parse --short HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-curl -LO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v3.0.0/kubebuilder_linux_amd64
-
-mkdir -p $PWD/kubebuilder_3.0.0_amd64/bin
-mv kubebuilder_linux_amd64 $PWD/kubebuilder_3.0.0_amd64/bin
-export KUBEBUILDER_ASSETS=$PWD/kubebuilder_3.0.0_linux_amd64/bin
+export ENVTEST_ASSETS_DIR=$PWD/testbin
+mkdir -p ${ENVTEST_ASSETS_DIR}
+test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
+source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR);
 
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push

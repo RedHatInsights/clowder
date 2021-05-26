@@ -7,7 +7,7 @@ mkdir /container_workspace
 cp -r /workspace/. /container_workspace
 cd /container_workspace
 
-export KUBEBUILDER_ASSETS=/container_workspace/kubebuilder_2.3.1_linux_amd64/bin
+export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
 (
   cd "$(mktemp -d)" &&
@@ -18,8 +18,6 @@ export KUBEBUILDER_ASSETS=/container_workspace/kubebuilder_2.3.1_linux_amd64/bin
 )
 
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-
-ls -la /dev/tty
 
 chmod 600 minikube-ssh-ident
 
