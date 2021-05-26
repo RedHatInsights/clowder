@@ -16,7 +16,7 @@ COPY Makefile Makefile
 COPY main.go main.go
 COPY apis/ apis/
 COPY controllers/ controllers/
-COPY config/crd/static/ config/crd/static/
+COPY config/ config/
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
 
 RUN make test
