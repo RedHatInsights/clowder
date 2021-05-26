@@ -68,7 +68,7 @@ export IMAGE_TAG=`git rev-parse --short HEAD`
 kubectl create namespace clowder-system
 kubectl apply -f clowder-config.yaml -n clowder-system
 
-IMG=$IMAGE_NAME:$IMAGE_TAG make deploy
+kubectl apply -f manifest.yaml
 
 # Wait for operator deployment...
 kubectl rollout status deployment clowder-controller-manager -n clowder-system
