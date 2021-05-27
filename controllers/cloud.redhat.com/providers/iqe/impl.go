@@ -3,9 +3,8 @@ package iqe
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
+	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -41,10 +40,12 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	}
 
 	envvar := []core.EnvVar{
-		{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
 		{Name: "NAMESPACE", Value: nn.Namespace},
-		{Name: "CLOWDER_ENABLED", Value: "true"},
+		{Name: "IQE_DEBUG_POD", Value: strconv.FormatBool(cji.Spec.Testing.Iqe.Debug)},
+		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
+		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
+		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
 	}
 
 	tag := ""
@@ -53,20 +54,13 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	} else {
 		tag = app.Spec.Testing.IqePlugin
 	}
-	plugin := app.Spec.Testing.IqePlugin
 	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
-
-	constructedIqeCommand, err := ConstructIqeCommand(cji, plugin)
-	if err != nil {
-		return err
-	}
 
 	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
 
 	c := core.Container{
 		Name:         nn.Name,
 		Image:        fmt.Sprintf("%s:%s", iqeImage, tag),
-		Command:      constructedIqeCommand,
 		Env:          envvar,
 		Resources:    deployProvider.ProcessResources(&pod, env),
 		VolumeMounts: []core.VolumeMount{},
@@ -124,24 +118,6 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	j.Spec.Template.Spec.Containers = []core.Container{c}
 
 	return nil
-}
-
-func ConstructIqeCommand(cji *crd.ClowdJobInvocation, plugin string) ([]string, error) {
-	if plugin == "" {
-		return []string{}, errors.New("iqe-plugin is missing from ClowdApp")
-	}
-	command := []string{
-		"iqe", "tests", "plugin",
-		fmt.Sprintf("%v", strings.ReplaceAll(plugin, "-", "_")),
-	}
-	if cji.Spec.Testing.Iqe.Marker != "" {
-		command = append(command, "-m", cji.Spec.Testing.Iqe.Marker)
-	}
-	if cji.Spec.Testing.Iqe.Filter != "" {
-		// Note: go can append multiple values to a slice
-		command = append(command, "-k", cji.Spec.Testing.Iqe.Filter)
-	}
-	return command, nil
 }
 
 func createAndApplyIqeSecret(cache *providers.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string, logger logr.Logger, client client.Client) error {

@@ -43,6 +43,8 @@ type IqeJobSpec struct {
 	DynaconfEnvName string `json:"dynaconfEnvName"`
 	// sets pytest -k args
 	Filter string `json:"filter,omitempty"`
+	// used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
+	Debug bool `json:"debug,omitempty"`
 }
 
 type UiSpec struct {
