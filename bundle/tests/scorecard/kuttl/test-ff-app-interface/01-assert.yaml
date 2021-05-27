@@ -20,7 +20,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: puptoo-app
+      serviceAccountName: puptoo-processor
 ---
 apiVersion: v1
 kind: Service
