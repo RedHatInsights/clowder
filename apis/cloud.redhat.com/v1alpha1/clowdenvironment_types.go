@@ -284,6 +284,16 @@ type FeatureFlagsConfig struct {
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
+
+	// Defines the secret containing the client access token, only used for (*_app-interface_*)
+	// mode.
+	CredentialRef NamespacedName `json:"credentialRef,omitempty"`
+
+	// Defines the hostname for (*_app-interface_*) mode
+	Hostname string `json:"hostname,omitempty"`
+
+	// Defineds the port for (*_app-interface_*) mode
+	Port int32 `json:"port,omitempty"`
 }
 
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB

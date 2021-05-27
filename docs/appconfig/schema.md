@@ -994,10 +994,11 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig"}
 ```
 
-| Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                              |
-| :---------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [hostname](#hostname-3) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/hostname") |
-| [port](#port-3)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/port")         |
+| Property                                    | Type      | Required | Nullable       | Defined by                                                                                                                                                                                                    |
+| :------------------------------------------ | --------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [hostname](#hostname-3)                     | `string`  | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/hostname")                       |
+| [port](#port-3)                             | `integer` | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/port")                               |
+| [client_access_token](#client_access_token) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-client_access_token.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/client_access_token") |
 
 ### hostname
 
@@ -1030,6 +1031,22 @@ Defines the port for the FeatureFlags server
 #### port Type
 
 `integer`
+
+### client_access_token
+
+Defines the client access token to use when connect to the FeatureFlags server
+
+
+`client_access_token`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-featureflagsconfig-properties-client_access_token.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/client_access_token")
+
+#### client_access_token Type
+
+`string`
 
 ## Definitions group InMemoryDBConfig
 

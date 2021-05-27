@@ -332,6 +332,10 @@
                 "port": {
                     "description": "Defines the port for the FeatureFlags server",
                     "type": "integer"
+                },
+                "client_access_token": {
+                    "description": "Defines the client access token to use when connect to the FeatureFlags server",
+                    "type": "string"
                 }
             },
             "required":[

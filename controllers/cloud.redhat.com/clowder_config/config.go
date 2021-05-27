@@ -24,6 +24,7 @@ type ClowderConfig struct {
 	} `json:"debugOptions"`
 	Features struct {
 		CreateServiceMonitor bool `json:"createServiceMonitor"`
+		DisableWebhooks      bool `json:"disableWebhooks"`
 	} `json:"features"`
 }
 
@@ -47,7 +48,7 @@ func getConfig() ClowderConfig {
 	err = json.Unmarshal(jsonData, &clowderConfig)
 
 	if err != nil {
-		fmt.Printf("Couldn't parse json\n")
+		fmt.Printf("Couldn't parse json:\n" + err.Error())
 		return ClowderConfig{}
 	}
 

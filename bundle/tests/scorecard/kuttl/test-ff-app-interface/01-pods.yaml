@@ -6,8 +6,13 @@ metadata:
 spec:
   targetNamespace: test-ff-app-interface
   providers:
-    featureflags:
+    featureFlags:
       mode: app-interface
+      hostname: test.featureflags.redhat.com
+      port: 12345
+      credentialRef:
+        name: ff-server
+        namespace: test-ff-app-interface-ff-location
     web:
       port: 8000
       mode: operator
@@ -25,8 +30,6 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
-    pullSecrets:
-    - test
   resourceDefaults:
     limits:
       cpu: 400m
@@ -46,6 +49,7 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
+  featureFlags: true
 ---
 apiVersion: v1
 kind: Secret
@@ -54,5 +58,4 @@ metadata:
   namespace: test-ff-app-interface-ff-location
 type: Opaque
 data:
-  hostname: YXBwLWItc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com
-  token: bXktYXdlc29tZS10b2tlbg==  # my-awesome-token
+  CLIENT_ACCESS_TOKEN: YXBwLWItc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com

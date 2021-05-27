@@ -83,6 +83,24 @@ spec:
                     description: Defines the Configuration for the Clowder FeatureFlags
                       Provider.
                     properties:
+                      credentialRef:
+                        description: Defines the secret containing the client access
+                          token, only used for (*_app-interface_*) mode.
+                        properties:
+                          name:
+                            description: Name defines the Name of a resource.
+                            type: string
+                          namespace:
+                            description: Namespace defines the Namespace of a resource.
+                            type: string
+                        required:
+                        - name
+                        - namespace
+                        type: object
+                      hostname:
+                        description: Defines the hostname for (*_app-interface_*)
+                          mode
+                        type: string
                       mode:
                         description: 'The mode of operation of the Clowder FeatureFlag
                           Provider. Valid options are: (*_app-interface_*) where the
@@ -93,6 +111,10 @@ spec:
                         - app-interface
                         - none
                         type: string
+                      port:
+                        description: Defineds the port for (*_app-interface_*) mode
+                        format: int32
+                        type: integer
                       pvc:
                         description: If using the (*_local_*) mode and PVC is set
                           to true, this instructs the local Database instance to use
