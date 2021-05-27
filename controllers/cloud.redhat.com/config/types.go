@@ -137,6 +137,9 @@ type DependencyEndpoint struct {
 
 // Feature Flags Configuration
 type FeatureFlagsConfig struct {
+	// Defines the client access token to use when connect to the FeatureFlags server
+	ClientAccessToken *string `json:"clientAccessToken,omitempty"`
+
 	// Defines the hostname for the FeatureFlags server
 	Hostname string `json:"hostname"`
 

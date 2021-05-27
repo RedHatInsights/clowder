@@ -1,6 +1,8 @@
 {
     "debugOptions": {
-        "trigger": false,
+        "trigger": {
+            "diff": false
+        },
         "cache": {
             "create": false,
             "update": false,
@@ -11,7 +13,8 @@
             "cpuFile": "testcpu"
         }
     },
-    "webhooks": {
-        "disable": true
+    "features": {
+        "createServiceMonitor": false,
+        "disableWebhooks": true
     }
 }
