@@ -10,7 +10,7 @@ repo: cloud.redhat.com/clowder/v2
 resources:
 - api:
     crdVersion: v1
-    namespaced: true
+    namespaced: false
   controller: true
   domain: cloud.redhat.com
   group: cloud.redhat.com
