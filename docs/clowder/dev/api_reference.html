@@ -670,11 +670,9 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>nodePort</code></strong> <em>boolean</em></p>
+<p><strong><code>serviceConfig</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-serviceconfig">ServiceConfig</a></em></p>
 </div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Node port enables the node port for clowder created services</p>
-</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
@@ -1172,6 +1170,30 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>If using the (<strong><em>local</em></strong>) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>credentialRef</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname">NamespacedName</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the secret containing the client access token, only used for (<strong><em>app-interface</em></strong>) mode.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>hostname</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the hostname for (<strong><em>app-interface</em></strong>) mode</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>port</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defineds the port for (<strong><em>app-interface</em></strong>) mode</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -1971,7 +1993,15 @@
 <p><strong><code>mode</code></strong> <em>MetricsMode</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The mode of operation of the Metrics provider. The allowed modes are  (<strong><em>none</em></strong>), which disables metrics service generation, or (<strong><em>operator</em></strong>) where services and probes are generated.</p>
+<p>The mode of operation of the Metrics provider. The allowed modes are  (<strong><em>none</em></strong>), which disables metrics service generation, or (<strong><em>operator</em></strong>) where services and probes are generated. (<strong><em>app-interface</em></strong>) where services and probes are generated for app-interface.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>prometheus</code></strong> <em><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-prometheusconfig">PrometheusConfig</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Prometheus specific configuration</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -1987,6 +2017,9 @@
 <div class="title">Appears In:</div>
 <div class="ulist">
 <ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-featureflagsconfig">FeatureFlagsConfig</a></p>
+</li>
 <li>
 <p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-kafkaconfig">KafkaConfig</a></p>
 </li>
@@ -2350,6 +2383,43 @@
 </table>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-prometheusconfig"><a class="anchor" href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-prometheusconfig"></a>PrometheusConfig</h4>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-metricsconfig">MetricsConfig</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>deploy</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Determines whether to deploy prometheus in operator mode</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig"><a class="anchor" href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig"></a>ProvidersConfig</h4>
 <div class="paragraph">
 <p>ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.</p>
@@ -2505,6 +2575,44 @@
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.</p>
 </div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-serviceconfig"><a class="anchor" href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-serviceconfig"></a>ServiceConfig</h4>
+<div class="paragraph">
+<p>ServiceConfig provides options for k8s Service resources</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentspec">ClowdEnvironmentSpec</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>type</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
