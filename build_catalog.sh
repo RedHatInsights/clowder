@@ -66,7 +66,7 @@ if [[ $prev_version != "" ]]; then
 fi
 export BUNDLE_IMAGE_TAG=$current_commit
 export VERSION=$version
-curl -L https://github.com/operator-framework/operator-sdk/releases/download/v1.8.0/operator-sdk_linux_amd64 -i ./operator-sdk
+curl -L https://github.com/operator-framework/operator-sdk/releases/download/v1.8.0/operator-sdk_linux_amd64 -o ./operator-sdk
 curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.3/kustomize_v4.1.3_linux_amd64.tar.gz | tar xzf - > kustomize
 chmod +x ./operator-sdk
 chmod +x ./kustomize
