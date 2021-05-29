@@ -73,6 +73,7 @@ chmod +x ./operator-sdk
 chmod +x ./bin/kustomize
 export PATH=$PATH:.
 make bundle
+make bundle-build
 docker tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
 
 log "Pushing the bundle $BUNDLE_IMAGE:$current_commit to repository"
