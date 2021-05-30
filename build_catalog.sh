@@ -29,7 +29,7 @@ done
 num_commits=$(git rev-list $(git rev-list --max-parents=0 HEAD)..HEAD --count)
 current_commit=$(git rev-parse --short=7 HEAD)
 version="0.1.$num_commits-git$current_commit"
-opm_version="1.17.1"
+opm_version="1.14.1"
 
 # Login to docker
 docker_conf="$PWD/.docker"
