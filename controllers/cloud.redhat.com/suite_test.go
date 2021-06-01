@@ -613,13 +613,13 @@ func TestCreateClowdApp(t *testing.T) {
 func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp, jsonContent *config.AppConfig, clowdAppNN types.NamespacedName) {
 	// Kafka validation
 
-	topicWithPartitionsReplicasName := "inventory-test-default"
+	topicWithPartitionsReplicasName := "inventory"
 	topicWithPartitionsReplicasNamespacedName := types.NamespacedName{
 		Namespace: env.Spec.Providers.Kafka.Cluster.Namespace,
 		Name:      topicWithPartitionsReplicasName,
 	}
 
-	topicNoPartitionsReplicasName := "inventory-default-values-test-default"
+	topicNoPartitionsReplicasName := "inventory-default"
 	topicNoPartitionsReplicasNamespacedName := types.NamespacedName{
 		Namespace: env.Spec.Providers.Kafka.Cluster.Namespace,
 		Name:      topicNoPartitionsReplicasName,
