@@ -32,10 +32,10 @@ version="0.1.$num_commits-git$current_commit"
 opm_version="1.14.1"
 
 # Login to docker
-docker_conf="$PWD/.docker"
-mkdir -p "$docker_conf"
-docker_cmd="docker --config=$docker_conf"
-
+docker_cmd="podman"
+AUTH_CONF_DIR="$(pwd)/.podman"
+mkdir -p $AUTH_CONF_DIR
+export REGISTRY_AUTH_FILE="$AUTH_CONF_DIR/auth.json"
 $docker_cmd login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 
 # Find the CSV version from the previous bundle
@@ -44,10 +44,10 @@ $docker_cmd pull $BUNDLE_IMAGE:latest && exists=1 || exists=0
 
 if [ $exists -eq 1 ]; then
   log "Extracting previous version from bundle image"
-  docker create --name="tmp_$$" $BUNDLE_IMAGE:latest sh
+  $docker_cmd create --name="tmp_$$" $BUNDLE_IMAGE:latest sh
   tmp_dir=$(mktemp -d -t sa-XXXXXXXXXX)
   pushd $tmp_dir
-    docker export tmp_$$ | tar -xf -
+    $docker_cmd export tmp_$$ | tar -xf -
     prev_version=`find . -name *.clusterserviceversion.* | xargs cat - | python3 -c 'import sys,yaml; print(yaml.safe_load(sys.stdin.read())["spec"]["version"])'`
     if [[ "$prev_version" == "" ]]; then
       log "Unable to find previous bundle version"
@@ -56,7 +56,7 @@ if [ $exists -eq 1 ]; then
     log "Found previous bundle version $prev_version"
   popd
   rm -rf $tmp_dir
-  docker rm tmp_$$
+  $docker_cmd rm tmp_$$
 fi
 
 # Build/push the new bundle
@@ -74,7 +74,7 @@ chmod +x ./bin/kustomize
 export PATH=$PATH:.
 make bundle
 make bundle-build
-docker tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
+$docker_cmd tag $BUNDLE_IMAGE:$current_commit $BUNDLE_IMAGE:latest
 
 log "Pushing the bundle $BUNDLE_IMAGE:$current_commit to repository"
 $docker_cmd push $BUNDLE_IMAGE:$current_commit
@@ -104,7 +104,7 @@ fi
 if [ $? -ne 0 ]; then
   exit 1
 fi
-docker tag $CATALOG_IMAGE:$current_commit $CATALOG_IMAGE:latest
+$docker_cmd tag $CATALOG_IMAGE:$current_commit $CATALOG_IMAGE:latest
 
 log "Pushing catalog $CATALOG_IMAGE:$current_commit to repository"
 $docker_cmd push $CATALOG_IMAGE:$current_commit
