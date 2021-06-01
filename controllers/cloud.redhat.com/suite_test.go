@@ -619,7 +619,7 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 		Name:      topicWithPartitionsReplicasName,
 	}
 
-	topicNoPartitionsReplicasName := "inventory-default"
+	topicNoPartitionsReplicasName := "inventory-default-values"
 	topicNoPartitionsReplicasNamespacedName := types.NamespacedName{
 		Namespace: env.Spec.Providers.Kafka.Cluster.Namespace,
 		Name:      topicNoPartitionsReplicasName,
@@ -632,7 +632,7 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 		}
 
 		actual = jsonContent.Kafka.Topics[i].Name
-		expected = fmt.Sprintf("%s-%s-%s", kafkaTopic.TopicName, clowdAppNN.Name, clowdAppNN.Namespace)
+		expected = kafkaTopic.TopicName
 		if actual != expected {
 			t.Errorf("Wrong generated topic name set on app's config; got %s, want %s", actual, expected)
 		}
