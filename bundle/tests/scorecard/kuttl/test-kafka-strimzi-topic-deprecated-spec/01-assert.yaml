@@ -24,7 +24,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic-deprecated
     strimzi.io/cluster: my-cluster
-  name: topicone-test-kafka-strimzi-topic-deprecated-test-kafka-strimzi-topic-deprecated
+  name: topicone
   namespace: test-kafka-strimzi-topic-deprecated-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -40,7 +40,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic-deprecated
     strimzi.io/cluster: my-cluster
-  name: topictwo-test-kafka-strimzi-topic-deprecated-test-kafka-strimzi-topic-deprecated
+  name: topictwo
   namespace: test-kafka-strimzi-topic-deprecated-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -56,7 +56,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic-deprecated
     strimzi.io/cluster: my-cluster
-  name: topicthree-test-kafka-strimzi-topic-deprecated-test-kafka-strimzi-topic-deprecated
+  name: topicthree
   namespace: test-kafka-strimzi-topic-deprecated-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1

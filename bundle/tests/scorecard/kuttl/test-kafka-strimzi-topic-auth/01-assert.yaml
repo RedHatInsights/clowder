@@ -24,7 +24,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic-auth
     strimzi.io/cluster: test-kafka-strimzi-topic-auth
-  name: topicone-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+  name: topicone
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -40,7 +40,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic-auth
     strimzi.io/cluster: test-kafka-strimzi-topic-auth
-  name: topictwo-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+  name: topictwo
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -56,7 +56,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic-auth
     strimzi.io/cluster: test-kafka-strimzi-topic-auth
-  name: topicthree-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+  name: topicthree
   namespace: test-kafka-strimzi-topic-auth-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -86,13 +86,13 @@ spec:
     - host: '*'
       operation: All
       resource:
-        name: topicone-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+        name: topicone
         patternType: literal
         type: topic
     - host: '*'
       operation: All
       resource:
-        name: topictwo-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+        name: topictwo
         patternType: literal
         type: topic
     - host: '*'
@@ -124,19 +124,19 @@ spec:
     - host: '*'
       operation: All
       resource:
-        name: topicone-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+        name: topicone
         patternType: literal
         type: topic
     - host: '*'
       operation: All
       resource:
-        name: topictwo-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+        name: topictwo
         patternType: literal
         type: topic
     - host: '*'
       operation: All
       resource:
-        name: topicthree-test-kafka-strimzi-topic-auth-test-kafka-strimzi-topic-auth
+        name: topicthree
         patternType: literal
         type: topic
     - host: '*'

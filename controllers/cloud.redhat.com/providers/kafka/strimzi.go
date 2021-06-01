@@ -9,6 +9,7 @@ import (
 	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
@@ -612,7 +613,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
 
 	for _, topic := range app.Spec.KafkaTopics {
-		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, app.Namespace)
+		topicName := getTopicName(topic, *s.Env, app.Namespace)
 
 		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 			Host:      &address,
@@ -651,15 +652,10 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		return errors.Wrap("Topic creation failed: Error listing apps", err)
 	}
 
-	nn := types.NamespacedName{
-		Name:      app.Name,
-		Namespace: app.Namespace,
-	}
-
 	for _, topic := range app.Spec.KafkaTopics {
 		k := &strimzi.KafkaTopic{}
 
-		topicName := fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, nn.Namespace)
+		topicName := getTopicName(topic, *s.Env, app.Namespace)
 		knn := types.NamespacedName{
 			Namespace: getKafkaNamespace(s.Env),
 			Name:      topicName,
@@ -710,6 +706,14 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 	s.Config.Topics = topicConfig
 
 	return nil
+}
+
+func getTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment, namespace string) string {
+	if clowder_config.LoadedConfig.Features.UseComplexStrimziTopicNames {
+		return fmt.Sprintf("%s-%s-%s", topic.TopicName, env.Name, namespace)
+	} else {
+		return topic.TopicName
+	}
 }
 
 func processTopicValues(

@@ -24,7 +24,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic
     strimzi.io/cluster: my-cluster
-  name: topicone-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+  name: topicone
   namespace: test-kafka-strimzi-topic-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -40,7 +40,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic
     strimzi.io/cluster: my-cluster
-  name: topictwo-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+  name: topictwo
   namespace: test-kafka-strimzi-topic-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -56,7 +56,7 @@ metadata:
   labels:
     env: test-kafka-strimzi-topic
     strimzi.io/cluster: my-cluster
-  name: topicthree-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+  name: topicthree
   namespace: test-kafka-strimzi-topic-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
@@ -86,13 +86,13 @@ spec:
     - host: '*'
       operation: All
       resource:
-        name: topicone-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        name: topicone
         patternType: literal
         type: topic
     - host: '*'
       operation: All
       resource:
-        name: topictwo-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        name: topictwo
         patternType: literal
         type: topic
     - host: '*'
@@ -124,19 +124,19 @@ spec:
     - host: '*'
       operation: All
       resource:
-        name: topicone-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        name: topicone
         patternType: literal
         type: topic
     - host: '*'
       operation: All
       resource:
-        name: topictwo-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        name: topictwo
         patternType: literal
         type: topic
     - host: '*'
       operation: All
       resource:
-        name: topicthree-test-kafka-strimzi-topic-test-kafka-strimzi-topic
+        name: topicthree
         patternType: literal
         type: topic
     - host: '*'
