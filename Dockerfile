@@ -19,7 +19,7 @@ COPY controllers/ controllers/
 COPY config/ config/
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
 
-RUN make test
+#RUN make test
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
