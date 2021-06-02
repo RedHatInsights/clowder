@@ -3,12 +3,13 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: test-kafka-strimzi-topic
+  namespace: test-kafka-strimzi-topic-kafka
 spec:
   ingress:
   - from:
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: test-kafka-strimzi-topic-kafka
+          kubernetes.io/metadata.name: test-kafka-strimzi-topic
   podSelector: {}
   policyTypes:
   - Ingress
