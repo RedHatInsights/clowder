@@ -1,5 +1,15 @@
 = Main docs
 
-- xref:contributing.adoc[Contributing]
-- xref:providers/index.adoc[Providers]
 - xref:api_reference.adoc[API Reference]
+- xref:contributing.adoc[Contributing]
+- xref:migration:index.adoc[Migration]
+- xref:providers:index.adoc[Providers]
+- xref:usage:index.adoc[Usage]
+- xref:clowder-design.adoc[Clowder Design]
+- xref:crc-guide.adoc[Code Ready Containers]
+- xref:developer-guide.adoc[Developer Guide]
+- xref:learn-more.adoc[Learn More]
+- xref:macos.adoc[MacOS Docs]
+- xref:preprod.adoc[PreProd]
+- xref:README.adoc[README]
+- xref:sop.doc[SOP]

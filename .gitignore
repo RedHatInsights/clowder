@@ -32,7 +32,12 @@ launch.json
 .vimrc
 
 docs/build
+docs/clowder
+docs/ui
+docs/*.html
+docs/*.xml
 .docs/
+node_modules
 
 # Clowder release yaml generation
 manifest.yaml

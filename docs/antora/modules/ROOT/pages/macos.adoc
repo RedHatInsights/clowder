@@ -1,0 +1,26 @@
+= Using Clowder on MacOS
+
+== Install Minikube
+
+``brew install minikube``
+
+If you do not use ``brew``, you can follow https://v1-18.docs.kubernetes.io/docs/tasks/tools/install-minikube/[this guide]
+
+
+== Install HyperKit or VirtualBox
+
+Virtualbox will work, but we recommend HyperKit. It is much faster and more 
+light weight than VirtualBox, but VirtualBox will also work just fine. 
+
+``brew install hyperkit``
+
+or 
+
+Install VirtualBox from https://www.virtualbox.org/wiki/Downloads[the VirtualBox site]
+
+
+== Running
+
+Minikube can now be run the same way as the rest of the documentation suggests. 
+Setting the config will also make the minikube experience less verbose.
+``minikube config set vm-driver hyperkit`` or  ``minikube config set vm-driver virtualbox``.

@@ -1,0 +1,116 @@
+= Getting Started
+
+== Install Clowder on your local box
+
+As covered in the https://github.com/RedHatInsights/clowder#getting-clowder[main README section], the installation process for
+Clowder is a breeze.
+
+Using the above method will install Clowder locally through your Minikube
+instance. It will also create two new custom resource types that are easy to
+query: ``env`` for ``ClowdEnvs`` and ``app`` for ``ClowdApps``.
+
+If you would like to install Clowder manually and set up a contributing
+developer environment, https://github.com/RedHatInsights/clowder/blob/master/docs/developer-guide.md[follow the developer guide].
+
+== Create your first ``ClowdEnvironment``
+
+Let's make a namespace to hold all the resources we'll be creating :
+
+[source,shell]
+oc new-project jumpstart
+oc project jumpstart
+
+That's the example namespace we'll be using for the rest of the guide.
+
+Now we can drop in our first resource, a ClowdEnvironment. A ClowdEnvironment,
+or ClowdEnv, is a custom resource that defines the environment our ClowdApp will
+utilize. The ClowdEnv defines what types of services our app may require and
+what source is providing those services. For our purposes, these services are
+set to ``local`` mode and will spin up pods in the ``jumpstart`` namespace.
+
+The https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment[API docs for ClowdEnvironments] can be found on redhatinsights.github.io.
+
+A https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdenv.yml[fully annotated ClowdEnv] file can be found in the Clowder examples
+directory.
+
+NOTE: You will only create a ClowdEnvironment in your local minikube. Stage
+and Production will have one ClowdEnv, respectively, shared by all apps in
+that environment.
+
+[source,shell]
+oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdenv.yml
+
+Clowder will pick up and apply that env resource. You may notice there are no
+pods running -- and that's correct. Let's see what the ClowdEnv does.
+
+[source,shell]
+oc get env env-jumpstart -o yaml
+
+As you can see in the output, we have `providers`_ for the different services,
+but they won't do anything until a ClowdApp asks for them specifically.
+
+=== Handling local ports
+
+If you are going to use a ClowdEnv service in your ClowdApp (Kafka, Minio, etc),
+we need edit to your ``/etc/hosts`` localhost (127.0.0.1). Our example uses
+Kafka, so we are using the ``env-jumpstart-kafka.jumpstart.svc`` service because
+it matches our environment's name. Follow the Kubernetes service pattern for
+whatever your entry may need to be; just be sure it matches your specific
+environment name.
+
+Your ``/etc/hosts`` should now look like ::
+
+[source,text]
+127.0.0.1   localhost ...  env-jumpstart-kafka.jumpstart.svc.
+
+If you are not using the name ``jumpstart``, change it to the appropriate
+service.
+
+== Create your first ClowdApp
+
+Now that we have a ClowdEnv up and running, let's use those providers and get
+some pods going. We can do that using a ClowdApp. You can think of a ClowdApp
+much like a Deployment resource, but more powerful. In your ClowdApp, you define
+everything your app needs to run: database names, object storage, environment
+variables, container images, and cron jobs; the whole party. We'll start small
+and use the example.
+
+The https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp[API docs for ClowdApps] can be found on redhatinsights.github.io.
+
+A https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdapp.yml[fully annotated ClowdApp] file can be found in the Clowder examples directory.
+
+=== Port forwarding a localhost service
+
+In order for the local minikube to reach your Kafka service, we'll need to
+port-forward it on your local machine using the ``/etc/hosts`` entry from
+earlier:
+
+[source,shell]
+oc port-forward svc/env-jumpstart-kafka 29092
+
+You can background that with ``&`` if you'd like, or run it in a different
+terminal window. You only need to do this for local deployments.
+
+Now let's add our ClowdApp:
+
+[source,shell]
+oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdapp.yml
+
+Let's verify that ClowdApp was created:
+
+[source,shell]
+oc get app
+
+Now you should see pods!:
+
+[source,shell]
+oc get pods -w
+
+This should show you several running pods. Some of them we defined in our
+ClowdApp, some we did not. Pods like Kafka are defined in the ClowdEnv and spun
+up when requested by your app, then added to your namespace. As a note, your app
+will not come up until the all ClowdEnv supplied pods are marked as ready (1/1).
+
+That's it! You have a running ClowdApp deployed with Clowder. In the next few
+documents, we'll cover creating a more powerful dev environment, building a more
+complex ClowdApp, and migrating existing services over to Clowder.
