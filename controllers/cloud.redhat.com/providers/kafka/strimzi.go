@@ -519,7 +519,7 @@ func createNetworkPolicies(p *providers.Provider) error {
 
 	np := &networking.NetworkPolicy{}
 	nn := types.NamespacedName{
-		Name:      p.Env.Name,
+		Name:      getKafkaName(p.Env),
 		Namespace: getKafkaNamespace(p.Env),
 	}
 
