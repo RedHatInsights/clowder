@@ -7,6 +7,6 @@ spec:
   - {}
   podSelector:
     matchLabels:
-      name: clowder-controller-manager
+      control-plane: controller-manager
   policyTypes:
   - Ingress
