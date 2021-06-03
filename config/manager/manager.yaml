@@ -55,6 +55,9 @@ spec:
         volumeMounts:
           - mountPath: "/config/"
             name: "config"
+        port:
+          - containerPort: 8080
+            name: metrics
       volumes:
         - name: "config"
           configMap:
