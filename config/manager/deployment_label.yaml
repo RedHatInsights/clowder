@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+  labels:
+    control-plane: controller-manager
+    operator-name: clowder
+spec:
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      operator-name: clowder
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+        operator-name: clowder

@@ -2,6 +2,9 @@ resources:
 - manager.yaml
 - metrics_service.yaml
 
+patchesStrategicMerge:
+- deployment_label.yaml
+
 generatorOptions:
   disableNameSuffixHash: true
 
