@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Main docs :: Clowder Documentation</title>
-    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/index.html">
+    <title>Pre-Production Planning :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/preprod.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../ui/css/site.css">
     <script>var uiRootPath = '../../ui'</script>
@@ -174,63 +174,160 @@
 <main class="article">
 <div class="toolbar" role="navigation">
 <button class="nav-toggle"></button>
-  <a href="index.html" class="home-link is-current"></a>
+  <a href="index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Clowder</a></li>
-    <li><a href="index.html">Main docs</a></li>
+    <li><a href="preprod.html">Pre-Production Planning</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/preprod.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Main docs</h1>
+<h1 class="page">Pre-Production Planning</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Three things Chris wants to achive in next project:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>CI/CD pipeline</p>
+</li>
+<li>
+<p>Ephemeral environments</p>
+</li>
+<li>
+<p>Smoke testing</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cicd_pipeline"><a class="anchor" href="#_cicd_pipeline"></a>CI/CD Pipeline</h2>
+<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><a href="api_reference.html" class="page">API Reference</a></p>
+<p>Moving deployment templates to code repos</p>
 </li>
 <li>
-<p><a href="contributing.html" class="page">Contributing</a></p>
+<p>Create build jobs in app-interface</p>
 </li>
 <li>
-<p><a href="migration/index.html" class="page">Migration</a></p>
+<p>Add build_deploy.sh and pr_check.sh to code repos</p>
 </li>
 <li>
-<p><a href="providers/index.html" class="page">Providers</a></p>
+<p>Create common library to run validations when PR is opened</p>
 </li>
 <li>
-<p><a href="usage/index.html" class="page">Usage</a></p>
-</li>
-<li>
-<p><a href="clowder-design.html" class="page">Clowder Design</a></p>
-</li>
-<li>
-<p><a href="crc-guide.html" class="page">Code Ready Containers</a></p>
-</li>
-<li>
-<p><a href="developer-guide.html" class="page">Developer Guide</a></p>
-</li>
-<li>
-<p><a href="learn-more.html" class="page">Learn More</a></p>
-</li>
-<li>
-<p><a href="macos.html" class="page">MacOS Docs</a></p>
-</li>
-<li>
-<p><a href="preprod.html" class="page">PreProd</a></p>
-</li>
-<li>
-<p><a href="README.html" class="page">README</a></p>
-</li>
-<li>
-<p><a href="#sop.doc">SOP</a></p>
+<p>Create validations to ensure stage is stable when promoting to prod</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ephemeral_environments"><a class="anchor" href="#_ephemeral_environments"></a>Ephemeral environments</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Semantic point: "Ephemeral environments" just means a temporary copy of the
+platform and any number of apps on top of it.  It does not necessary map to one
+or more namespaces.</p>
+</div>
+<div class="paragraph">
+<p>Smoke testing can be done without having to have a separate service to check
+out temporary namespaces.  The value in ephemeral environments would come from
+app teams using them for reasons other than running PR smoke tests.</p>
+</div>
+<div class="paragraph">
+<p>Some ideas:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Team-specific or personal CI environments</p>
+</li>
+<li>
+<p>Pen testing envs</p>
+</li>
+<li>
+<p>Load testing envs</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>I think these use cases could be solved by using the operator to watch
+namespaces defined in app-interface.  App teams could then grant themselves edit
+access to specific namespaces to be able to debug their isolated environments.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_smoke_testing"><a class="anchor" href="#_smoke_testing"></a>Smoke testing</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Do test frameworks hit the app k8s services directly?  <strong>Yes.</strong></p>
+</li>
+<li>
+<p>Are metrics collected in current test runs? <strong>No, not from Prometheus.</strong></p>
+</li>
+<li>
+<p>Do we need to share a single kafka instance?  <strong>No, but this would be ideal</strong></p>
+</li>
+<li>
+<p>If so, how is this achieved?  <strong>Operator could manage topics transparently</strong></p>
+</li>
+<li>
+<p>Do we need to be able to run front-end tests?  <strong>Yes, but not in the short term</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Tasks:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Determine secret management strategy</p>
+</li>
+<li>
+<p>Build library to pull dependent CRs and other resources, probably from app-interface</p>
+</li>
+<li>
+<p>Deploy IQE test runner into same namespace to run tests</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operator"><a class="anchor" href="#_operator"></a>Operator</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are a few non-technical reasons why pushing to build the operator sooner
+rather than later makes sense.  First, it would be ideal to minimize the number
+of "migrations" that app teams have to make.  If we do the operator after the
+smoke test migration, it will be yet another project that app teams will have to
+plan for.  We can instead combine the operator migration with the smoke testing
+migration, making the switch to our new CRDs a prerequisite to moving to the new
+build/deploy pipeline.</p>
+</div>
+<div class="paragraph">
+<p>Second, we are constrained by the yearly "tick tock" cycle of SaaS development,
+centered around Summit in March/April.  We probably only get one more shot at
+getting apps improve their operational capabilities before we must hold off
+until after March 2021.</p>
+</div>
+</div>
 </div>
 </article>
   </div>

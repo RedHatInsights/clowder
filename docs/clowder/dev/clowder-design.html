@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Main docs :: Clowder Documentation</title>
-    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/index.html">
+    <title>Clowder Design :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/clowder-design.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../ui/css/site.css">
     <script>var uiRootPath = '../../ui'</script>
@@ -174,63 +174,210 @@
 <main class="article">
 <div class="toolbar" role="navigation">
 <button class="nav-toggle"></button>
-  <a href="index.html" class="home-link is-current"></a>
+  <a href="index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Clowder</a></li>
-    <li><a href="index.html">Main docs</a></li>
+    <li><a href="clowder-design.html">Clowder Design</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/clowder-design.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Main docs</h1>
+<h1 class="page">Clowder Design</h1>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Engineers have a steep learning curve when they start writing their first
+application for cloud.redhat.com, particularly if they&#8217;re unfamiliar working in
+a cloud-native environment before.</p>
+</div>
+<div class="paragraph">
+<p>Additionally, enforcing standards and consistency across cloud.redhat.com
+applications is difficult because of the number of disparate teams across the
+enterprise that contribute to the ecosystem.</p>
+</div>
+<div class="paragraph">
+<p>Similar to application consistency, it is difficult for engineers to be able to
+handle the inconsistencies between environments, e.g local development versus
+production.  While these differences can never be fully eliminated, ideally
+developers would not have to devise their own solutions to handle these
+differences.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mission"><a class="anchor" href="#_mission"></a>Mission</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Clowder aims to abstract the underlying Kubernetes environment and configuration
+to simplify the creation and maintenance of applications on cloud.redhat.com.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_goals"><a class="anchor" href="#_goals"></a>Goals</h2>
+<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><a href="api_reference.html" class="page">API Reference</a></p>
+<p>Abstract Kubernetes environment and configuration details from applications</p>
 </li>
 <li>
-<p><a href="contributing.html" class="page">Contributing</a></p>
+<p>Enable engineers to deploy their application in every Kubernetes environment
+(i.e. dev, stage, prod) with minimal changes to their custom resources.</p>
 </li>
 <li>
-<p><a href="migration/index.html" class="page">Migration</a></p>
+<p>Increase operational consistency between cloud.redhat.com applications,
+including rollout parameters and pod affinity.</p>
 </li>
 <li>
-<p><a href="providers/index.html" class="page">Providers</a></p>
+<p>Handle metrics configuration and standard SLI/SLO metrics and alerts</p>
 </li>
 <li>
-<p><a href="usage/index.html" class="page">Usage</a></p>
-</li>
-<li>
-<p><a href="clowder-design.html" class="page">Clowder Design</a></p>
-</li>
-<li>
-<p><a href="crc-guide.html" class="page">Code Ready Containers</a></p>
-</li>
-<li>
-<p><a href="developer-guide.html" class="page">Developer Guide</a></p>
-</li>
-<li>
-<p><a href="learn-more.html" class="page">Learn More</a></p>
-</li>
-<li>
-<p><a href="macos.html" class="page">MacOS Docs</a></p>
-</li>
-<li>
-<p><a href="preprod.html" class="page">PreProd</a></p>
-</li>
-<li>
-<p><a href="README.html" class="page">README</a></p>
-</li>
-<li>
-<p><a href="#sop.doc">SOP</a></p>
+<p>Some form of progressive deployment</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_non_goals"><a class="anchor" href="#_non_goals"></a>Non-goals</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Support applications outside cloud.redhat.com</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Build a single operator that handles the common use cases that cloud.redhat.com
+applications have.  These use cases will be encoded into the API of the
+operator, which is of course CRDs.  There will be two CRDs:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>ClowdEnvironment</code>
+This CR represents an instance of the entire cloud.redhat.com environment,
+e.g. stage or prod.  It contains configuration for various aspects of the
+environment, implemented by <strong>providers</strong>.</p>
+</li>
+<li>
+<p><code>ClowdApp</code> This CR represents a all the configuration an app needs to be deployed into
+the cloud.redhat.com environment, including:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>One or more deployment specs</p>
+</li>
+<li>
+<p>Kafka topics</p>
+</li>
+<li>
+<p>Databases</p>
+</li>
+<li>
+<p>Object store buckets (e.g. S3)</p>
+</li>
+<li>
+<p>In-memory DBs (e.g. Redis)</p>
+</li>
+<li>
+<p>Public API endpoint name(s)</p>
+</li>
+<li>
+<p>SLO/SLI thresholds</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>How these CRs will be translated into lower level resource types:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/clowder-flow.svg" alt="Clowder Flow">
+</div>
+</div>
+<div class="paragraph">
+<p>Apps will consume their environmental configuration from a JSON document mounted
+in their app container.  This JSON document contains the various configuration
+that could be considered common across the platform or common kinds of resources
+that would be requested by an app on the platform, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Kafka topics</p>
+</li>
+<li>
+<p>Connection information for Kafka, object storage, databases, and in-memory DBs</p>
+</li>
+<li>
+<p>Port numbers for metrics and webservices</p>
+</li>
+<li>
+<p>Public API endpoint prefix</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Common configuration interface:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/clowder-new.svg" alt="Clowder Common Interface">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_alternatives"><a class="anchor" href="#_alternatives"></a>Alternatives</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>One operator per app, perhaps with a shared library between them</p>
+<div class="paragraph">
+<p>While this proposal falls neatly in the "app teams are responsible for the
+operation of their app" mantra, the overhead of having each team build and
+maintain their own operator is considered too high.  The design proposed in
+this document helps draw the boundary between the responsibilities of the
+Cloud Dot platform team and the teams that build apps on that platform.</p>
+</div>
+</li>
+<li>
+<p>One operator with a CRD for each app</p>
+<div class="paragraph">
+<p>While this would provide significantly more flexibility for teams to
+configure their apps, many app teams would not add any custom attributes,
+thus essentially making their custom CRDs boilerplate code.  In addition,
+teams that did in fact add custom fields would then have to maintain the
+code required to reconcile them.</p>
+</div>
+<div class="paragraph">
+<p>The design proposed in this document is intentionally opinionated and makes
+choices on behalf of apps because more often than not dev teams do not have
+strong preferences on many operational aspects of their application.</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
 </div>
 </article>
   </div>

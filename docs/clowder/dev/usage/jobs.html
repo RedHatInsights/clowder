@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Job and CronJob Support :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/usage/jobs.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../../ui/css/site.css">
+    <script>var uiRootPath = '../../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Clowder</a></li>
+    <li><a href="index.html">Usage</a></li>
+    <li><a href="jobs.html">Jobs</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/usage/pages/jobs.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Job and CronJob Support</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Jobs and CronJobs are currently enabled as part of the ClowdApp spec. The
+<code>jobs</code> field contains a list of all currently defined jobs. The spec for a
+job is documented in the <a href="https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job">Clowder API reference</a>.</p>
+</div>
+<div class="paragraph">
+<p>Jobs and CronJobs are split by a <code>schedule</code> field inside your job. If the job
+has a <code>schedule</code>, it is assumed to be a CronJob. If not, Clowder runs your
+job as a standard Job resource. Note that Jobs run as soon as they are applied.</p>
+</div>
+<div class="paragraph">
+<p>Jobs that need to be run at some arbitrary point in the future are run by a
+ClowdJobInvocation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_invoking_jobs_via_clowdjobinvocation"><a class="anchor" href="#_invoking_jobs_via_clowdjobinvocation"></a>Invoking Jobs via ClowdJobInvocation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Jobs can be triggered by applying a <code>ClowdJobInvocation</code> CRD to the cluster.
+Clowder will read the resource and run the specified Jobs.</p>
+</div>
+<div class="paragraph">
+<p>Below is an example of a ClowdJobInvocation, or CJI for short. It is followed
+by a sample ClowdApp with the definition of the "curl" job. Notice that the
+<code>appName</code> in the CJI matches the <code>name</code> of the ClowdApp. The <code>jobs</code> list
+also corresponds to the <code>jobs</code> field in the ClowdApp. <code>curl</code> is a job
+hosted by the ClowdApp and the CJI will use that to find all the data it needs
+to invoke and apply the job.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: tester
+spec:
+  appName: sample-app
+  jobs:
+    - curl</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">---
+apiVersion: v1
+kind: Template
+metadata:
+  name: sample-app
+objects:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  metadata:
+    name: sample-app
+  spec:
+    envName: env-debugger
+    deployments:
+    - name: api
+      minReplicas: 1
+      webServices:
+        public:
+          enabled: true
+      podSpec:
+        image: quay.io/bholifie/simpleserver
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+    jobs:
+      - name: hello-twenty
+        schedule: "*/20 * * * *"
+        podSpec:
+          name: hello
+          image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - date; echo Hello from the Cron Job
+      - name: curl
+        podSpec:
+          name: getter
+          image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - wget sample-app-api.debugger.svc:8000/
+      - name: coming-soon
+        podSpec:
+          name: hello
+          image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - date; echo I'm ready!</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To apply a CJI, run  <code>oc apply -f cji.yml</code></p>
+</div>
+<div class="paragraph">
+<p>A CJI can then be checked by <code>oc get cji</code></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_running_iqe_tests_with_clowdjobs"><a class="anchor" href="#_running_iqe_tests_with_clowdjobs"></a>Running IQE Tests with ClowdJobs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Part of the mission for jobs was to empower developers to run the full suite
+of testing on their local machine. Using ClowdJobsInvocations, developers can
+now run smoke tests locally and on a remote cluster. In order to get everything
+setup correctly for the full smoke tests, we need to do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Ensure your app&#8217;s iqe plugin is configured to read from cdappconfig. Please feel
+free to use this <a href="https://gitlab.cee.redhat.com/insights-qe/iqe-host-inventory-plugin/-/merge_requests/514/diffs">inventory MR as a reference</a>.</p>
+</li>
+<li>
+<p>Run <code>bonfire</code> with the <code>--get-dependencies</code> flag enabled. This will
+install the ClowdApp along with any apps listed as dependencies; optional or
+otherwise.</p>
+</li>
+<li>
+<p>Define the <code>iqe</code> pod parameters in the ClowdJobInvocation. Note: The
+example below specifies overrides for the already set App and Env definitions
+of an IQE job.</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: my-job-invocation
+  namespace: ${NAMESPACE}
+spec:
+  appName: host-inventory
+  testing:
+    iqe:
+      # by default, Clowder will set the image on the ClowdJob to be
+      # "baseImage:&lt;name of the iqe plugin set on ClowdApp&gt;", but you
+      # can override the image tag here:
+      imageTag: "my-custom-image-tag"
+
+      # override the environment's default test run options
+      ui:
+        enabled: true  # indicates whether a selenium container should be included in the pod
+      marker: "smoke AND (something) AND (my other marker)"  # sets pytest -m argument
+      dynaconfEnvName: "my_env_override"  # sets value for ENV_FOR_DYNACONF
+      filter: "some_test"  # sets pytest -k argument</code></pre>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../../ui/js/site.js"></script>
+<script async src="../../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>

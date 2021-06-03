@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>ServiceMesh Provider :: Clowder Documentation</title>
-    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/servicemesh.html">
+    <title>Migration Checklist :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/migration/checklist.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../../ui/css/site.css">
     <script>var uiRootPath = '../../../ui'</script>
@@ -74,61 +74,61 @@
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="../migration/index.html">Migration</a>
+    <a class="nav-link" href="index.html">Migration</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../migration/migration.html">Migration Docs</a>
+    <a class="nav-link" href="migration.html">Migration Docs</a>
   </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../migration/checklist.html">Check List</a>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="checklist.html">Check List</a>
   </li>
 </ul>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="index.html">Providers</a>
+    <a class="nav-link" href="../providers/index.html">Providers</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="confighash.html">Config Hash</a>
+    <a class="nav-link" href="../providers/confighash.html">Config Hash</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="cronjob.html">CronJob</a>
+    <a class="nav-link" href="../providers/cronjob.html">CronJob</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="database.html">Database</a>
+    <a class="nav-link" href="../providers/database.html">Database</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="dependencies.html">Dependencies</a>
+    <a class="nav-link" href="../providers/dependencies.html">Dependencies</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="deployment.html">Deployment</a>
+    <a class="nav-link" href="../providers/deployment.html">Deployment</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="featureflags.html">Feature Flags</a>
+    <a class="nav-link" href="../providers/featureflags.html">Feature Flags</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="inmemorydb.html">In-Memory DB</a>
+    <a class="nav-link" href="../providers/inmemorydb.html">In-Memory DB</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="kafka.html">Kafka</a>
+    <a class="nav-link" href="../providers/kafka.html">Kafka</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="logging.html">Logging</a>
+    <a class="nav-link" href="../providers/logging.html">Logging</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="metrics.html">Metrics</a>
+    <a class="nav-link" href="../providers/metrics.html">Metrics</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="objectstore.html">Object Storage</a>
+    <a class="nav-link" href="../providers/objectstore.html">Object Storage</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="serviceaccount.html">Service Accounts</a>
-  </li>
-  <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="servicemesh.html">Service Mesh</a>
+    <a class="nav-link" href="../providers/serviceaccount.html">Service Accounts</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="web.html">Web</a>
+    <a class="nav-link" href="../providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/web.html">Web</a>
   </li>
 </ul>
   </li>
@@ -178,39 +178,111 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Clowder</a></li>
-    <li><a href="index.html">Providers</a></li>
-    <li><a href="servicemesh.html">Service Mesh</a></li>
+    <li><a href="index.html">Migration</a></li>
+    <li><a href="checklist.html">Check List</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/servicemesh.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/migration/pages/checklist.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">ServiceMesh Provider</h1>
+<h1 class="page">Migration Checklist</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <strong>ServiceMesh Provider</strong> is responsible for annotating pods with the correct
-service ServiceMesh annotation.</p>
+<p>Suggested order is top to bottom. App changes with PR approved by team,
+Build changes with PR approved by team, once validated, turn off e2e builds
+and setup backwards compatability</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_clowdapp_configuration"><a class="anchor" href="#_clowdapp_configuration"></a>ClowdApp Configuration</h2>
+<h2 id="_app_changes_settings_config_and_clowdapp_if_applicable"><a class="anchor" href="#_app_changes_settings_config_and_clowdapp_if_applicable"></a>App Changes - Settings, Config, and ClowdApp (if applicable)</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>There is no configuration for this provider.</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p><i class="fa fa-square-o"></i> Database (RDS) is connected via clowder config and is present in <code>ClowdApp</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> InMemoryDb (Redis) is connected via clowder config and is present in <code>ClowdApp</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Kafka is connected via clowder, topics are present in <code>Clowdapp</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Logging is sent to cloudwatch via clowder</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Objectstores are connected via clowder, minio is used instead of boto</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Webport is present in <code>Clowdapp</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Dependent services are present in <code>Clowdapp</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Optional dependent services are present in <code>Clowdapp</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>CLOWDER_ENABLED</code> can toggle backwards compatability in app config</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>ENV_NAME</code> is parameterized and set to required</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>MIN_REPLICAS</code> is parameterized</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_clowdenv_configuration"><a class="anchor" href="#_clowdenv_configuration"></a>ClowdEnv Configuration</h2>
+<h2 id="_build_and_deploy"><a class="anchor" href="#_build_and_deploy"></a>Build and Deploy</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The service mesh provider will only operate if the mode is set to <code>enabled</code>.</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p><i class="fa fa-square-o"></i> <code>Dockerfile</code> is up to date</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>build_deploy.sh</code> is pushing to quay</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>pr_check.sh</code> is building in ephemeral env and passing local tests</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> App interface entries for <a href="https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-pr-check-and-build-master-jenkins-jobs-in-app-interface">Jenkins jobs are running</a></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> saas-deploy file <a href="https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-new-saas-deploy-file">for Bonfire is enabled</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_backwards_compatibility"><a class="anchor" href="#_backwards_compatibility"></a>Backwards Compatibility</h2>
+<div class="sectionbody">
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p><i class="fa fa-square-o"></i> e2e builds are disabled</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>quay copier</code> is disabled in build config for app</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> qa/smoke images pull from quay</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> Prod env option is disabled in app&#8217;s jenkins deploy</p>
+</li>
+</ul>
 </div>
 </div>
 </div>

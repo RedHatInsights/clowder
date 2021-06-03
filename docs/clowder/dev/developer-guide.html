@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Design :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/developer-guide.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../ui/css/site.css">
+    <script>var uiRootPath = '../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Clowder</a></li>
+    <li><a href="developer-guide.html">Design</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/developer-guide.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Design</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://github.com/RedHatInsights/clowder/tree/master/docs/">Design docs</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dev_environment_setup"><a class="anchor" href="#_dev_environment_setup"></a>Dev Environment Setup</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Install <a href="https://sdk.operatorframework.io/docs/installation/#install-from-github-release">operator-sdk</a></p>
+</li>
+<li>
+<p>Install the latest <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">kubectl</a></p>
+</li>
+<li>
+<p>Install <a href="https://krew.sigs.k8s.io/docs/user-guide/setup/install/">krew</a></p>
+</li>
+<li>
+<p>Install kuttl:
+<code>kubectl krew install kuttl</code></p>
+</li>
+<li>
+<p>Install <a href="https://book.kubebuilder.io/quick-start.html#installation">kubebuilder</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Normally kubebuilder is installed to <code>/usr/local/kubebuilder/bin</code>. You should see the following
+executables in that directory:</p>
+<div class="literalblock">
+<div class="content">
+<pre>``etcd  kube-apiserver  kubebuilder  kubectl``</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>You may want to append this directory to your ``PATH`` in your ``.bashrc``, ``.zshrc``, or similar.</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you choose to place the kubebuilder executables in a different path, make sure to
+use the <code>KUBEBUILDER_ASSETS</code> env var when running tests (mentioned in <code>Unit Tests</code> section below)
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Install <a href="https://kubernetes-sigs.github.io/kustomize/installation/binaries/">kustomize</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>The install script places a <code>kustomize</code> binary in whatever directory you ran the above script in. Move this binary to a folder that is on your <code>PATH</code> or make sure the directory is appended to your <code>PATH</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Install <a href="https://minikube.sigs.k8s.io/docs/start/">minikube</a>. The latest release we have tested with is <a href="https://github.com/kubernetes/minikube/releases/tag/v1.20.0">v1.20.0</a>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you want/need to use OpenShift, you can install <a href="https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md">Code Ready Containers</a>, just be aware that it consumes a much larger amount of resources and our test helper scripts are designed to work with minikube.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>We haven&#8217;t had much success using the docker/podman drivers, and would recommend the <a href="https://minikube.sigs.k8s.io/docs/drivers/kvm2/">kvm2 driver</a> or <a href="https://minikube.sigs.k8s.io/docs/drivers/virtualbox/">virtualbox driver</a></p>
+</div>
+<div class="sect2">
+<h3 id="_kvm2_specific_notes"><a class="anchor" href="#_kvm2_specific_notes"></a><strong>KVM2-specific notes</strong></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>If you don&#8217;t have virtualization enabled, follow the guide
+on <a href="https://docs.fedoraproject.org/en-US/quick-docs/getting-started-with-virtualization/">the minikube docs</a></p>
+</li>
+<li>
+<p>Note that <code>virt-host-validate</code> may throw errors related to cgroups on Fedora 33&#8201;&#8212;&#8201;which you can <a href="https://gitlab.com/libvirt/libvirt/-/issues/94">ignore</a></p>
+</li>
+<li>
+<p>If you don&#8217;t want to enter a root password when minikube needs to modify its VM, add your user to the <code>libvirt</code> group:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">sudo usermod -a -G libvirt $(whoami)
+newgrp libvirt</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>You can set minikube to default to kvm2 with: <code>minikube config set driver kvm2</code></p>
+</li>
+<li>
+<p>Move to the <code>Testing</code> section below to see if you can successfully run unit tests and E2E tests.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_running"><a class="anchor" href="#_running"></a>Running</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>make install</code> will deploy the CRDs to the cluster configured in your kubeconfig.</p>
+</li>
+<li>
+<p><code>make run</code> will build the binary and locally run the binary, connecting the
+manager to the Openshift cluster configured in your kubeconfig.</p>
+</li>
+<li>
+<p><code>make deploy</code> will try to run the manager in the cluster configured in your
+kubeconfig.  You likely need to push the image to a docker registry that your Kubernetes
+cluster can access.  See <code>E2E Testing</code> below.</p>
+</li>
+<li>
+<p><code>make genconfig</code> (optionally) needs to be run if the specification for the config
+has been altered.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing"><a class="anchor" href="#_testing"></a>Testing</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_unit_testing"><a class="anchor" href="#_unit_testing"></a>Unit Testing</h3>
+<div class="paragraph">
+<p>The tests rely on the test environment set up by controller-runtime.  This enables the operator to
+get initialized against a control plane just like it would against a real OpenShift cluster.</p>
+</div>
+<div class="paragraph">
+<p>To run the tests:</p>
+</div>
+<div class="paragraph">
+<p><code>make test</code></p>
+</div>
+<div class="paragraph">
+<p>If kubebuilder is installed somewhere other than <code>/usr/local/kubebuilder/bin</code>, then:
+<code>KUBEBUILDER_ASSETS=/path/to/kubebuilder/bin make test</code></p>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re just getting started with writing tests in Go, or getting started with Go in general, take
+a look at <a href="https://quii.gitbook.io/learn-go-with-tests/" class="bare">https://quii.gitbook.io/learn-go-with-tests/</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_e2e_testing"><a class="anchor" href="#_e2e_testing"></a>E2E Testing</h3>
+<div class="paragraph">
+<p>There are two e2e testing scripts which:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>build your code changes into a docker image (both <code>podman</code> or <code>docker</code> supported)</p>
+</li>
+<li>
+<p>push the image into a registry</p>
+</li>
+<li>
+<p>deploy the operator onto a kubernetes cluster</p>
+</li>
+<li>
+<p>run <code>kuttl`</code> tests</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The scripts are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>e2e-test.sh</code>&#8201;&#8212;&#8201;pushes images to quay.io, used mainly for this repo&#8217;s CI/CD jobs or in cases where you have
+access to a remote cluster on which to test the operator.</p>
+</li>
+<li>
+<p><code>e2e-test-local.sh</code>&#8201;&#8212;&#8201;pushes images to a local docker registry, meant for local testing with minikube</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You will usually want to run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">minikube start --addons=registry
+/e2e-test-local.sh</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_podman_notes"><a class="anchor" href="#_podman_notes"></a>Podman Notes</h3>
+<div class="paragraph">
+<p>If using podman to build the operator&#8217;s docker image, ensure sub ID&#8217;s for rootless mode are configured:
+Test with:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">podman system migrate
+podman unshare cat /proc/self/uid_map</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If those commands throw an error, you need to add entries to <code>/etc/subuid</code> and <code>/etc/subgid</code> for your user.
+The subuid range must not contain your user ID and the subgid range must not contain your group ID. Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">❯ id -u
+112898
+❯ id -g
+112898
+
+# Use 200000-265535 since 112898 is not found in this range
+❯ sudo usermod --add-subuids 200000-265535 --add-subgids 200000-265535 $(whoami)
+
+# Run migrate again:
+❯ podman system migrate
+❯ podman unshare cat /proc/self/uid_map</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_migrating_an_app_to_clowder"><a class="anchor" href="#_migrating_an_app_to_clowder"></a>Migrating an App to Clowder</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://github.com/RedHatInsights/clowder/tree/master/docs/migration">Insights App Migration Guide</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_doc_generation"><a class="anchor" href="#_doc_generation"></a>Doc generation</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h3>
+<div class="paragraph">
+<p>The API docs are generated by using the <a href="https://github.com/elastic/crd-ref-docs">crd-ref-docs</a> tool
+by Elastic. You will need to install <code>asciidoctor</code>:</p>
+</div>
+<div class="paragraph">
+<p>On Fedora use:</p>
+</div>
+<div class="paragraph">
+<p><code>sudo dnf install -y asciidoctor</code></p>
+</div>
+<div class="paragraph">
+<p>For others, see: <a href="https://docs.asciidoctor.org/asciidoctor/latest/install/" class="bare">https://docs.asciidoctor.org/asciidoctor/latest/install/</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_building_docs"><a class="anchor" href="#_building_docs"></a>Building docs</h3>
+<div class="paragraph">
+<p>Build the docs using:</p>
+</div>
+<div class="paragraph">
+<p><code>make api-docs</code></p>
+</div>
+<div class="paragraph">
+<p>Then be sure to add doc changes before committing, e.g.:</p>
+</div>
+<div class="paragraph">
+<p><code>git add docs/api_reference.html</code></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../ui/js/site.js"></script>
+<script async src="../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>

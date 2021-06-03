@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Migrate to App-SRE Build Pipeline and Clowder :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/migration/migration.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../../ui/css/site.css">
+    <script>var uiRootPath = '../../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Clowder</a></li>
+    <li><a href="index.html">Migration</a></li>
+    <li><a href="migration.html">Migration Docs</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/migration/pages/migration.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Migrate to App-SRE Build Pipeline and Clowder</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Deployment and configuration of an app on cloud.redhat.com becomes much simpler after migrating to
+Clowder because a lot of operational decisions are made for the app, e.g. logging and kafka topic
+configuration. In addition, migrating to the operator unlocks the ability to leverage ephemeral
+environments for smoke/integration testing.</p>
+</div>
+<div class="paragraph">
+<p>The migration involves some work, of course: apps must ensure conformity to the conventions enforced
+by Clowder before they can be managed by it.</p>
+</div>
+<div class="paragraph">
+<p>This migration combines two migrations into one:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Migrate build pipelines to app-interface</p>
+</li>
+<li>
+<p>Migrate apps to Clowder</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Performing both migrations together reduces overall work, though more steps need to be performed
+before seeing results.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ensure_code_repo_is_visible"><a class="anchor" href="#_ensure_code_repo_is_visible"></a>Ensure code repo is visible</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>App SRE only supports fetching code without authentication.  This means that code must either be a
+public repo on Github or on gitlab.cee.redhat.com.  If the app&#8217;s code repo is currently private on
+Github, it needs to either be made public or moved to Gitlab.  If the repo is already public on
+Github or Gitlab, then the migration can proceed.</p>
+</div>
+<div class="sect2">
+<h3 id="_open_sourcing_a_project"><a class="anchor" href="#_open_sourcing_a_project"></a>Open Sourcing a Project</h3>
+<div class="paragraph">
+<p>If it is decided to keep the project on Github, it must be open sourced.  This usually entails
+several things:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Adding a license file to the root of your repository</p>
+</li>
+<li>
+<p>Adding a reference to the license at the top of each source file</p>
+</li>
+<li>
+<p>Reviewing the repo&#8217;s commit history for sensitive information</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_moving_a_project_from_github_to_gitlab"><a class="anchor" href="#_moving_a_project_from_github_to_gitlab"></a>Moving a Project from Github to Gitlab</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Moving a project from Github to Gitlab should be relatively straightforward, but will require some
+workflow changes for devs.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a new repo on gitlab.cee.redhat.com. There is already an
+<a href="https://gitlab.cee.redhat.com/insights-platform/">insights-platform</a>
+group that can be used to house repos, but other groups
+can be used if desired.</p>
+</li>
+<li>
+<p>Change your local upstream to gitlab.  Example::</p>
+<div class="literalblock">
+<div class="content">
+<pre>``git remote set-url upstream git@gitlab.cee.redhat.com:insights-platform/new-repo.git``</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>There should be no concern about existing CI integrations since the goal of this migration is to
+have all CI integrated into app-interface.</p>
+</div>
+<div class="sect2">
+<h3 id="_why"><a class="anchor" href="#_why"></a>Why?</h3>
+<div class="paragraph">
+<p>Jenkins jobs managed by App SRE do not support making authenticated pulls to git repos.</p>
+</div>
+<div class="paragraph">
+<p>If a dev team is not comfortable making their code public to the world, then their interests would
+be better served by moving to Gitlab since it is hosted within the Red Hat internal network, thus
+reducing the risk of the code leaking publicly.</p>
+</div>
+<div class="paragraph">
+<p>If a dev team <strong>is</strong> comfortable making their code public, then they should go ahead and schedule the
+work to open source their app.  If this work is too costly, then their app should be hosted on
+Gitlab until the open sourcing work can be completed.</p>
+</div>
+<div class="paragraph">
+<p>Lastly, the Clouddot team&#8217;s position has always been that private repositories live in Gitlab and
+public ones live in Github.  By reserving Github repositories for open source projects, we can
+better manage the number of Github licenses
+required.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ensure_code_repo_has_a_dockerfile"><a class="anchor" href="#_ensure_code_repo_has_a_dockerfile"></a>Ensure code repo has a Dockerfile</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>AppSRE&#8217;s build conventions require that all images be built using a <code>Dockerfile</code>. The
+<code>Dockerfile</code> can live anywhere in the code repo and can be configured by a custom location in
+<code>build_deploy.sh</code> (described later) if it is placed somewhere besides the root folder.</p>
+</div>
+<div class="paragraph">
+<p>Note that a <code>Dockerfile</code> <strong>must not</strong> pull from Dockerhub.  AppSRE blocks all requests to
+Dockerhub due to strict rate limiting imposed on their APIs.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_code_changes_to_consume_configuration"><a class="anchor" href="#_code_changes_to_consume_configuration"></a>Code changes to consume configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One of Clowder&#8217;s key features is centralized configuration.  Instead of cobbling together an app&#8217;s
+configuration from a disparate set of secrets, environment variables, and <code>ConfigMaps</code> that
+potentially change from environment to environment, Clowder combines much of an app&#8217;s configuration
+into a single JSON document and mounts it in the app&#8217;s container.  This insulates apps from
+differences between environments, e.g. production, ephemeral, and local development.</p>
+</div>
+<div class="paragraph">
+<p>There is a companion client library for Clowder, currently implemented in
+<a href="https://github.com/RedHatInsights/app-common-go">Go</a>,
+<a href="https://github.com/RedHatInsights/app-common-python">Python</a>,
+<a href="https://github.com/RedHatInsights/app-common-js">Javascript</a> and
+<a href="https://github.com/RedHatInsights/app-common-ruby">Ruby</a>, that consumes the
+configuration document mounted into every application
+container and exposes it via an API.
+This <a href="https://github.com/RedHatInsights/clowder/blob/master/docs/appconfig/schema.md">API</a>
+is the recommended way to consume configuration that comes from Clowder.</p>
+</div>
+<div class="paragraph">
+<p>Until a dev team is confident an app will not need to be deployed without Clowder, please use the
+<code>isClowderEnabled</code> method in the client library, or alternatively the presence of the
+<code>ACG_CONFIG</code> environment variable to switch between consuming configuration from Clowder and from
+its current configuration method (e.g. env vars, <code>ConfigMap</code>).</p>
+</div>
+<div class="paragraph">
+<p>Here are the items that should be consumed from the Clowder client library:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Dependent service hostnames</strong>: Look these up by the app name</p>
+</li>
+<li>
+<p><strong>Kafka bootstrap URL</strong>: Multiple URLs can be provided, though only one is ever present today</p>
+</li>
+<li>
+<p><strong>Kafka topic names</strong>: Please look up the actual topic name based on the requested name.</p>
+</li>
+<li>
+<p><strong>Web prefix and port number</strong></p>
+</li>
+<li>
+<p><strong>Metrics path and port number</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There are a couple of less trivial changes that may need to be made, depending on what services are
+consumed by an app.</p>
+</div>
+<div class="paragraph">
+<p>If object storage (e.g. S3) is used by an app, it is required that an app switch to the
+<a href="https://github.com/minio/mc">MinIO client library</a> if the app is intended to be deployed outside of
+stage and production.  MinIO is deployed by Clowder in pre-production environments as the object
+store provider, and the client library also supports interacting with S3.  Thus switching to this
+library will allow an app to have to use only one object storage library.</p>
+</div>
+<div class="paragraph">
+<p>Clowder can provision Redis on behalf of an app.  If an app uses Redis, the clouddot team suggests
+testing with the version of Redis deployed by Clowder to ensure it is compatible.  If not, changes
+to the app will need to be made.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_develop_clowdapp_resource_for_target_service"><a class="anchor" href="#_develop_clowdapp_resource_for_target_service"></a>Develop <code>ClowdApp</code> resource for target service</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>An app&#8217;s <code>ClowdApp</code> resource will become its interface with Clowder.  It will replace the app&#8217;s
+<code>Deployment</code> and <code>Service</code> resources in its deployment template.</p>
+</div>
+<div class="paragraph">
+<p>Developing the <code>ClowdApp</code> resource largely consists of two parts:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Copying over the relevant parts of an app&#8217;s current pod template into the simplified pod spec</p>
+</li>
+<li>
+<p>Filling out the new metadata in the rest of the <code>ClowdApp</code> spec.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All deployments from one code repo should map to one <code>ClowdApp</code>, each one mapping to an item in
+the <code>pods</code> spec.  For each <code>Deployment</code>, extract the following from the app&#8217;s deployment
+template in <a href="https://gitlab.cee.redhat.com/insights-platform/saas-templates/">saas-templates</a>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Image spec</p>
+</li>
+<li>
+<p>Resource requirements</p>
+</li>
+<li>
+<p>Command arguments</p>
+</li>
+<li>
+<p>Environment variables</p>
+</li>
+<li>
+<p>Liveness and readiness probes (not necessary if the app follows the <code>/healthz</code> convention)</p>
+</li>
+<li>
+<p>Volumes and volume mounts.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Additional information needed to fill out the other fields:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>List of kafka topics</p>
+</li>
+<li>
+<p>Optionally request a PostgreSQL database</p>
+</li>
+<li>
+<p>List of object store buckets</p>
+</li>
+<li>
+<p>Optionally request an in-memory database (i.e. Redis)</p>
+</li>
+<li>
+<p>List other app dependencies (e.g. <code>rbac</code>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The new <code>ClowdApp</code> can be validated on any cluster that has Clowder
+installed. If access to a cluster with Clowder is not available, Clowder can be
+<a href="https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md">installed on Codeready Containers</a>
+or on Minikube please see the <a href="#../usage/index.adoc" class="page unresolved">usage guide</a> for more information.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_deployment_template_with_clowdapp_resource"><a class="anchor" href="#_create_deployment_template_with_clowdapp_resource"></a>Create deployment template with <code>ClowdApp</code> resource</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Going forward, an app&#8217;s deployment template must live in its source code repo. This will simplify
+saas-deploy file configuration (see below) and has always been AppSRE&#8217;s convention.</p>
+</div>
+<div class="paragraph">
+<p>Additional resources defined in an app&#8217;s current deployment template besides Deployment and Service
+should be copied over to the new template in the app&#8217;s source code repo.  Then the <code>ClowdApp</code>
+developed above should be added in.</p>
+</div>
+<div class="paragraph">
+<p>A <code>ClowdApp</code> must point to a <code>ClowdEnvironment</code> resource via its <code>envName</code> spec attribute, and
+its value should be set as the <code>ENV_NAME</code> template parameter.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_add_build_deploy_sh_and_pr_check_sh_to_source_code_repo"><a class="anchor" href="#_add_build_deploy_sh_and_pr_check_sh_to_source_code_repo"></a>Add <code>build_deploy.sh</code> and <code>pr_check.sh</code> to source code repo</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>AppSRE&#8217;s build jobs largely rely on shell scripts in the target code repo to execute the build and
+run tests, respectively.  There are two jobs for each app: <strong>build master</strong> and <strong>PR check</strong>, and each
+job has a corresponding shell script: <code>build_deploy.sh</code> and <code>pr_check.sh.</code></p>
+</div>
+<div class="paragraph">
+<p><code>build_deploy.sh</code> builds an app&#8217;s image using a Dockerfile and pushes to Quay with credentials
+provided in Jenkins job environment.  Make sure to push the <code>latest</code> and <code>qa</code> image tags if
+e2e-deploy backwards compatibility is needed.  There is little variation in this file between
+projects, thus there are many examples to pull from.</p>
+</div>
+<div class="paragraph">
+<p><code>pr_check.sh</code> is where an app&#8217;s unit test, static code analysis, linting, and smoke/integration
+testing will be performed.  It is largely up to app owners as to the content of this script.
+Smoke/integration testing will be performed by Bonfire, and there is an example script available to
+paste into an app&#8217;s script.  There are a few environment variables to plug in at the top for an app,
+and the rest of the script should be left untouched.</p>
+</div>
+<div class="paragraph">
+<p>Both files live in the root folder of source code repo, unless overridden in
+the Jenkins job definition (see below).</p>
+</div>
+<div class="paragraph">
+<p>See examples of these files here:</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/RedHatInsights/insights-ingress-go/blob/master/build_deploy.sh" class="bare">https://github.com/RedHatInsights/insights-ingress-go/blob/master/build_deploy.sh</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/RedHatInsights/insights-ingress-go/blob/master/pr_check.sh" class="bare">https://github.com/RedHatInsights/insights-ingress-go/blob/master/pr_check.sh</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_pr_check_and_build_master_jenkins_jobs_in_app_interface"><a class="anchor" href="#_create_pr_check_and_build_master_jenkins_jobs_in_app_interface"></a>Create "PR check" and "build master" Jenkins jobs in app-interface</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Two Jenkins jobs need to be defined for each app in app-interface: one to build the image and one to
+run test validations against PRs.</p>
+</div>
+<div class="paragraph">
+<p>AppSRE uses Jenkins Job Builder (JJB) to define jobs in YAML.  Jobs are created by referencing job
+templates and filling in template parameters.  There are two common patterns: one for github repos
+and another for gitlab repos.</p>
+</div>
+<div class="paragraph">
+<p>Github:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">project:
+  name: puptoo-stage
+  label: insights
+  node: insights
+  gh_org: RedHatInsights
+  gh_repo: insights-puptoo
+  quay_org: cloudservices
+  jobs:
+  - "insights-gh-pr-check":
+      display_name: puptoo pr-check
+  - "insights-gh-build-master":
+      display_name: puptoo build-master</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gitlab:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">project:
+  name: insightsapp-poc-ci
+  label: insights
+  node: insights
+  gl_group: bsquizza
+  gl_project: insights-ingress-go
+  quay_org: cloudservices
+  jobs:
+  - 'insights-gl-pr-check':
+      display_name: 'insightsapp-poc pr-check'
+  - 'insights-gl-build-master':
+      display_name: 'insightsapp-poc build-master'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the app&#8217;s <code>build.yml</code>, a specification must be made as to which Jenkins server to have the apps
+jobs defined.  AppSRE provides two Jenkins servers: <code>ci-int</code> for projects hosted on
+gitlab.cee.redhat.com, and <code>ci-ext</code> for public projects hosted on Github.  Note that private
+Github projects are <strong>not supported</strong>; if a Github project must remain private, then its origin must
+move to gitlab.cee.redhat.com.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_new_saas_deploy_file"><a class="anchor" href="#_create_new_saas_deploy_file"></a>Create new saas-deploy file</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The last step to enable smoke testing is to create a new saas-deploy file to provide
+<a href="https://github.com/redhatinsights/bonfire">Bonfire</a> with a way to deploy the app to an ephemeral
+environment. This saas file should be separate from the existing saas file so that the template
+<code>path</code> can be different for each service. It should not contain any of the <code>stage</code> or <code>prod</code>
+deployment targets until you are ready to deploy the <code>ClowdApp</code> into those environments.</p>
+</div>
+<div class="paragraph">
+<p>Points to ensure are in place in your new saas-deploy file:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Add <code>ClowdApp</code> as a resource type</p>
+</li>
+<li>
+<p>Point <code>resourceTemplate</code> <code>url</code> and <code>path</code> to the deployment template in
+the app&#8217;s code repo</p>
+</li>
+<li>
+<p>Remove <code>IMAGE_TAG</code> from the <code>target</code>.  This was only specified because the
+deployment template was in a separate repo than the code.</p>
+</li>
+<li>
+<p>Add an ephemeral target.  This will be used by Bonfire to know how to deploy
+the app. Example:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">- namespace:
+    $ref: /services/insights/ephemeral/namespaces/ephemeral-base.yml
+  disable: true  # do not create an app-sre deploy job for ephemeral namespace
+  ref: internal  # populated by bonfire
+  parameters:
+    REPLICAS: 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once these changes are merged into app-interface, it should be possible to open a PR against the
+app&#8217;s source code repo and see Bonfire deploy the app, assuming all dependent services are also set
+up with Bonfire.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing_your_migration_codetemplate_changes"><a class="anchor" href="#_testing_your_migration_codetemplate_changes"></a>Testing your migration code/template changes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_testing_without_jenkins"><a class="anchor" href="#_testing_without_jenkins"></a>Testing Without Jenkins</h3>
+<div class="paragraph">
+<p>Changes to an application may be tested before any Jenkins jobs are wired up to the app&#8217;s repo. This
+allows the testing of changes before they are merged into the app&#8217;s repository or app-interface. The
+only thing that <strong>cannot</strong> be tested is of course whether the Jenkins jobs work as expected but it is
+even possible to run <code>pr_check.sh</code> locally if all the proper environment variables are passed to
+it.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a separate branch on the app repo and add:</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>the new deployment template defining your <code>ClowdApp</code></p>
+</li>
+<li>
+<p>whatever code changes are needed so that your app can run as a ClowdApp</p>
+</li>
+<li>
+<p><code>build_deploy.sh</code></p>
+</li>
+<li>
+<p><code>pr_check.sh</code></p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Push your changes to git and note the git commit&#8217;s hash.</p>
+</li>
+<li>
+<p>Create a separate branch in app-interface and add:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>an updated deploy.yaml/saas file that configures the ephemeral deployment target (make sure
+that the template path for the app points to the new ClowdApp template)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Clone <a href="https://github.com/redhatinsights/bonfire">Bonfire</a> and install it</p>
+</li>
+<li>
+<p>Follow <a href="https://github.com/RedHatInsights/bonfire#running-a-local-qontract-server">these directions</a>
+to set up a local app-interface server and start it</p>
+</li>
+<li>
+<p>Build the app&#8217;s new docker image and somehow push it to quay with a unique image tag.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>You can use <code>build_deploy.sh</code> for this but be careful to not overwrite any tags like
+<code>latest</code>, <code>qa</code>, etc. It may be better to push to an entirely separate quay repo just to be
+safe. But, you&#8217;ll have to temporarily edit the <code>IMAGE</code> that your <code>ClowdApp</code> template uses</p>
+</li>
+<li>
+<p>If the app&#8217;s quay repository is private or access rights are not available, a temporary quay repo
+could be created to perform testing. Build the Dockerfile
+and <code>docker push</code> the built image to that repo. The application template will need editing
+temporarily to use the temporary repo for the <code>IMAGE</code>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Log in to the ephemeral <a href="https://visual-app-interface.devshift.net/clusters#/openshift/insights/c-rh-c-eph/cluster.yml">cluster</a> using <code>oc</code>.</p>
+</li>
+<li>
+<p>Run &lt;<a href="https://github.com/RedHatInsights/bonfire/blob/master/cicd/deploy_ephemeral_env.sh#L15-L20&gt;">the same deploy command</a>
+that the <code>pr_check.sh</code> would run. This will reserve a namespace on the cluster and deploy your
+app into it. Make sure you replace the needed env vars: <code>APP_NAME</code>, <code>COMPONENT_NAME</code>, <code>GIT_COMMIT</code>,
+<code>IMAGE</code>, <code>IMAGE_TAG</code>. The <code>GIT_COMMIT</code> should match the commit of the PR and the
+<code>IMAGE/IMAGE_TAG</code> should match whatever custom image was just built for the PR.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_jenkins"><a class="anchor" href="#_testing_with_jenkins"></a>Testing With Jenkins</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Get all config changes related to the Jenkins jobs and saas file updates merged into
+app-interface so that the app has a pr_check job and an ephemeral deploy target in place. The
+initial update to the saas file should only add the ephemeral deploy target, since the new
+template has not yet been merged into the new template into the app repo&#8217;s <code>master</code> branch.</p>
+</li>
+<li>
+<p>Open the PR against the app to add the <code>build_deploy.sh</code>, <code>pr_check.sh</code>, <code>Dockerfile</code>,
+and new ClowdApp template.</p>
+</li>
+<li>
+<p>The PR check test should fire and deploy the code changes that have been made within the PR.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_disable_builds_in_e2e_deploy"><a class="anchor" href="#_disable_builds_in_e2e_deploy"></a>Disable builds in e2e-deploy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once an app&#8217;s build pipeline is set up through app-interface, the same build pipeline in
+e2e-deploy/buildfactory needs to be disabled.  To do this, open a PR against e2e-deploy that removes
+<code>BuildConfig</code> resources from the buildfactory folder.  Remember to push the <code>qa</code> and <code>latest</code>
+tags from the <code>build_deploy.sh</code> script if backwards compatibility is needed with e2e-deploy.</p>
+</div>
+<div class="paragraph">
+<p>Note that in order to maintain compatibility with existing CI and QA environments, the deployment
+templates for apps in e2e-deploy must be maintained.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deploy_to_stage_and_production"><a class="anchor" href="#_deploy_to_stage_and_production"></a>Deploy to stage and production</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once all the previous steps have been completed, it&#8217;s time to deploy the Clowder-dependent app to
+stage.  Move the <code>target</code> for stage to the new saas-deploy file, ensuring <code>ref</code> is set to
+<code>master</code>.  Note that this means that all pushes to <code>master</code> will automatically be deployed to
+stage (per App SRE convention).  Also remember to remove the <code>IMAGE_TAG</code> template parameter.</p>
+</div>
+<div class="paragraph">
+<p>The deployment to stage shoudl be treated as a test run for deploying to production.  A cutover plan
+should account for the impact of an app&#8217;s outage. If the impact is low, the cutover plan can be
+simplified to save time and effort in planning.  If the impact is high, then the cutover should be
+carefully planned to ensure a little down time as possible.  If no additional care is taken to
+minimize downtime, an app can expect 2-15 minutes of downtime, assuming there are no regressions.</p>
+</div>
+<div class="paragraph">
+<p>Once the app has been sufficiently validated in stage, follow the same process to move the
+production target to the new saas-deploy file.  The only other difference is that the <code>ref</code> for
+production should point to a git SHA.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../../ui/js/site.js"></script>
+<script async src="../../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>

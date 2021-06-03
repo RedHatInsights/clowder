@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Running Clowder on CRC :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/crc-guide.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../ui/css/site.css">
+    <script>var uiRootPath = '../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Clowder</a></li>
+    <li><a href="crc-guide.html">Running Clowder on CRC</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/crc-guide.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Running Clowder on CRC</h1>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Download the <a href="https://developers.redhat.com/products/codeready-containers/overview">crc binary</a> and follow the instructions to get crc running.</p>
+</li>
+<li>
+<p>Fork or clone the <a href="https://github.com/RedHatInsights/clowder">Clowder repo</a></p>
+</li>
+<li>
+<p>Install <a href="https://github.com/RedHatInsights/clowder#dependencies">the Clowder dependencies</a></p>
+</li>
+<li>
+<p>Run <code>make install</code></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_running_clowder"><a class="anchor" href="#_running_clowder"></a>Running Clowder</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At this time it is not recommended to deploy Clowder to your crc cluster. Instead, we will run the Operator on your local machine. To do this, we need add the clowder-system services to your <code>/etc/hosts</code> localhost (127.0.0.1). For this example, we are using the <code>dev-env-minio.dev-env.svc</code> service because it matches our environment&#8217;s name. Follow the Kubernetes service pattern for whatever your entry may need to be; just be sure it matches your specific environment name.</p>
+</div>
+<div class="paragraph">
+<p>Your <code>etc/hosts</code> should now look like <code>127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 dev-env-minio.dev-env.svc</code>. If you are not using the name dev-env, change it to the appropriate service.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;re going to use Ingress as the example, so the configuration we&#8217;re doing is specific to that. If you are standing up a different application, substitute your own services, or other variables.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">make install
+make run 2&gt;&amp;1 | grep '^{' | jq -r .</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will start the operator on your local machine with output redirected to <code>jq</code>. The jq output is formatted and easier to read and therefore recommended. However, if don&#8217;t want that, <code>make run</code> will do just fine; albeit less neat.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_applying_the_clowdenvironment"><a class="anchor" href="#_applying_the_clowdenvironment"></a>Applying the ClowdEnvironment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that Clowder is running, we need to give it a <code>ClowdEnvironment</code> for Ingress to run inside.</p>
+</div>
+<div class="paragraph">
+<p>In a new terminal, run <code>oc new-project dev-env</code></p>
+</div>
+<div class="paragraph">
+<p>Create the following as <code>clowd-environment.yaml</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: dev-env
+spec:
+  targetNamespace: clowder-dev
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      namespace: default
+      clusterName: crc-cluster
+      mode: local
+    db:
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+      port: 9000
+    inMemoryDb:
+      mode: redis
+  resourceDefaults:
+    limits:
+      cpu: "500m"
+      memory: "8192Mi"
+    requests:
+      cpu: "300m"
+      memory: "1024Mi"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and then run <code>oc apply -f clowd-environment.yaml</code></p>
+</div>
+<div class="paragraph">
+<p>Once applied, check the terminal that is running the operator and make sure there aren&#8217;t any errors. If you&#8217;re unsure, you can check the <code>clowder-dev</code> namespace. If you see issues with any types (like Kafka), run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc apply -f config/crd/bases/kafka.strimzi.io_kafkatopics.yaml
+oc apply -f config/crd/bases/kafka.strimzi.io_kafkas.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Before we add the ClowdApp, we need to port forward the minio and kafka ports on your local machine with <code>oc port-forward svc/dev-env-minio 9000</code> and <code>oc port-forward svc/dev-env-kafka 29092</code>. Remember, in our example the operator is running on localhost. In order for our operator to talk to the minio and kafka services and perform bucket and topic operations, we&#8217;ll need to forward the port.</p>
+</div>
+<div class="paragraph">
+<p>Create the following file as <code>clowd-app.yaml</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: ingress
+spec:
+  envName: dev-env
+  deployments:
+  - name: ingress
+    web: true
+    podSpec:
+      image: quay.io/cloudservices/insights-ingress-go-poc:5bcb3d14
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /api/ingress/v1/version
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 1
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /api/ingress/v1/version
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 1
+      env:
+        - name: INGRESS_STAGEBUCKET
+          value: ingress-uploads-perma
+        - name: INGRESS_VALIDTOPICS
+          value: advisor
+        - name: OPENSHIFT_BUILD_COMMIT
+          value: somestring
+        - name: INGRESS_MINIODEV
+          value: "true"
+        - name: DEBUG
+          value: "true"
+      resources:
+        limits:
+          cpu: 300m
+          memory: 8192Mi
+        requests:
+          cpu: 30m
+          memory: 1024Mi
+  objectStore:
+    - ingress-uploads-perma
+  kafkaTopics:
+    - replicas: 5
+      partitions: 5
+      topicName: advisor
+    - replicas: 5
+      partitions: 5
+      topicName: platform.upload.advisor</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, <code>oc apply -f clowd-app.yaml</code></p>
+</div>
+<div class="paragraph">
+<p>If all works well you should see the operator terminal adding to the dev-env namespace. Again, if you&#8217;re unsure just checkout your crc in the <code>dev-env</code> namespace.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing_ingress"><a class="anchor" href="#_testing_ingress"></a>Testing Ingress</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you&#8217;re interested in validating the new deployment, download (<a href="https://gitlab.cee.redhat.com/insights-qe/iqe-core/-/blob/master/iqe/data/advisor_archives/security_low.tar.gz)">this tar to test it</a>.</p>
+</div>
+<div class="paragraph">
+<p>Port forward the ingress port with <code>oc port-forward svc/ingress-ingress 8000</code>. If this returns an
+error, run <code>oc get svc</code> to find out the correct service name.</p>
+</div>
+<div class="paragraph">
+<p>Then run <code>curl -F "file=&lt;YOUR DOWNLOAD LOCATION&gt;/security_low.tar.gz;type=application/vnd.redhat.advisor.somefile+tgz" -H "x-rh-identity: eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsICJpbnRlcm5hbCI6IHsib3JnX2lkIjogIjAwMDAwMSJ9fX0=" -H "x-rh-request_id: testtesttest" -v <a href="http://localhost:8000/api/ingress/v1/upload" class="bare">http://localhost:8000/api/ingress/v1/upload</a></code></p>
+</div>
+<div class="paragraph">
+<p>If you can see</p>
+</div>
+<div class="paragraph">
+<p><code>We are completely uploaded and fine</code></p>
+</div>
+<div class="paragraph">
+<p>It worked, and you are finished!</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../ui/js/site.js"></script>
+<script async src="../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>

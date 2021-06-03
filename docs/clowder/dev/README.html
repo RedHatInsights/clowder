@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Clowder Documentation :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/README.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../ui/css/site.css">
+    <script>var uiRootPath = '../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Clowder</a></li>
+    <li><a href="README.html">Clowder Documentation</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/README.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Clowder Documentation</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://clowder-operator.readthedocs.io/en/latest/#" class="bare">https://clowder-operator.readthedocs.io/en/latest/#</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_insights_operator_design"><a class="anchor" href="#_insights_operator_design"></a>Insights Operator Design</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The goal of this document is to develop a design for an operator that can
+deploy and operate one or more instances of the SaaS application known as the
+<strong>Insights Platform</strong>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_operators"><a class="anchor" href="#_why_operators"></a>Why Operators?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>An operator is an application that follows various conventions which enable it
+to constantly monitor and react to its Openshift environment.</p>
+</div>
+<div class="paragraph">
+<p>While most operators you may be familiar with are shipped to customers, the
+operator we are building will not be shipped to customers; instead it will be
+used to operate our SaaS-based application, in tandem with App SRE&#8217;s
+app-interface toolchain.  This allows us greater flexibility in the design and
+management of our operator.</p>
+</div>
+<div class="paragraph">
+<p>There are two high-level aspects of the value provided by an operator for a
+SaaS-based service:  deployment configuration and operational resiliency</p>
+</div>
+<div class="sect2">
+<h3 id="_deployment_configuration"><a class="anchor" href="#_deployment_configuration"></a>Deployment Configuration</h3>
+<div class="paragraph">
+<p>Operators come with their own Custom Resource Definitions (CRDs), which
+effectively extend the Kubernetes API.  An example of a resource definition you
+are familiar with is the <code>DeploymentConfig</code> resource type.  This translates
+to a simpler set of resources defined for any given app on the Insights
+Platform.  Instead of an app having to define a <code>Deployment</code>, <code>Service</code>,
+various logging and database secrets, etc., an app just defines a single CRD,
+and the operator will take care of creating all of the "low level" resources on
+the app&#8217;s behalf.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_operational_resiliency"><a class="anchor" href="#_operational_resiliency"></a>Operational Resiliency</h3>
+<div class="paragraph">
+<p>Operators are able to constantly monitor the state of all the resources it
+manages and then respond with the appropriate corrective action when
+identifying abnormalities or errors.  Think of it like a set of playbooks or
+SOPs codified into the operator&#8217;s codebase.</p>
+</div>
+<div class="paragraph">
+<p>The advantage is clear: reduced human intervention when things break.  For
+example, instead of having to page someone to bounce a pod, the operator can
+instead bounce the pod itself.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_benefits_of_operator"><a class="anchor" href="#_benefits_of_operator"></a>Benefits of Operator</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Increase operational consistency</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Improves ability to automate</p>
+</li>
+<li>
+<p>Reduces learning curve; understanding one app means you understand all apps</p>
+</li>
+<li>
+<p>Easily enforce operational standards from App SRE, Infosec, FedRAMP, etc.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Simplify configuration for apps</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Most app teams do not have strong preferences for many operational aspects, e.g. logging</p>
+</li>
+<li>
+<p>Reduce number and complexity of k8s resources app teams need to maintain</p>
+</li>
+<li>
+<p>Reduces number of errors app teams can make (e.g. ServiceMonitor configuration)</p>
+</li>
+<li>
+<p>Reduces onboarding ramp up time</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Adds ability to remediate common issues</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Bouncing pods</p>
+</li>
+<li>
+<p>Running DB migration scripts</p>
+</li>
+<li>
+<p>Autoscaling</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Add common alerts for apps</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Consumer group lag</p>
+</li>
+<li>
+<p>Public service request rate</p>
+</li>
+<li>
+<p>Public service error rate</p>
+</li>
+<li>
+<p>Public service latency</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Facilitates deploying pre-production environments</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Abstracts various environment-specific operational components, e.g. RDS vs local DB</p>
+</li>
+<li>
+<p>Dynamic consumer group config enables sharing of a singla Kafka instance</p>
+</li>
+<li>
+<p>Facilitates deploying platform into dynamic namespace configuration</p>
+</li>
+<li>
+<p>Significantly reduces the number of resources required to create a complete environment</p>
+</li>
+<li>
+<p>Will be able to wire up metrics just like stage/prod</p>
+</li>
+<li>
+<p>Will be able to set up web gateway similar to just like stage/prod</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Centralize operational evolution</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Abstract operational aspecs of apps, e.g. logging</p>
+</li>
+<li>
+<p>Operational changes can then be applied platform-wide by changing the operator</p>
+</li>
+<li>
+<p>Example: Introduction of Istio</p>
+</li>
+<li>
+<p>Example: Migration of logging to kafka</p>
+</li>
+<li>
+<p>Example: Modifying deployments or network policies for compliance requirements</p>
+</li>
+<li>
+<p>Example: progressive deployment</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_use_cases"><a class="anchor" href="#_use_cases"></a>Use Cases</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The operator should fulfill each of the following use cases, thus they should
+strongly guide its design.</p>
+</div>
+<div class="sect2">
+<h3 id="_personal_dev_environment"><a class="anchor" href="#_personal_dev_environment"></a>Personal Dev Environment</h3>
+<div class="paragraph">
+<p>Insights app developers use the operator to deploy personal instances of the
+Insights Platform.  This will replace the use of Docker Compose or any other
+orchestration tool used by developers to manage local environments.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_and_production"><a class="anchor" href="#_stage_and_production"></a>Stage and Production</h3>
+<div class="paragraph">
+<p>The operator is used to deploy all applications in stage and production.  This
+means the resources in an app&#8217;s deployment template referenced by their saas
+deploy file in app-interface will use CRDs managed by the Insights Operator
+where applicable.  It also means that the operator must be stable enough to be
+relied on for production usage.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_tests_in_pr_check"><a class="anchor" href="#_integration_tests_in_pr_check"></a>Integration Tests in PR Check</h3>
+<div class="paragraph">
+<p>The PR check script uses the operator to deploy a temporary platform
+environment to run tests.  Once the tests complete, the the PR check script
+will remove the CRs, triggering the operator to tear down the temporary
+environment.  Thus the operator needs to <strong>quickly</strong> set up and tear down
+environments.  This should also be contained in one namespace, as opposed to
+stage and production, where apps are spread across multiple namespaces.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_operational_remediations"><a class="anchor" href="#_operational_remediations"></a>Operational Remediations</h3>
+<div class="paragraph">
+<p>The operator should respond to typical issues that can be remediated
+automatically.  One example would be overloaded pods, of which the solution
+would be to increase the number of replicas for the affected deployment.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_custom_resource_definitions_crds"><a class="anchor" href="#_custom_resource_definitions_crds"></a>Custom Resource Definitions (CRDs)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The CRDs for an operator are considered the interface between an app developer
+and the operator.  In other words, these CRDs will be how an app developer will
+define what should be deployed in a given environment.  These CRDs will be used
+to deploy the vast majority of resources in the platform.  App teams will be
+expected to adopt these CRs in favor of lower level CRs like <code>Deployment</code> or
+<code>Service</code>.</p>
+</div>
+<div class="paragraph">
+<p>App teams will also be required to retrofit their applications to the standards
+imposed by these CRs, e.g.  database and logging environment variable names,
+pre-hook pod conventions, etc.</p>
+</div>
+<div class="sect2">
+<h3 id="_clowdapp"><a class="anchor" href="#_clowdapp"></a>ClowdApp</h3>
+<div class="paragraph">
+<p>This is intended to be a replacement for a single <code>Deployment</code> or
+<code>DeploymentConfig</code>.</p>
+</div>
+<div class="paragraph">
+<p>This CR produces (or will produce):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>One <code>Deployment</code> resource.</p>
+</li>
+<li>
+<p>A <code>Service</code> resource for metrics. If a public web service is configured, it will add a
+port for the public endpoint.</p>
+</li>
+<li>
+<p>A <code>ServiceMonitor</code> resource to configure Prometheus to scrape the
+deployment&#8217;s metrics endpoint.</p>
+</li>
+<li>
+<p>A <code>PrometheusRule</code> resource to create SLI/SLO alerts for the deployment.</p>
+</li>
+<li>
+<p>One or more <code>KafkaTopics</code> if the deployment intends to connect to Kafka.</p>
+</li>
+<li>
+<p>A routing configuration in the gateway if the deployment intends to run a
+publicly-exposed webservice.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Configuration:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Image spec</p>
+</li>
+<li>
+<p>Public service name.  This will update the routing configuration
+for the nginx gateway (i.e. reverse proxy)</p>
+</li>
+<li>
+<p>Kafka topic names.</p>
+</li>
+<li>
+<p>Environment variables</p>
+</li>
+<li>
+<p>Liveness and readiness probes.  These could potentially be standardized.</p>
+</li>
+<li>
+<p>Resource constraints</p>
+</li>
+<li>
+<p>Replica scaling attributes</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_clowdenvironment"><a class="anchor" href="#_clowdenvironment"></a>ClowdEnvironment</h3>
+<div class="paragraph">
+<p>The <code>ClowdEnvironment</code> represents the foundation of an instance of
+cloud.redhat.com.  The fact that any number of <code>ClowdEnvironment</code> resources can be
+managed by a single operator means that the one operator can manage multiple
+instances of a cloud.redhat.com deployment in parallel.</p>
+</div>
+<div class="paragraph">
+<p>This CRD defines a set of core services to be deployed, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Gateway router</p>
+</li>
+<li>
+<p>Entitlements service</p>
+</li>
+<li>
+<p>Kafka deployment</p>
+</li>
+<li>
+<p>UHC auth proxy</p>
+</li>
+<li>
+<p>Prometheus push gateway (only if existing push gateway config not provided)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Configuration:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Auth/SSO configuration</p>
+</li>
+<li>
+<p>Database configuration (i.e. RDS or pod-based deployments)</p>
+</li>
+<li>
+<p>API prefix</p>
+</li>
+<li>
+<p>Logging config</p>
+</li>
+<li>
+<p>Prometheus config</p>
+</li>
+<li>
+<p>Prometheus push gateway config</p>
+</li>
+<li>
+<p>Entitlements service config</p>
+</li>
+<li>
+<p>publicly exposed?</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>ClowdApp</code> resources will always depend on one <code>ClowdEnvironment</code>, referenced
+by name in its <code>base</code> attribute.</p>
+</div>
+<div class="paragraph">
+<p><code>ClowdEnvironment</code> will be defined in the same namespaces that the gateway is
+deployed in.  Thus most, if not all, <code>ClowdApps</code> will live in a different
+namespace.</p>
+</div>
+<div class="paragraph">
+<p>Changes to an <code>ClowdEnvironment</code> will propagate to all the associated
+<code>ClowdApps</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_service_dependencies"><a class="anchor" href="#_service_dependencies"></a>Service Dependencies</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_mandatory_dependencies"><a class="anchor" href="#_mandatory_dependencies"></a>Mandatory Dependencies</h3>
+<div class="paragraph">
+<p>The operator introduces the idea of service dependencies.  A <code>ClowdApp</code>
+can list out a number of service dependencies.  If any of the dependencies are
+not met, then the operator will emit an event listing the missing service
+dependencies and requeue the <code>ClowdApp</code> for reconciliation until the
+dependencies are met.  This is similar to how Openshift already manages
+dependencies, e.g. a missing persistent volume. These are defined by the
+<code>dependencies</code> section in the <code>ClowdApp</code>.</p>
+</div>
+<div class="paragraph">
+<p>Service hostnames for dependent apps will be added to the JSON configuration
+mounted into an app&#8217;s container; hostnames for apps that are not listed as
+dependencies will not be added to the configuration.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_optionaldependencies"><a class="anchor" href="#_optionaldependencies"></a>OptionalDependencies</h3>
+<div class="paragraph">
+<p>As well as mandatory dependencies, Clowder also supports the concept of optional
+dependencies. These will not prevent an app from being deployed and starting up
+if they do not exist at the time of reconciliation. When they do exist, the
+configuration for the app is altered and as a consequence the app is restarted
+so that it can pick up the new configuration.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_gateway"><a class="anchor" href="#_gateway"></a>Gateway</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At this time the operator will intend to use the new gateway configuration base
+on the <a href="https://github.com/RedHatInsights/turnpike">Turnpike</a> project.  This will enable the operator to dyanmically update
+the routing configuration of the gateway as apps are deployed or removed.</p>
+</div>
+<div class="paragraph">
+<p>A new CRD will be introduced to persist routing configuration:
+<code>InsightsRoute</code>.  This resource will be automatically created by the
+<code>ClowdApp</code> controller, but devs can add these resources to their deployment
+template if they are not using <code>ClowdApp</code> to deploy their public facing
+service.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_clowdapp_conventions"><a class="anchor" href="#_clowdapp_conventions"></a>ClowdApp Conventions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In order for an app to be deployed via the Insights Operator, it must conform
+to a number of conventions laid out by the operator.  If it does not, it will
+either fail to deploy or the CR creation will be rejected due to validation
+failures.</p>
+</div>
+<div class="sect2">
+<h3 id="_configuration_volume"><a class="anchor" href="#_configuration_volume"></a>Configuration Volume</h3>
+<div class="paragraph">
+<p>Instead of adding a large number of environment variables to configure an app,
+a JSON document will be compiled into a <code>Secret</code> resource and mounted into an
+app&#8217;s pod at <code>/config</code>.  A non-exhaustive list of items to be configured in
+this document:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Kafka boostrap URL</p>
+</li>
+<li>
+<p>Other platform service URLs, e.g. RBAC and host inventory</p>
+</li>
+<li>
+<p>Web and metric port numbers</p>
+</li>
+<li>
+<p>Database hostname and credentials</p>
+</li>
+<li>
+<p>Available topics and the consumer group assigned to the app</p>
+</li>
+<li>
+<p>Cloudwatch/Logging configuration</p>
+</li>
+<li>
+<p>API prefix</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Apps should be able to parse the JSON document and find configuration options
+at consistent locations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_kafka"><a class="anchor" href="#_kafka"></a>Kafka</h3>
+<div class="paragraph">
+<p>Kafka topics will be listed in <code>ClowdApps</code>, and <code>KafkaTopic</code> resources
+will be implicity created when an app references non-existent topics.  A topic
+definition has an <code>owner</code> boolean field.  If it is set to <code>true</code>, then the
+CR can define the configuration of the topic, e.g. partition count or retention
+time.  Only one app can be set as topic owner at a given time; apps that try to
+claim ownership of a topic that is already owned will result in a rejection of
+the app.  If an app requests a topic that has no owner, it will not be deployed
+until the app that claims ownership is deployed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_security"><a class="anchor" href="#_security"></a>Security</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Apps will run with a service account with very few privileges.</p>
+</li>
+<li>
+<p>Apps may be able to request more specific privileges.</p>
+</li>
+<li>
+<p>App service accounts should never have any privileges outside its own namespace.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_convention_compliance"><a class="anchor" href="#_convention_compliance"></a>Convention Compliance</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Kafka clients must consume provided consumer group and topic names</p>
+</li>
+<li>
+<p>Web services must consume provided API prefix and port number</p>
+</li>
+<li>
+<p>Apps must consume provided metrics path and port number</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Most apps should be able to comfortably fit into the ClowdApp conventions.
+If not, apps can specify their own pod template in their ClowdApp, but this
+may cause an app to lose operational compliance.  Thus, use of a custom pod
+template is discouraged unless absolutely necessary.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_common_library"><a class="anchor" href="#_common_library"></a>Common Library</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While apps can consume the JSON configuration directly, the platform team will
+build and maintain a library that will expose an API to query the
+configuration.  This API will contain both high level (e.g.
+<code>get_django_db_config(db_name)</code>) and low level (e.g.
+<code>get_db_password(db_name)</code>).</p>
+</div>
+<div class="paragraph">
+<p>In addition, the library will include a logging package to abstract away the
+log handler implementation.  This will allow the platform team to enforce
+logging best practices while hopefully simplifying the burden of logging
+configuration for apps.</p>
+</div>
+<div class="paragraph">
+<p>The platform team will maintain configuration libraries for four languages:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Python</p>
+</li>
+<li>
+<p>Ruby</p>
+</li>
+<li>
+<p>Java</p>
+</li>
+<li>
+<p>Go</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These libraries are intended to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Simplify configuration for app devs</p>
+</li>
+<li>
+<p>Allow enforcement of compliance requirements and best practices</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>They are <strong>not</strong> intended to make configuration <strong>more</strong> difficult for app devs, nor
+to be an extra burden for devs.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operational_remediations_2"><a class="anchor" href="#_operational_remediations_2"></a>Operational Remediations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The operator should be able to handle several well-known operations issues.
+This will help reduce the number of indicents that require human intervention,
+e.g. PagerDuty notifications.</p>
+</div>
+<div class="sect2">
+<h3 id="_bounce_a_stuck_pod"><a class="anchor" href="#_bounce_a_stuck_pod"></a>Bounce a Stuck Pod</h3>
+<div class="paragraph">
+<p>If a pod is considered "stuck" based on a Prometheus metric, e.g. request count
+is less than one for ten minutes, then delete the pod and let the
+<code>Deployment</code> recreate.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_autoscaling"><a class="anchor" href="#_autoscaling"></a>Autoscaling</h3>
+<div class="paragraph">
+<p>The operator will watch a number of metrics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>For web applications, watch the gateway latency metric.</p>
+</li>
+<li>
+<p>For kafka applications, watch the topic lag.</p>
+</li>
+<li>
+<p>For any application, watch the average pod CPU percentage.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If any one of these metrics reaches a particular threshold, then increase the
+number of replicas for the target <code>Deployment</code>.  The reverse is also true:
+Reduce the number of replicas (down to a minimum threshold) if it appears that
+most pods are idle.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_one_operator_vs_many"><a class="anchor" href="#_one_operator_vs_many"></a>One Operator vs Many</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While each app team should be responsible for the operation of their own apps,
+the cost of building and maintaining many operators significantly outweights
+the benefit of placing greater operational responsibility on app teams.  Having
+to create an operator&#8201;&#8212;&#8201;even using the Operator SDK using a shared library
+with examples&#8201;&#8212;&#8201;is a high barrier to entry for any app team looking to build
+an app on the Insights Platform.</p>
+</div>
+<div class="paragraph">
+<p>In addition, the use of a shared library in multiple operators would introduce
+versioning headaches as each app team would have to consume a constant stream
+of library releases.</p>
+</div>
+<div class="paragraph">
+<p>Splitting the Insights Operator into many per-app operators would make it more
+difficult to monitor relationships between apps or platform components, e.g.
+advisor&#8217;s dependency on RBAC.  This makes it more difficult to self-heal when
+these relationships break down, causing outages.</p>
+</div>
+<div class="paragraph">
+<p>Thus the Platform team will take on the responsibility of maintaining the
+Insights Operator.  The operator could eventually become the centerpiece of
+operational value provided by the platform team; many other aspects of
+platform-provided operational support will eventually be absorbed by the
+operator.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_relationship_to_app_interface"><a class="anchor" href="#_relationship_to_app_interface"></a>Relationship to app-interface</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_operator_responsibilities"><a class="anchor" href="#_operator_responsibilities"></a>Operator Responsibilities</h3>
+<div class="paragraph">
+<p>While the operator could take over some of the responsibilities of
+app-interface in the long-term, there are currently no plans to implement these
+in the operator.  An example would be creating all requisite AWS resources from
+the operator instead of tracking them in app-interface.</p>
+</div>
+<div class="paragraph">
+<p>There should be little to no change in app-interface for the operator to be
+utilized by apps; instead, an app&#8217;s deployment template will be significanly
+modified to push an <code>ClowdApp</code> instead a <code>Deployment</code> and <code>Service</code>.
+An app&#8217;s <code>ServiceMonitors</code> and <code>PrometheusRules</code> may be removed from
+app-interface if the operator starts creating these.  Namespaces, AWS
+resources, secrets, and deployment pipelines are still managed via
+app-interface.</p>
+</div>
+<div class="paragraph">
+<p>App-interface will be queried to deploy pre-production environments, but this
+will not be part of the operator; instead it should be decoupled from
+app-interface except indirectly by looking for particular k8s resources laid
+down by app-interface.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_operator_deployment"><a class="anchor" href="#_operator_deployment"></a>Operator Deployment</h3>
+<div class="paragraph">
+<p>The operator will be deployed via app-interface.  It is still to be determined
+exactly how all of its components will be deployed.  Because this operator will
+never be consumed directly by external customers, many the constraints placed on
+shipped operators do not apply to this one.  That said, we will likely still
+deploy this operator via OLM since that is how operators are required to be
+deployed on OSD clusters managed by App SRE.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../ui/js/site.js"></script>
+<script async src="../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>

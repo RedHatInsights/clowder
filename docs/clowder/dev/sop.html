@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Operating Clowder :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/sop.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../ui/css/site.css">
+    <script>var uiRootPath = '../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Clowder</a></li>
+    <li><a href="sop.html">Operating Clowder</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/sop.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Operating Clowder</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Two primary aspects of operating Clowder: Operating the apps managed by Clowder and operating
+Clowder itself.</p>
+</div>
+<div class="paragraph">
+<p>Clowder utilizes a common configuration format that is presented to each application, no matter
+the environment it is running in, enabling a far easier development experience. It governs many
+different aspects of an applications configuration from defining the port it should listen to for
+its main web service, to metrics, kafka and others. When using Clowder, the burden of identifying
+and defining dependency and core service credentials and connection information is removed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operating_apps_managed_by_clowder"><a class="anchor" href="#_operating_apps_managed_by_clowder"></a>Operating Apps Managed by Clowder</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_clowdenvironment"><a class="anchor" href="#_clowdenvironment"></a>ClowdEnvironment</h3>
+<div class="paragraph">
+<p><strong>abbreviated to [env] in k8s</strong></p>
+</div>
+<div class="paragraph">
+<p>The <code>ClowdEnvironment</code> CRD is responsible for configuring key infrastruture services that the Clowder enabled
+apps will interact with. It is a <strong>cluster scoped</strong> CRD and thus must have a unique name inside the
+k8s cluster. For production environments it is usual to have only one <code>ClowdEnvironment</code>, whereas
+in other scenarios&#8201;&#8212;&#8201;such as ephemeral testing&#8201;&#8212;&#8201;Clowder enables the management of
+multiple environments that operate completely independently from each other.</p>
+</div>
+<div class="sect3">
+<h4 id="_providers"><a class="anchor" href="#_providers"></a>Providers</h4>
+<div class="paragraph">
+<p>An environment&#8217;s specification is broken into <strong>providers</strong>, which govern the creation of services, e.g. Kafka topics,
+object storage, etc, that applications may depend on. The <code>ClowdEnvironment</code> CRD configures these
+providers principally by making use of a provider&#8217;s <strong>mode</strong>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_modes"><a class="anchor" href="#_modes"></a>Modes</h4>
+<div class="paragraph">
+<p>Providers often operate in different modes. As an example the Kafka provider can operate in three
+different modes. In <strong>local</strong> mode, the Kafka provider deploys a single node Kafka/Zookeeper instance
+inside the cluster and configures it to auto-create the topics. In <strong>operator</strong> mode, the provider
+assumes a Strimzi Kafka instance is present and will create <code>KafkaTopic</code> CRs to provide the
+topics.  In <strong>app-interface</strong> mode, no resources are deployed and it is assumed app-interface has
+already created the requested topics. For more information on the configuration of each of these
+providers and their modes, please see the links below.</p>
+</div>
+<div class="paragraph">
+<p><a href="#providers/index.adoc" class="page unresolved">List of providers</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_target_namespace"><a class="anchor" href="#_target_namespace"></a>Target Namespace</h4>
+<div class="paragraph">
+<p>Environmental resources, such as the Kafka/Zookeeper from the exmaple in the <strong>Modes</strong> section, will
+be placed in the <code>ClowdEnvironment</code>'s target namespace. This is configured by setting the
+<code>targetNamespace</code> attribute of the <code>ClowdEnvironment</code>. If it is omitted, a random target
+namespace is generated instead. The name of this resource can be found by inspecting the
+<code>status.targetNamespace</code> of the ClowdEnvironment resource.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_clowdapp"><a class="anchor" href="#_clowdapp"></a>ClowdApp</h3>
+<div class="paragraph">
+<p><strong>abbreviated to [app] in k8s</strong></p>
+</div>
+<div class="paragraph">
+<p>The <code>ClowdApp</code> CRD is responsible for configuring an application and is namespace scoped. Any
+resources Clowder creates on behalf of the application will reside in the same namespace that the
+<code>ClowdApp</code> resources is applied to. As such the <code>ClowdApp</code> name must be unique within a
+particular namespace.  An <code>ClowdApp</code> does not have to be placed in the <code>ClowdEnvironment</code>'s
+target namespace.</p>
+</div>
+<div class="paragraph">
+<p>A <code>ClowdApp</code> may define multiple services inside it. These services, though defined by a
+specification that is very similar to the k8s pod specification, will be deployed as individual
+deployment resources.  Functionally, defining multiple applications in the same <code>ClowdApp</code>
+specification allows the sharing of some infrastructure dependencies such as databases.
+Applications in different ClowdApp&#8217;s should not expect to be able to share databases.</p>
+</div>
+<div class="paragraph">
+<p>A <code>ClowdApp</code> is coupled to a <code>ClowdEnvironment</code> by the use of the <code>envName</code> parameter of the
+<code>ClowdApp</code>. When Clowder configures applications, it will point them to the resources that are
+defined in the coupled <code>ClowdEnvironment</code>. As an example, if a <code>ClowdApp</code> requires the use of a
+Kafka topic, the application will be configured to use the kafka broker that has been configured in
+the coupled ClowdEnvironment, which could be a local, strimzi or app-interface managed Kafka
+instance.</p>
+</div>
+<div class="sect3">
+<h4 id="_dependencies"><a class="anchor" href="#_dependencies"></a>Dependencies</h4>
+<div class="paragraph">
+<p>An application will usually require several dependencies in the form of either infrastructure
+services e.g. Kafka, or other application services such as RBAC.</p>
+</div>
+<div class="paragraph">
+<p>Services such as RBAC will be other Clowder-managed applications and, as such, have an associated
+<code>ClowdApp</code> coupled to the <code>ClowdEnvironment</code>. These are defined in the <code>dependencies</code> field of
+the <code>ClowdApp</code> and take the form of the dependency&#8217;s <code>ClowdApp</code> name. This will result in all of
+the dependent services being listed in the application&#8217;s configuration. If a dependent service
+defines multiple pod specs with a web service exposed in its <code>ClowdApp</code>, each of these will be
+exposed to the requesting app.  A <code>ClowdApp</code> will not be deployed if any of its service
+dependencies do not exist within the coupled <code>ClowdEnvironment</code>.</p>
+</div>
+<div class="paragraph">
+<p>Infrastructure dependencies, such as Kafka topics and object bucket storage, are defined in the
+<code>ClowdApp</code> spec. More information on each of them is defined in the <a href="https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec">API specification</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_created_resources"><a class="anchor" href="#_created_resources"></a>Created Resources</h4>
+<div class="paragraph">
+<p>For each <code>ClowdApp</code> service, Clowder will create an <code>apps.Deployment</code> and a <code>Service</code>
+resource.  If the service has the <code>web</code> field set to true, the <code>Service</code> resource will
+include a port definition for <code>webPort</code> as well as the standard <code>metricsPort</code>. The actual values
+of these are defined in the <code>ClowdEnvironment</code> by configuring the web and metric providers,
+respectively. By default these are set to 8000 for the web service port and 9000 for the metrics
+port.</p>
+</div>
+<div class="paragraph">
+<p>Clowder will also set certain fields in the pod spec, inline with best practice, such as pull
+policy, and anti-affinity.</p>
+</div>
+<div class="paragraph">
+<p>Clowder creates a <code>Secret</code> resource which will contain the generated configuration
+for that app. This secret will be mounted at <code>/cdappconfig.json</code> and will be consumed by the app
+to configure itself on startup.</p>
+</div>
+<div class="paragraph">
+<p>Secrets may also be created for application dependencies such as databases and in-memory db
+services.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operating_clowder_itself"><a class="anchor" href="#_operating_clowder_itself"></a>Operating Clowder Itself</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_olm_pipeline"><a class="anchor" href="#_olm_pipeline"></a>OLM pipeline</h3>
+<div class="paragraph">
+<p>Clowder is deployed via OLM, thus the build and deploy pipeline comprises of creating and deploying
+OLM CRs: <code>OperatorGroup</code>, <code>CatalogSource</code>, and <code>Subscription</code>.  To truly understand OLM is
+outside the scope of this document, but it will cover how each resource is managed.</p>
+</div>
+<div class="paragraph">
+<p>Despite being deployed via OLM, Clowder follows a very similar build and deployment pipeline as
+other apps in app-interface, specifically all pushes to master are automatically deployed to stage,
+and an MR to app-interface is required to update the ref in production.</p>
+</div>
+<div class="paragraph">
+<p><code>OperatorGroup</code> and <code>Subscription</code> are quite static, but <code>CatalogSource</code> is what gets updated
+every promotion.  Before it&#8217;s updated, there are three images that are pushed to Quay:  the Clowder
+application image, the Clowder OLM bundle, and the Clowder catalog image.  All three images use the
+same image tag, based off the commit hash at the tip of master.  The app image is built using
+<code>build_deploy.sh</code>, and the bundle and catalog images are built in a separate Jenkins job using
+<code>build_catalog.sh</code>.</p>
+</div>
+<div class="sect3">
+<h4 id="_troubleshooting"><a class="anchor" href="#_troubleshooting"></a>Troubleshooting</h4>
+<div class="paragraph">
+<p>On occasion, updating the <code>CatalogSource</code> does not trigger OLM to deploy the latest version of
+Clowder.  If this happens, the simplest approach is to delete the <code>ClusterServiceVersion</code> and
+<code>Subscription</code> resources with the name <code>clowder</code> from the <code>clowder</code> namespace.  Once they are
+removed, you should re-run the saas-deploy job for clowder, which will recreate the
+<code>Subscription</code>, which should trigger OLM to recreate the <code>ClusterServiceVersion</code>.</p>
+</div>
+<div class="sect4">
+<h5 id="_metrics_and_alerts"><a class="anchor" href="#_metrics_and_alerts"></a>Metrics and alerts</h5>
+
+</div>
+<div class="sect4">
+<h5 id="_app_interface_modes"><a class="anchor" href="#_app_interface_modes"></a>App-interface modes</h5>
+
+</div>
+<div class="sect4">
+<h5 id="_promoting_clowder_to_prod"><a class="anchor" href="#_promoting_clowder_to_prod"></a>Promoting clowder to prod</h5>
+<div class="paragraph">
+<p>As stated above, promoting Clowder to production is done the same as any other app in app-interface,
+but there are additional considerations given how Clowder code changes could cause widespread
+rollouts across the target cluster. For example, if a field is added to every app&#8217;s
+<code>cdappconfig.json</code>, this will trigger every deployment to rollout a new version at virtually the
+same time.  While this <strong>shouldn&#8217;t</strong> cause a problem, promoters should be aware that such churn is
+going to happen before promoting.</p>
+</div>
+<div class="paragraph">
+<p>Another more disruptive example would be if the format of the name of services was changed.  Not
+only would this trigger a rollout of all deployments, but old pods would no longer function properly
+because the old hostname in their configuration is no longer valid.  A change like this should
+either be done in a backwards-compatible way or be done in a planned outage window.</p>
+</div>
+<div class="paragraph">
+<p>Despite those two examples, most changes to Clowder should not be very disruptive; just make sure
+that extra care is taken to review all changes before promoting to production.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../ui/js/site.js"></script>
+<script async src="../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>

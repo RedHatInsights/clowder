@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Main docs :: Clowder Documentation</title>
-    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/index.html">
+    <title>Clowder Workflow :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/learn-more.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../ui/css/site.css">
     <script>var uiRootPath = '../../ui'</script>
@@ -174,63 +174,80 @@
 <main class="article">
 <div class="toolbar" role="navigation">
 <button class="nav-toggle"></button>
-  <a href="index.html" class="home-link is-current"></a>
+  <a href="index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Clowder</a></li>
-    <li><a href="index.html">Main docs</a></li>
+    <li><a href="learn-more.html">Clowder Workflow</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/learn-more.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Main docs</h1>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="api_reference.html" class="page">API Reference</a></p>
-</li>
-<li>
-<p><a href="contributing.html" class="page">Contributing</a></p>
-</li>
-<li>
-<p><a href="migration/index.html" class="page">Migration</a></p>
-</li>
-<li>
-<p><a href="providers/index.html" class="page">Providers</a></p>
-</li>
-<li>
-<p><a href="usage/index.html" class="page">Usage</a></p>
-</li>
-<li>
-<p><a href="clowder-design.html" class="page">Clowder Design</a></p>
-</li>
-<li>
-<p><a href="crc-guide.html" class="page">Code Ready Containers</a></p>
-</li>
-<li>
-<p><a href="developer-guide.html" class="page">Developer Guide</a></p>
-</li>
-<li>
-<p><a href="learn-more.html" class="page">Learn More</a></p>
-</li>
-<li>
-<p><a href="macos.html" class="page">MacOS Docs</a></p>
-</li>
-<li>
-<p><a href="preprod.html" class="page">PreProd</a></p>
-</li>
-<li>
-<p><a href="README.html" class="page">README</a></p>
-</li>
-<li>
-<p><a href="#sop.doc">SOP</a></p>
-</li>
-</ul>
+<h1 class="page">Clowder Workflow</h1>
+<div class="paragraph">
+<p>The Clowder operator takes much of the heavy lifting out of creating and
+maintaining applications on the Clouddot platform. Instead of an app developer
+being responsible for authoring multiple resources and combining them into a
+single k8s template, the Clowder app defines a simple <code>ClowdApp</code> resource
+which not only defines the pods for the application, but also requests certain
+key resources from the environment, such as Object Storage Buckets, a Database,
+Kafka Topics, or an In Memory Database.</p>
+</div>
+<div class="paragraph">
+<p>A <code>ClowdEnvironment</code> resource is used to define how key resources, such as
+Kafka Topics and Databases are deployed. Using different providers, a single
+<code>ClowdEnvironment</code> can radically alter the way in which resources are
+provisioned. For example, with regards to Kafka Topics, setting the <code>provider</code>
+to <code>local</code> will instruct Clowder to deploy a local Zookeeper/Kafka pod
+and create topics inside it, but if the provider were set to <code>operator</code>, then
+Clowder would instead drop a KafkaTopic custom resource ready for the Kafka
+Strimzi operator to pick up and create topics.</p>
+</div>
+<div class="paragraph">
+<p>The diagram below shows how the two Clowder resources are used to create all
+other k8s resources.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/clowder-flow.svg" alt="Clowder Flow">
+</div>
+</div>
+<div class="paragraph">
+<p>Once these custom resources have been created and deployed to the k8s
+environment, the operator will create a secret with all necessary configuration
+data and expose it to the pods by mounting the JSON document in the app
+container. In this way, instead of an app configuring itself, the app is
+configured instead by Clowder.</p>
+</div>
+<div class="paragraph">
+<p>This has the advantage of creating consistency across deployments, whether
+they are development, testing or production. It also creates a simple interface
+for developers to onboard, producing a more streamlined developer experience.</p>
+</div>
+<div class="paragraph">
+<p>The <code>ClowdApp</code> resource does not change when deploying into environments
+configured with different <code>ClowdEnvironment</code> resources. Though the underlying
+environmental resources, object storage, kafka, etc, may be provided through
+different implementations, the configuration that is presented to the pod
+remains consistent.</p>
+</div>
+<div class="paragraph">
+<p>If the application is written in Python or Go, there is a client available
+which further simplifies the process of obtaining configuration and offers
+several helpers for accessing some of the more complex structures.</p>
+</div>
+<div class="paragraph">
+<p>The diagram below describes how the application accesses the configuration.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/clowder-new.svg" alt="Clowder Client">
+</div>
 </div>
 </article>
   </div>

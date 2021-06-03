@@ -67,7 +67,22 @@
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../index.html">Contributing</a>
+    <a class="nav-link" href="../api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../migration/checklist.html">Check List</a>
+  </li>
+</ul>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
@@ -118,7 +133,19 @@
 </ul>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../api_reference.html">API Reference</a>
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/jobs.html">Jobs</a>
+  </li>
+</ul>
   </li>
 </ul>
   </li>
@@ -155,7 +182,7 @@
     <li><a href="featureflags.html">Feature Flags</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/providers/featureflags.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/featureflags.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
@@ -178,22 +205,15 @@ flags server.</p>
 <p>To request a Feature Flags server, a <code>ClowdApp</code> would use the <code>featureFlags</code>
 stanza, an example of which is shown below.</p>
 </div>
-<div class="olist loweralpha">
-<ol class="loweralpha" type="a">
-<li>
-<p>code-block:: yaml</p>
-<div class="literalblock">
+<div class="listingblock">
 <div class="content">
-<pre>apiVersion: cloud.redhat.com/v1alpha1
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: myapp
 spec:
-  featureFlags: true</pre>
+  featureFlags: true</code></pre>
 </div>
-</div>
-</li>
-</ol>
 </div>
 </div>
 </div>
