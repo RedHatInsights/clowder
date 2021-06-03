@@ -14,6 +14,7 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,6 +38,9 @@ var KafkaConnectUser = providers.NewSingleResourceIdent(ProvName, "kafka_connect
 
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
 var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{})
+
+// KafkaNetworkPolicy is the resource ident for the KafkaNetworkPolicy
+var KafkaNetworkPolicy = providers.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{})
 
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
@@ -498,7 +502,62 @@ func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
 		},
 	}
 
+	if err := createNetworkPolicies(p); err != nil {
+		return nil, err
+	}
+
 	return kafkaProvider, kafkaProvider.configureBrokers()
+}
+
+func createNetworkPolicies(p *providers.Provider) error {
+	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
+	if err != nil {
+		return err
+	}
+
+	namespaceSet := map[string]bool{}
+
+	np := &networking.NetworkPolicy{}
+	nn := types.NamespacedName{
+		Name:      getKafkaName(p.Env),
+		Namespace: getKafkaNamespace(p.Env),
+	}
+
+	if err := p.Cache.Create(KafkaNetworkPolicy, nn, np); err != nil {
+		return err
+	}
+
+	npFrom := []networking.NetworkPolicyPeer{}
+
+	for _, app := range appList.Items {
+		if _, ok := namespaceSet[app.Namespace]; ok {
+			continue
+		}
+
+		npFrom = append(npFrom, networking.NetworkPolicyPeer{
+			NamespaceSelector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"kubernetes.io/metadata.name": app.Namespace,
+				},
+			},
+		})
+		namespaceSet[app.Namespace] = true
+	}
+
+	np.Spec.Ingress = []networking.NetworkPolicyIngressRule{{
+		From: npFrom,
+	}}
+
+	np.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
+
+	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
+	labeler(np)
+
+	if err := p.Cache.Update(KafkaNetworkPolicy, np); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
