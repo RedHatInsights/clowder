@@ -83,7 +83,7 @@ Clowder is developed on Fedora and the kvm driver has been found to work best
 initiated with the following options:
 
 [source,shell]
-minikube start --cpus 4 --disk-size 36GB --memory 8000MB --driver=kvm2
+minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2
 
 [NOTE]
 ====
@@ -95,12 +95,17 @@ To persist these changes for every minikube invocation, run the following:
 
 [source,shell]
 minikube config set cpus 4
-minikube config set memory 8000
+minikube config set memory 16000
 minikube config set disk-size 36GB
 minikube config set vm-driver kvm2
 
 If you encounter any kvm issues, please take a look 
 xref:docs/antora/modules/ROOT/developer-guide.md[at the troubleshooting guide]
+
+The ``kube_setup.sh``` script then need to be run by invoking
+
+[source,shell]
+./build/kube_setup.sh
 
 Clowder can then be installed by visiting the 
 https://github.com/RedHatInsights/clowder/releases/latest[latest release]
@@ -110,7 +115,7 @@ shown below:
 [source,shell]
 ----
 # Be sure to get the latest release in the link above!
-minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.12.0/clowder-manifest-0.12.0.yaml --validate=false
+minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.14.0/clowder-manifest-0.14.0.yaml --validate=false
 ----
 
 ## Usage
