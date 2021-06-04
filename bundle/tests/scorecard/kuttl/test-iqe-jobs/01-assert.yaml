@@ -34,6 +34,8 @@ spec:
               value: clowder_smoke
             - name: "NAMESPACE"
               value: test-iqe-jobs
+            - name: CLOWDER_ENABLED
+              value: "true"
             - name: IQE_DEBUG_POD
               value: "false"
             - name: IQE_PLUGINS
@@ -42,8 +44,6 @@ spec:
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
-            - name: CLOWDER_ENABLED
-              value: "true"
           resources:
             limits:
               cpu: "2"
