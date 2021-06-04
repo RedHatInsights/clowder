@@ -42,6 +42,8 @@ spec:
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
+            - name: CLOWDER_ENABLED
+              value: "true"
           resources:
             limits:
               cpu: "2"
