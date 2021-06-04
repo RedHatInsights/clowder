@@ -20,7 +20,7 @@ Strimzi operator to pick up and create topics.
 The diagram below shows how the two Clowder resources are used to create all
 other k8s resources.
 
-image::clowder-flow.svg[Clowder Flow]
+image::../images/clowder-flow.svg[Clowder Flow]
 
 Once these custom resources have been created and deployed to the k8s
 environment, the operator will create a secret with all necessary configuration
@@ -44,4 +44,4 @@ several helpers for accessing some of the more complex structures.
 
 The diagram below describes how the application accesses the configuration.
 
-image::clowder-new.svg["Clowder Client"]
+image::../images/clowder-new.svg["Clowder Client"]

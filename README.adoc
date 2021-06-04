@@ -31,7 +31,7 @@ provides a number of other benefits:
   team, such as pod affinity, rollout parameters etc built-in. Spend less time
   worrying about configuring deployment templates and more time writing your app.
 * **Assisting Ops** Any dev or SRE that learns how Clowder deploys apps will
-  implicitly understand the deployment of any other app utilizaing Clowder.
+  implicitly understand the deployment of any other app utilizing Clowder.
 * **Deploy a full environment locally** Gone are the days of hacking together
   scripts that just about get you mocked or partially working dependant services.
   With  Clowder, you can deploy an instance of the cloud.redhat.com platform on your
@@ -88,7 +88,7 @@ minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2
 [NOTE]
 ====
 Mac OS is also supported with the `virtualbox` and `hyperkit` drivers. A full
-guide xref:docs/antora/ROOT/pages/macos.adoc[can be found here]
+guide xref:docs/antora/modules/ROOT/pages/macos.adoc[can be found here]
 ====
 
 To persist these changes for every minikube invocation, run the following:
@@ -100,7 +100,7 @@ minikube config set disk-size 36GB
 minikube config set vm-driver kvm2
 
 If you encounter any kvm issues, please take a look 
-xref:docs/antora/modules/ROOT/developer-guide.md[at the troubleshooting guide]
+xref:docs/antora/modules/ROOT/pages/developer-guide.adoc[at the troubleshooting guide]
 
 The ``kube_setup.sh``` script then need to be run by invoking
 
@@ -132,7 +132,7 @@ Example app developer workflow:
 . Use ``kubectl apply -f clowdapp.yaml`` to apply a ``ClowdApp`` resource to the
   cluster.
 
-More details on how to do this are present in the xref:docs/antora/modules/ROOT/pages/getting-started.adoc[Getting Started] section
+More details on how to do this are present in the xref:docs/antora/modules/usage/pages/getting-started.adoc[Getting Started] section
 of the documentation.
 
 https://redhatinsights.github.io/clowder/api_reference.html[API Reference]

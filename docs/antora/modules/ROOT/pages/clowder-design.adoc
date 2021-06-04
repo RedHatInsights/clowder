@@ -60,7 +60,7 @@ operator, which is of course CRDs.  There will be two CRDs:
 
 How these CRs will be translated into lower level resource types:
 
-image::clowder-flow.svg[Clowder Flow]
+image::../images/clowder-flow.svg[Clowder Flow]
 
 Apps will consume their environmental configuration from a JSON document mounted
 in their app container.  This JSON document contains the various configuration
@@ -74,7 +74,7 @@ that would be requested by an app on the platform, including:
 
 Common configuration interface:
 
-image::clowder-new.svg[Clowder Common Interface]
+image::../images/clowder-new.svg[Clowder Common Interface]
 
 == Alternatives
 
