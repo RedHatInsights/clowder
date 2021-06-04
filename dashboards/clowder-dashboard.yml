@@ -1195,7 +1195,7 @@ data:
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "/crc.*/",
+            "regex": "/c.*/",
             "skipUrlSync": false,
             "type": "datasource"
           }
