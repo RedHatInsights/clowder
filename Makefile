@@ -193,6 +193,9 @@ bundle: manifests kustomize ## Generate bundle manifests and metadata, then vali
 	operator-sdk generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+ifneq ($(origin REPLACE_VERSION), undefined)
+	echo "  replaces: clowder.v$(REPLACE_VERSION)" >> bundle/manifests/clowder.clusterserviceversion.yaml
+endif
 	operator-sdk bundle validate ./bundle
 
 .PHONY: bundle-build
