@@ -91,9 +91,7 @@ api-docs:
 	./build/build_config_docs.sh
 
 release: manifests kustomize controller-gen
-	cat config/crd/bases/cloud.redhat.com_clowdapps.yaml > manifest.yaml
-	cat config/crd/bases/cloud.redhat.com_clowdenvironments.yaml >> manifest.yaml
-	cat config/crd/bases/cloud.redhat.com_clowdjobinvocations.yaml >> manifest.yaml
+	echo "---" > manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd ../..
 	$(KUSTOMIZE) build config/default >> manifest.yaml
