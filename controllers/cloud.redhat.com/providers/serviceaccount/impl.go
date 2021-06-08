@@ -67,7 +67,8 @@ func CreateRoleBinding(cache *providers.ObjectCache, ident providers.ResourceIde
 		Namespace: nn.Namespace,
 	}}
 	rb.RoleRef = rbac.RoleRef{
-		Kind: "ClusterRole",
+		APIGroup: "rbac.authorization.k8s.io",
+		Kind:     "ClusterRole",
 	}
 
 	switch accessLevel {
