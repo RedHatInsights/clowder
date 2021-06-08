@@ -55,7 +55,7 @@ func CreateRoleBinding(cache *providers.ObjectCache, ident providers.ResourceIde
 
 	rb := &rbac.RoleBinding{}
 
-	if err := cache.Create(CoreDeploymentRoleBinding, nn, rb); err != nil {
+	if err := cache.Create(ident, nn, rb); err != nil {
 		return err
 	}
 
@@ -77,7 +77,7 @@ func CreateRoleBinding(cache *providers.ObjectCache, ident providers.ResourceIde
 		rb.RoleRef.Name = "edit"
 	}
 
-	if err := cache.Update(CoreDeploymentRoleBinding, rb); err != nil {
+	if err := cache.Update(ident, rb); err != nil {
 		return err
 	}
 
