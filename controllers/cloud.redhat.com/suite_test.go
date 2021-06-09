@@ -487,6 +487,27 @@ func TestObjectCache(t *testing.T) {
 		t.Errorf("Retrieved object has wrong port")
 		return
 	}
+
+	TemplateIdent := p.ResourceIdentSingle{
+		Provider: "TEST",
+		Purpose:  "TEMPLATE",
+		Type:     &core.Pod{},
+	}
+
+	tnn := types.NamespacedName{
+		Name:      "template",
+		Namespace: "template-namespace",
+	}
+	service := &core.Service{}
+
+	if err := oCache.Create(TemplateIdent, tnn, service); err == nil {
+		t.Fatal(err)
+		t.Fatal("Did not error when should have: cache create")
+	}
+
+	if err := oCache.Update(TemplateIdent, service); err == nil {
+		t.Fatal("Did not error when should have: cache update")
+	}
 }
 
 func TestCreateClowdApp(t *testing.T) {
