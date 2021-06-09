@@ -403,8 +403,8 @@ func (o *ObjectCache) ApplyAll() error {
 			if clowder_config.LoadedConfig.DebugOptions.Cache.Apply {
 				jsonData, _ := json.MarshalIndent(i.Object, "", "  ")
 				diff := difflib.UnifiedDiff{
-					A:        difflib.SplitLines(string(jsonData)),
-					B:        difflib.SplitLines(i.jsonData),
+					A:        difflib.SplitLines(i.jsonData),
+					B:        difflib.SplitLines(string(jsonData)),
 					FromFile: "old",
 					ToFile:   "new",
 					Context:  3,
