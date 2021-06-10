@@ -15,7 +15,7 @@ type namespaceProvider struct {
 	providers.Provider
 }
 
-// NewNamespaceProvider returns a new End provider run at the end of the provider set.
+// NewNamespaceProvider returns a new Namespace provider.
 func NewNamespaceProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 
