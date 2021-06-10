@@ -128,7 +128,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 		provutils.MakeLocalDBPVC(pvc, nn, app)
 
-		if err = db.Cache.Update(LocalDBService, pvc); err != nil {
+		if err = db.Cache.Update(LocalDBPVC, pvc); err != nil {
 			return err
 		}
 	}
