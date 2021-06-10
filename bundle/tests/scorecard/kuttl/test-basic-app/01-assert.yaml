@@ -135,3 +135,10 @@ metadata:
     controller: true
     kind: ClowdEnvironment
     name: test-basic-app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-basic-app
+  labels:
+    kubernetes.io/metadata.name: test-basic-app
