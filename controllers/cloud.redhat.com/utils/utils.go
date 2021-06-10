@@ -263,8 +263,9 @@ func GetKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.Group
 func GetClowderNamespace() (string, error) {
 	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 
+	// CLOBBER the error here as this is our default
 	if err != nil {
-		return "", err
+		return "clowder-system", nil
 	}
 
 	return string(clowderNsB), nil
