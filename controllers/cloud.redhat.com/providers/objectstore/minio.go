@@ -3,6 +3,7 @@ package objectstore
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -15,7 +16,9 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -30,6 +33,9 @@ var MinioPVC = providers.NewSingleResourceIdent(ProvName, "minio_db_pvc", &core.
 
 // MinioSecret is the resource ident for the Minio secret object.
 var MinioSecret = providers.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.Secret{})
+
+// MinioNetworkPolicy is the resource ident for the KafkaNetworkPolicy
+var MinioNetworkPolicy = providers.NewSingleResourceIdent(ProvName, "minio_network_policy", &networking.NetworkPolicy{})
 
 const bucketCheckErrorMsg = "failed to check if bucket exists"
 const bucketCreateErrorMsg = "failed to create bucket"
@@ -191,13 +197,57 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 	}
 
 	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.IsNodePort())
+
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't make component", err)
 		raisedErr.Requeue = true
 		return nil, raisedErr
 	}
 
-	return mp, nil
+	return mp, createNetworkPolicy(p)
+}
+
+func createNetworkPolicy(p *providers.Provider) error {
+	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+
+	clowderNs := string(clowderNsB)
+
+	if err != nil {
+		return err
+	}
+
+	np := &networking.NetworkPolicy{}
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("allow-from-%s-namespace", clowderNs),
+		Namespace: p.Env.Status.TargetNamespace,
+	}
+
+	if err := p.Cache.Create(MinioNetworkPolicy, nn, np); err != nil {
+		return err
+	}
+
+	npFrom := []networking.NetworkPolicyPeer{{
+		NamespaceSelector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"kubernetes.io/metadata.name": clowderNs,
+			},
+		},
+	}}
+
+	np.Spec.Ingress = []networking.NetworkPolicyIngressRule{{
+		From: npFrom,
+	}}
+
+	np.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
+
+	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
+	labeler(np)
+
+	if err := p.Cache.Update(MinioNetworkPolicy, np); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {

@@ -126,3 +126,24 @@ spec:
     env-app: test-minio-app-minio
   sessionAffinity: None
   type: ClusterIP
+--- 
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app: test-minio-app
+  name: allow-from-clowder-system-namespace
+  namespace: test-minio-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-minio-app
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: clowder-system
+  podSelector: {}
+  policyTypes:
+  - Ingress
