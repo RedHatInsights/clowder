@@ -1,4 +1,4 @@
-package pullsecrets
+package namespace
 
 import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
