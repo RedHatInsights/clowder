@@ -3,7 +3,6 @@ package objectstore
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
@@ -208,12 +207,10 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func createNetworkPolicy(p *providers.Provider) error {
-	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-
-	clowderNs := string(clowderNsB)
+	clowderNs, err := utils.GetClowderNamespace()
 
 	if err != nil {
-		return err
+		return nil
 	}
 
 	np := &networking.NetworkPolicy{}

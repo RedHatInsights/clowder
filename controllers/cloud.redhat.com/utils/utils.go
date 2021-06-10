@@ -4,6 +4,7 @@ import (
 	"context"
 	b64 "encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"reflect"
 	"sort"
@@ -257,4 +258,14 @@ func GetKindFromObj(scheme *runtime.Scheme, object runtime.Object) (schema.Group
 	}
 
 	return gvks[0], nil
+}
+
+func GetClowderNamespace() (string, error) {
+	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(clowderNsB), nil
 }

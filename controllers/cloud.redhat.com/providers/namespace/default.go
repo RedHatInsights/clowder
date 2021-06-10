@@ -1,11 +1,10 @@
 package namespace
 
 import (
-	"io/ioutil"
-
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -17,18 +16,12 @@ type namespaceProvider struct {
 
 // NewNamespaceProvider returns a new Namespace provider.
 func NewNamespaceProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	clowderNs, nSerr := utils.GetClowderNamespace()
 
-	if err != nil {
-		return nil, err
-	}
-
-	clowderNs := string(clowderNsB)
-
-	err = setLabelOnNamespace(p, clowderNs)
-
-	if err != nil {
-		return nil, err
+	if nSerr == nil {
+		if err := setLabelOnNamespace(p, clowderNs); err != nil {
+			return nil, err
+		}
 	}
 
 	return &namespaceProvider{Provider: *p}, setLabelOnNamespace(p, p.Env.Status.TargetNamespace)
@@ -46,14 +39,15 @@ func setLabelOnNamespace(p *providers.Provider, ns string) error {
 		return err
 	}
 
-	annotations := nsType.GetAnnotations()
+	labels := nsType.GetLabels()
 
-	if annotations == nil {
-		annotations = make(map[string]string)
+	if labels == nil {
+		labels = make(map[string]string)
 	}
 
-	if _, ok := annotations["kubernetes.io/metadata.name"]; !ok {
-		annotations["kubernetes.io/metadata.name"] = ns
+	if _, ok := labels["kubernetes.io/metadata.name"]; !ok {
+		labels["kubernetes.io/metadata.name"] = ns
+		nsType.SetLabels(labels)
 		return p.Client.Update(p.Ctx, nsType)
 	}
 
