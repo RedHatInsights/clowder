@@ -19,9 +19,8 @@ func NewNamespaceProvider(p *providers.Provider) (providers.ClowderProvider, err
 	clowderNs, nSerr := utils.GetClowderNamespace()
 
 	if nSerr == nil {
-		if err := setLabelOnNamespace(p, clowderNs); err != nil {
-			return nil, err
-		}
+		// CLOBBER: Purposefully ignoring the error here
+		setLabelOnNamespace(p, clowderNs)
 	}
 
 	return &namespaceProvider{Provider: *p}, setLabelOnNamespace(p, p.Env.Status.TargetNamespace)
