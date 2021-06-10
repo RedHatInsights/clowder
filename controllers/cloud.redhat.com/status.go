@@ -271,6 +271,8 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	return nil
 }
 
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
 func GetClowdAppConditionFromList(conditions []crd.ClowdAppCondition, conditionType crd.ClowdAppConditionType) (int, *crd.ClowdAppCondition) {
 	if conditions == nil {
 		return -1, nil
@@ -283,6 +285,8 @@ func GetClowdAppConditionFromList(conditions []crd.ClowdAppCondition, conditionT
 	return -1, nil
 }
 
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
 func GetClowdAppCondition(status *crd.ClowdAppStatus, conditionType crd.ClowdAppConditionType) (int, *crd.ClowdAppCondition) {
 	if status == nil {
 		return -1, nil
@@ -290,7 +294,8 @@ func GetClowdAppCondition(status *crd.ClowdAppStatus, conditionType crd.ClowdApp
 	return GetClowdAppConditionFromList(status.Conditions, conditionType)
 }
 
-// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L343
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
 func UpdateClowdAppCondition(status *crd.ClowdAppStatus, condition *crd.ClowdAppCondition) bool {
 	condition.LastTransitionTime = v1.Now()
 	// Try to find this clowdapp condition.
