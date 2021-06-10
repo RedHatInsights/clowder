@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
@@ -255,17 +254,14 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	}
 
 	conditions = append(conditions, *condition)
-	fmt.Printf("%v", conditions)
 
 	for _, condition := range conditions {
-		fmt.Printf("%v", condition)
 		UpdateClowdAppCondition(&o.Status, &condition)
 	}
 
 	o.Status.Ready = deploymentStatus
 
 	if err := client.Status().Update(ctx, o); err != nil {
-		fmt.Printf("%v", err)
 		return err
 	}
 	return nil
