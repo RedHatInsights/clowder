@@ -353,6 +353,36 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>A TLS/User auth enabled Kafka will look like this</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "kafka": {
+      "brokers": [
+          {
+              "hostname": "broker-host",
+              "port": 27015,
+              "authtype": "sasl",
+              "cacert": "-----BEGIN CERTIFICATE-----\nMIIDLTCCAhWgAwIBAgIJAPOWU.........",
+              "sasl":{
+                  "username": "kafkausername",
+                  "password": "kafkapassword"
+              }
+          }
+      ],
+      "topics": [
+          {
+              "requestedName": "originalName",
+              "name": "someTopic",
+              "consumerGroupName": "someGroupName"
+          }
+      ]
+  }
+}</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_client_access"><a class="anchor" href="#_client_access"></a>Client access</h3>
