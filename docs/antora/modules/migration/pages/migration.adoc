@@ -102,6 +102,7 @@ Here are the items that should be consumed from the Clowder client library:
 * *Dependent service hostnames*: Look these up by the app name
 * *Kafka bootstrap URL*: Multiple URLs can be provided, though only one is ever present today
 * *Kafka topic names*: Please look up the actual topic name based on the requested name.
+* *Kafka in the fedramp environment* requires the use of TLS + User authentication, both of which are supplied in the loaded config.
 * *Web prefix and port number*
 * *Metrics path and port number*
 

@@ -112,6 +112,35 @@ A helper is available below to facilitate quick access via a map.
 }
 ----
 
+A TLS/User auth enabled Kafka will look like this
+[source,json]
+----
+{
+  "kafka": {
+      "brokers": [
+          {
+              "hostname": "broker-host",
+              "port": 27015,
+              "authtype": "sasl",
+              "cacert": "-----BEGIN CERTIFICATE-----\nMIIDLTCCAhWgAwIBAgIJAPOWU.........",
+              "sasl":{
+                  "username": "kafkausername",
+                  "password": "kafkapassword"
+              }
+          }
+      ],
+      "topics": [
+          {
+              "requestedName": "originalName",
+              "name": "someTopic",
+              "consumerGroupName": "someGroupName"
+          }
+      ]
+  }
+}
+----
+
+
 === Client access
 
 For supported languages, the kafka configuration is access via the following
