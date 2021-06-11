@@ -135,7 +135,7 @@ Example app developer workflow:
 More details on how to do this are present in the xref:docs/antora/modules/usage/pages/getting-started.adoc[Getting Started] section
 of the documentation.
 
-https://redhatinsights.github.io/clowder/api_reference.html[API Reference]
+https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html[API Reference]
 
 ## Building Clowder
 
