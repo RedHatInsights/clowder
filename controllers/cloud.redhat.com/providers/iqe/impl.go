@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -31,6 +32,7 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	j.Spec.Template.ObjectMeta.Labels = labels
 
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
+	j.Spec.BackoffLimit = common.Int32Ptr(0)
 
 	j.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{
 		{Name: "quay-cloudservices-pull"},
