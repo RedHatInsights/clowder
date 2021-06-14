@@ -25,7 +25,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1618995511996,
+      "iteration": 1623660304465,
       "links": [],
       "panels": [
         {
@@ -194,7 +194,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"clowder\", container=\"manager\"}[5m]))",
+              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"clowder-system\", container=\"manager\"}[5m]))",
               "interval": "",
               "legendFormat": "",
               "refId": "A"
@@ -291,7 +291,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "kube_deployment_status_replicas_available{namespace=\"clowder\"}",
+              "expr": "kube_deployment_status_replicas_available{namespace=\"clowder-system\"}",
               "interval": "",
               "legendFormat": "",
               "refId": "A"
@@ -799,7 +799,7 @@ data:
           "pluginVersion": "7.2.1",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
+              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -1054,19 +1054,19 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(container_memory_working_set_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "expr": "avg(container_memory_working_set_bytes{namespace=\"clowder-system\", container=\"manager\"})",
               "interval": "",
               "legendFormat": "Usage",
               "refId": "A"
             },
             {
-              "expr": "avg(kube_pod_container_resource_requests_memory_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "expr": "avg(kube_pod_container_resource_requests_memory_bytes{namespace=\"clowder-system\", container=\"manager\"})",
               "interval": "",
               "legendFormat": "Request",
               "refId": "B"
             },
             {
-              "expr": "avg(kube_pod_container_resource_limits_memory_bytes{namespace=\"clowder\", container=\"manager\"})",
+              "expr": "avg(kube_pod_container_resource_limits_memory_bytes{namespace=\"clowder-syste\", container=\"manager\"})",
               "interval": "",
               "legendFormat": "Limit",
               "refId": "C"
@@ -1131,9 +1131,9 @@ data:
                   {
                     "color": "red",
                     "value": 80
-        }
+                  }
                 ]
-        }
+              }
             },
             "overrides": []
           },
@@ -1152,7 +1152,7 @@ data:
             "reduceOptions": {
               "calcs": [
                 "mean"
-      ],
+              ],
               "fields": "",
               "values": false
             },
@@ -1167,7 +1167,7 @@ data:
               "legendFormat": "{{version}}",
               "refId": "A"
             }
-      ],
+          ],
           "timeFrom": null,
           "timeShift": null,
           "title": "Fedramp Stage version",
@@ -1209,5 +1209,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 6
+      "version": 7
     }
