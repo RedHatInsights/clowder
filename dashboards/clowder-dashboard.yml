@@ -25,7 +25,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1623660304465,
+      "iteration": 1623661868735,
       "links": [],
       "panels": [
         {
@@ -1161,7 +1161,7 @@ data:
           "pluginVersion": "7.2.1",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
+              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -1209,5 +1209,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 7
+      "version": 8
     }
