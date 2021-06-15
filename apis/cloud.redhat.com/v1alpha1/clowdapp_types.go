@@ -312,22 +312,22 @@ type ClowdAppSpec struct {
 	Cyndi CyndiSpec `json:"cyndi,omitempty"`
 }
 
-type ClowdAppConditionType string
+type ClowdConditionType string
 
 const (
 	// Ready means all the deployments are ready
-	DeploymentsReady ClowdAppConditionType = "DeploymentsReady"
+	DeploymentsReady ClowdConditionType = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
-	ReconciliationSuccessful ClowdAppConditionType = "ReconciliationSuccessful"
+	ReconciliationSuccessful ClowdConditionType = "ReconciliationSuccessful"
 	// ReconciliationPartiallySuccessful means the reconciliation is in a partial success state
-	ReconciliationPartiallySuccessful ClowdAppConditionType = "ReconciliationPartiallySuccessful"
+	ReconciliationPartiallySuccessful ClowdConditionType = "ReconciliationPartiallySuccessful"
 	// ReconciliationFailed means the reconciliation failed
-	ReconciliationFailed ClowdAppConditionType = "ReconciliationFailed"
+	ReconciliationFailed ClowdConditionType = "ReconciliationFailed"
 )
 
-type ClowdAppCondition struct {
+type ClowdCondition struct {
 	// Type is the type of the condition.
-	Type ClowdAppConditionType `json:"type"`
+	Type ClowdConditionType `json:"type"`
 	// Status is the status of the condition.
 	// Can be True, False, Unknown.
 	Status v1.ConditionStatus `json:"status"`
@@ -348,7 +348,7 @@ type ClowdAppStatus struct {
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
 	Deployments common.DeploymentStatus `json:"deployments,omitempty"`
 	Ready       bool                    `json:"ready"`
-	Conditions  []ClowdAppCondition     `json:"conditions,omitempty"`
+	Conditions  []ClowdCondition        `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

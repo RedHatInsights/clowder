@@ -418,6 +418,7 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Conditions      []ClowdCondition        `json:"conditions,omitempty"`
 	TargetNamespace string                  `json:"targetNamespace,omitempty"`
 	Ready           bool                    `json:"ready,omitempty"`
 	Deployments     common.DeploymentStatus `json:"deployments,omitempty"`
