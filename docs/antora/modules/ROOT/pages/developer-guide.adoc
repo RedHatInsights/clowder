@@ -193,6 +193,11 @@ required to either create the ``/config/clowder_config.json`` file in the filesy
 running the Clowder process, or to use the environment variable ``CLOWDER_CONFIG_PATH`` to point to
 an alternative file.
 
+At startup, Clowder will print the configuration that was read in the logs
+
+[source,text]
+[2021-06-16 11:10:44] INFO   Loaded config config:{'debugOptions': {'trigger': {'diff': True}, 'cache': {'create': True, 'update': True, 'apply': True}, 'pprof': {'enable': True, 'cpuFile': 'testcpu'}}, 'features': {'createServiceMonitor': False, 'disableWebhooks': True, 'watchStrimziResources': False, 'useComplexStrimziTopicNames': False}}
+
 === Debug flags
 
 Clowder has several debug flags which can aid in troubleshooting difficult situations. These are 
@@ -201,19 +206,119 @@ defined in the below.
 * ``debugOptions.trigger.diff`` - When a resource is responsible for triggering a reconciliation of
   either a ``ClowdApp`` or a ``ClowdEnvironment`` this option will print out a diff of the old and 
   new resource, allowing an inspection of what actually triggered the reconciliation.
-* ``debugOptions.cache.create`` - When an item is *created* in Clowder's resource cache, this option will enable printing of the resource that came from k8s cache. If the resource exists in k8s, this will be the starting resource that Clowder will update.
-* ``debugOptions.cache.update`` - When enabled, and an item is *updated* in Clowder's resource cache, this option will print a diff between what _was_ in Clowder's cache, and the updated version that was applied.
-* ``debugOptions.cache.apply`` - This option is responsible for printing out a diff showing what the resource was when it was first read into Clowder's cache via the ``create``, and what is being applied via the k8s client.
+
+  [2021-06-16 11:24:49] INFO APP  Reconciliation trigger name:puptoo-processor namespace:test-basic-app resType:Deployment type:update
+  [2021-06-16 11:24:49] INFO APP  Trigger diff diff:--- old
+  +++ new
+  @@ -3,8 +3,8 @@
+      "name": "puptoo-processor",
+      "namespace": "test-basic-app",
+      "uid": "de492af3-be26-4a2c-b959-54b674c9e34f",
+  -    "resourceVersion": "43162",
+  -    "generation": 1,
+  +    "resourceVersion": "44111",
+  +    "generation": 2,
+      "creationTimestamp": "2021-06-16T10:19:20Z",
+      "labels": {
+        "app": "puptoo",
+  @@ -69,7 +69,7 @@
+          "manager": "manager",
+          "operation": "Update",
+          "apiVersion": "apps/v1",
+  -        "time": "2021-06-16T10:19:20Z",
+  +        "time": "2021-06-16T10:24:49Z",
+          "fieldsType": "FieldsV1",
+          "fieldsV1": {
+            "f:metadata": {
+
+
+* ``debugOptions.cache.create`` - When an item is *created* in Clowder's resource cache, this option
+  will enable printing of the resource that came from k8s cache. If the resource exists in k8s, this 
+  will be the starting resource that Clowder will update.
+
+  [2021-06-16 11:20:23] INFO  [test-basic-app:puptoo] CREATE resource  app:test-basic-app:puptoo diff:{
+  "kind": "Deployment",
+  "apiVersion": "apps/v1",
+  "metadata": {
+    "name": "puptoo-processor",
+    "namespace": "test-basic-app",
+    "uid": "de492af3-be26-4a2c-b959-54b674c9e34f",
+    "resourceVersion": "43162",
+    "generation": 1,
+    "creationTimestamp": "2021-06-16T10:19:20Z",
+    "labels": {
+      "app": "puptoo",
+      "pod": "puptoo-processor"
+  ...
+  ...
+
+* ``debugOptions.cache.update`` - When enabled, and an item is *updated* in Clowder's resource 
+  cache, this option will print the new version of the item in the cache.
+
+  [2021-06-16 11:20:23] INFO  [test-basic-app:puptoo] UPDATE resource  app:test-basic-app:puptoo diff:{
+  "kind": "ServiceAccount",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "iqe-test-basic-app",
+    "namespace": "test-basic-app",
+    "uid": "3d89ab16-dcb2-4dbb-b0e6-685009878175",
+    "resourceVersion": "43135",
+    "creationTimestamp": "2021-06-16T10:19:20Z",
+    "labels": {
+      "app": "test-basic-app"
+    },
+    "ownerReferences": [
+      {
+        "apiVersion": "cloud.redhat.com/v1alpha1",
+        "kind": "ClowdEnvironment",
+        "name": "test-basic-app",
+        "uid": "25e121df-5b12-4c34-b8f3-a49b0f20afcf",
+        "controller": true
+      }
+    ],
+
+
+* ``debugOptions.cache.apply`` - This option is responsible for printing out a diff showing what the
+  resource was when it was first read into Clowder's cache via the ``create``, and what is being 
+  applied via the k8s client.
+
+  [2021-06-16 11:20:23] INFO  [test-basic-app:puptoo] Update diff app:test-basic-app:puptoo diff:--- old
+  +++ new
+  @@ -84,14 +84,14 @@
+          "protocol": "TCP",
+          "appProtocol": "http",
+          "port": 8000,
+  -        "targetPort": 0
+  +        "targetPort": 8000
+        },
+        {
+          "name": "metrics",
+          "protocol": "TCP",
+          "appProtocol": "http",
+          "port": 9000,
+  -        "targetPort": 0
+  +        "targetPort": 9000
+        }
+      ],
+
+
 * ``debugOptions.pprof.enable`` - To aid in profiling, this option enables the cpu profilier.
-* ``debugOptions.pprof.cpuFile`` - This option sets where the cpu profiling saves the collected pprof data.
+* ``debugOptions.pprof.cpuFile`` - This option sets where the cpu profiling saves the collected 
+  pprof data.
 
 === FeatureFlags
-Clowder currently support several feature flags which are intended to enable or disable certain behaviour. They are detailed as follows:
+Clowder currently support several feature flags which are intended to enable or disable certain 
+behaviour. They are detailed as follows:
 
 [options="header"]
 |===============
 | Flag Name | Description | Permanent
-| ``features.createServiceMonitor`` | Enables the creation of prometheus ``ServiceMonitor`` resources. | No
-| ``features.disableWebhooks`` | While testing locally and for the ``suite_test``, the webhooks need to be disabled. this option facilitates that. | Yes
-| ``features.watchStrimziResources`` | When enabled, Clowder will assume ownership of the ``Kafka`` and ``KafkaConnect`` resources it creates. It will then respond to changes to these resources. | No
-| ``features.useComplexStrimziTopicNames`` | This flag switches Clowder to use non-colliding names for strimzi resources. This is important if using a singular strimzi server for multiple ``ClowdEnvironment`` resources. | Yes
+| ``features.createServiceMonitor`` | Enables the creation of prometheus ``ServiceMonitor`` 
+resources. | No
+| ``features.disableWebhooks`` | While testing locally and for the ``suite_test``, the webhooks need
+to be disabled. this option facilitates that. | Yes
+| ``features.watchStrimziResources`` | When enabled, Clowder will assume ownership of the ``Kafka`` 
+and ``KafkaConnect`` resources it creates. It will then respond to changes to these resources. | No
+| ``features.useComplexStrimziTopicNames`` | This flag switches Clowder to use non-colliding names
+for strimzi resources. This is important if using a singular strimzi server for multiple 
+``ClowdEnvironment`` resources. | Yes
