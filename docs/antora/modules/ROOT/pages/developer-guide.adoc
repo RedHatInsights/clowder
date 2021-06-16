@@ -211,15 +211,6 @@ defined in the below.
 Clowder currently support several feature flags which are intended to enable or disable certain behaviour. They are detailed as follows:
 
 [options="header"]
-|=================================================
-| Language  | Attribute Name                      
-| Python    | ``LoadedConfig.dependencyEndpoints``
-| Go        | ``LoadedConfig.DependencyEndpoints``
-| Javscript | ``LoadedConfig.dependencyEndpoints``
-| Ruby      | ``LoadedConfig.dependencyEndpoints``
-|=================================================
-
-[options="header"]
 |===============
 | Flag Name | Description | Permanent
 | ``features.createServiceMonitor`` | Enables the creation of prometheus ``ServiceMonitor`` resources. | No
