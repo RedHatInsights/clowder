@@ -535,6 +535,14 @@ required to either create the <code>/config/clowder_config.json</code> file in t
 running the Clowder process, or to use the environment variable <code>CLOWDER_CONFIG_PATH</code> to point to
 an alternative file.</p>
 </div>
+<div class="paragraph">
+<p>At startup, Clowder will print the configuration that was read in the logs</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">[2021-06-16 11:10:44] INFO   Loaded config config:{'debugOptions': {'trigger': {'diff': True}, 'cache': {'create': True, 'update': True, 'apply': True}, 'pprof': {'enable': True, 'cpuFile': 'testcpu'}}, 'features': {'createServiceMonitor': False, 'disableWebhooks': True, 'watchStrimziResources': False, 'useComplexStrimziTopicNames': False}}</code></pre>
+</div>
+</div>
 <div class="sect2">
 <h3 id="_debug_flags"><a class="anchor" href="#_debug_flags"></a>Debug flags</h3>
 <div class="paragraph">
@@ -547,21 +555,120 @@ defined in the below.</p>
 <p><code>debugOptions.trigger.diff</code> - When a resource is responsible for triggering a reconciliation of
 either a <code>ClowdApp</code> or a <code>ClowdEnvironment</code> this option will print out a diff of the old and
 new resource, allowing an inspection of what actually triggered the reconciliation.</p>
+<div class="literalblock">
+<div class="content">
+<pre>[2021-06-16 11:24:49] INFO APP  Reconciliation trigger name:puptoo-processor namespace:test-basic-app resType:Deployment type:update
+[2021-06-16 11:24:49] INFO APP  Trigger diff diff:--- old
++++ new
+@@ -3,8 +3,8 @@
+    "name": "puptoo-processor",
+    "namespace": "test-basic-app",
+    "uid": "de492af3-be26-4a2c-b959-54b674c9e34f",
+-    "resourceVersion": "43162",
+-    "generation": 1,
++    "resourceVersion": "44111",
++    "generation": 2,
+    "creationTimestamp": "2021-06-16T10:19:20Z",
+    "labels": {
+      "app": "puptoo",
+@@ -69,7 +69,7 @@
+        "manager": "manager",
+        "operation": "Update",
+        "apiVersion": "apps/v1",
+-        "time": "2021-06-16T10:19:20Z",
++        "time": "2021-06-16T10:24:49Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {</pre>
+</div>
+</div>
 </li>
 <li>
-<p><code>debugOptions.cache.create</code> - When an item is <strong>created</strong> in Clowder&#8217;s resource cache, this option will enable printing of the resource that came from k8s cache. If the resource exists in k8s, this will be the starting resource that Clowder will update.</p>
+<p><code>debugOptions.cache.create</code> - When an item is <strong>created</strong> in Clowder&#8217;s resource cache, this option
+will enable printing of the resource that came from k8s cache. If the resource exists in k8s, this
+will be the starting resource that Clowder will update.</p>
+<div class="literalblock">
+<div class="content">
+<pre>[2021-06-16 11:20:23] INFO  [test-basic-app:puptoo] CREATE resource  app:test-basic-app:puptoo diff:{
+"kind": "Deployment",
+"apiVersion": "apps/v1",
+"metadata": {
+  "name": "puptoo-processor",
+  "namespace": "test-basic-app",
+  "uid": "de492af3-be26-4a2c-b959-54b674c9e34f",
+  "resourceVersion": "43162",
+  "generation": 1,
+  "creationTimestamp": "2021-06-16T10:19:20Z",
+  "labels": {
+    "app": "puptoo",
+    "pod": "puptoo-processor"
+...
+...</pre>
+</div>
+</div>
 </li>
 <li>
-<p><code>debugOptions.cache.update</code> - When enabled, and an item is <strong>updated</strong> in Clowder&#8217;s resource cache, this option will print a diff between what <em>was</em> in Clowder&#8217;s cache, and the updated version that was applied.</p>
+<p><code>debugOptions.cache.update</code> - When enabled, and an item is <strong>updated</strong> in Clowder&#8217;s resource
+cache, this option will print the new version of the item in the cache.</p>
+<div class="literalblock">
+<div class="content">
+<pre>[2021-06-16 11:20:23] INFO  [test-basic-app:puptoo] UPDATE resource  app:test-basic-app:puptoo diff:{
+"kind": "ServiceAccount",
+"apiVersion": "v1",
+"metadata": {
+  "name": "iqe-test-basic-app",
+  "namespace": "test-basic-app",
+  "uid": "3d89ab16-dcb2-4dbb-b0e6-685009878175",
+  "resourceVersion": "43135",
+  "creationTimestamp": "2021-06-16T10:19:20Z",
+  "labels": {
+    "app": "test-basic-app"
+  },
+  "ownerReferences": [
+    {
+      "apiVersion": "cloud.redhat.com/v1alpha1",
+      "kind": "ClowdEnvironment",
+      "name": "test-basic-app",
+      "uid": "25e121df-5b12-4c34-b8f3-a49b0f20afcf",
+      "controller": true
+    }
+  ],</pre>
+</div>
+</div>
 </li>
 <li>
-<p><code>debugOptions.cache.apply</code> - This option is responsible for printing out a diff showing what the resource was when it was first read into Clowder&#8217;s cache via the <code>create</code>, and what is being applied via the k8s client.</p>
+<p><code>debugOptions.cache.apply</code> - This option is responsible for printing out a diff showing what the
+resource was when it was first read into Clowder&#8217;s cache via the <code>create</code>, and what is being
+applied via the k8s client.</p>
+<div class="literalblock">
+<div class="content">
+<pre>[2021-06-16 11:20:23] INFO  [test-basic-app:puptoo] Update diff app:test-basic-app:puptoo diff:--- old
++++ new
+@@ -84,14 +84,14 @@
+        "protocol": "TCP",
+        "appProtocol": "http",
+        "port": 8000,
+-        "targetPort": 0
++        "targetPort": 8000
+      },
+      {
+        "name": "metrics",
+        "protocol": "TCP",
+        "appProtocol": "http",
+        "port": 9000,
+-        "targetPort": 0
++        "targetPort": 9000
+      }
+    ],</pre>
+</div>
+</div>
 </li>
 <li>
 <p><code>debugOptions.pprof.enable</code> - To aid in profiling, this option enables the cpu profilier.</p>
 </li>
 <li>
-<p><code>debugOptions.pprof.cpuFile</code> - This option sets where the cpu profiling saves the collected pprof data.</p>
+<p><code>debugOptions.pprof.cpuFile</code> - This option sets where the cpu profiling saves the collected
+pprof data.</p>
 </li>
 </ul>
 </div>
@@ -569,7 +676,8 @@ new resource, allowing an inspection of what actually triggered the reconciliati
 <div class="sect2">
 <h3 id="_featureflags"><a class="anchor" href="#_featureflags"></a>FeatureFlags</h3>
 <div class="paragraph">
-<p>Clowder currently support several feature flags which are intended to enable or disable certain behaviour. They are detailed as follows:</p>
+<p>Clowder currently support several feature flags which are intended to enable or disable certain
+behaviour. They are detailed as follows:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -587,22 +695,27 @@ new resource, allowing an inspection of what actually triggered the reconciliati
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>features.createServiceMonitor</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables the creation of prometheus <code>ServiceMonitor</code> resources.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables the creation of prometheus <code>ServiceMonitor</code>
+resources.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>features.disableWebhooks</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">While testing locally and for the <code>suite_test</code>, the webhooks need to be disabled. this option facilitates that.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">While testing locally and for the <code>suite_test</code>, the webhooks need
+to be disabled. this option facilitates that.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>features.watchStrimziResources</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">When enabled, Clowder will assume ownership of the <code>Kafka</code> and <code>KafkaConnect</code> resources it creates. It will then respond to changes to these resources.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">When enabled, Clowder will assume ownership of the <code>Kafka</code>
+and <code>KafkaConnect</code> resources it creates. It will then respond to changes to these resources.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>features.useComplexStrimziTopicNames</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">This flag switches Clowder to use non-colliding names for strimzi resources. This is important if using a singular strimzi server for multiple <code>ClowdEnvironment</code> resources.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">This flag switches Clowder to use non-colliding names
+for strimzi resources. This is important if using a singular strimzi server for multiple
+<code>ClowdEnvironment</code> resources.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
 </tr>
 </tbody>
