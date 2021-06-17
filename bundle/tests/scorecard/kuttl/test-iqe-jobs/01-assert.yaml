@@ -29,15 +29,21 @@ spec:
       containers:
         - name: host-inventory-smoke-iqe
           image: quay.io/psav/clowder-hello:latest
-          command:
-          - "iqe"
-          - "tests"
-          - "plugin"
-          - "host_inventory"
-          - "-m"
-          - "smoke"
-          - "-k"
-          - "test_plugin_accessible"
+          env:
+            - name: "ENV_FOR_DYNACONF"
+              value: clowder_smoke
+            - name: "NAMESPACE"
+              value: test-iqe-jobs
+            - name: CLOWDER_ENABLED
+              value: "true"
+            - name: IQE_DEBUG_POD
+              value: "false"
+            - name: IQE_PLUGINS
+              value: "host-inventory"
+            - name: IQE_MARKER_EXPRESSION
+              value: "smoke"
+            - name: IQE_FILTER_EXPRESSION
+              value: "test_plugin_accessible"
           resources:
             limits:
               cpu: "2"
