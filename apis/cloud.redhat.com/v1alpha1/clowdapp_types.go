@@ -331,8 +331,6 @@ type ClowdCondition struct {
 	// Status is the status of the condition.
 	// Can be True, False, Unknown.
 	Status v1.ConditionStatus `json:"status"`
-	// Last time we probed the condition.
-	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty"`
 	// Last time the condition transitioned from one status to another.
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
 	// Unique, one-word, CamelCase reason for the condition's last transition.
