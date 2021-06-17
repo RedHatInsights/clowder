@@ -27,6 +27,8 @@ spec:
   template:
     spec:
       containers:
+        - args:
+          - "iqe_runner.sh"
         - name: host-inventory-smoke-iqe
           image: quay.io/psav/clowder-hello:latest
           env:

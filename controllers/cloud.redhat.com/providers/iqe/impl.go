@@ -67,6 +67,7 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 		Env:          envvar,
 		Resources:    deployProvider.ProcessResources(&pod, env),
 		VolumeMounts: []core.VolumeMount{},
+		Args:         []string{"iqe_runner.sh"},
 		// Because the tags on iqe plugins are not commit based, we need to pull everytime we run.
 		// A leftover tag from a previous run is never guaranteed to be up to date
 		ImagePullPolicy: core.PullAlways,
