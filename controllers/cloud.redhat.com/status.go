@@ -228,7 +228,6 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		}
 
 		condition.LastTransitionTime = v1.Now()
-		condition.LastProbeTime = v1.Now()
 		conditions = append(conditions, *condition)
 	}
 
@@ -248,7 +247,6 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	condition.Type = crd.DeploymentsReady
 	condition.LastTransitionTime = v1.Now()
-	condition.LastProbeTime = v1.Now()
 	if err != nil {
 		condition.Reason = err.Error()
 	}
@@ -284,7 +282,6 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		}
 
 		condition.LastTransitionTime = v1.Now()
-		condition.LastProbeTime = v1.Now()
 		conditions = append(conditions, *condition)
 	}
 
@@ -304,7 +301,6 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	condition.Type = crd.DeploymentsReady
 	condition.LastTransitionTime = v1.Now()
-	condition.LastProbeTime = v1.Now()
 	if err != nil {
 		condition.Reason = err.Error()
 	}
@@ -366,7 +362,6 @@ func UpdateClowdAppCondition(status *crd.ClowdAppStatus, condition *crd.ClowdCon
 	isEqual := condition.Status == oldCondition.Status &&
 		condition.Reason == oldCondition.Reason &&
 		condition.Message == oldCondition.Message &&
-		condition.LastProbeTime.Equal(&oldCondition.LastProbeTime) &&
 		condition.LastTransitionTime.Equal(&oldCondition.LastTransitionTime)
 
 	status.Conditions[conditionIndex] = *condition
@@ -417,7 +412,6 @@ func UpdateClowdEnvCondition(status *crd.ClowdEnvironmentStatus, condition *crd.
 	isEqual := condition.Status == oldCondition.Status &&
 		condition.Reason == oldCondition.Reason &&
 		condition.Message == oldCondition.Message &&
-		condition.LastProbeTime.Equal(&oldCondition.LastProbeTime) &&
 		condition.LastTransitionTime.Equal(&oldCondition.LastTransitionTime)
 
 	status.Conditions[conditionIndex] = *condition
