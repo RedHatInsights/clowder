@@ -30,16 +30,16 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # cloud.redhat.com/clowder-bundle:$VERSION and cloud.redhat.com/clowder-catalog:$VERSION.
 IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
-BUILD_TAG ?= $(shell git rev-parse --short=7 HEAD)
+CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=7 HEAD)
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:$(BUNDLE_IMAGE_TAG)
 
 # Image URL to use all building/pushing image targets
 ifeq ($(findstring -minikube,${MAKECMDGOALS}), -minikube)
-IMG ?= 127.0.0.1:5000/clowder:$(BUILD_TAG)
+IMG ?= 127.0.0.1:5000/clowder:$(CLOWDER_BUILD_TAG)
 else
-IMG ?= quay.io/cloudservices/clowder:$(BUILD_TAG)
+IMG ?= quay.io/cloudservices/clowder:$(CLOWDER_BUILD_TAG)
 endif
 
 # Use podman by default, docker as fallback
@@ -144,7 +144,7 @@ docker-push:
 
 # Push the docker image
 docker-push-minikube:
-	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(BUILD_TAG) --tls-verify=false
+	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(CLOWDER_BUILD_TAG) --tls-verify=false
 
 deploy-minikube: bundle docker-build-no-test docker-push-minikube deploy
 
