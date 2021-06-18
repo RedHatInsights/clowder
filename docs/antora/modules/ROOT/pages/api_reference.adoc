@@ -329,6 +329,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`webServices`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
 | *`podSpec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
+| *`sidecars`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-sidecar[$$Sidecar$$] array__ | Lists the expected side cars, will be validated in the validating webhook
 |===
 
 
@@ -828,6 +829,24 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 |===
 | Field | Description
 | *`mode`* __ServiceMeshMode__ | 
+|===
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-sidecar"]
+==== Sidecar 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | The name of the sidecar, only supported names allowed, (token-refresher, splunk)
+| *`enabled`* __boolean__ | Defines if the sidecar is enabled, defaults to False
 |===
 
 
