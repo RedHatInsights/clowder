@@ -58,6 +58,10 @@ spec:
                     description: Iqe is the job spec to override defaults from the
                       ClowdApp's definition of the job
                     properties:
+                      debug:
+                        description: used when desiring to run `oc debug`on the Job
+                          to cause pod to immediately & gracefully exit
+                        type: boolean
                       dynaconfEnvName:
                         description: sets value for ENV_FOR_DYNACONF
                         type: string
