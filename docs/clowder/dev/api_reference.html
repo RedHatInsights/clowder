@@ -339,6 +339,75 @@
 </table>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappcondition"><a class="anchor" href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappcondition"></a>ClowdAppCondition</h4>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappstatus">ClowdAppStatus</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>type</code></strong> <em>ClowdAppConditionType</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Type is the type of the condition.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>lastProbeTime</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta">Time</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Last time we probed the condition.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>lastTransitionTime</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta">Time</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Last time the condition transitioned from one status to another.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>reason</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Unique, one-word, CamelCase reason for the condition&#8217;s last transition.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>message</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Human-readable message indicating details about last transition.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist"><a class="anchor" href="#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist"></a>ClowdAppList</h4>
 <div class="paragraph">
 <p>ClowdAppList contains a list of ClowdApp</p>
@@ -1448,6 +1517,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>sets pytest -k args</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>debug</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>used when desiring to run `oc debug`on the Job to cause pod to immediately &amp; gracefully exit</p>
 </div></div></td>
 </tr>
 </tbody>
