@@ -364,7 +364,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&core.ConfigMap{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
 		WithOptions(controller.Options{
-			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(10*time.Second), time.Duration(60*time.Second)),
+			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).
 		Complete(r)
 }
