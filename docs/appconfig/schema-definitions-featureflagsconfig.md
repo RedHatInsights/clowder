@@ -17,11 +17,11 @@ Feature Flags Configuration
 
 # undefined Properties
 
-| Property                                    | Type      | Required | Nullable       | Defined by                                                                                                                                                                                                    |
-| :------------------------------------------ | --------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [hostname](#hostname)                       | `string`  | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/hostname")                       |
-| [port](#port)                               | `integer` | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/port")                               |
-| [client_access_token](#client_access_token) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-client_access_token.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/client_access_token") |
+| Property                                | Type      | Required | Nullable       | Defined by                                                                                                                                                                                                |
+| :-------------------------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [hostname](#hostname)                   | `string`  | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/hostname")                   |
+| [port](#port)                           | `integer` | Required | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/port")                           |
+| [clientAccessToken](#clientaccesstoken) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig-properties-clientaccesstoken.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/clientAccessToken") |
 
 ## hostname
 
@@ -55,18 +55,18 @@ Defines the port for the FeatureFlags server
 
 `integer`
 
-## client_access_token
+## clientAccessToken
 
 Defines the client access token to use when connect to the FeatureFlags server
 
 
-`client_access_token`
+`clientAccessToken`
 
 -   is optional
 -   Type: `string`
 -   cannot be null
--   defined in: [AppConfig](schema-definitions-featureflagsconfig-properties-client_access_token.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/client_access_token")
+-   defined in: [AppConfig](schema-definitions-featureflagsconfig-properties-clientaccesstoken.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/FeatureFlagsConfig/properties/clientAccessToken")
 
-### client_access_token Type
+### clientAccessToken Type
 
 `string`

@@ -63,6 +63,27 @@ ClowdApp is the Schema for the clowdapps API
 |===
 
 
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappcondition"]
+==== ClowdAppCondition 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappstatus[$$ClowdAppStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`type`* __ClowdAppConditionType__ | Type is the type of the condition.
+| *`lastProbeTime`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta[$$Time$$]__ | Last time we probed the condition.
+| *`lastTransitionTime`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta[$$Time$$]__ | Last time the condition transitioned from one status to another.
+| *`reason`* __string__ | Unique, one-word, CamelCase reason for the condition's last transition.
+| *`message`* __string__ | Human-readable message indicating details about last transition.
+|===
+
+
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist"]
 ==== ClowdAppList 
 
@@ -426,6 +447,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`marker`* __string__ | sets the pytest -m args
 | *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
 | *`filter`* __string__ | sets pytest -k args
+| *`debug`* __boolean__ | used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
 |===
 
 
