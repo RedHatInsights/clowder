@@ -31,22 +31,19 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 		sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&deployment))
 
-		sideCarAdded := false
-
 		for _, sidecar := range deployment.PodSpec.Sidecars {
 			switch sidecar.Name {
 			case "splunk":
-				if sidecar.Enabled {
-					sideCarAdded = true
+				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.Splunk.Enabled {
 					cont := getSplunk()
 					if cont != nil {
 						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						d.Spec.Template.Spec.Volumes = appendSplunkVolumes(d.Spec.Template.Spec.Volumes, app.Name)
 					}
 				}
 			case "token-refresher":
-				if sidecar.Enabled {
-					sideCarAdded = true
-					cont := getTokenRefresher()
+				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
+					cont := getTokenRefresher(app.Name)
 					if cont != nil {
 						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
 					}
@@ -55,18 +52,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 				return fmt.Errorf("%s is not a valid sidecar name", sidecar.Name)
 			}
 
-			if sideCarAdded {
-				d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
-					Name: "splunk",
-					VolumeSource: core.VolumeSource{
-						Secret: &core.SecretVolumeSource{
-							SecretName:  "splunk",
-							DefaultMode: common.Int32Ptr(272),
-						},
-					},
-				})
-				sc.Cache.Update(deployProvider.CoreDeployment, d)
-			}
+			sc.Cache.Update(deployProvider.CoreDeployment, d)
 		}
 	}
 
@@ -76,22 +62,19 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 		sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob))
 
-		sideCarAdded := false
-
 		for _, sidecar := range cronJob.PodSpec.Sidecars {
 			switch sidecar.Name {
 			case "splunk":
-				if sidecar.Enabled {
-					sideCarAdded = true
+				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.Splunk.Enabled {
 					cont := getSplunk()
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
+						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = appendSplunkVolumes(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, app.Name)
 					}
 				}
 			case "token-refresher":
-				if sidecar.Enabled {
-					sideCarAdded = true
-					cont := getTokenRefresher()
+				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
+					cont := getTokenRefresher(app.Name)
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
 					}
@@ -100,22 +83,108 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 				return fmt.Errorf("%s is not a valid sidecar name", sidecar.Name)
 			}
 
-			if sideCarAdded {
-				cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
-					Name: "splunk",
-					VolumeSource: core.VolumeSource{
-						Secret: &core.SecretVolumeSource{
-							SecretName:  "splunk",
-							DefaultMode: common.Int32Ptr(272),
-						},
-					},
-				})
-				sc.Cache.Update(deployProvider.CoreDeployment, cj)
-			}
+			sc.Cache.Update(deployProvider.CoreDeployment, cj)
 		}
 	}
 
 	return nil
+}
+
+func appendSplunkVolumes(vols []core.Volume, appName string) []core.Volume {
+	vols = append(vols, core.Volume{
+		Name: "splunkpem",
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName:  fmt.Sprintf("%s-splunk", appName),
+				DefaultMode: common.Int32Ptr(272),
+			},
+		},
+	})
+	vols = append(vols, core.Volume{
+		Name: "inputsconf",
+		VolumeSource: core.VolumeSource{
+			ConfigMap: &core.ConfigMapVolumeSource{
+				LocalObjectReference: core.LocalObjectReference{
+					Name: fmt.Sprintf("%s-splunk", appName),
+				},
+				DefaultMode: common.Int32Ptr(436),
+			},
+		},
+	})
+	return vols
+}
+
+func getTokenRefresher(appName string) *core.Container {
+	cont := core.Container{}
+
+	cont.Name = "token-refresher"
+	cont.Image = "quay.io/observatorium/token-refresher:master-2021-02-05-5da9663"
+	cont.Args = []string{
+		"--oidc.audience=observatorium-telemeter",
+		"--oidc.client-id=$(CLIENT_ID)",
+		"--oidc.client-secret=$(CLIENT_SECRET)",
+		"--oidc.issuer-url=$(ISSUER_URL)",
+		"--url=$(URL)",
+		"--web.listen=:8082",
+	}
+	cont.Resources = core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"cpu":    resource.MustParse("100m"),
+			"memory": resource.MustParse("150Mi"),
+		},
+		Requests: core.ResourceList{
+			"cpu":    resource.MustParse("50m"),
+			"memory": resource.MustParse("128Mi"),
+		},
+	}
+	cont.Env = []core.EnvVar{
+		{
+			Name: "CLIENT_ID",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: fmt.Sprintf("%s-token-refresher", appName),
+					},
+					Key: "CLIENT_ID",
+				},
+			},
+		},
+		{
+			Name: "CLIENT_SECRET",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: fmt.Sprintf("%s-token-refresher", appName),
+					},
+					Key: "CLIENT_SECRET",
+				},
+			},
+		},
+		{
+			Name: "ISSUER_URL",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: fmt.Sprintf("%s-token-refresher", appName),
+					},
+					Key: "ISSUER_URL",
+				},
+			},
+		},
+		{
+			Name: "URL",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: fmt.Sprintf("%s-token-refresher", appName),
+					},
+					Key: "URL",
+				},
+			},
+		},
+	}
+
+	return &cont
 }
 
 func getSplunk() *core.Container {
@@ -123,11 +192,18 @@ func getSplunk() *core.Container {
 
 	cont.Name = "splunk"
 	cont.Image = "quay.io/cloudservices/rhsm-splunk-forwarder:8f72cfb"
-	cont.VolumeMounts = []core.VolumeMount{{
-		Name:      "splunk",
-		MountPath: "/tls/splunk.pem",
-		SubPath:   "splunk.pem",
-	}}
+	cont.VolumeMounts = []core.VolumeMount{
+		{
+			Name:      "splunkpem",
+			MountPath: "/tls/splunk.pem",
+			SubPath:   "splunk.pem",
+		},
+		{
+			Name:      "inputsconf",
+			MountPath: "/opt/splunkforwarder/etc/system/local/inputs.conf",
+			SubPath:   "inputs.conf",
+		},
+	}
 	cont.Resources = core.ResourceRequirements{
 		Limits: core.ResourceList{
 			"cpu":    resource.MustParse("100m"),
@@ -149,8 +225,4 @@ func getSplunk() *core.Container {
 	}}
 
 	return &cont
-}
-
-func getTokenRefresher() *core.Container {
-	return nil
 }
