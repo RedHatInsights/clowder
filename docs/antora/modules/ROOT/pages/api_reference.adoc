@@ -63,27 +63,6 @@ ClowdApp is the Schema for the clowdapps API
 |===
 
 
-[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappcondition"]
-==== ClowdAppCondition 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappstatus[$$ClowdAppStatus$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`type`* __ClowdAppConditionType__ | Type is the type of the condition.
-| *`lastProbeTime`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta[$$Time$$]__ | Last time we probed the condition.
-| *`lastTransitionTime`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta[$$Time$$]__ | Last time the condition transitioned from one status to another.
-| *`reason`* __string__ | Unique, one-word, CamelCase reason for the condition's last transition.
-| *`message`* __string__ | Human-readable message indicating details about last transition.
-|===
-
-
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapplist"]
 ==== ClowdAppList 
 
@@ -131,6 +110,27 @@ ClowdAppSpec is the main specification for a single Clowder Application it defin
 |===
 
 
+
+
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdcondition"]
+==== ClowdCondition 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappstatus[$$ClowdAppStatus$$]
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus[$$ClowdEnvironmentStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`type`* __ClowdConditionType__ | Type is the type of the condition.
+| *`lastTransitionTime`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta[$$Time$$]__ | Last time the condition transitioned from one status to another.
+| *`reason`* __string__ | Unique, one-word, CamelCase reason for the condition's last transition.
+| *`message`* __string__ | Human-readable message indicating details about last transition.
+|===
 
 
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment"]
@@ -794,6 +794,7 @@ PublicWebService is the definition of the public web service. There can be only 
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
+| *`apiEndpoint`* __string__ | ApiEndpoint is the string that will be used in the api gateway as the services endpoint.
 |===
 
 
