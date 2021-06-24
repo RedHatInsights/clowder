@@ -20,6 +20,10 @@ type apigatewayProvider struct {
 }
 
 func NewApiGatewayProvider(p *p.Provider) (p.ClowderProvider, error) {
+	if p.Env.Spec.Providers.ApiGateway.Mode == "disabled" {
+		return &apigatewayProvider{Provider: *p}, nil
+	}
+
 	appList := crd.ClowdAppList{}
 	p.Client.List(p.Ctx, &appList)
 

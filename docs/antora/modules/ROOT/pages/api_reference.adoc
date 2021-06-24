@@ -24,6 +24,23 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 
 
 
+[id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-apigatewayconfig"]
+==== ApiGatewayConfig 
+
+ApiGatewayConfig determines if this env should deploy and API gateway or not
+
+.Appears In:
+****
+- xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mode`* __ApiGatewayMode__ | 
+|===
+
+
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-appinfo"]
 ==== AppInfo 
 
@@ -777,6 +794,7 @@ ProvidersConfig defines a group of providers configuration for a ClowdEnvironmen
 | *`serviceMesh`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-servicemeshconfig[$$ServiceMeshConfig$$]__ | Defines the Configuration for the Clowder ServiceMesh Provider.
 | *`pullSecrets`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the pull secret to use for the service accounts.
 | *`testing`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]__ | Defines the environment for iqe/smoke testing
+| *`apiGateway`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-apigatewayconfig[$$ApiGatewayConfig$$]__ | Defines the configuration for the API gateway
 |===
 
 
