@@ -211,12 +211,12 @@ func GetDeploymentStatus(ctx context.Context, client client.Client, o object.Clo
 	return false, nil
 }
 
-func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state crd.ClowdAppConditionType, err error) error {
-	conditions := []crd.ClowdAppCondition{}
+func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state crd.ClowdConditionType, err error) error {
+	conditions := []crd.ClowdCondition{}
 
-	loopConditions := []crd.ClowdAppConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
+	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
-		condition := &crd.ClowdAppCondition{}
+		condition := &crd.ClowdCondition{}
 		condition.Type = conditionType
 		condition.Status = core.ConditionFalse
 
@@ -228,7 +228,6 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		}
 
 		condition.LastTransitionTime = v1.Now()
-		condition.LastProbeTime = v1.Now()
 		conditions = append(conditions, *condition)
 	}
 
@@ -237,7 +236,7 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		return err
 	}
 
-	condition := &crd.ClowdAppCondition{}
+	condition := &crd.ClowdCondition{}
 
 	condition.Status = core.ConditionFalse
 	condition.Message = "Deployments are not yet ready"
@@ -248,7 +247,60 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	condition.Type = crd.DeploymentsReady
 	condition.LastTransitionTime = v1.Now()
-	condition.LastProbeTime = v1.Now()
+	if err != nil {
+		condition.Reason = err.Error()
+	}
+
+	conditions = append(conditions, *condition)
+
+	for _, condition := range conditions {
+		UpdateClowdEnvCondition(&o.Status, &condition)
+	}
+
+	o.Status.Ready = deploymentStatus
+
+	if err := client.Status().Update(ctx, o); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state crd.ClowdConditionType, err error) error {
+	conditions := []crd.ClowdCondition{}
+
+	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
+	for _, conditionType := range loopConditions {
+		condition := &crd.ClowdCondition{}
+		condition.Type = conditionType
+		condition.Status = core.ConditionFalse
+
+		if state == conditionType {
+			condition.Status = core.ConditionTrue
+			if err != nil {
+				condition.Reason = err.Error()
+			}
+		}
+
+		condition.LastTransitionTime = v1.Now()
+		conditions = append(conditions, *condition)
+	}
+
+	deploymentStatus, err := GetDeploymentStatus(ctx, client, o)
+	if err != nil {
+		return err
+	}
+
+	condition := &crd.ClowdCondition{}
+
+	condition.Status = core.ConditionFalse
+	condition.Message = "Deployments are not yet ready"
+	if deploymentStatus {
+		condition.Status = core.ConditionTrue
+		condition.Message = "All managed deployments ready"
+	}
+
+	condition.Type = crd.DeploymentsReady
+	condition.LastTransitionTime = v1.Now()
 	if err != nil {
 		condition.Reason = err.Error()
 	}
@@ -269,7 +321,7 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 // The following function was modified from the kubnernetes repo under the apache license here
 // https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
-func GetClowdAppConditionFromList(conditions []crd.ClowdAppCondition, conditionType crd.ClowdAppConditionType) (int, *crd.ClowdAppCondition) {
+func GetClowdAppConditionFromList(conditions []crd.ClowdCondition, conditionType crd.ClowdConditionType) (int, *crd.ClowdCondition) {
 	if conditions == nil {
 		return -1, nil
 	}
@@ -283,7 +335,7 @@ func GetClowdAppConditionFromList(conditions []crd.ClowdAppCondition, conditionT
 
 // The following function was modified from the kubnernetes repo under the apache license here
 // https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
-func GetClowdAppCondition(status *crd.ClowdAppStatus, conditionType crd.ClowdAppConditionType) (int, *crd.ClowdAppCondition) {
+func GetClowdAppCondition(status *crd.ClowdAppStatus, conditionType crd.ClowdConditionType) (int, *crd.ClowdCondition) {
 	if status == nil {
 		return -1, nil
 	}
@@ -292,7 +344,7 @@ func GetClowdAppCondition(status *crd.ClowdAppStatus, conditionType crd.ClowdApp
 
 // The following function was modified from the kubnernetes repo under the apache license here
 // https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
-func UpdateClowdAppCondition(status *crd.ClowdAppStatus, condition *crd.ClowdAppCondition) bool {
+func UpdateClowdAppCondition(status *crd.ClowdAppStatus, condition *crd.ClowdCondition) bool {
 	condition.LastTransitionTime = v1.Now()
 	// Try to find this clowdapp condition.
 	conditionIndex, oldCondition := GetClowdAppCondition(status, condition.Type)
@@ -310,7 +362,56 @@ func UpdateClowdAppCondition(status *crd.ClowdAppStatus, condition *crd.ClowdApp
 	isEqual := condition.Status == oldCondition.Status &&
 		condition.Reason == oldCondition.Reason &&
 		condition.Message == oldCondition.Message &&
-		condition.LastProbeTime.Equal(&oldCondition.LastProbeTime) &&
+		condition.LastTransitionTime.Equal(&oldCondition.LastTransitionTime)
+
+	status.Conditions[conditionIndex] = *condition
+	// Return true if one of the fields have changed.
+	return !isEqual
+}
+
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
+func GetClowdEnvConditionFromList(conditions []crd.ClowdCondition, conditionType crd.ClowdConditionType) (int, *crd.ClowdCondition) {
+	if conditions == nil {
+		return -1, nil
+	}
+	for i := range conditions {
+		if conditions[i].Type == conditionType {
+			return i, &conditions[i]
+		}
+	}
+	return -1, nil
+}
+
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
+func GetClowdEnvCondition(status *crd.ClowdEnvironmentStatus, conditionType crd.ClowdConditionType) (int, *crd.ClowdCondition) {
+	if status == nil {
+		return -1, nil
+	}
+	return GetClowdEnvConditionFromList(status.Conditions, conditionType)
+}
+
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
+func UpdateClowdEnvCondition(status *crd.ClowdEnvironmentStatus, condition *crd.ClowdCondition) bool {
+	condition.LastTransitionTime = v1.Now()
+	// Try to find this clowdapp condition.
+	conditionIndex, oldCondition := GetClowdEnvCondition(status, condition.Type)
+
+	if oldCondition == nil {
+		// We are adding new pod condition.
+		status.Conditions = append(status.Conditions, *condition)
+		return true
+	}
+	// We are updating an existing condition, so we need to check if it has changed.
+	if condition.Status == oldCondition.Status {
+		condition.LastTransitionTime = oldCondition.LastTransitionTime
+	}
+
+	isEqual := condition.Status == oldCondition.Status &&
+		condition.Reason == oldCondition.Reason &&
+		condition.Message == oldCondition.Message &&
 		condition.LastTransitionTime.Equal(&oldCondition.LastTransitionTime)
 
 	status.Conditions[conditionIndex] = *condition

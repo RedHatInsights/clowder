@@ -126,6 +126,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			err := r.Client.Get(ctx, namespaceName, &namespace)
 			if err != nil {
 				r.Recorder.Eventf(&env, "Warning", "NamespaceMissing", "Requested Target Namespace [%s] is missing", env.Spec.TargetNamespace)
+				SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 				return ctrl.Result{Requeue: true}, err
 			}
 			env.Status.TargetNamespace = env.Spec.TargetNamespace
@@ -135,11 +136,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			namespace.SetName(env.Status.TargetNamespace)
 			err := r.Client.Create(ctx, namespace)
 			if err != nil {
+				SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 				return ctrl.Result{Requeue: true}, err
 			}
 		}
 		err := r.Client.Status().Update(ctx, &env)
 		if err != nil {
+			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 			return ctrl.Result{Requeue: true}, err
 		}
 	}
@@ -161,6 +164,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
+			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
 			return ctrl.Result{}, provErr
 
 		} else {
@@ -172,6 +176,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if cacheErr != nil {
 		if non_fatal := errors.HandleError(ctx, cacheErr); !non_fatal {
+			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
 			return ctrl.Result{}, cacheErr
 
 		} else {
@@ -188,15 +193,18 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	err = r.setAppInfo(provider)
 	if err != nil {
+		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 		return ctrl.Result{Requeue: true}, err
 	}
 
 	err = r.setAppInfo(provider)
 	if err != nil {
+		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 		return ctrl.Result{Requeue: true}, err
 	}
 
 	if statusErr := SetDeploymentStatus(ctx, r.Client, &env); statusErr != nil {
+		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 		return ctrl.Result{}, err
 	}
 
@@ -204,6 +212,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	env.Status.Generation = env.Generation
 
 	if err := r.Client.Status().Update(ctx, &env); err != nil {
+		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 		return ctrl.Result{}, err
 	}
 
@@ -216,9 +225,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		if err != nil {
 			return ctrl.Result{Requeue: requeue}, nil
 		}
+		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, err)
 	} else {
 		log.Info("Reconciliation partially successful", "env", fmt.Sprintf("%s:%s", env.Namespace, env.Name))
 		r.Recorder.Eventf(&env, "Warning", "SuccessfulPartialReconciliation", "Environment requeued [%s]", env.GetClowdName())
+		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationPartiallySuccessful, err)
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
