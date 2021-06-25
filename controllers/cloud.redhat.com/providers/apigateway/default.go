@@ -20,7 +20,7 @@ type apigatewayProvider struct {
 }
 
 func NewApiGatewayProvider(p *p.Provider) (p.ClowderProvider, error) {
-	if p.Env.Spec.Providers.ApiGateway.Mode == "disabled" {
+	if p.Env.Spec.Providers.ApiGateway.Mode != "enabled" {
 		return &apigatewayProvider{Provider: *p}, nil
 	}
 
