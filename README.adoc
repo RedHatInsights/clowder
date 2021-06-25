@@ -102,14 +102,16 @@ minikube config set vm-driver kvm2
 If you encounter any kvm issues, please take a look 
 xref:docs/antora/modules/ROOT/pages/developer-guide.adoc[at the troubleshooting guide]
 
-The ``kube_setup.sh``` script then need to be run by invoking
+The ``kube_setup.sh`` script then needs to be run by invoking
 
 [source,shell]
+....
 ./build/kube_setup.sh
+....
 
 Clowder can then be installed by visiting the 
 https://github.com/RedHatInsights/clowder/releases/latest[latest release]
-page copying the link to the manifest and running something similar to that
+page, copying the link to the manifest, and running something similar to that
 shown below:
 
 [source,shell]
