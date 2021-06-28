@@ -45,6 +45,7 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
 		{Name: "NAMESPACE", Value: nn.Namespace},
 		{Name: "CLOWDER_ENABLED", Value: "true"},
+		{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
 		{Name: "IQE_DEBUG_POD", Value: strconv.FormatBool(cji.Spec.Testing.Iqe.Debug)},
 		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
