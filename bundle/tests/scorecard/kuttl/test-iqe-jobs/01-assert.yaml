@@ -38,6 +38,8 @@ spec:
               value: test-iqe-jobs
             - name: CLOWDER_ENABLED
               value: "true"
+            - name: ACG_CONFIG
+              value: /cdapp/cdappconfig.json
             - name: IQE_DEBUG_POD
               value: "false"
             - name: IQE_PLUGINS
