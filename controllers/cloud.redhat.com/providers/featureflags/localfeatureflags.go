@@ -205,7 +205,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 
 	c := core.Container{
 		Name:           nn.Name,
-		Image:          "quay.io/cloudservices/unleash:3.9",
+		Image:          "quay.io/cloudservices/unleash-docker:3.9",
 		Env:            envVars,
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
