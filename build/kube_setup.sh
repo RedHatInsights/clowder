@@ -56,7 +56,7 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.21.1
+    STRIMZI_VERSION=0.22.1
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
