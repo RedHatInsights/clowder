@@ -91,7 +91,7 @@ type KafkaMode string
 
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
 type KafkaClusterConfig struct {
-	// Defines the kafka cluster name
+	// Defines the kafka cluster name (default: name of ClowdEnvironment)
 	Name string `json:"name,omitempty"`
 
 	// The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)
@@ -125,7 +125,7 @@ type KafkaClusterConfig struct {
 // KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
 type KafkaConnectClusterConfig struct {
 	// Defines the kafka connect cluster name (default: '<kafka cluster's name>-connect')
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace)
 	Namespace string `json:"namespace,omitempty"`
