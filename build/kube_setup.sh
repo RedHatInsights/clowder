@@ -104,11 +104,11 @@ function install_strimzi_operator {
         --clusterrole=strimzi-topic-operator --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
 
     if [ $REINSTALL -ne 1 ]; then
-        echo "*** Replacing Strimzi resources ..."
-        kubectl replace -f . -n $STRIMZI_OPERATOR_NS
-    else
         echo "*** Installing Strimzi resources ..."
         kubectl create -f . -n $STRIMZI_OPERATOR_NS
+    else
+        echo "*** Replacing Strimzi resources ..."
+        kubectl replace -f . -n $STRIMZI_OPERATOR_NS
     fi
 
     echo "*** Will wait for Strimzi operator to come up in background"
