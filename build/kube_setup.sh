@@ -103,8 +103,13 @@ function install_strimzi_operator {
     kubectl create clusterrolebinding strimzi-cluster-operator-topic-operator-delegation \
         --clusterrole=strimzi-topic-operator --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
 
-    echo "*** Installing Strimzi resources ..."
-    kubectl apply -f . -n $STRIMZI_OPERATOR_NS
+    if [ $REINSTALL -ne 1 ]; then
+        echo "*** Replacing Strimzi resources ..."
+        kubectl replace -f . -n $STRIMZI_OPERATOR_NS
+    else
+        echo "*** Installing Strimzi resources ..."
+        kubectl create -f . -n $STRIMZI_OPERATOR_NS
+    fi
 
     echo "*** Will wait for Strimzi operator to come up in background"
     kubectl rollout status deployment/strimzi-cluster-operator -n $STRIMZI_OPERATOR_NS | sed "s/^/[strimzi] /" &
