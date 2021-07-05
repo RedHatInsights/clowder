@@ -56,7 +56,7 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.21.1
+    STRIMZI_VERSION=0.22.1
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
@@ -103,8 +103,13 @@ function install_strimzi_operator {
     kubectl create clusterrolebinding strimzi-cluster-operator-topic-operator-delegation \
         --clusterrole=strimzi-topic-operator --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
 
-    echo "*** Installing Strimzi resources ..."
-    kubectl apply -f . -n $STRIMZI_OPERATOR_NS
+    if [ $REINSTALL -ne 1 ]; then
+        echo "*** Installing Strimzi resources ..."
+        kubectl create -f . -n $STRIMZI_OPERATOR_NS
+    else
+        echo "*** Replacing Strimzi resources ..."
+        kubectl replace -f . -n $STRIMZI_OPERATOR_NS
+    fi
 
     echo "*** Will wait for Strimzi operator to come up in background"
     kubectl rollout status deployment/strimzi-cluster-operator -n $STRIMZI_OPERATOR_NS | sed "s/^/[strimzi] /" &
