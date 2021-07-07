@@ -140,15 +140,52 @@ On Fedora use:
 For others, see: https://docs.asciidoctor.org/asciidoctor/latest/install/
 
 
-=== Building docs
+=== Generating docs
 
-Build the docs using:
+Generating the docs source using:
 
 ``make api-docs``
 
 Then be sure to add doc changes before committing, e.g.:
 
 ``git add docs/api_reference.html``
+
+=== Previewing Docs
+
+The build docs stage only generates the asciidoc files. To actually view them, it is required to 
+install antora.
+
+``npm install @antora/cli@2.3 @antora/site-generator-default@2.3``
+
+A ``playbook.yaml`` is required at the root of the repo which refers to certain directories:
+
+[source,yaml]
+----
+site:
+  title: Clowder Documentation
+  url: https://redhatinsights.github.io/clowder/
+  start_page: clowder::index.adoc
+content:
+  sources:
+  - url: /path/to/clowder/
+    branches: master
+    start_path: docs/antora
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  output_dir: ui
+runtime:
+  fetch: true
+output:
+  dir: docs
+----
+
+After this, the antora build can be invoked:
+
+``./node_modules/.bin/antora generate playbook.yaml``
+
+And then viewed from the ``docs/clowder/dev/index.html`` entrypoint.
 
 == Clowder configuration
 
@@ -322,3 +359,4 @@ and ``KafkaConnect`` resources it creates. It will then respond to changes to th
 | ``features.useComplexStrimziTopicNames`` | This flag switches Clowder to use non-colliding names
 for strimzi resources. This is important if using a singular strimzi server for multiple 
 ``ClowdEnvironment`` resources. | Yes
+|===============
