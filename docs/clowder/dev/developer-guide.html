@@ -473,9 +473,9 @@ by Elastic. You will need to install <code>asciidoctor</code>:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_building_docs"><a class="anchor" href="#_building_docs"></a>Building docs</h3>
+<h3 id="_generating_docs"><a class="anchor" href="#_generating_docs"></a>Generating docs</h3>
 <div class="paragraph">
-<p>Build the docs using:</p>
+<p>Generating the docs source using:</p>
 </div>
 <div class="paragraph">
 <p><code>make api-docs</code></p>
@@ -485,6 +485,50 @@ by Elastic. You will need to install <code>asciidoctor</code>:</p>
 </div>
 <div class="paragraph">
 <p><code>git add docs/api_reference.html</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_previewing_docs"><a class="anchor" href="#_previewing_docs"></a>Previewing Docs</h3>
+<div class="paragraph">
+<p>The build docs stage only generates the asciidoc files. To actually view them, it is required to
+install antora.</p>
+</div>
+<div class="paragraph">
+<p><code>npm install @antora/cli@2.3 @antora/site-generator-default@2.3</code></p>
+</div>
+<div class="paragraph">
+<p>A <code>playbook.yaml</code> is required at the root of the repo which refers to certain directories:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">site:
+  title: Clowder Documentation
+  url: https://redhatinsights.github.io/clowder/
+  start_page: clowder::index.adoc
+content:
+  sources:
+  - url: /path/to/clowder/
+    branches: master
+    start_path: docs/antora
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  output_dir: ui
+runtime:
+  fetch: true
+output:
+  dir: docs</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After this, the antora build can be invoked:</p>
+</div>
+<div class="paragraph">
+<p><code>./node_modules/.bin/antora generate playbook.yaml</code></p>
+</div>
+<div class="paragraph">
+<p>And then viewed from the <code>docs/clowder/dev/index.html</code> entrypoint.</p>
 </div>
 </div>
 </div>
