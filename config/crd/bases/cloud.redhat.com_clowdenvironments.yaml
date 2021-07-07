@@ -196,7 +196,8 @@ spec:
                                 type: array
                             type: object
                           name:
-                            description: Defines the kafka cluster name
+                            description: 'Defines the kafka cluster name (default:
+                              name of ClowdEnvironment)'
                             type: string
                           namespace:
                             description: 'The namespace the kafka cluster is expected
@@ -263,8 +264,6 @@ spec:
                           version:
                             description: Version. If unset, default is '2.5.0'
                             type: string
-                        required:
-                        - name
                         type: object
                       connectClusterName:
                         description: (Deprecated) Defines the kafka connect cluster

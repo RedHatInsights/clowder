@@ -148,7 +148,7 @@ Generating the docs source using:
 
 Then be sure to add doc changes before committing, e.g.:
 
-``git add docs/api_reference.html``
+``git add docs/antora/modules/ROOT/pages/api_reference.adoc``
 
 === Previewing Docs
 
