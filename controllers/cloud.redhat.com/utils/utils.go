@@ -270,3 +270,31 @@ func GetClowderNamespace() (string, error) {
 
 	return string(clowderNsB), nil
 }
+
+
+// CopySecret will return a *core.Secret that is copied from a source NamespaceName and intended to
+// be applied into a destination NamespacedName
+CopySecret(ctx context.Context, client client.Client, srcSecretRef types.NamespacedName, dstSecretRef types.NamespacedName) (error, *core.Secret) {
+	nullName := types.NamespacedName{}
+	if srcSecretRef == nullName {
+		return errors.New("srcSecretRef is an empty NamespacedName"), nil
+	}
+	if dstSecretRef == nullName {
+		return errors.New("dstSecretRef is an empty NamespacedName"), nil
+	}
+
+	srcSecret := &core.Secret{}
+
+	if err := client.Get(ctx, srcSecretRef, srcSecret); err != nil {
+		return err, nil
+	}
+
+	newSecret := &core.Secret{}
+	newSecret.Immutable = srcSecret.Immutable
+	newSecret.Data = srcSecret.Data
+	newSecret.Type = srcSecret.Type
+	newSecret.SetName(dstSecretRef.Name)
+	newSecret.SetNamespace(dstSecretRef.Namespace)
+
+	return nil, newSecret
+}
