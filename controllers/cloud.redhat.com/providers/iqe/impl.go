@@ -182,16 +182,6 @@ func buildVaultEnvVars(vaultSecret *core.Secret) []core.EnvVar {
 			},
 		},
 		{
-			Name: "DYNACONF_IQE_VAULT_ROLE_ID",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{Name: vaultSecret.Name},
-					Key:                  "roleId",
-					Optional:             utils.BoolPtr(true),
-				},
-			},
-		},
-		{
 			Name: "DYNACONF_IQE_VAULT_SECRET_ID",
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
