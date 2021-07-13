@@ -71,12 +71,16 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	}
 
 	// set image tag for pod
-	tag := ""
-	if cji.Spec.Testing.Iqe.ImageTag != "" {
-		tag = cji.Spec.Testing.Iqe.ImageTag
-	} else {
+	tag := "latest"
+	if app.Spec.Testing.IqePlugin != "" {
+		// ClowdApp has an IQE Plugin defined, use that image tag by default
 		tag = app.Spec.Testing.IqePlugin
 	}
+	if cji.Spec.Testing.Iqe.ImageTag != "" {
+		// this CJI has specified an image tag override
+		tag = cji.Spec.Testing.Iqe.ImageTag
+	}
+
 	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
 
 	// set service account for pod
