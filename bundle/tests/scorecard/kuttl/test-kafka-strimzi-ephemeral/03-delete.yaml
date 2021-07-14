@@ -4,16 +4,16 @@ kind: TestStep
 delete:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: env-test-kafka-strimzi-kafka-provisioner-ephemeral
+  name: env-test-kafka-strimzi-ephemeral
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
   name: env-test-kafka-strimzi-kafka-provisioner-pvc
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi-kafka-provisioner-kafka
+  name: test-kafka-strimzi-ephemeral
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi-kafka-provisioner
+  name: test-kafka-strimzi-ephemeral-kafka
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi-kafka-provisioner-kafka-connect
+  name: test-kafka-strimzi-ephemeral-connect

@@ -3,11 +3,11 @@ apiVersion: kafka.strimzi.io/v1beta1
 kind: Kafka
 metadata:
   name: my-pvc-cluster
-  namespace: test-kafka-strimzi-kafka-provisioner-pvc-kafka
+  namespace: test-kafka-strimzi-pvc-kafka
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdEnvironment
-    name: env-test-kafka-strimzi-kafka-provisioner-pvc
+    name: env-test-kafka-strimzi-pvc
 spec:
   kafka:
     version: "2.7.0"
@@ -33,14 +33,14 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaConnect
 metadata:
-  name: my-pvc-cluster-connect
-  namespace: test-kafka-strimzi-kafka-provisioner-pvc-kafka
+  name: my-pvc-cluster
+  namespace: test-kafka-strimzi-pvc-kafka
   annotations:
     strimzi.io/use-connector-resources: 'true'
 spec:
   version: "2.7.0"
   image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
-  bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-kafka-provisioner-pvc-kafka.svc:9092
+  bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-pvc-kafka.svc:9092
   config:
     group.id: connect-cluster
     offset.storage.topic: connect-cluster-offsets
