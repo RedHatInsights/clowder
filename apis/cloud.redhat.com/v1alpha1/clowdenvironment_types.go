@@ -419,6 +419,9 @@ type ProvidersConfig struct {
 
 	// Defines the sidecar configuration
 	Sidecars Sidecars `json:"sidecars,omitempty"`
+
+	// Use sidecar
+	AuthSidecar bool `json:"authSidecar,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
