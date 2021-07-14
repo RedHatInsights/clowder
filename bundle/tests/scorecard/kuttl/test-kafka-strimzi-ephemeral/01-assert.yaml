@@ -36,7 +36,7 @@ metadata:
 spec:
   version: "2.7.0"
   image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
-  bootstrapServers: my-ephemeral-cluster-kafka-bootstrap.test-kafka-strimzi-ephemeral-kafka.svc:9092
+  # bootstrapServers is asserted in json asserts
   config:
     group.id: connect-cluster
     offset.storage.topic: connect-cluster-offsets
