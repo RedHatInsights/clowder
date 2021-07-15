@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: env-test-kafka-strimzi-kafka-provisioner-ephemeral
+  name: env-test-kafka-strimzi-pvc
 spec:
-  targetNamespace: test-kafka-strimzi-kafka-provisioner-ephemeral
+  targetNamespace: test-kafka-strimzi-pvc
   providers:
     web:
       port: 8000
@@ -15,13 +15,12 @@ spec:
       path: "/metrics"
     kafka:
       cluster:
-        namespace: test-kafka-strimzi-kafka-provisioner-ephemeral-kafka
-        name: my-ephemeral-cluster
-      connect:
-        name: my-other-connect-cluster
-        namespace: test-kafka-strimzi-kafka-provisioner-ephemeral-kafka-connect
+        namespace: test-kafka-strimzi-pvc-kafka
+        name: my-pvc-cluster
+        provisionCluster: true
+        storageSize: 100Mi
       mode: operator
-      pvc: false
+      pvc: true
       enableLegacyStrimzi: true
     db:
       mode: none

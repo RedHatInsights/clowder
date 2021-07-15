@@ -15,6 +15,7 @@ spec:
       path: "/metrics"
     kafka:
       cluster:
+        name: test-kafka-strimzi-topic-auth
         namespace: test-kafka-strimzi-topic-auth-kafka
       mode: operator
     db:

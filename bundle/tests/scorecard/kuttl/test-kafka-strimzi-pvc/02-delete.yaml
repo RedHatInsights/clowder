@@ -4,10 +4,10 @@ kind: TestStep
 delete:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: env-test-kafka-strimzi-kafka-provisioner-pvc
+  name: env-test-kafka-strimzi-pvc
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi-kafka-provisioner-pvc-kafka
+  name: test-kafka-strimzi-pvc-kafka
 - apiVersion: v1
   kind: Namespace
-  name: test-kafka-strimzi-kafka-provisioner-pvc
+  name: test-kafka-strimzi-pvc
