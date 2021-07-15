@@ -254,11 +254,14 @@ normal user and an admin user.</p>
 <h4 id="_app_interface"><a class="anchor" href="#_app_interface"></a>app-interface</h4>
 <div class="paragraph">
 <p>In app-interface mode, the Clowder operator does not create any resources and
-simply passes through configuration from a secret to the client config. The
-provider will search all secrets in the same namespace looking for a hostname
-which is of the form <code>&lt;name&gt;-&lt;env&gt;.*********</code> where <code>name</code> is the name
-defined in the <code>ClowdApp</code> <code>database</code> stanza, and <code>env</code> is usually one of
-either <code>stage</code> or <code>prod</code>.</p>
+simply passes through configuration from a secret to the client config. First
+the provider will search for any secrets that have the annotation of
+<code>clowder/database: &lt;app-name&gt;</code> where the app-name matches the ClowdApp name.
+If this cannot be found then the provider will search all secrets in the same
+namespace looking for a hostname which is of the form
+<code>&lt;name&gt;-&lt;env&gt;.*********</code> where <code>name</code> is the name defined in the
+<code>ClowdApp</code> <code>database</code> stanza, and <code>env</code> is usually one of either
+<code>stage</code> or <code>prod</code>.</p>
 </div>
 </div>
 </div>
