@@ -683,7 +683,7 @@ data:
           "pluginVersion": "7.2.1",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder\"}) by (version)",
+              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
