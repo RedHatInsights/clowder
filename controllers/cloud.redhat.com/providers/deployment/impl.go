@@ -1,6 +1,8 @@
 package deployment
 
 import (
+	"strconv"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	apps "k8s.io/api/apps/v1"
@@ -36,8 +38,9 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	pod := deployment.PodSpec
 	d.Spec.Template.SetAnnotations(make(map[string]string))
-	if env.Spec.Providers.AuthSidecar {
+	if env.Spec.Providers.AuthSidecar && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		d.Spec.Template.Annotations["authsidecar"] = "enabled"
+		d.Spec.Template.Annotations["authsidecar/port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
 	}
 	d.Spec.Replicas = deployment.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}

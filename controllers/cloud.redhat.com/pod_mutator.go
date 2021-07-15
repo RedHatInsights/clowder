@@ -3,10 +3,10 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,9 +36,18 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			}
 		}
 
+		port, ok := pod.GetAnnotations()["authsidecar/port"]
+		if !ok {
+			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify service port"))
+		}
+
 		container := core.Container{
 			Name:  "crcauth",
 			Image: "127.0.0.1:5000/crccaddy:2",
+			Env: []core.EnvVar{{
+				Name:  "CADDY_PORT",
+				Value: port,
+			}},
 		}
 
 		if ridx == -1 {
@@ -58,13 +67,4 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 func (a *mutantPod) InjectDecoder(d *admission.Decoder) error {
 	a.decoder = d
 	return nil
-}
-
-func (a *mutantPod) CreateConfig(ctx context.Context, p *core.Pod) {
-	cfg := &core.ConfigMap{}
-	nn := types.NamespacedName{
-		Name:      "caddy-config",
-		Namespace: "",
-	}
-	a.Client.Get(ctx, nn, cfg)
 }
