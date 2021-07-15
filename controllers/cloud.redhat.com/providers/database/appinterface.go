@@ -212,7 +212,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfig, error) {
 func searchAnnotationSecret(appName string, secrets []core.Secret) ([]config.DatabaseConfig, error) {
 	for _, secret := range secrets {
 		anno := secret.GetAnnotations()
-		if v, ok := anno["database"]; ok && v == appName {
+		if v, ok := anno["clowder/database"]; ok && v == appName {
 			configs, err := genDbConfigs([]core.Secret{secret})
 			return configs, err
 		}

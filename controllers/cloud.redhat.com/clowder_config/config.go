@@ -27,6 +27,7 @@ type ClowderConfig struct {
 		DisableWebhooks             bool `json:"disableWebhooks"`
 		WatchStrimziResources       bool `json:"watchStrimziResources"`
 		UseComplexStrimziTopicNames bool `json:"useComplexStrimziTopicNames"`
+		EnableAuthSidecarHook       bool `json:"enableAuthSidecarHook"`
 	} `json:"features"`
 }
 

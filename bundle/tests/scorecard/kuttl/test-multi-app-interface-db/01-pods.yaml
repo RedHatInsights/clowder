@@ -109,7 +109,7 @@ metadata:
   name: app-c-readonly-db
   namespace: test-multi-app-interface-db
   annotations:
-    database: app-d
+    clowder/database: app-d
 type: Opaque
 data:
   db.host: dW51c3VhbC5kYi5uYW1lLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com
