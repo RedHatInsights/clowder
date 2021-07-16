@@ -49,7 +49,8 @@ docker run -i \
     -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR \
     -e MINIKUBE_USER=$MINIKUBE_USER \
     quay.io/psav/clowder_pr_check:v2.5 \
-    /workspace/build/pr_check_inner.sh
+    /workspace/build/pr_check_inner.sh \
+    /workspace/parse-controller-logs
 TEST_RESULT=$?
 
 mkdir artifacts
