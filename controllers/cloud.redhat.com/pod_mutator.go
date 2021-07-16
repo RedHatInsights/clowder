@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,16 +40,46 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 
 		port, ok := pod.GetAnnotations()["authsidecar/port"]
 		if !ok {
-			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify service port"))
+			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar port"))
 		}
+
+		config, ok := pod.GetAnnotations()["authsidecar/config"]
+		if !ok {
+			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar config"))
+		}
+
+		nnParts := strings.Split(config, "/")
+		if len(nnParts) != 2 {
+			return admission.Errored(http.StatusBadRequest, fmt.Errorf("config ref is invalid"))
+		}
+
+		ascconf := &core.Secret{}
+
+		p.Client.Get(ctx, types.NamespacedName{
+			Name:      nnParts[1],
+			Namespace: nnParts[0],
+		}, ascconf)
+
+		bopurl := string(ascconf.Data["bopurl"])
+		keycloakurl := string(ascconf.Data["keycloakurl"])
 
 		container := core.Container{
 			Name:  "crcauth",
-			Image: "127.0.0.1:5000/crccaddy:2",
-			Env: []core.EnvVar{{
-				Name:  "CADDY_PORT",
-				Value: port,
-			}},
+			Image: "127.0.0.1:5000/crccaddy:5",
+			Env: []core.EnvVar{
+				{
+					Name:  "CADDY_PORT",
+					Value: port,
+				},
+				{
+					Name:  "CADDY_BOP_URL",
+					Value: bopurl,
+				},
+				{
+					Name:  "CADDY_KEYCLOAK_URL",
+					Value: keycloakurl,
+				},
+			},
 		}
 
 		if ridx == -1 {
