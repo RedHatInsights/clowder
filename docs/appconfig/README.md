@@ -15,6 +15,8 @@
 -   [DatabaseConfig](./schema-definitions-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig`
 -   [LoggingConfig](./schema-definitions-appconfig-properties-loggingconfig.md "Logging Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging`
 -   [LoggingConfig](./schema-definitions-loggingconfig.md "Logging Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig`
+-   [MockConfig](./schema-definitions-appconfig-properties-mockconfig.md "Mocked information") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/mock`
+-   [MockConfig](./schema-definitions-mockconfig.md "Mocked information") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/MockConfig`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig.md "ClowdApp deployment configuration for Clowder enabled apps") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-kafka.md "Kafka Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/kafka`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokers-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers/items`

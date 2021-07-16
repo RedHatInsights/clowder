@@ -32,6 +32,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [featureFlags](#featureflags)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")                        |
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
+| [mock](#mock)                         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-mockconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/mock")                                        |
 
 ## privatePort
 
@@ -240,3 +241,19 @@ Feature Flags Configuration
 ### privateEndpoints Type
 
 `object[]` ([Details](schema-definitions-privatedependencyendpoint.md))
+
+## mock
+
+Mocked information
+
+
+`mock`
+
+-   is optional
+-   Type: `object` ([MockConfig](schema-definitions-mockconfig.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-mockconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/mock")
+
+### mock Type
+
+`object` ([MockConfig](schema-definitions-mockconfig.md))

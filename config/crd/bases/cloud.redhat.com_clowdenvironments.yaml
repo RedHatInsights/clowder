@@ -384,6 +384,9 @@ spec:
                     - mode
                     - port
                     type: object
+                  mock:
+                    description: Deploy Mocked items
+                    type: boolean
                   objectStore:
                     description: Defines the Configuration for the Clowder ObjectStore
                       Provider.

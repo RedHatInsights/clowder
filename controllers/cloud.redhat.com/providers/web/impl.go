@@ -33,6 +33,7 @@ func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdAp
 			Protocol:    "TCP",
 			AppProtocol: &appProtocol,
 		}
+
 		servicePorts = append(servicePorts, webPort)
 
 		// Append port to deployment spec
@@ -42,6 +43,16 @@ func (web *webProvider) makeService(deployment *crd.Deployment, app *crd.ClowdAp
 				ContainerPort: web.Env.Spec.Providers.Web.Port,
 			},
 		)
+
+		if web.Env.Spec.Providers.AuthSidecar {
+			authPort := core.ServicePort{
+				Name:        "auth",
+				Port:        8080,
+				Protocol:    "TCP",
+				AppProtocol: &appProtocol,
+			}
+			servicePorts = append(servicePorts, authPort)
+		}
 	}
 
 	if deployment.WebServices.Private.Enabled {
