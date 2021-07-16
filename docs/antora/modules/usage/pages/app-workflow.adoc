@@ -18,43 +18,33 @@ Step 1 is pretty case by case basis. Maybe your config is reading the wrong
 variable. Perhaps your ClowdApp is missing a Kafka topic. Whatever your changes
 may be, update the code and go on to step 2. 
 
-
 == 2. Deploy locally with Bonfire
 
-https://internal.cloud.redhat.com/docs/devprod/ephemeral/[Bonfire] is a cli tool used to deploy apps with Clowder. Bonfire comes with
+Bonfire is a cli tool used to deploy apps with Clowder. Bonfire comes with
 a local config option that we'll use to drop our ClowdApp into our minikube
-cluster. 
+cluster. Read about getting started with bonfire on ephemeral environments https://clouddot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html[here]
 
-First, https://github.com/RedHatInsights/bonfire#installation[install Bonfire] if you don't already have it on your local machine. 
+We'll use our examples from https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst[Getting Started] again. First, let's make a custom config for our ClowdApp so that bonfire can deploy it without
+us needing to push any configuration into app-interface.
 
-We'll use our examples from the https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst[Getting Started] again. First, let's make a
-`config.yaml`. This file will be used to inform Bonfire about our ClowdApp. 
+Type `bonfire config edit` and add the following to the 'apps' section:
 
-Update ``$(PWD)`` to the place where your app will be stored ``/home/src/app``
-for example.  Save as ``config.yaml```
-
-=== config.yaml
 [source,yaml]
-envName: env-jumpstart
 apps:
 - name: jumpstart
   host: local
-  repo: $(PWD)
+  repo: /path/to/your/git/repo
   path: clowdapp.yml
   parameters:
     IMAGE: quay.io/psav/clowder-hello
 
-Our config.yaml defines an app name, a local host (this machine), a repo to
-read, and a path to a ClowdApp in that repo. Bonfire will use this information
-to deploy our ClowdApp into the namespace declared in our ClowdApp. 
+This config instructs bonfire to fetch the template for your application from a git repo located on local disk.
 
-Let's refer back to our example app from earlier. Now, instead of using a base
-App, we will use a Template. 
+Let's refer back to our example app from earlier. Now, instead of using a base ClowdApp, we will use a Template. 
 
-Note: if your previous ClowdApp is still running, use ``oc delete app
-jumpstart`` to remove it. 
+Note: if your previous ClowdApp is still running in the `jumpstart` namespace, use ``oc delete app jumpstart`` to remove it. 
 
-Save as ``clowdapp.yml```
+Save ``clowdapp.yml`` in your git repo's folder:
 [source,yaml]
 ----
 ---
@@ -80,10 +70,10 @@ objects:
         metrics: true
       # Give details about your running pod
       podSpec:
-        image: ${IMAGE}
+        image: ${IMAGE}:${IMAGE_TAG}
 
     # The name of the ClowdEnvironment providing the services
-    envName: env-jumpstart
+    envName: ${ENV_NAME}
     
     # Request kafka topics for your application here
     kafkaTopics:
@@ -98,16 +88,24 @@ objects:
       version: 12
 
 parameters:
-  IMAGE: ''
+  - name: IMAGE
+    value: quay.io/psav/clowder-hello
+  - name: IMAGE_TAG
+    value: latest
+  - name: ENV_NAME
+    required: true
 ----
 
-``bonfire config get -l -a jumpstart | oc apply -f -``
+
+Now run:
+
+[source,shell]
+bonfire deploy jumpstart -n jumpstart
 
 == 3. Observe the changes
-Run ``oc get app`` to verify the jumpstart app has been deployed.
+Run ``kubectl get app -n jumpstart`` to verify the jumpstart app has been deployed.
 
-You can do all the standard ``oc logs`` debugging to figure out if your changes
-are successful.
+If the deployment fails to reach a 'ready' state or pods fail to come up, use ``kubectl get events -n jumpstart`` and look for any errors related to your ClowdApp. You can also use ``kubectl logs <pod name> -n jumpstart --previous=true`` if your pods are crash looping.
 
 == 4. Repeat
 Repeat until you're happy with the results. When satisfied, checkout the

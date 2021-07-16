@@ -17,54 +17,63 @@ developer environment, https://github.com/RedHatInsights/clowder/blob/master/doc
 Let's make a namespace to hold all the resources we'll be creating :
 
 [source,shell]
-oc new-project jumpstart
-oc project jumpstart
+kubectl create ns jumpstart
 
 That's the example namespace we'll be using for the rest of the guide.
 
 Now we can drop in our first resource, a ClowdEnvironment. A ClowdEnvironment,
 or ClowdEnv, is a custom resource that defines the environment our ClowdApp will
 utilize. The ClowdEnv defines what types of services our app may require and
-what source is providing those services. For our purposes, these services are
-set to ``local`` mode and will spin up pods in the ``jumpstart`` namespace.
+what source is providing those services. For our purposes, these services are configured to operate with ephemeral environments.
 
-The https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment[API docs for ClowdEnvironments] can be found on redhatinsights.github.io.
+The easiest way to install a ClowdEnvironment that is fit for working with ephemeral environments is by using Bonfire.
 
-A https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdenv.yml[fully annotated ClowdEnv] file can be found in the Clowder examples
-directory.
+Bonfire is a cli tool used to deploy apps into ephemeral environments. Read about getting started with bonfire on ephemeral environments https://clouddot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html[here]
+
+If you're curious to see what is going to be deployed (without actually applying the config), run:
+
+[source,shell]
+bonfire process-env -n jumpstart
+
+You can apply the environment's config and wait for it to become "ready" using:
+
+[source,shell]
+bonfire deploy-env -n jumpstart
+
+This will cause bonfire to apply the https://github.com/RedHatInsights/bonfire/blob/master/bonfire/resources/ephemeral-clowdenvironment.yaml[default ephemeral template] and set the ``targetNamespace`` to ``jumpstart```
 
 NOTE: You will only create a ClowdEnvironment in your local minikube. Stage
 and Production will have one ClowdEnv, respectively, shared by all apps in
-that environment.
+that environment. The ephemeral cluster has a ClowdEnvironment created for you ahead of time when you reserve a namespace.
+
+Let's see what the ClowdEnv does.
 
 [source,shell]
-oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdenv.yml
+kubectl get env env-jumpstart -o yaml
 
-Clowder will pick up and apply that env resource. You may notice there are no
-pods running -- and that's correct. Let's see what the ClowdEnv does.
+As you can see in the output, we have ``providers``_ for the different services. Some of these providers have caused certain deployments to appear in the environment's ``targetNamespace`` such as kafka, minio, featureflags service, etc.
+These will be used by ClowdApps associated with this environment.
+
+=== Accessing services running inside your namespace
+
+Pods running within your kubernetes cluster can access the services set up by the ClowdEnvironment. However, if you are wanting to access a ClowdEnv-provided service (Kafka, Minio, etc) directly from your host we need edit to your ``/etc/hosts`` mappings. Our example uses
+Kafka, so we are going to look up the bootstrap service address in our environment:
 
 [source,shell]
-oc get env env-jumpstart -o yaml
+kubectl get kafka -n jumpstart -o jsonpath='{.items[0].status.listeners[0].bootstrapServers}' | cut -f1 -d':'
 
-As you can see in the output, we have `providers`_ for the different services,
-but they won't do anything until a ClowdApp asks for them specifically.
+This is your kafka cluster's boostrap FQDN. It will look similar to:
 
-=== Handling local ports
-
-If you are going to use a ClowdEnv service in your ClowdApp (Kafka, Minio, etc),
-we need edit to your ``/etc/hosts`` localhost (127.0.0.1). Our example uses
-Kafka, so we are using the ``env-jumpstart-kafka.jumpstart.svc`` service because
-it matches our environment's name. Follow the Kubernetes service pattern for
-whatever your entry may need to be; just be sure it matches your specific
-environment name.
+[source,text]
+env-jumpstart-cadf501e-kafka-bootstrap.jumpstart.svc
 
 Your ``/etc/hosts`` should now look like ::
 
 [source,text]
-127.0.0.1   localhost ...  env-jumpstart-kafka.jumpstart.svc.
+127.0.0.1   localhost ...  env-jumpstart-cadf501e-kafka-bootstrap.jumpstart.svc.
 
-If you are not using the name ``jumpstart``, change it to the appropriate
-service.
+
+You can then use ``kubectl port-forward svc/env-jumpstart-cadf501e-kafka-bootstrap -n jumpstart 9092:9092`` and access the kafka broker using ``env-jumpstart-cadf501e-kafka-bootstrap.jumpstart.svc:9092``
 
 == Create your first ClowdApp
 
@@ -79,37 +88,24 @@ The https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-re
 
 A https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdapp.yml[fully annotated ClowdApp] file can be found in the Clowder examples directory.
 
-=== Port forwarding a localhost service
-
-In order for the local minikube to reach your Kafka service, we'll need to
-port-forward it on your local machine using the ``/etc/hosts`` entry from
-earlier:
-
-[source,shell]
-oc port-forward svc/env-jumpstart-kafka 29092
-
-You can background that with ``&`` if you'd like, or run it in a different
-terminal window. You only need to do this for local deployments.
-
 Now let's add our ClowdApp:
 
 [source,shell]
-oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdapp.yml
+kubectl apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdapp.yml -n jumpstart
 
 Let's verify that ClowdApp was created:
 
 [source,shell]
-oc get app
+kubectl get app -n jumpstart
 
 Now you should see pods!:
 
 [source,shell]
-oc get pods -w
+kubectl get pods -n jumpstart -w
 
 This should show you several running pods. Some of them we defined in our
 ClowdApp, some we did not. Pods like Kafka are defined in the ClowdEnv and spun
-up when requested by your app, then added to your namespace. As a note, your app
-will not come up until the all ClowdEnv supplied pods are marked as ready (1/1).
+up when the environment was created, while others are related to your ClowdApp. As a note, your app will not come up until the all ClowdEnv's managed deployments are marked as ready.
 
 That's it! You have a running ClowdApp deployed with Clowder. In the next few
 documents, we'll cover creating a more powerful dev environment, building a more
