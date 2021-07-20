@@ -76,7 +76,7 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 					continue
 				}
 			}
-			dd.Spec.Template.Spec.ServiceAccountName = sa.Env.GetClowdSAName()
+			dd.Spec.Template.Spec.ServiceAccountName = app.GetClowdSAName()
 			if err := sa.Cache.Update(obj, dd); err != nil {
 				return err
 			}
