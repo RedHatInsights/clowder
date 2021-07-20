@@ -18,3 +18,6 @@ resources:
 - auth_proxy_role.yaml
 - auth_proxy_role_binding.yaml
 - auth_proxy_client_clusterrole.yaml
+- clowdapp_editor_role.yaml
+- clowdenvironment_editor_role.yaml
+- clowdjobinvocation_editor_role.yaml
