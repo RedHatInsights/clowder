@@ -220,12 +220,23 @@ func MakeService(service *core.Service, nn types.NamespacedName, labels map[stri
 	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(service)
 	service.Spec.Selector = labels
-	service.Spec.Ports = ports
 	if nodePort {
+		for i, sport := range ports {
+			for _, dport := range service.Spec.Ports {
+				if sport.Name == dport.Name {
+					if dport.NodePort != 0 {
+						sport.NodePort = dport.NodePort
+					}
+					break
+				}
+			}
+			ports[i] = sport
+		}
 		service.Spec.Type = "NodePort"
 	} else {
 		service.Spec.Type = "ClusterIP"
 	}
+	service.Spec.Ports = ports
 }
 
 // MakePVC takes a PVC object and applies the correct ownership and labels to it.
