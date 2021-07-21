@@ -89,7 +89,7 @@ mv kuttl-test.xml artifacts/junit-kuttl.xml
 CLOWDER_PODS=$(kubectl get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}')
 for pod in $CLOWDER_PODS; do
     kubectl logs $pod -n clowder-system > artifacts/$pod.log
-    kubectl logs $pod -n clowder-system | ./parse-controller-logs > artifacts/$pod-controller.log
+    kubectl logs $pod -n clowder-system | ./parse-controller-logs > artifacts/$pod-parsed-controller-logs.log
 done
 
 STRIMZI_PODS=$(kubectl get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
