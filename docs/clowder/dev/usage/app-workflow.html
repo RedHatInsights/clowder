@@ -234,50 +234,39 @@ may be, update the code and go on to step 2.</p>
 <h2 id="_2_deploy_locally_with_bonfire"><a class="anchor" href="#_2_deploy_locally_with_bonfire"></a>2. Deploy locally with Bonfire</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><a href="https://internal.cloud.redhat.com/docs/devprod/ephemeral/">Bonfire</a> is a cli tool used to deploy apps with Clowder. Bonfire comes with
+<p>Bonfire is a cli tool used to deploy apps with Clowder. Bonfire comes with
 a local config option that we&#8217;ll use to drop our ClowdApp into our minikube
-cluster.</p>
+cluster. Read about getting started with bonfire on ephemeral environments <a href="https://clouddot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html">here</a></p>
 </div>
 <div class="paragraph">
-<p>First, <a href="https://github.com/RedHatInsights/bonfire#installation">install Bonfire</a> if you don&#8217;t already have it on your local machine.</p>
+<p>We&#8217;ll use our examples from <a href="https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst">Getting Started</a> again. First, let&#8217;s make a custom config for our ClowdApp so that bonfire can deploy it without
+us needing to push any configuration into app-interface.</p>
 </div>
 <div class="paragraph">
-<p>We&#8217;ll use our examples from the <a href="https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst">Getting Started</a> again. First, let&#8217;s make a
-<code>config.yaml</code>. This file will be used to inform Bonfire about our ClowdApp.</p>
+<p>Type <code>bonfire config edit</code> and add the following to the 'apps' section:</p>
 </div>
-<div class="paragraph">
-<p>Update <code>$(PWD)</code> to the place where your app will be stored <code>/home/src/app</code>
-for example.  Save as <code>config.yaml</code>`</p>
-</div>
-<div class="sect2">
-<h3 id="_config_yaml"><a class="anchor" href="#_config_yaml"></a>config.yaml</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">envName: env-jumpstart
-apps:
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apps:
 - name: jumpstart
   host: local
-  repo: $(PWD)
+  repo: /path/to/your/git/repo
   path: clowdapp.yml
   parameters:
     IMAGE: quay.io/psav/clowder-hello</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Our config.yaml defines an app name, a local host (this machine), a repo to
-read, and a path to a ClowdApp in that repo. Bonfire will use this information
-to deploy our ClowdApp into the namespace declared in our ClowdApp.</p>
+<p>This config instructs bonfire to fetch the template for your application from a git repo located on local disk.</p>
 </div>
 <div class="paragraph">
-<p>Let&#8217;s refer back to our example app from earlier. Now, instead of using a base
-App, we will use a Template.</p>
+<p>Let&#8217;s refer back to our example app from earlier. Now, instead of using a base ClowdApp, we will use a Template.</p>
 </div>
 <div class="paragraph">
-<p>Note: if your previous ClowdApp is still running, use <code>oc delete app
-jumpstart</code> to remove it.</p>
+<p>Note: if your previous ClowdApp is still running in the <code>jumpstart</code> namespace, use <code>oc delete app jumpstart</code> to remove it.</p>
 </div>
 <div class="paragraph">
-<p>Save as <code>clowdapp.yml</code>`</p>
+<p>Save <code>clowdapp.yml</code> in your git repo&#8217;s folder:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -304,10 +293,10 @@ objects:
         metrics: true
       # Give details about your running pod
       podSpec:
-        image: ${IMAGE}
+        image: ${IMAGE}:${IMAGE_TAG}
 
     # The name of the ClowdEnvironment providing the services
-    envName: env-jumpstart
+    envName: ${ENV_NAME}
 
     # Request kafka topics for your application here
     kafkaTopics:
@@ -322,11 +311,20 @@ objects:
       version: 12
 
 parameters:
-  IMAGE: ''</code></pre>
+  - name: IMAGE
+    value: quay.io/psav/clowder-hello
+  - name: IMAGE_TAG
+    value: latest
+  - name: ENV_NAME
+    required: true</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>bonfire config get -l -a jumpstart | oc apply -f -</code></p>
+<p>Now run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">bonfire deploy jumpstart -n jumpstart</code></pre>
 </div>
 </div>
 </div>
@@ -335,11 +333,10 @@ parameters:
 <h2 id="_3_observe_the_changes"><a class="anchor" href="#_3_observe_the_changes"></a>3. Observe the changes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Run <code>oc get app</code> to verify the jumpstart app has been deployed.</p>
+<p>Run <code>kubectl get app -n jumpstart</code> to verify the jumpstart app has been deployed.</p>
 </div>
 <div class="paragraph">
-<p>You can do all the standard <code>oc logs</code> debugging to figure out if your changes
-are successful.</p>
+<p>If the deployment fails to reach a 'ready' state or pods fail to come up, use <code>kubectl get events -n jumpstart</code> and look for any errors related to your ClowdApp. You can also use <code>kubectl logs &lt;pod name&gt; -n jumpstart --previous=true</code> if your pods are crash looping.</p>
 </div>
 </div>
 </div>

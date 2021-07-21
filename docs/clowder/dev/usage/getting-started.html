@@ -216,8 +216,7 @@ developer environment, <a href="https://github.com/RedHatInsights/clowder/blob/m
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc new-project jumpstart
-oc project jumpstart</code></pre>
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">kubectl create ns jumpstart</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -227,15 +226,32 @@ oc project jumpstart</code></pre>
 <p>Now we can drop in our first resource, a ClowdEnvironment. A ClowdEnvironment,
 or ClowdEnv, is a custom resource that defines the environment our ClowdApp will
 utilize. The ClowdEnv defines what types of services our app may require and
-what source is providing those services. For our purposes, these services are
-set to <code>local</code> mode and will spin up pods in the <code>jumpstart</code> namespace.</p>
+what source is providing those services. For our purposes, these services are configured to operate with ephemeral environments.</p>
 </div>
 <div class="paragraph">
-<p>The <a href="https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdenvironment">API docs for ClowdEnvironments</a> can be found on redhatinsights.github.io.</p>
+<p>The easiest way to install a ClowdEnvironment that is fit for working with ephemeral environments is by using Bonfire.</p>
 </div>
 <div class="paragraph">
-<p>A <a href="https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdenv.yml">fully annotated ClowdEnv</a> file can be found in the Clowder examples
-directory.</p>
+<p>Bonfire is a cli tool used to deploy apps into ephemeral environments. Read about getting started with bonfire on ephemeral environments <a href="https://clouddot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html">here</a></p>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re curious to see what is going to be deployed (without actually applying the config), run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">bonfire process-env -n jumpstart</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can apply the environment&#8217;s config and wait for it to become "ready" using:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">bonfire deploy-env -n jumpstart</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will cause bonfire to apply the <a href="https://github.com/RedHatInsights/bonfire/blob/master/bonfire/resources/ephemeral-clowdenvironment.yaml">default ephemeral template</a> and set the <code>targetNamespace</code> to <code>jumpstart</code>`</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -246,38 +262,41 @@ directory.</p>
 <td class="content">
 You will only create a ClowdEnvironment in your local minikube. Stage
 and Production will have one ClowdEnv, respectively, shared by all apps in
-that environment.
+that environment. The ephemeral cluster has a ClowdEnvironment created for you ahead of time when you reserve a namespace.
 </td>
 </tr>
 </table>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdenv.yml</code></pre>
-</div>
-</div>
 <div class="paragraph">
-<p>Clowder will pick up and apply that env resource. You may notice there are no
-pods running&#8201;&#8212;&#8201;and that&#8217;s correct. Let&#8217;s see what the ClowdEnv does.</p>
+<p>Let&#8217;s see what the ClowdEnv does.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc get env env-jumpstart -o yaml</code></pre>
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">kubectl get env env-jumpstart -o yaml</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>As you can see in the output, we have `providers`_ for the different services,
-but they won&#8217;t do anything until a ClowdApp asks for them specifically.</p>
+<p>As you can see in the output, we have <code>providers</code>_ for the different services. Some of these providers have caused certain deployments to appear in the environment&#8217;s <code>targetNamespace</code> such as kafka, minio, featureflags service, etc.
+These will be used by ClowdApps associated with this environment.</p>
 </div>
 <div class="sect2">
-<h3 id="_handling_local_ports"><a class="anchor" href="#_handling_local_ports"></a>Handling local ports</h3>
+<h3 id="_accessing_services_running_inside_your_namespace"><a class="anchor" href="#_accessing_services_running_inside_your_namespace"></a>Accessing services running inside your namespace</h3>
 <div class="paragraph">
-<p>If you are going to use a ClowdEnv service in your ClowdApp (Kafka, Minio, etc),
-we need edit to your <code>/etc/hosts</code> localhost (127.0.0.1). Our example uses
-Kafka, so we are using the <code>env-jumpstart-kafka.jumpstart.svc</code> service because
-it matches our environment&#8217;s name. Follow the Kubernetes service pattern for
-whatever your entry may need to be; just be sure it matches your specific
-environment name.</p>
+<p>Pods running within your kubernetes cluster can access the services set up by the ClowdEnvironment. However, if you are wanting to access a ClowdEnv-provided service (Kafka, Minio, etc) directly from your host we need edit to your <code>/etc/hosts</code> mappings. Our example uses
+Kafka, so we are going to look up the bootstrap service address in our environment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">kubectl get kafka -n jumpstart -o jsonpath='{.items[0].status.listeners[0].bootstrapServers}' | cut -f1 -d':'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is your kafka cluster&#8217;s boostrap FQDN. It will look similar to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">env-jumpstart-cadf501e-kafka-bootstrap.jumpstart.svc</code></pre>
+</div>
 </div>
 <div class="dlist">
 <dl>
@@ -286,12 +305,11 @@ environment name.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">127.0.0.1   localhost ...  env-jumpstart-kafka.jumpstart.svc.</code></pre>
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">127.0.0.1   localhost ...  env-jumpstart-cadf501e-kafka-bootstrap.jumpstart.svc.</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>If you are not using the name <code>jumpstart</code>, change it to the appropriate
-service.</p>
+<p>You can then use <code>kubectl port-forward svc/env-jumpstart-cadf501e-kafka-bootstrap -n jumpstart 9092:9092</code> and access the kafka broker using <code>env-jumpstart-cadf501e-kafka-bootstrap.jumpstart.svc:9092</code></p>
 </div>
 </div>
 </div>
@@ -313,28 +331,12 @@ and use the example.</p>
 <div class="paragraph">
 <p>A <a href="https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdapp.yml">fully annotated ClowdApp</a> file can be found in the Clowder examples directory.</p>
 </div>
-<div class="sect2">
-<h3 id="_port_forwarding_a_localhost_service"><a class="anchor" href="#_port_forwarding_a_localhost_service"></a>Port forwarding a localhost service</h3>
-<div class="paragraph">
-<p>In order for the local minikube to reach your Kafka service, we&#8217;ll need to
-port-forward it on your local machine using the <code>/etc/hosts</code> entry from
-earlier:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc port-forward svc/env-jumpstart-kafka 29092</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You can background that with <code>&amp;</code> if you&#8217;d like, or run it in a different
-terminal window. You only need to do this for local deployments.</p>
-</div>
 <div class="paragraph">
 <p>Now let&#8217;s add our ClowdApp:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdapp.yml</code></pre>
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">kubectl apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/docs/examples/clowdapp.yml -n jumpstart</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -342,7 +344,7 @@ terminal window. You only need to do this for local deployments.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc get app</code></pre>
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">kubectl get app -n jumpstart</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -350,20 +352,18 @@ terminal window. You only need to do this for local deployments.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">oc get pods -w</code></pre>
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">kubectl get pods -n jumpstart -w</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>This should show you several running pods. Some of them we defined in our
 ClowdApp, some we did not. Pods like Kafka are defined in the ClowdEnv and spun
-up when requested by your app, then added to your namespace. As a note, your app
-will not come up until the all ClowdEnv supplied pods are marked as ready (1/1).</p>
+up when the environment was created, while others are related to your ClowdApp. As a note, your app will not come up until the all ClowdEnv&#8217;s managed deployments are marked as ready.</p>
 </div>
 <div class="paragraph">
 <p>That&#8217;s it! You have a running ClowdApp deployed with Clowder. In the next few
 documents, we&#8217;ll cover creating a more powerful dev environment, building a more
 complex ClowdApp, and migrating existing services over to Clowder.</p>
-</div>
 </div>
 </div>
 </div>
