@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -98,11 +99,19 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
+	kafkaConfigJson, err := json.Marshal(map[string]string{
+		"offsets.topic.replication.factor": strconv.Itoa(int(replicas)),
+	})
+	if err != nil {
+		return fmt.Errorf("Could not marshal config into json, err: %s", err)
+	}
+
+	var kafkaConfig apiextensions.JSON
+	kafkaConfig.UnmarshalJSON(kafkaConfigJson)
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config: map[string]string{
-				"offsets.topic.replication.factor": strconv.Itoa(int(replicas)),
-			},
+			Config:   strimzi.KafkaSpecKafkaConfig(kafkaConfig),
 			Version:  &version,
 			Replicas: replicas,
 		},
@@ -116,7 +125,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		},
 	}
 
-	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil {
+	if s.Env.Spec.Providers.Kafka.Cluster.Config.Raw != nil {
 		k.Spec.Kafka.Config = s.Env.Spec.Providers.Kafka.Cluster.Config
 	}
 
