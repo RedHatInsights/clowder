@@ -29,6 +29,8 @@ spec:
     spec:
       template:
         spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
           containers:
             - name: puptoo-standard-cron
               image: quay.io/psav/clowder-hello
@@ -45,6 +47,8 @@ spec:
     spec:
       template:
         spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
           containers:
             - name: puptoo-restart-on-failure
               image: quay.io/psav/clowder-hello
@@ -58,6 +62,8 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccount: puptoo-app
+      serviceAccountName: puptoo-app
       containers:
         - name: puptoo-hello-cji-runner
           image: busybox

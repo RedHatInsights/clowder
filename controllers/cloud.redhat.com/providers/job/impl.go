@@ -12,7 +12,7 @@ import (
 
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
-func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
+func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
@@ -65,6 +65,8 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, n
 	if (core.Probe{}) != readinessProbe {
 		c.ReadinessProbe = &readinessProbe
 	}
+
+	j.Spec.Template.Spec.ServiceAccountName = app.GetClowdSAName()
 
 	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 		Name:      "config-secret",

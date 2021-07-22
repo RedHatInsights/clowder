@@ -78,6 +78,9 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
+	// set service account for pod
+	pt.Spec.ServiceAccountName = fmt.Sprintf("%s", app.GetClowdSAName())
+
 	if (core.Probe{}) != livenessProbe {
 		c.LivenessProbe = &livenessProbe
 	}
