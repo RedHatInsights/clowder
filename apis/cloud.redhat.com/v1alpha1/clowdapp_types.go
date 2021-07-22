@@ -78,6 +78,18 @@ type Job struct {
 	// Defines the concurrency policy for the CronJob, defaults to Allow
 	ConcurrencyPolicy batch.ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
 
+	// This flag tells the controller to suspend subsequent executions, it does
+	// not apply to already started executions.  Defaults to false.
+	Suspend *bool `json:"suspend,omitempty"`
+
+	// The number of successful finished jobs to retain. Value must be non-negative integer.
+	// Defaults to 3.
+	SuccessfulJobsHistoryLimit *int32 `json:"successfulJobsHistoryLimit,omitempty"`
+
+	// The number of failed finished jobs to retain. Value must be non-negative integer.
+	// Defaults to 1.
+	FailedJobsHistoryLimit *int32 `json:"failedJobsHistoryLimit,omitempty"`
+
 	// Defines the StartingDeadlineSeconds for the CronJob
 	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
 }

@@ -25,6 +25,9 @@ metadata:
   namespace: test-clowder-jobs
 spec:
   concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  suspend: false
   jobTemplate:
     spec:
       template:
@@ -33,6 +36,27 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-standard-cron
+              image: quay.io/psav/clowder-hello
+          restartPolicy: Never
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: puptoo-suspend-cron
+  namespace: test-clowder-jobs
+spec:
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  suspend: true
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
+          containers:
+            - name: puptoo-suspend-cron
               image: quay.io/psav/clowder-hello
           restartPolicy: Never
 ---

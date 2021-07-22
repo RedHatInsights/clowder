@@ -47,6 +47,19 @@ spec:
   jobs:
     - name: standard-cron
       schedule: "*/1 * * * *"
+      suspend: false 
+      successfulJobsHistoryLimit: 2
+      failedJobsHistoryLimit: 2
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo
+    - name: suspend-cron
+      schedule: "*/1 * * * *"
+      suspend: true
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
       podSpec:
         image: quay.io/psav/clowder-hello
         args:
@@ -61,6 +74,11 @@ spec:
           - ./clowder-hello
           - boo
     - name: hello-cji
+      # Testing incorrect specs, should be thrown away
+      # becuase it goes to a different controller
+      # without a schedule attribute
+      suspend: false
+      successfulJobsHistoryLimit: 1
       podSpec:
         image: busybox
         args:
