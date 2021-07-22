@@ -125,7 +125,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		},
 	}
 
-	if len(s.Env.Spec.Providers.Kafka.Cluster.Config.Raw) > 0 {
+	if s.Env.Spec.Providers.Kafka.Cluster.Config.Raw != nil {
 		k.Spec.Kafka.Config = s.Env.Spec.Providers.Kafka.Cluster.Config
 	}
 
