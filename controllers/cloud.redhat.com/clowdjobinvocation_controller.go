@@ -227,7 +227,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, j
 		return err
 	}
 
-	jobProvider.CreateJobResource(cji, env, nn, job, &j)
+	jobProvider.CreateJobResource(cji, env, app, nn, job, &j)
 
 	if err := cache.Update(ClowdJob, &j); err != nil {
 		return err

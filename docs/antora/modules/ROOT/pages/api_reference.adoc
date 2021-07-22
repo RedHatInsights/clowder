@@ -27,7 +27,7 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-appinfo"]
 ==== AppInfo 
 
-AppInfo details information about a specific app.
+
 
 .Appears In:
 ****
@@ -335,7 +335,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-deploymentinfo"]
 ==== DeploymentInfo 
 
-DeploymentInfo defailts information about a specific deployment.
+
 
 .Appears In:
 ****
@@ -455,7 +455,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 [id="{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job"]
 ==== Job 
 
-Job defines a CronJob as Schedule is required. In the future omitting the Schedule field will allow support for a standard Job resource.
+Job defines a ClowdJob A Job struct will deploy as a CronJob if `schedule` is set and will deploy as a Job if it is not set. Unsupported fields will be dropped from Jobs
 
 .Appears In:
 ****
@@ -469,7 +469,10 @@ Job defines a CronJob as Schedule is required. In the future omitting the Schedu
 | *`schedule`* __string__ | Defines the schedule for the job to run
 | *`podSpec`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside the CronJob.
 | *`restartPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core[$$RestartPolicy$$]__ | Defines the restart policy for the CronJob, defaults to never
-| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow
+| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow Only applies to Cronjobs
+| *`suspend`* __boolean__ | This flag tells the controller to suspend subsequent executions, it does not apply to already started executions.  Defaults to false. Only applies to Cronjobs
+| *`successfulJobsHistoryLimit`* __integer__ | The number of successful finished jobs to retain. Value must be non-negative integer. Defaults to 3. Only applies to Cronjobs
+| *`failedJobsHistoryLimit`* __integer__ | The number of failed finished jobs to retain. Value must be non-negative integer. Defaults to 1. Only applies to Cronjobs
 | *`startingDeadlineSeconds`* __integer__ | Defines the StartingDeadlineSeconds for the CronJob
 |===
 
@@ -683,7 +686,7 @@ PodSpec defines a container running inside a ClowdApp.
 | *`initContainers`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$]__ | A list of init containers used to perform at-startup operations.
 | *`command`* __string array__ | The command that will be invoked inside the pod at startup.
 | *`args`* __string array__ | A list of args to be passed to the pod container.
-| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$]__ | A list of environment variables in k8s defined format.
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables in k8s defined format.
 | *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
 | *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Liveness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
 | *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
@@ -713,12 +716,12 @@ PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object
 | *`initContainers`* __xref:{anchor_prefix}-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$]__ | 
 | *`command`* __string array__ | 
 | *`args`* __string array__ | 
-| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$]__ | 
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$] array__ | 
 | *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | 
 | *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | 
 | *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | 
-| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core[$$Volume$$]__ | 
-| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core[$$VolumeMount$$]__ | 
+| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core[$$Volume$$] array__ | 
+| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core[$$VolumeMount$$] array__ | 
 |===
 
 

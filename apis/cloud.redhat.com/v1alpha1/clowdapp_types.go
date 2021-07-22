@@ -59,8 +59,10 @@ type DatabaseSpec struct {
 	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
 }
 
-// Job defines a CronJob as Schedule is required. In the future omitting the
-// Schedule field will allow support for a standard Job resource.
+// Job defines a ClowdJob
+// A Job struct will deploy as a CronJob if `schedule` is set
+// and will deploy as a Job if it is not set. Unsupported fields
+// will be dropped from Jobs
 type Job struct {
 	// Name defines identifier of the Job. This name will be used to name the
 	// CronJob resource, the container will be name identically.
@@ -76,7 +78,23 @@ type Job struct {
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
 
 	// Defines the concurrency policy for the CronJob, defaults to Allow
+	// Only applies to Cronjobs
 	ConcurrencyPolicy batch.ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
+
+	// This flag tells the controller to suspend subsequent executions, it does
+	// not apply to already started executions.  Defaults to false.
+	// Only applies to Cronjobs
+	Suspend *bool `json:"suspend,omitempty"`
+
+	// The number of successful finished jobs to retain. Value must be non-negative integer.
+	// Defaults to 3.
+	// Only applies to Cronjobs
+	SuccessfulJobsHistoryLimit *int32 `json:"successfulJobsHistoryLimit,omitempty"`
+
+	// The number of failed finished jobs to retain. Value must be non-negative integer.
+	// Defaults to 1.
+	// Only applies to Cronjobs
+	FailedJobsHistoryLimit *int32 `json:"failedJobsHistoryLimit,omitempty"`
 
 	// Defines the StartingDeadlineSeconds for the CronJob
 	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`

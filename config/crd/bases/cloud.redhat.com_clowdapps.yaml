@@ -2395,6 +2395,11 @@ spec:
                       description: Defines the concurrency policy for the CronJob,
                         defaults to Allow
                       type: string
+                    failedJobsHistoryLimit:
+                      description: The number of failed finished jobs to retain. Value
+                        must be non-negative integer. Defaults to 1.
+                      format: int32
+                      type: integer
                     name:
                       description: Name defines identifier of the Job. This name will
                         be used to name the CronJob resource, the container will be
@@ -4608,6 +4613,16 @@ spec:
                       description: Defines the StartingDeadlineSeconds for the CronJob
                       format: int64
                       type: integer
+                    successfulJobsHistoryLimit:
+                      description: The number of successful finished jobs to retain.
+                        Value must be non-negative integer. Defaults to 3.
+                      format: int32
+                      type: integer
+                    suspend:
+                      description: This flag tells the controller to suspend subsequent
+                        executions, it does not apply to already started executions.  Defaults
+                        to false.
+                      type: boolean
                   required:
                   - name
                   - podSpec

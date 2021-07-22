@@ -78,6 +78,9 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
+	// set service account for pod
+	pt.Spec.ServiceAccountName = fmt.Sprintf("%s", app.GetClowdSAName())
+
 	if (core.Probe{}) != livenessProbe {
 		c.LivenessProbe = &livenessProbe
 	}
@@ -126,6 +129,18 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 	if cronjob.StartingDeadlineSeconds != nil {
 		cj.Spec.StartingDeadlineSeconds = cronjob.StartingDeadlineSeconds
 	}
+
+	if cronjob.Suspend != nil {
+		cj.Spec.Suspend = cronjob.Suspend
+	} // implicit else => default is *bool false
+
+	if cronjob.SuccessfulJobsHistoryLimit != nil {
+		cj.Spec.SuccessfulJobsHistoryLimit = cronjob.SuccessfulJobsHistoryLimit
+	} // implicit else => default is 3
+
+	if cronjob.FailedJobsHistoryLimit != nil {
+		cj.Spec.FailedJobsHistoryLimit = cronjob.FailedJobsHistoryLimit
+	} // implicit else => default is 1
 
 	cj.Spec.JobTemplate.Spec.Template.Annotations = make(map[string]string)
 
