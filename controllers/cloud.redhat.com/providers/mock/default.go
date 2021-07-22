@@ -1,7 +1,13 @@
 package mock
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
@@ -75,6 +81,12 @@ func NewMockProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	}
 
 	if err := p.Cache.Update(MockSecret, sec); err != nil {
+		return nil, err
+	}
+
+	err := mp.configureKeycloak()
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -245,7 +257,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	c := core.Container{
 		Name:           nn.Name,
-		Image:          "127.0.0.1:5000/mbop:4",
+		Image:          "quay.io/cloudservices/mbop:513688c",
 		Env:            envVars,
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
@@ -263,4 +275,224 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 
+}
+
+type KeyCloakClient struct {
+	BaseURL     string
+	Username    string
+	Password    string
+	AccessToken string
+	Ctx         context.Context
+}
+
+func NewKeyCloakClient(BaseUrl string, Username string, Password string, BaseCtx context.Context) (*KeyCloakClient, error) {
+	client := KeyCloakClient{
+		BaseURL:  BaseUrl,
+		Username: Username,
+		Password: Password,
+		Ctx:      BaseCtx,
+	}
+	err := client.init()
+	if err != nil {
+		return nil, err
+	}
+	return &client, nil
+}
+
+func (k *KeyCloakClient) init() error {
+
+	headers := map[string]string{
+		"Content-type": "application/x-www-form-urlencoded",
+	}
+
+	resp, err := k.rawMethod("POST", "/auth/realms/master/protocol/openid-connect/token", "grant_type=password&client_id=admin-cli&username=admin&password=admin", headers)
+	if err != nil {
+		return err
+	}
+
+	var iface interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&iface)
+
+	if err != nil {
+		return err
+	}
+
+	auth, ok := iface.(map[string]interface{})
+
+	if !ok {
+		return fmt.Errorf("could not get auth info")
+	}
+
+	access_token, ok := auth["access_token"]
+
+	if !ok {
+		return fmt.Errorf("could not get access token")
+	}
+
+	access_token_string := access_token.(string)
+
+	k.AccessToken = access_token_string
+
+	return nil
+}
+
+func (k *KeyCloakClient) rawMethod(method string, url string, body string, headers map[string]string) (*http.Response, error) {
+	fullUrl := fmt.Sprintf("%s%s", k.BaseURL, url)
+	fmt.Printf("\n\n%v\n%v\n%v\n%v\n\n", url, body, headers, method)
+	ctx, cancel := context.WithTimeout(k.Ctx, 10*time.Second)
+	defer cancel()
+
+	r := strings.NewReader(body)
+
+	req, err := http.NewRequestWithContext(ctx, method, fullUrl, r)
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (k *KeyCloakClient) Get(url string, body string) (*http.Response, error) {
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("Bearer %s", k.AccessToken),
+	}
+	return k.rawMethod("GET", url, body, headers)
+}
+
+func (k *KeyCloakClient) Post(url string, body string, headers map[string]string) (*http.Response, error) {
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", k.AccessToken)
+
+	return k.rawMethod("POST", url, body, headers)
+}
+
+type Realm struct {
+	Realm string `json:"realm"`
+}
+
+type RealmResponse []Realm
+
+func (k *KeyCloakClient) doesRealmExist(requestedRealmName string) (bool, error) {
+	resp, err := k.Get("/auth/admin/realms", "")
+
+	if err != nil {
+		return false, err
+	}
+
+	iface := &RealmResponse{}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	err = json.Unmarshal(data, iface)
+
+	if err != nil {
+		return false, err
+	}
+
+	for _, realm := range *iface {
+		if realm.Realm == requestedRealmName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+type Client struct {
+	ClientId string `json:"clientId"`
+}
+
+type ClientResponse []Client
+
+func (k *KeyCloakClient) doesClientExist(realm string, requestedClientName string) (bool, error) {
+	resp, err := k.Get(fmt.Sprintf("/auth/admin/realms/%s/clients", realm), "")
+
+	if err != nil {
+		return false, err
+	}
+
+	iface := &ClientResponse{}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	err = json.Unmarshal(data, iface)
+
+	if err != nil {
+		return false, err
+	}
+
+	for _, client := range *iface {
+		fmt.Printf("\n\n%s\n\n", client.ClientId)
+		if client.ClientId == requestedClientName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (k *KeyCloakClient) createRealm(requestedRealmName string) error {
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+	resp, err := k.Post("/auth/admin/realms", `{"realm": "redhat-external", "enabled": true, "id": "redhat-external"}`, headers)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\n%v\n\n", resp)
+	v, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf("\n\n%s\n\n", string(v))
+	return nil
+}
+
+func (m *mockProvider) configureKeycloak() error {
+	s := &core.Service{}
+	if err := m.Cache.Get(MockKeycloakService, s); err != nil {
+		return err
+	}
+
+	client, err := NewKeyCloakClient(fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace), "admin", "admin", m.Ctx)
+
+	if err != nil {
+		return err
+	}
+
+	exists, err := client.doesRealmExist("redhat-external")
+
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		err := client.createRealm("redhat-external")
+		if err != nil {
+			return err
+		}
+	}
+
+	exists, err = client.doesClientExist("redhat-external", "cloud-services")
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\n%v\n\n", exists)
+
+	return nil
 }
