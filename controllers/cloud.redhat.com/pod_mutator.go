@@ -65,7 +65,7 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 
 		container := core.Container{
 			Name:  "crcauth",
-			Image: "127.0.0.1:5000/crccaddy:5",
+			Image: "quay.io/cloudservices/crc-caddy-plugin:2267a23",
 			Env: []core.EnvVar{
 				{
 					Name:  "CADDY_PORT",
