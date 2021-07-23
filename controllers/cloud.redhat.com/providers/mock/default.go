@@ -363,10 +363,8 @@ func (k *KeyCloakClient) rawMethod(method string, url string, body string, heade
 	return resp, nil
 }
 
-func (k *KeyCloakClient) Get(url string, body string) (*http.Response, error) {
-	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Bearer %s", k.AccessToken),
-	}
+func (k *KeyCloakClient) Get(url string, body string, headers map[string]string) (*http.Response, error) {
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", k.AccessToken)
 	return k.rawMethod("GET", url, body, headers)
 }
 
@@ -383,7 +381,7 @@ type Realm struct {
 type RealmResponse []Realm
 
 func (k *KeyCloakClient) doesRealmExist(requestedRealmName string) (bool, error) {
-	resp, err := k.Get("/auth/admin/realms", "")
+	resp, err := k.Get("/auth/admin/realms", "", make(map[string]string))
 
 	if err != nil {
 		return false, err
@@ -417,7 +415,7 @@ type Client struct {
 type ClientResponse []Client
 
 func (k *KeyCloakClient) doesClientExist(realm string, requestedClientName string) (bool, error) {
-	resp, err := k.Get(fmt.Sprintf("/auth/admin/realms/%s/clients", realm), "")
+	resp, err := k.Get(fmt.Sprintf("/auth/admin/realms/%s/clients", realm), "", make(map[string]string))
 
 	if err != nil {
 		return false, err
@@ -445,11 +443,126 @@ func (k *KeyCloakClient) doesClientExist(realm string, requestedClientName strin
 	return false, nil
 }
 
+type createRealmStruct struct {
+	Realm   string `json:"realm"`
+	Enabled bool   `json:"enabled"`
+	ID      string `json:"id"`
+}
+
 func (k *KeyCloakClient) createRealm(requestedRealmName string) error {
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	resp, err := k.Post("/auth/admin/realms", `{"realm": "redhat-external", "enabled": true, "id": "redhat-external"}`, headers)
+
+	postObj := createRealmStruct{
+		Realm:   requestedRealmName,
+		Enabled: true,
+		ID:      requestedRealmName,
+	}
+
+	b, err := json.Marshal(postObj)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := k.Post("/auth/admin/realms", string(b), headers)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\n%v\n\n", resp)
+	v, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf("\n\n%s\n\n", string(v))
+	return nil
+}
+
+type mapperConfig struct {
+	UserInfoTokenClaim bool   `json:"userinfo.token.claim"`
+	UserAttribute      string `json:"user.Attribute"`
+	IDTokenClaim       bool   `json:"id.token.claim"`
+	AccessTokenClaim   bool   `json:"access.token.claim"`
+	ClaimName          string `json:"claim.name"`
+	JSONTypeLabel      string `json:"jsonType.label"`
+}
+
+type mapperStruct struct {
+	Name            string       `json:"name"`
+	ID              string       `json:"id"`
+	Protocol        string       `json:"protocol"`
+	ProtocolMapper  string       `json:"protocolMapper"`
+	ConsentRequired bool         `json:"consentRequired"`
+	Config          mapperConfig `json:"config"`
+}
+
+func createMapper(attr string, mtype string) mapperStruct {
+	return mapperStruct{
+		Name:            attr,
+		ID:              attr,
+		Protocol:        "openid-connect",
+		ProtocolMapper:  "oidc-usermodel-attribute-mapper",
+		ConsentRequired: false,
+		Config: mapperConfig{
+			UserInfoTokenClaim: true,
+			UserAttribute:      attr,
+			IDTokenClaim:       true,
+			AccessTokenClaim:   true,
+			ClaimName:          attr,
+			JSONTypeLabel:      mtype,
+		},
+	}
+}
+
+type clientStruct struct {
+	ClientId                  string         `json:"clientId"`
+	Enabled                   bool           `json:"enabled"`
+	BearerOnly                bool           `json:"bearerOnly"`
+	PublicClient              bool           `json:"publicClient"`
+	RedirectUris              []string       `json:"redirectUris"`
+	WebOrigins                []string       `json:"webOrigins"`
+	ProtocolMappers           []mapperStruct `json:"protocolMappers"`
+	DirectAccessGrantsEnabled bool           `json:"directAccessGrantsEnabled"`
+}
+
+func (k *KeyCloakClient) createClient(realmName string, clientName string) error {
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	postObj := clientStruct{
+		ClientId:                  clientName,
+		Enabled:                   true,
+		BearerOnly:                false,
+		PublicClient:              true,
+		RedirectUris:              []string{"url"},
+		WebOrigins:                []string{"url"},
+		DirectAccessGrantsEnabled: true,
+		ProtocolMappers: []mapperStruct{
+			createMapper("account_number", "String"),
+			createMapper("account_number", "String"),
+			createMapper("account_id", "String"),
+			createMapper("org_id", "String"),
+			createMapper("username", "String"),
+			createMapper("email", "String"),
+			createMapper("first_name", "String"),
+			createMapper("last_name", "String"),
+			createMapper("is_org_admin", "boolean"),
+			createMapper("is_internal", "boolean"),
+			createMapper("is_active", "boolean"),
+		},
+	}
+
+	b, err := json.Marshal(postObj)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := k.Post(
+		fmt.Sprintf("/auth/admin/realms/%s/clients", realmName),
+		string(b), headers,
+	)
 
 	if err != nil {
 		return err
@@ -490,6 +603,13 @@ func (m *mockProvider) configureKeycloak() error {
 
 	if err != nil {
 		return err
+	}
+
+	if !exists {
+		err := client.createClient("redhat-external", "cloud-services")
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Printf("\n\n%v\n\n", exists)
