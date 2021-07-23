@@ -98,11 +98,15 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
+	var kConfig apiextensions.JSON
+
+	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
+		"offsets.topic.replication.factor": %s
+	}`, strconv.Itoa(int(replicas)))))
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config: map[string]string{
-				"offsets.topic.replication.factor": strconv.Itoa(int(replicas)),
-			},
+			Config:   strimzi.KafkaSpecKafkaConfig(kConfig),
 			Version:  &version,
 			Replicas: replicas,
 		},
@@ -116,7 +120,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		},
 	}
 
-	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil {
+	if s.Env.Spec.Providers.Kafka.Cluster.Config.Raw != nil {
 		k.Spec.Kafka.Config = s.Env.Spec.Providers.Kafka.Cluster.Config
 	}
 
