@@ -52,7 +52,7 @@ func fetchCa() (string, error) {
 	return caBundle, nil
 }
 
-// NewAppInterfaceDBProvider creates a new app-interface DB provider obejct.
+// NewAppInterfaceDBProvider creates a new app-interface DB provider object.
 func NewAppInterfaceDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	provider := appInterface{Provider: *p}
 
@@ -131,11 +131,10 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		matched = resolveDb(dbSpec, dbConfigs)
 
 		if matched == (config.DatabaseConfig{}) {
-			return &errors.MissingDependencies{
-				MissingDeps: map[string][]string{
-					"database": {app.Name},
-				},
-			}
+			msg := fmt.Sprintf(`Expected substring is not found in secrets. Make sure that `+
+				`"identifier" field of the appropriate namespace manifest in the app-interface `+
+				`starts with DB name: "%s".`, dbSpec.Name)
+			return errors.New(msg)
 		}
 	} else {
 		matched = matches[0]
