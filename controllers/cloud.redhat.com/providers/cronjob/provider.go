@@ -1,7 +1,7 @@
 package cronjob
 
 import (
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	batch "k8s.io/api/batch/v1beta1"
 )
 

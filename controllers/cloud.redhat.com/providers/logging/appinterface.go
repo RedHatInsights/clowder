@@ -1,10 +1,10 @@
 package logging
 
 import (
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"

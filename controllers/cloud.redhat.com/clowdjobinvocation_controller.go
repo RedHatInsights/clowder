@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -33,11 +33,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/iqe"
-	jobProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/job"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
+	jobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/job"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"

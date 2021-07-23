@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"strings"
 
-	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 
 	core "k8s.io/api/core/v1"

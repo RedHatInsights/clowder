@@ -1,7 +1,7 @@
 package dependencies
 
 import (
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName sets the provider name identifier

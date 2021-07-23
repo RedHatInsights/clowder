@@ -1,10 +1,10 @@
 package metrics
 
 import (
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 type appinterfaceMetricsProvider struct {

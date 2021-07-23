@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

@@ -1,4 +1,4 @@
-module cloud.redhat.com/clowder/v2
+module github.com/RedHatInsights/clowder
 
 go 1.15
 

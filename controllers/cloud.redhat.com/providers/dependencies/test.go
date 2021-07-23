@@ -3,9 +3,9 @@ package dependencies
 import (
 	"testing"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

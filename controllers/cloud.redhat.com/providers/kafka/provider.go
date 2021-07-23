@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	cyndi "github.com/RedHatInsights/clowder/apis/cyndi-operator/v1alpha1"
 	core "k8s.io/api/core/v1"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName is the name/ident of the provider

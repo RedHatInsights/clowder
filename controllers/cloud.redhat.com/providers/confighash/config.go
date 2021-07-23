@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	core "k8s.io/api/core/v1"
 )
 

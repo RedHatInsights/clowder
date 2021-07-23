@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"

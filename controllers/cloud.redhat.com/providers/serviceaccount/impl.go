@@ -1,12 +1,12 @@
 package serviceaccount
 
 import (
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

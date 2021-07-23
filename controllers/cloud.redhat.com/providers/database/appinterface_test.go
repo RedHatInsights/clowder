@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	core "k8s.io/api/core/v1"
 )
 

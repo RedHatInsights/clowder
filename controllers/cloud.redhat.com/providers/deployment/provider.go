@@ -1,7 +1,7 @@
 package deployment
 
 import (
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
 )
 

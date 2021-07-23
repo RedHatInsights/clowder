@@ -3,8 +3,8 @@ package featureflags
 import (
 	"fmt"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName identifies the featureflags provider.

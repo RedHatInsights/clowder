@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -39,9 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	// +kubebuilder:scaffold:imports
 )

@@ -3,12 +3,12 @@ package metrics
 import (
 	"fmt"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
-	webProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/web"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	webProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"

@@ -1,11 +1,11 @@
 package job
 
 import (
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
-	deployProvider "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/deployment"
+	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 
 	"k8s.io/apimachinery/pkg/types"
 )

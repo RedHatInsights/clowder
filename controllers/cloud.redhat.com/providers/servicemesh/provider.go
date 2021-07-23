@@ -1,7 +1,7 @@
 package servicemesh
 
 import (
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName sets the provider name identifier

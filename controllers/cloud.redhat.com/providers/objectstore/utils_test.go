@@ -3,7 +3,7 @@ package objectstore
 import (
 	"fmt"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 )
 
 func objectStoreEquals(actual *config.ObjectStoreConfig, expected *config.ObjectStoreConfig) string {
