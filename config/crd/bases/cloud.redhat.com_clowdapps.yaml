@@ -2387,17 +2387,18 @@ spec:
               jobs:
                 description: A list of jobs
                 items:
-                  description: Job defines a CronJob as Schedule is required. In the
-                    future omitting the Schedule field will allow support for a standard
-                    Job resource.
+                  description: Job defines a ClowdJob A Job struct will deploy as
+                    a CronJob if `schedule` is set and will deploy as a Job if it
+                    is not set. Unsupported fields will be dropped from Jobs
                   properties:
                     concurrencyPolicy:
                       description: Defines the concurrency policy for the CronJob,
-                        defaults to Allow
+                        defaults to Allow Only applies to Cronjobs
                       type: string
                     failedJobsHistoryLimit:
                       description: The number of failed finished jobs to retain. Value
-                        must be non-negative integer. Defaults to 1.
+                        must be non-negative integer. Defaults to 1. Only applies
+                        to Cronjobs
                       format: int32
                       type: integer
                     name:
@@ -4615,13 +4616,14 @@ spec:
                       type: integer
                     successfulJobsHistoryLimit:
                       description: The number of successful finished jobs to retain.
-                        Value must be non-negative integer. Defaults to 3.
+                        Value must be non-negative integer. Defaults to 3. Only applies
+                        to Cronjobs
                       format: int32
                       type: integer
                     suspend:
                       description: This flag tells the controller to suspend subsequent
                         executions, it does not apply to already started executions.  Defaults
-                        to false.
+                        to false. Only applies to Cronjobs
                       type: boolean
                   required:
                   - name

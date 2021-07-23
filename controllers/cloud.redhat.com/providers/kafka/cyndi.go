@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	db "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/database"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	cyndi "github.com/RedHatInsights/clowder/apis/cyndi-operator/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	db "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

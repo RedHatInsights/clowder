@@ -1,7 +1,7 @@
 package object
 
 import (
-	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )

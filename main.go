@@ -30,9 +30,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	cloudredhatcomv1alpha1 "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	controllers "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
+	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	controllers "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	//+kubebuilder:scaffold:imports
 )
 

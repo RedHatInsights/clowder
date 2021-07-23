@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 

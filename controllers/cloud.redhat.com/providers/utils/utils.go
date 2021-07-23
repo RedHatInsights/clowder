@@ -1,11 +1,11 @@
 package providers
 
 import (
-	"cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1/common"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"

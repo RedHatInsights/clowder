@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 
-	cloudredhatcomv1alpha1 "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	cyndi "cloud.redhat.com/clowder/v2/apis/cyndi-operator/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	cyndi "github.com/RedHatInsights/clowder/apis/cyndi-operator/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"

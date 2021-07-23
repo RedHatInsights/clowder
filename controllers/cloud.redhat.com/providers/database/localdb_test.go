@@ -10,11 +10,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
-	provutils "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers/utils"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 )
 
 func getBaseElements() (types.NamespacedName, crd.ClowdApp) {

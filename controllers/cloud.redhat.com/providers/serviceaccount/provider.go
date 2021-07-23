@@ -1,7 +1,7 @@
 package serviceaccount
 
 import (
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 )
