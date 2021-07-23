@@ -53,7 +53,7 @@ spec:
     spec:
       template:
         spec:
-          serviceAccount: puptoo-app
+          serviceaccount: puptoo-app
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-suspend-cron
