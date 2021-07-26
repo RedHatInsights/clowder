@@ -448,6 +448,68 @@ func (k *KeyCloakClient) doesClientExist(realm string, requestedClientName strin
 	return false, nil
 }
 
+type User struct {
+	Username string `json:"username"`
+}
+
+type UserResponse []User
+
+func (k *KeyCloakClient) doesUserExist(realm string, requestedUsername string) (bool, error) {
+	resp, err := k.Get(fmt.Sprintf("/auth/admin/realms/%s/users", realm), "", make(map[string]string))
+
+	if err != nil {
+		return false, err
+	}
+
+	iface := &UserResponse{}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	err = json.Unmarshal(data, iface)
+
+	if err != nil {
+		return false, err
+	}
+
+	for _, user := range *iface {
+		fmt.Printf("\n\n%s\n\n", user.Username)
+		if user.Username == requestedUsername {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+type createUserStruct struct {
+	Enabled     bool              `json:"enabled"`
+	Username    string            `json:"username"`
+	FirstName   string            `json:"firstName"`
+	LastName    string            `json:"lastName"`
+	Email       string            `json:"email"`
+	Attributes  userAttributes    `json:"attributes"`
+	Credentials []userCredentials `json:"credentials"`
+}
+
+type userAttributes struct {
+	FirstName     string `json:"first_name"`
+	LastName      string `json:"last_name"`
+	AccountID     string `json:"account_id"`
+	AccountNumber string `json:"account_number"`
+	OrdID         string `json:"org_id"`
+	IsInternal    bool   `json:"is_internal"`
+	IsOrgAdmin    bool   `json:"is_org_admin"`
+	IsActive      bool   `json:"is_active"`
+}
+
+type userCredentials struct {
+	Temporary bool   `json:"temporary"`
+	Type      string `json:"type"`
+	Value     string `json:"value"`
+}
+
 type createRealmStruct struct {
 	Realm   string `json:"realm"`
 	Enabled bool   `json:"enabled"`
@@ -578,6 +640,32 @@ func (k *KeyCloakClient) createClient(realmName string, clientName string) error
 	return nil
 }
 
+func (k *KeyCloakClient) createUser(realmName string, user *createUserStruct) error {
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	b, err := json.Marshal(user)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := k.Post(
+		fmt.Sprintf("/auth/admin/realms/%s/users", realmName),
+		string(b), headers,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\n%v\n\n", resp)
+	v, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf("\n\n%s\n\n", string(v))
+	return nil
+}
+
 func (m *localWebProvider) configureKeycloak() error {
 	s := &core.Service{}
 	if err := m.Cache.Get(WebKeycloakService, s); err != nil {
@@ -611,6 +699,42 @@ func (m *localWebProvider) configureKeycloak() error {
 
 	if !exists {
 		err := client.createClient("redhat-external", "cloud-services")
+		if err != nil {
+			return err
+		}
+	}
+
+	exists, err = client.doesUserExist("redhat-external", "jdoe")
+
+	if err != nil {
+		return err
+	}
+
+	user := &createUserStruct{
+		Enabled:   true,
+		Username:  "jdoe",
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "jode@example.com",
+		Attributes: userAttributes{
+			FirstName:     "John",
+			LastName:      "Doe",
+			AccountID:     "12345",
+			AccountNumber: "12345",
+			OrdID:         "12345",
+			IsInternal:    false,
+			IsOrgAdmin:    true,
+			IsActive:      true,
+		},
+		Credentials: []userCredentials{{
+			Temporary: false,
+			Type:      "password",
+			Value:     "test",
+		}},
+	}
+
+	if !exists {
+		err := client.createUser("redhat-external", user)
 		if err != nil {
 			return err
 		}
