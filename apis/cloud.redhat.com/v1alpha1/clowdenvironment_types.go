@@ -32,7 +32,7 @@ import (
 )
 
 // WebMode details the mode of operation of the Clowder Web Provider
-// +kubebuilder:validation:Enum=none;operator
+// +kubebuilder:validation:Enum=none;operator;local
 type WebMode string
 
 // WebConfig configures the Clowder provider controlling the creation of web
