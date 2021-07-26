@@ -485,7 +485,7 @@ func (k *KeyCloakClient) createRealm(requestedRealmName string) error {
 
 type mapperConfig struct {
 	UserInfoTokenClaim bool   `json:"userinfo.token.claim"`
-	UserAttribute      string `json:"user.Attribute"`
+	UserAttribute      string `json:"user.attribute"`
 	IDTokenClaim       bool   `json:"id.token.claim"`
 	AccessTokenClaim   bool   `json:"access.token.claim"`
 	ClaimName          string `json:"claim.name"`
@@ -544,7 +544,6 @@ func (k *KeyCloakClient) createClient(realmName string, clientName string) error
 		WebOrigins:                []string{"url"},
 		DirectAccessGrantsEnabled: true,
 		ProtocolMappers: []mapperStruct{
-			createMapper("account_number", "String"),
 			createMapper("account_number", "String"),
 			createMapper("account_id", "String"),
 			createMapper("org_id", "String"),
