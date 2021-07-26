@@ -755,8 +755,6 @@ ProvidersConfig defines a group of providers configuration for a ClowdEnvironmen
 | *`pullSecrets`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the pull secret to use for the service accounts.
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]__ | Defines the environment for iqe/smoke testing
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecars[$$Sidecars$$]__ | Defines the sidecar configuration
-| *`authSidecar`* __boolean__ | Use sidecar
-| *`mock`* __boolean__ | Deploy Mocked items
 |===
 
 
@@ -932,7 +930,8 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`port`* __integer__ | The port that web services inside ClowdApp pods should be served on.
 | *`privatePort`* __integer__ | The private port that web services inside a ClowdApp should be served on.
 | *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.
-| *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*), which disables web service generation, or (*_operator_*) where services and probes are generated.
+| *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
+| *`bopURL`* __string__ | The URL of BOP - only used in (*_none_*/*_operator_*) mode.
 |===
 
 
