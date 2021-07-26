@@ -27,7 +27,7 @@ func (web *webProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	for _, deployment := range app.Spec.Deployments {
 
-		if err := web.makeService(&deployment, app); err != nil {
+		if err := makeService(web.Cache, &deployment, app, web.Env); err != nil {
 			return err
 		}
 	}
