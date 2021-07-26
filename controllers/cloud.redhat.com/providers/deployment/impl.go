@@ -39,7 +39,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	pod := deployment.PodSpec
 	d.Spec.Template.SetAnnotations(make(map[string]string))
-	if env.Spec.Providers.AuthSidecar && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
+	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		d.Spec.Template.Annotations["authsidecar"] = "enabled"
 		d.Spec.Template.Annotations["authsidecar/port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
 		d.Spec.Template.Annotations["authsidecar/config"] = fmt.Sprintf("%s/%s", env.GetClowdNamespace(), "caddy-config")

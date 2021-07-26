@@ -49,9 +49,11 @@ type WebConfig struct {
 	ApiPrefix string `json:"apiPrefix,omitempty"`
 
 	// The mode of operation of the Web provider. The allowed modes are
-	// (*_none_*), which disables web service generation, or (*_operator_*)
-	// where services and probes are generated.
+	// (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
 	Mode WebMode `json:"mode"`
+
+	// The URL of BOP - only used in (*_none_*/*_operator_*) mode.
+	BOPURL string `json:"bopURL,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider
@@ -419,12 +421,6 @@ type ProvidersConfig struct {
 
 	// Defines the sidecar configuration
 	Sidecars Sidecars `json:"sidecars,omitempty"`
-
-	// Use sidecar
-	AuthSidecar bool `json:"authSidecar,omitempty"`
-
-	// Deploy Mocked items
-	Mock bool `json:"mock,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
