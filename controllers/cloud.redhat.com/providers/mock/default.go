@@ -11,6 +11,7 @@ import (
 
 	crd "cloud.redhat.com/clowder/v2/apis/cloud.redhat.com/v1alpha1"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	obj "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/object"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
@@ -87,7 +88,9 @@ func NewMockProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	err := mp.configureKeycloak()
 
 	if err != nil {
-		return nil, err
+		newErr := errors.Wrap("couldn't config", err)
+		newErr.Requeue = true
+		return nil, newErr
 	}
 
 	return mp, nil
