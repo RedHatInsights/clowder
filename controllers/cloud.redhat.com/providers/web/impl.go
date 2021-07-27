@@ -502,6 +502,7 @@ type userAttributes struct {
 	IsInternal    bool   `json:"is_internal"`
 	IsOrgAdmin    bool   `json:"is_org_admin"`
 	IsActive      bool   `json:"is_active"`
+	Entitlements  string `json:"entitlements"`
 }
 
 type userCredentials struct {
@@ -616,6 +617,7 @@ func (k *KeyCloakClient) createClient(realmName string, clientName string) error
 			createMapper("is_org_admin", "boolean"),
 			createMapper("is_internal", "boolean"),
 			createMapper("is_active", "boolean"),
+			createMapper("entitlements", "String"),
 		},
 	}
 
@@ -725,6 +727,7 @@ func (m *localWebProvider) configureKeycloak() error {
 			IsInternal:    false,
 			IsOrgAdmin:    true,
 			IsActive:      true,
+			Entitlements:  `{"insights": {"is_trial": false, "is_enabled": true}}`,
 		},
 		Credentials: []userCredentials{{
 			Temporary: false,
