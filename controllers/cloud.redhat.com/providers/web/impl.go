@@ -262,7 +262,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	c := core.Container{
 		Name:           nn.Name,
-		Image:          "quay.io/cloudservices/mbop:513688c",
+		Image:          "quay.io/cloudservices/mbop:c75bda5",
 		Env:            envVars,
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
