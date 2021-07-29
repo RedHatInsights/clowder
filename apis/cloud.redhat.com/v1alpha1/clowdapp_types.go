@@ -110,6 +110,9 @@ type PublicWebService struct {
 	// Enabled describes if Clowder should enable the public service and provide the
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
+
+	//ApiPath describes the api path that will be configured to serve this backend from.
+	ApiPath string `json:"apiPath,omitempty"`
 }
 
 // PrivateWebService is the definition of the private web service. There can be only

@@ -4,12 +4,14 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	core "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -105,6 +107,66 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 	c.Mock = &config.MockConfig{
 		Bop:      providers.StrPtr(web.config.BOPURL),
 		Keycloak: providers.StrPtr(web.config.KeycloakURL),
+	}
+
+	web.createIngress(app)
+
+	return nil
+}
+
+func (web *localWebProvider) createIngress(app *crd.ClowdApp) error {
+
+	for _, deployment := range app.Spec.Deployments {
+
+		if !deployment.WebServices.Public.Enabled && !bool(deployment.Web) {
+			continue
+		}
+
+		netobj := &networking.Ingress{}
+
+		nn := app.GetDeploymentNamespacedName(&deployment)
+
+		if err := web.Cache.Create(WebIngress, nn, netobj); err != nil {
+			return err
+		}
+
+		labels := app.GetLabels()
+		labler := utils.MakeLabeler(nn, labels, app)
+		labler(netobj)
+
+		apiPath := deployment.WebServices.Public.ApiPath
+
+		if apiPath == "" {
+			apiPath = nn.Name
+		}
+
+		netobj.Spec = networking.IngressSpec{
+			Rules: []networking.IngressRule{
+				{
+					Host: web.Env.Name,
+					IngressRuleValue: networking.IngressRuleValue{
+						HTTP: &networking.HTTPIngressRuleValue{
+							Paths: []networking.HTTPIngressPath{{
+								Path:     fmt.Sprintf("/api/%s/", apiPath),
+								PathType: (*networking.PathType)(common.StringPtr("Prefix")),
+								Backend: networking.IngressBackend{
+									Service: &networking.IngressServiceBackend{
+										Name: nn.Name,
+										Port: networking.ServiceBackendPort{
+											Name: "auth",
+										},
+									},
+								},
+							}},
+						},
+					},
+				},
+			},
+		}
+
+		if err := web.Cache.Update(WebIngress, netobj); err != nil {
+			return err
+		}
 	}
 
 	return nil

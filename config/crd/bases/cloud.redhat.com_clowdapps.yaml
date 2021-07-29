@@ -2356,6 +2356,10 @@ spec:
                             web service. There can be only one public service managed
                             by Clowder.
                           properties:
+                            apiPath:
+                              description: ApiPath describes the api path that will
+                                be configured to serve this backend from.
+                              type: string
                             enabled:
                               description: Enabled describes if Clowder should enable
                                 the public service and provide the configuration in
