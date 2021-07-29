@@ -7,6 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1"
 )
 
 // ProvName sets the provider name identifier
@@ -29,6 +30,9 @@ var WebBOPService = providers.NewSingleResourceIdent(ProvName, "web_bop_service"
 
 // WebSecret is the mocked secret config
 var WebSecret = providers.NewSingleResourceIdent(ProvName, "web_secret", &core.Secret{})
+
+// WebIngress is the mocked secret config
+var WebIngress = providers.NewMultiResourceIdent(ProvName, "web_ingress", &networking.Ingress{})
 
 // GetEnd returns the correct end provider.
 func GetWeb(c *providers.Provider) (providers.ClowderProvider, error) {

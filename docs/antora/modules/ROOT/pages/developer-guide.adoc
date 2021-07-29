@@ -93,7 +93,7 @@ The scripts are:
 You will usually want to run:
 
 [source,shell]
-minikube start --addons=registry
+minikube start --addons=registry --addons=ingress
 /e2e-test-local.sh
 
 === Podman Notes

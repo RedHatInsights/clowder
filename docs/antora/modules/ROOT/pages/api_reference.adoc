@@ -803,6 +803,7 @@ PublicWebService is the definition of the public web service. There can be only 
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
+| *`apiPath`* __string__ | ApiPath describes the api path that will be configured to serve this backend from.
 |===
 
 
