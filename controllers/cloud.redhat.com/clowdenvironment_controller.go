@@ -118,6 +118,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	log.Info("Reconciliation started", "env", env.Name)
 
+	if env.Spec.Disabled {
+		log.Info("Reconciliation aborted - set to be disabled", "env", env.Name)
+		return ctrl.Result{}, nil
+	}
+
 	if env.Status.TargetNamespace == "" {
 		if env.Spec.TargetNamespace != "" {
 			namespace := core.Namespace{}

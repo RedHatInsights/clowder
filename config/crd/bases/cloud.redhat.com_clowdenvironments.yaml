@@ -51,6 +51,9 @@ spec:
           spec:
             description: A ClowdEnvironmentSpec object.
             properties:
+              disabled:
+                description: Disabled turns off reconciliation for this ClowdEnv
+                type: boolean
               providers:
                 description: A ProvidersConfig object, detailing the setup and configuration
                   of all the providers used in this ClowdEnvironment.

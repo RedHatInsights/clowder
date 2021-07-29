@@ -2368,6 +2368,9 @@ spec:
                   - podSpec
                   type: object
                 type: array
+              disabled:
+                description: Disabled turns off reconciliation for this ClowdApp
+                type: boolean
               envName:
                 description: The name of the ClowdEnvironment resource that this ClowdApp
                   will use as its base. This does not mean that the ClowdApp needs
