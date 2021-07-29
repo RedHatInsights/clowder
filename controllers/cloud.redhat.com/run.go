@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 
@@ -28,6 +29,9 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 )
+
+var mu sync.RWMutex
+var cEnv = ""
 
 var secretCompare schema.GroupVersionKind
 

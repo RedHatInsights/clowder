@@ -77,6 +77,24 @@ type ClowdEnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
 
+func SetEnv(name string) {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = name
+}
+
+func ReleaseEnv() {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = ""
+}
+
+func ReadEnv() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return cEnv
+}
+
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("env", req.Name).WithValues("id", utils.RandString(5))
@@ -161,11 +179,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	var requeue = false
 
+	SetEnv(env.Name)
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
 			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
+			ReleaseEnv()
 			return ctrl.Result{}, provErr
 
 		} else {
@@ -178,12 +198,15 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if cacheErr != nil {
 		if non_fatal := errors.HandleError(ctx, cacheErr); !non_fatal {
 			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
+			ReleaseEnv()
 			return ctrl.Result{}, cacheErr
 
 		} else {
 			requeue = true
 		}
 	}
+
+	ReleaseEnv()
 
 	if err == nil {
 		if _, ok := managedEnvironments[env.Name]; !ok {
