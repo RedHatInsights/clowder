@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	"github.com/go-logr/logr"
@@ -63,6 +64,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
+
+var mu sync.RWMutex
+var cEnv = ""
 
 const envFinalizer = "finalizer.env.cloud.redhat.com"
 
@@ -180,12 +184,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	var requeue = false
 
 	SetEnv(env.Name)
+	defer ReleaseEnv()
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
 		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
 			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
-			ReleaseEnv()
 			return ctrl.Result{}, provErr
 
 		} else {
@@ -198,15 +202,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if cacheErr != nil {
 		if non_fatal := errors.HandleError(ctx, cacheErr); !non_fatal {
 			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
-			ReleaseEnv()
 			return ctrl.Result{}, cacheErr
 
 		} else {
 			requeue = true
 		}
 	}
-
-	ReleaseEnv()
 
 	if err == nil {
 		if _, ok := managedEnvironments[env.Name]; !ok {
