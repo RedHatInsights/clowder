@@ -60,31 +60,16 @@
                         "$ref": "#/definitions/PrivateDependencyEndpoint"
                     }
                 },
-                "mock": {
-                    "$ref": "#/definitions/MockConfig"
+                "BOPURL": {
+                    "description": "Defines the path to the BOPURL.",
+                    "type": "string"
                 }
-
             },
             "required": [
                 "metricsPort",
                 "metricsPath",
                 "logging"
             ]
-        },
-        "MockConfig":{
-            "title": "MockConfig",
-            "type": "object",
-            "description": "Mocked information",
-            "properties":{
-                "bop": {
-                    "description": "BOP URL",
-                    "type": "string"
-                },
-                "keycloak": {
-                    "description": "Keycloak",
-                    "type": "string"
-                }
-            }
         },
         "LoggingConfig": {
             "title": "LoggingConfig",

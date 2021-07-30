@@ -40,9 +40,9 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	pod := deployment.PodSpec
 	d.Spec.Template.SetAnnotations(make(map[string]string))
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
-		d.Spec.Template.Annotations["authsidecar"] = "enabled"
-		d.Spec.Template.Annotations["authsidecar/port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
-		d.Spec.Template.Annotations["authsidecar/config"] = fmt.Sprintf("%s/%s", env.GetClowdNamespace(), "caddy-config")
+		d.Spec.Template.Annotations["clowder/authsidecar-enabled"] = "true"
+		d.Spec.Template.Annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
+		d.Spec.Template.Annotations["clowder/authsidecar-config"] = fmt.Sprintf("%s/%s", env.GetClowdNamespace(), "caddy-config")
 	}
 	d.Spec.Replicas = deployment.MinReplicas
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}

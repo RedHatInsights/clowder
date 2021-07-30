@@ -16,14 +16,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-type mockConfig struct {
+type backendConfig struct {
 	BOPURL      string
 	KeycloakURL string
 }
 
 type localWebProvider struct {
 	providers.Provider
-	config mockConfig
+	config backendConfig
 }
 
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
@@ -45,33 +45,6 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	}
 
 	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mbop", makeBOP, false, p.Env.IsNodePort()); err != nil {
-		return nil, err
-	}
-
-	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
-	wp.config.KeycloakURL = fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "keycloak", p.Env.GetClowdNamespace())
-
-	nn := types.NamespacedName{
-		Name:      "caddy-config",
-		Namespace: p.Env.GetClowdNamespace(),
-	}
-
-	sec := &core.Secret{}
-	if err := p.Cache.Create(WebSecret, nn, sec); err != nil {
-		return nil, err
-	}
-
-	sec.Name = nn.Name
-	sec.Namespace = nn.Namespace
-	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
-	sec.Type = core.SecretTypeOpaque
-
-	sec.StringData = map[string]string{
-		"bopurl":      wp.config.BOPURL,
-		"keycloakurl": wp.config.KeycloakURL,
-	}
-
-	if err := p.Cache.Update(WebSecret, sec); err != nil {
 		return nil, err
 	}
 
@@ -104,12 +77,36 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 		}
 	}
 
-	c.Mock = &config.MockConfig{
-		Bop:      providers.StrPtr(web.config.BOPURL),
-		Keycloak: providers.StrPtr(web.config.KeycloakURL),
+	web.createIngress(app)
+
+	BOPURL := fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace())
+	KeycloakURL := fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "keycloak", web.Env.GetClowdNamespace())
+
+	c.BOPURL = providers.StrPtr(web.config.BOPURL)
+
+	nn := types.NamespacedName{
+		Name:      "caddy-config",
+		Namespace: web.Env.GetClowdNamespace(),
 	}
 
-	web.createIngress(app)
+	sec := &core.Secret{}
+	if err := web.Cache.Create(WebSecret, nn, sec); err != nil {
+		return err
+	}
+
+	sec.Name = nn.Name
+	sec.Namespace = nn.Namespace
+	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
+	sec.Type = core.SecretTypeOpaque
+
+	sec.StringData = map[string]string{
+		"bopurl":      BOPURL,
+		"keycloakurl": KeycloakURL,
+	}
+
+	if err := web.Cache.Update(WebSecret, sec); err != nil {
+		return err
+	}
 
 	return nil
 }
