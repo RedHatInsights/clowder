@@ -1,0 +1,15 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-disabled
+spec:
+  disabled: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app
+  namespace: test-disabled
+spec:
+  disabled: true
