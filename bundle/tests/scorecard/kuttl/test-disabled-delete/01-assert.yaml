@@ -1,0 +1,18 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  namespace: test-disabled-delete
+status:
+  replicas: 1
+  observedGeneration: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-db
+  namespace: test-disabled-delete
+status:
+  replicas: 1
+  observedGeneration: 1
