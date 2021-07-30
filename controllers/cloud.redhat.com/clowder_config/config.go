@@ -8,6 +8,17 @@ import (
 )
 
 type ClowderConfig struct {
+	Credentials struct {
+		Keycloak struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+	}
+	Images struct {
+		MBOP     string `json:"mbop"`
+		Caddy    string `json:"caddy"`
+		Keycloak string `json:"Keycloak"`
+	} `json:"images"`
 	DebugOptions struct {
 		Trigger struct {
 			Diff bool `json:"diff"`
@@ -61,5 +72,15 @@ func getConfig() ClowderConfig {
 var LoadedConfig ClowderConfig
 
 func init() {
-	LoadedConfig = getConfig()
+
+	config := getConfig()
+
+	if config.Credentials.Keycloak.Username == "" {
+		config.Credentials.Keycloak.Username = "admin"
+	}
+
+	if config.Credentials.Keycloak.Password == "" {
+		config.Credentials.Keycloak.Password = "admin"
+	}
+	LoadedConfig = config
 }

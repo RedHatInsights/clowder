@@ -8,6 +8,9 @@ import "reflect"
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
+	// Defines the path to the BOPURL.
+	BOPURL *string `json:"BOPURL,omitempty"`
+
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`
 
@@ -33,9 +36,6 @@ type AppConfig struct {
 	// Defines the metrics port that the app should be configured to listen on for
 	// metric traffic.
 	MetricsPort int `json:"metricsPort"`
-
-	// Mock corresponds to the JSON schema field "mock".
-	Mock *MockConfig `json:"mock,omitempty"`
 
 	// ObjectStore corresponds to the JSON schema field "objectStore".
 	ObjectStore *ObjectStoreConfig `json:"objectStore,omitempty"`
@@ -192,15 +192,6 @@ type LoggingConfig struct {
 	Type string `json:"type"`
 }
 
-// Mocked information
-type MockConfig struct {
-	// BOP URL
-	Bop *string `json:"bop,omitempty"`
-
-	// Keycloak
-	Keycloak *string `json:"keycloak,omitempty"`
-}
-
 // Object Storage Bucket
 type ObjectStoreBucket struct {
 	// Defines the access key for specificed bucket.
@@ -286,6 +277,24 @@ func (j *TopicConfig) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
+func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	type Plain BrokerConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = BrokerConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
 func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
@@ -307,20 +316,22 @@ func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+func (j *BrokerConfigAuthtype) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
+	var ok bool
+	for _, expected := range enumValues_BrokerConfigAuthtype {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
 	}
-	type Plain BrokerConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BrokerConfigAuthtype, v)
 	}
-	*j = BrokerConfig(plain)
+	*j = BrokerConfigAuthtype(v)
 	return nil
 }
 
@@ -352,22 +363,23 @@ func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *BrokerConfigAuthtype) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
+func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var ok bool
-	for _, expected := range enumValues_BrokerConfigAuthtype {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
 	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BrokerConfigAuthtype, v)
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
 	}
-	*j = BrokerConfigAuthtype(v)
+	type Plain InMemoryDBConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = InMemoryDBConfig(plain)
 	return nil
 }
 
@@ -386,27 +398,6 @@ func (j *LoggingConfig) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	*j = LoggingConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain InMemoryDBConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = InMemoryDBConfig(plain)
 	return nil
 }
 

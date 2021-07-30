@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -29,7 +29,7 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	if v, ok := pod.GetAnnotations()["authsidecar"]; ok && v == "enabled" {
+	if v, ok := pod.GetAnnotations()["clowder/authsidecar-enabled"]; ok && v == "true" {
 		ridx := -1
 		for idx, container := range pod.Spec.Containers {
 			if container.Name == "crcauth" {
@@ -38,34 +38,35 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			}
 		}
 
-		port, ok := pod.GetAnnotations()["authsidecar/port"]
+		port, ok := pod.GetAnnotations()["clowder/authsidecar-port"]
 		if !ok {
 			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar port"))
 		}
 
-		config, ok := pod.GetAnnotations()["authsidecar/config"]
+		config, ok := pod.GetAnnotations()["clowder/authsidecar-config"]
 		if !ok {
 			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar config"))
-		}
-
-		nnParts := strings.Split(config, "/")
-		if len(nnParts) != 2 {
-			return admission.Errored(http.StatusBadRequest, fmt.Errorf("config ref is invalid"))
 		}
 
 		ascconf := &core.Secret{}
 
 		p.Client.Get(ctx, types.NamespacedName{
-			Name:      nnParts[1],
-			Namespace: nnParts[0],
+			Name:      config,
+			Namespace: pod.Namespace,
 		}, ascconf)
 
 		bopurl := string(ascconf.Data["bopurl"])
 		keycloakurl := string(ascconf.Data["keycloakurl"])
 
+		image := "quay.io/cloudservices/crc-caddy-plugin:29deb35"
+
+		if clowder_config.LoadedConfig.Images.Caddy != "" {
+			image = clowder_config.LoadedConfig.Images.Caddy
+		}
+
 		container := core.Container{
 			Name:  "crcauth",
-			Image: "quay.io/cloudservices/crc-caddy-plugin:29deb35",
+			Image: image,
 			Env: []core.EnvVar{
 				{
 					Name:  "CADDY_PORT",

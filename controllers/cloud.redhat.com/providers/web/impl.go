@@ -10,6 +10,7 @@ import (
 	"time"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -126,14 +127,6 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
-		Name: "quay-cloudservices-pull",
-	}}
-
-	// get the secret
-
-	port := int32(8080)
-
 	envVars := []core.EnvVar{
 		{
 			Name:  "DB_VENDOR",
@@ -145,13 +138,15 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		},
 		{
 			Name:  "KEYCLOAK_USER",
-			Value: "admin",
+			Value: clowder_config.LoadedConfig.Credentials.Keycloak.Username,
 		},
 		{
 			Name:  "KEYCLOAK_PASSWORD",
-			Value: "admin",
+			Value: clowder_config.LoadedConfig.Credentials.Keycloak.Password,
 		},
 	}
+
+	port := int32(8080)
 
 	ports := []core.ContainerPort{{
 		Name:          "service",
@@ -162,7 +157,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
-				IntVal: 8080,
+				IntVal: port,
 			},
 		},
 	}
@@ -178,9 +173,15 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		TimeoutSeconds:      2,
 	}
 
+	image := "quay.io/keycloak/keycloak:11.0.3"
+
+	if clowder_config.LoadedConfig.Images.Keycloak != "" {
+		image = clowder_config.LoadedConfig.Images.Keycloak
+	}
+
 	c := core.Container{
 		Name:           nn.Name,
-		Image:          "quay.io/keycloak/keycloak:11.0.3",
+		Image:          image,
 		Env:            envVars,
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
@@ -220,20 +221,14 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	dd.Spec.Template.Spec.ImagePullSecrets = []core.LocalObjectReference{{
-		Name: "quay-cloudservices-pull",
-	}}
-
-	// get the secret
-
-	port := int32(8080)
-
 	envVars := []core.EnvVar{
 		{
 			Name:  "KEYCLOAK_SERVER",
 			Value: fmt.Sprintf("http://%s-keycloak.%s.svc:8080", o.GetClowdName(), o.GetClowdNamespace()),
 		},
 	}
+
+	port := int32(8080)
 
 	ports := []core.ContainerPort{{
 		Name:          "service",
@@ -244,7 +239,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
-				IntVal: 8080,
+				IntVal: port,
 			},
 		},
 	}
@@ -260,9 +255,15 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
+	image := "quay.io/cloudservices/mbop:c75bda5"
+
+	if clowder_config.LoadedConfig.Images.MBOP != "" {
+		image = clowder_config.LoadedConfig.Images.MBOP
+	}
+
 	c := core.Container{
 		Name:           nn.Name,
-		Image:          "quay.io/cloudservices/mbop:c75bda5",
+		Image:          image,
 		Env:            envVars,
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
@@ -304,40 +305,43 @@ func NewKeyCloakClient(BaseUrl string, Username string, Password string, BaseCtx
 	return &client, nil
 }
 
+type AuthStruct struct {
+	AccessToken string `json:"access_token"`
+}
+
 func (k *KeyCloakClient) init() error {
 
 	headers := map[string]string{
 		"Content-type": "application/x-www-form-urlencoded",
 	}
 
-	resp, err := k.rawMethod("POST", "/auth/realms/master/protocol/openid-connect/token", "grant_type=password&client_id=admin-cli&username=admin&password=admin", headers)
+	resp, err := k.rawMethod(
+		"POST",
+		"/auth/realms/master/protocol/openid-connect/token",
+		fmt.Sprintf(
+			"grant_type=password&client_id=admin-cli&username=%s&password=%s",
+			clowder_config.LoadedConfig.Credentials.Keycloak.Username,
+			clowder_config.LoadedConfig.Credentials.Keycloak.Password,
+		),
+		headers,
+	)
 	if err != nil {
 		return err
 	}
 
-	var iface interface{}
+	respObj := &AuthStruct{}
 
-	err = json.NewDecoder(resp.Body).Decode(&iface)
+	data, err := ioutil.ReadAll(resp.Body)
+
+	fmt.Printf("%v", data)
 
 	if err != nil {
 		return err
 	}
 
-	auth, ok := iface.(map[string]interface{})
+	json.Unmarshal(data, respObj)
 
-	if !ok {
-		return fmt.Errorf("could not get auth info")
-	}
-
-	access_token, ok := auth["access_token"]
-
-	if !ok {
-		return fmt.Errorf("could not get access token")
-	}
-
-	access_token_string := access_token.(string)
-
-	k.AccessToken = access_token_string
+	k.AccessToken = respObj.AccessToken
 
 	return nil
 }
@@ -712,31 +716,32 @@ func (m *localWebProvider) configureKeycloak() error {
 		return err
 	}
 
-	user := &createUserStruct{
-		Enabled:   true,
-		Username:  "jdoe",
-		FirstName: "John",
-		LastName:  "Doe",
-		Email:     "jode@example.com",
-		Attributes: userAttributes{
-			FirstName:     "John",
-			LastName:      "Doe",
-			AccountID:     "12345",
-			AccountNumber: "12345",
-			OrdID:         "12345",
-			IsInternal:    false,
-			IsOrgAdmin:    true,
-			IsActive:      true,
-			Entitlements:  `{"insights": {"is_trial": false, "is_enabled": true}}`,
-		},
-		Credentials: []userCredentials{{
-			Temporary: false,
-			Type:      "password",
-			Value:     "test",
-		}},
-	}
-
 	if !exists {
+
+		user := &createUserStruct{
+			Enabled:   true,
+			Username:  "jdoe",
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "jode@example.com",
+			Attributes: userAttributes{
+				FirstName:     "John",
+				LastName:      "Doe",
+				AccountID:     "12345",
+				AccountNumber: "12345",
+				OrdID:         "12345",
+				IsInternal:    false,
+				IsOrgAdmin:    true,
+				IsActive:      true,
+				Entitlements:  `{"insights": {"is_trial": false, "is_enabled": true}}`,
+			},
+			Credentials: []userCredentials{{
+				Temporary: false,
+				Type:      "password",
+				Value:     "test",
+			}},
+		}
+
 		err := client.createUser("redhat-external", user)
 		if err != nil {
 			return err
