@@ -117,3 +117,18 @@ data:
   db.port: NTQzMg==  # 5432
   db.user: dXNlcmJhZAo=  # userbad
   db.password:  cGFzc3dvcmQxMjM=  # password123
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-e
+  namespace: test-multi-app-interface-db
+spec:
+  envName: test-multi-app-interface-db
+  pods:
+  - name: processor
+    image: quay.io/psav/clowder-hello
+  database:
+    sharedDbAppName: app-d
+  dependencies:
+  - app-d
