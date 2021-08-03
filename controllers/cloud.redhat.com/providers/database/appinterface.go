@@ -79,10 +79,12 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	var dbSpec crd.DatabaseSpec
 	var namespace string
+	var searchAppName string
 
 	if app.Spec.Database.Name != "" {
 		dbSpec = app.Spec.Database
 		namespace = app.Namespace
+		searchAppName = app.Name
 	} else if app.Spec.Database.SharedDBAppName != "" {
 		err := checkDependency(app)
 		if err != nil {
@@ -97,7 +99,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 		dbSpec = refApp.Spec.Database
 		namespace = refApp.Namespace
-
+		searchAppName = refApp.Name
 	}
 
 	secrets := core.SecretList{}
@@ -114,7 +116,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	var matched config.DatabaseConfig
 
-	matches, err := searchAnnotationSecret(app.Name, secrets.Items)
+	matches, err := searchAnnotationSecret(searchAppName, secrets.Items)
 
 	if err != nil {
 		return errors.Wrap("failed to extract annotated secret", err)
