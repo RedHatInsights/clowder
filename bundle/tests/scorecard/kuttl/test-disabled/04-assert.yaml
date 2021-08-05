@@ -1,0 +1,20 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  namespace: test-disabled
+status:
+  readyReplicas: 1
+  replicas: 1
+  observedGeneration: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-db
+  namespace: test-disabled
+status:
+  readyReplicas: 1
+  replicas: 1
+  observedGeneration: 3

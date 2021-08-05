@@ -107,6 +107,7 @@ ClowdAppSpec is the main specification for a single Clowder Application it defin
 | *`optionalDependencies`* __string array__ | A list of optional dependencies in the form of the name of the ClowdApps that are will be added to the configuration when present.
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingspec[$$TestingSpec$$]__ | Iqe plugin and other specifics
 | *`cyndi`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec[$$CyndiSpec$$]__ | Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has the kafka provider set to (*_operator_*) mode, Clowder will configure a CyndiPipeline for this app in the environment's kafka-connect namespace. When the kafka provider is in (*_app-interface_*) mode, Clowder will check to ensure that a CyndiPipeline resource exists for the application in the environment's kafka-connect namespace. For all other kafka provider modes, this configuration option has no effect.
+| *`disabled`* __boolean__ | Disabled turns off reconciliation for this ClowdApp
 |===
 
 
@@ -189,6 +190,7 @@ ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 | *`providers`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]__ | A ProvidersConfig object, detailing the setup and configuration of all the providers used in this ClowdEnvironment.
 | *`resourceDefaults`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.
 | *`serviceConfig`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-serviceconfig[$$ServiceConfig$$]__ | 
+| *`disabled`* __boolean__ | Disabled turns off reconciliation for this ClowdEnv
 |===
 
 

@@ -339,6 +339,9 @@ type ClowdAppSpec struct {
 	// for the application in the environment's kafka-connect namespace. For all other kafka
 	// provider modes, this configuration option has no effect.
 	Cyndi CyndiSpec `json:"cyndi,omitempty"`
+
+	// Disabled turns off reconciliation for this ClowdApp
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 type ClowdConditionType string

@@ -147,6 +147,11 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
+	if app.Spec.Disabled {
+		log.Info("Reconciliation aborted - set to be disabled", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+		return ctrl.Result{}, nil
+	}
+
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &app)
 
 	env := crd.ClowdEnvironment{}

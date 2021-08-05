@@ -1,0 +1,9 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-disabled-delete
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  namespace: test-disabled-delete

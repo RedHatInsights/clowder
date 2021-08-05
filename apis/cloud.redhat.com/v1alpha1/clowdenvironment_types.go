@@ -367,6 +367,9 @@ type ClowdEnvironmentSpec struct {
 	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
 
 	ServiceConfig ServiceConfig `json:"serviceConfig,omitempty"`
+
+	// Disabled turns off reconciliation for this ClowdEnv
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 type TokenRefresherConfig struct {
