@@ -523,6 +523,14 @@
 <p>Configures 'cyndi' database syndication for this app. When the app&#8217;s ClowdEnvironment has the kafka provider set to (<strong><em>operator</em></strong>) mode, Clowder will configure a CyndiPipeline for this app in the environment&#8217;s kafka-connect namespace. When the kafka provider is in (<strong><em>app-interface</em></strong>) mode, Clowder will check to ensure that a CyndiPipeline resource exists for the application in the environment&#8217;s kafka-connect namespace. For all other kafka provider modes, this configuration option has no effect.</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>disabled</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Disabled turns off reconciliation for this ClowdApp</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -764,6 +772,14 @@
 <p><strong><code>serviceConfig</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-serviceconfig">ServiceConfig</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>disabled</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Disabled turns off reconciliation for this ClowdEnv</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
