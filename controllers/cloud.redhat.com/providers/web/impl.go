@@ -137,12 +137,26 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 			Value: "true",
 		},
 		{
-			Name:  "KEYCLOAK_USER",
-			Value: clowder_config.LoadedConfig.Credentials.Keycloak.Username,
+			Name: "KEYCLOAK_USER",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: nn.Name,
+					},
+					Key: "username",
+				},
+			},
 		},
 		{
-			Name:  "KEYCLOAK_PASSWORD",
-			Value: clowder_config.LoadedConfig.Credentials.Keycloak.Password,
+			Name: "KEYCLOAK_PASSWORD",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: nn.Name,
+					},
+					Key: "password",
+				},
+			},
 		},
 	}
 
@@ -202,6 +216,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 }
 
 func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mbop")
 
 	dd := objMap[WebBOPDeployment].(*apps.Deployment)
@@ -225,6 +240,28 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		{
 			Name:  "KEYCLOAK_SERVER",
 			Value: fmt.Sprintf("http://%s-keycloak.%s.svc:8080", o.GetClowdName(), o.GetClowdNamespace()),
+		},
+		{
+			Name: "KEYCLOAK_USER",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: snn.Name,
+					},
+					Key: "username",
+				},
+			},
+		},
+		{
+			Name: "KEYCLOAK_PASSWORD",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: snn.Name,
+					},
+					Key: "password",
+				},
+			},
 		},
 	}
 
@@ -255,7 +292,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:c75bda5"
+	image := "quay.io/cloudservices/mbop:8ba3f25"
 
 	if clowder_config.LoadedConfig.Images.MBOP != "" {
 		image = clowder_config.LoadedConfig.Images.MBOP
@@ -320,8 +357,8 @@ func (k *KeyCloakClient) init() error {
 		"/auth/realms/master/protocol/openid-connect/token",
 		fmt.Sprintf(
 			"grant_type=password&client_id=admin-cli&username=%s&password=%s",
-			clowder_config.LoadedConfig.Credentials.Keycloak.Username,
-			clowder_config.LoadedConfig.Credentials.Keycloak.Password,
+			k.Username,
+			k.Password,
 		),
 		headers,
 	)
@@ -678,7 +715,9 @@ func (m *localWebProvider) configureKeycloak() error {
 		return err
 	}
 
-	client, err := NewKeyCloakClient(fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace), "admin", "admin", m.Ctx)
+	fmt.Printf("\n\n%v\n\n", m.config)
+
+	client, err := NewKeyCloakClient(fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace), m.config.KeycloakConfig.Username, m.config.KeycloakConfig.Password, m.Ctx)
 
 	if err != nil {
 		return err
@@ -710,7 +749,7 @@ func (m *localWebProvider) configureKeycloak() error {
 		}
 	}
 
-	exists, err = client.doesUserExist("redhat-external", "jdoe")
+	exists, err = client.doesUserExist("redhat-external", m.config.KeycloakConfig.DefaultUsername)
 
 	if err != nil {
 		return err
@@ -738,7 +777,7 @@ func (m *localWebProvider) configureKeycloak() error {
 			Credentials: []userCredentials{{
 				Temporary: false,
 				Type:      "password",
-				Value:     "test",
+				Value:     m.config.KeycloakConfig.DefaultPassword,
 			}},
 		}
 

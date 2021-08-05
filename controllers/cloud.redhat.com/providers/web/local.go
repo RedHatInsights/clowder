@@ -5,6 +5,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -16,9 +17,17 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type KeycloakConfig struct {
+	URL             string
+	Username        string
+	Password        string
+	DefaultUsername string
+	DefaultPassword string
+}
+
 type backendConfig struct {
-	BOPURL      string
-	KeycloakURL string
+	BOPURL         string
+	KeycloakConfig KeycloakConfig
 }
 
 type localWebProvider struct {
@@ -29,6 +38,42 @@ type localWebProvider struct {
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
 	wp := &localWebProvider{Provider: *p}
+
+	nn := providers.GetNamespacedName(p.Env, "keycloak")
+
+	dataInit := func() map[string]string {
+		username := clowder_config.LoadedConfig.Credentials.Keycloak.Username
+		if username == "" {
+			username = utils.RandString(8)
+		}
+
+		password := clowder_config.LoadedConfig.Credentials.Keycloak.Password
+		if password == "" {
+			password = utils.RandString(8)
+		}
+
+		defaultPassword := utils.RandString(8)
+
+		return map[string]string{
+			"username":        username,
+			"password":        password,
+			"defaultUsername": "jdoe",
+			"defaultPassword": defaultPassword,
+		}
+	}
+
+	dataMap, err := providers.MakeOrGetSecret(wp.Ctx, p.Env, wp.Cache, WebKeycloakSecret, nn, dataInit)
+	if err != nil {
+		return nil, errors.Wrap("Couldn't set/get secret", err)
+	}
+
+	wp.config.KeycloakConfig.Username = (*dataMap)["username"]
+	wp.config.KeycloakConfig.Password = (*dataMap)["password"]
+	wp.config.KeycloakConfig.DefaultUsername = (*dataMap)["defaultUsername"]
+	wp.config.KeycloakConfig.DefaultPassword = (*dataMap)["defaultPassword"]
+
+	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace())
+	wp.config.KeycloakConfig.URL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "keycloak", wp.Env.GetClowdNamespace())
 
 	objList := []providers.ResourceIdent{
 		WebKeycloakDeployment,
@@ -48,7 +93,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
-	err := wp.configureKeycloak()
+	err = wp.configureKeycloak()
 
 	if err != nil {
 		newErr := errors.Wrap("couldn't config", err)
@@ -79,9 +124,6 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 
 	web.createIngress(app)
 
-	BOPURL := fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace())
-	KeycloakURL := fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "keycloak", web.Env.GetClowdNamespace())
-
 	c.BOPURL = providers.StrPtr(web.config.BOPURL)
 
 	nn := types.NamespacedName{
@@ -100,8 +142,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 	sec.Type = core.SecretTypeOpaque
 
 	sec.StringData = map[string]string{
-		"bopurl":      BOPURL,
-		"keycloakurl": KeycloakURL,
+		"bopurl":      web.config.BOPURL,
+		"keycloakurl": web.config.KeycloakConfig.URL,
 	}
 
 	if err := web.Cache.Update(WebSecret, sec); err != nil {

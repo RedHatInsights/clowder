@@ -72,15 +72,5 @@ func getConfig() ClowderConfig {
 var LoadedConfig ClowderConfig
 
 func init() {
-
-	config := getConfig()
-
-	if config.Credentials.Keycloak.Username == "" {
-		config.Credentials.Keycloak.Username = "admin"
-	}
-
-	if config.Credentials.Keycloak.Password == "" {
-		config.Credentials.Keycloak.Password = "admin"
-	}
-	LoadedConfig = config
+	LoadedConfig = getConfig()
 }
