@@ -153,8 +153,10 @@ spec:
                           for this environment. Ignored for (*_local_*) mode.
                         properties:
                           config:
+                            additionalProperties:
+                              type: string
                             description: Config full options
-                            x-kubernetes-preserve-unknown-fields: true
+                            type: object
                           deleteClaim:
                             description: Delete persistent volume claim if the Kafka
                               cluster is deleted Only applies when KafkaConfig.PVC
