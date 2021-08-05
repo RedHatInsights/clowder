@@ -89,8 +89,6 @@ type MetricsConfig struct {
 // +kubebuilder:validation:Enum=managed;operator;app-interface;local;none
 type KafkaMode string
 
-type KafkaConfigKafka map[string]string
-
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
 type KafkaClusterConfig struct {
 	// Defines the kafka cluster name (default: <ClowdEnvironment Name>-<UID>)
@@ -115,7 +113,7 @@ type KafkaClusterConfig struct {
 	Version string `json:"version,omitempty"`
 
 	// Config full options
-	Config *KafkaConfigKafka `json:"config,omitempty"`
+	Config *map[string]string `json:"config,omitempty"`
 
 	// JVM Options
 	JVMOptions strimzi.KafkaSpecKafkaJvmOptions `json:"jvmOptions,omitempty"`
