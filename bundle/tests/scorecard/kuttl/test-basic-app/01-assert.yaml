@@ -18,6 +18,8 @@ metadata:
   name: puptoo-processor
   namespace: test-basic-app
 spec:
+  strategy:
+    type: RollingUpdate
   template:
     spec:
       serviceAccountName: puptoo-processor
