@@ -113,7 +113,7 @@ type KafkaClusterConfig struct {
 	Version string `json:"version,omitempty"`
 
 	// Config full options
-	Config strimzi.KafkaSpecKafkaConfig `json:"config,omitempty"`
+	Config *map[string]string `json:"config,omitempty"`
 
 	// JVM Options
 	JVMOptions strimzi.KafkaSpecKafkaJvmOptions `json:"jvmOptions,omitempty"`

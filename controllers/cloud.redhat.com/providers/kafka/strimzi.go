@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -98,11 +99,15 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
+	var kConfig apiextensions.JSON
+
+	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
+		"offsets.topic.replication.factor": %s
+	}`, strconv.Itoa(int(replicas)))))
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config: map[string]string{
-				"offsets.topic.replication.factor": strconv.Itoa(int(replicas)),
-			},
+			Config:   &kConfig,
 			Version:  &version,
 			Replicas: replicas,
 		},
@@ -116,15 +121,16 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		},
 	}
 
-	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil {
-		k.Spec.Kafka.Config = s.Env.Spec.Providers.Kafka.Cluster.Config
+	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil && len(*s.Env.Spec.Providers.Kafka.Cluster.Config) != 0 {
+		jsonData, err := json.Marshal(s.Env.Spec.Providers.Kafka.Cluster.Config)
+		if err != nil {
+			return err
+		}
+		kConfig.UnmarshalJSON(jsonData)
+		k.Spec.Kafka.Config = &kConfig
 	}
 
 	k.Spec.Kafka.JvmOptions = &s.Env.Spec.Providers.Kafka.Cluster.JVMOptions
-
-	var metrics apiextensions.JSON
-
-	metrics.UnmarshalJSON(metricsData)
 
 	metricsConfig := strimzi.KafkaSpecKafkaMetricsConfig{
 		Type: "jmxPrometheusExporter",

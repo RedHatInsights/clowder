@@ -652,9 +652,13 @@ func (in *KafkaClusterConfig) DeepCopyInto(out *KafkaClusterConfig) {
 	*out = *in
 	if in.Config != nil {
 		in, out := &in.Config, &out.Config
-		*out = make(v1beta1.KafkaSpecKafkaConfig, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
+		*out = new(map[string]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make(map[string]string, len(*in))
+			for key, val := range *in {
+				(*out)[key] = val
+			}
 		}
 	}
 	in.JVMOptions.DeepCopyInto(&out.JVMOptions)
