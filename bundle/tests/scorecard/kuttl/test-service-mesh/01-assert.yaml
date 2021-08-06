@@ -9,4 +9,4 @@ spec:
     metadata:
       annotations: 
         sidecar.istio.io/inject: "true"
-        traffic.sidecar.istio.io/excludeOutboundPorts: "443,9093"
+        traffic.sidecar.istio.io/excludeOutboundPorts: "443,9093,5432"
