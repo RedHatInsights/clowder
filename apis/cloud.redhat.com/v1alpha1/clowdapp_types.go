@@ -19,6 +19,7 @@ import (
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -162,6 +163,9 @@ type Deployment struct {
 
 	// K8sAccessLevel defines the level of access for this deployment
 	K8sAccessLevel K8sAccessLevel `json:"k8sAccessLevel,omitempty"`
+
+	// DeploymentStrategy defines the deployment strategy for this deployment.
+	DeploymentStrategy *apps.DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 }
 
 type Sidecar struct {
