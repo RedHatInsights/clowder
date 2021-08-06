@@ -165,7 +165,15 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	if env.Generation != env.Status.Generation {
+	successfulReconciliation := false
+
+	for _, cond := range env.Status.Conditions {
+		if cond.Type == crd.ReconciliationSuccessful && cond.Status == core.ConditionTrue {
+			successfulReconciliation = true
+		}
+	}
+
+	if env.Generation != env.Status.Generation || !successfulReconciliation {
 		err := errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
 		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
 		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
