@@ -260,7 +260,8 @@ function install_elasticsearch_operator {
     ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/1.6.0/all-in-one.yaml
 
     echo "*** Will wait for elastic-operator to come up in background"
-    ${KUBECTL_CMD} wait pods/$POD --for=condition=Ready --timeout=150s -n "$OPERATOR_NS" &
+    ${KUBECTL_CMD} rollout status statefulset/elastic-operator -n "$OPERATOR_NS" | sed "s/^/[elastic-operator] /" &
+
     BG_PIDS+=($!)
 
     cd "$ROOT_DIR"
