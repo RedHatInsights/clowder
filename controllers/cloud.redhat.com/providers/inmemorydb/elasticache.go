@@ -45,8 +45,8 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 				)
 			}
 
-                        passwd, err := string(secret.Data["db.auth_token"])
-                        if err != nil {
+                        passwd := string(secret.Data["db.auth_token"])
+                        if passwd = nil {
                                 // Elasticache password not found in secret
                                 return errors.Wrap(
                                         fmt.Sprintf("Auth token was not found in secret '%s' in namespace '%s'", secretName, app.Namespace),
