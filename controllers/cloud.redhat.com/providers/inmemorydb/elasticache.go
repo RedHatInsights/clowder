@@ -45,6 +45,18 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 				)
 			}
 
+			passwd, err := strconv.Atoi(string(secret.Data["db.auth_token"]))
+                        if err != nil {
+				// Elasticache PW not found in secret
+                                return errors.Wrap(
+                                        fmt.Sprintf("Auth token was not found in secret '%s' in namespace '%s'", secretName, app.Namespace),
+                                        err,
+                                )
+                        } else {
+				// Elasticache PW found
+				e.Config.Password = passwd
+			}
+
 			e.Config.Hostname = string(secret.Data["db.endpoint"])
 			e.Config.Port = port
 			found = true
