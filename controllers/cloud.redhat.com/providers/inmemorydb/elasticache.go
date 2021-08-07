@@ -45,7 +45,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 				)
 			}
 
-                        passwd, err := strconv.Atoi(string(secret.Data["db.auth_token"]))
+                        passwd, err := string(secret.Data["db.auth_token"])
                         if err != nil {
                                 // Elasticache password not found in secret
                                 return errors.Wrap(
@@ -54,7 +54,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
                                 )
                         } else {
                                 // Elasticache password found
-                                e.Config.Password = string(passwd)
+                                e.Config.Password = passwd
                         }
 
 			e.Config.Hostname = string(secret.Data["db.endpoint"])
