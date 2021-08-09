@@ -45,8 +45,11 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 				)
 			}
 
-			passwd := string(secret.Data["db.auth_token"])
-			e.Config.Password = &passwd
+                        passwd := string(secret.Data["db.auth_token"])
+                        if passwd != "" {
+                                e.Config.Password = &passwd
+                        }
+
 			e.Config.Hostname = string(secret.Data["db.endpoint"])
 			e.Config.Port = port
 			found = true
