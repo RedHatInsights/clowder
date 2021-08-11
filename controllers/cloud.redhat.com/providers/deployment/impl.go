@@ -120,6 +120,15 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		},
 	})
 
+	for _, vol := range d.Spec.Template.Spec.Volumes {
+		if vol.VolumeSource.PersistentVolumeClaim != nil {
+			d.Spec.Strategy = apps.DeploymentStrategy{
+				Type: apps.RecreateDeploymentStrategyType,
+			}
+			break
+		}
+	}
+
 	ApplyPodAntiAffinity(&d.Spec.Template)
 }
 
