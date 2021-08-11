@@ -63,7 +63,7 @@ following structure.
 
 === Client access
 
-For supported languages, the kafka configuration is access via the following
+For supported languages, the In-Memory DB configuration is accessed via the following
 attribute names.
 
 [options="header"]
