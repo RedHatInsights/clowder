@@ -196,6 +196,19 @@
 <p>The <strong>Deployment Provider</strong> is responsible for creating the base Deployment
 resource for a <code>ClowdApp</code>.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If a deployment uses a PVC type volume, the rollout strategy
+      will automatically be switched to <code>Recreate</code>.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
