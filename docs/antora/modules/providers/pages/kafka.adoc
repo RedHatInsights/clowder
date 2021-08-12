@@ -143,7 +143,7 @@ A TLS/User auth enabled Kafka will look like this
 
 === Client access
 
-For supported languages, the kafka configuration is access via the following
+For supported languages, the kafka configuration is accessed via the following
 attribute names.
 
 [options="header"]

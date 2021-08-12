@@ -42,7 +42,7 @@ ClowdEnv Config options available:
 === app-interface
 
 In app-interface mode, the *Object Store Provider* does not create any resources.
-In order to provide te configuration to the `cdappconfig.json` it searches
+In order to provide the configuration to the `cdappconfig.json` it searches
 through all the k8s Secrets in the same namespace as the `ClowdApp` looking
 for one where the `bucket` field of the Secret matches the requested bucket
 name in the ClowdApp.
