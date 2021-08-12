@@ -20,12 +20,12 @@ image::docs/antora/modules/ROOT/images/terminal-example.gif[Animated GIF termina
 
 ## Why use Clowder?
 
-In addition to reducing the effort to maintain a deployment template, Clowder 
+In addition to reducing the effort to maintain a deployment template, Clowder
 provides a number of other benefits:
 
 * **Consistent deployment** Whether you're deploying to production, running smoke
-  tests on a PR, or developing your application locally, Clowder will use the 
-  same app definition for all three. No more endlessly tweaking environment variables! 
+  tests on a PR, or developing your application locally, Clowder will use the
+  same app definition for all three. No more endlessly tweaking environment variables!
 * **Focus on development** Clowder has the best practices of running an app in
   a microservices environment as well as specific requirements from the app-sre
   team, such as pod affinity, rollout parameters etc built-in. Spend less time
@@ -76,7 +76,7 @@ Our current roadmap looks like this:
 
 **Clowder is already running in pre-prod/prod environments.**
 
-To run Clowder locally in Minikube, obtain and install 
+To run Clowder locally in Minikube, obtain and install
 https://minikube.sigs.k8s.io/docs/start/[Minikube].
 
 Clowder is developed on Fedora and the kvm driver has been found to work best
@@ -99,7 +99,7 @@ minikube config set memory 16000
 minikube config set disk-size 36GB
 minikube config set vm-driver kvm2
 
-If you encounter any kvm issues, please take a look 
+If you encounter any kvm issues, please take a look
 xref:docs/antora/modules/ROOT/pages/developer-guide.adoc[at the troubleshooting guide]
 
 The ``kube_setup.sh`` script then needs to be run by invoking
@@ -109,7 +109,7 @@ The ``kube_setup.sh`` script then needs to be run by invoking
 ./build/kube_setup.sh
 ....
 
-Clowder can then be installed by visiting the 
+Clowder can then be installed by visiting the
 https://github.com/RedHatInsights/clowder/releases/latest[latest release]
 page, copying the link to the manifest, and running something similar to that
 shown below:
@@ -117,13 +117,13 @@ shown below:
 [source,shell]
 ----
 # Be sure to get the latest release in the link above!
-minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/0.15.0/clowder-manifest-0.15.0.yaml --validate=false
+minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/v0.18.1/clowder-manifest-v0.18.1.yaml --validate=false
 ----
 
 ## Usage
 
 To use Clowder to deploy an application a ``ClowdEnvironment`` resource must be
-present to define an environment. Once this has been deployed, a ``ClowdApp`` 
+present to define an environment. Once this has been deployed, a ``ClowdApp``
 resource is authored for the app and deployed alongside the ``ClowdEnvironment``.
 
 Example app developer workflow:
