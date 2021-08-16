@@ -454,6 +454,7 @@ func contains(list []string, s string) bool {
 func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.Provider, a *crd.ClowdApp) error {
 
 	c := config.AppConfig{}
+	c.Self = a.Spec
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
