@@ -2,12 +2,19 @@
 
 package config
 
-import "fmt"
-import "encoding/json"
-import "reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+)
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
+	// Self corresponds to the full ClowdApp spec of this app as seen by the operator
+	Self crd.ClowdAppSpec `json:"self"`
+
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`
 
