@@ -185,7 +185,7 @@ function install_prometheus_operator {
 
 
 function install_cyndi_operator {
-    OPERATOR_NS=cyndi-operator
+    OPERATOR_NS=cyndi-operator-system
     DEPLOYMENT=cyndi-operator-controller-manager
 
     if [ $REINSTALL -ne 1 ]; then
