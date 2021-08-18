@@ -455,26 +455,9 @@ func contains(list []string, s string) bool {
 	return false
 }
 
-func updateMetadata(app *crd.ClowdApp, appConfig *config.AppConfig) {
-	metadata := config.AppMetadata{}
-
-	for _, deployment := range app.Spec.Deployments {
-		deploymentMetadata := config.DeploymentMetadata{
-			Name:  deployment.Name,
-			Image: deployment.PodSpec.Image,
-		}
-		metadata.Deployments = append(metadata.Deployments, deploymentMetadata)
-	}
-
-	appConfig.Metadata = metadata
-}
-
 func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.Provider, a *crd.ClowdApp) error {
 
 	c := config.AppConfig{}
-
-	// Update app metadata
-	updateMetadata(a, &c)
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
