@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
-	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -627,22 +626,9 @@ func TestCreateClowdApp(t *testing.T) {
 		return
 	}
 
-	metadataValidation(t, app, jsonContent)
-
 	kafkaValidation(t, env, app, jsonContent, clowdAppNN)
 
 	clowdWatchValidation(t, jsonContent, cwData)
-}
-
-func metadataValidation(t *testing.T, app *crd.ClowdApp, jsonContent *config.AppConfig) {
-	for _, deployment := range app.Spec.Deployments {
-		expected := config.DeploymentMetadata{
-			Name:  deployment.Name,
-			Image: deployment.PodSpec.Image,
-		}
-		assert.Contains(t, jsonContent.Metadata.Deployments, expected)
-	}
-	assert.Len(t, jsonContent.Metadata.Deployments, len(app.Spec.Deployments))
 }
 
 func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp, jsonContent *config.AppConfig, clowdAppNN types.NamespacedName) {
