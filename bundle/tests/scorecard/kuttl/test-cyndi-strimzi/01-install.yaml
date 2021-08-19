@@ -44,9 +44,10 @@ spec:
   cyndi:
     enabled: true
   envName: test-cyndi-strimzi
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   database:
     name: myapp-db
     version: 12
@@ -58,9 +59,10 @@ metadata:
   namespace: test-cyndi-strimzi
 spec:
   envName: test-cyndi-strimzi
-  pods:
+  deployments:
   - name: fake-inventory-app
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   database:
     name: host-inventory-db
     version: 12
