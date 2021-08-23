@@ -69,8 +69,9 @@ type ClowdJobInvocationStatus struct {
 	// Completed is false and updated when all jobs have either finished
 	// successfully or failed past their backoff and retry values
 	Completed bool `json:"completed"`
-	// Jobs is a list of the job names run by Job invocation
-	Jobs []string `json:"jobs"`
+	// Jobs is a map of the job names run by Job invocation and their outcomes
+	Jobs       map[string]string `json:"jobs"`
+	Conditions []ClowdCondition  `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

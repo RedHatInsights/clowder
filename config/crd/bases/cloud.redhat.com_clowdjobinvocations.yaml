@@ -100,10 +100,41 @@ spec:
                 description: Completed is false and updated when all jobs have either
                   finished successfully or failed past their backoff and retry values
                 type: boolean
-              jobs:
-                description: Jobs is a list of the job names run by Job invocation
+              conditions:
                 items:
-                  type: string
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: Human-readable message indicating details about
+                        last transition.
+                      type: string
+                    reason:
+                      description: Unique, one-word, CamelCase reason for the condition's
+                        last transition.
+                      type: string
+                    status:
+                      description: Status is the status of the condition. Can be True,
+                        False, Unknown.
+                      type: string
+                    type:
+                      description: Type is the type of the condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              jobs:
+                description: Jobs is a map of the job names run by Job invocation
+                  and their outcomes
+                items:
+                  additionalProperties:
+                    type: string
+                  type: object
                 type: array
             required:
             - completed

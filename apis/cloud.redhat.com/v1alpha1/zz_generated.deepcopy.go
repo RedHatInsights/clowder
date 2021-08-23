@@ -397,8 +397,17 @@ func (in *ClowdJobInvocationStatus) DeepCopyInto(out *ClowdJobInvocationStatus) 
 	*out = *in
 	if in.Jobs != nil {
 		in, out := &in.Jobs, &out.Jobs
-		*out = make([]string, len(*in))
-		copy(*out, *in)
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
+	if in.Conditions != nil {
+		in, out := &in.Conditions, &out.Conditions
+		*out = make([]ClowdCondition, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 
