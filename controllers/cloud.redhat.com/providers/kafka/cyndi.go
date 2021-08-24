@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	cyndi "github.com/RedHatInsights/clowder/apis/cyndi-operator/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	db "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
+	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

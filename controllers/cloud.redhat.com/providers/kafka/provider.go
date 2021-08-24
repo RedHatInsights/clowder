@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	cyndi "github.com/RedHatInsights/clowder/apis/cyndi-operator/v1alpha1"
+	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	core "k8s.io/api/core/v1"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
