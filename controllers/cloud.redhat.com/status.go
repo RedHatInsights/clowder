@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	//"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
@@ -16,11 +17,6 @@ import (
 type DeploymentStats struct {
 	ManagedDeployments int32
 	ReadyDeployments   int32
-}
-
-type JobStats struct {
-	ManagedJobs   int
-	CompletedJobs int
 }
 
 func deploymentStatusChecker(deployment apps.Deployment) bool {
@@ -493,21 +489,24 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 		conditions = append(conditions, *condition)
 	}
 
-	jobStatus, err := GetInvocationStatus(ctx, client, o)
-	if err != nil {
-		return err
-	}
+	// jobStatus, err := GetInvocationStatus(ctx, client, o)
+	// if err != nil {
+	// 	return err
+	// }
+	jobs := o.GetInvokedJobs(ctx, client)
+	jobStatus := GetJobStatus(&jobs, o)
 
 	condition := &crd.ClowdCondition{}
 
 	condition.Status = core.ConditionFalse
 	condition.Message = "Some Jobs are still incomplete"
+
 	if jobStatus {
 		condition.Status = core.ConditionTrue
 		condition.Message = "All ClowdJob invocations complete"
 	}
 
-	condition.Type = crd.DeploymentsReady
+	condition.Type = crd.JobInvocationComplete
 	condition.LastTransitionTime = v1.Now()
 	if err != nil {
 		condition.Reason = err.Error()
@@ -520,6 +519,9 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	}
 
 	o.Status.Completed = jobStatus
+	UpdateInvokedJobStatus(ctx, &jobs, o)
+
+	// fmt.Printf("Full status before update: %+v\n", o.Status)
 
 	if err := client.Status().Update(ctx, o); err != nil {
 		return err
@@ -527,13 +529,17 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	return nil
 }
 
-func GetInvocationStatus(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation) (bool, error) {
-	stats, err := GetInvocationStats(ctx, client, o)
-	if err != nil {
-		return false, err
-	}
-	if stats.ManagedJobs == stats.CompletedJobs {
-		return true, nil
-	}
-	return false, nil
-}
+// func GetInvocationStatus(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation) (bool, error) {
+// 	stats, err := GetInvocationStats(ctx, client, o)
+// 	fmt.Printf("Managed : {%d}, : Completed: {%d}\n", stats.ManagedJobs, stats.CompletedJobs)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	if stats.ManagedJobs < 1 {
+// 		return false, nil
+// 	}
+// 	if stats.ManagedJobs == stats.CompletedJobs {
+// 		return true, nil
+// 	}
+// 	return false, nil
+// }

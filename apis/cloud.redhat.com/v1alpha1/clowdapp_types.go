@@ -355,6 +355,8 @@ const (
 	ReconciliationPartiallySuccessful ClowdConditionType = "ReconciliationPartiallySuccessful"
 	// ReconciliationFailed means the reconciliation failed
 	ReconciliationFailed ClowdConditionType = "ReconciliationFailed"
+	// Ready means all the deployments are ready
+	JobInvocationComplete ClowdConditionType = "JobInvocationComplete"
 )
 
 type ClowdCondition struct {

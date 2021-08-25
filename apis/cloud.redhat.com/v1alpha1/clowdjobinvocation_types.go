@@ -19,9 +19,14 @@ package v1alpha1
 import (
 	"fmt"
 
+	"context"
+
+	batchv1 "k8s.io/api/batch/v1"
+
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type JobTestingSpec struct {
@@ -169,4 +174,14 @@ func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	for _, opt := range opts {
 		opt(o)
 	}
+}
+
+func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client) batchv1.JobList {
+
+	jobs := batchv1.JobList{}
+	if err := c.List(ctx, &jobs, client.InNamespace(i.ObjectMeta.Namespace)); err != nil {
+		return jobs
+	}
+
+	return jobs
 }

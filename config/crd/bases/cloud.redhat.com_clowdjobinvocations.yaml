@@ -129,13 +129,11 @@ spec:
                   type: object
                 type: array
               jobs:
+                additionalProperties:
+                  type: string
                 description: Jobs is a map of the job names run by Job invocation
                   and their outcomes
-                items:
-                  additionalProperties:
-                    type: string
-                  type: object
-                type: array
+                type: object
             required:
             - completed
             - jobs
