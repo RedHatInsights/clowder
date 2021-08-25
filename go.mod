@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/strimzi-client-go v0.21.1-7
+	github.com/RedHatInsights/cyndi-operator v0.1.4
 	github.com/go-logr/logr v0.3.0
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/onsi/ginkgo v1.14.1
