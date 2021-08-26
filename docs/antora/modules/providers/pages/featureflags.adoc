@@ -23,6 +23,11 @@ spec:
 In local mode, the **Feature Flags Provider** will provision an Unleash server. This
 instance will be created when the ``ClowdEnv`` is deployed.
 
+=== app-interface
+
+In app-interface mode, the **Feature Flags Provider** will look up the secret defined in the
+environment spec and return the hostname, port and access token in the cdapp configuration.
+
 == Generated App Configuration
 
 The Feature Flags configuration appears in the cdappconfig.json with the
@@ -36,6 +41,7 @@ following structure.
   "featureFlags": {
     "hostname": "ff-server.server.example.com",
     "port": 4242
+    "clientAccessToken": "someaccesstoken"
   }
 }
 ----
@@ -49,7 +55,7 @@ following attribute names.
 |==========================================
 | Language  | Attribute Name               
 | Python    | ``LoadedConfig.featureFlags``
-| Go        | ``LoadedConfig.featureFlags``
+| Go        | ``LoadedConfig.FeatureFlags``
 | Javscript | ``LoadedConfig.featureFlags``
 | Ruby      | ``LoadedConfig.featureFlags``
 |==========================================
@@ -74,4 +80,22 @@ spec:
     featureFlags:
       mode: local
       pvc: false
+----
+
+App-interface mode requires a little more configuration:
+
+[source,yaml]
+----
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvivonment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    featureFlags:
+      mode: app-interface
+      hostname: app-interface-ff-server
+      port: 1234
+      credentialRef: the name of the app-interface Unleash credential secret
 ----
