@@ -227,12 +227,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	err = r.setAppInfo(provider)
-	if err != nil {
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
-	}
-
 	if statusErr := SetDeploymentStatus(ctx, r.Client, &env); statusErr != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 		return ctrl.Result{}, err
@@ -257,6 +251,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, err)
 	} else {
+		var err error
+		if provErr != nil {
+			err = provErr
+		} else if cacheErr != nil {
+			err = cacheErr
+		}
 		log.Info("Reconciliation partially successful", "env", fmt.Sprintf("%s:%s", env.Namespace, env.Name))
 		r.Recorder.Eventf(&env, "Warning", "SuccessfulPartialReconciliation", "Environment requeued [%s]", env.GetClowdName())
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationPartiallySuccessful, err)
