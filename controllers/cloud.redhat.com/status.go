@@ -489,10 +489,6 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 		conditions = append(conditions, *condition)
 	}
 
-	// jobStatus, err := GetInvocationStatus(ctx, client, o)
-	// if err != nil {
-	// 	return err
-	// }
 	jobs := o.GetInvokedJobs(ctx, client)
 	jobStatus := GetJobsStatus(&jobs, o)
 
@@ -528,18 +524,3 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	}
 	return nil
 }
-
-// func GetInvocationStatus(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation) (bool, error) {
-// 	stats, err := GetInvocationStats(ctx, client, o)
-// 	fmt.Printf("Managed : {%d}, : Completed: {%d}\n", stats.ManagedJobs, stats.CompletedJobs)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	if stats.ManagedJobs < 1 {
-// 		return false, nil
-// 	}
-// 	if stats.ManagedJobs == stats.CompletedJobs {
-// 		return true, nil
-// 	}
-// 	return false, nil
-// }

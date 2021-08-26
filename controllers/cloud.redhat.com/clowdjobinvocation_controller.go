@@ -42,7 +42,6 @@ import (
 	jobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/job"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	//"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -330,26 +329,6 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 	return reqs
 }
 
-// Look for completed instead of successes
-// setClowdJobInvocationStatus will determine if a CJI has completed all needed Jobs
-// func SetClowdJobInvocationStatus(ctx context.Context, c client.Client, cji *crd.ClowdJobInvocation) error {
-
-// 	jobs := batchv1.JobList{}
-// 	if err := c.List(ctx, &jobs, client.InNamespace(cji.ObjectMeta.Namespace)); err != nil {
-// 		return err
-// 	}
-// 	if err := UpdateInvokedJobStatus(ctx, &jobs, cji); err != nil {
-// 		return err
-// 	}
-// 	cji.Status.Completed = GetJobStatus(&jobs, cji)
-
-// 	if err := c.Status().Update(ctx, cji); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
 
 	if len(cji.Status.Jobs) < 1 {
@@ -386,12 +365,7 @@ func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 	if cji.Spec.Testing.Iqe != emptyTesting {
 		jobsRequired += 1
 	}
-	// var completed bool
 	jobsCompleted := countCompletedJobs(jobs, cji)
-	// If calling jobs, we aren't complete until every job has completed
-	// if invokedJobs := len(cji.Spec.Jobs); invokedJobs > 0 {
-	// 	completed = jobsCompleted == invokedJobs
-	// }
 	return jobsCompleted == jobsRequired
 }
 
@@ -447,17 +421,3 @@ func jobFilter(log logr.Logger, ctrlName string) predicate.Predicate {
 		},
 	}
 }
-
-// func GetInvocationStats(ctx context.Context, c client.Client, cji *crd.ClowdJobInvocation) (JobStats, error) {
-// 	var totalManagedJobs int
-// 	var totalCompletedJobs int
-
-// 	jobs := batchv1.JobList{}
-// 	if err := c.List(ctx, &jobs, client.InNamespace(cji.ObjectMeta.Name)); err != nil {
-// 		return JobStats{}, err
-// 	}
-// 	totalManagedJobs = len(cji.Status.Jobs)
-// 	totalCompletedJobs = countCompletedJobs(&jobs, cji)
-
-// 	return JobStats{ManagedJobs: totalManagedJobs, CompletedJobs: totalCompletedJobs}, nil
-// }
