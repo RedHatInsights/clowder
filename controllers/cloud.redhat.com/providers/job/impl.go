@@ -1,11 +1,13 @@
 package job
 
 import (
+	//"fmt"
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	//	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -17,6 +19,9 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
 	j.ObjectMeta.Labels = labels
+	// randomString := utils.RandString(7)
+	// fullJobName := fmt.Sprintf("%v-%v-%s", app.Name, job.Name, randomString)
+	// j.ObjectMeta.Name = fullJobName
 	j.Spec.Template.ObjectMeta.Labels = labels
 
 	pod := job.PodSpec

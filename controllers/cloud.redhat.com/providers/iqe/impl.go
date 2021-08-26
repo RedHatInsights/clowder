@@ -49,7 +49,6 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 		{Name: "IQE_DEBUG_POD", Value: strconv.FormatBool(cji.Spec.Testing.Iqe.Debug)},
 		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
-		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
 	}
 
 	// apply vault env vars if vaultSecretRef exists in environment

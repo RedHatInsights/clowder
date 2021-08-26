@@ -42,7 +42,7 @@ import (
 	jobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/job"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	//"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -68,8 +68,6 @@ var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secr
 // +kubebuilder:rbac:groups=batch,resources=cronjobs;jobs,verbs=get;list;create;update;watch;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 
-// TODO: Update tests to use new job name
-// TODO: Determine how to share all status updates instead of splitting
 // Reconcile CJI Resources
 func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
@@ -98,11 +96,15 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// Set the initial status to an empty list of pods and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
 	// setting the status after requeue will ensure it won't be double invoked
+	fmt.Printf("Status: %+v\n", cji.Status)
+	fmt.Printf("Jobs: %+v\n", len(cji.Status.Jobs))
 
 	// We have already invoked jobs and don't need to announce another reconcile run
 	if len(cji.Status.Jobs) > 0 {
 		SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil)
 		return ctrl.Result{}, nil
+	} else {
+		cji.Status.Jobs = map[string]string{}
 	}
 
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
@@ -157,9 +159,9 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		// becuase a CJI can contain > 1 job, we must handle the case
 		// where one job is done and the other is still running
-		// Add rand string
-		randomString := utils.RandString(7)
-		fullJobName := fmt.Sprintf("%v-%v-%s", app.Name, job.Name, randomString)
+		//randomString := utils.RandStringLower(7)
+		fullJobName := fmt.Sprintf("%v-%v", app.Name, job.Name)
+		job.Name = fullJobName
 		for j, _ := range cji.Status.Jobs {
 			if j == fullJobName {
 				continue
@@ -167,7 +169,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 
 		// We have a match that isn't running and can invoke the job
-		r.Log.Info("Invoking job", "jobinvocation", jobName, "namespace", app.Namespace)
+		r.Log.Info("Invoking job", "jobinvocation", fullJobName, "namespace", app.Namespace)
 
 		if err := r.InvokeJob(&cache, &job, &app, &env, &cji, ctx); err != nil {
 			r.Log.Error(err, "Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
@@ -182,6 +184,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
 
+		// randomString := utils.RandStringLower(7)
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("%s-iqe", cji.Name),
 			Namespace: cji.Namespace,
@@ -208,7 +211,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		}
 		r.Log.Info("Iqe Job Invoked Successfully", "jobinvocation", nn.Name, "namespace", app.Namespace)
-		cji.Status.Jobs[j.ObjectMeta.Name] = "Invoked"
+		cji.Status.Jobs[nn.Name] = "Invoked"
+
 		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 	}
 
@@ -229,7 +233,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 // the status of that job
 func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation, ctx context.Context) error {
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-%v-%v", app.Name, job.Name, cji.Name),
+		Name:      job.Name,
 		Namespace: cji.Namespace,
 	}
 
@@ -375,18 +379,20 @@ func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd
 	return nil
 }
 
-func GetJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
+func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 
-	var completed bool
+	jobsRequired := len(cji.Spec.Jobs)
+	var emptyTesting crd.IqeJobSpec
+	if cji.Spec.Testing.Iqe != emptyTesting {
+		jobsRequired += 1
+	}
+	// var completed bool
 	jobsCompleted := countCompletedJobs(jobs, cji)
 	// If calling jobs, we aren't complete until every job has completed
-	if invokedJobs := len(cji.Spec.Jobs); invokedJobs > 0 {
-		completed = jobsCompleted == invokedJobs
-	} else {
-		// only one iqe job will ever be invoked at a time, so it's one and done
-		completed = jobsCompleted > 0
-	}
-	return completed
+	// if invokedJobs := len(cji.Spec.Jobs); invokedJobs > 0 {
+	// 	completed = jobsCompleted == invokedJobs
+	// }
+	return jobsCompleted == jobsRequired
 }
 
 func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int {
