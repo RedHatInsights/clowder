@@ -227,6 +227,13 @@ spec:
 instance will be created when the <code>ClowdEnv</code> is deployed.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_app_interface"><a class="anchor" href="#_app_interface"></a>app-interface</h3>
+<div class="paragraph">
+<p>In app-interface mode, the <strong>Feature Flags Provider</strong> will look up the secret defined in the
+environment spec and return the hostname, port and access token in the cdapp configuration.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -244,6 +251,7 @@ following structure.</p>
   "featureFlags": {
     "hostname": "ff-server.server.example.com",
     "port": 4242
+    "clientAccessToken": "someaccesstoken"
   }
 }</code></pre>
 </div>
@@ -273,7 +281,7 @@ following attribute names.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Go</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.featureFlags</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.FeatureFlags</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Javscript</p></td>
@@ -307,6 +315,25 @@ spec:
     featureFlags:
       mode: local
       pvc: false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>App-interface mode requires a little more configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvivonment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    featureFlags:
+      mode: app-interface
+      hostname: app-interface-ff-server
+      port: 1234
+      credentialRef: the name of the app-interface Unleash credential secret</code></pre>
 </div>
 </div>
 </div>
