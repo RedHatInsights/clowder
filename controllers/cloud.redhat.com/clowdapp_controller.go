@@ -145,6 +145,11 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
+	if ReadEnv() == app.Spec.EnvName {
+		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
+		return ctrl.Result{Requeue: true}, fmt.Errorf("env currently being reconciled")
+	}
+
 	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
 	if app.Spec.Disabled {
