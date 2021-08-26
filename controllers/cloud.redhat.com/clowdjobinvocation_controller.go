@@ -160,15 +160,14 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		// where one job is done and the other is still running
 		//randomString := utils.RandStringLower(7)
 		fullJobName := fmt.Sprintf("%v-%v", app.Name, job.Name)
-		job.Name = fullJobName
-		for j, _ := range cji.Status.Jobs {
-			if j == fullJobName {
-				continue
-			}
+		if _, ok := cji.Status.Jobs[fullJobName]; ok {
+			continue
+
 		}
+		job.Name = fullJobName
 
 		// We have a match that isn't running and can invoke the job
-		r.Log.Info("Invoking job", "jobinvocation", fullJobName, "namespace", app.Namespace)
+		r.Log.Info("Invoking job", "jobinvocation", job.Name, "namespace", app.Namespace)
 
 		if err := r.InvokeJob(&cache, &job, &app, &env, &cji, ctx); err != nil {
 			r.Log.Error(err, "Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
