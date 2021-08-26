@@ -150,7 +150,8 @@
                 "password": {
                     "type": "string"
                 }
-            }
+            },
+            "required": []
         },
         "BrokerConfig": {
             "id": "brokerConfig",
