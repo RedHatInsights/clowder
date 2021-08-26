@@ -1,0 +1,10 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-iqe-jobs
+- apiVersion: rbac.authorization.k8s.io/v1 
+  kind: RoleBinding 
+  name: iqe-test-iqe-jobs
