@@ -397,7 +397,7 @@ func (in *ClowdJobInvocationStatus) DeepCopyInto(out *ClowdJobInvocationStatus) 
 	*out = *in
 	if in.Jobs != nil {
 		in, out := &in.Jobs, &out.Jobs
-		*out = make(map[string]string, len(*in))
+		*out = make(map[string]JobConditionState, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}

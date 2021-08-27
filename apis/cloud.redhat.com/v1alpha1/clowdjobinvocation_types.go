@@ -29,6 +29,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type JobConditionState string
+
+const (
+	JobInvoked  JobConditionState = "Invoked"
+	JobComplete JobConditionState = "Complete"
+	JobFailed   JobConditionState = "Failed"
+)
+
 type JobTestingSpec struct {
 	// Iqe is the job spec to override defaults from the ClowdApp's
 	// definition of the job
@@ -75,8 +83,8 @@ type ClowdJobInvocationStatus struct {
 	// successfully or failed past their backoff and retry values
 	Completed bool `json:"completed"`
 	// Jobs is a map of the job names run by Job invocation and their outcomes
-	Jobs       map[string]string `json:"jobs"`
-	Conditions []ClowdCondition  `json:"conditions,omitempty"`
+	Jobs       map[string]JobConditionState `json:"jobs"`
+	Conditions []ClowdCondition             `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -176,12 +184,12 @@ func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	}
 }
 
-func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client) batchv1.JobList {
+func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client) (batchv1.JobList, error) {
 
 	jobs := batchv1.JobList{}
 	if err := c.List(ctx, &jobs, client.InNamespace(i.ObjectMeta.Namespace)); err != nil {
-		return jobs
+		return jobs, err
 	}
 
-	return jobs
+	return jobs, nil
 }

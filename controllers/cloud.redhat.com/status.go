@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
@@ -489,7 +488,10 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 		conditions = append(conditions, *condition)
 	}
 
-	jobs := o.GetInvokedJobs(ctx, client)
+	jobs, err := o.GetInvokedJobs(ctx, client)
+	if err != nil {
+		return err
+	}
 	jobStatus := GetJobsStatus(&jobs, o)
 
 	condition := &crd.ClowdCondition{}
@@ -516,8 +518,6 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 
 	o.Status.Completed = jobStatus
 	UpdateInvokedJobStatus(ctx, &jobs, o)
-
-	fmt.Printf("Full status before update: %+v\n", o.Status)
 
 	if err := client.Status().Update(ctx, o); err != nil {
 		return err

@@ -42,6 +42,7 @@ import (
 	jobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/job"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -95,15 +96,14 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// Set the initial status to an empty list of pods and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
 	// setting the status after requeue will ensure it won't be double invoked
-	fmt.Printf("Status: %+v\n", cji.Status)
-	fmt.Printf("Jobs: %+v\n", len(cji.Status.Jobs))
+	SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil)
 
 	// We have already invoked jobs and don't need to announce another reconcile run
 	if len(cji.Status.Jobs) > 0 {
-		SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil)
 		return ctrl.Result{}, nil
 	} else {
-		cji.Status.Jobs = map[string]string{}
+		// We have a first reconcile and need to set the Status
+		cji.Status.Jobs = map[string]crd.JobConditionState{}
 	}
 
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
@@ -156,20 +156,14 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 
-		// becuase a CJI can contain > 1 job, we must handle the case
-		// where one job is done and the other is still running
-		//randomString := utils.RandStringLower(7)
-		fullJobName := fmt.Sprintf("%v-%v", app.Name, job.Name)
-		if _, ok := cji.Status.Jobs[fullJobName]; ok {
-			continue
-
-		}
-		job.Name = fullJobName
+		// Update job name to avoid collisions
+		randomString := utils.RandStringLower(7)
+		job.Name = fmt.Sprintf("%v-%v-%s", app.Name, job.Name, randomString)
 
 		// We have a match that isn't running and can invoke the job
 		r.Log.Info("Invoking job", "jobinvocation", job.Name, "namespace", app.Namespace)
 
-		if err := r.InvokeJob(&cache, &job, &app, &env, &cji, ctx); err != nil {
+		if err := r.InvokeJob(ctx, &cache, &job, &app, &env, &cji); err != nil {
 			r.Log.Error(err, "Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
 			SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err)
 			r.Recorder.Eventf(&cji, "Warning", "JobNotInvoked", "Job [%s] could not be invoked", jobName)
@@ -182,9 +176,9 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
 
-		// randomString := utils.RandStringLower(7)
+		randomString := utils.RandStringLower(7)
 		nn := types.NamespacedName{
-			Name:      fmt.Sprintf("%s-iqe", cji.Name),
+			Name:      fmt.Sprintf("%s-iqe-%s", cji.Name, randomString),
 			Namespace: cji.Namespace,
 		}
 
@@ -221,7 +215,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	// Short running jobs may be done by the time the loop is ranged,
 	// so we update again before the reconcile ends
-	// SetClowdJobInvocationStatus(ctx, r.Client, &cji)
 	SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil)
 
 	return ctrl.Result{}, nil
@@ -229,7 +222,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 // InvokeJob is responsible for applying the Job. It also updates and reports
 // the status of that job
-func (r *ClowdJobInvocationReconciler) InvokeJob(cache *providers.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation, ctx context.Context) error {
+func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *providers.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
 	nn := types.NamespacedName{
 		Name:      job.Name,
 		Namespace: cji.Namespace,
@@ -331,7 +324,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
 
 	if len(cji.Status.Jobs) < 1 {
-		cji.Status.Jobs = map[string]string{}
+		cji.Status.Jobs = map[string]crd.JobConditionState{}
 		return nil
 	}
 
@@ -343,11 +336,11 @@ func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd
 					condition := s.Status.Conditions[0].Type
 					switch condition {
 					case "Complete":
-						cji.Status.Jobs[jobName] = "Complete"
+						cji.Status.Jobs[jobName] = crd.JobComplete
 					case "Failed":
-						cji.Status.Jobs[jobName] = "Failed"
+						cji.Status.Jobs[jobName] = crd.JobFailed
 					default:
-						cji.Status.Jobs[jobName] = "Invoked"
+						cji.Status.Jobs[jobName] = crd.JobInvoked
 
 					}
 				}
@@ -400,11 +393,14 @@ func jobFilter(log logr.Logger, ctrlName string) predicate.Predicate {
 				return true
 			}
 
-			// type checking and do stuff incase it isn't a job if not ok
-			oldObject := e.ObjectOld.(*batchv1.Job)
-			fmt.Printf("Old obj %+v\n", oldObject.Status)
-			newObject := e.ObjectNew.(*batchv1.Job)
-			fmt.Printf("new obj %+v\n", newObject.Status)
+			var oldObject *batchv1.Job
+			var newObject *batchv1.Job
+			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Job" {
+				oldObject = e.ObjectOld.(*batchv1.Job)
+				newObject = e.ObjectNew.(*batchv1.Job)
+			} else {
+				return false
+			}
 
 			// If there is no condition, the job is still running
 			if len(newObject.Status.Conditions) < 1 {
