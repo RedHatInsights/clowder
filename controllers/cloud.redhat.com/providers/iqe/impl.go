@@ -30,13 +30,15 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
-	j.ObjectMeta.Labels = labels
-	j.Name = nn.Name
-	j.Spec.Template.ObjectMeta.Labels = labels
 	// Becuase the ns name now has a suffix attached, we need to specify
 	// that the secret name does not include it (and can't because the
 	// env creates the secret)
 	secretName := fmt.Sprintf("%s-iqe", cji.Name)
+
+	j.ObjectMeta.Labels = labels
+	j.ObjectMeta.Labels["job"] = secretName
+	j.Name = nn.Name
+	j.Spec.Template.ObjectMeta.Labels = labels
 
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 	j.Spec.BackoffLimit = common.Int32Ptr(0)

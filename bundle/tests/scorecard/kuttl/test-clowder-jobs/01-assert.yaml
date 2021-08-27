@@ -81,16 +81,16 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: puptoo-hello-cji-runner
   namespace: test-clowder-jobs
+  labels:
+    job: puptoo-hello-cji
 spec:
   template:
     spec:
       serviceAccount: puptoo-app
       serviceAccountName: puptoo-app
       containers:
-        - name: puptoo-hello-cji-runner
-          image: busybox
+        - image: busybox
           args:
           - /bin/sh
           - -c

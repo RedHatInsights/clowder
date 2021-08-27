@@ -87,25 +87,21 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
 
+	// Set the initial status to an empty list of pods and a Completed
+	// status of false. If a job has been invoked, but hasn't finished,
+	// setting the status after requeue will ensure it won't be double invoked
+	SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil)
+
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
 		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJobInvocation [%s] has completed all jobs", cji.Name)
 		return ctrl.Result{}, nil
 	}
 
-	// Set the initial status to an empty list of pods and a Completed
-	// status of false. If a job has been invoked, but hasn't finished,
-	// setting the status after requeue will ensure it won't be double invoked
-	SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil)
-
 	// We have already invoked jobs and don't need to announce another reconcile run
 	if len(cji.Status.Jobs) > 0 {
 		return ctrl.Result{}, nil
-	} else {
-		// We have a first reconcile and need to set the Status
-		cji.Status.Jobs = map[string]crd.JobConditionState{}
 	}
-
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
 
@@ -127,7 +123,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if !app.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 		r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-		// Partial success? No real error, just not ready
 		SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationPartiallySuccessful, appErr)
 		return ctrl.Result{Requeue: true}, appErr
 	}
@@ -155,10 +150,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err)
 			return ctrl.Result{}, err
 		}
-
-		// Update job name to avoid collisions
-		randomString := utils.RandStringLower(7)
-		job.Name = fmt.Sprintf("%v-%v-%s", app.Name, job.Name, randomString)
+		job.Name = fmt.Sprintf("%s-%s", app.Name, jobName)
 
 		// We have a match that isn't running and can invoke the job
 		r.Log.Info("Invoking job", "jobinvocation", job.Name, "namespace", app.Namespace)
@@ -203,7 +195,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		}
 		r.Log.Info("Iqe Job Invoked Successfully", "jobinvocation", nn.Name, "namespace", app.Namespace)
-		cji.Status.Jobs[nn.Name] = "Invoked"
+		cji.Status.Jobs[nn.Name] = crd.JobInvoked
 
 		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 	}
@@ -223,8 +215,10 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 // InvokeJob is responsible for applying the Job. It also updates and reports
 // the status of that job
 func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *providers.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
+	// Update job name to avoid collisions
+	randomString := utils.RandStringLower(7)
 	nn := types.NamespacedName{
-		Name:      job.Name,
+		Name:      fmt.Sprintf("%s-%s", job.Name, randomString),
 		Namespace: cji.Namespace,
 	}
 
@@ -240,7 +234,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *pro
 	}
 
 	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
-	cji.Status.Jobs[j.ObjectMeta.Name] = "Invoked"
+	cji.Status.Jobs[j.ObjectMeta.Name] = crd.JobInvoked
 	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 
 	return nil
@@ -322,12 +316,10 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 }
 
 func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
-
 	if len(cji.Status.Jobs) < 1 {
 		cji.Status.Jobs = map[string]crd.JobConditionState{}
 		return nil
 	}
-
 	for j := range cji.Status.Jobs {
 		for _, s := range jobs.Items {
 			jobName := s.ObjectMeta.Name
