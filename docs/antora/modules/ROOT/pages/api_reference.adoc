@@ -6,7 +6,6 @@
 
 .Packages
 - xref:{anchor_prefix}-cloud-redhat-com-v1alpha1[$$cloud.redhat.com/v1alpha1$$]
-- xref:{anchor_prefix}-cyndi-cloud-redhat-com-v1alpha1[$$cyndi.cloud.redhat.com/v1alpha1$$]
 
 
 [id="{anchor_prefix}-cloud-redhat-com-v1alpha1"]
@@ -985,82 +984,5 @@ WebServices defines the structs for the three exposed web services: public, priv
 | *`private`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice[$$PrivateWebService$$]__ | 
 | *`metrics`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricswebservice[$$MetricsWebService$$]__ | 
 |===
-
-
-
-[id="{anchor_prefix}-cyndi-cloud-redhat-com-v1alpha1"]
-=== cyndi.cloud.redhat.com/v1alpha1
-
-Package v1alpha1 contains API Schema definitions for the cyndi v1alpha1 API group
-
-.Resource Types
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipeline[$$CyndiPipeline$$]
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipelinelist[$$CyndiPipelineList$$]
-
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipeline"]
-==== CyndiPipeline 
-
-CyndiPipeline is the Schema for the cyndipipelines API
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipelinelist[$$CyndiPipelineList$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`apiVersion`* __string__ | `cyndi.cloud.redhat.com/v1alpha1`
-| *`kind`* __string__ | `CyndiPipeline`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
-
-| *`spec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipelinespec[$$CyndiPipelineSpec$$]__ | 
-|===
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipelinelist"]
-==== CyndiPipelineList 
-
-CyndiPipelineList contains a list of CyndiPipeline
-
-
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`apiVersion`* __string__ | `cyndi.cloud.redhat.com/v1alpha1`
-| *`kind`* __string__ | `CyndiPipelineList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
-
-| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipeline[$$CyndiPipeline$$]__ | 
-|===
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipelinespec"]
-==== CyndiPipelineSpec 
-
-CyndiPipelineSpec defines the desired state of CyndiPipeline
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cyndi-operator-v1alpha1-cyndipipeline[$$CyndiPipeline$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`appName`* __string__ | 
-| *`insightsOnly`* __boolean__ | 
-| *`connectCluster`* __string__ | 
-| *`maxAge`* __integer__ | 
-| *`validationThreshold`* __integer__ | 
-| *`topic`* __string__ | 
-| *`dbSecret`* __string__ | 
-| *`inventoryDbSecret`* __string__ | 
-|===
-
-
 
 
