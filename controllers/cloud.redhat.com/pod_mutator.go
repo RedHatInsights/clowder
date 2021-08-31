@@ -57,8 +57,9 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 
 		bopurl := string(ascconf.Data["bopurl"])
 		keycloakurl := string(ascconf.Data["keycloakurl"])
+		whitelist := string(ascconf.Data["whitelist"])
 
-		image := "quay.io/cloudservices/crc-caddy-plugin:29deb35"
+		image := "quay.io/cloudservices/crc-caddy-plugin:1c4b098"
 
 		if clowder_config.LoadedConfig.Images.Caddy != "" {
 			image = clowder_config.LoadedConfig.Images.Caddy
@@ -79,6 +80,10 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 				{
 					Name:  "CADDY_KEYCLOAK_URL",
 					Value: keycloakurl,
+				},
+				{
+					Name:  "CADDY_WHITELIST",
+					Value: whitelist,
 				},
 			},
 		}

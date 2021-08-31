@@ -515,7 +515,7 @@ KafkaClusterConfig defines options related to the Kafka cluster managed/monitore
 | *`storageSize`* __string__ | Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
 | *`deleteClaim`* __boolean__ | Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'
 | *`version`* __string__ | Version. If unset, default is '2.5.0'
-| *`config`* __object (keys:string, values:string)__ | Config full options
+| *`config`* __map[string]string__ | Config full options
 | *`jvmOptions`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkajvmoptions[$$KafkaSpecKafkaJvmOptions$$]__ | JVM Options
 | *`resources`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkaresources[$$KafkaSpecKafkaResources$$]__ | Resource Limits
 |===
@@ -804,6 +804,7 @@ PublicWebService is the definition of the public web service. There can be only 
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
 | *`apiPath`* __string__ | ApiPath describes the api path that will be configured to serve this backend from.
+| *`whitelistPaths`* __string array__ | WhitelistPaths define the paths that do not require authentication
 |===
 
 

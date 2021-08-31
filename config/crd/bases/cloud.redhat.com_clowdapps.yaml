@@ -2365,6 +2365,12 @@ spec:
                                 the public service and provide the configuration in
                                 the cdappconfig.
                               type: boolean
+                            whitelistPaths:
+                              description: WhitelistPaths define the paths that do
+                                not require authentication
+                              items:
+                                type: string
+                              type: array
                           type: object
                       type: object
                   required:
