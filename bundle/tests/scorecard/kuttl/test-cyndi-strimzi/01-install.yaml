@@ -15,9 +15,9 @@ spec:
     kafka:
       cluster:
         namespace: test-cyndi-strimzi-kafka
-        name: my-cluster
+        name: test-cyndi-strimzi
       connect:
-        name: my-connect-cluster
+        name: test-cyndi-strimzi-cluster
       mode: operator
     db:
       mode: local

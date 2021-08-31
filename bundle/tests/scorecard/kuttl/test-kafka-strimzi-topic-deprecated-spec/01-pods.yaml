@@ -15,7 +15,7 @@ spec:
       path: "/metrics"
     kafka:
       namespace: test-kafka-strimzi-topic-deprecated-kafka
-      clusterName: my-cluster
+      clusterName: strimzi-topic-deprecated
       mode: operator
     db:
       mode: none
