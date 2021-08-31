@@ -32,7 +32,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [featureFlags](#featureflags)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")                        |
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
-| [mock](#mock)                         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-mockconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/mock")                                        |
+| [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
 
 ## privatePort
 
@@ -242,18 +242,18 @@ Feature Flags Configuration
 
 `object[]` ([Details](schema-definitions-privatedependencyendpoint.md))
 
-## mock
+## BOPURL
 
-Mocked information
+Defines the path to the BOPURL.
 
 
-`mock`
+`BOPURL`
 
 -   is optional
--   Type: `object` ([MockConfig](schema-definitions-mockconfig.md))
+-   Type: `string`
 -   cannot be null
--   defined in: [AppConfig](schema-definitions-mockconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/mock")
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")
 
-### mock Type
+### BOPURL Type
 
-`object` ([MockConfig](schema-definitions-mockconfig.md))
+`string`

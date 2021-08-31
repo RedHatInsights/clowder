@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
@@ -120,92 +121,91 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 		if err := makeService(web.Cache, &deployment, app, web.Env); err != nil {
 			return err
 		}
-	}
 
-	web.createIngress(app)
+		web.createIngress(app, &deployment)
 
-	c.BOPURL = providers.StrPtr(web.config.BOPURL)
+		c.BOPURL = providers.StrPtr(web.config.BOPURL)
 
-	nn := types.NamespacedName{
-		Name:      "caddy-config",
-		Namespace: web.Env.GetClowdNamespace(),
-	}
+		nn := types.NamespacedName{
+			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
+			Namespace: web.Env.GetClowdNamespace(),
+		}
 
-	sec := &core.Secret{}
-	if err := web.Cache.Create(WebSecret, nn, sec); err != nil {
-		return err
-	}
+		sec := &core.Secret{}
+		if err := web.Cache.Create(WebSecret, nn, sec); err != nil {
+			return err
+		}
 
-	sec.Name = nn.Name
-	sec.Namespace = nn.Namespace
-	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
-	sec.Type = core.SecretTypeOpaque
+		sec.Name = nn.Name
+		sec.Namespace = nn.Namespace
+		sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
+		sec.Type = core.SecretTypeOpaque
 
-	sec.StringData = map[string]string{
-		"bopurl":      web.config.BOPURL,
-		"keycloakurl": web.config.KeycloakConfig.URL,
-	}
+		sec.StringData = map[string]string{
+			"bopurl":      web.config.BOPURL,
+			"keycloakurl": web.config.KeycloakConfig.URL,
+			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
+		}
 
-	if err := web.Cache.Update(WebSecret, sec); err != nil {
-		return err
+		if err := web.Cache.Update(WebSecret, sec); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
 }
 
-func (web *localWebProvider) createIngress(app *crd.ClowdApp) error {
+func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.Deployment) error {
 
-	for _, deployment := range app.Spec.Deployments {
+	if !deployment.WebServices.Public.Enabled && !bool(deployment.Web) {
+		return nil
+	}
 
-		if !deployment.WebServices.Public.Enabled && !bool(deployment.Web) {
-			continue
-		}
+	netobj := &networking.Ingress{}
 
-		netobj := &networking.Ingress{}
+	nn := app.GetDeploymentNamespacedName(deployment)
 
-		nn := app.GetDeploymentNamespacedName(&deployment)
+	if err := web.Cache.Create(WebIngress, nn, netobj); err != nil {
+		return err
+	}
 
-		if err := web.Cache.Create(WebIngress, nn, netobj); err != nil {
-			return err
-		}
+	labels := app.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, app)
+	labler(netobj)
 
-		labels := app.GetLabels()
-		labler := utils.MakeLabeler(nn, labels, app)
-		labler(netobj)
+	apiPath := deployment.WebServices.Public.ApiPath
 
-		apiPath := deployment.WebServices.Public.ApiPath
+	if apiPath == "" {
+		apiPath = nn.Name
+	}
 
-		if apiPath == "" {
-			apiPath = nn.Name
-		}
-
-		netobj.Spec = networking.IngressSpec{
-			Rules: []networking.IngressRule{
-				{
-					Host: web.Env.Name,
-					IngressRuleValue: networking.IngressRuleValue{
-						HTTP: &networking.HTTPIngressRuleValue{
-							Paths: []networking.HTTPIngressPath{{
-								Path:     fmt.Sprintf("/api/%s/", apiPath),
-								PathType: (*networking.PathType)(common.StringPtr("Prefix")),
-								Backend: networking.IngressBackend{
-									Service: &networking.IngressServiceBackend{
-										Name: nn.Name,
-										Port: networking.ServiceBackendPort{
-											Name: "auth",
-										},
+	netobj.Spec = networking.IngressSpec{
+		Rules: []networking.IngressRule{
+			{
+				Host: web.Env.Name,
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     fmt.Sprintf("/api/%s/", apiPath),
+							PathType: (*networking.PathType)(common.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: nn.Name,
+									Port: networking.ServiceBackendPort{
+										Name: "auth",
 									},
 								},
-							}},
-						},
+							},
+						}},
 					},
 				},
 			},
-		}
+		},
+	}
 
-		if err := web.Cache.Update(WebIngress, netobj); err != nil {
-			return err
-		}
+	if err := web.Cache.Update(WebIngress, netobj); err != nil {
+		return err
 	}
 
 	return nil
