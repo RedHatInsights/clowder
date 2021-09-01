@@ -11,4 +11,3 @@ delete:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
   name: test-ff-app-interface
-  
