@@ -437,14 +437,6 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>pods</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecdeprecated">PodSpecDeprecated</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Deprecated</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p><strong><code>envName</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -1367,9 +1359,6 @@
 <li>
 <p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec">PodSpec</a></p>
 </li>
-<li>
-<p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecdeprecated">PodSpecDeprecated</a></p>
-</li>
 </ul>
 </div>
 </div>
@@ -1769,7 +1758,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>config</code></strong> <em>object (keys:string, values:string)</em></p>
+<p><strong><code>config</code></strong> <em>map[string]string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Config full options</p>
@@ -2386,116 +2375,6 @@
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Lists the expected side cars, will be validated in the validating webhook</p>
 </div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecdeprecated"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecdeprecated"></a>PodSpecDeprecated</h4>
-<div class="paragraph">
-<p>PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Appears In:</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappspec">ClowdAppSpec</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 75%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Field</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>name</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>web</code></strong> <em>WebDeprecated</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>minReplicas</code></strong> <em>integer</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>image</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>initContainers</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer">InitContainer</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>command</code></strong> <em>string array</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>args</code></strong> <em>string array</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>resources</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core">ResourceRequirements</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>livenessProbe</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core">Probe</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>readinessProbe</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core">Probe</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>volumes</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core">Volume</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>volumeMounts</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core">VolumeMount</a></em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 </tbody>
 </table>
