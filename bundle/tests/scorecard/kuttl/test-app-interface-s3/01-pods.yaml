@@ -40,9 +40,10 @@ metadata:
   namespace: test-app-interface-s3
 spec:
   envName: test-app-interface-s3
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   objectStore:
   - test-app-interface-s3
   - test-iam-s3
