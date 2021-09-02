@@ -1,0 +1,6 @@
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ephemeral-gateway
+spec:
+  targetNamespace: test-ephemeral-gateway
