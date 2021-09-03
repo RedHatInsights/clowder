@@ -47,17 +47,13 @@ else
     exit 1
 fi
 
+python -m venv "build/.build_venv"
+source build/.build_venv/bin/activate
+pip install ruamel.yaml
 
 GO_BIN_PATH="$(go env GOPATH)/bin"
 
 export PATH="$PATH:$GO_BIN_PATH"
-
-echo "*** Checking for 'yq' ..."
-if ! command -v yq; then
-    echo "*** 'yq' executable not found in '$GO_BIN_PATH', installing it with:"
-    echo "         GO111MODULE=on go get github.com/mikefarah/yq/v4"
-    (cd & GO111MODULE=on go get github.com/mikefarah/yq/v4)
-fi
 
 declare -a array BG_PIDS=()
 
@@ -97,9 +93,7 @@ function install_strimzi_operator {
     [[ $PLATFORM == "Darwin" ]] && sed -i '' "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml \
         || sed -i "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml
 
-    # Set namespaces that operator watches
-    yq eval -i "del(.spec.template.spec.containers[0].env.[] | select(.name == \"STRIMZI_NAMESPACE\").valueFrom)" 060-Deployment-strimzi-cluster-operator.yaml
-    yq eval -i "(.spec.template.spec.containers[0].env.[] | select(.name == \"STRIMZI_NAMESPACE\")).value = \"$WATCH_NS\"" 060-Deployment-strimzi-cluster-operator.yaml
+    $ROOT_DIR/build/fix_namespace.py 060-Deployment-strimzi-cluster-operator.yaml "$WATCH_NS"
 
     echo "*** Creating ns ${STRIMZI_OPERATOR_NS}..."
     # if we hit an error, assumption is the Namespace already exists
