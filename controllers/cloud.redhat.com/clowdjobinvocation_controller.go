@@ -168,9 +168,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
 
-		randomString := utils.RandStringLower(7)
 		nn := types.NamespacedName{
-			Name:      fmt.Sprintf("%s-iqe-%s", cji.Name, randomString),
+			Name:      cji.GenerateJobName(),
 			Namespace: cji.Namespace,
 		}
 
@@ -299,7 +298,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 	for _, cji := range cjiList.Items {
 		// job event triggered a reconcile, check our jobs and match
 		// to enable a requeue
-		for j, _ := range cji.Status.Jobs {
+		for j := range cji.Status.Jobs {
 			if j == job.ObjectMeta.Name {
 				reqs = append(reqs, reconcile.Request{
 					NamespacedName: types.NamespacedName{

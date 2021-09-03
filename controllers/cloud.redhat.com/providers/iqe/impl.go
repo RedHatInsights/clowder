@@ -33,7 +33,7 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	// Becuase the ns name now has a suffix attached, we need to specify
 	// that the secret name does not include it (and can't because the
 	// env creates the secret)
-	secretName := fmt.Sprintf("%s-iqe", cji.Name)
+	secretName := cji.GetIQEName()
 
 	j.ObjectMeta.Labels = labels
 	j.ObjectMeta.Labels["job"] = secretName

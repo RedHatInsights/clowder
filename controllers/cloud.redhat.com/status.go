@@ -492,7 +492,7 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	if err != nil {
 		return err
 	}
-	jobStatus := GetJobsStatus(&jobs, o)
+	jobStatus := GetJobsStatus(jobs, o)
 
 	condition := &crd.ClowdCondition{}
 
@@ -517,7 +517,7 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	}
 
 	o.Status.Completed = jobStatus
-	UpdateInvokedJobStatus(ctx, &jobs, o)
+	UpdateInvokedJobStatus(ctx, jobs, o)
 
 	if err := client.Status().Update(ctx, o); err != nil {
 		return err
