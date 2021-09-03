@@ -47,7 +47,7 @@ else
     exit 1
 fi
 
-python -m venv "build/.build_venv"
+python3 -m venv "build/.build_venv"
 source build/.build_venv/bin/activate
 pip install ruamel.yaml
 
