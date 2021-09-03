@@ -217,23 +217,6 @@ type PodSpec struct {
 	Sidecars []Sidecar `json:"sidecars,omitempty"`
 }
 
-// PodSpecDeprecated is a deprecated in favour of using the real k8s PodSpec object.
-type PodSpecDeprecated struct {
-	Name           string                  `json:"name"`
-	Web            WebDeprecated           `json:"web,omitempty"`
-	MinReplicas    *int32                  `json:"minReplicas,omitempty"`
-	Image          string                  `json:"image,omitempty"`
-	InitContainers []InitContainer         `json:"initContainers,omitempty"`
-	Command        []string                `json:"command,omitempty"`
-	Args           []string                `json:"args,omitempty"`
-	Env            []v1.EnvVar             `json:"env,omitempty"`
-	Resources      v1.ResourceRequirements `json:"resources,omitempty"`
-	LivenessProbe  *v1.Probe               `json:"livenessProbe,omitempty"`
-	ReadinessProbe *v1.Probe               `json:"readinessProbe,omitempty"`
-	Volumes        []v1.Volume             `json:"volumes,omitempty"`
-	VolumeMounts   []v1.VolumeMount        `json:"volumeMounts,omitempty"`
-}
-
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the
 // cyndi operator and exposes a limited set of cyndi configuration options
 type CyndiSpec struct {
@@ -290,9 +273,6 @@ type ClowdAppSpec struct {
 
 	// A list of jobs
 	Jobs []Job `json:"jobs,omitempty"`
-
-	// Deprecated
-	Pods []PodSpecDeprecated `json:"pods,omitempty"`
 
 	// The name of the ClowdEnvironment resource that this ClowdApp will use as
 	// its base. This does not mean that the ClowdApp needs to be placed in the
@@ -508,32 +488,6 @@ func (i *ClowdApp) IsReady() bool {
 // GetClowdSAName returns the ServiceAccount Name for the App
 func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
-}
-
-// ConvertToNewShim converts an old "pod" based spec into the new "deployment" style.
-func (i *ClowdApp) ConvertToNewShim() {
-	deps := []Deployment{}
-	for _, pod := range i.Spec.Pods {
-		dep := Deployment{
-			Name:        pod.Name,
-			Web:         pod.Web,
-			MinReplicas: pod.MinReplicas,
-			PodSpec: PodSpec{
-				Image:          pod.Image,
-				InitContainers: pod.InitContainers,
-				Command:        pod.Command,
-				Args:           pod.Args,
-				Env:            pod.Env,
-				Resources:      pod.Resources,
-				LivenessProbe:  pod.LivenessProbe,
-				ReadinessProbe: pod.ReadinessProbe,
-				Volumes:        pod.Volumes,
-				VolumeMounts:   pod.VolumeMounts,
-			},
-		}
-		deps = append(deps, dep)
-	}
-	i.Spec.Deployments = deps
 }
 
 // Omfunc is a utility function that performs an operation on a metav1.Object.

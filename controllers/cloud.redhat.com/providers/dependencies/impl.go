@@ -77,11 +77,6 @@ func makeDepConfig(
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, iapp := range apps.Items {
-
-		if iapp.Spec.Pods != nil {
-			iapp.ConvertToNewShim()
-		}
-
 		if iapp.Spec.EnvName == app.Spec.EnvName {
 			appMap[iapp.Name] = iapp
 		}

@@ -15,7 +15,7 @@ spec:
       path: "/metrics"
     kafka:
       cluster:
-        name: my-cluster
+        name: strimzi-topic-basic
         namespace: test-kafka-strimzi-topic-kafka
       mode: operator
       enableLegacyStrimzi: true

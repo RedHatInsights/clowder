@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	"github.com/go-logr/logr"
@@ -64,6 +65,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+var mu sync.RWMutex
+var cEnv = ""
+
 const envFinalizer = "finalizer.env.cloud.redhat.com"
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -76,6 +80,24 @@ type ClowdEnvironmentReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
+
+func SetEnv(name string) {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = name
+}
+
+func ReleaseEnv() {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = ""
+}
+
+func ReadEnv() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return cEnv
+}
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -166,6 +188,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	var requeue = false
 
+	SetEnv(env.Name)
+	defer ReleaseEnv()
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
@@ -203,12 +227,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	err = r.setAppInfo(provider)
-	if err != nil {
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
-	}
-
 	if statusErr := SetDeploymentStatus(ctx, r.Client, &env); statusErr != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
 		return ctrl.Result{}, err
@@ -233,6 +251,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, err)
 	} else {
+		var err error
+		if provErr != nil {
+			err = provErr
+		} else if cacheErr != nil {
+			err = cacheErr
+		}
 		log.Info("Reconciliation partially successful", "env", fmt.Sprintf("%s:%s", env.Namespace, env.Name))
 		r.Recorder.Eventf(&env, "Warning", "SuccessfulPartialReconciliation", "Environment requeued [%s]", env.GetClowdName())
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationPartiallySuccessful, err)
@@ -333,10 +357,6 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 
 		if app.GetDeletionTimestamp() != nil {
 			continue
-		}
-
-		if app.Spec.Pods != nil {
-			app.ConvertToNewShim()
 		}
 
 		appstatus := crd.AppInfo{
