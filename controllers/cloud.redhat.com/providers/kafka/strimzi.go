@@ -8,7 +8,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -354,21 +354,25 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	username := getConnectClusterUserName(s.Env)
 
+	var config apiextensions.JSON
+
+	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
+		"group.id":                                "connect-cluster",
+		"offset.storage.topic":                    "connect-cluster-offsets",
+		"config.storage.topic":                    "connect-cluster-configs",
+		"status.storage.topic":                    "connect-cluster-status",
+		"offset.storage.replication.factor":       "1",
+		"config.storage.replication.factor":       "1",
+		"status.storage.replication.factor":       "1",
+		"connector.client.config.override.policy": "All",
+	}`)))
+
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: s.getBootstrapServersString(),
 		Version:          &version,
-		Config: map[string]string{
-			"group.id":                                "connect-cluster",
-			"offset.storage.topic":                    "connect-cluster-offsets",
-			"config.storage.topic":                    "connect-cluster-configs",
-			"status.storage.topic":                    "connect-cluster-status",
-			"offset.storage.replication.factor":       "1",
-			"config.storage.replication.factor":       "1",
-			"status.storage.replication.factor":       "1",
-			"connector.client.config.override.policy": "All",
-		},
-		Image: &image,
+		Config:           &config,
+		Image:            &image,
 	}
 	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
@@ -744,9 +748,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 		k.SetLabels(labels)
 
-		k.Spec = &strimzi.KafkaTopicSpec{
-			Config: make(map[string]string),
-		}
+		k.Spec = &strimzi.KafkaTopicSpec{}
 
 		// This can be improved from an efficiency PoV
 		// Loop through all key/value pairs in the config
@@ -810,6 +812,8 @@ func processTopicValues(
 		}
 	}
 
+	jsonData := "{"
+
 	for key := range topic.Config {
 		valList := []string{}
 		for _, iapp := range appList.Items {
@@ -836,10 +840,15 @@ func processTopicValues(
 		f, ok := conversionMap[key]
 		if ok {
 			out, _ := f(valList)
-			k.Spec.Config[key] = out
+			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
 		} else {
 			return errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
+		jsonData = jsonData[0 : len(jsonData)-1]
+		var config apiextensions.JSON
+
+		config.UnmarshalJSON([]byte(jsonData))
+		k.Spec.Config = &config
 	}
 
 	if len(replicaValList) > 0 {
@@ -847,14 +856,14 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
-		maxReplicasInt, err := common.Atoi32(maxReplicas)
+		maxReplicasInt, err := strconv.Atoi(maxReplicas)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
-		k.Spec.Replicas = maxReplicasInt
-		if k.Spec.Replicas < int32(1) {
+		k.Spec.Replicas = common.Int32Ptr(maxReplicasInt)
+		if *k.Spec.Replicas < int32(1) {
 			// if unset, default to 3
-			k.Spec.Replicas = int32(3)
+			k.Spec.Replicas = common.Int32Ptr(3)
 		}
 	}
 
@@ -863,21 +872,21 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
-		maxPartitionsInt, err := common.Atoi32(maxPartitions)
+		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
-		k.Spec.Partitions = maxPartitionsInt
-		if k.Spec.Partitions < int32(1) {
+		k.Spec.Partitions = common.Int32Ptr(maxPartitionsInt)
+		if *k.Spec.Partitions < int32(1) {
 			// if unset, default to 3
-			k.Spec.Partitions = int32(3)
+			k.Spec.Partitions = common.Int32Ptr(3)
 		}
 	}
 
 	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
-		k.Spec.Replicas = 1
-	} else if env.Spec.Providers.Kafka.Cluster.Replicas < k.Spec.Replicas {
-		k.Spec.Replicas = env.Spec.Providers.Kafka.Cluster.Replicas
+		k.Spec.Replicas = common.Int32Ptr(1)
+	} else if env.Spec.Providers.Kafka.Cluster.Replicas < *k.Spec.Replicas {
+		k.Spec.Replicas = &env.Spec.Providers.Kafka.Cluster.Replicas
 	}
 
 	return nil
