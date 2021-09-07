@@ -1,6 +1,51 @@
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-ephemeral-gateway
+  name: test-ephgw
 spec:
-  targetNamespace: test-ephemeral-gateway
+  targetNamespace: test-ephgw
+  providers:
+    web:
+      port: 8000
+      mode: local
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+  serviceConfig:
+    type: NodePort
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-ephgw
+spec:
+  envName: test-ephgw
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    webServices:
+      public:
+        enabled: true
