@@ -762,7 +762,7 @@ func (m *localWebProvider) configureKeycloak() error {
 			Username:  "jdoe",
 			FirstName: "John",
 			LastName:  "Doe",
-			Email:     "jode@example.com",
+			Email:     "jdoe@example.com",
 			Attributes: userAttributes{
 				FirstName:     "John",
 				LastName:      "Doe",

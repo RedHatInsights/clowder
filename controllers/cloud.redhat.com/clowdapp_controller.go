@@ -110,10 +110,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
 
-	if app.Spec.Pods != nil {
-		app.ConvertToNewShim()
-	}
-
 	if err != nil {
 		if k8serr.IsNotFound(err) {
 			// Must have been deleted
@@ -410,11 +406,6 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 	// Filter based on base attribute
 
 	for _, app := range appList.Items {
-
-		if app.Spec.Pods != nil {
-			app.ConvertToNewShim()
-		}
-
 		if app.Spec.EnvName == env.Name {
 			// Add filtered resources to return result
 			reqs = append(reqs, reconcile.Request{

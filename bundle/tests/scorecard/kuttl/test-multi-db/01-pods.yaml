@@ -40,9 +40,10 @@ metadata:
   namespace: test-multi-db
 spec:
   envName: test-multi-db
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   database:
     name: app-a
     version: 12
@@ -54,9 +55,10 @@ metadata:
   namespace: test-multi-db
 spec:
   envName: test-multi-db
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   database:
     name: app-b
     version: 10
@@ -68,9 +70,10 @@ metadata:
   namespace: test-multi-db
 spec:
   envName: test-multi-db
-  pods:
+  deployments:
   - name: processor
-    image: quay.io/psav/clowder-hello
+    podSpec:
+      image: quay.io/psav/clowder-hello
   database:
     sharedDbAppName: app-b
     version: 10

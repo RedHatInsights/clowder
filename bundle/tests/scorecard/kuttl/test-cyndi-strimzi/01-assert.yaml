@@ -13,7 +13,7 @@ metadata:
     name: test-cyndi-strimzi
 spec:
   appName: myapp
-  connectCluster: my-connect-cluster
+  connectCluster: test-cyndi-strimzi-cluster
 ---
 apiVersion: v1
 kind: Secret

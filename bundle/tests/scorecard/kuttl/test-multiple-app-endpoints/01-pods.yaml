@@ -49,7 +49,6 @@ spec:
       path: "/metrics"
     kafka:
       namespace: kafka
-      clusterName: my-cluster
       mode: none
     db:
       mode: none

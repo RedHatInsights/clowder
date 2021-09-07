@@ -40,7 +40,11 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	pod := deployment.PodSpec
 	d.Spec.Template.SetAnnotations(make(map[string]string))
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
+<<<<<<< HEAD
 		d.Spec.Template.Annotations["clowder/authsidecar-image"] = "b0f47b3"
+=======
+		d.Spec.Template.Annotations["clowder/authsidecar-image"] = "a76bb81"
+>>>>>>> debc682fcdac61eb62abd3b4de95b71d69be62ca
 		d.Spec.Template.Annotations["clowder/authsidecar-enabled"] = "true"
 		d.Spec.Template.Annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
 		d.Spec.Template.Annotations["clowder/authsidecar-config"] = fmt.Sprintf(

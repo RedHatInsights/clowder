@@ -1,6 +1,11 @@
 package web
 
 import (
+<<<<<<< HEAD
+=======
+	"crypto/sha256"
+	"encoding/json"
+>>>>>>> debc682fcdac61eb62abd3b4de95b71d69be62ca
 	"fmt"
 	"strings"
 
@@ -10,8 +15,15 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+<<<<<<< HEAD
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
+=======
+	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+
+	apps "k8s.io/api/apps/v1"
+>>>>>>> debc682fcdac61eb62abd3b4de95b71d69be62ca
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -147,6 +159,30 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
 		}
 
+<<<<<<< HEAD
+=======
+		jsonData, err := json.Marshal(sec)
+		if err != nil {
+			return errors.Wrap("Failed to marshal config JSON", err)
+		}
+
+		h := sha256.New()
+		h.Write([]byte(jsonData))
+		hash := fmt.Sprintf("%x", h.Sum(nil))
+
+		d := &apps.Deployment{}
+		dnn := app.GetDeploymentNamespacedName(&deployment)
+		if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+			return err
+		}
+
+		d.Spec.Template.Annotations["clowder/authsidecar-confighash"] = hash
+
+		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
+			return err
+		}
+
+>>>>>>> debc682fcdac61eb62abd3b4de95b71d69be62ca
 		if err := web.Cache.Update(WebSecret, sec); err != nil {
 			return err
 		}

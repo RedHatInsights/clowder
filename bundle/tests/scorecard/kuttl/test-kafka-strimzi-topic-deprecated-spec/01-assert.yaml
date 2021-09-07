@@ -23,7 +23,7 @@ kind: KafkaTopic
 metadata:
   labels:
     env: test-kafka-strimzi-topic-deprecated
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: strimzi-topic-deprecated
   name: topicone
   namespace: test-kafka-strimzi-topic-deprecated-kafka
   ownerReferences:
@@ -39,7 +39,7 @@ kind: KafkaTopic
 metadata:
   labels:
     env: test-kafka-strimzi-topic-deprecated
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: strimzi-topic-deprecated
   name: topictwo
   namespace: test-kafka-strimzi-topic-deprecated-kafka
   ownerReferences:
@@ -55,7 +55,7 @@ kind: KafkaTopic
 metadata:
   labels:
     env: test-kafka-strimzi-topic-deprecated
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: strimzi-topic-deprecated
   name: topicthree
   namespace: test-kafka-strimzi-topic-deprecated-kafka
   ownerReferences:
