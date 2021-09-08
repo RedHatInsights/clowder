@@ -18,7 +18,7 @@ metadata:
   name: puptoo-processor
   namespace: test-kafka-strimzi-topic-deprecated
 ---
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   labels:
@@ -34,7 +34,7 @@ spec:
   partitions: 96
   replicas: 1
 ---
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   labels:
@@ -50,7 +50,7 @@ spec:
   partitions: 128
   replicas: 1
 ---
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   labels:

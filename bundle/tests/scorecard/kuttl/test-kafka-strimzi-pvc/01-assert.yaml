@@ -1,5 +1,5 @@
 ---
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: my-pvc-cluster
@@ -30,7 +30,7 @@ spec:
   entityOperator:
     topicOperator: {}
 ---
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaConnect
 metadata:
   name: my-pvc-cluster
