@@ -70,6 +70,8 @@ github.com/RedHatInsights/strimzi-client-go v0.21.1-6 h1:6KclCyuCvjaHlGJblYku/JY
 github.com/RedHatInsights/strimzi-client-go v0.21.1-6/go.mod h1:Z488n7yGdCVT3AFYuamQ9F7b6c99OSMr4lPYzgEEpzY=
 github.com/RedHatInsights/strimzi-client-go v0.21.1-7 h1:nkkIraViFcukPwiqAJtGbwyY0fN8SeCe//xvFY5bf20=
 github.com/RedHatInsights/strimzi-client-go v0.21.1-7/go.mod h1:Z488n7yGdCVT3AFYuamQ9F7b6c99OSMr4lPYzgEEpzY=
+github.com/RedHatInsights/strimzi-client-go v0.24.0 h1:Dj+Wfhht0FRtk3emN/iwzoHhunBTMYP24zDmgKmc3o0=
+github.com/RedHatInsights/strimzi-client-go v0.24.0/go.mod h1:Z488n7yGdCVT3AFYuamQ9F7b6c99OSMr4lPYzgEEpzY=
 github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
