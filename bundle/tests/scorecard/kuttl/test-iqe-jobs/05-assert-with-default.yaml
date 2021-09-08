@@ -21,7 +21,8 @@ metadata:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: host-inventory-smoke-iqe
+  labels:
+    job: host-inventory-smoke-iqe
   namespace: test-iqe-jobs 
 spec:
   template:
