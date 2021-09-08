@@ -356,7 +356,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	var config apiextensions.JSON
 
-	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
+	config.UnmarshalJSON([]byte(`{
 		"group.id":                                "connect-cluster",
 		"offset.storage.topic":                    "connect-cluster-offsets",
 		"config.storage.topic":                    "connect-cluster-configs",
@@ -364,8 +364,8 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		"offset.storage.replication.factor":       "1",
 		"config.storage.replication.factor":       "1",
 		"status.storage.replication.factor":       "1",
-		"connector.client.config.override.policy": "All",
-	}`)))
+		"connector.client.config.override.policy": "All"
+	}`))
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
@@ -845,6 +845,7 @@ func processTopicValues(
 			return errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
 		jsonData = jsonData[0 : len(jsonData)-1]
+		jsonData += "}"
 		var config apiextensions.JSON
 
 		config.UnmarshalJSON([]byte(jsonData))
