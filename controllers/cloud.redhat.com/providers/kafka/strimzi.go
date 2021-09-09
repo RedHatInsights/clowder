@@ -344,7 +344,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "2.7.0"
+		version = "2.8.0"
 	}
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
