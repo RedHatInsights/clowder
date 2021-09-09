@@ -10,7 +10,7 @@ metadata:
     name: env-test-kafka-strimzi-ephemeral
 spec:
   kafka:
-    version: "2.7.0"
+    version: "2.8.0"
     replicas: 1
     listeners:
       - name: tcp
@@ -34,7 +34,7 @@ metadata:
   annotations:
     strimzi.io/use-connector-resources: 'true'
 spec:
-  version: "2.7.0"
+  version: "2.8.0"
   image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
   # bootstrapServers is asserted in json asserts
   config:

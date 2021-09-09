@@ -10,7 +10,7 @@ metadata:
     name: env-test-kafka-strimzi-pvc
 spec:
   kafka:
-    version: "2.7.0"
+    version: "2.8.0"
     replicas: 1
     listeners:
       - name: tcp
@@ -38,7 +38,7 @@ metadata:
   annotations:
     strimzi.io/use-connector-resources: 'true'
 spec:
-  version: "2.7.0"
+  version: "2.8.0"
   image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
   bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-pvc-kafka.svc:9092
   config:
