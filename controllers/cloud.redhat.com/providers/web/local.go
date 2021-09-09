@@ -98,6 +98,10 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
+	if err := makeBOPIngress(p); err != nil {
+		return nil, err
+	}
+
 	err = wp.configureKeycloak()
 
 	if err != nil {
@@ -108,6 +112,52 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	return wp, nil
 
+}
+
+func makeBOPIngress(p *providers.Provider) error {
+	netobj := &networking.Ingress{}
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-mbop", p.Env.Name),
+		Namespace: p.Env.Status.TargetNamespace,
+	}
+
+	if err := p.Cache.Create(WebBOPIngress, nn, netobj); err != nil {
+		return err
+	}
+
+	labels := p.Env.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, p.Env)
+	labler(netobj)
+
+	netobj.Spec = networking.IngressSpec{
+		Rules: []networking.IngressRule{
+			{
+				Host: p.Env.Name,
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     "/api/entitlements/",
+							PathType: (*networking.PathType)(common.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: fmt.Sprintf("%s-mbop", p.Env.Name),
+									Port: networking.ServiceBackendPort{
+										Name: "mbop",
+									},
+								},
+							},
+						}},
+					},
+				},
+			},
+		},
+	}
+
+	if err := p.Cache.Update(WebBOPIngress, netobj); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

@@ -28,6 +28,9 @@ var WebBOPDeployment = providers.NewSingleResourceIdent(ProvName, "web_bop_deplo
 // WebKeycloakService is the mocked keycloak deployment
 var WebBOPService = providers.NewSingleResourceIdent(ProvName, "web_bop_service", &core.Service{})
 
+// WebKeycloakIngress is the mocked bop ingress
+var WebBOPIngress = providers.NewSingleResourceIdent(ProvName, "web_bop_ingress", &networking.Ingress{})
+
 // WebSecret is the mocked secret config
 var WebSecret = providers.NewMultiResourceIdent(ProvName, "web_secret", &core.Secret{})
 

@@ -292,7 +292,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:8ba3f25"
+	image := "quay.io/cloudservices/mbop:030f3bb"
 
 	if clowder_config.LoadedConfig.Images.MBOP != "" {
 		image = clowder_config.LoadedConfig.Images.MBOP
