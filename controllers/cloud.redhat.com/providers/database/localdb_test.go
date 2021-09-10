@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 
@@ -134,6 +136,11 @@ func TestLocalDBDeployment(t *testing.T) {
 	if !compareEnvs(&envVars, &d.Spec.Template.Spec.Containers[0].Env) {
 		t.Fatal("Envvars didn't match")
 	}
+	assert.Equal(
+		t,
+		d.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command,
+		[]string{"/bin/bash", "-c", "pg_ctl stop -D /var/lib/pgsql/data"},
+	)
 }
 
 func compareEnvs(a, b *([]core.EnvVar)) bool {

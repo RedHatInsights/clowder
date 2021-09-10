@@ -1,6 +1,8 @@
 package providers
 
 import (
+	"fmt"
+
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
@@ -71,6 +73,9 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		ContainerPort: 5432,
 	}}
 
+	dataPath := "/var/lib/pgsql/data"
+
+	// set liveness/readiness probes
 	probeHandler := core.Handler{
 		Exec: &core.ExecAction{
 			Command: []string{
@@ -84,7 +89,6 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 			},
 		},
 	}
-
 	livenessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 15,
@@ -96,16 +100,31 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		TimeoutSeconds:      2,
 	}
 
+	// use preStop lifecycle to ensure .pid file is removed when container is shut down/restarted
+	preStopHandler := core.Handler{
+		Exec: &core.ExecAction{
+			Command: []string{
+				"/bin/bash",
+				"-c",
+				fmt.Sprintf("pg_ctl stop -D %s", dataPath),
+			},
+		},
+	}
+	preStopLifecycle := core.Lifecycle{
+		PreStop: &preStopHandler,
+	}
+
 	c := core.Container{
 		Name:           nn.Name,
 		Image:          image,
 		Env:            envVars,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
+		Lifecycle:      &preStopLifecycle,
 		Ports:          ports,
 		VolumeMounts: []core.VolumeMount{{
 			Name:      nn.Name,
-			MountPath: "/var/lib/pgsql/data",
+			MountPath: dataPath,
 		}},
 	}
 
