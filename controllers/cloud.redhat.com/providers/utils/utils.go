@@ -29,15 +29,21 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 			},
 		}
 		dd.Spec.Strategy.Type = apps.RecreateDeploymentStrategyType
-		dd.Spec.Strategy.RollingUpdate = &apps.RollingUpdateDeployment{}
+		dd.Spec.Strategy.RollingUpdate = nil
 	} else {
 		volSource = core.VolumeSource{
 			EmptyDir: &core.EmptyDirVolumeSource{},
 		}
 		dd.Spec.Strategy.Type = apps.RollingUpdateDeploymentStrategyType
 		dd.Spec.Strategy.RollingUpdate = &apps.RollingUpdateDeployment{
-			MaxUnavailable: &intstr.IntOrString{StrVal: "25%"},
-			MaxSurge:       &intstr.IntOrString{StrVal: "25%"},
+			MaxUnavailable: &intstr.IntOrString{
+				Type:   intstr.String,
+				StrVal: "25%",
+			},
+			MaxSurge: &intstr.IntOrString{
+				Type:   intstr.String,
+				StrVal: "25%",
+			},
 		}
 	}
 
