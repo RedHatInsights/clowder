@@ -11,6 +11,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
@@ -27,9 +28,16 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 				ClaimName: nn.Name,
 			},
 		}
+		dd.Spec.Strategy.Type = apps.RecreateDeploymentStrategyType
+		dd.Spec.Strategy.RollingUpdate = &apps.RollingUpdateDeployment{}
 	} else {
 		volSource = core.VolumeSource{
 			EmptyDir: &core.EmptyDirVolumeSource{},
+		}
+		dd.Spec.Strategy.Type = apps.RollingUpdateDeploymentStrategyType
+		dd.Spec.Strategy.RollingUpdate = &apps.RollingUpdateDeployment{
+			MaxUnavailable: &intstr.IntOrString{StrVal: "25%"},
+			MaxSurge:       &intstr.IntOrString{StrVal: "25%"},
 		}
 	}
 
