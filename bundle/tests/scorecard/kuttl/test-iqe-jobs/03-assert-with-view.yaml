@@ -30,7 +30,6 @@ spec:
       containers:
         - args:
           - "iqe_runner.sh"
-          name: host-inventory-smoke-iqe
           image: quay.io/psav/clowder-hello:latest
           env:
             - name: "ENV_FOR_DYNACONF"
