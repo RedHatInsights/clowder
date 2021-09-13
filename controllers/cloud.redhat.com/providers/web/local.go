@@ -102,6 +102,10 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
+	if err := makeAuthIngress(p); err != nil {
+		return nil, err
+	}
+
 	err = wp.configureKeycloak()
 
 	if err != nil {
@@ -155,6 +159,52 @@ func makeBOPIngress(p *providers.Provider) error {
 	}
 
 	if err := p.Cache.Update(WebBOPIngress, netobj); err != nil {
+		return err
+	}
+	return nil
+}
+
+func makeAuthIngress(p *providers.Provider) error {
+	netobj := &networking.Ingress{}
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-auth", p.Env.Name),
+		Namespace: p.Env.Status.TargetNamespace,
+	}
+
+	if err := p.Cache.Create(WebKeycloakIngress, nn, netobj); err != nil {
+		return err
+	}
+
+	labels := p.Env.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, p.Env)
+	labler(netobj)
+
+	netobj.Spec = networking.IngressSpec{
+		Rules: []networking.IngressRule{
+			{
+				Host: fmt.Sprintf("%s-auth", p.Env.Name),
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     "/",
+							PathType: (*networking.PathType)(common.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: fmt.Sprintf("%s-keycloak", p.Env.Name),
+									Port: networking.ServiceBackendPort{
+										Name: "keycloak",
+									},
+								},
+							},
+						}},
+					},
+				},
+			},
+		},
+	}
+
+	if err := p.Cache.Update(WebKeycloakIngress, netobj); err != nil {
 		return err
 	}
 	return nil

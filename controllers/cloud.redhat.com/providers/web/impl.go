@@ -238,6 +238,10 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	envVars := []core.EnvVar{
 		{
+			Name:  "ALL_PASS",
+			Value: "true",
+		},
+		{
 			Name:  "KEYCLOAK_SERVER",
 			Value: fmt.Sprintf("http://%s-keycloak.%s.svc:8080", o.GetClowdName(), o.GetClowdNamespace()),
 		},
@@ -292,7 +296,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:030f3bb"
+	image := "quay.io/cloudservices/mbop:a8be5e9"
 
 	if clowder_config.LoadedConfig.Images.MBOP != "" {
 		image = clowder_config.LoadedConfig.Images.MBOP
@@ -772,7 +776,7 @@ func (m *localWebProvider) configureKeycloak() error {
 				IsInternal:    false,
 				IsOrgAdmin:    true,
 				IsActive:      true,
-				Entitlements:  `{"insights": {"is_trial": false, "is_enabled": true}}`,
+				Entitlements:  `{"insights": {"is_entitled": true, "is_trial": false}}`,
 			},
 			Credentials: []userCredentials{{
 				Temporary: false,
