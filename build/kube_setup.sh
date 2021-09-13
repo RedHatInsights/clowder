@@ -63,7 +63,7 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.22.1
+    STRIMZI_VERSION=0.25.0
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
@@ -124,7 +124,7 @@ function install_strimzi_operator {
 }
 
 function install_cert_manager {
-    CERT_MANAGER_VERSION=v1.2.0
+    CERT_MANAGER_VERSION=v1.5.3
 
     echo "*** Installing cert manager ..."
     cd "$DOWNLOAD_DIR"
@@ -252,7 +252,8 @@ function install_elasticsearch_operator {
     fi
 
     echo "*** Applying elastic-operator manifest ..."
-    ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/1.6.0/all-in-one.yaml
+    ${KUBECTL_CMD} create -f https://download.elastic.co/downloads/eck/1.7.1/crds.yaml
+    ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/1.7.1/operator.yaml
 
     echo "*** Will wait for elastic-operator to come up in background"
     ${KUBECTL_CMD} rollout status statefulset/elastic-operator -n "$OPERATOR_NS" | sed "s/^/[elastic-operator] /" &
