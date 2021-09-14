@@ -794,6 +794,8 @@ func processTopicValues(
 	partitionValList []string,
 ) error {
 
+	keys := map[string]bool{}
+
 	for _, iapp := range appList.Items {
 
 		if iapp.Spec.EnvName != app.Spec.EnvName {
@@ -808,13 +810,16 @@ func processTopicValues(
 				}
 				replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
 				partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
+				for key := range topic.Config {
+					keys[key] = true
+				}
 			}
 		}
 	}
 
 	jsonData := "{"
 
-	for key := range topic.Config {
+	for key := range keys {
 		valList := []string{}
 		for _, iapp := range appList.Items {
 			if iapp.Spec.EnvName != app.Spec.EnvName {
@@ -850,8 +855,6 @@ func processTopicValues(
 		jsonData = jsonData[0 : len(jsonData)-1]
 	}
 	jsonData += "}"
-
-	fmt.Printf("%v", jsonData)
 
 	var config apiextensions.JSON
 
