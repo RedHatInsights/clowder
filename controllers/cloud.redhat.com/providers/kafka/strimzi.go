@@ -844,13 +844,25 @@ func processTopicValues(
 		} else {
 			return errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
-		jsonData = jsonData[0 : len(jsonData)-1]
-		jsonData += "}"
-		var config apiextensions.JSON
-
-		config.UnmarshalJSON([]byte(jsonData))
-		k.Spec.Config = &config
 	}
+
+	if len(jsonData) > 1 {
+		jsonData = jsonData[0 : len(jsonData)-1]
+	}
+	jsonData += "}"
+
+	fmt.Printf("%v", jsonData)
+
+	var config apiextensions.JSON
+
+	err := config.UnmarshalJSON([]byte(jsonData))
+
+	if err != nil {
+		return err
+
+	}
+
+	k.Spec.Config = &config
 
 	if len(replicaValList) > 0 {
 		maxReplicas, err := utils.IntMax(replicaValList)
