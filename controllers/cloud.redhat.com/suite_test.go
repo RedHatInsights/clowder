@@ -42,7 +42,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -686,10 +686,10 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 			expectedReplicas = int32(3)
 			expectedPartitions = int32(3)
 		}
-		if fetchedTopic.Spec.Replicas != expectedReplicas {
+		if *fetchedTopic.Spec.Replicas != expectedReplicas {
 			t.Errorf("Bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Replicas, expectedReplicas)
 		}
-		if fetchedTopic.Spec.Partitions != expectedPartitions {
+		if *fetchedTopic.Spec.Partitions != expectedPartitions {
 			t.Errorf("Bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Partitions, expectedPartitions)
 		}
 	}

@@ -169,10 +169,8 @@ spec:
                             description: JVM Options
                             properties:
                               -XX:
-                                additionalProperties:
-                                  type: string
                                 description: A map of -XX options to the JVM.
-                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               -Xms:
                                 description: -Xms option to to the JVM.
                                 type: string
@@ -216,17 +214,13 @@ spec:
                             description: Resource Limits
                             properties:
                               limits:
-                                additionalProperties:
-                                  type: string
                                 description: Limits corresponds to the JSON schema
                                   field "limits".
-                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               requests:
-                                additionalProperties:
-                                  type: string
                                 description: Requests corresponds to the JSON schema
                                   field "requests".
-                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             type: object
                           storageSize:
                             description: Persistent volume storage size. If unset,
