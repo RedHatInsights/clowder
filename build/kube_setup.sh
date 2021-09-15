@@ -94,14 +94,12 @@ function install_strimzi_operator {
     [[ $PLATFORM == "Darwin" ]] && sed -i '' "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml \
         || sed -i "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml
 
-    if ! test -f $ROOT_DIR/build/${FIX_NAMESPACE_SCRIPT}; then
-         echo "*** Downloading ${FIX_NAMESPACE_SCRIPT} ..."
-         curl -LsSO https://raw.githubusercontent.com/RedHatInsights/clowder/master/build/${FIX_NAMESPACE_SCRIPT} \
-             -o ${FIX_NAMESPACE_SCRIPT} && chmod +x ${FIX_NAMESPACE_SCRIPT}
-         mv ${FIX_NAMESPACE_SCRIPT} $ROOT_DIR/build/
-     fi
+    echo "*** Downloading ${FIX_NAMESPACE_SCRIPT} ..."
+    curl -LsSO https://raw.githubusercontent.com/RedHatInsights/clowder/master/build/${FIX_NAMESPACE_SCRIPT} \
+        -o ${FIX_NAMESPACE_SCRIPT} && chmod +x ${FIX_NAMESPACE_SCRIPT}
+    mv ${FIX_NAMESPACE_SCRIPT} $ROOT_DIR/build/
  
-     $ROOT_DIR/build/${FIX_NAMESPACE_SCRIPT} 060-Deployment-strimzi-cluster-operator.yaml "$WATCH_NS"
+    $ROOT_DIR/build/${FIX_NAMESPACE_SCRIPT} 060-Deployment-strimzi-cluster-operator.yaml "$WATCH_NS"
 
     echo "*** Creating ns ${STRIMZI_OPERATOR_NS}..."
     # if we hit an error, assumption is the Namespace already exists
