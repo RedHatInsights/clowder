@@ -17,7 +17,7 @@ import (
 	core "k8s.io/api/core/v1"
 
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 

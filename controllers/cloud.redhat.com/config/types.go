@@ -2,12 +2,17 @@
 
 package config
 
-import "fmt"
-import "encoding/json"
-import "reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+)
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
+	// Arbitrary metadata pertaining to the application application
+	Metadata AppMetadata `json:"metadata,omitempty"`
+
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`
 
@@ -50,6 +55,21 @@ type AppConfig struct {
 
 	// Deprecated: Use 'publicPort' instead.
 	WebPort *int `json:"webPort,omitempty"`
+}
+
+// Application Metadata
+type AppMetadata struct {
+	// Metadata pertaining to an application's deployments
+	Deployments []DeploymentMetadata `json:"deployments,omitempty"`
+}
+
+// Deployment Metadata
+type DeploymentMetadata struct {
+	// Name of deployment
+	Name string `json:"name"`
+
+	// Image used by deployment
+	Image string `json:"image"`
 }
 
 // Broker Configuration
