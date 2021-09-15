@@ -8,7 +8,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -94,7 +94,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Cluster.Version
 	if version == "" {
-		version = "2.7.0"
+		version = "2.8.0"
 	}
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
@@ -344,7 +344,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "2.7.0"
+		version = "2.8.0"
 	}
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
@@ -354,21 +354,25 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	username := getConnectClusterUserName(s.Env)
 
+	var config apiextensions.JSON
+
+	config.UnmarshalJSON([]byte(`{
+		"group.id":                                "connect-cluster",
+		"offset.storage.topic":                    "connect-cluster-offsets",
+		"config.storage.topic":                    "connect-cluster-configs",
+		"status.storage.topic":                    "connect-cluster-status",
+		"offset.storage.replication.factor":       "1",
+		"config.storage.replication.factor":       "1",
+		"status.storage.replication.factor":       "1",
+		"connector.client.config.override.policy": "All"
+	}`))
+
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: s.getBootstrapServersString(),
 		Version:          &version,
-		Config: map[string]string{
-			"group.id":                                "connect-cluster",
-			"offset.storage.topic":                    "connect-cluster-offsets",
-			"config.storage.topic":                    "connect-cluster-configs",
-			"status.storage.topic":                    "connect-cluster-status",
-			"offset.storage.replication.factor":       "1",
-			"config.storage.replication.factor":       "1",
-			"status.storage.replication.factor":       "1",
-			"connector.client.config.override.policy": "All",
-		},
-		Image: &image,
+		Config:           &config,
+		Image:            &image,
 	}
 	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
@@ -744,9 +748,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 		k.SetLabels(labels)
 
-		k.Spec = &strimzi.KafkaTopicSpec{
-			Config: make(map[string]string),
-		}
+		k.Spec = &strimzi.KafkaTopicSpec{}
 
 		// This can be improved from an efficiency PoV
 		// Loop through all key/value pairs in the config
@@ -792,6 +794,8 @@ func processTopicValues(
 	partitionValList []string,
 ) error {
 
+	keys := map[string]bool{}
+
 	for _, iapp := range appList.Items {
 
 		if iapp.Spec.EnvName != app.Spec.EnvName {
@@ -806,11 +810,16 @@ func processTopicValues(
 				}
 				replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
 				partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
+				for key := range topic.Config {
+					keys[key] = true
+				}
 			}
 		}
 	}
 
-	for key := range topic.Config {
+	jsonData := "{"
+
+	for key := range keys {
 		valList := []string{}
 		for _, iapp := range appList.Items {
 			if iapp.Spec.EnvName != app.Spec.EnvName {
@@ -836,25 +845,41 @@ func processTopicValues(
 		f, ok := conversionMap[key]
 		if ok {
 			out, _ := f(valList)
-			k.Spec.Config[key] = out
+			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
 		} else {
 			return errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
+
+	if len(jsonData) > 1 {
+		jsonData = jsonData[0 : len(jsonData)-1]
+	}
+	jsonData += "}"
+
+	var config apiextensions.JSON
+
+	err := config.UnmarshalJSON([]byte(jsonData))
+
+	if err != nil {
+		return err
+
+	}
+
+	k.Spec.Config = &config
 
 	if len(replicaValList) > 0 {
 		maxReplicas, err := utils.IntMax(replicaValList)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
-		maxReplicasInt, err := common.Atoi32(maxReplicas)
+		maxReplicasInt, err := strconv.Atoi(maxReplicas)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
-		k.Spec.Replicas = maxReplicasInt
-		if k.Spec.Replicas < int32(1) {
+		k.Spec.Replicas = common.Int32Ptr(maxReplicasInt)
+		if *k.Spec.Replicas < int32(1) {
 			// if unset, default to 3
-			k.Spec.Replicas = int32(3)
+			k.Spec.Replicas = common.Int32Ptr(3)
 		}
 	}
 
@@ -863,21 +888,21 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
-		maxPartitionsInt, err := common.Atoi32(maxPartitions)
+		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
-		k.Spec.Partitions = maxPartitionsInt
-		if k.Spec.Partitions < int32(1) {
+		k.Spec.Partitions = common.Int32Ptr(maxPartitionsInt)
+		if *k.Spec.Partitions < int32(1) {
 			// if unset, default to 3
-			k.Spec.Partitions = int32(3)
+			k.Spec.Partitions = common.Int32Ptr(3)
 		}
 	}
 
 	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
-		k.Spec.Replicas = 1
-	} else if env.Spec.Providers.Kafka.Cluster.Replicas < k.Spec.Replicas {
-		k.Spec.Replicas = env.Spec.Providers.Kafka.Cluster.Replicas
+		k.Spec.Replicas = common.Int32Ptr(1)
+	} else if env.Spec.Providers.Kafka.Cluster.Replicas < *k.Spec.Replicas {
+		k.Spec.Replicas = &env.Spec.Providers.Kafka.Cluster.Replicas
 	}
 
 	return nil

@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta1"
 	batch "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -246,7 +245,7 @@ type KafkaTopicSpec struct {
 
 	// A key/value pair describing the configuration of a particular topic.
 	// +optional
-	Config strimzi.KafkaTopicSpecConfig `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty"`
 
 	// The requested number of partitions for this topic. If unset, default is '3'
 	// +optional

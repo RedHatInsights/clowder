@@ -63,10 +63,11 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.22.1
+    STRIMZI_VERSION=0.24.0
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
+    FIX_NAMESPACE_SCRIPT="fix_namespace.py"
 
     if [ $REINSTALL -ne 1 ]; then
         STRIMZI_DEPLOYMENT=$(${KUBECTL_CMD} get deployment strimzi-cluster-operator -n $STRIMZI_OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
@@ -93,7 +94,12 @@ function install_strimzi_operator {
     [[ $PLATFORM == "Darwin" ]] && sed -i '' "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml \
         || sed -i "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml
 
-    $ROOT_DIR/build/fix_namespace.py 060-Deployment-strimzi-cluster-operator.yaml "$WATCH_NS"
+    echo "*** Downloading ${FIX_NAMESPACE_SCRIPT} ..."
+    curl -LsSO https://raw.githubusercontent.com/RedHatInsights/clowder/master/build/${FIX_NAMESPACE_SCRIPT} \
+        -o ${FIX_NAMESPACE_SCRIPT} && chmod +x ${FIX_NAMESPACE_SCRIPT}
+    mv ${FIX_NAMESPACE_SCRIPT} $ROOT_DIR/build/
+ 
+    $ROOT_DIR/build/${FIX_NAMESPACE_SCRIPT} 060-Deployment-strimzi-cluster-operator.yaml "$WATCH_NS"
 
     echo "*** Creating ns ${STRIMZI_OPERATOR_NS}..."
     # if we hit an error, assumption is the Namespace already exists
@@ -124,7 +130,7 @@ function install_strimzi_operator {
 }
 
 function install_cert_manager {
-    CERT_MANAGER_VERSION=v1.2.0
+    CERT_MANAGER_VERSION=v1.5.3
 
     echo "*** Installing cert manager ..."
     cd "$DOWNLOAD_DIR"
@@ -252,7 +258,8 @@ function install_elasticsearch_operator {
     fi
 
     echo "*** Applying elastic-operator manifest ..."
-    ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/1.6.0/all-in-one.yaml
+    ${KUBECTL_CMD} create -f https://download.elastic.co/downloads/eck/1.7.1/crds.yaml
+    ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/1.7.1/operator.yaml
 
     echo "*** Will wait for elastic-operator to come up in background"
     ${KUBECTL_CMD} rollout status statefulset/elastic-operator -n "$OPERATOR_NS" | sed "s/^/[elastic-operator] /" &
