@@ -651,7 +651,7 @@ func (k *KeyCloakClient) createClient(realmName, clientName, envName string) err
 		PublicClient:              true,
 		RedirectUris:              []string{"*"},
 		WebOrigins:                []string{"*"},
-		BaseURL:                   envName,
+		BaseURL:                   fmt.Sprintf("https://%s", envName),
 		DirectAccessGrantsEnabled: true,
 		ProtocolMappers: []mapperStruct{
 			createMapper("account_number", "String"),
@@ -678,6 +678,10 @@ func (k *KeyCloakClient) createClient(realmName, clientName, envName string) err
 		fmt.Sprintf("/auth/admin/realms/%s/clients", realmName),
 		string(b), headers,
 	)
+
+	fmt.Printf("/auth/admin/realms/%s/clients\n", realmName)
+	fmt.Print(string(b))
+	fmt.Printf("\n%v", headers)
 
 	if err != nil {
 		return err
