@@ -31,6 +31,9 @@
                 "logging": {
                     "$ref": "#/definitions/LoggingConfig"
                 },
+                "metadata": {
+                    "$ref": "#/definitions/AppMetadata"
+                },
                 "kafka": {
                     "$ref": "#/definitions/KafkaConfig"
                 },
@@ -86,6 +89,39 @@
             },
             "required": [
                 "type"
+            ]
+        },
+        "AppMetadata": {
+            "title": "AppMetadata",
+            "type": "object",
+            "description": "Arbitrary metadata pertaining to the application application",
+            "properties": {
+                "deployments": {
+                    "description": "Metadata pertaining to an application's deployments",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DeploymentMetadata"
+                    }
+                }
+            }
+        },
+        "DeploymentMetadata": {
+            "title": "DeploymentMetadata",
+            "type": "object",
+            "description": "Deployment Metadata",
+            "properties": {
+                "name": {
+                    "description": "Name of deployment",
+                    "type": "string"
+                },
+                "image": {
+                    "description": "Image used by deployment",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "image"
             ]
         },
         "CloudWatchConfig": {
