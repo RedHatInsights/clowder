@@ -639,7 +639,7 @@ type clientStruct struct {
 	DirectAccessGrantsEnabled bool           `json:"directAccessGrantsEnabled"`
 }
 
-func (k *KeyCloakClient) createClient(realmName string, clientName string) error {
+func (k *KeyCloakClient) createClient(realmName, clientName, envName string) error {
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
@@ -651,7 +651,7 @@ func (k *KeyCloakClient) createClient(realmName string, clientName string) error
 		PublicClient:              true,
 		RedirectUris:              []string{"*"},
 		WebOrigins:                []string{"*"},
-		BaseURL:                   "",
+		BaseURL:                   envName,
 		DirectAccessGrantsEnabled: true,
 		ProtocolMappers: []mapperStruct{
 			createMapper("account_number", "String"),
@@ -749,7 +749,7 @@ func (m *localWebProvider) configureKeycloak() error {
 	}
 
 	if !exists {
-		err := client.createClient("redhat-external", "cloud-services")
+		err := client.createClient("redhat-external", "cloud-services", m.Env.Name)
 		if err != nil {
 			return err
 		}
