@@ -632,6 +632,7 @@ type clientStruct struct {
 	Enabled                   bool           `json:"enabled"`
 	BearerOnly                bool           `json:"bearerOnly"`
 	PublicClient              bool           `json:"publicClient"`
+	BaseURL                   string         `json:"baseUrl"`
 	RedirectUris              []string       `json:"redirectUris"`
 	WebOrigins                []string       `json:"webOrigins"`
 	ProtocolMappers           []mapperStruct `json:"protocolMappers"`
@@ -648,8 +649,9 @@ func (k *KeyCloakClient) createClient(realmName string, clientName string) error
 		Enabled:                   true,
 		BearerOnly:                false,
 		PublicClient:              true,
-		RedirectUris:              []string{"url"},
-		WebOrigins:                []string{"url"},
+		RedirectUris:              []string{"*"},
+		WebOrigins:                []string{"*"},
+		BaseURL:                   "",
 		DirectAccessGrantsEnabled: true,
 		ProtocolMappers: []mapperStruct{
 			createMapper("account_number", "String"),
