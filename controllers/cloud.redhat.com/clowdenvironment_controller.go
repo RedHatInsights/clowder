@@ -184,6 +184,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		Client: r.Client,
 		Env:    &env,
 		Cache:  &cache,
+		Log:    log,
 	}
 
 	var requeue = false

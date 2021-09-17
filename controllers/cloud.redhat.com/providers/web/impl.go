@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -330,14 +332,17 @@ type KeyCloakClient struct {
 	Password    string
 	AccessToken string
 	Ctx         context.Context
+	Log         logr.Logger
 }
 
-func NewKeyCloakClient(BaseUrl string, Username string, Password string, BaseCtx context.Context) (*KeyCloakClient, error) {
+func NewKeyCloakClient(BaseUrl string, Username string, Password string, BaseCtx context.Context, Log logr.Logger) (*KeyCloakClient, error) {
+	log := Log.WithValues("subsystem", "KeyCloakClient")
 	client := KeyCloakClient{
 		BaseURL:  BaseUrl,
 		Username: Username,
 		Password: Password,
 		Ctx:      BaseCtx,
+		Log:      log,
 	}
 	err := client.init()
 	if err != nil {
@@ -374,8 +379,6 @@ func (k *KeyCloakClient) init() error {
 
 	data, err := ioutil.ReadAll(resp.Body)
 
-	fmt.Printf("%v", data)
-
 	if err != nil {
 		return err
 	}
@@ -389,7 +392,7 @@ func (k *KeyCloakClient) init() error {
 
 func (k *KeyCloakClient) rawMethod(method string, url string, body string, headers map[string]string) (*http.Response, error) {
 	fullUrl := fmt.Sprintf("%s%s", k.BaseURL, url)
-	fmt.Printf("\n\n%v\n%v\n%v\n%v\n\n", url, body, headers, method)
+
 	ctx, cancel := context.WithTimeout(k.Ctx, 10*time.Second)
 	defer cancel()
 
@@ -410,6 +413,9 @@ func (k *KeyCloakClient) rawMethod(method string, url string, body string, heade
 	if err != nil {
 		return nil, err
 	}
+
+	k.Log.Info(fmt.Sprintf("%s - %s - %d", url, method, resp.StatusCode))
+
 	return resp, nil
 }
 
@@ -485,7 +491,6 @@ func (k *KeyCloakClient) doesClientExist(realm string, requestedClientName strin
 	}
 
 	for _, client := range *iface {
-		fmt.Printf("\n\n%s\n\n", client.ClientId)
 		if client.ClientId == requestedClientName {
 			return true, nil
 		}
@@ -520,7 +525,6 @@ func (k *KeyCloakClient) doesUserExist(realm string, requestedUsername string) (
 	}
 
 	for _, user := range *iface {
-		fmt.Printf("\n\n%s\n\n", user.Username)
 		if user.Username == requestedUsername {
 			return true, nil
 		}
@@ -582,12 +586,11 @@ func (k *KeyCloakClient) createRealm(requestedRealmName string) error {
 	resp, err := k.Post("/auth/admin/realms", string(b), headers)
 
 	if err != nil {
+		v, _ := ioutil.ReadAll(resp.Body)
+		k.Log.Error(err, string(v))
 		return err
 	}
 
-	fmt.Printf("\n\n%v\n\n", resp)
-	v, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("\n\n%s\n\n", string(v))
 	return nil
 }
 
@@ -679,17 +682,12 @@ func (k *KeyCloakClient) createClient(realmName, clientName, envName string) err
 		string(b), headers,
 	)
 
-	fmt.Printf("/auth/admin/realms/%s/clients\n", realmName)
-	fmt.Print(string(b))
-	fmt.Printf("\n%v", headers)
-
 	if err != nil {
+		v, _ := ioutil.ReadAll(resp.Body)
+		k.Log.Error(err, string(v))
 		return err
 	}
 
-	fmt.Printf("\n\n%v\n\n", resp)
-	v, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("\n\n%s\n\n", string(v))
 	return nil
 }
 
@@ -710,12 +708,11 @@ func (k *KeyCloakClient) createUser(realmName string, user *createUserStruct) er
 	)
 
 	if err != nil {
+		v, _ := ioutil.ReadAll(resp.Body)
+		k.Log.Error(err, string(v))
 		return err
 	}
 
-	fmt.Printf("\n\n%v\n\n", resp)
-	v, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("\n\n%s\n\n", string(v))
 	return nil
 }
 
@@ -725,9 +722,7 @@ func (m *localWebProvider) configureKeycloak() error {
 		return err
 	}
 
-	fmt.Printf("\n\n%v\n\n", m.config)
-
-	client, err := NewKeyCloakClient(fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace), m.config.KeycloakConfig.Username, m.config.KeycloakConfig.Password, m.Ctx)
+	client, err := NewKeyCloakClient(fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace), m.config.KeycloakConfig.Username, m.config.KeycloakConfig.Password, m.Ctx, m.Log)
 
 	if err != nil {
 		return err
@@ -765,6 +760,8 @@ func (m *localWebProvider) configureKeycloak() error {
 		return err
 	}
 
+	m.Log.Info(fmt.Sprintf("User exists: %s", strconv.FormatBool(exists)))
+
 	if !exists {
 
 		user := &createUserStruct{
@@ -796,8 +793,6 @@ func (m *localWebProvider) configureKeycloak() error {
 			return err
 		}
 	}
-
-	fmt.Printf("\n\n%v\n\n", exists)
 
 	return nil
 }
