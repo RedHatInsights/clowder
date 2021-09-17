@@ -99,25 +99,62 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
-	var kConfig apiextensions.JSON
+	var kConfig, kRequests, kLimits apiextensions.JSON
 
 	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
+
+	kRequests.UnmarshalJSON([]byte(`{
+        "requests": {
+            "cpu": "250m",
+            "memory": "600Mi"
+        }
+	}`))
+
+	kLimits.UnmarshalJSON([]byte(`{
+        "limits": {
+            "cpu": "500m",
+            "memory": "1Gi"
+        }
+	}`))
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
 			Config:   &kConfig,
 			Version:  &version,
 			Replicas: replicas,
+			Resources: &strimzi.KafkaSpecKafkaResources{
+				Requests: &kRequests,
+				Limits:   &kLimits,
+			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
+			Resources: &strimzi.KafkaSpecZookeeperResources{
+				Requests: &kRequests,
+				Limits:   &kLimits,
+			},
 		},
 		EntityOperator: &strimzi.KafkaSpecEntityOperator{
-			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{},
-			UserOperator:  &strimzi.KafkaSpecEntityOperatorUserOperator{},
-			TlsSidecar:    &strimzi.KafkaSpecEntityOperatorTlsSidecar{},
+			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
+				Resources: &strimzi.KafkaSpecEntityOperatorTopicOperatorResources{
+					Requests: &kRequests,
+					Limits:   &kLimits,
+				},
+			},
+			UserOperator: &strimzi.KafkaSpecEntityOperatorUserOperator{
+				Resources: &strimzi.KafkaSpecEntityOperatorUserOperatorResources{
+					Requests: &kRequests,
+					Limits:   &kLimits,
+				},
+			},
+			TlsSidecar: &strimzi.KafkaSpecEntityOperatorTlsSidecar{
+				Resources: &strimzi.KafkaSpecEntityOperatorTlsSidecarResources{
+					Requests: &kRequests,
+					Limits:   &kLimits,
+				},
+			},
 		},
 	}
 
