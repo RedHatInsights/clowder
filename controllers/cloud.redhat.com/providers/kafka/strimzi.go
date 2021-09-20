@@ -109,73 +109,53 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}`, strconv.Itoa(int(replicas)))))
 
 	kRequests.UnmarshalJSON([]byte(`{
-        "requests": {
-            "cpu": "250m",
-            "memory": "600Mi"
-        }
+        "cpu": "250m",
+        "memory": "600Mi"
 	}`))
 
 	kLimits.UnmarshalJSON([]byte(`{
-        "limits": {
-            "cpu": "500m",
-            "memory": "1Gi"
-        }
+        "cpu": "500m",
+        "memory": "1Gi"
 	}`))
 
 	zRequests.UnmarshalJSON([]byte(`{
-        "requests": {
-            "cpu": "100m",
-            "memory": "300Mi"
-        }
+        "cpu": "100m",
+        "memory": "300Mi"
 	}`))
 
 	zLimits.UnmarshalJSON([]byte(`{
-        "limits": {
-            "cpu": "250m",
-            "memory": "600Mi"
-        }
+        "cpu": "250m",
+        "memory": "600Mi"
 	}`))
 
 	entityUserRequests.UnmarshalJSON([]byte(`{
-        "requests": {
-            "cpu": "100m",
-            "memory": "150Mi"
-        }
+        "cpu": "100m",
+        "memory": "150Mi"
 	}`))
 
 	entityUserLimits.UnmarshalJSON([]byte(`{
-        "limits": {
-            "cpu": "200m",
-            "memory": "300Mi"
-        }
+        "cpu": "200m",
+        "memory": "300Mi"
 	}`))
 
 	entityTopicRequests.UnmarshalJSON([]byte(`{
-        "requests": {
-            "cpu": "100m",
-            "memory": "150Mi"
-        }
+        "cpu": "100m",
+        "memory": "150Mi"
 	}`))
 
 	entityTopicLimits.UnmarshalJSON([]byte(`{
-        "limits": {
-            "cpu": "200m",
-            "memory": "300Mi"
-        }
+        "cpu": "200m",
+        "memory": "300Mi"
 	}`))
 
 	entityTlsRequests.UnmarshalJSON([]byte(`{
-        "requests": {
-            "cpu": "50m",
-            "memory": "50Mi"
-        }
+        "cpu": "50m",
+        "memory": "50Mi"
 	}`))
 
 	entityTlsLimits.UnmarshalJSON([]byte(`{
-        "limits": {
-            "cpu": "100m",
-            "memory": "100Mi"
-        }
+        "cpu": "100m",
+        "memory": "100Mi"
 	}`))
 
 	k.Spec = &strimzi.KafkaSpec{
