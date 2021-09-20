@@ -129,12 +129,12 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}`))
 
 	entityUserRequests.UnmarshalJSON([]byte(`{
-        "cpu": "100m",
+        "cpu": "200m",
         "memory": "150Mi"
 	}`))
 
 	entityUserLimits.UnmarshalJSON([]byte(`{
-        "cpu": "200m",
+        "cpu": "400m",
         "memory": "300Mi"
 	}`))
 
