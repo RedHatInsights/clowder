@@ -118,63 +118,63 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	kLimits.UnmarshalJSON([]byte(`{
         "limits": {
             "cpu": "500m",
-            "memory": "1200Mi"
+            "memory": "1Gi"
         }
 	}`))
 
 	zRequests.UnmarshalJSON([]byte(`{
         "requests": {
-            "cpu": "250m",
+            "cpu": "100m",
             "memory": "300Mi"
         }
 	}`))
 
 	zLimits.UnmarshalJSON([]byte(`{
         "limits": {
-            "cpu": "500m",
+            "cpu": "250m",
             "memory": "600Mi"
         }
 	}`))
 
 	entityUserRequests.UnmarshalJSON([]byte(`{
         "requests": {
-            "cpu": "250m",
-            "memory": "200Mi"
+            "cpu": "100m",
+            "memory": "150Mi"
         }
 	}`))
 
 	entityUserLimits.UnmarshalJSON([]byte(`{
         "limits": {
-            "cpu": "500m",
-            "memory": "400Mi"
+            "cpu": "200m",
+            "memory": "300Mi"
         }
 	}`))
 
 	entityTopicRequests.UnmarshalJSON([]byte(`{
         "requests": {
-            "cpu": "250m",
-            "memory": "200Mi"
+            "cpu": "100m",
+            "memory": "150Mi"
         }
 	}`))
 
 	entityTopicLimits.UnmarshalJSON([]byte(`{
         "limits": {
-            "cpu": "500m",
-            "memory": "400Mi"
+            "cpu": "200m",
+            "memory": "300Mi"
         }
 	}`))
 
 	entityTlsRequests.UnmarshalJSON([]byte(`{
         "requests": {
-            "cpu": "250m",
-            "memory": "100Mi"
+            "cpu": "50m",
+            "memory": "50Mi"
         }
 	}`))
 
 	entityTlsLimits.UnmarshalJSON([]byte(`{
         "limits": {
-            "cpu": "500m",
-            "memory": "200Mi"
+            "cpu": "100m",
+            "memory": "100Mi"
         }
 	}`))
 
