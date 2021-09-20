@@ -99,7 +99,10 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
-	var kConfig, kRequests, kLimits apiextensions.JSON
+	var kConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
+	var entityUserLimits, entityUserRequests apiextensions.JSON
+	var entityTopicLimits, entityTopicRequests apiextensions.JSON
+	var entityTlsLimits, entityTlsRequests apiextensions.JSON
 
 	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
@@ -115,7 +118,63 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	kLimits.UnmarshalJSON([]byte(`{
         "limits": {
             "cpu": "500m",
-            "memory": "1Gi"
+            "memory": "1200Mi"
+        }
+	}`))
+
+	zRequests.UnmarshalJSON([]byte(`{
+        "requests": {
+            "cpu": "250m",
+            "memory": "300Mi"
+        }
+	}`))
+
+	zLimits.UnmarshalJSON([]byte(`{
+        "limits": {
+            "cpu": "500m",
+            "memory": "600Mi"
+        }
+	}`))
+
+	entityUserRequests.UnmarshalJSON([]byte(`{
+        "requests": {
+            "cpu": "250m",
+            "memory": "200Mi"
+        }
+	}`))
+
+	entityUserLimits.UnmarshalJSON([]byte(`{
+        "limits": {
+            "cpu": "500m",
+            "memory": "400Mi"
+        }
+	}`))
+
+	entityTopicRequests.UnmarshalJSON([]byte(`{
+        "requests": {
+            "cpu": "250m",
+            "memory": "200Mi"
+        }
+	}`))
+
+	entityTopicLimits.UnmarshalJSON([]byte(`{
+        "limits": {
+            "cpu": "500m",
+            "memory": "400Mi"
+        }
+	}`))
+
+	entityTlsRequests.UnmarshalJSON([]byte(`{
+        "requests": {
+            "cpu": "250m",
+            "memory": "100Mi"
+        }
+	}`))
+
+	entityTlsLimits.UnmarshalJSON([]byte(`{
+        "limits": {
+            "cpu": "500m",
+            "memory": "200Mi"
         }
 	}`))
 
@@ -132,27 +191,27 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
 			Resources: &strimzi.KafkaSpecZookeeperResources{
-				Requests: &kRequests,
-				Limits:   &kLimits,
+				Requests: &zRequests,
+				Limits:   &zLimits,
 			},
 		},
 		EntityOperator: &strimzi.KafkaSpecEntityOperator{
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
 				Resources: &strimzi.KafkaSpecEntityOperatorTopicOperatorResources{
-					Requests: &kRequests,
-					Limits:   &kLimits,
+					Requests: &entityTopicRequests,
+					Limits:   &entityTopicLimits,
 				},
 			},
 			UserOperator: &strimzi.KafkaSpecEntityOperatorUserOperator{
 				Resources: &strimzi.KafkaSpecEntityOperatorUserOperatorResources{
-					Requests: &kRequests,
-					Limits:   &kLimits,
+					Requests: &entityUserRequests,
+					Limits:   &entityUserLimits,
 				},
 			},
 			TlsSidecar: &strimzi.KafkaSpecEntityOperatorTlsSidecar{
 				Resources: &strimzi.KafkaSpecEntityOperatorTlsSidecarResources{
-					Requests: &kRequests,
-					Limits:   &kLimits,
+					Requests: &entityTlsRequests,
+					Limits:   &entityTlsLimits,
 				},
 			},
 		},
