@@ -7,6 +7,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	db "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 
@@ -110,7 +111,7 @@ func createCyndiPipeline(
 	return nil
 }
 
-func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *providers.ObjectCache, app *crd.ClowdApp, name string) (*core.Secret, error) {
+func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *providers.ObjectCache, app *crd.ClowdApp, name string, env *crd.ClowdEnvironment) (*core.Secret, error) {
 	// locate the clowdapp named 'name' in the same env as 'app' and return its DB secret
 	// TODO: switch this to use cache instead of getting secret out of k8s?
 	appList := &crd.ClowdAppList{}
@@ -152,8 +153,26 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *provider
 			return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
 		}
 	} else {
-		if err = cache.Get(db.LocalDBSecret, dbSecret); err != nil {
-			return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+		if env.Spec.Providers.Database.Mode == "local" {
+			if err = cache.Get(db.LocalDBSecret, dbSecret); err != nil {
+				return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+			}
+		} else if env.Spec.Providers.Database.Mode == "app-interface" {
+			if app.Spec.Database.Name != "" {
+				dbConfig, err := database.GetDbConfig(ctx, cl, app.Namespace, app.Name, app.Name, app.Spec.Database)
+
+				if err != nil {
+					return nil, errors.New("could not get database config")
+				}
+
+				err = cl.Get(ctx, dbConfig.Ref, dbSecret)
+
+				if err != nil {
+					return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+				}
+			} else if app.Spec.Database.SharedDBAppName != "" {
+				return nil, errors.New("Shared DB app cannot use Cyndi")
+			}
 		}
 	}
 
@@ -207,7 +226,7 @@ func createCyndiAppDbSecret(
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
 ) (string, error) {
-	dbSecret, err := getDbSecretInSameEnv(ctx, cl, cache, app, app.Name)
+	dbSecret, err := getDbSecretInSameEnv(ctx, cl, cache, app, app.Name, env)
 	if err != nil {
 		return "", errors.Wrap(fmt.Sprintf("unable to get '%s' db secret", app.Name), err)
 	}
@@ -244,7 +263,7 @@ func createCyndiInventoryDbSecret(
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
 ) (string, error) {
-	dbSecret, err := getDbSecretInSameEnv(ctx, cl, cache, app, "host-inventory")
+	dbSecret, err := getDbSecretInSameEnv(ctx, cl, cache, app, "host-inventory", env)
 	if err != nil {
 		return "", errors.Wrap("unable to get host-inventory db secret", err)
 	}
