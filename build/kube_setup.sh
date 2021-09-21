@@ -236,7 +236,7 @@ function install_xjoin_operator {
     curl -LsS $LATEST_MANIFEST -o xjoin-operator-manifest.yaml
 
     echo "*** Applying xjoin-operator manifest ..."
-    ${KUBECTL_CMD} apply -f xjoin-operator-manifest.yaml
+    ${KUBECTL_CMD} apply --validate=false -f xjoin-operator-manifest.yaml
 
     echo "*** Will wait for xjoin-operator to come up in background"
     ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[xjoin-operator] /" &
