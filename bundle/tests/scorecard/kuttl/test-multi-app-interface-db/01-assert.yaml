@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-b-processor
+  namespace: test-multi-app-interface-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-c-processor
+  namespace: test-multi-app-interface-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-d-processor
+  namespace: test-multi-app-interface-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-e-processor
+  namespace: test-multi-app-interface-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
