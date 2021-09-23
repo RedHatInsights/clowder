@@ -130,7 +130,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 
 		var size string
-		if db.Env.Spec.Providers.Database.TShirtSizeDefinitions == nil || app.Spec.Database.DBTShirtSize != "" {
+		if db.Env.Spec.Providers.Database.TShirtSizeDefinitions == nil || app.Spec.Database.DBTShirtSize == "" {
 			size = "1Gi"
 		} else {
 			switch app.Spec.Database.DBTShirtSize {
