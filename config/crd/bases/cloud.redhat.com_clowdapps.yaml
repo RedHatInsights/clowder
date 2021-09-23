@@ -76,6 +76,13 @@ spec:
                   the configuration of which will be made available to all the pods
                   in the ClowdApp.
                 properties:
+                  dbTShirtSize:
+                    description: T-shirt size, one of small, medium, large
+                    enum:
+                    - small
+                    - medium
+                    - large
+                    type: string
                   name:
                     description: Defines the Name of the database to be created. This
                       will be used as the name of the logical database inside the

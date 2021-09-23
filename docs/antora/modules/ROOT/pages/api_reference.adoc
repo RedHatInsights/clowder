@@ -324,6 +324,7 @@ DatabaseConfig configures the Clowder provider controlling the creation of Datab
 | Field | Description
 | *`mode`* __DatabaseMode__ | The mode of operation of the Clowder Database Provider. Valid options are: (*_app-interface_*) where the provider will pass through database credentials found in the secret defined by the database name in the ClowdApp, and (*_local_*) where the provider will spin up a local instance of the database.
 | *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
+| *`tShirtSizeDefinitions`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tshirtsizedefinitions[$$TShirtSizeDefinitions$$]__ | 
 |===
 
 
@@ -343,6 +344,7 @@ DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 | *`version`* __integer__ | Defines the Version of the PostGreSQL database, defaults to 12.
 | *`name`* __string__ | Defines the Name of the database to be created. This will be used as the name of the logical database inside the database server in (*_local_*) mode and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
 | *`sharedDbAppName`* __string__ | Defines the Name of the app to share a database from
+| *`dbTShirtSize`* __TShirtSize__ | T-shirt size, one of small, medium, large
 |===
 
 
@@ -944,6 +946,25 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 |===
 | Field | Description
 | *`tokenRefresher`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tokenrefresherconfig[$$TokenRefresherConfig$$]__ | Sets up Token Refresher configuration
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tshirtsizedefinitions"]
+==== TShirtSizeDefinitions 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databaseconfig[$$DatabaseConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`small`* __string__ | Small size definition
+| *`medium`* __string__ | Medium size definition
+| *`large`* __string__ | Large size definition
 |===
 
 

@@ -54,6 +54,10 @@ type InitContainer struct {
 	Env []v1.EnvVar `json:"env,omitempty"`
 }
 
+// K8sAccessLevel defines the access level for the deployment, one of 'small', 'medium' or 'large'
+// +kubebuilder:validation:Enum={"small", "medium", "large"}
+type TShirtSize string
+
 // DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 type DatabaseSpec struct {
 	// Defines the Version of the PostGreSQL database, defaults to 12.
@@ -67,6 +71,9 @@ type DatabaseSpec struct {
 
 	// Defines the Name of the app to share a database from
 	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
+
+	// T-shirt size, one of small, medium, large
+	DBTShirtSize TShirtSize `json:"dbTShirtSize,omitempty"`
 }
 
 // Job defines a ClowdJob

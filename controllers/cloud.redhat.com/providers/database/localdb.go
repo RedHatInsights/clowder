@@ -129,7 +129,21 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, app)
+		var size string
+		if db.Env.Spec.Providers.Database.TShirtSizeDefinitions == nil || app.Spec.Database.DBTShirtSize != "" {
+			size = "1Gi"
+		} else {
+			switch app.Spec.Database.DBTShirtSize {
+			case "small":
+				size = db.Env.Spec.Providers.Database.TShirtSizeDefinitions.Small
+			case "medium":
+				size = db.Env.Spec.Providers.Database.TShirtSizeDefinitions.Medium
+			case "large":
+				size = db.Env.Spec.Providers.Database.TShirtSizeDefinitions.Large
+			}
+		}
+
+		provutils.MakeLocalDBPVC(pvc, nn, app, size)
 
 		if err = db.Cache.Update(LocalDBPVC, pvc); err != nil {
 			return err

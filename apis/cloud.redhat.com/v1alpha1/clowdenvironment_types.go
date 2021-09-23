@@ -229,6 +229,19 @@ type DatabaseConfig struct {
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
+
+	TShirtSizeDefinitions *TShirtSizeDefinitions `json:"tShirtSizeDefinitions,omitempty"`
+}
+
+type TShirtSizeDefinitions struct {
+	// Small size definition
+	Small string `json:"small"`
+
+	// Medium size definition
+	Medium string `json:"medium"`
+
+	// Large size definition
+	Large string `json:"large"`
 }
 
 // LoggingMode details the mode of operation of the Clowder Logging Provider
