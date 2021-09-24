@@ -48,6 +48,12 @@ spec:
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
+            - name: IQE_REQUIREMENTS
+              value: ''
+            - name: IQE_REQUIREMENTS_PRIORITY
+              value: ''
+            - name: IQE_TEST_IMPORTANCE
+              value: ''
           resources:
             limits:
               cpu: "2"
