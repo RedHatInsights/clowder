@@ -76,6 +76,17 @@ spec:
                       marker:
                         description: sets the pytest -m args
                         type: string
+                      requirements:
+                        description: sets value passed to IQE '--requirements' arg
+                        type: string
+                      requirementsPriority:
+                        description: sets value passed to IQE '--requirements-priority'
+                          arg
+                        type: string
+                      testImportance:
+                        description: sets value passed to IQE '--test-importance'
+                          arg
+                        type: string
                       ui:
                         description: 'Indiciates the presence of a selenium container
                           Note: currently not implemented'
