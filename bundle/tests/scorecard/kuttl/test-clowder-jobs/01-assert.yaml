@@ -18,7 +18,7 @@ metadata:
   name: puptoo-processor
   namespace: test-clowder-jobs
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: puptoo-standard-cron
@@ -40,7 +40,7 @@ spec:
               image: quay.io/psav/clowder-hello
           restartPolicy: Never
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: puptoo-suspend-cron
@@ -61,7 +61,7 @@ spec:
               image: quay.io/psav/clowder-hello
           restartPolicy: Never
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: puptoo-restart-on-failure
