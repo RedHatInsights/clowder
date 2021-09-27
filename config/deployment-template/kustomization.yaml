@@ -1,0 +1,29 @@
+# Adds namespace to all resources.
+namespace: clowder-system
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+# Note that it should also match with the prefix (text before '-') of the namespace
+# field above.
+namePrefix: clowder-
+
+# Labels to add to all resources and selectors.
+#commonLabels:
+#  someName: someValue
+
+bases:
+- ../crd
+- ../rbac
+- ../manager
+# [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
+# crd/kustomization.yaml
+- ../webhook
+
+patchesStrategicMerge:
+- manager_webhook_patch.yaml
+- manager.yaml # Put template param refs into image field
+- clowder_config.yaml
+- webhook_cert_annotation.yaml
+
+vars: []
