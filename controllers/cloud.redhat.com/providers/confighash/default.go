@@ -7,7 +7,7 @@ import (
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
-	batch "k8s.io/api/batch/v1beta1"
+	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"

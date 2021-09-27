@@ -19,7 +19,7 @@ import (
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	keda "github.com/kedacore/keda/v2/api/v1alpha1"
-	batch "k8s.io/api/batch/v1beta1"
+	batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

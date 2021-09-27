@@ -529,7 +529,7 @@ Job defines a ClowdJob A Job struct will deploy as a CronJob if `schedule` is se
 | *`schedule`* __string__ | Defines the schedule for the job to run
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside the CronJob.
 | *`restartPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core[$$RestartPolicy$$]__ | Defines the restart policy for the CronJob, defaults to never
-| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1beta1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow Only applies to Cronjobs
+| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow Only applies to Cronjobs
 | *`suspend`* __boolean__ | This flag tells the controller to suspend subsequent executions, it does not apply to already started executions.  Defaults to false. Only applies to Cronjobs
 | *`successfulJobsHistoryLimit`* __integer__ | The number of successful finished jobs to retain. Value must be non-negative integer. Defaults to 3. Only applies to Cronjobs
 | *`failedJobsHistoryLimit`* __integer__ | The number of failed finished jobs to retain. Value must be non-negative integer. Defaults to 1. Only applies to Cronjobs

@@ -2,9 +2,8 @@ package cronjob
 
 import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	batch "k8s.io/api/batch/v1beta1"
-
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	batch "k8s.io/api/batch/v1"
 )
 
 // ProvName sets the provider name identifier
