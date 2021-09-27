@@ -134,6 +134,15 @@ func makeBOPIngress(p *providers.Provider) error {
 	labler := utils.MakeLabeler(nn, labels, p.Env)
 	labler(netobj)
 
+	annotations := netobj.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations["kubernetes.io/ingress.class"] = "nginx"
+
+	netobj.SetAnnotations(annotations)
+
 	netobj.Spec = networking.IngressSpec{
 		Rules: []networking.IngressRule{
 			{
@@ -179,6 +188,15 @@ func makeAuthIngress(p *providers.Provider) error {
 	labels := p.Env.GetLabels()
 	labler := utils.MakeLabeler(nn, labels, p.Env)
 	labler(netobj)
+
+	annotations := netobj.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations["kubernetes.io/ingress.class"] = "nginx"
+
+	netobj.SetAnnotations(annotations)
 
 	netobj.Spec = networking.IngressSpec{
 		Rules: []networking.IngressRule{
@@ -298,6 +316,15 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 	labels := app.GetLabels()
 	labler := utils.MakeLabeler(nn, labels, app)
 	labler(netobj)
+
+	annotations := netobj.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations["kubernetes.io/ingress.class"] = "nginx"
+
+	netobj.SetAnnotations(annotations)
 
 	apiPath := deployment.WebServices.Public.ApiPath
 
