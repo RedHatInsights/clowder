@@ -86,23 +86,23 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	buckets := []config.ObjectStoreBucket{}
 	objectStoreConfig := config.ObjectStoreConfig{Port: 443}
 
-	extractFn := func(m map[string][]byte, bucket string) {
+	extractFn := func(secret *core.Secret, bucket string) {
 		bucketConfig := config.ObjectStoreBucket{
-			AccessKey: providers.StrPtr(string(m["aws_access_key_id"])),
-			SecretKey: providers.StrPtr(string(m["aws_secret_access_key"])),
+			AccessKey: providers.StrPtr(string(secret.Data["aws_access_key_id"])),
+			SecretKey: providers.StrPtr(string(secret.Data["aws_secret_access_key"])),
 			Name:      bucket,
-			Region:    providers.StrPtr(string(m["aws_region"])),
+			Region:    providers.StrPtr(string(secret.Data["aws_region"])),
 		}
 
-		if endpoint, ok := m["endpoint"]; ok {
+		if endpoint, ok := secret.Data["endpoint"]; ok {
 			objectStoreConfig.Hostname = string(endpoint)
 		}
 
 		buckets = append(buckets, bucketConfig)
 	}
 
-	extractFnNoAnno := func(m map[string][]byte) {
-		extractFn(m, string(m["bucket"]))
+	extractFnNoAnno := func(secret *core.Secret) {
+		extractFn(secret, string(secret.Data["bucket"]))
 	}
 
 	keys := []string{"aws_access_key_id", "aws_secret_access_key"}
