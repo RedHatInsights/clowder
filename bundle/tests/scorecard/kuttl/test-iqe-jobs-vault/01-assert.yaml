@@ -52,6 +52,9 @@ spec:
               value: "true"
             - name: DYNACONF_IQE_VAULT_VERIFY
               value: "true"
+            - name: IQE_REQUIREMENTS
+            - name: IQE_REQUIREMENTS_PRIORITY
+            - name: IQE_TEST_IMPORTANCE
             - name: DYNACONF_IQE_VAULT_URL
               valueFrom:
                 secretKeyRef:
@@ -82,12 +85,6 @@ spec:
                   key: githubToken
                   name: host-inventory-smoke-vault
                   optional: true
-            - name: IQE_REQUIREMENTS
-              value: ''
-            - name: IQE_REQUIREMENTS_PRIORITY
-              value: ''
-            - name: IQE_TEST_IMPORTANCE
-              value: ''
           resources:
             limits:
               cpu: "2"
