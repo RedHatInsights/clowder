@@ -512,9 +512,9 @@ KafkaClusterConfig defines options related to the Kafka cluster managed/monitore
 | *`storageSize`* __string__ | Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
 | *`deleteClaim`* __boolean__ | Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'
 | *`version`* __string__ | Version. If unset, default is '2.5.0'
-| *`config`* __map[string]string__ | Config full options
-| *`jvmOptions`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkajvmoptions[$$KafkaSpecKafkaJvmOptions$$]__ | JVM Options
-| *`resources`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta1-kafkaspeckafkaresources[$$KafkaSpecKafkaResources$$]__ | Resource Limits
+| *`config`* __object (keys:string, values:string)__ | Config full options
+| *`jvmOptions`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta2-kafkaspeckafkajvmoptions[$$KafkaSpecKafkaJvmOptions$$]__ | JVM Options
+| *`resources`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta2-kafkaspeckafkaresources[$$KafkaSpecKafkaResources$$]__ | Resource Limits
 |===
 
 
@@ -930,6 +930,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | Field | Description
 | *`port`* __integer__ | The port that web services inside ClowdApp pods should be served on.
 | *`privatePort`* __integer__ | The private port that web services inside a ClowdApp should be served on.
+| *`aiuthPort`* __integer__ | The auth port that the web local mode will use with the AuthSidecar
 | *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.
 | *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
 | *`bopURL`* __string__ | The URL of BOP - only used in (*_none_*/*_operator_*) mode.

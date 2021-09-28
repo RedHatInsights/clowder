@@ -60,9 +60,14 @@ func makeService(cache *providers.ObjectCache, deployment *crd.Deployment, app *
 		)
 
 		if env.Spec.Providers.Web.Mode == "local" {
+			authPortNumber := env.Spec.Providers.Web.AuthPort
+
+			if authPortNumber == 0 {
+				authPortNumber = 8080
+			}
 			authPort := core.ServicePort{
 				Name:        "auth",
-				Port:        8080,
+				Port:        authPortNumber,
 				Protocol:    "TCP",
 				AppProtocol: &appProtocol,
 			}

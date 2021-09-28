@@ -527,6 +527,11 @@ spec:
                   web:
                     description: Defines the Configuration for the Clowder Web Provider.
                     properties:
+                      aiuthPort:
+                        description: The auth port that the web local mode will use
+                          with the AuthSidecar
+                        format: int32
+                        type: integer
                       apiPrefix:
                         description: An api prefix path that pods will be instructed
                           to use when setting up their web server.

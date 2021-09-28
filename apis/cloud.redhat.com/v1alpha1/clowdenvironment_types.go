@@ -44,6 +44,9 @@ type WebConfig struct {
 	// The private port that web services inside a ClowdApp should be served on.
 	PrivatePort int32 `json:"privatePort,omitempty"`
 
+	// The auth port that the web local mode will use with the AuthSidecar
+	AuthPort int32 `json:"aiuthPort,omitempty"`
+
 	// An api prefix path that pods will be instructed to use when setting up
 	// their web server.
 	ApiPrefix string `json:"apiPrefix,omitempty"`
