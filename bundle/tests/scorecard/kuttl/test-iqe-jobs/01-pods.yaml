@@ -77,6 +77,6 @@ spec:
       marker: "smoke"
       dynaconfEnvName: "clowder_smoke"
       filter: "test_plugin_accessible"
-      requirements: "{\"some\",\"requirements\"}"
+      requirements: '{"some","requirements"}'
       requirementsPriority: "some-priority"
-      testImportance: "{\"critical\",\"high\"}"
+      testImportance: '{"critical","high"}'
