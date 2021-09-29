@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -55,10 +56,6 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			Namespace: pod.Namespace,
 		}, ascconf)
 
-		bopurl := string(ascconf.Data["bopurl"])
-		keycloakurl := string(ascconf.Data["keycloakurl"])
-		whitelist := string(ascconf.Data["whitelist"])
-
 		image := "quay.io/cloudservices/crc-caddy-plugin:a76bb81"
 
 		if clowder_config.LoadedConfig.Images.Caddy != "" {
@@ -74,16 +71,40 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 					Value: port,
 				},
 				{
-					Name:  "CADDY_BOP_URL",
-					Value: bopurl,
+					Name: "CADDY_BOP_URL",
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: config,
+							},
+							Optional: utils.BoolPtr(false),
+							Key:      "bopurl",
+						},
+					},
 				},
 				{
-					Name:  "CADDY_KEYCLOAK_URL",
-					Value: keycloakurl,
+					Name: "CADDY_KEYCLOAK_URL",
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: config,
+							},
+							Optional: utils.BoolPtr(false),
+							Key:      "keycloakurl",
+						},
+					},
 				},
 				{
-					Name:  "CADDY_WHITELIST",
-					Value: whitelist,
+					Name: "CADDY_WHITELIST",
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: config,
+							},
+							Optional: utils.BoolPtr(false),
+							Key:      "whitelist",
+						},
+					},
 				},
 			},
 		}
