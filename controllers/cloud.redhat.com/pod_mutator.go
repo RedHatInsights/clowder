@@ -9,7 +9,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -48,13 +47,6 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 		if !ok {
 			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar config"))
 		}
-
-		ascconf := &core.Secret{}
-
-		p.Client.Get(ctx, types.NamespacedName{
-			Name:      config,
-			Namespace: pod.Namespace,
-		}, ascconf)
 
 		image := "quay.io/cloudservices/crc-caddy-plugin:a76bb81"
 
