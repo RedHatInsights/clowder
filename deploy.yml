@@ -959,6 +959,10 @@ objects:
                                   value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
+                          restartPolicy:
+                            description: Defines the restart policy for the pod, defaults
+                              to always
+                            type: string
                           sidecars:
                             description: Lists the expected side cars, will be validated
                               in the validating webhook
@@ -3416,6 +3420,10 @@ objects:
                                   value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
+                          restartPolicy:
+                            description: Defines the restart policy for the pod, defaults
+                              to always
+                            type: string
                           sidecars:
                             description: Lists the expected side cars, will be validated
                               in the validating webhook

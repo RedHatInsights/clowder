@@ -156,6 +156,12 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		}
 	}
 
+	if pod.RestartPolicy == "" {
+		d.Spec.Template.Spec.RestartPolicy = core.RestartPolicyAlways
+	} else {
+		d.Spec.Template.Spec.RestartPolicy = pod.RestartPolicy
+	}
+
 	ApplyPodAntiAffinity(&d.Spec.Template)
 }
 

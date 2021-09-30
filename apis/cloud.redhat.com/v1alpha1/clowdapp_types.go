@@ -240,6 +240,9 @@ type PodSpec struct {
 
 	// Lists the expected side cars, will be validated in the validating webhook
 	Sidecars []Sidecar `json:"sidecars,omitempty"`
+
+	// Defines the restart policy for the pod, defaults to always
+	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
 }
 
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
