@@ -25,5 +25,6 @@ patchesStrategicMerge:
 - manager.yaml # Put template param refs into image field
 - clowder_config.yaml
 - webhook_cert_annotation.yaml
+- webhook_cert.yaml
 
 vars: []
