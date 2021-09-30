@@ -52,6 +52,7 @@ func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp, c *config.
 		ClientAccessToken: &stringAccessToken,
 		Hostname:          ff.Env.Spec.Providers.FeatureFlags.Hostname,
 		Port:              int(ff.Env.Spec.Providers.FeatureFlags.Port),
+		Scheme:            config.FeatureFlagsConfigSchemeHttps,
 	}
 
 	return nil

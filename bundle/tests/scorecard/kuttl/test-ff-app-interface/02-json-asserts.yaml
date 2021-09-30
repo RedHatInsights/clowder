@@ -9,3 +9,4 @@ commands:
 - script: jq -r '.featureFlags.clientAccessToken == "app-b-stage.rds.example.com"' -e < /tmp/test-ff-app-interface-json
 - script: jq -r '.featureFlags.hostname == "test.featureflags.redhat.com"' -e < /tmp/test-ff-app-interface-json
 - script: jq -r '.featureFlags.port == 12345' -e < /tmp/test-ff-app-interface-json
+- script: jq -r '.featureFlags.scheme == "https"' -e < /tmp/test-ff-local-json
