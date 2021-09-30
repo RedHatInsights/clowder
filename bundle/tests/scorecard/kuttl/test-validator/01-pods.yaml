@@ -23,9 +23,6 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
-    pullSecrets:
-    - name: test
-      namespace: test-validator
   resourceDefaults:
     limits:
       cpu: 400m
