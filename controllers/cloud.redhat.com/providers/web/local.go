@@ -250,7 +250,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
-			Namespace: web.Env.GetClowdNamespace(),
+			Namespace: app.Namespace,
 		}
 
 		sec := &core.Secret{}
