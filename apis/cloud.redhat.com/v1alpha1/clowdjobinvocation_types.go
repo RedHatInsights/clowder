@@ -65,14 +65,14 @@ type IqeJobSpec struct {
 	// used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
 	Debug bool `json:"debug,omitempty"`
 
-	// sets value passed to IQE '--requirements' arg
-	Requirements string `json:"requirements,omitempty"`
+	// sets values passed to IQE '--requirements' arg
+	Requirements []string `json:"requirements,omitempty"`
 
-	// sets value passed to IQE '--requirements-priority' arg
-	RequirementsPriority string `json:"requirementsPriority,omitempty"`
+	// sets values passed to IQE '--requirements-priority' arg
+	RequirementsPriority []string `json:"requirementsPriority,omitempty"`
 
-	// sets value passed to IQE '--test-importance' arg
-	TestImportance string `json:"testImportance,omitempty"`
+	// sets values passed to IQE '--test-importance' arg
+	TestImportance []string `json:"testImportance,omitempty"`
 }
 
 type UiSpec struct {

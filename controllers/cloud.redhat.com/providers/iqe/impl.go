@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
@@ -57,9 +58,9 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
 		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
-		{Name: "IQE_REQUIREMENTS", Value: cji.Spec.Testing.Iqe.Requirements},
-		{Name: "IQE_REQUIREMENTS_PRIORITY", Value: cji.Spec.Testing.Iqe.RequirementsPriority},
-		{Name: "IQE_TEST_IMPORTANCE", Value: cji.Spec.Testing.Iqe.TestImportance},
+		{Name: "IQE_REQUIREMENTS", Value: strings.Join(cji.Spec.Testing.Iqe.Requirements, ",")},
+		{Name: "IQE_REQUIREMENTS_PRIORITY", Value: strings.Join(cji.Spec.Testing.Iqe.RequirementsPriority, ",")},
+		{Name: "IQE_TEST_IMPORTANCE", Value: strings.Join(cji.Spec.Testing.Iqe.TestImportance, ",")},
 	}
 
 	// apply vault env vars if vaultSecretRef exists in environment
