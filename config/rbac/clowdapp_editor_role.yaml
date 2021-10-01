@@ -4,6 +4,7 @@ kind: ClusterRole
 metadata:
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    managed.openshift.io/aggregate-to-dedicated-admins: "cluster"
   name: clowdapp-editor-role
 rules:
 - apiGroups:
