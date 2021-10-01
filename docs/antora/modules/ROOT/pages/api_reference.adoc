@@ -448,9 +448,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
 | *`filter`* __string__ | sets pytest -k args
 | *`debug`* __boolean__ | used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
-| *`requirements`* __string__ | sets value passed to IQE '--requirements' arg
-| *`requirementsPriority`* __string__ | sets value passed to IQE '--requirements-priority' arg
-| *`testImportance`* __string__ | sets value passed to IQE '--test-importance' arg
+| *`requirements`* __string__ | sets values passed to IQE '--requirements' arg
+| *`requirementsPriority`* __string__ | sets values passed to IQE '--requirements-priority' arg
+| *`testImportance`* __string__ | sets values passed to IQE '--test-importance' arg
 |===
 
 
