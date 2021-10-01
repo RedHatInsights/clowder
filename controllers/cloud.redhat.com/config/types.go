@@ -7,29 +7,23 @@ import "encoding/json"
 import "reflect"
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
+func (j *TopicConfig) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["accessKeyId"]; !ok || v == nil {
-		return fmt.Errorf("field accessKeyId: required")
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
 	}
-	if v, ok := raw["logGroup"]; !ok || v == nil {
-		return fmt.Errorf("field logGroup: required")
+	if v, ok := raw["requestedName"]; !ok || v == nil {
+		return fmt.Errorf("field requestedName: required")
 	}
-	if v, ok := raw["region"]; !ok || v == nil {
-		return fmt.Errorf("field region: required")
-	}
-	if v, ok := raw["secretAccessKey"]; !ok || v == nil {
-		return fmt.Errorf("field secretAccessKey: required")
-	}
-	type Plain CloudWatchConfig
+	type Plain TopicConfig
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
 	}
-	*j = CloudWatchConfig(plain)
+	*j = TopicConfig(plain)
 	return nil
 }
 
@@ -176,27 +170,6 @@ func (j *PrivateDependencyEndpoint) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *FeatureFlagsConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["hostname"]; !ok || v == nil {
-		return fmt.Errorf("field hostname: required")
-	}
-	if v, ok := raw["port"]; !ok || v == nil {
-		return fmt.Errorf("field port: required")
-	}
-	type Plain FeatureFlagsConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = FeatureFlagsConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
 func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
@@ -217,6 +190,116 @@ func (j *ObjectStoreConfig) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	*j = ObjectStoreConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FeatureFlagsConfigScheme) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FeatureFlagsConfigScheme {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FeatureFlagsConfigScheme, v)
+	}
+	*j = FeatureFlagsConfigScheme(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ObjectStoreBucket) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["requestedName"]; !ok || v == nil {
+		return fmt.Errorf("field requestedName: required")
+	}
+	type Plain ObjectStoreBucket
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ObjectStoreBucket(plain)
+	return nil
+}
+
+// Arbitrary metadata pertaining to the application application
+type AppMetadata struct {
+	// Metadata pertaining to an application's deployments
+	Deployments []DeploymentMetadata `json:"deployments,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DeploymentMetadata) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["image"]; !ok || v == nil {
+		return fmt.Errorf("field image: required")
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	type Plain DeploymentMetadata
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = DeploymentMetadata(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FeatureFlagsConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port: required")
+	}
+	if v, ok := raw["scheme"]; !ok || v == nil {
+		return fmt.Errorf("field scheme: required")
+	}
+	type Plain FeatureFlagsConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = FeatureFlagsConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *LoggingConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["type"]; !ok || v == nil {
+		return fmt.Errorf("field type: required")
+	}
+	type Plain LoggingConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = LoggingConfig(plain)
 	return nil
 }
 
@@ -244,23 +327,29 @@ func (j *InMemoryDBConfig) UnmarshalJSON(b []byte) error {
 type BrokerConfigAuthtype string
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ObjectStoreBucket) UnmarshalJSON(b []byte) error {
+func (j *CloudWatchConfig) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
+	if v, ok := raw["accessKeyId"]; !ok || v == nil {
+		return fmt.Errorf("field accessKeyId: required")
 	}
-	if v, ok := raw["requestedName"]; !ok || v == nil {
-		return fmt.Errorf("field requestedName: required")
+	if v, ok := raw["logGroup"]; !ok || v == nil {
+		return fmt.Errorf("field logGroup: required")
 	}
-	type Plain ObjectStoreBucket
+	if v, ok := raw["region"]; !ok || v == nil {
+		return fmt.Errorf("field region: required")
+	}
+	if v, ok := raw["secretAccessKey"]; !ok || v == nil {
+		return fmt.Errorf("field secretAccessKey: required")
+	}
+	type Plain CloudWatchConfig
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
 	}
-	*j = ObjectStoreBucket(plain)
+	*j = CloudWatchConfig(plain)
 	return nil
 }
 
@@ -287,10 +376,19 @@ func (j *BrokerConfigAuthtype) UnmarshalJSON(b []byte) error {
 const BrokerConfigAuthtypeMtls BrokerConfigAuthtype = "mtls"
 const BrokerConfigAuthtypeSasl BrokerConfigAuthtype = "sasl"
 
-// Arbitrary metadata pertaining to the application application
-type AppMetadata struct {
-	// Metadata pertaining to an application's deployments
-	Deployments []DeploymentMetadata `json:"deployments,omitempty"`
+// Cloud Watch configuration
+type CloudWatchConfig struct {
+	// Defines the access key that the app should use for configuring CloudWatch.
+	AccessKeyId string `json:"accessKeyId"`
+
+	// Defines the logGroup that the app should use for configuring CloudWatch.
+	LogGroup string `json:"logGroup"`
+
+	// Defines the region that the app should use for configuring CloudWatch.
+	Region string `json:"region"`
+
+	// Defines the secret key that the app should use for configuring CloudWatch.
+	SecretAccessKey string `json:"secretAccessKey"`
 }
 
 // Broker Configuration
@@ -330,66 +428,6 @@ func (j *BrokerConfig) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *DeploymentMetadata) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["image"]; !ok || v == nil {
-		return fmt.Errorf("field image: required")
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	type Plain DeploymentMetadata
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = DeploymentMetadata(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *TopicConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["requestedName"]; !ok || v == nil {
-		return fmt.Errorf("field requestedName: required")
-	}
-	type Plain TopicConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = TopicConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *LoggingConfig) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["type"]; !ok || v == nil {
-		return fmt.Errorf("field type: required")
-	}
-	type Plain LoggingConfig
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = LoggingConfig(plain)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
 func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
@@ -408,21 +446,6 @@ func (j *KafkaConfig) UnmarshalJSON(b []byte) error {
 	}
 	*j = KafkaConfig(plain)
 	return nil
-}
-
-// Cloud Watch configuration
-type CloudWatchConfig struct {
-	// Defines the access key that the app should use for configuring CloudWatch.
-	AccessKeyId string `json:"accessKeyId"`
-
-	// Defines the logGroup that the app should use for configuring CloudWatch.
-	LogGroup string `json:"logGroup"`
-
-	// Defines the region that the app should use for configuring CloudWatch.
-	Region string `json:"region"`
-
-	// Defines the secret key that the app should use for configuring CloudWatch.
-	SecretAccessKey string `json:"secretAccessKey"`
 }
 
 // Database Configuration
@@ -489,7 +512,15 @@ type FeatureFlagsConfig struct {
 
 	// Defines the port for the FeatureFlags server
 	Port int `json:"port"`
+
+	// Details the scheme to use for FeatureFlags http/https
+	Scheme FeatureFlagsConfigScheme `json:"scheme"`
 }
+
+type FeatureFlagsConfigScheme string
+
+const FeatureFlagsConfigSchemeHttp FeatureFlagsConfigScheme = "http"
+const FeatureFlagsConfigSchemeHttps FeatureFlagsConfigScheme = "https"
 
 // In Memory DB Configuration
 type InMemoryDBConfig struct {
@@ -599,6 +630,10 @@ type TopicConfig struct {
 var enumValues_BrokerConfigAuthtype = []interface{}{
 	"mtls",
 	"sasl",
+}
+var enumValues_FeatureFlagsConfigScheme = []interface{}{
+	"http",
+	"https",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
