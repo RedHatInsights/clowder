@@ -100,7 +100,8 @@
                         "$ref": "#/definitions/DeploymentMetadata"
                     }
                 }
-            }
+            },
+            "required": []
         },
         "DeploymentMetadata": {
             "title": "DeploymentMetadata",
