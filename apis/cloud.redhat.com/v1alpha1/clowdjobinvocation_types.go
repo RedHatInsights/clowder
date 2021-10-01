@@ -66,13 +66,13 @@ type IqeJobSpec struct {
 	Debug bool `json:"debug,omitempty"`
 
 	// sets values passed to IQE '--requirements' arg
-	Requirements []string `json:"requirements,omitempty"`
+	Requirements *[]string `json:"requirements,omitempty"`
 
 	// sets values passed to IQE '--requirements-priority' arg
-	RequirementsPriority []string `json:"requirementsPriority,omitempty"`
+	RequirementsPriority *[]string `json:"requirementsPriority,omitempty"`
 
 	// sets values passed to IQE '--test-importance' arg
-	TestImportance []string `json:"testImportance,omitempty"`
+	TestImportance *[]string `json:"testImportance,omitempty"`
 }
 
 type UiSpec struct {
