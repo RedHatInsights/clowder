@@ -167,17 +167,15 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if env.Generation != env.Status.Generation {
-		err := errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
-		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not yet reconciled: %s", env.Name))
+		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReconciled", "Clowder Environment [%s] is not reconciled", app.Spec.EnvName)
+		log.Info("Env not yet reconciled", "app", app.Name, "namespace", app.Namespace)
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
 	}
 
 	if !env.IsReady() {
-		err := errors.New(fmt.Sprintf("Clowd Environment not ready: %s", env.Name))
-		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
 		log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
-		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("Clowd Environment not ready: %s", env.Name))
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
 	}
 
 	cache := providers.NewObjectCache(ctx, r.Client, scheme)

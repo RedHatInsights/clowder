@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -22,7 +24,7 @@ const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bun
 
 type appInterface struct {
 	providers.Provider
-	Config config.DatabaseConfig
+	Config config.DatabaseConfigContainer
 }
 
 func fetchCa() (string, error) {
@@ -102,24 +104,38 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		searchAppName = refApp.Name
 	}
 
+	matched, err := GetDbConfig(a.Ctx, a.Client, namespace, app.Name, searchAppName, dbSpec)
+
+	if err != nil {
+		return err
+	}
+
+	a.Config = *matched
+
+	c.Database = &a.Config.Config
+
+	return nil
+}
+
+func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName, searchAppName string, dbSpec crd.DatabaseSpec) (*config.DatabaseConfigContainer, error) {
 	secrets := core.SecretList{}
-	err := a.Client.List(a.Ctx, &secrets, client.InNamespace(namespace))
+	err := pClient.List(ctx, &secrets, client.InNamespace(namespace))
 
 	if err != nil {
 		msg := fmt.Sprintf("Failed to list secrets in %s", namespace)
-		return errors.Wrap(msg, err)
+		return nil, errors.Wrap(msg, err)
 	}
 
 	sort.Slice(secrets.Items, func(i, j int) bool {
 		return secrets.Items[i].Name < secrets.Items[j].Name
 	})
 
-	var matched config.DatabaseConfig
+	var matched config.DatabaseConfigContainer
 
 	matches, err := searchAnnotationSecret(searchAppName, secrets.Items)
 
 	if err != nil {
-		return errors.Wrap("failed to extract annotated secret", err)
+		return nil, errors.Wrap("failed to extract annotated secret", err)
 	}
 
 	if len(matches) == 0 {
@@ -127,15 +143,15 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		dbConfigs, err := genDbConfigs(secrets.Items)
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		matched = resolveDb(dbSpec, dbConfigs)
 
-		if matched == (config.DatabaseConfig{}) {
-			return &errors.MissingDependencies{
+		if matched == (config.DatabaseConfigContainer{}) {
+			return nil, &errors.MissingDependencies{
 				MissingDeps: map[string][]string{
-					"database": {app.Name},
+					"database": {appName},
 				},
 			}
 		}
@@ -144,20 +160,17 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	}
 
 	// The creds given by app-interface have elevated privileges
-	matched.AdminPassword = matched.Password
-	matched.AdminUsername = matched.Username
-	matched.RdsCa = &rdsCa
+	matched.Config.AdminPassword = matched.Config.Password
+	matched.Config.AdminUsername = matched.Config.Username
+	matched.Config.RdsCa = &rdsCa
 
-	a.Config = matched
+	return &matched, nil
 
-	c.Database = &a.Config
-
-	return nil
 }
 
-func resolveDb(spec crd.DatabaseSpec, c []config.DatabaseConfig) config.DatabaseConfig {
+func resolveDb(spec crd.DatabaseSpec, c []config.DatabaseConfigContainer) config.DatabaseConfigContainer {
 	for _, config := range c {
-		hostname := strings.Split(config.Hostname, ".")[0]
+		hostname := strings.Split(config.Config.Hostname, ".")[0]
 		nameSegments := strings.Split(hostname, "-")
 		segLen := len(nameSegments)
 		lastSegment := nameSegments[segLen-1]
@@ -173,29 +186,35 @@ func resolveDb(spec crd.DatabaseSpec, c []config.DatabaseConfig) config.Database
 		}
 	}
 
-	return config.DatabaseConfig{}
+	return config.DatabaseConfigContainer{}
 }
 
-func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfig, error) {
-	configs := []config.DatabaseConfig{}
+func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfigContainer, error) {
+	configs := []config.DatabaseConfigContainer{}
 
 	var err error
 
-	extractFn := func(m map[string][]byte) {
-		port, erro := strconv.Atoi(string(m["db.port"]))
+	extractFn := func(secret *core.Secret) {
+		port, erro := strconv.Atoi(string(secret.Data["db.port"]))
 
 		if erro != nil {
 			err = errors.Wrap("Failed to parse DB port", err)
 			return
 		}
 
-		dbConfig := config.DatabaseConfig{
-			Hostname: string(m["db.host"]),
-			Port:     port,
-			Username: string(m["db.user"]),
-			Password: string(m["db.password"]),
-			Name:     string(m["db.name"]),
-			SslMode:  "verify-full",
+		dbConfig := config.DatabaseConfigContainer{
+			Config: config.DatabaseConfig{
+				Hostname: string(secret.Data["db.host"]),
+				Port:     port,
+				Username: string(secret.Data["db.user"]),
+				Password: string(secret.Data["db.password"]),
+				Name:     string(secret.Data["db.name"]),
+				SslMode:  "verify-full",
+			},
+			Ref: types.NamespacedName{
+				Name:      secret.Name,
+				Namespace: secret.Namespace,
+			},
 		}
 
 		configs = append(configs, dbConfig)
@@ -211,7 +230,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfig, error) {
 	return configs, nil
 }
 
-func searchAnnotationSecret(appName string, secrets []core.Secret) ([]config.DatabaseConfig, error) {
+func searchAnnotationSecret(appName string, secrets []core.Secret) ([]config.DatabaseConfigContainer, error) {
 	for _, secret := range secrets {
 		anno := secret.GetAnnotations()
 		if v, ok := anno["clowder/database"]; ok && v == appName {
@@ -219,5 +238,5 @@ func searchAnnotationSecret(appName string, secrets []core.Secret) ([]config.Dat
 			return configs, err
 		}
 	}
-	return []config.DatabaseConfig{}, nil
+	return []config.DatabaseConfigContainer{}, nil
 }
