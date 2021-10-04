@@ -11,29 +11,3 @@ delete:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
   name: test-iqe-jobs-vault
-
-
-
-apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdJobInvocation
-metadata:
- name: host-inventory-smoke
- namespace: test-iqe-jobs
-spec:
- appName: host-inventory
- testing:
-   iqe:
-     imageTag: latest
-     ui:
-       enabled: false
-     marker: "smoke"
-     dynaconfEnvName: "clowder_smoke"
-     filter: "test_plugin_accessible"
-     requirements:
-     - "some"
-     - "requirements"
-     requirementsPriority: 
-     - "some-priority"
-     testImportance:
-     - "critical"
-     - "high"
