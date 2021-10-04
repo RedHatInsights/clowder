@@ -83,8 +83,10 @@ type ClowdJobInvocationStatus struct {
 	// Completed is false and updated when all jobs have either finished
 	// successfully or failed past their backoff and retry values
 	Completed bool `json:"completed"`
-	// Jobs is a map of the job names run by Job invocation and their outcomes
-	Jobs       map[string]JobConditionState `json:"jobs"`
+	// DEPRECATED : Jobs is an array of jobs name run by a CJI.
+	Jobs []string `json:"jobs"`
+	// JobMap is a map of the job names run by Job invocation and their outcomes
+	JobMap     map[string]JobConditionState `json:"jobMap"`
 	Conditions []ClowdCondition             `json:"conditions,omitempty"`
 }
 

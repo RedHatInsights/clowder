@@ -99,7 +99,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	// We have already invoked jobs and don't need to announce another reconcile run
-	if len(cji.Status.Jobs) > 0 {
+	if len(cji.Status.JobMap) > 0 {
 		return ctrl.Result{}, nil
 	}
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
@@ -194,7 +194,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		}
 		r.Log.Info("Iqe Job Invoked Successfully", "jobinvocation", nn.Name, "namespace", app.Namespace)
-		cji.Status.Jobs[nn.Name] = crd.JobInvoked
+		cji.Status.JobMap[nn.Name] = crd.JobInvoked
 
 		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 	}
@@ -233,7 +233,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *pro
 	}
 
 	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
-	cji.Status.Jobs[j.ObjectMeta.Name] = crd.JobInvoked
+	cji.Status.JobMap[j.ObjectMeta.Name] = crd.JobInvoked
 	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
 
 	return nil
@@ -298,7 +298,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 	for _, cji := range cjiList.Items {
 		// job event triggered a reconcile, check our jobs and match
 		// to enable a requeue
-		for j := range cji.Status.Jobs {
+		for j := range cji.Status.JobMap {
 			if j == job.ObjectMeta.Name {
 				reqs = append(reqs, reconcile.Request{
 					NamespacedName: types.NamespacedName{
@@ -315,11 +315,11 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 }
 
 func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
-	if len(cji.Status.Jobs) < 1 {
-		cji.Status.Jobs = map[string]crd.JobConditionState{}
+	if len(cji.Status.JobMap) < 1 {
+		cji.Status.JobMap = map[string]crd.JobConditionState{}
 		return nil
 	}
-	for j := range cji.Status.Jobs {
+	for j := range cji.Status.JobMap {
 		for _, s := range jobs.Items {
 			jobName := s.ObjectMeta.Name
 			if j == jobName {
@@ -327,11 +327,11 @@ func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd
 					condition := s.Status.Conditions[0].Type
 					switch condition {
 					case "Complete":
-						cji.Status.Jobs[jobName] = crd.JobComplete
+						cji.Status.JobMap[jobName] = crd.JobComplete
 					case "Failed":
-						cji.Status.Jobs[jobName] = crd.JobFailed
+						cji.Status.JobMap[jobName] = crd.JobFailed
 					default:
-						cji.Status.Jobs[jobName] = crd.JobInvoked
+						cji.Status.JobMap[jobName] = crd.JobInvoked
 
 					}
 				}
@@ -343,6 +343,10 @@ func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd
 
 func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 
+	// DEPRECATED: used to skip reconcilation on old job Status
+	if cji.Status.Jobs != nil {
+		return true
+	}
 	jobsRequired := len(cji.Spec.Jobs)
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
@@ -360,7 +364,7 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 	// backoffLimit threshold. The Condition status is only populated when
 	// the jobs have succeeded or passed the backoff limit
 	for _, j := range jobs.Items {
-		for s := range cji.Status.Jobs {
+		for s := range cji.Status.JobMap {
 			if s == j.ObjectMeta.Name {
 				if len(j.Status.Conditions) > 0 {
 					condition := j.Status.Conditions[0].Type

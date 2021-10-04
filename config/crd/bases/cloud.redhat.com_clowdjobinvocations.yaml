@@ -128,7 +128,7 @@ spec:
                   - type
                   type: object
                 type: array
-              jobs:
+              jobMap:
                 additionalProperties:
                   type: string
                 description: Jobs is a map of the job names run by Job invocation
@@ -136,7 +136,7 @@ spec:
                 type: object
             required:
             - completed
-            - jobs
+            - jobMap
             type: object
         type: object
     served: true
