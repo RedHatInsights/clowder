@@ -17,6 +17,7 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
 	j.ObjectMeta.Labels = labels
+	j.ObjectMeta.Labels["job"] = job.Name
 	j.Spec.Template.ObjectMeta.Labels = labels
 
 	pod := job.PodSpec
