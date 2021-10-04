@@ -84,7 +84,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		r.Log.Error(err, "CJI not found")
 		return ctrl.Result{}, err
 	}
-
 	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
 
 	// Set the initial status to an empty list of pods and a Completed
@@ -99,7 +98,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	// We have already invoked jobs and don't need to announce another reconcile run
-	if len(cji.Status.JobMap) > 0 {
+	if len(cji.Status.JobMap) > 0 || cji.Status.Jobs != nil {
 		return ctrl.Result{}, nil
 	}
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
@@ -343,10 +342,6 @@ func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd
 
 func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 
-	// DEPRECATED: used to skip reconcilation on old job Status
-	if cji.Status.Jobs != nil {
-		return true
-	}
 	jobsRequired := len(cji.Spec.Jobs)
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {

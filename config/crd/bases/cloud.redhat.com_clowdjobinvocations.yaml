@@ -131,9 +131,15 @@ spec:
               jobMap:
                 additionalProperties:
                   type: string
-                description: Jobs is a map of the job names run by Job invocation
+                description: JobMap is a map of the job names run by Job invocation
                   and their outcomes
                 type: object
+              jobs:
+                description: 'DEPRECATED : Jobs is an array of jobs name run by a
+                  CJI.'
+                items:
+                  type: string
+                type: array
             required:
             - completed
             - jobMap
