@@ -5686,14 +5686,49 @@ objects:
                   description: Completed is false and updated when all jobs have either
                     finished successfully or failed past their backoff and retry values
                   type: boolean
+                conditions:
+                  items:
+                    properties:
+                      lastTransitionTime:
+                        description: Last time the condition transitioned from one
+                          status to another.
+                        format: date-time
+                        type: string
+                      message:
+                        description: Human-readable message indicating details about
+                          last transition.
+                        type: string
+                      reason:
+                        description: Unique, one-word, CamelCase reason for the condition's
+                          last transition.
+                        type: string
+                      status:
+                        description: Status is the status of the condition. Can be
+                          True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type is the type of the condition.
+                        type: string
+                    required:
+                    - status
+                    - type
+                    type: object
+                  type: array
+                jobMap:
+                  additionalProperties:
+                    type: string
+                  description: JobMap is a map of the job names run by Job invocation
+                    and their outcomes
+                  type: object
                 jobs:
-                  description: Jobs is a list of the job names run by Job invocation
+                  description: 'DEPRECATED : Jobs is an array of jobs name run by
+                    a CJI.'
                   items:
                     type: string
                   type: array
               required:
               - completed
-              - jobs
+              - jobMap
               type: object
           type: object
       served: true
@@ -6287,6 +6322,7 @@ objects:
   metadata:
     labels:
       control-plane: controller-manager
+      operator-name: clowder
     name: clowder-controller-manager-metrics-service-non-auth
     namespace: clowder-system
   spec:
