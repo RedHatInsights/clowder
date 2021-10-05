@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"reflect"
+	"time"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
@@ -10,6 +13,8 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -521,6 +526,19 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 
 	if err := client.Status().Update(ctx, o); err != nil {
 		return err
+	}
+	cjiState := o.Status
+	nn := types.NamespacedName{
+		Name:      o.Name,
+		Namespace: o.Namespace,
+	}
+	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if err := client.Get(ctx, nn, o); err != nil {
+			return false, fmt.Errorf("failed to get cji: %w", err)
+		}
+		return reflect.DeepEqual(o.Status, cjiState), nil
+	}); err != nil {
+		return fmt.Errorf("failed to wait for cached cji %s to get into state %s: %w", nn.String(), state, err)
 	}
 	return nil
 }
