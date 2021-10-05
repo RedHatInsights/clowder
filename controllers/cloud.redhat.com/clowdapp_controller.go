@@ -253,11 +253,15 @@ func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
 		return true
 	} else if gvk.Kind == "ClowdApp" {
 		return true
+	} else if gvk.Kind == "ClowdJobInvocation" {
+		return true
 	} else if len(meta.GetOwnerReferences()) == 0 {
 		return false
 	} else if meta.GetOwnerReferences()[0].Kind == "ClowdApp" {
 		return true
 	} else if meta.GetOwnerReferences()[0].Kind == "ClowdEnvironment" {
+		return true
+	} else if meta.GetOwnerReferences()[0].Kind == "ClowdJobInvocation" {
 		return true
 	}
 	return false
