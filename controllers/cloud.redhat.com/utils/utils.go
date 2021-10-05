@@ -27,7 +27,6 @@ import (
 )
 
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-const lCharSet = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -42,17 +41,6 @@ func RandString(n int) string {
 
 	for i := range b {
 		b[i] = rCharSet[rand.Intn(len(rCharSet))]
-	}
-
-	return string(b)
-}
-
-// RandStringLower generates a random string of length n
-func RandStringLower(n int) string {
-	b := make([]byte, n)
-
-	for i := range b {
-		b[i] = lCharSet[rand.Intn(len(lCharSet))]
 	}
 
 	return string(b)
