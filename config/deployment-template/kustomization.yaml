@@ -26,6 +26,8 @@ patchesStrategicMerge:
 - clowder_config.yaml
 - webhook_cert_annotation.yaml
 - webhook_cert.yaml
-- legacy_service.yaml
 
 vars: []
+
+resources:
+- legacy_service.yaml

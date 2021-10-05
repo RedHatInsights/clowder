@@ -6258,6 +6258,20 @@ objects:
   metadata:
     labels:
       control-plane: controller-manager
+    name: clowder-controller-manager
+    namespace: clowder-system
+  spec:
+    ports:
+    - name: metrics
+      port: 8080
+      targetPort: metrics
+    selector:
+      control-plane: controller-manager
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      control-plane: controller-manager
     name: clowder-controller-manager-metrics-service
     namespace: clowder-system
   spec:
