@@ -21,8 +21,7 @@ metadata:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  labels:
-    job: host-inventory-smoke-iqe
+  name: host-inventory-smoke-iqe
   namespace: test-iqe-jobs 
 spec:
   template:
@@ -30,6 +29,7 @@ spec:
       containers:
         - args:
           - "iqe_runner.sh"
+          name: host-inventory-smoke-iqe
           image: quay.io/psav/clowder-hello:latest
           env:
             - name: "ENV_FOR_DYNACONF"
