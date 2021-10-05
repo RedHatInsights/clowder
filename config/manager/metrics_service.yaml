@@ -3,6 +3,7 @@ kind: Service
 metadata:
   labels:
     control-plane: controller-manager
+    operator-name: clowder
   name: controller-manager-metrics-service-non-auth
   namespace: system
 spec:
