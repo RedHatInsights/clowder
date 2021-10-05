@@ -3,7 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    olm.opgroup.permissions/aggregate-to-edit: clowder
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    managed.openshift.io/aggregate-to-dedicated-admins: "cluster"
   name: clowdenvironment-editor-role
 rules:
 - apiGroups:

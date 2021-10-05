@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: clowder
+parameters:
+- name: IMAGE_TAG
+  value: latest
+- name: IMAGE
+  value: quay.io/cloudservices/clowder
+- name: DEBUG_TRIGGERS
+  value: "false"
+- name: DEBUG_CACHE_CREATE
+  value: "false"
+- name: DEBUG_CACHE_UPDATE
+  value: "false"
+- name: DEBUG_CACHE_APPLY
+  value: "false"
+- name: CREATE_SERVICE_MONITORS
+  value: "false"
+- name: WATCH_STRIMZI_RESOURCES
+  value: "false"
+objects: []

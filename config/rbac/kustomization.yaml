@@ -21,3 +21,6 @@ resources:
 - clowdapp_editor_role.yaml
 - clowdenvironment_editor_role.yaml
 - clowdjobinvocation_editor_role.yaml
+- clowdapp_viewer_role.yaml
+- clowdenvironment_viewer_role.yaml
+- clowdjobinvocation_viewer_role.yaml
