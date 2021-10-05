@@ -142,7 +142,9 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	if envErr != nil {
 		r.Recorder.Eventf(&cji, "Warning", "ClowdEnvMissing", "ClowdEnv [%s] is missing; Job cannot be invoked", app.Spec.EnvName)
-		SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, envErr)
+		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
+			return ctrl.Result{}, err
+		}
 		return ctrl.Result{Requeue: true}, envErr
 	}
 
@@ -206,7 +208,6 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
 				return ctrl.Result{}, err
 			}
-			SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err)
 			return ctrl.Result{}, err
 
 		}
