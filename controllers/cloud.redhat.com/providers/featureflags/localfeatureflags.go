@@ -95,6 +95,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 	ffp.Config = config.FeatureFlagsConfig{
 		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", p.Env.Name, p.Env.Status.TargetNamespace),
 		Port:     4242,
+		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 
 	provutils.MakeLocalDB(dd, nn, p.Env, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-1", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")

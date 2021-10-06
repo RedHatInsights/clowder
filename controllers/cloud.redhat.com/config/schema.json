@@ -103,7 +103,8 @@
                         "$ref": "#/definitions/DeploymentMetadata"
                     }
                 }
-            }
+            },
+            "required": []
         },
         "DeploymentMetadata": {
             "title": "DeploymentMetadata",
@@ -376,11 +377,17 @@
                 "clientAccessToken": {
                     "description": "Defines the client access token to use when connect to the FeatureFlags server",
                     "type": "string"
+                },
+                "scheme": {
+                    "description": "Details the scheme to use for FeatureFlags http/https",
+                    "type": "string",
+                    "enum": ["http", "https"]
                 }
             },
             "required":[
                 "hostname",
-                "port"
+                "port",
+                "scheme"
             ]
         },
         "InMemoryDBConfig": {

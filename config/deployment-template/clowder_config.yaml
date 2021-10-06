@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clowder-config
+data:
+  clowder_config.json: |
+    {
+        "debugOptions": {
+            "trigger": {
+                "diff": ${DEBUG_TRIGGERS}
+            },
+            "cache": {
+                "create": ${DEBUG_CACHE_CREATE},
+                "update": ${DEBUG_CACHE_UPDATE},
+                "apply": ${DEBUG_CACHE_APPLY}
+            }
+        },
+        "features": {
+            "createServiceMonitor": ${CREATE_SERVICE_MONITORS},
+            "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES}
+        }
+    }

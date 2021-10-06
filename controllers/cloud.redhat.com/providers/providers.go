@@ -166,10 +166,10 @@ func GetNamespacedName(o obj.ClowdObject, suffix string) types.NamespacedName {
 
 // ExtractFn is a function that can extract secret data from a function, the result of this function
 // is usually declared as part of the function so no arguments are passed.
-type ExtractFn func(m map[string][]byte)
+type ExtractFn func(m *core.Secret)
 
 // ExtractFnAnno is just like ExtractFn except it reads in the value of an annotation
-type ExtractFnAnno func(m map[string][]byte, annoVal string)
+type ExtractFnAnno func(m *core.Secret, annoVal string)
 
 // ExtractSecretData takes a list of secrets, checks that the correct 'keys' are present and then
 // runs the extract function on them.
@@ -184,7 +184,7 @@ func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
 		}
 
 		if allOk {
-			fn(secret.Data)
+			fn(&secret)
 		}
 	}
 }
@@ -209,7 +209,7 @@ func ExtractSecretDataAnno(secrets []core.Secret, fn ExtractFnAnno, annoKey stri
 
 		if allOk {
 			for _, value := range strings.Split(secret.Annotations[annoKey], ",") {
-				fn(secret.Data, value)
+				fn(&secret, value)
 			}
 		}
 	}
