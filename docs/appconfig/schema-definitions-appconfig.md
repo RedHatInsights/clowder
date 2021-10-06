@@ -25,6 +25,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [metricsPort](#metricsport)           | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPort")           |
 | [metricsPath](#metricspath)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPath")           |
 | [logging](#logging)                   | `object`  | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging")                                  |
+| [metadata](#metadata)                 | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metadata")                                   |
 | [kafka](#kafka)                       | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkaconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/kafka")                                      |
 | [database](#database)                 | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-databaseconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/database")                                |
 | [objectStore](#objectstore)           | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstoreconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore")                          |
@@ -128,6 +129,22 @@ Logging Configuration
 ### logging Type
 
 `object` ([LoggingConfig](schema-definitions-loggingconfig.md))
+
+## metadata
+
+Arbitrary metadata pertaining to the application application
+
+
+`metadata`
+
+-   is optional
+-   Type: `object` ([AppMetadata](schema-definitions-appmetadata.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appmetadata.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metadata")
+
+### metadata Type
+
+`object` ([AppMetadata](schema-definitions-appmetadata.md))
 
 ## kafka
 

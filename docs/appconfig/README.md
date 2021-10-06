@@ -8,11 +8,16 @@
 
 ### Objects
 
+-   [AppMetadata](./schema-definitions-appconfig-properties-appmetadata.md "Arbitrary metadata pertaining to the application application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metadata`
+-   [AppMetadata](./schema-definitions-appmetadata.md "Arbitrary metadata pertaining to the application application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata`
 -   [CloudWatchConfig](./schema-definitions-loggingconfig-properties-cloudwatchconfig.md "Cloud Watch configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch`
 -   [CloudWatchConfig](./schema-definitions-loggingconfig-properties-cloudwatchconfig.md "Cloud Watch configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch`
 -   [CloudWatchConfig](./schema-definitions-cloudwatchconfig.md "Cloud Watch configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/CloudWatchConfig`
 -   [DatabaseConfig](./schema-definitions-appconfig-properties-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/database`
 -   [DatabaseConfig](./schema-definitions-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig`
+-   [DeploymentMetadata](./schema-definitions-appmetadata-properties-deployments-deploymentmetadata.md "Deployment Metadata") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments/items`
+-   [DeploymentMetadata](./schema-definitions-appmetadata-properties-deployments-deploymentmetadata.md "Deployment Metadata") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments/items`
+-   [DeploymentMetadata](./schema-definitions-deploymentmetadata.md "Deployment Metadata") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DeploymentMetadata`
 -   [LoggingConfig](./schema-definitions-appconfig-properties-loggingconfig.md "Logging Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging`
 -   [LoggingConfig](./schema-definitions-loggingconfig.md "Logging Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig.md "ClowdApp deployment configuration for Clowder enabled apps") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig`
@@ -44,11 +49,13 @@
 
 ### Arrays
 
+-   [Untitled array in AppConfig](./schema-definitions-appmetadata-properties-deployments.md "Metadata pertaining to an application's deployments") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokers.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`
 -   [Untitled array in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets`
 -   [Untitled array in AppConfig](./schema-definitions-appconfig-properties-endpoints.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints`
 -   [Untitled array in AppConfig](./schema-definitions-appconfig-properties-privateendpoints.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints`
+-   [Untitled array in AppConfig](./schema-definitions-appmetadata-properties-deployments.md "Metadata pertaining to an application's deployments") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokers.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`
 -   [Untitled array in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets`
