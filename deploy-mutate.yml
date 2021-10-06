@@ -6430,7 +6430,7 @@ objects:
         name: clowder-webhook-service
         namespace: clowder-system
         path: /mutate-pod
-    failurePolicy: Fail
+    failurePolicy: Ignore
     name: vclowdmutatepod.kb.io
     rules:
     - apiGroups:

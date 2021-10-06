@@ -15,7 +15,7 @@ webhooks:
       name: webhook-service
       namespace: system
       path: /mutate-pod
-  failurePolicy: Fail
+  failurePolicy: Ignore
   name: vclowdmutatepod.kb.io
   rules:
   - apiGroups:
