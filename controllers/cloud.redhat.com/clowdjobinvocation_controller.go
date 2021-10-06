@@ -86,24 +86,34 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
 
-	// Set the initial status to an empty list of pods and a Completed
+	// Set the initial status to an empty map of jobs and a Completed
 	// status of false. If a job has been invoked, but hasn't finished,
 	// setting the status after requeue will ensure it won't be double invoked
-
-	if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-		return ctrl.Result{}, err
+	if !SetupInitalStatus(&cji) {
+		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{Requeue: true}, nil
 	}
+	r.Log.Info("cji status", "jobinvocation", cji.Status.JobMap)
 
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
+		r.Log.Info("job has been completed", "jobinvocation", cji.Name)
 		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJobInvocation [%s] has completed all jobs", cji.Name)
 		return ctrl.Result{}, nil
 	}
 
 	// We have already invoked jobs and don't need to announce another reconcile run
 	if len(cji.Status.JobMap) > 0 || cji.Status.Jobs != nil {
+		// but we do want to update the status if it hasn't been handled yet
+		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
+			return ctrl.Result{}, err
+		}
+		r.Log.Info("job has been started, update map", "jobinvocation", cji.Name)
 		return ctrl.Result{}, nil
 	}
+
 	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
 
@@ -276,12 +286,12 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 	r.Recorder = mgr.GetEventRecorderFor("clowdjobinvocation")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdJobInvocation{}).
-		WithEventFilter(jobFilter(r.Log, "cji")).
+		Owns(&batchv1.Job{}).
 		Watches(
 			&source.Kind{Type: &batchv1.Job{}},
 			handler.EnqueueRequestsFromMapFunc(r.cjiToEnqueueUponJobUpdate),
 		).
-		Owns(&batchv1.Job{}).
+		WithEventFilter(jobFilter(r.Log, "cji")).
 		Complete(r)
 }
 
@@ -322,6 +332,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 		// to enable a requeue
 		for j := range cji.Status.JobMap {
 			if j == job.ObjectMeta.Name {
+				r.Log.Info("enqueue event for", "jobinvocation", j)
 				reqs = append(reqs, reconcile.Request{
 					NamespacedName: types.NamespacedName{
 						Name:      cji.Name,
@@ -337,10 +348,7 @@ func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object
 }
 
 func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
-	if len(cji.Status.JobMap) < 1 {
-		cji.Status.JobMap = map[string]crd.JobConditionState{}
-		return nil
-	}
+
 	for j := range cji.Status.JobMap {
 		for _, s := range jobs.Items {
 			jobName := s.ObjectMeta.Name
@@ -400,32 +408,45 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 func jobFilter(log logr.Logger, ctrlName string) predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
+			log.Info("update event for", "jobinvocation", e.ObjectNew.GetName())
 			// Always reconcile our cji
 			log.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 			if reflect.TypeOf(e.ObjectNew).String() == "*v1alpha1.ClowdJobInvocation" {
 				return true
 			}
 
-			var oldObject *batchv1.Job
+			// var oldObject *batchv1.Job
 			var newObject *batchv1.Job
 			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Job" {
-				oldObject = e.ObjectOld.(*batchv1.Job)
+				// oldObject = e.ObjectOld.(*batchv1.Job)
 				newObject = e.ObjectNew.(*batchv1.Job)
 			} else {
 				return false
 			}
 
 			// If there is no condition, the job is still running
-			if len(newObject.Status.Conditions) < 1 {
-				return false
+			if len(newObject.Status.Conditions) > 0 {
+				return true
 			}
 
 			// If the status has updated on our job, we reconcile
-			if !reflect.DeepEqual(oldObject.Status.Conditions, newObject.Status.Conditions) {
-				return true
-			}
+			// if !reflect.DeepEqual(oldObject.Status.Conditions, newObject.Status.Conditions) {
+			// 	return true
+			// }
 
 			return false
 		},
 	}
+}
+
+// If the JobMap isn't populated, the status needs to go through
+// initial setup, but it is not applied. The setup is made to be altered
+// as the reconciler goes through its paces and status is applied at the end.
+func SetupInitalStatus(cji *crd.ClowdJobInvocation) bool {
+	if cji.Status.JobMap == nil {
+		cji.Status.JobMap = map[string]crd.JobConditionState{}
+		cji.Status.Completed = false
+		return false
+	}
+	return true
 }
