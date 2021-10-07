@@ -8,7 +8,7 @@ spec:
   template:
     metadata:
       annotations:
-        clowder/authsidecar-config: test-ephemeral-gateway/caddy-config-puptoo-processor
+        clowder/authsidecar-config: caddy-config-puptoo-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
     spec:
