@@ -2618,6 +2618,22 @@
 <p>Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>apiPath</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>ApiPath describes the api path that will be configured to serve this backend from.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>whitelistPaths</code></strong> <em>string array</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>WhitelistPaths define the paths that do not require authentication</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2988,6 +3004,14 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>aiuthPort</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The auth port that the web local mode will use with the AuthSidecar</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p><strong><code>apiPrefix</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -2999,7 +3023,15 @@
 <p><strong><code>mode</code></strong> <em>WebMode</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The mode of operation of the Web provider. The allowed modes are (<strong><em>none</em></strong>), which disables web service generation, or (<strong><em>operator</em></strong>) where services and probes are generated.</p>
+<p>The mode of operation of the Web provider. The allowed modes are (<strong><em>none</em></strong>/<strong><em>operator</em></strong>), and (<strong><em>local</em></strong>) which deploys keycloak and BOP.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>bopURL</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The URL of BOP - only used in (<strong><em>none</em></strong>/<strong><em>operator</em></strong>) mode.</p>
 </div></div></td>
 </tr>
 </tbody>
