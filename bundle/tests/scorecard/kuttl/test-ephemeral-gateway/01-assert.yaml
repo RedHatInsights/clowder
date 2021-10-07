@@ -42,7 +42,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-ephemeral-gateway-keycloak
+  name: test-ephemeral-gateway-auth
   namespace: test-ephemeral-gateway
 spec:
   rules:
