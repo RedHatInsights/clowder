@@ -10,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
+	"github.com/go-logr/logr"
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,6 +68,7 @@ type Provider struct {
 	Ctx    context.Context
 	Env    *crd.ClowdEnvironment
 	Cache  *ObjectCache
+	Log    logr.Logger
 }
 
 // ClowderProvider is an interface providing a way for a provider to perform its duty.

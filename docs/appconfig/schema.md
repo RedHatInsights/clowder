@@ -41,6 +41,7 @@ Reference this group by using
 | [featureFlags](#featureflags)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")                        |
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
+| [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
 
 ### privatePort
 
@@ -265,6 +266,22 @@ Feature Flags Configuration
 #### privateEndpoints Type
 
 `object[]` ([Details](schema-definitions-privatedependencyendpoint.md))
+
+### BOPURL
+
+Defines the path to the BOPURL.
+
+
+`BOPURL`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")
+
+#### BOPURL Type
+
+`string`
 
 ## Definitions group LoggingConfig
 

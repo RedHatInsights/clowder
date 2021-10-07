@@ -62,8 +62,11 @@
                     "items": {
                         "$ref": "#/definitions/PrivateDependencyEndpoint"
                     }
+                },
+                "BOPURL": {
+                    "description": "Defines the path to the BOPURL.",
+                    "type": "string"
                 }
-
             },
             "required": [
                 "metricsPort",

@@ -6416,6 +6416,34 @@ objects:
     policyTypes:
     - Ingress
 - apiVersion: admissionregistration.k8s.io/v1
+  kind: MutatingWebhookConfiguration
+  metadata:
+    creationTimestamp: null
+    name: clowder-mutating-webhook-configuration
+  webhooks:
+  - admissionReviewVersions:
+    - v1
+    - v1beta1
+    - v1alpha1
+    clientConfig:
+      service:
+        name: clowder-webhook-service
+        namespace: clowder-system
+        path: /mutate-pod
+    failurePolicy: Ignore
+    name: vclowdmutatepod.kb.io
+    rules:
+    - apiGroups:
+      - ''
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - pods
+    sideEffects: None
+- apiVersion: admissionregistration.k8s.io/v1
   kind: ValidatingWebhookConfiguration
   metadata:
     annotations:

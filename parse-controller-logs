@@ -5,6 +5,7 @@ import sys
 import time
 
 levels = {
+    'dpanic': '\033[91m',
     'error': '\033[91m',
     'warning': '\033[93m',
     'diff': '\033[95m',

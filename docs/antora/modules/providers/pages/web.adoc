@@ -24,6 +24,9 @@ spec:
     webServices:
       public:
         enabled: true
+        apiPath: hello
+        whitelistPaths:
+        - /api/hello/openapi.json
       private:
         enabled: true
 ----
@@ -45,6 +48,34 @@ ClowdEnv Config options available:
 - `port`
 - `privatePort`
 - `apiPrefix`
+- `BOPURL`
+
+=== local
+
+In local mode, the *Web Provider* will setup an entire mocked backend including
+SSO, BOP and an aggregated gateway.
+
+All pods which have the `webServices.public.enabled` set to `true` will also
+have an auth pod injected into them which will be configured to work with the
+SSO server and BOP URL. This will have a new port added to the service which
+the gateway will be configured to use.
+
+The `apiPath` parameter sets the URL that the service will be routed for. `/api/<apiPath>` will
+be configured to route to the `auth` service port for that deployment.
+
+The `whitelistPaths` parameter sets the paths that will not be required to go through authentication. These paths will always be able to be hit without auth. The following declarations are possible
+
+- /absolute/path
+- *prefixed/path
+- /suffixed/path*
+- *
+
+ClowdEnv Config options available:
+
+- `port`
+- `privatePort`
+- `apiPrefix`
+- `authPort`
 
 == Generated App Configuration
 

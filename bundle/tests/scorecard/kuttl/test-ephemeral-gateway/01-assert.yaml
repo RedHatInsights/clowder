@@ -1,0 +1,111 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-ephemeral-gateway
+spec:
+  template:
+    metadata:
+      annotations:
+        clowder/authsidecar-config: caddy-config-puptoo-processor
+        clowder/authsidecar-enabled: "true"
+        clowder/authsidecar-port: "8000"
+    spec:
+      serviceAccountName: puptoo-processor
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-ephemeral-gateway-keycloak
+  namespace: test-ephemeral-gateway
+type: Opaque
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: puptoo-processor
+  namespace: test-ephemeral-gateway
+spec:
+  rules:
+  - host: test-ephemeral-gateway
+    http:
+      paths:
+      - backend:
+          service:
+            name: puptoo-processor
+            port:
+              name: auth
+        path: /api/puptoo/
+        pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ephemeral-gateway-auth
+  namespace: test-ephemeral-gateway
+spec:
+  rules:
+  - host: test-ephemeral-gateway-auth
+    http:
+      paths:
+      - backend:
+          service:
+            name: test-ephemeral-gateway-keycloak
+            port:
+              name: keycloak
+        path: /
+        pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ephemeral-gateway-mbop
+  namespace: test-ephemeral-gateway
+spec:
+  rules:
+  - host: test-ephemeral-gateway
+    http:
+      paths:
+      - backend:
+          service:
+            name: test-ephemeral-gateway-mbop
+            port:
+              name: mbop
+        path: /api/entitlements/
+        pathType: Prefix
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-processor
+  namespace: test-ephemeral-gateway
+spec:
+  selector:
+    pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    appProtocol: http
+  - port: 8080
+    targetPort: 8080
+    name: auth
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    appProtocol: http
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-gateway-keycloak
+  namespace: test-ephemeral-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-gateway-mbop
+  namespace: test-ephemeral-gateway

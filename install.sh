@@ -30,7 +30,7 @@ minikube status 2>/dev/null >/dev/null
 if [ $? != "0" ]; then
     echo Starting Minikube...
     echo
-    cmd="minikube start --cpus=$(($cpu_count / 2)) --memory $(($memory / 2))MB --addons=registry --driver=kvm2"
+    cmd="minikube start --cpus=$(($cpu_count / 2)) --memory $(($memory / 2))MB --addons=registry --addons=ingress --driver=kvm2"
     echo $cmd
     $cmd
 fi

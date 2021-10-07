@@ -32,7 +32,7 @@ import (
 )
 
 // WebMode details the mode of operation of the Clowder Web Provider
-// +kubebuilder:validation:Enum=none;operator
+// +kubebuilder:validation:Enum=none;operator;local
 type WebMode string
 
 // WebConfig configures the Clowder provider controlling the creation of web
@@ -44,14 +44,19 @@ type WebConfig struct {
 	// The private port that web services inside a ClowdApp should be served on.
 	PrivatePort int32 `json:"privatePort,omitempty"`
 
+	// The auth port that the web local mode will use with the AuthSidecar
+	AuthPort int32 `json:"aiuthPort,omitempty"`
+
 	// An api prefix path that pods will be instructed to use when setting up
 	// their web server.
 	ApiPrefix string `json:"apiPrefix,omitempty"`
 
 	// The mode of operation of the Web provider. The allowed modes are
-	// (*_none_*), which disables web service generation, or (*_operator_*)
-	// where services and probes are generated.
+	// (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
 	Mode WebMode `json:"mode"`
+
+	// The URL of BOP - only used in (*_none_*/*_operator_*) mode.
+	BOPURL string `json:"bopURL,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

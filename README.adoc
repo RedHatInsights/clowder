@@ -83,7 +83,7 @@ Clowder is developed on Fedora and the kvm driver has been found to work best
 initiated with the following options:
 
 [source,shell]
-minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2
+minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 --addons registry --addons ingress
 
 [NOTE]
 ====

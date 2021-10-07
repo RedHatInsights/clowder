@@ -68,6 +68,9 @@ func (j *DatabaseConfig) UnmarshalJSON(b []byte) error {
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
+	// Defines the path to the BOPURL.
+	BOPURL *string `json:"BOPURL,omitempty"`
+
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`
 

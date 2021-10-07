@@ -527,18 +527,27 @@ spec:
                   web:
                     description: Defines the Configuration for the Clowder Web Provider.
                     properties:
+                      aiuthPort:
+                        description: The auth port that the web local mode will use
+                          with the AuthSidecar
+                        format: int32
+                        type: integer
                       apiPrefix:
                         description: An api prefix path that pods will be instructed
                           to use when setting up their web server.
                         type: string
+                      bopURL:
+                        description: The URL of BOP - only used in (*_none_*/*_operator_*)
+                          mode.
+                        type: string
                       mode:
                         description: The mode of operation of the Web provider. The
-                          allowed modes are (*_none_*), which disables web service
-                          generation, or (*_operator_*) where services and probes
-                          are generated.
+                          allowed modes are (*_none_*/*_operator_*), and (*_local_*)
+                          which deploys keycloak and BOP.
                         enum:
                         - none
                         - operator
+                        - local
                         type: string
                       port:
                         description: The port that web services inside ClowdApp pods
