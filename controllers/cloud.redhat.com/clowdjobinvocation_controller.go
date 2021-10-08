@@ -32,11 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	// "sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	//"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
@@ -104,10 +101,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{}, nil
-
-		// This is fresh CJI and needs to be invoked the first time
 	} else {
-
+		// This is a fresh CJI and needs to be invoked the first time
 		r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
 		ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
 
@@ -290,10 +285,6 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdJobInvocation{}).
 		Owns(&batchv1.Job{}, builder.WithPredicates(jobFilter(r.Log, "job"))).
-		// Watches(
-		// 	&source.Kind{Type: &batchv1.Job{}},
-		// 	handler.EnqueueRequestsFromMapFunc(r.cjiToEnqueueUponJobUpdate),
-		// ).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "cji")).
 		Complete(r)
 }
@@ -413,15 +404,8 @@ func jobFilter(log logr.Logger, ctrlName string) predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			log.Info("update", "jobinvocation", e.ObjectNew.GetName())
-			// Always reconcile our cji
-			// if reflect.TypeOf(e.ObjectNew).String() == "*v1alpha1.ClowdJobInvocation" {
-			// 	return true
-			// }
-
-			// var oldObject *batchv1.Job
 			var newObject *batchv1.Job
 			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Job" {
-				// 	oldObject = e.ObjectOld.(*batchv1.Job)
 				newObject = e.ObjectNew.(*batchv1.Job)
 			} else {
 				return false
@@ -431,11 +415,6 @@ func jobFilter(log logr.Logger, ctrlName string) predicate.Predicate {
 			if len(newObject.Status.Conditions) > 0 {
 				return true
 			}
-
-			// If the status has not updated on our job, we don't reconcile
-			// if reflect.DeepEqual(oldObject.Status.Conditions, newObject.Status.Conditions) {
-			// 	return false
-			// }
 
 			return false
 		},
