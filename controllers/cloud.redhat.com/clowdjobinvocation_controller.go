@@ -33,7 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
@@ -287,58 +286,6 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Owns(&batchv1.Job{}, builder.WithPredicates(jobFilter(r.Log, "job"))).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "cji")).
 		Complete(r)
-}
-
-// cjiToEnqueueUponJobUpdate watches is triggered when a job watched by the
-// ClowdJobInvocationReconciler is updated. Rather than constantly requeue
-// in order to update a cji status, we can trigger a queue up a single reconcile
-// when a watched job updates
-func (r *ClowdJobInvocationReconciler) cjiToEnqueueUponJobUpdate(a client.Object) []reconcile.Request {
-	reqs := []reconcile.Request{}
-	ctx := context.Background()
-	obj := types.NamespacedName{
-		Name:      a.GetName(),
-		Namespace: a.GetNamespace(),
-	}
-
-	job := batchv1.Job{}
-	if cjErr := r.Client.Get(ctx, obj, &job); cjErr != nil {
-		if k8serr.IsNotFound(cjErr) {
-			// Must have been deleted
-			return reqs
-		}
-		r.Log.Error(cjErr, "Failed to fetch ClowdJob")
-		return nil
-	}
-
-	cjiList := crd.ClowdJobInvocationList{}
-	if cjiErr := r.Client.List(ctx, &cjiList); cjiErr != nil {
-		if k8serr.IsNotFound(cjiErr) {
-			// Must have been deleted
-			return reqs
-		}
-		r.Log.Error(cjiErr, "Failed to fetch ClowdJobInvocation")
-		return nil
-	}
-
-	for _, cji := range cjiList.Items {
-		// job event triggered a reconcile, check our jobs and match
-		// to enable a requeue
-		for j := range cji.Status.JobMap {
-			if j == job.ObjectMeta.Name {
-				r.Log.Info("Enqueue event for", "jobinvocation", j)
-				reqs = append(reqs, reconcile.Request{
-					NamespacedName: types.NamespacedName{
-						Name:      cji.Name,
-						Namespace: cji.Namespace,
-					},
-				})
-			}
-
-		}
-	}
-
-	return reqs
 }
 
 func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
