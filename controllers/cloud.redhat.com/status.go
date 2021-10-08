@@ -418,3 +418,109 @@ func UpdateClowdEnvCondition(status *crd.ClowdEnvironmentStatus, condition *crd.
 	// Return true if one of the fields have changed.
 	return !isEqual
 }
+
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
+func GetClowdJobInvocationConditionFromList(conditions []crd.ClowdCondition, conditionType crd.ClowdConditionType) (int, *crd.ClowdCondition) {
+	if conditions == nil {
+		return -1, nil
+	}
+	for i := range conditions {
+		if conditions[i].Type == conditionType {
+			return i, &conditions[i]
+		}
+	}
+	return -1, nil
+}
+
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
+func GetClowdJobInvocationCondition(status *crd.ClowdJobInvocationStatus, conditionType crd.ClowdConditionType) (int, *crd.ClowdCondition) {
+	if status == nil {
+		return -1, nil
+	}
+	return GetClowdJobInvocationConditionFromList(status.Conditions, conditionType)
+}
+
+// The following function was modified from the kubnernetes repo under the apache license here
+// https://github.com/kubernetes/kubernetes/blob/v1.21.1/pkg/api/v1/pod/util.go#L317-L367
+func UpdateClowdJobInvocationCondition(status *crd.ClowdJobInvocationStatus, condition *crd.ClowdCondition) bool {
+	condition.LastTransitionTime = v1.Now()
+	conditionIndex, oldCondition := GetClowdJobInvocationCondition(status, condition.Type)
+
+	if oldCondition == nil {
+		// We are adding new pod condition.
+		status.Conditions = append(status.Conditions, *condition)
+		return true
+	}
+	// We are updating an existing condition, so we need to check if it has changed.
+	if condition.Status == oldCondition.Status {
+		condition.LastTransitionTime = oldCondition.LastTransitionTime
+	}
+
+	isEqual := condition.Status == oldCondition.Status &&
+		condition.Reason == oldCondition.Reason &&
+		condition.Message == oldCondition.Message &&
+		condition.LastTransitionTime.Equal(&oldCondition.LastTransitionTime)
+
+	status.Conditions[conditionIndex] = *condition
+	// Return true if one of the fields have changed.
+	return !isEqual
+}
+
+func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state crd.ClowdConditionType, err error) error {
+	conditions := []crd.ClowdCondition{}
+
+	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
+	for _, conditionType := range loopConditions {
+		condition := &crd.ClowdCondition{}
+		condition.Type = conditionType
+		condition.Status = core.ConditionFalse
+
+		if state == conditionType {
+			condition.Status = core.ConditionTrue
+			if err != nil {
+				condition.Reason = err.Error()
+			}
+		}
+
+		condition.LastTransitionTime = v1.Now()
+		conditions = append(conditions, *condition)
+	}
+
+	jobs, err := o.GetInvokedJobs(ctx, client)
+	if err != nil {
+		return err
+	}
+	jobStatus := GetJobsStatus(jobs, o)
+
+	condition := &crd.ClowdCondition{}
+
+	condition.Status = core.ConditionFalse
+	condition.Message = "Some Jobs are still incomplete"
+
+	if jobStatus {
+		condition.Status = core.ConditionTrue
+		condition.Message = "All ClowdJob invocations complete"
+	}
+
+	condition.Type = crd.JobInvocationComplete
+	condition.LastTransitionTime = v1.Now()
+	if err != nil {
+		condition.Reason = err.Error()
+	}
+
+	conditions = append(conditions, *condition)
+
+	for _, condition := range conditions {
+		UpdateClowdJobInvocationCondition(&o.Status, &condition)
+	}
+
+	o.Status.Completed = jobStatus
+	UpdateInvokedJobStatus(ctx, jobs, o)
+
+	if err := client.Status().Update(ctx, o); err != nil {
+		return err
+	}
+	return nil
+}
