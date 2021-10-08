@@ -540,6 +540,9 @@ spec:
                         description: The URL of BOP - only used in (*_none_*/*_operator_*)
                           mode.
                         type: string
+                      ingressClass:
+                        description: Ingress Class Name used only in (*_local_*) mode.
+                        type: string
                       mode:
                         description: The mode of operation of the Web provider. The
                           allowed modes are (*_none_*/*_operator_*), and (*_local_*)

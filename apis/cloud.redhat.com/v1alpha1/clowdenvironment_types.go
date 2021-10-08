@@ -57,6 +57,9 @@ type WebConfig struct {
 
 	// The URL of BOP - only used in (*_none_*/*_operator_*) mode.
 	BOPURL string `json:"bopURL,omitempty"`
+
+	// Ingress Class Name used only in (*_local_*) mode.
+	IngressClass string `json:"ingressClass,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

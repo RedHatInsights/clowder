@@ -27,6 +27,7 @@ metadata:
   name: puptoo-processor
   namespace: test-ephemeral-gateway
 spec:
+  ingressClassName: "openshift"
   rules:
   - host: test-ephemeral-gateway
     http:

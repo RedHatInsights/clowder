@@ -934,6 +934,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.
 | *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
 | *`bopURL`* __string__ | The URL of BOP - only used in (*_none_*/*_operator_*) mode.
+| *`ingressClass`* __string__ | Ingress Class Name used only in (*_local_*) mode.
 |===
 
 
