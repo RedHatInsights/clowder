@@ -5,10 +5,7 @@ data:
         "features": {
             "createServiceMonitor": true,
             "watchStrimziResources": true
-        },
-  "debug": {
-    "triggerDiff": true
-}
+        }
     }
 kind: ConfigMap
 metadata:
