@@ -120,6 +120,7 @@ ClowdAppSpec is the main specification for a single Clowder Application it defin
 ****
 - xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappstatus[$$ClowdAppStatus$$]
 - xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus[$$ClowdEnvironmentStatus$$]
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationstatus[$$ClowdJobInvocationStatus$$]
 ****
 
 [cols="25a,75a", options="header"]
