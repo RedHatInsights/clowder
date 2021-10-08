@@ -134,16 +134,16 @@ func makeBOPIngress(p *providers.Provider) error {
 	labler := utils.MakeLabeler(nn, labels, p.Env)
 	labler(netobj)
 
-	annotations := netobj.GetAnnotations()
-	if annotations == nil {
-		annotations = make(map[string]string)
+	ingressClass := p.Env.Spec.Providers.Web.IngressClass
+	if ingressClass == "" {
+		ingressClass = "nginx"
 	}
 
-	annotations["kubernetes.io/ingress.class"] = "nginx"
-
-	netobj.SetAnnotations(annotations)
-
 	netobj.Spec = networking.IngressSpec{
+		TLS: []networking.IngressTLS{{
+			Hosts: []string{},
+		}},
+		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
 				Host: p.Env.Name,

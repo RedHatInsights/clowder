@@ -9,6 +9,7 @@ spec:
     web:
       port: 8000
       mode: local
+      ingressClass: openshift
     metrics:
       port: 9000
       mode: operator
