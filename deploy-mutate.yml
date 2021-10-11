@@ -6422,7 +6422,8 @@ objects:
 - apiVersion: admissionregistration.k8s.io/v1
   kind: MutatingWebhookConfiguration
   metadata:
-    creationTimestamp: null
+    annotations:
+      service.beta.openshift.io/inject-cabundle: 'true'
     name: clowder-mutating-webhook-configuration
   webhooks:
   - admissionReviewVersions:

@@ -26,6 +26,7 @@ patchesStrategicMerge:
 - clowder_config.yaml
 - webhook_cert_annotation.yaml
 - webhook_cert.yaml
+- mutate_webhook_cert.yaml
 
 vars: []
 
