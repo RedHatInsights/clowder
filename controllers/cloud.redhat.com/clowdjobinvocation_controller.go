@@ -19,7 +19,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/go-logr/logr"
@@ -29,10 +28,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	// "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
@@ -88,7 +84,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if cji.Status.Jobs != nil {
 
 		// Warn, and set the CJI not to reconcile again. If you can see "jobs", the cji has been invoked previously
-		r.Log.Info("jobinvocation", cji.Name, "Updating deprecated CJIj status; please remove this CJI and reinvoke to reset completed status")
+		r.Log.Info("jobinvocation", cji.Name, "Warning: deprecated CJI status; please remove this CJI and reinvoke to reset the Completed status")
 		cji.Status.JobMap = map[string]crd.JobConditionState{}
 		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
 			return ctrl.Result{}, err
@@ -356,25 +352,4 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 		}
 	}
 	return jobsCompleted
-}
-
-func jobFilter(log logr.Logger, ctrlName string) predicate.Predicate {
-	return predicate.Funcs{
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			log.Info("update", "jobinvocation", e.ObjectNew.GetName())
-			var newObject *batchv1.Job
-			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Job" {
-				newObject = e.ObjectNew.(*batchv1.Job)
-			} else {
-				return false
-			}
-
-			// If there is no condition, the job is still running
-			if len(newObject.Status.Conditions) > 0 {
-				return true
-			}
-
-			return false
-		},
-	}
 }
