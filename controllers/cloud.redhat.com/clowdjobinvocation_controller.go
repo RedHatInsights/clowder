@@ -29,7 +29,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
+	// "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -283,8 +283,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 	r.Recorder = mgr.GetEventRecorderFor("clowdjobinvocation")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdJobInvocation{}).
-		Owns(&batchv1.Job{}, builder.WithPredicates(jobFilter(r.Log, "job"))).
-		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "cji")).
+		Owns(&batchv1.Job{}).
 		Complete(r)
 }
 
