@@ -84,6 +84,18 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
 
+	// Deprecated, used to handle any lagging CJIs that would otherwise throw errors
+	if cji.Status.Jobs != nil {
+
+		// Warn, and set the CJI not to reconcile again. If you can see "jobs", the cji has been invoked previously
+		r.Log.Info("jobinvocation", cji.Name, "Updating deprecated CJIj status; please remove this CJI and reinvoke to reset completed status")
+		cji.Status.JobMap = map[string]crd.JobConditionState{}
+		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, nil
+	}
+
 	// If the status is updated to complete, don't invoke again.
 	if cji.Status.Completed {
 		r.Log.Info("Job has been completed", "jobinvocation", cji.Name)
@@ -95,7 +107,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	// CJI has already invoked a job, we'll update the status
-	if cji.Status.JobMap != nil || cji.Status.Jobs != nil {
+	if cji.Status.JobMap != nil {
 		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
 			return ctrl.Result{}, err
 		}
