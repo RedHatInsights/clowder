@@ -527,6 +527,8 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	if err := client.Status().Update(ctx, o); err != nil {
 		return err
 	}
+	// https://github.com/kubernetes-sigs/controller-runtime/issues/1464#issuecomment-811930090
+	// Handle the lag between the client and the k8s cache
 	cjiState := o.Status
 	nn := types.NamespacedName{
 		Name:      o.Name,
