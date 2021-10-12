@@ -195,9 +195,7 @@ func makeAuthIngress(p *providers.Provider) error {
 	}
 
 	hostname := p.Env.GetHostname(p.Ctx, p.Client, p.Log)
-	hostComponents := strings.Split(hostname, ".")
-	hostComponents[0] = hostComponents[0] + "-auth"
-	hostname = strings.Join(hostComponents, ".")
+	hostname = getAuthHostname(hostname)
 
 	netobj.Spec = networking.IngressSpec{
 		TLS: []networking.IngressTLS{{
@@ -366,4 +364,10 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 	}
 
 	return nil
+}
+
+func getAuthHostname(hostname string) string {
+	hostComponents := strings.Split(hostname, ".")
+	hostComponents[0] = hostComponents[0] + "-auth"
+	return strings.Join(hostComponents, ".")
 }
