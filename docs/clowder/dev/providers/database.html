@@ -218,6 +218,35 @@ spec:
     version: 12</code></pre>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_using_a_shared_database_across_multiple_clowdapps"><a class="anchor" href="#_using_a_shared_database_across_multiple_clowdapps"></a>Using a Shared Database across multiple ClowdApps</h3>
+<div class="paragraph">
+<p>To share a database from one ClowdApp to another Clowder supports sharing a database
+declared in one ClowdApp with many others.</p>
+</div>
+<div class="paragraph">
+<p>Request a database like above, but then in your dependent ClowdApp resource set up
+the shared configuration like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: myapp-worker
+spec:
+  # Other App Config
+  database:
+    sharedDbAppName: myapp
+  dependenceis:
+  - myapp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This example would set up <code>myapp-worker</code> looking at the same database as <code>myapp</code>.
+The strings need to be the same.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
