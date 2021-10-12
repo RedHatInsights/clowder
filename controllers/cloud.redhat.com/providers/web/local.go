@@ -42,6 +42,14 @@ type localWebProvider struct {
 
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
+	if p.Env.Status.Hostname == "" {
+		p.Env.Status.Hostname = p.Env.GenerateHostname(p.Ctx, p.Client, p.Log)
+		err := p.Client.Status().Update(p.Ctx, p.Env)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	wp := &localWebProvider{Provider: *p}
 
 	nn := providers.GetNamespacedName(p.Env, "keycloak")
@@ -146,7 +154,7 @@ func makeBOPIngress(p *providers.Provider) error {
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: p.Env.Name,
+				Host: p.Env.Status.Hostname,
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
@@ -201,7 +209,7 @@ func makeAuthIngress(p *providers.Provider) error {
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: fmt.Sprintf("%s-auth", p.Env.Name),
+				Host: getAuthHostname(p.Env.Status.Hostname),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
@@ -335,7 +343,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: web.Env.Name,
+				Host: web.Env.Status.Hostname,
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
@@ -361,4 +369,10 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 	}
 
 	return nil
+}
+
+func getAuthHostname(hostname string) string {
+	hostComponents := strings.Split(hostname, ".")
+	hostComponents[0] = hostComponents[0] + "-auth"
+	return strings.Join(hostComponents, ".")
 }

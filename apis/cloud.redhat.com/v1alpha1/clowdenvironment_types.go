@@ -23,10 +23,13 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	"github.com/go-logr/logr"
 
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -451,6 +454,7 @@ type ClowdEnvironmentStatus struct {
 	Deployments     common.DeploymentStatus `json:"deployments,omitempty"`
 	Apps            []AppInfo               `json:"apps,omitempty"`
 	Generation      int64                   `json:"generation,omitempty"`
+	Hostname        string                  `json:"hostname,omitempty"`
 }
 
 // AppInfo details information about a specific app.
@@ -619,4 +623,41 @@ func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient clien
 // IsNodePort indicates whether or not services are configured as NodePort or not
 func (i *ClowdEnvironment) IsNodePort() bool {
 	return i.Spec.ServiceConfig.Type == "NodePort"
+}
+
+// GetClowdHostname gets the hostname for a particular environment
+func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.Client, log logr.Logger) string {
+	nn := types.NamespacedName{
+		Name: "cluster",
+	}
+
+	var icGVK = schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Kind:    "Ingress",
+		Version: "v1",
+	}
+
+	ic := &unstructured.Unstructured{}
+	ic.SetGroupVersionKind(icGVK)
+
+	err := pClient.Get(ctx, nn, ic)
+	if err != nil {
+		log.Info("Couldn't find cluster route resource, defaulting to env name" + err.Error())
+		return i.Name
+	}
+
+	randomIdent := strings.ToLower(utils.RandString(8))
+
+	obj := ic.Object
+	if obj["spec"] != nil {
+		spec := obj["spec"].(map[string]interface{})
+		domain := spec["domain"]
+		if domain != "" {
+			return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
+		}
+	}
+
+	log.Info("Route resource didn't contain spec.domain, defaulting to env name")
+
+	return i.Name
 }
