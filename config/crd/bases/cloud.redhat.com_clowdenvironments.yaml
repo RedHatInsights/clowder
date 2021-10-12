@@ -699,6 +699,8 @@ spec:
               generation:
                 format: int64
                 type: integer
+              hostname:
+                type: string
               randomIdent:
                 type: string
               ready:

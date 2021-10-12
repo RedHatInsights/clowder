@@ -132,6 +132,13 @@ rules:
   - patch
   - update
 - apiGroups:
+  - config.openshift.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+- apiGroups:
   - cyndi.cloud.redhat.com
   resources:
   - cyndipipelines

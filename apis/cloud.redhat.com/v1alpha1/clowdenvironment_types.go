@@ -455,6 +455,7 @@ type ClowdEnvironmentStatus struct {
 	Apps            []AppInfo               `json:"apps,omitempty"`
 	Generation      int64                   `json:"generation,omitempty"`
 	RandomIdent     string                  `json:"randomIdent,omitempty"`
+	Hostname        string                  `json:"hostname,omitempty"`
 }
 
 // AppInfo details information about a specific app.
@@ -640,8 +641,9 @@ func (i *ClowdEnvironment) GetHostname(ctx context.Context, pClient client.Clien
 	ic := &unstructured.Unstructured{}
 	ic.SetGroupVersionKind(icGVK)
 
-	if err := pClient.Get(ctx, nn, ic); err != nil {
-		log.Info("Couldn't find cluster route resource, defaulting to env name")
+	err := pClient.Get(ctx, nn, ic)
+	if err != nil {
+		log.Info("Couldn't find cluster route resource, defaulting to env name" + err.Error())
 		return i.Name
 	}
 
