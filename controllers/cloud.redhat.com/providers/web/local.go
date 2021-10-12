@@ -146,7 +146,7 @@ func makeBOPIngress(p *providers.Provider) error {
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: p.Env.Name,
+				Host: p.Env.GetHostname(p.Ctx, p.Client, p.Log),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
@@ -194,6 +194,11 @@ func makeAuthIngress(p *providers.Provider) error {
 		ingressClass = "nginx"
 	}
 
+	hostname := p.Env.GetHostname(p.Ctx, p.Client, p.Log)
+	hostComponents := strings.Split(hostname, ".")
+	hostComponents[0] = hostComponents[0] + "-auth"
+	hostname = strings.Join(hostComponents, ".")
+
 	netobj.Spec = networking.IngressSpec{
 		TLS: []networking.IngressTLS{{
 			Hosts: []string{},
@@ -201,7 +206,7 @@ func makeAuthIngress(p *providers.Provider) error {
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: fmt.Sprintf("%s-auth", p.Env.Name),
+				Host: hostname,
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
@@ -335,7 +340,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: web.Env.Name,
+				Host: web.Env.GetHostname(web.Ctx, web.Client, web.Log),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{

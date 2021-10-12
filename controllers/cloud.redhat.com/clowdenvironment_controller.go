@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
@@ -144,6 +145,17 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		log.Info("Reconciliation aborted - set to be disabled", "env", env.Name)
 		return ctrl.Result{}, nil
 	}
+
+	if env.Status.RandomIdent == "" {
+		env.Status.RandomIdent = strings.ToLower(utils.RandString(8))
+		err := r.Client.Status().Update(ctx, &env)
+		if err != nil {
+			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
+			return ctrl.Result{Requeue: true}, err
+		}
+	}
+
+	log.Info("Using hostname: ", "hostname", env.GetHostname(ctx, r.Client, log))
 
 	if env.Status.TargetNamespace == "" {
 		if env.Spec.TargetNamespace != "" {
