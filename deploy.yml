@@ -5591,6 +5591,8 @@ objects:
                 generation:
                   format: int64
                   type: integer
+                hostname:
+                  type: string
                 ready:
                   type: boolean
                 targetNamespace:
@@ -6078,6 +6080,13 @@ objects:
     - get
     - patch
     - update
+  - apiGroups:
+    - config.openshift.io
+    resources:
+    - ingresses
+    verbs:
+    - get
+    - list
   - apiGroups:
     - cyndi.cloud.redhat.com
     resources:
