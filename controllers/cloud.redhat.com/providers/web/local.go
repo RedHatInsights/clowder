@@ -42,9 +42,8 @@ type localWebProvider struct {
 
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	hostname := p.Env.GetHostname(p.Ctx, p.Client, p.Log)
-	if p.Env.Status.Hostname != hostname {
-		p.Env.Status.Hostname = hostname
+	if p.Env.Status.Hostname == "" {
+		p.Env.Status.Hostname = p.Env.GenerateHostname(p.Ctx, p.Client, p.Log)
 		err := p.Client.Status().Update(p.Ctx, p.Env)
 		if err != nil {
 			return nil, err

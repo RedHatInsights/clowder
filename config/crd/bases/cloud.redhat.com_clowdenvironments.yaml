@@ -701,8 +701,6 @@ spec:
                 type: integer
               hostname:
                 type: string
-              randomIdent:
-                type: string
               ready:
                 type: boolean
               targetNamespace:

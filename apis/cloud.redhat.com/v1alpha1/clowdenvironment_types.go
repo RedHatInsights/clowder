@@ -454,7 +454,6 @@ type ClowdEnvironmentStatus struct {
 	Deployments     common.DeploymentStatus `json:"deployments,omitempty"`
 	Apps            []AppInfo               `json:"apps,omitempty"`
 	Generation      int64                   `json:"generation,omitempty"`
-	RandomIdent     string                  `json:"randomIdent,omitempty"`
 	Hostname        string                  `json:"hostname,omitempty"`
 }
 
@@ -627,7 +626,7 @@ func (i *ClowdEnvironment) IsNodePort() bool {
 }
 
 // GetClowdHostname gets the hostname for a particular environment
-func (i *ClowdEnvironment) GetHostname(ctx context.Context, pClient client.Client, log logr.Logger) string {
+func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.Client, log logr.Logger) string {
 	nn := types.NamespacedName{
 		Name: "cluster",
 	}
@@ -647,12 +646,14 @@ func (i *ClowdEnvironment) GetHostname(ctx context.Context, pClient client.Clien
 		return i.Name
 	}
 
+	randomIdent := strings.ToLower(utils.RandString(8))
+
 	obj := ic.Object
 	if obj["spec"] != nil {
 		spec := obj["spec"].(map[string]interface{})
 		domain := spec["domain"]
 		if domain != "" {
-			return fmt.Sprintf("%s-%s.%s", i.Name, i.Status.RandomIdent, domain)
+			return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
 		}
 	}
 
