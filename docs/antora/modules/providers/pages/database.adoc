@@ -21,6 +21,31 @@ spec:
     version: 12
 ----
 
+=== Using a Shared Database across multiple ClowdApps
+
+To share a database from one ClowdApp to another Clowder supports sharing a database 
+declared in one ClowdApp with many others.
+
+Request a database like above, but then in your dependent ClowdApp resource set up
+the shared configuration like so:
+
+[source,yaml]
+----
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: myapp-worker
+spec:
+  # Other App Config
+  database:
+    sharedDbAppName: myapp
+  dependenceis:
+  - myapp
+----
+
+This example would set up `myapp-worker` looking at the same database as `myapp`.
+The strings need to be the same.
+
 == ClowdEnv Configuration
 
 === Modes
