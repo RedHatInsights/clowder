@@ -48,6 +48,9 @@ spec:
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
+            - name: IQE_REQUIREMENTS
+            - name: IQE_REQUIREMENTS_PRIORITY
+            - name: IQE_TEST_IMPORTANCE
             - name: DYNACONF_IQE_VAULT_LOADER_ENABLED
               value: "true"
             - name: DYNACONF_IQE_VAULT_VERIFY

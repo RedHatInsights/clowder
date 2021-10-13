@@ -22,7 +22,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   labels:
-    job: host-inventory-smoke-iqe
+    job: host-inventory-smoke-default-iqe
   namespace: test-iqe-jobs 
 spec:
   template:
@@ -48,6 +48,9 @@ spec:
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
+            - name: IQE_REQUIREMENTS
+            - name: IQE_REQUIREMENTS_PRIORITY
+            - name: IQE_TEST_IMPORTANCE
           resources:
             limits:
               cpu: "2"
@@ -59,7 +62,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: host-inventory-smoke-iqe
+  name: host-inventory-smoke-default-iqe
   namespace: test-iqe-jobs 
 type: Opaque
 

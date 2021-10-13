@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
@@ -24,6 +25,13 @@ import (
 
 var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
 var VaultSecret = providers.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
+
+func joinNullableSlice(s *[]string) string {
+	if s != nil {
+		return strings.Join(*s, ",")
+	}
+	return ""
+}
 
 // CreateIqeJobResource will create a Job that contains a pod spec for running IQE
 func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
@@ -57,6 +65,9 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
 		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
+		{Name: "IQE_REQUIREMENTS", Value: joinNullableSlice(cji.Spec.Testing.Iqe.Requirements)},
+		{Name: "IQE_REQUIREMENTS_PRIORITY", Value: joinNullableSlice(cji.Spec.Testing.Iqe.RequirementsPriority)},
+		{Name: "IQE_TEST_IMPORTANCE", Value: joinNullableSlice(cji.Spec.Testing.Iqe.TestImportance)},
 	}
 
 	// apply vault env vars if vaultSecretRef exists in environment

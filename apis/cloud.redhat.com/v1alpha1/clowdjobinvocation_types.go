@@ -48,17 +48,31 @@ type IqeJobSpec struct {
 	// By default, Clowder will set the image on the ClowdJob to be the
 	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
 	ImageTag string `json:"imageTag,omitempty"`
+
 	// Indiciates the presence of a selenium container
 	// Note: currently not implemented
 	UI UiSpec `json:"ui,omitempty"`
+
 	// sets the pytest -m args
 	Marker string `json:"marker,omitempty"`
+
 	// sets value for ENV_FOR_DYNACONF
 	DynaconfEnvName string `json:"dynaconfEnvName"`
+
 	// sets pytest -k args
 	Filter string `json:"filter,omitempty"`
+
 	// used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
 	Debug bool `json:"debug,omitempty"`
+
+	// sets values passed to IQE '--requirements' arg
+	Requirements *[]string `json:"requirements,omitempty"`
+
+	// sets values passed to IQE '--requirements-priority' arg
+	RequirementsPriority *[]string `json:"requirementsPriority,omitempty"`
+
+	// sets values passed to IQE '--test-importance' arg
+	TestImportance *[]string `json:"testImportance,omitempty"`
 }
 
 type UiSpec struct {
