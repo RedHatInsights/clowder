@@ -19,6 +19,7 @@ import (
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -207,6 +208,16 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
+		Resources: core.ResourceRequirements{
+			Limits: core.ResourceList{
+				"memory": *resource.NewQuantity(500, resource.BinarySI),
+				"cpu":    *resource.NewQuantity(1, resource.BinarySI),
+			},
+			Requests: core.ResourceList{
+				"memory": *resource.NewQuantity(384, resource.BinarySI),
+				"cpu":    *resource.NewMilliQuantity(100, resource.DecimalSI),
+			},
+		},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
@@ -316,6 +327,16 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
+		Resources: core.ResourceRequirements{
+			Limits: core.ResourceList{
+				"memory": *resource.NewQuantity(500, resource.BinarySI),
+				"cpu":    *resource.NewQuantity(1, resource.BinarySI),
+			},
+			Requests: core.ResourceList{
+				"memory": *resource.NewQuantity(384, resource.BinarySI),
+				"cpu":    *resource.NewMilliQuantity(100, resource.DecimalSI),
+			},
+		},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
