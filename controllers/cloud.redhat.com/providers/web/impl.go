@@ -210,12 +210,12 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": *resource.NewQuantity(500, resource.BinarySI),
-				"cpu":    *resource.NewQuantity(1, resource.BinarySI),
+				"memory": resource.MustParse("500Mi"),
+				"cpu":    resource.MustParse("1"),
 			},
 			Requests: core.ResourceList{
-				"memory": *resource.NewQuantity(384, resource.BinarySI),
-				"cpu":    *resource.NewMilliQuantity(100, resource.DecimalSI),
+				"memory": resource.MustParse("384Mi"),
+				"cpu":    resource.MustParse("100m"),
 			},
 		},
 	}
@@ -329,12 +329,12 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": *resource.NewQuantity(500, resource.BinarySI),
-				"cpu":    *resource.NewQuantity(1, resource.BinarySI),
+				"memory": resource.MustParse("500Mi"),
+				"cpu":    resource.MustParse("1"),
 			},
 			Requests: core.ResourceList{
-				"memory": *resource.NewQuantity(384, resource.BinarySI),
-				"cpu":    *resource.NewMilliQuantity(100, resource.DecimalSI),
+				"memory": resource.MustParse("384Mi"),
+				"cpu":    resource.MustParse("100m"),
 			},
 		},
 	}
