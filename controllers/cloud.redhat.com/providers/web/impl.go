@@ -210,11 +210,11 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("500Mi"),
+				"memory": resource.MustParse("750Mi"),
 				"cpu":    resource.MustParse("1"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("384Mi"),
+				"memory": resource.MustParse("400Mi"),
 				"cpu":    resource.MustParse("100m"),
 			},
 		},
