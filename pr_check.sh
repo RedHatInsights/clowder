@@ -2,6 +2,25 @@
 
 go version
 
+make manifests kustomize controller-gen
+bin/kustomize build config/deployment-template | ./manifest2template.py --mutate > test-deploy-mutate.yml
+bin/kustomize build config/deployment-template | ./manifest2template.py > test-deploy.yml
+
+diff -u test-deploy-mutate.yml deploy-mutate.yml
+
+if [[ $? == 1 ]]; then
+    echo "deploy-mutate.yml needs to be updated"
+    exit 1
+fi
+
+diff -u test-deploy.yml deploy.yml
+
+if [[ $? == 1 ]]; then
+    echo "deploy.yml needs to be updated"
+    exit 1
+fi
+
+
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 
 while read line; do
