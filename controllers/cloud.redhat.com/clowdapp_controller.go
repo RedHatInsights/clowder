@@ -467,7 +467,7 @@ func updateMetadata(app *crd.ClowdApp, appConfig *config.AppConfig) {
 
 	appConfig.Metadata = &metadata
 
-	appConfig.Metadata.Name = app.Name
+	appConfig.Metadata.Name = &app.Name
 }
 
 func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.Provider, a *crd.ClowdApp) error {

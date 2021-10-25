@@ -635,7 +635,7 @@ func TestCreateClowdApp(t *testing.T) {
 }
 
 func metadataValidation(t *testing.T, app *crd.ClowdApp, jsonContent *config.AppConfig) {
-	assert.Equal(t, jsonContent.Metadata.Name, app.Name)
+	assert.Equal(t, *jsonContent.Metadata.Name, app.Name)
 
 	for _, deployment := range app.Spec.Deployments {
 		expected := config.DeploymentMetadata{
