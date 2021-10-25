@@ -25,7 +25,6 @@ import (
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
 
-	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -229,19 +228,6 @@ type DatabaseConfig struct {
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
-
-	TShirtSizeDefinitions *TShirtSizeDefinitions `json:"tShirtSizeDefinitions,omitempty"`
-}
-
-type TShirtSizeDefinitions struct {
-	// Small size definition
-	Small string `json:"small"`
-
-	// Medium size definition
-	Medium string `json:"medium"`
-
-	// Large size definition
-	Large string `json:"large"`
 }
 
 // LoggingMode details the mode of operation of the Clowder Logging Provider
@@ -471,7 +457,7 @@ type ProvidersConfig struct {
 // MinioStatus defines the status of a minio instance in local mode.
 type MinioStatus struct {
 	// A reference to standard k8s secret.
-	Credentials core.SecretReference `json:"credentials"`
+	Credentials v1.SecretReference `json:"credentials"`
 
 	// The hostname of a Minio instance.
 	Hostname string `json:"hostname"`

@@ -30,6 +30,12 @@ var LocalDBPVC = rc.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.Persi
 // LocalDBSecret is the ident referring to the local DB secret object.
 var LocalDBSecret = rc.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
 
+const (
+	DB_SMALL  = "1Gi"
+	DB_MEDIUM = "3Gi"
+	DB_LARGE  = "5Gi"
+)
+
 type localDbProvider struct {
 	providers.Provider
 	Config config.DatabaseConfig
@@ -130,16 +136,16 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 
 		var size string
-		if db.Env.Spec.Providers.Database.TShirtSizeDefinitions == nil || app.Spec.Database.DBTShirtSize == "" {
-			size = "1Gi"
+		if app.Spec.Database.DBTShirtSize == "" {
+			size = DB_SMALL
 		} else {
 			switch app.Spec.Database.DBTShirtSize {
 			case "small":
-				size = db.Env.Spec.Providers.Database.TShirtSizeDefinitions.Small
+				size = DB_SMALL
 			case "medium":
-				size = db.Env.Spec.Providers.Database.TShirtSizeDefinitions.Medium
+				size = DB_MEDIUM
 			case "large":
-				size = db.Env.Spec.Providers.Database.TShirtSizeDefinitions.Large
+				size = DB_LARGE
 			}
 		}
 
