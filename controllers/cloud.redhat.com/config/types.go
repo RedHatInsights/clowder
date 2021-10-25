@@ -239,11 +239,11 @@ func (j *ObjectStoreBucket) UnmarshalJSON(b []byte) error {
 
 // Arbitrary metadata pertaining to the application application
 type AppMetadata struct {
-	// The name of the ClowdApp
-	Name string `json:"name,omitempty"`
-
 	// Metadata pertaining to an application's deployments
 	Deployments []DeploymentMetadata `json:"deployments,omitempty"`
+
+	// Name of the ClowdApp
+	Name *string `json:"name,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
