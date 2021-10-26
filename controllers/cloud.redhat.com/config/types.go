@@ -242,6 +242,9 @@ type AppMetadata struct {
 	// Metadata pertaining to an application's deployments
 	Deployments []DeploymentMetadata `json:"deployments,omitempty"`
 
+	// Name of the ClowdEnvironment this ClowdApp runs in
+	EnvName *string `json:"envName,omitempty"`
+
 	// Name of the ClowdApp
 	Name *string `json:"name,omitempty"`
 }

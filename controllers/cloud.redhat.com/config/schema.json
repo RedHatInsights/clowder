@@ -100,6 +100,10 @@
                     "description": "Name of the ClowdApp",
                     "type": "string"
                 },
+                "envName": {
+                    "description": "Name of the ClowdEnvironment this ClowdApp runs in",
+                    "type": "string"
+                },
                 "deployments": {
                     "description": "Metadata pertaining to an application's deployments",
                     "type": "array",
