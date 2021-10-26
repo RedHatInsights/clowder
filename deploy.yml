@@ -5575,18 +5575,24 @@ objects:
                     type: object
                   type: array
                 deployments:
-                  description: DeploymentStatus defines Overall and ready deployment
-                    counts
                   properties:
                     managedDeployments:
+                      format: int32
+                      type: integer
+                    managedTopics:
                       format: int32
                       type: integer
                     readyDeployments:
                       format: int32
                       type: integer
+                    readyTopics:
+                      format: int32
+                      type: integer
                   required:
                   - managedDeployments
+                  - managedTopics
                   - readyDeployments
+                  - readyTopics
                   type: object
                 generation:
                   format: int64

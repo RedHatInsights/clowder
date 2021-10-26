@@ -1,11 +1,5 @@
 package common
 
-// DeploymentStatus defines Overall and ready deployment counts
-type DeploymentStatus struct {
-	ManagedDeployments int32 `json:"managedDeployments"`
-	ReadyDeployments   int32 `json:"readyDeployments"`
-}
-
 // Int32Ptr returns a pointer to an int32 version of n
 func Int32Ptr(n int) *int32 {
 	t, err := Int32(n)

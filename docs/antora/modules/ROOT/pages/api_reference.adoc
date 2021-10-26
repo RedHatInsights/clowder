@@ -41,6 +41,24 @@ AppInfo details information about a specific app.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appresourcestatus"]
+==== AppResourceStatus 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappstatus[$$ClowdAppStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`managedDeployments`* __integer__ | 
+| *`readyDeployments`* __integer__ | 
+|===
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp"]
 ==== ClowdApp 
 
@@ -349,6 +367,26 @@ DeploymentInfo defailts information about a specific deployment.
 | *`name`* __string__ | 
 | *`hostname`* __string__ | 
 | *`port`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-envresourcestatus"]
+==== EnvResourceStatus 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus[$$ClowdEnvironmentStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`managedDeployments`* __integer__ | 
+| *`readyDeployments`* __integer__ | 
+| *`managedTopics`* __integer__ | 
+| *`readyTopics`* __integer__ | 
 |===
 
 

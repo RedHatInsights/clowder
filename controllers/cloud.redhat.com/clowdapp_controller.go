@@ -213,7 +213,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if statusErr := SetDeploymentStatus(ctx, r.Client, &app); statusErr != nil {
+	if statusErr := SetAppResourceStatus(ctx, r.Client, &app); statusErr != nil {
 		return ctrl.Result{}, err
 	}
 
