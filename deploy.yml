@@ -5256,6 +5256,10 @@ objects:
                         prometheus:
                           description: Prometheus specific configuration
                           properties:
+                            appInterfaceHostname:
+                              description: Specify prometheus hostname when in app-interface
+                                mode
+                              type: string
                             deploy:
                               description: Determines whether to deploy prometheus
                                 in operator mode
@@ -5599,6 +5603,15 @@ objects:
                   type: integer
                 hostname:
                   type: string
+                prometheus:
+                  description: PrometheusStatus provides info on how to connect to
+                    Prometheus
+                  properties:
+                    hostname:
+                      type: string
+                  required:
+                  - hostname
+                  type: object
                 ready:
                   type: boolean
                 targetNamespace:

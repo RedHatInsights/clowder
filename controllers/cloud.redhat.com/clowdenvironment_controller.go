@@ -233,6 +233,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
+	setPrometheusStatus(&env)
+
 	env.Status.Ready = env.IsReady()
 	env.Status.Generation = env.Generation
 
@@ -264,6 +266,18 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	return ctrl.Result{Requeue: requeue}, nil
+}
+
+func setPrometheusStatus(env *crd.ClowdEnvironment) {
+	var hostname string
+
+	if env.Spec.Providers.Metrics.Mode == "app-interface" {
+		hostname = env.Spec.Providers.Metrics.Prometheus.AppInterfaceHostname
+	} else {
+		hostname = fmt.Sprintf("prometheus-operated.%s.svc.local", env.Status.TargetNamespace)
+	}
+
+	env.Status.Prometheus = crd.PrometheusStatus{Hostname: hostname}
 }
 
 func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {

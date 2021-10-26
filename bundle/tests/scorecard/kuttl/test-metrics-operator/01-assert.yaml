@@ -1,4 +1,12 @@
 ---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-metrics-operator
+status:
+  prometheus:
+    hostname: prometheus-operated.test-metrics-operator.svc.local
+---
 apiVersion: v1
 kind: Secret
 metadata:
