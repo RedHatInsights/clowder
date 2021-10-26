@@ -448,16 +448,16 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Conditions      []ClowdCondition    `json:"conditions,omitempty"`
-	TargetNamespace string              `json:"targetNamespace,omitempty"`
-	Ready           bool                `json:"ready,omitempty"`
-	Deployments     EnvDeploymentStatus `json:"deployments,omitempty"`
-	Apps            []AppInfo           `json:"apps,omitempty"`
-	Generation      int64               `json:"generation,omitempty"`
-	Hostname        string              `json:"hostname,omitempty"`
+	Conditions      []ClowdCondition  `json:"conditions,omitempty"`
+	TargetNamespace string            `json:"targetNamespace,omitempty"`
+	Ready           bool              `json:"ready,omitempty"`
+	Deployments     EnvResourceStatus `json:"deployments,omitempty"`
+	Apps            []AppInfo         `json:"apps,omitempty"`
+	Generation      int64             `json:"generation,omitempty"`
+	Hostname        string            `json:"hostname,omitempty"`
 }
 
-type EnvDeploymentStatus struct {
+type EnvResourceStatus struct {
 	ManagedDeployments int32 `json:"managedDeployments"`
 	ReadyDeployments   int32 `json:"readyDeployments"`
 	ManagedTopics      int32 `json:"managedTopics"`
@@ -555,7 +555,7 @@ func (i *ClowdEnvironment) GetUID() types.UID {
 }
 
 // GetDeploymentStatus returns the Status.Deployments member
-func (i *ClowdEnvironment) GetDeploymentStatus() *EnvDeploymentStatus {
+func (i *ClowdEnvironment) GetDeploymentStatus() *EnvResourceStatus {
 	return &i.Status.Deployments
 }
 

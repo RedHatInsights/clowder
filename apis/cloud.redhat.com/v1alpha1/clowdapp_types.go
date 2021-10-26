@@ -363,12 +363,12 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments AppDeploymentStatus `json:"deployments,omitempty"`
-	Ready       bool                `json:"ready"`
-	Conditions  []ClowdCondition    `json:"conditions,omitempty"`
+	Deployments AppResourceStatus `json:"deployments,omitempty"`
+	Ready       bool              `json:"ready"`
+	Conditions  []ClowdCondition  `json:"conditions,omitempty"`
 }
 
-type AppDeploymentStatus struct {
+type AppResourceStatus struct {
 	ManagedDeployments int32 `json:"managedDeployments"`
 	ReadyDeployments   int32 `json:"readyDeployments"`
 }
@@ -470,7 +470,7 @@ func (i *ClowdApp) GetUID() types.UID {
 }
 
 // GetDeploymentStatus returns the Status.Deployments member
-func (i *ClowdApp) GetDeploymentStatus() *AppDeploymentStatus {
+func (i *ClowdApp) GetDeploymentStatus() *AppResourceStatus {
 	return &i.Status.Deployments
 }
 
