@@ -29,6 +29,10 @@ import (
 // deployed along with the parent pod and is used to carry out one time
 // initialization procedures.
 type InitContainer struct {
+	// Image refers to the container image used to create the init container
+	// (if different from the primary pod image).
+	Image string `json:"image,omitempty"`
+
 	// A list of commands to run inside the parent Pod.
 	Command []string `json:"command,omitempty"`
 

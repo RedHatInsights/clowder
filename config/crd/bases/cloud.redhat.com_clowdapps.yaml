@@ -401,6 +401,11 @@ spec:
                                   - name
                                   type: object
                                 type: array
+                              image:
+                                description: Image refers to the container image used
+                                  to create the init container (if different from
+                                  the primary pod image).
+                                type: string
                               inheritEnv:
                                 description: If true, inheirts the environment variables
                                   from the parent pod. specification
@@ -2692,6 +2697,11 @@ spec:
                                   - name
                                   type: object
                                 type: array
+                              image:
+                                description: Image refers to the container image used
+                                  to create the init container (if different from
+                                  the primary pod image).
+                                type: string
                               inheritEnv:
                                 description: If true, inheirts the environment variables
                                   from the parent pod. specification

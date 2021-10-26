@@ -1,0 +1,50 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-init-container-image
+spec:
+  targetNamespace: test-init-container-image
+  providers:
+    web:
+      port: 8000
+      mode: none
+    metrics:
+      port: 9000
+      mode: none
+    db:
+      mode: none
+    inMemoryDb:
+      mode: none
+    kafka:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-init-container-image
+  namespace: test-init-container-image
+spec:
+  envName: test-init-container-image
+  deployments:
+  - name: overridden
+    podSpec:
+      image: k8s.gcr.io/pause:3.2
+      initContainers:
+        - image: k8s.gcr.io/pause:3.1
+  - name: app
+    podSpec:
+      image: k8s.gcr.io/pause:3.2
+      initContainers:
+      - {}
