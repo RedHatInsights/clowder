@@ -1,7 +1,6 @@
 package object
 
 import (
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -13,7 +12,6 @@ type ClowdObject interface {
 	GetClowdNamespace() string
 	GetClowdName() string
 	GetUID() types.UID
-	GetDeploymentStatus() *common.DeploymentStatus
 	GetClowdSAName() string
 	GetPrimaryLabel() string
 }
