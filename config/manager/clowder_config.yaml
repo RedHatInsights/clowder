@@ -7,16 +7,16 @@ data:
     {
         "debugOptions": {
             "trigger": {
-                "diff": "false"
+                "diff": false
             },
             "cache": {
-                "create": "false",
-                "update": "false",
-                "apply": "false"
+                "create": false,
+                "update": false,
+                "apply": false
             }
         },
         "features": {
-            "createServiceMonitor": "true",
-            "watchStrimziResources": "true"
+            "createServiceMonitor": true,
+            "watchStrimziResources": true
         }
     }
