@@ -326,10 +326,7 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	if err != nil {
 		return false, err
 	}
-	if stats.ManagedDeployments == stats.ReadyDeployments {
-		return true, nil
-	}
-	if stats.ManagedTopics == stats.ReadyTopics {
+	if stats.ManagedDeployments == stats.ReadyDeployments && stats.ManagedTopics == stats.ReadyTopics {
 		return true, nil
 	}
 	return false, nil
