@@ -18,10 +18,6 @@ spec:
     db:
       mode: local
       pvc: true
-      tShirtSizeDefinitions:
-        small: 2Gi
-        medium: 3Gi
-        large: 4Gi
     logging:
       mode: none
     objectStore:
