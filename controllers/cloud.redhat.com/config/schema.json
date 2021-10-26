@@ -96,6 +96,10 @@
             "type": "object",
             "description": "Arbitrary metadata pertaining to the application application",
             "properties": {
+                "name": {
+                    "description": "Name of the ClowdApp",
+                    "type": "string"
+                },
                 "deployments": {
                     "description": "Metadata pertaining to an application's deployments",
                     "type": "array",
