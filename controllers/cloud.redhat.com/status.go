@@ -199,7 +199,7 @@ func countKafkaConnects(ctx context.Context, client client.Client, o object.Clow
 
 // SetEnvResourceStatus the status on the passed ClowdObject interface.
 func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) error {
-	stats, err := GetEnvDeploymentFigures(ctx, client, o)
+	stats, err := GetEnvResourceFigures(ctx, client, o)
 	if err != nil {
 		return err
 	}
@@ -213,7 +213,7 @@ func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
-func GetEnvDeploymentFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, error) {
+func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, error) {
 
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
@@ -261,7 +261,7 @@ func GetEnvDeploymentFigures(ctx context.Context, client client.Client, o *crd.C
 }
 
 func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) (bool, error) {
-	stats, err := GetAppDeploymentFigures(ctx, client, o)
+	stats, err := GetAppResourceFigures(ctx, client, o)
 	if err != nil {
 		return false, err
 	}
@@ -273,7 +273,7 @@ func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 
 // SetAppResourceStatus the status on the passed ClowdObject interface.
 func SetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) error {
-	stats, err := GetAppDeploymentFigures(ctx, client, o)
+	stats, err := GetAppResourceFigures(ctx, client, o)
 	if err != nil {
 		return err
 	}
@@ -285,7 +285,7 @@ func SetAppResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
-func GetAppDeploymentFigures(ctx context.Context, client client.Client, o *crd.ClowdApp) (crd.AppResourceStatus, error) {
+func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdApp) (crd.AppResourceStatus, error) {
 
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
@@ -322,7 +322,7 @@ func GetAppDeploymentFigures(ctx context.Context, client client.Client, o *crd.C
 }
 
 func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (bool, error) {
-	stats, err := GetEnvDeploymentFigures(ctx, client, o)
+	stats, err := GetEnvResourceFigures(ctx, client, o)
 	if err != nil {
 		return false, err
 	}
