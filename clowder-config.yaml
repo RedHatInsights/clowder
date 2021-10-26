@@ -9,4 +9,4 @@ data:
     }
 kind: ConfigMap
 metadata:
-  name: clowder-config
+  name: clowder-clowder-config
