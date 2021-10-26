@@ -149,9 +149,13 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 	containerList := make([]core.Container, len(ics))
 
 	for i, ic := range ics {
+		image := c.Image
+		if ic.Image != "" {
+			image = ic.Image
+		}
 		icStruct := core.Container{
 			Name:            nn.Name + "-init",
-			Image:           c.Image,
+			Image:           image,
 			Command:         ic.Command,
 			Args:            ic.Args,
 			Resources:       c.Resources,

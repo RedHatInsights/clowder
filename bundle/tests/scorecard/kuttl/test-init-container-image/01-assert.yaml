@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-init-container-image-overridden
+  namespace: test-init-container-image
+spec:
+  template:
+    spec:
+      containers:
+      - image: k8s.gcr.io/pause:3.2
+      initContainers:
+      - image: k8s.gcr.io/pause:3.1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-init-container-image-app
+  namespace: test-init-container-image
+spec:
+  template:
+    spec:
+      containers:
+      - image: k8s.gcr.io/pause:3.2
+      initContainers:
+      - image: k8s.gcr.io/pause:3.2
