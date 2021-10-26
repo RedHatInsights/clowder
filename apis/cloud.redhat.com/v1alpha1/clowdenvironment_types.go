@@ -72,6 +72,9 @@ type MetricsMode string
 type PrometheusConfig struct {
 	// Determines whether to deploy prometheus in operator mode
 	Deploy bool `json:"deploy,omitempty"`
+
+	// Specify prometheus hostname when in app-interface mode
+	AppInterfaceHostname string `json:"appInterfaceHostname,omitempty"`
 }
 
 // MetricsConfig configures the Clowder provider controlling the creation of
@@ -455,6 +458,7 @@ type ClowdEnvironmentStatus struct {
 	Apps            []AppInfo         `json:"apps,omitempty"`
 	Generation      int64             `json:"generation,omitempty"`
 	Hostname        string            `json:"hostname,omitempty"`
+	Prometheus      PrometheusStatus  `json:"prometheus,omitempty"`
 }
 
 type EnvResourceStatus struct {
@@ -462,6 +466,11 @@ type EnvResourceStatus struct {
 	ReadyDeployments   int32 `json:"readyDeployments"`
 	ManagedTopics      int32 `json:"managedTopics"`
 	ReadyTopics        int32 `json:"readyTopics"`
+}
+
+// PrometheusStatus provides info on how to connect to Prometheus
+type PrometheusStatus struct {
+	Hostname string `json:"hostname"`
 }
 
 // AppInfo details information about a specific app.

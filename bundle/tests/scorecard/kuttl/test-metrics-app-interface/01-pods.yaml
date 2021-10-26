@@ -13,6 +13,8 @@ spec:
       port: 9000
       mode: app-interface
       path: "/metrics"
+      prometheus:
+        appInterfaceHostname: cool-name-12345
     kafka:
       mode: none
     db:
