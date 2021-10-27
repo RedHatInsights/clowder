@@ -86,7 +86,7 @@ objects:
                     the configuration of which will be made available to all the pods
                     in the ClowdApp.
                   properties:
-                    dbTShirtSize:
+                    dbVolumeSize:
                       description: T-shirt size, one of small, medium, large
                       enum:
                       - small

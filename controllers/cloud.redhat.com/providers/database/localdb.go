@@ -130,10 +130,10 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		}
 
 		var size string
-		if app.Spec.Database.DBTShirtSize == "" {
+		if app.Spec.Database.DBVolumeSize == "" {
 			size = providers.DB_DEFAULT
 		} else {
-			switch app.Spec.Database.DBTShirtSize {
+			switch app.Spec.Database.DBVolumeSize {
 			case "small":
 				size = providers.DB_SMALL
 			case "medium":

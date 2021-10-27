@@ -56,7 +56,7 @@ type InitContainer struct {
 
 // K8sAccessLevel defines the access level for the deployment, one of 'small', 'medium' or 'large'
 // +kubebuilder:validation:Enum={"small", "medium", "large"}
-type TShirtSize string
+type VolumeSize string
 
 // DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 type DatabaseSpec struct {
@@ -73,7 +73,7 @@ type DatabaseSpec struct {
 	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
 
 	// T-shirt size, one of small, medium, large
-	DBTShirtSize TShirtSize `json:"dbTShirtSize,omitempty"`
+	DBVolumeSize VolumeSize `json:"dbVolumeSize,omitempty"`
 }
 
 // Job defines a ClowdJob

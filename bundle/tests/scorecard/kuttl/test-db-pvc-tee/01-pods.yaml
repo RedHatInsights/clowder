@@ -49,4 +49,4 @@ spec:
     name: app-a
     version: 12
     pvc: true
-    dbTShirtSize: small
+    dbVolumeSize: small
