@@ -57,7 +57,6 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 			Name:          "metrics",
 			ContainerPort: env.Spec.Providers.Metrics.Port,
 		}},
-		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
 	if (core.Probe{}) != livenessProbe {

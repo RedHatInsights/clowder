@@ -75,7 +75,6 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 			Name:          "metrics",
 			ContainerPort: env.Spec.Providers.Metrics.Port,
 		}},
-		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
 	// set service account for pod

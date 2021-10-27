@@ -100,7 +100,6 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Env:             envvar,
 		Resources:       ProcessResources(&pod, env),
 		VolumeMounts:    pod.VolumeMounts,
-		ImagePullPolicy: core.PullIfNotPresent,
 	}
 
 	if (core.Probe{}) != livenessProbe {
