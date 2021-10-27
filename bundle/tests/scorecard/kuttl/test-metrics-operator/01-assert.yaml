@@ -5,7 +5,7 @@ metadata:
   name: test-metrics-operator
 status:
   prometheus:
-    hostname: prometheus-operated.test-metrics-operator.svc.local
+    hostname: prometheus-operated.test-metrics-operator.svc.cluster.local
 ---
 apiVersion: v1
 kind: Secret

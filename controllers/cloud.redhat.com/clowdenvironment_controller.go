@@ -274,7 +274,7 @@ func setPrometheusStatus(env *crd.ClowdEnvironment) {
 	if env.Spec.Providers.Metrics.Mode == "app-interface" {
 		hostname = env.Spec.Providers.Metrics.Prometheus.AppInterfaceHostname
 	} else {
-		hostname = fmt.Sprintf("prometheus-operated.%s.svc.local", env.Status.TargetNamespace)
+		hostname = fmt.Sprintf("prometheus-operated.%s.svc.cluster.local", env.Status.TargetNamespace)
 	}
 
 	env.Status.Prometheus = crd.PrometheusStatus{Hostname: hostname}
