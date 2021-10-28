@@ -123,7 +123,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 			},
 			Requests: core.ResourceList{
 				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("200m"),
+				"cpu":    resource.MustParse("600m"),
 			},
 		},
 		VolumeMounts: []core.VolumeMount{{
