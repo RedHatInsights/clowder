@@ -75,7 +75,7 @@ spec:
           - boo
     - name: hello-cji
       # Testing incorrect specs, should be thrown away
-      # becuase it goes to a different controller
+      # because it goes to a different controller
       # without a schedule attribute
       suspend: false
       successfulJobsHistoryLimit: 1

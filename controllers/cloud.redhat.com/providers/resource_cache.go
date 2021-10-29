@@ -175,7 +175,7 @@ func NewObjectCache(ctx context.Context, kclient client.Client, scheme *runtime.
 }
 
 // Create first attempts to fetch the object from k8s for initial population. If this fails, the
-// blank object is stored in the cache it is imperitive that the user of this function call Create
+// blank object is stored in the cache it is imperative that the user of this function call Create
 // before modifying the obejct they wish to be placed in the cache.
 func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedName, object client.Object) error {
 
