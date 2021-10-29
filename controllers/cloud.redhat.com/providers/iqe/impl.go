@@ -38,7 +38,7 @@ func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocat
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
-	// Becuase the ns name now has a suffix attached, we need to specify
+	// Because the ns name now has a suffix attached, we need to specify
 	// that the secret name does not include it (and can't because the
 	// env creates the secret)
 	secretName := cji.GetIQEName()

@@ -18,22 +18,22 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// LocalFFDeployment is the ident refering to the local Feature Flags deployment object.
+// LocalFFDeployment is the ident referring to the local Feature Flags deployment object.
 var LocalFFDeployment = providers.NewSingleResourceIdent(ProvName, "ff_deployment", &apps.Deployment{})
 
-// LocalFFService is the ident refering to the local Feature Flags service object.
+// LocalFFService is the ident referring to the local Feature Flags service object.
 var LocalFFService = providers.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
 
-// LocalFFDBDeployment is the ident refering to the local Feature Flags DB deployment object.
+// LocalFFDBDeployment is the ident referring to the local Feature Flags DB deployment object.
 var LocalFFDBDeployment = providers.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
 
-// LocalFFDBService is the ident refering to the local Feature Flags DB service object.
+// LocalFFDBService is the ident referring to the local Feature Flags DB service object.
 var LocalFFDBService = providers.NewSingleResourceIdent(ProvName, "ff_db_service", &core.Service{})
 
-// LocalFFDBPVC is the ident refering to the local Feature Flags DB PVC object.
+// LocalFFDBPVC is the ident referring to the local Feature Flags DB PVC object.
 var LocalFFDBPVC = providers.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.PersistentVolumeClaim{})
 
-// LocalFFDBSecret is the ident refering to the local Feature Flags DB secret object.
+// LocalFFDBSecret is the ident referring to the local Feature Flags DB secret object.
 var LocalFFDBSecret = providers.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
 
 type localFeatureFlagsProvider struct {

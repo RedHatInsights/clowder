@@ -16,16 +16,16 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// LocalDBDeployment is the ident refering to the local DB deployment object.
+// LocalDBDeployment is the ident referring to the local DB deployment object.
 var LocalDBDeployment = providers.NewSingleResourceIdent(ProvName, "local_db_deployment", &apps.Deployment{})
 
-// LocalDBService is the ident refering to the local DB service object.
+// LocalDBService is the ident referring to the local DB service object.
 var LocalDBService = providers.NewSingleResourceIdent(ProvName, "local_db_service", &core.Service{})
 
-// LocalDBPVC is the ident refering to the local DB PVC object.
+// LocalDBPVC is the ident referring to the local DB PVC object.
 var LocalDBPVC = providers.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.PersistentVolumeClaim{})
 
-// LocalDBSecret is the ident refering to the local DB secret object.
+// LocalDBSecret is the ident referring to the local DB secret object.
 var LocalDBSecret = providers.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
 
 type localDbProvider struct {
