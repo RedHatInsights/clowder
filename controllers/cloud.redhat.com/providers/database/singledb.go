@@ -17,6 +17,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -31,6 +32,9 @@ var SingleDBPVC = providers.NewSingleResourceIdent(ProvName, "single_db_pvc", &c
 
 // SingleDBSecret is the ident referring to the local DB secret object.
 var SingleDBSecret = providers.NewSingleResourceIdent(ProvName, "single_db_secret", &core.Secret{})
+
+// SingleDBSecret is the ident referring to the local DB secret object.
+var SingleDBAppSecret = providers.NewSingleResourceIdent(ProvName, "single_db_app_secret", &core.Secret{})
 
 type singleDbProvider struct {
 	providers.Provider
@@ -178,6 +182,35 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 		}
 	}
 
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%v-db", app.Name),
+		Namespace: app.Namespace,
+	}
+
+	secret := &core.Secret{}
+	if err := db.Cache.Create(SingleDBAppSecret, nn, secret); err != nil {
+		return err
+	}
+
+	secret.StringData = map[string]string{
+		"hostname": host,
+		"port":     "5432",
+		"username": db.Config.Username,
+		"password": db.Config.Password,
+		"pgPass":   db.Config.AdminPassword,
+		"name":     app.Spec.Database.Name,
+	}
+
+	secret.Name = nn.Name
+	secret.Namespace = nn.Namespace
+	secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
+	secret.Type = core.SecretTypeOpaque
+
+	if err := db.Cache.Update(SingleDBAppSecret, secret); err != nil {
+		return err
+	}
+
+	db.Config.Name = app.Spec.Database.Name
 	c.Database = &db.Config
 
 	return nil
