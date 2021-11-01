@@ -336,9 +336,43 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata"}
 ```
 
-| Property                    | Type    | Required | Nullable       | Defined by                                                                                                                                                                      |
-| :-------------------------- | ------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [deployments](#deployments) | `array` | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-deployments.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments") |
+| Property                    | Type     | Required | Nullable       | Defined by                                                                                                                                                                      |
+| :-------------------------- | -------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [name](#name)               | `string` | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/name")               |
+| [envName](#envname)         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-envname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/envName")         |
+| [deployments](#deployments) | `array`  | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-deployments.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments") |
+
+### name
+
+Name of the ClowdApp
+
+
+`name`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appmetadata-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/name")
+
+#### name Type
+
+`string`
+
+### envName
+
+Name of the ClowdEnvironment this ClowdApp runs in
+
+
+`envName`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appmetadata-properties-envname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/envName")
+
+#### envName Type
+
+`string`
 
 ### deployments
 
@@ -366,7 +400,7 @@ Reference this group by using
 
 | Property        | Type     | Required | Nullable       | Defined by                                                                                                                                                                        |
 | :-------------- | -------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)   | `string` | Required | cannot be null | [AppConfig](schema-definitions-deploymentmetadata-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DeploymentMetadata/properties/name")   |
+| [name](#name-1) | `string` | Required | cannot be null | [AppConfig](schema-definitions-deploymentmetadata-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DeploymentMetadata/properties/name")   |
 | [image](#image) | `string` | Required | cannot be null | [AppConfig](schema-definitions-deploymentmetadata-properties-image.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DeploymentMetadata/properties/image") |
 
 ### name
@@ -686,7 +720,7 @@ Reference this group by using
 | Property                        | Type     | Required | Nullable       | Defined by                                                                                                                                                                          |
 | :------------------------------ | -------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [requestedName](#requestedname) | `string` | Required | cannot be null | [AppConfig](schema-definitions-topicconfig-properties-requestedname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/requestedName") |
-| [name](#name-1)                 | `string` | Required | cannot be null | [AppConfig](schema-definitions-topicconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/name")                   |
+| [name](#name-2)                 | `string` | Required | cannot be null | [AppConfig](schema-definitions-topicconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/TopicConfig/properties/name")                   |
 
 ### requestedName
 
@@ -730,7 +764,7 @@ Reference this group by using
 
 | Property                        | Type      | Required | Nullable       | Defined by                                                                                                                                                                                |
 | :------------------------------ | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name-2)                 | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")                   |
+| [name](#name-3)                 | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")                   |
 | [username](#username-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
 | [password](#password-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
 | [hostname](#hostname-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")           |
@@ -898,7 +932,7 @@ Reference this group by using
 | [secretKey](#secretkey)           | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-secretkey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/secretKey")         |
 | [region](#region-1)               | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-region.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/region")               |
 | [requestedName](#requestedname-1) | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-requestedname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/requestedName") |
-| [name](#name-3)                   | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/name")                   |
+| [name](#name-4)                   | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/name")                   |
 
 ### accessKey
 
@@ -1270,7 +1304,7 @@ Reference this group by using
 
 | Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                              |
 | :---------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name-4)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
+| [name](#name-5)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
 | [hostname](#hostname-5) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
 | [port](#port-5)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
 | [app](#app)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
@@ -1349,7 +1383,7 @@ Reference this group by using
 
 | Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                                            |
 | :---------------------- | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name-5)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name")         |
+| [name](#name-6)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name")         |
 | [hostname](#hostname-6) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/hostname") |
 | [port](#port-6)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/port")         |
 | [app](#app-1)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/app")           |

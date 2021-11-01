@@ -103,7 +103,8 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		image = imgComponents[0] + ":" + tag
 	}
 
-	provutils.MakeLocalDB(dd, nn, app, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
+	labels := &map[string]string{"sub": "local_db"}
+	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
 
 	if err = db.Cache.Update(LocalDBDeployment, dd); err != nil {
 		return err
@@ -114,7 +115,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		return err
 	}
 
-	provutils.MakeLocalDBService(s, nn, app)
+	provutils.MakeLocalDBService(s, nn, app, labels)
 
 	if err = db.Cache.Update(LocalDBService, s); err != nil {
 		return err

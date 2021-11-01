@@ -37,6 +37,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 		kafka.LocalKafkaDeployment,
 		kafka.LocalZookeeperDeployment,
 		objectstore.MinioDeployment,
+		database.LocalDBDeployment,
 	}
 
 	for _, resourceIdent := range resourceIdentsToUpdate {

@@ -81,7 +81,8 @@ func TestLocalDBService(t *testing.T) {
 
 	s := core.Service{}
 
-	provutils.MakeLocalDBService(&s, nn, &app)
+	labels := &map[string]string{"sub": "test_db"}
+	provutils.MakeLocalDBService(&s, nn, &app, labels)
 
 	if s.Name != nn.Name {
 		t.Fatalf("Name %v did not match expected %v", s.Name, nn.Name)
@@ -123,7 +124,8 @@ func TestLocalDBDeployment(t *testing.T) {
 
 	image := "imagename:tag"
 
-	provutils.MakeLocalDB(&d, nn, &app, &cfg, image, true, "")
+	labels := &map[string]string{"sub": "test_db"}
+	provutils.MakeLocalDB(&d, nn, &app, labels, &cfg, image, true, "")
 
 	if d.Spec.Template.Spec.Containers[0].Image != image {
 		t.Fatalf("Image requested %v does not match the one in spec: %v ", image, d.Spec.Template.Spec.Containers[0].Image)

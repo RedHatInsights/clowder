@@ -235,7 +235,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	setPrometheusStatus(&env)
 
-	env.Status.Ready = env.IsReady()
+	ready, err := GetEnvResourceStatus(ctx, r.Client, &env)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	env.Status.Ready = ready
 	env.Status.Generation = env.Generation
 
 	if err := r.Client.Status().Update(ctx, &env); err != nil {

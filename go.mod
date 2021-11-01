@@ -7,6 +7,7 @@ require (
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/strimzi-client-go v0.24.0-1
 	github.com/go-logr/logr v0.3.0
+	github.com/lib/pq v1.10.3
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2

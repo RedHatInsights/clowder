@@ -442,6 +442,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`image`* __string__ | Image refers to the container image used to create the init container (if different from the primary pod image).
 | *`command`* __string array__ | A list of commands to run inside the parent Pod.
 | *`args`* __string array__ | A list of args to be passed to the init container.
 | *`inheritEnv`* __boolean__ | If true, inheirts the environment variables from the parent pod. specification
@@ -768,6 +769,24 @@ PrivateWebService is the definition of the private web service. There can be onl
 |===
 | Field | Description
 | *`deploy`* __boolean__ | Determines whether to deploy prometheus in operator mode
+| *`appInterfaceHostname`* __string__ | Specify prometheus hostname when in app-interface mode
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-prometheusstatus"]
+==== PrometheusStatus 
+
+PrometheusStatus provides info on how to connect to Prometheus
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus[$$ClowdEnvironmentStatus$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`hostname`* __string__ | 
 |===
 
 

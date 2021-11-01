@@ -173,7 +173,12 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
 	}
 
-	if !env.IsReady() {
+	ready, err := GetEnvResourceStatus(ctx, r.Client, &env)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if !ready {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
 		log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
