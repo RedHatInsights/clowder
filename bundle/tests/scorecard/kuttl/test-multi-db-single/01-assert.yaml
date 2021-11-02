@@ -9,3 +9,10 @@ spec:
     spec:
       containers:
         - image: quay.io/cloudservices/postgresql-rds:cyndi-12-1
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-multi-db-single
+status:
+  ready: true
