@@ -119,6 +119,7 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 
 	cj.Spec.JobTemplate.ObjectMeta.Labels = labels
 	cj.Spec.JobTemplate.Spec.Template = *pt
+	cj.Spec.JobTemplate.Spec.ActiveDeadlineSeconds = cronjob.ActiveDeadlineSeconds
 
 	if cronjob.ConcurrencyPolicy == "" {
 		cj.Spec.ConcurrencyPolicy = batch.AllowConcurrent

@@ -2474,6 +2474,11 @@ objects:
                       a CronJob if `schedule` is set and will deploy as a Job if it
                       is not set. Unsupported fields will be dropped from Jobs
                     properties:
+                      activeDeadlineSeconds:
+                        description: 'The activeDeadlineSeconds for the Job or CronJob.
+                          More info: https://kubernetes.io/docs/concepts/workloads/controllers/job/'
+                        format: int64
+                        type: integer
                       concurrencyPolicy:
                         description: Defines the concurrency policy for the CronJob,
                           defaults to Allow Only applies to Cronjobs
