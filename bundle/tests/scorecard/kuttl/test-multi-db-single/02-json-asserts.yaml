@@ -1,0 +1,10 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-multi-db-single app-c -o json > /tmp/test-multi-db-single
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-db-single | base64 -d > /tmp/test-multi-db-single-json
+
+- script: jq -r '.database.hostname == "test-multi-db-single-db.test-multi-db-single.svc"' -e < /tmp/test-multi-db-single-json
+- script: jq -r '.database.sslMode == "disable"' -e < /tmp/test-multi-db-single-json
