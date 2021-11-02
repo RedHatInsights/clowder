@@ -17,9 +17,43 @@ Arbitrary metadata pertaining to the application application
 
 # AppMetadata Properties
 
-| Property                    | Type    | Required | Nullable       | Defined by                                                                                                                                                                      |
-| :-------------------------- | ------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [deployments](#deployments) | `array` | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-deployments.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments") |
+| Property                    | Type     | Required | Nullable       | Defined by                                                                                                                                                                      |
+| :-------------------------- | -------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [name](#name)               | `string` | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/name")               |
+| [envName](#envname)         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-envname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/envName")         |
+| [deployments](#deployments) | `array`  | Optional | cannot be null | [AppConfig](schema-definitions-appmetadata-properties-deployments.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments") |
+
+## name
+
+Name of the ClowdApp
+
+
+`name`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appmetadata-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/name")
+
+### name Type
+
+`string`
+
+## envName
+
+Name of the ClowdEnvironment this ClowdApp runs in
+
+
+`envName`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appmetadata-properties-envname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/envName")
+
+### envName Type
+
+`string`
 
 ## deployments
 

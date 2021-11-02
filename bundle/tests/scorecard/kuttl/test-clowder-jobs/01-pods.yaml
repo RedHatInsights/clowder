@@ -50,6 +50,7 @@ spec:
       suspend: false 
       successfulJobsHistoryLimit: 2
       failedJobsHistoryLimit: 2
+      activeDeadlineSeconds: 6000
       podSpec:
         image: quay.io/psav/clowder-hello
         args:
@@ -78,6 +79,7 @@ spec:
       # because it goes to a different controller
       # without a schedule attribute
       suspend: false
+      activeDeadlineSeconds: 6000
       successfulJobsHistoryLimit: 1
       podSpec:
         image: busybox

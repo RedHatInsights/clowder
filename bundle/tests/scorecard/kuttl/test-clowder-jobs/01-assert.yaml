@@ -30,6 +30,7 @@ spec:
   suspend: false
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 6000
       template:
         spec:
           serviceAccount: puptoo-app
@@ -85,6 +86,7 @@ metadata:
   labels:
     job: puptoo-hello-cji
 spec:
+  activeDeadlineSeconds: 6000
   template:
     spec:
       serviceAccount: puptoo-app

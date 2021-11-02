@@ -101,6 +101,10 @@ type Job struct {
 
 	// Defines the StartingDeadlineSeconds for the CronJob
 	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
+
+	// The activeDeadlineSeconds for the Job or CronJob.
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/job/
+	ActiveDeadlineSeconds *int64 `json:"activeDeadlineSeconds,omitempty"`
 }
 
 // WebDeprecated defines a boolean flag to help distinguish from the newer WebServices

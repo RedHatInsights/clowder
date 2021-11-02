@@ -19,6 +19,7 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	j.ObjectMeta.Labels = labels
 	j.ObjectMeta.Labels["job"] = job.Name
 	j.Spec.Template.ObjectMeta.Labels = labels
+	j.Spec.ActiveDeadlineSeconds = job.ActiveDeadlineSeconds
 
 	pod := job.PodSpec
 
