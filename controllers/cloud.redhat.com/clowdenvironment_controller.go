@@ -276,6 +276,8 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if clowder_config.LoadedConfig.Features.WatchStrimziResources {
 		controller.Owns(&strimzi.Kafka{})
 		controller.Owns(&strimzi.KafkaConnect{})
+		controller.Owns(&strimzi.KafkaUser{})
+		controller.Owns(&strimzi.KafkaTopic{})
 	}
 
 	return controller.Complete(r)

@@ -309,6 +309,24 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 				}
 			}
 
+			if _, ok := e.ObjectOld.(*strimzi.KafkaTopic); ok {
+				if _, ok := e.ObjectNew.(*strimzi.KafkaTopic); ok {
+					return true
+				}
+			}
+
+			if _, ok := e.ObjectOld.(*strimzi.KafkaUser); ok {
+				if _, ok := e.ObjectNew.(*strimzi.KafkaUser); ok {
+					return true
+				}
+			}
+
+			if _, ok := e.ObjectOld.(*strimzi.KafkaConnect); ok {
+				if _, ok := e.ObjectNew.(*strimzi.KafkaConnect); ok {
+					return true
+				}
+			}
+
 			// Ignore updates to CR status in which case metadata.Generation does not change
 			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
 		},
