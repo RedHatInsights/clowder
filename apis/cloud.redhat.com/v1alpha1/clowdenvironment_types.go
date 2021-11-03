@@ -575,7 +575,15 @@ func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 
 // IsReady returns true when all the ManagedDeployments are Ready
 func (i *ClowdEnvironment) IsReady() bool {
-	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+	conditionCheck := false
+
+	for _, condition := range i.Status.Conditions {
+		if condition.Type == ReconciliationSuccessful {
+			conditionCheck = true
+		}
+	}
+
+	return i.Status.Ready && conditionCheck
 }
 
 // ConvertDeprecatedKafkaSpec converts values from the old Kafka provider spec into the new format

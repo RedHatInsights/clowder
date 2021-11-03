@@ -148,6 +148,7 @@ type k8sResource struct {
 	Object   client.Object
 	Update   utils.Updater
 	Status   bool
+	WriteNow bool
 	jsonData string
 }
 
@@ -244,9 +245,13 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 	return nil
 }
 
+type CacheOption struct {
+	WriteNow bool
+}
+
 // Update takes the item and tries to update the version in the cache. This will fail if the item is
 // not in the cache. A previous provider should have "created" the item before it can be updated.
-func (o *ObjectCache) Update(resourceIdent ResourceIdent, object client.Object) error {
+func (o *ObjectCache) Update(resourceIdent ResourceIdent, object client.Object, opts ...CacheOption) error {
 	if _, ok := o.data[resourceIdent]; !ok {
 		return fmt.Errorf("object cache not found, cannot update")
 	}
@@ -283,6 +288,23 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object client.Object) 
 			o.log.Info("UPDATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", "hidden")
 		} else {
 			o.log.Info("UPDATE resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "diff", string(jsonData))
+		}
+	}
+
+	for _, opt := range opts {
+		if opt.WriteNow {
+			o.data[resourceIdent][nn].WriteNow = true
+			o.log.Info("INSTANT APPLY resource ", "namespace", nn.Namespace, "name", nn.Name, "provider", resourceIdent.GetProvider(), "purpose", resourceIdent.GetPurpose(), "kind", object.GetObjectKind().GroupVersionKind().Kind, "update", o.data[resourceIdent][nn].Update)
+
+			i := o.data[resourceIdent][nn]
+			if err := i.Update.Apply(o.ctx, o.client, i.Object); err != nil {
+				return err
+			}
+			if i.Status {
+				if err := o.client.Status().Update(o.ctx, i.Object); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
@@ -399,6 +421,9 @@ func (o *ObjectCache) Status(resourceIdent ResourceIdent, object client.Object) 
 func (o *ObjectCache) ApplyAll() error {
 	for k, v := range o.data {
 		for n, i := range v {
+			if i.WriteNow {
+				continue
+			}
 			o.log.Info("APPLY resource ", "namespace", n.Namespace, "name", n.Name, "provider", k.GetProvider(), "purpose", k.GetPurpose(), "kind", i.Object.GetObjectKind().GroupVersionKind().Kind, "update", i.Update)
 			if clowder_config.LoadedConfig.DebugOptions.Cache.Apply {
 				jsonData, _ := json.MarshalIndent(i.Object, "", "  ")
@@ -416,6 +441,7 @@ func (o *ObjectCache) ApplyAll() error {
 					o.log.Info("Update diff", "diff", text, "type", "update", "resType", i.Object.GetObjectKind().GroupVersionKind().Kind, "name", n.Name, "namespace", n.Namespace)
 				}
 			}
+
 			if err := i.Update.Apply(o.ctx, o.client, i.Object); err != nil {
 				return err
 			}

@@ -335,7 +335,7 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state crd.ClowdConditionType, err error) error {
 	conditions := []crd.ClowdCondition{}
 
-	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
+	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
 		condition := &crd.ClowdCondition{}
 		condition.Type = conditionType
@@ -389,7 +389,7 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state crd.ClowdConditionType, err error) error {
 	conditions := []crd.ClowdCondition{}
 
-	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
+	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
 		condition := &crd.ClowdCondition{}
 		condition.Type = conditionType
@@ -592,7 +592,7 @@ func UpdateClowdJobInvocationCondition(status *crd.ClowdJobInvocationStatus, con
 func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state crd.ClowdConditionType, err error) error {
 	conditions := []crd.ClowdCondition{}
 
-	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationPartiallySuccessful, crd.ReconciliationFailed}
+	loopConditions := []crd.ClowdConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
 		condition := &crd.ClowdCondition{}
 		condition.Type = conditionType

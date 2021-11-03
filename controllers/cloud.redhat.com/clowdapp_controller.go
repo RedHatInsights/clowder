@@ -142,11 +142,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if ReadEnv() == app.Spec.EnvName {
-		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
-		return ctrl.Result{Requeue: true}, fmt.Errorf("env currently being reconciled")
-	}
-
 	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
 	if app.Spec.Disabled {
@@ -164,7 +159,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", app.Spec.EnvName)
 		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
 	}
 
 	if env.Generation != env.Status.Generation {
@@ -189,55 +184,41 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		Log:    log,
 	}
 
-	var requeue = false
-
 	provErr := r.runProviders(log, &provider, &app)
 
 	if provErr != nil {
-		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
-			SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr)
-			return ctrl.Result{}, provErr
-		} else {
-			requeue = true
+		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
+		err := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr)
+		if err != nil {
+			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
 		}
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, provErr
 	}
 
 	cacheErr := cache.ApplyAll()
 
 	if cacheErr != nil {
-		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
-			SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, cacheErr)
-			return ctrl.Result{}, cacheErr
-		} else {
-			requeue = true
+		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
+		err := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, cacheErr)
+		if err != nil {
+			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
 		}
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, cacheErr
 	}
 
 	if statusErr := SetAppResourceStatus(ctx, r.Client, &app); statusErr != nil {
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
 	}
 
 	// Delete all resources that are not used anymore
-	if !requeue {
-		r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
-		log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
-		err := cache.Reconcile(&app)
-		if err != nil {
-			log.Info("Reconcile error", "error", err)
-			return ctrl.Result{Requeue: requeue}, nil
-		}
-		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil)
-	} else {
-		var err error
-		if provErr != nil {
-			err = provErr
-		} else if cacheErr != nil {
-			err = cacheErr
-		}
-		log.Info("Reconciliation partially successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
-		r.Recorder.Eventf(&app, "Warning", "SuccessfulPartialReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
-		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationPartiallySuccessful, err)
+	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
+	log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+	rErr := cache.Reconcile(&app)
+	if rErr != nil {
+		log.Info("Reconcile error", "error", rErr)
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
 	}
+	err = SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil)
 
 	if err == nil {
 		if _, ok := managedApps[app.GetIdent()]; !ok {
@@ -246,7 +227,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		managedAppsMetric.Set(float64(len(managedApps)))
 	}
 
-	return ctrl.Result{Requeue: requeue}, nil
+	return ctrl.Result{}, nil
 }
 
 func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
@@ -374,7 +355,8 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&core.ConfigMap{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
 		WithOptions(controller.Options{
-			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+			RateLimiter:             workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+			MaxConcurrentReconciles: 4,
 		}).
 		Complete(r)
 }
