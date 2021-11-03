@@ -24,3 +24,17 @@ spec:
       containers:
       - name: puptoo-processor
       - name: token-refresher
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: puptoo-cron
+  namespace: test-sidecars
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: puptoo-cron
+          - name: token-refresher
