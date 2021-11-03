@@ -66,7 +66,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 				return fmt.Errorf("%s is not a valid sidecar name", sidecar.Name)
 			}
 
-			sc.Cache.Update(deployProvider.CoreDeployment, cj)
+			sc.Cache.Update(cronjobProvider.CoreCronJob, cj)
 		}
 	}
 

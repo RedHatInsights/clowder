@@ -48,6 +48,14 @@ spec:
       sidecars:
         - name: token-refresher
           enabled: true
+  jobs:
+    - name: cron
+      schedule: "*/1 * * * *"
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        sidecars:
+          - name: token-refresher
+            enabled: true
 ---
 apiVersion: v1
 data:
