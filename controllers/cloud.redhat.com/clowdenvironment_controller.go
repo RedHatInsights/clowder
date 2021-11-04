@@ -156,7 +156,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			if err != nil {
 				r.Recorder.Eventf(&env, "Warning", "NamespaceMissing", "Requested Target Namespace [%s] is missing", env.Spec.TargetNamespace)
 				SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-				return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+				return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 			}
 			env.Status.TargetNamespace = env.Spec.TargetNamespace
 		} else {
@@ -166,13 +166,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			err := r.Client.Create(ctx, namespace)
 			if err != nil {
 				SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-				return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+				return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 			}
 		}
 		err := r.Client.Status().Update(ctx, &env)
 		if err != nil {
 			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 		}
 	}
 
@@ -195,9 +195,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if provErr != nil {
 		err := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
 		if err != nil {
-			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 		}
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, provErr
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, provErr
 	}
 
 	cacheErr := cache.ApplyAll()
@@ -205,9 +205,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if cacheErr != nil {
 		err := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
 		if err != nil {
-			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 		}
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, cacheErr
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, cacheErr
 	}
 
 	if err == nil {
@@ -220,12 +220,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	err = r.setAppInfo(provider)
 	if err != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
 
 	if statusErr := SetEnvResourceStatus(ctx, r.Client, &env); statusErr != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
 
 	setPrometheusStatus(&env)
@@ -240,7 +240,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if err := r.Client.Status().Update(ctx, &env); err != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, err
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
 
 	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
@@ -249,12 +249,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Delete all resources that are not used anymore
 	rErr := cache.Reconcile(&env)
 	if rErr != nil {
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, nil
 	}
 
 	err = SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, err)
 	if err != nil {
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, nil
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, nil
 	}
 
 	return ctrl.Result{}, nil
