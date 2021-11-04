@@ -573,7 +573,7 @@ func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
 }
 
-// IsReady returns true when all the ManagedDeployments are Ready
+// IsReady returns true when all deployments are ready and the reconciliation is successful
 func (i *ClowdEnvironment) IsReady() bool {
 	conditionCheck := false
 

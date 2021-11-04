@@ -492,7 +492,7 @@ func (i *ClowdApp) GetCronJobNamespacedName(d *Job) types.NamespacedName {
 	}
 }
 
-// IsReady returns true when all the ManagedDeployments are Ready
+// IsReady returns true when all deployments are ready and the reconciliation is successful
 func (i *ClowdApp) IsReady() bool {
 	conditionCheck := false
 

@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
@@ -65,6 +66,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+var mu sync.RWMutex
+var cEnv = ""
+
 const envFinalizer = "finalizer.env.cloud.redhat.com"
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -77,6 +81,24 @@ type ClowdEnvironmentReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
+
+func SetEnv(name string) {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = name
+}
+
+func ReleaseEnv() {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = ""
+}
+
+func ReadEnv() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return cEnv
+}
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -166,6 +188,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		Log:    log,
 	}
 
+	SetEnv(env.Name)
+	defer ReleaseEnv()
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {

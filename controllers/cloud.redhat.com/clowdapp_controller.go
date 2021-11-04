@@ -142,6 +142,11 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
+	if ReadEnv() == app.Spec.EnvName {
+		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 10}, fmt.Errorf("env currently being reconciled")
+	}
+
 	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
 	if app.Spec.Disabled {
@@ -373,8 +378,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&core.ConfigMap{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
 		WithOptions(controller.Options{
-			RateLimiter:             workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
-			MaxConcurrentReconciles: 4,
+			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).
 		Complete(r)
 }
