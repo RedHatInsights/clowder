@@ -27,3 +27,15 @@ metadata:
   name: test-multi-db-single
 status:
   ready: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-c
+  namespace: test-multi-db-single
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-a
+  namespace: test-multi-db-single
