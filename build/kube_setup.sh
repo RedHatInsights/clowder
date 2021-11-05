@@ -98,7 +98,7 @@ function install_strimzi_operator {
     curl -LsSO https://raw.githubusercontent.com/RedHatInsights/clowder/master/build/${FIX_NAMESPACE_SCRIPT} \
         -o ${FIX_NAMESPACE_SCRIPT} && chmod +x ${FIX_NAMESPACE_SCRIPT}
     mv ${FIX_NAMESPACE_SCRIPT} $ROOT_DIR/build/
- 
+
     $ROOT_DIR/build/${FIX_NAMESPACE_SCRIPT} 060-Deployment-strimzi-cluster-operator.yaml "$WATCH_NS"
 
     echo "*** Creating ns ${STRIMZI_OPERATOR_NS}..."
@@ -269,12 +269,35 @@ function install_elasticsearch_operator {
     cd "$ROOT_DIR"
 }
 
+function install_keda_operator {
+    OPERATOR_NS=keda
+    DEPLOYMENT=keda-operator
+
+    if [ $REINSTALL -ne 1 ]; then
+        OPERATOR_DEPLOYMENT=$(${KUBECTL_CMD} get deployment $DEPLOYMENT -n $OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
+        if [ ! -z "$OPERATOR_DEPLOYMENT" ]; then
+            echo "*** keda-operator deployment found, skipping install ..."
+            return 0
+        fi
+    fi
+
+    echo "*** Applying keda-operator manifest ..."
+    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v2.4.0/keda-2.4.0.yaml
+
+    echo "*** Will wait for keda-operator to come up in background"
+    ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[keda-operator] /" &
+    BG_PIDS+=($!)
+
+    cd "$ROOT_DIR"
+}
+
 install_strimzi_operator
 install_cert_manager
 install_prometheus_operator
 install_cyndi_operator
 install_xjoin_operator
 install_elasticsearch_operator
+install_keda_operator
 
 FAILURES=0
 if [ ${#BG_PIDS[@]} -gt 0 ]; then

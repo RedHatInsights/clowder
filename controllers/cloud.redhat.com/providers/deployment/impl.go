@@ -45,7 +45,16 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		d.Spec.Template.Annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
 		d.Spec.Template.Annotations["clowder/authsidecar-config"] = fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name)
 	}
-	d.Spec.Replicas = deployment.MinReplicas
+
+	// let autoscaler scale without reconciliation re-writing the replicas
+	if d.Spec.Replicas == nil {
+		// Replicas is nil during deployment initialisation
+		d.Spec.Replicas = deployment.MinReplicas
+	} else if deployment.MinReplicas != nil && *d.Spec.Replicas < *deployment.MinReplicas {
+		// Reset replicas to minReplicas if it somehow falls below minReplicas
+		d.Spec.Replicas = deployment.MinReplicas
+	}
+
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	d.Spec.Template.ObjectMeta.Labels = labels
 	d.Spec.Strategy = apps.DeploymentStrategy{

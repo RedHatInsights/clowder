@@ -1,0 +1,12 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-kafka-app-autoscale puptoo -o json > /tmp/test-minio-app
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-minio-app | base64 -d > /tmp/test-minio-app-json
+
+- script: jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne-test-kafka-app-autoscale-test-kafka-app-autoscale"' -e < /tmp/test-minio-app-json
+- script: jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo-test-kafka-app-autoscale-test-kafka-app-autoscale"' -e < /tmp/test-minio-app-json
+- script: jq -r '.kafka.brokers[].hostname == "test-kafka-app-autoscale-kafka.test-kafka-app-autoscale.svc"' -e < /tmp/test-minio-app-json
+- script: jq -r '.kafka.brokers[].port == 29092' -e < /tmp/test-minio-app-json

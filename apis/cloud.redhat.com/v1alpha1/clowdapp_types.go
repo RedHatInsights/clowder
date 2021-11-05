@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	keda "github.com/kedacore/keda/v2/api/v1alpha1"
 	batch "k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -175,6 +176,9 @@ type Deployment struct {
 
 	// K8sAccessLevel defines the level of access for this deployment
 	K8sAccessLevel K8sAccessLevel `json:"k8sAccessLevel,omitempty"`
+
+	// AutoScaler defines the configuration for the auto scaler
+	AutoScaler *AutoScaler `json:"autoScaler,omitempty"`
 }
 
 type Sidecar struct {
@@ -228,6 +232,28 @@ type PodSpec struct {
 
 	// Lists the expected side cars, will be validated in the validating webhook
 	Sidecars []Sidecar `json:"sidecars,omitempty"`
+}
+
+// AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
+type AutoScaler struct {
+	// PollingInterval is the interval (in seconds) to check each trigger on.
+	// Default is 30 seconds.
+	// +optional
+	PollingInterval *int32 `json:"pollingInterval,omitempty"`
+	// CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before
+	// scaling the deployment down. Default is 5 minutes (300 seconds).
+	// +optional
+	CooldownPeriod *int32 `json:"cooldownPeriod,omitempty"`
+	// MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to.
+	// Default is 10.
+	// +optional
+	MaxReplicaCount *int32 `json:"maxReplicaCount,omitempty"`
+	// +optional
+	Advanced *keda.AdvancedConfig `json:"advanced,omitempty"`
+	// +optional
+	Triggers []keda.ScaleTriggers `json:"triggers,omitempty"`
+	// +optional
+	Fallback *keda.Fallback `json:"fallback,omitempty"`
 }
 
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the

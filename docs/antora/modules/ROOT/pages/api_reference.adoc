@@ -59,6 +59,28 @@ AppInfo details information about a specific app.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"]
+==== AutoScaler 
+
+AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`pollingInterval`* __integer__ | PollingInterval is the interval (in seconds) to check each trigger on. Default is 30 seconds.
+| *`cooldownPeriod`* __integer__ | CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before scaling the deployment down. Default is 5 minutes (300 seconds).
+| *`maxReplicaCount`* __integer__ | MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to. Default is 10.
+| *`advanced`* __AdvancedConfig__ | 
+| *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-api-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
+| *`fallback`* __Fallback__ | 
+|===
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp"]
 ==== ClowdApp 
 
@@ -348,6 +370,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`webServices`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
+| *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the auto scaler
 |===
 
 
