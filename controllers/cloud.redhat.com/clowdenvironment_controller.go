@@ -232,7 +232,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	ready, err := GetEnvResourceStatus(ctx, r.Client, &env)
 	if err != nil {
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
 
 	env.Status.Ready = ready
