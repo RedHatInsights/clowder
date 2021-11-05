@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-multi-db-single
+  name: test-multi-db-shared
 spec:
-  targetNamespace: test-multi-db-single
+  targetNamespace: test-multi-db-shared
   providers:
     web:
       port: 8000
@@ -37,9 +37,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: app-a
-  namespace: test-multi-db-single
+  namespace: test-multi-db-shared
 spec:
-  envName: test-multi-db-single
+  envName: test-multi-db-shared
   deployments:
   - name: processor
     podSpec:
@@ -52,9 +52,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: app-b
-  namespace: test-multi-db-single
+  namespace: test-multi-db-shared
 spec:
-  envName: test-multi-db-single
+  envName: test-multi-db-shared
   deployments:
   - name: processor
     podSpec:
@@ -67,9 +67,9 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: app-c
-  namespace: test-multi-db-single
+  namespace: test-multi-db-shared
 spec:
-  envName: test-multi-db-single
+  envName: test-multi-db-shared
   deployments:
   - name: processor
     podSpec:
