@@ -22,5 +22,5 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/cloudservices/postgresql-rds:cyndi-12-1
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-12-9ee2984
         
