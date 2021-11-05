@@ -66,9 +66,9 @@ ClowdEnv Config options available:
 
 - `+pvc+`
 
-==== single
+==== shared
 
-In single mode, the **Database Provider** will provision a single node PostgreSQL
+In shared mode, the **Database Provider** will provision a single node PostgreSQL
 and configure every app to use the same instance. As in the local mode, the client
 will be given credentials for both a normal and an admin user.
 
