@@ -34,9 +34,9 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 func init() {
 	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
 	imageList = map[int32]string{
-		13: "quay.io/cloudservices/postgresql-rds:13-1",
-		12: "quay.io/cloudservices/postgresql-rds:12-1",
-		10: "quay.io/cloudservices/postgresql-rds:10-1",
+		13: "quay.io/cloudservices/postgresql-rds:13-9ee2984",
+		12: "quay.io/cloudservices/postgresql-rds:12-9ee2984",
+		10: "quay.io/cloudservices/postgresql-rds:10-9ee2984",
 	}
 }
 

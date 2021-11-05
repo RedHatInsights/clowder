@@ -98,7 +98,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 	labels := &map[string]string{"sub": "feature_flags"}
-	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-1", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
+	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
 
 	if err = p.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return nil, err
