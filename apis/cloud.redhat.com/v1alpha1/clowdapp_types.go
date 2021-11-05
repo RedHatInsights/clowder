@@ -344,8 +344,6 @@ const (
 	DeploymentsReady ClowdConditionType = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
 	ReconciliationSuccessful ClowdConditionType = "ReconciliationSuccessful"
-	// ReconciliationPartiallySuccessful means the reconciliation is in a partial success state
-	ReconciliationPartiallySuccessful ClowdConditionType = "ReconciliationPartiallySuccessful"
 	// ReconciliationFailed means the reconciliation failed
 	ReconciliationFailed ClowdConditionType = "ReconciliationFailed"
 	// JobInvocationComplete means all the Jobs have finished
@@ -498,9 +496,17 @@ func (i *ClowdApp) GetCronJobNamespacedName(d *Job) types.NamespacedName {
 	}
 }
 
-// IsReady returns true when all the ManagedDeployments are Ready
+// IsReady returns true when all deployments are ready and the reconciliation is successful
 func (i *ClowdApp) IsReady() bool {
-	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+	conditionCheck := false
+
+	for _, condition := range i.Status.Conditions {
+		if condition.Type == ReconciliationSuccessful {
+			conditionCheck = true
+		}
+	}
+
+	return i.Status.Ready && conditionCheck
 }
 
 // GetClowdSAName returns the ServiceAccount Name for the App

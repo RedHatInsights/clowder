@@ -283,7 +283,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
-	if err := s.Cache.Update(KafkaInstance, k); err != nil {
+	if err := s.Cache.Update(KafkaInstance, k, providers.CacheOption{WriteNow: true}); err != nil {
 		return err
 	}
 
@@ -308,7 +308,7 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	cm.SetLabels(providers.Labels{"env": s.Env.Name})
 	cm.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
-	if err := s.Cache.Update(KafkaMetricsConfigMap, cm); err != nil {
+	if err := s.Cache.Update(KafkaMetricsConfigMap, cm, providers.CacheOption{WriteNow: true}); err != nil {
 		return types.NamespacedName{}, err
 	}
 
@@ -380,7 +380,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 		},
 	})
 
-	if err := s.Cache.Update(KafkaConnectUser, ku); err != nil {
+	if err := s.Cache.Update(KafkaConnectUser, ku, providers.CacheOption{WriteNow: true}); err != nil {
 		return err
 	}
 
@@ -480,7 +480,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	k.SetNamespace(getConnectNamespace(s.Env))
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 
-	if err := s.Cache.Update(KafkaConnect, k); err != nil {
+	if err := s.Cache.Update(KafkaConnect, k, providers.CacheOption{WriteNow: true}); err != nil {
 		return err
 	}
 
@@ -641,7 +641,7 @@ func createNetworkPolicies(p *providers.Provider) error {
 	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
 	labeler(np)
 
-	if err := p.Cache.Update(KafkaNetworkPolicy, np); err != nil {
+	if err := p.Cache.Update(KafkaNetworkPolicy, np, providers.CacheOption{WriteNow: true}); err != nil {
 		return err
 	}
 
@@ -783,7 +783,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		},
 	})
 
-	if err := s.Cache.Update(KafkaUser, ku); err != nil {
+	if err := s.Cache.Update(KafkaUser, ku, providers.CacheOption{WriteNow: true}); err != nil {
 		return err
 	}
 
@@ -837,7 +837,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if err := s.Cache.Update(KafkaTopic, k); err != nil {
+		if err := s.Cache.Update(KafkaTopic, k, providers.CacheOption{WriteNow: true}); err != nil {
 			return err
 		}
 
