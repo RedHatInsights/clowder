@@ -4970,6 +4970,7 @@ objects:
                             and (*_local_*) where the provider will spin up a local
                             instance of the database.'
                           enum:
+                          - shared
                           - app-interface
                           - local
                           - none

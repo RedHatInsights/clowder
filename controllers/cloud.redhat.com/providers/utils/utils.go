@@ -16,9 +16,14 @@ import (
 )
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
-func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string) {
+func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string) {
 	labels := baseResource.GetLabels()
 	labels["service"] = "db"
+
+	for k, v := range *extraLabels {
+		labels[k] = v
+	}
+
 	labler := utils.MakeLabeler(nn, labels, baseResource)
 	labler(dd)
 
@@ -124,13 +129,17 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 }
 
 // MakeLocalDBService populates the given service object with the local DB struct.
-func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource obj.ClowdObject) {
+func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string) {
 	servicePorts := []core.ServicePort{{
 		Name:     "database",
 		Port:     5432,
 		Protocol: "TCP",
 	}}
-	utils.MakeService(s, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, servicePorts, baseResource, false)
+	labels := providers.Labels{"service": "db", "app": baseResource.GetClowdName()}
+	for k, v := range *extraLabels {
+		labels[k] = v
+	}
+	utils.MakeService(s, nn, labels, servicePorts, baseResource, false)
 }
 
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
