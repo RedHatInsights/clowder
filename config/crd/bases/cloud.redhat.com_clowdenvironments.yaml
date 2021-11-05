@@ -70,7 +70,7 @@ spec:
                           and (*_local_*) where the provider will spin up a local
                           instance of the database.'
                         enum:
-                        - single
+                        - shared
                         - app-interface
                         - local
                         - none

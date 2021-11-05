@@ -214,7 +214,7 @@ type KafkaConfig struct {
 // TODO: Other potential modes: RDS and Operator (e.g. CrunchyDB)
 
 // DatabaseMode details the mode of operation of the Clowder Database Provider
-// +kubebuilder:validation:Enum=single;app-interface;local;none
+// +kubebuilder:validation:Enum=shared;app-interface;local;none
 type DatabaseMode string
 
 // DatabaseConfig configures the Clowder provider controlling the creation of

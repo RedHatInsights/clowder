@@ -1,9 +1,11 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"database/sql"
 
@@ -22,28 +24,28 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// SingleDBDeployment is the ident referring to the local DB deployment object.
-var SingleDBDeployment = providers.NewMultiResourceIdent(ProvName, "single_db_deployment", &apps.Deployment{})
+// SharedDBDeployment is the ident referring to the local DB deployment object.
+var SharedDBDeployment = providers.NewMultiResourceIdent(ProvName, "shared_db_deployment", &apps.Deployment{})
 
-// SingleDBService is the ident referring to the local DB service object.
-var SingleDBService = providers.NewMultiResourceIdent(ProvName, "single_db_service", &core.Service{})
+// SharedDBService is the ident referring to the local DB service object.
+var SharedDBService = providers.NewMultiResourceIdent(ProvName, "shared_db_service", &core.Service{})
 
-// SingleDBPVC is the ident referring to the local DB PVC object.
-var SingleDBPVC = providers.NewMultiResourceIdent(ProvName, "single_db_pvc", &core.PersistentVolumeClaim{})
+// SharedDBPVC is the ident referring to the local DB PVC object.
+var SharedDBPVC = providers.NewMultiResourceIdent(ProvName, "shared_db_pvc", &core.PersistentVolumeClaim{})
 
-// SingleDBSecret is the ident referring to the local DB secret object.
-var SingleDBSecret = providers.NewMultiResourceIdent(ProvName, "single_db_secret", &core.Secret{})
+// SharedDBSecret is the ident referring to the local DB secret object.
+var SharedDBSecret = providers.NewMultiResourceIdent(ProvName, "shared_db_secret", &core.Secret{})
 
-// SingleDBSecret is the ident referring to the local DB secret object.
-var SingleDBAppSecret = providers.NewSingleResourceIdent(ProvName, "single_db_app_secret", &core.Secret{})
+// SharedDBSecret is the ident referring to the local DB secret object.
+var SharedDBAppSecret = providers.NewSingleResourceIdent(ProvName, "shared_db_app_secret", &core.Secret{})
 
-type singleDbProvider struct {
+type sharedDbProvider struct {
 	providers.Provider
 	Config map[int32]*config.DatabaseConfig
 }
 
-// NewSingleDBProvider returns a new local DB provider object.
-func NewSingleDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+// NewSharedDBProvider returns a new local DB provider object.
+func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
 	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 	if err != nil {
@@ -54,7 +56,6 @@ func NewSingleDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	for _, app := range appList.Items {
 		if app.Spec.Database.Name != "" {
-			fmt.Printf("\n----%v----\n", app.Spec.Database.Version)
 			if app.Spec.Database.Version == nil {
 				versionsRequired[12] = true
 			} else {
@@ -73,7 +74,7 @@ func NewSingleDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		configs[v] = dbCfg
 	}
 
-	return &singleDbProvider{Provider: *p, Config: configs}, nil
+	return &sharedDbProvider{Provider: *p, Config: configs}, nil
 }
 
 func createVersionedDatabase(p *providers.Provider, version int32) (*config.DatabaseConfig, error) {
@@ -83,7 +84,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	}
 
 	dd := &apps.Deployment{}
-	err := p.Cache.Create(SingleDBDeployment, nn, dd)
+	err := p.Cache.Create(SharedDBDeployment, nn, dd)
 
 	if err != nil {
 		return nil, err
@@ -101,7 +102,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 		}
 	}
 
-	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, SingleDBSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, SharedDBSecret, nn, dataInit)
 	if err != nil {
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
@@ -122,34 +123,34 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	tag := "cyndi-" + imgComponents[1]
 	image = imgComponents[0] + ":" + tag
 
-	labels := &map[string]string{"sub": fmt.Sprintf("single_db_%s", strconv.Itoa(int(version)))}
+	labels := &map[string]string{"sub": fmt.Sprintf("shared_db_%s", strconv.Itoa(int(version)))}
 
 	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, image, p.Env.Spec.Providers.Database.PVC, p.Env.Name)
 
-	if err = p.Cache.Update(SingleDBDeployment, dd); err != nil {
+	if err = p.Cache.Update(SharedDBDeployment, dd); err != nil {
 		return nil, err
 	}
 
 	s := &core.Service{}
-	if err := p.Cache.Create(SingleDBService, nn, s); err != nil {
+	if err := p.Cache.Create(SharedDBService, nn, s); err != nil {
 		return nil, err
 	}
 
 	provutils.MakeLocalDBService(s, nn, p.Env, labels)
 
-	if err = p.Cache.Update(SingleDBService, s); err != nil {
+	if err = p.Cache.Update(SharedDBService, s); err != nil {
 		return nil, err
 	}
 
 	if p.Env.Spec.Providers.Database.PVC {
 		pvc := &core.PersistentVolumeClaim{}
-		if err := p.Cache.Create(SingleDBPVC, nn, pvc); err != nil {
+		if err := p.Cache.Create(SharedDBPVC, nn, pvc); err != nil {
 			return nil, err
 		}
 
 		provutils.MakeLocalDBPVC(pvc, nn, p.Env)
 
-		if err = p.Cache.Update(SingleDBPVC, pvc); err != nil {
+		if err = p.Cache.Update(SharedDBPVC, pvc); err != nil {
 			return nil, err
 		}
 	}
@@ -159,7 +160,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
-func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *sharedDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
 		return nil
 	}
@@ -182,7 +183,10 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 	dbname := app.Spec.Database.Name
 
 	appSqlConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	fmt.Printf("\n%v\n", appSqlConnectionString)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	dbClient, err := sql.Open("postgres", appSqlConnectionString)
 	if err != nil {
 		return err
@@ -190,7 +194,7 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 
 	defer dbClient.Close()
 
-	pErr := dbClient.Ping()
+	pErr := dbClient.PingContext(ctx)
 	if pErr != nil {
 		if strings.Contains(pErr.Error(), fmt.Sprintf("database \"%s\" does not exist", app.Spec.Database.Name)) {
 
@@ -204,7 +208,7 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 			defer envDbClient.Close()
 
 			sqlStatement := fmt.Sprintf("CREATE DATABASE \"%s\" WITH OWNER=\"%s\";", app.Spec.Database.Name, dbCfg.Username)
-			_, createErr := envDbClient.Exec(sqlStatement)
+			_, createErr := envDbClient.ExecContext(ctx, sqlStatement)
 			if createErr != nil {
 				return createErr
 			}
@@ -219,7 +223,7 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 	}
 
 	secret := &core.Secret{}
-	if err := db.Cache.Create(SingleDBAppSecret, nn, secret); err != nil {
+	if err := db.Cache.Create(SharedDBAppSecret, nn, secret); err != nil {
 		return err
 	}
 
@@ -237,7 +241,7 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 	secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 	secret.Type = core.SecretTypeOpaque
 
-	if err := db.Cache.Update(SingleDBAppSecret, secret); err != nil {
+	if err := db.Cache.Update(SharedDBAppSecret, secret); err != nil {
 		return err
 	}
 
@@ -247,7 +251,7 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 	return nil
 }
 
-func (db *singleDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfig) error {
 	err := checkDependency(app)
 
 	if err != nil {
