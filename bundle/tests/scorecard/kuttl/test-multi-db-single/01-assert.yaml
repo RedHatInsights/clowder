@@ -2,13 +2,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-multi-db-single-db
+  name: test-multi-db-single-db-v12
   namespace: test-multi-db-single
 spec:
   template:
     spec:
       containers:
         - image: quay.io/cloudservices/postgresql-rds:cyndi-12-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-multi-db-single-db-v10
+  namespace: test-multi-db-single
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-10-1
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment

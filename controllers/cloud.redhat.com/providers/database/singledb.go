@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"database/sql"
@@ -22,32 +23,62 @@ import (
 )
 
 // SingleDBDeployment is the ident referring to the local DB deployment object.
-var SingleDBDeployment = providers.NewSingleResourceIdent(ProvName, "single_db_deployment", &apps.Deployment{})
+var SingleDBDeployment = providers.NewMultiResourceIdent(ProvName, "single_db_deployment", &apps.Deployment{})
 
 // SingleDBService is the ident referring to the local DB service object.
-var SingleDBService = providers.NewSingleResourceIdent(ProvName, "single_db_service", &core.Service{})
+var SingleDBService = providers.NewMultiResourceIdent(ProvName, "single_db_service", &core.Service{})
 
 // SingleDBPVC is the ident referring to the local DB PVC object.
-var SingleDBPVC = providers.NewSingleResourceIdent(ProvName, "single_db_pvc", &core.PersistentVolumeClaim{})
+var SingleDBPVC = providers.NewMultiResourceIdent(ProvName, "single_db_pvc", &core.PersistentVolumeClaim{})
 
 // SingleDBSecret is the ident referring to the local DB secret object.
-var SingleDBSecret = providers.NewSingleResourceIdent(ProvName, "single_db_secret", &core.Secret{})
+var SingleDBSecret = providers.NewMultiResourceIdent(ProvName, "single_db_secret", &core.Secret{})
 
 // SingleDBSecret is the ident referring to the local DB secret object.
 var SingleDBAppSecret = providers.NewSingleResourceIdent(ProvName, "single_db_app_secret", &core.Secret{})
 
 type singleDbProvider struct {
 	providers.Provider
-	Config config.DatabaseConfig
+	Config map[int32]*config.DatabaseConfig
 }
 
 // NewSingleDBProvider returns a new local DB provider object.
 func NewSingleDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	dbp := &singleDbProvider{Provider: *p, Config: config.DatabaseConfig{}}
+	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
+	if err != nil {
+		return nil, err
+	}
 
+	versionsRequired := map[int32]bool{}
+
+	for _, app := range appList.Items {
+		if app.Spec.Database.Name != "" {
+			fmt.Printf("\n----%v----\n", app.Spec.Database.Version)
+			if app.Spec.Database.Version == nil {
+				versionsRequired[12] = true
+			} else {
+				versionsRequired[*app.Spec.Database.Version] = true
+			}
+		}
+	}
+
+	configs := map[int32]*config.DatabaseConfig{}
+
+	for v, _ := range versionsRequired {
+		dbCfg, err := createVersionedDatabase(p, v)
+		if err != nil {
+			return nil, err
+		}
+		configs[v] = dbCfg
+	}
+
+	return &singleDbProvider{Provider: *p, Config: configs}, nil
+}
+
+func createVersionedDatabase(p *providers.Provider, version int32) (*config.DatabaseConfig, error) {
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%v-db", p.Env.Name),
+		Name:      fmt.Sprintf("%s-db-v%s", p.Env.Name, strconv.Itoa(int(version))),
 		Namespace: p.Env.Status.TargetNamespace,
 	}
 
@@ -55,7 +86,7 @@ func NewSingleDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	err := p.Cache.Create(SingleDBDeployment, nn, dd)
 
 	if err != nil {
-		return &singleDbProvider{}, err
+		return nil, err
 	}
 
 	dbCfg := config.DatabaseConfig{}
@@ -72,65 +103,58 @@ func NewSingleDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, SingleDBSecret, nn, dataInit)
 	if err != nil {
-		return &singleDbProvider{}, errors.Wrap("Couldn't set/get secret", err)
+		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
 
 	dbCfg.Populate(secMap)
 	dbCfg.AdminUsername = "postgres"
 	dbCfg.SslMode = "disable"
 
-	dbp.Config = dbCfg
-
 	var image string
 
-	var dbVersion int32 = 12
-	// if app.Spec.Database.Version != nil {
-	// 	dbVersion = *(app.Spec.Database.Version)
-	// }
-
-	image, ok := imageList[dbVersion]
+	image, ok := imageList[version]
 
 	if !ok {
-		return &singleDbProvider{}, errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", dbVersion))
+		return nil, errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
 	}
 
 	imgComponents := strings.Split(image, ":")
 	tag := "cyndi-" + imgComponents[1]
 	image = imgComponents[0] + ":" + tag
 
-	labels := &map[string]string{"sub": "single_db"}
+	labels := &map[string]string{"sub": fmt.Sprintf("single_db_%s", strconv.Itoa(int(version)))}
 
 	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, image, p.Env.Spec.Providers.Database.PVC, p.Env.Name)
 
 	if err = p.Cache.Update(SingleDBDeployment, dd); err != nil {
-		return &singleDbProvider{}, err
+		return nil, err
 	}
 
 	s := &core.Service{}
 	if err := p.Cache.Create(SingleDBService, nn, s); err != nil {
-		return &singleDbProvider{}, err
+		return nil, err
 	}
 
 	provutils.MakeLocalDBService(s, nn, p.Env, labels)
 
 	if err = p.Cache.Update(SingleDBService, s); err != nil {
-		return &singleDbProvider{}, err
+		return nil, err
 	}
 
 	if p.Env.Spec.Providers.Database.PVC {
 		pvc := &core.PersistentVolumeClaim{}
 		if err := p.Cache.Create(SingleDBPVC, nn, pvc); err != nil {
-			return &singleDbProvider{}, err
+			return nil, err
 		}
 
 		provutils.MakeLocalDBPVC(pvc, nn, p.Env)
 
 		if err = p.Cache.Update(SingleDBPVC, pvc); err != nil {
-			return &singleDbProvider{}, err
+			return nil, err
 		}
 	}
 
-	return &singleDbProvider{Provider: *p, Config: dbCfg}, nil
+	return &dbCfg, nil
 }
 
 // CreateDatabase ensures a database is created for the given app.  The
@@ -144,14 +168,21 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 		return db.processSharedDB(app, c)
 	}
 
-	host := db.Config.Hostname
-	port := db.Config.Port
-	user := db.Config.AdminUsername
-	password := db.Config.AdminPassword
+	version := int32(12)
+	if app.Spec.Database.Version != nil {
+		version = *app.Spec.Database.Version
+	}
+
+	dbCfg := db.Config[version]
+
+	host := dbCfg.Hostname
+	port := dbCfg.Port
+	user := dbCfg.AdminUsername
+	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
 
 	appSqlConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
+	fmt.Printf("\n%v\n", appSqlConnectionString)
 	dbClient, err := sql.Open("postgres", appSqlConnectionString)
 	if err != nil {
 		return err
@@ -172,7 +203,7 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 
 			defer envDbClient.Close()
 
-			sqlStatement := fmt.Sprintf("CREATE DATABASE \"%s\" WITH OWNER=\"%s\";", app.Spec.Database.Name, db.Config.Username)
+			sqlStatement := fmt.Sprintf("CREATE DATABASE \"%s\" WITH OWNER=\"%s\";", app.Spec.Database.Name, dbCfg.Username)
 			_, createErr := envDbClient.Exec(sqlStatement)
 			if createErr != nil {
 				return createErr
@@ -195,9 +226,9 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 	secret.StringData = map[string]string{
 		"hostname": host,
 		"port":     "5432",
-		"username": db.Config.Username,
-		"password": db.Config.Password,
-		"pgPass":   db.Config.AdminPassword,
+		"username": dbCfg.Username,
+		"password": dbCfg.Password,
+		"pgPass":   dbCfg.AdminPassword,
 		"name":     app.Spec.Database.Name,
 	}
 
@@ -210,8 +241,8 @@ func (db *singleDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 		return err
 	}
 
-	db.Config.Name = app.Spec.Database.Name
-	c.Database = &db.Config
+	dbCfg.Name = app.Spec.Database.Name
+	c.Database = dbCfg
 
 	return nil
 }
@@ -254,8 +285,7 @@ func (db *singleDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConf
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	db.Config = dbCfg
-	c.Database = &db.Config
+	c.Database = &dbCfg
 
 	return nil
 }
