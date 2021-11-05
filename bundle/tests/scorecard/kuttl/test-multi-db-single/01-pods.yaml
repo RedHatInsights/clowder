@@ -16,7 +16,7 @@ spec:
     kafka:
       mode: none
     db:
-      mode: single
+      mode: shared
     logging:
       mode: none
     objectStore:
