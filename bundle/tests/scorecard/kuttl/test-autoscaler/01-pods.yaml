@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-disabled
+  name: test-autoscaler
 spec:
-  targetNamespace: test-disabled
+  targetNamespace: test-autoscaler
   providers:
     web:
       port: 8000
@@ -13,15 +13,19 @@ spec:
       port: 9000
       mode: operator
       path: "/metrics"
+      prometheus:
+        deploy: true
     kafka:
       mode: none
     db:
-      mode: local
+      mode: none
     logging:
       mode: none
     objectStore:
       mode: none
     inMemoryDb:
+      mode: none
+    featureFlags:
       mode: none
   resourceDefaults:
     limits:
@@ -34,15 +38,23 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: app
-  namespace: test-disabled
+  name: puptoo
+  namespace: test-autoscaler
 spec:
-  envName: test-disabled
-  database:
-    name: app-db
-    version: 12
+  envName: test-autoscaler
   deployments:
-  - name: deployment
-    minReplicas: 1
+  - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
+    autoScaler:
+      maxReplicaCount: 5
+      triggers:
+      - type: cpu
+        metadata:
+          type: Utilization
+          value: "50"
+      - type: prometheus
+        metadata:
+          metricName: http_requests_total
+          threshold: '4'
+          query: summation_query

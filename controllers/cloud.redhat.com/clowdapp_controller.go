@@ -49,6 +49,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
 	// These imports are to register the providers with the provider registration system
+	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/autoscaler"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
@@ -94,6 +95,7 @@ type ClowdAppReconciler struct {
 // +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkas,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkausers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kafka.strimzi.io,resources=kafkaconnects,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cyndi.cloud.redhat.com,resources=cyndipipelines,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings;roles,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=prometheuses;servicemonitors,verbs=get;list;watch;create;update;patch;delete

@@ -18,6 +18,7 @@ import (
 
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	keda "github.com/kedacore/keda/v2/api/v1alpha1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
@@ -96,6 +97,7 @@ func init() {
 	utilruntime.Must(strimzi.AddToScheme(scheme))
 	utilruntime.Must(cyndi.AddToScheme(scheme))
 	utilruntime.Must(prom.AddToScheme(scheme))
+	utilruntime.Must(keda.AddToScheme(scheme))
 
 	gvk, _ := utils.GetKindFromObj(scheme, &strimzi.KafkaTopic{})
 	protectedGVKs[gvk] = true
