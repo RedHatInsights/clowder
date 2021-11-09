@@ -7,12 +7,12 @@ name: Run Unit Tests
 jobs:
 
   testing:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out source code
         uses: actions/checkout@v1
       - name: Install package and dependencies
         run: |
-          sudo apt-get install golang-1.15
+          sudo apt-get install golang-1.16
       - name: Run Tests
         run: make test
