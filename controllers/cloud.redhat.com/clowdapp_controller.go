@@ -235,6 +235,10 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		managedAppsMetric.Set(float64(len(managedApps)))
 	}
 
+	if err != nil {
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 

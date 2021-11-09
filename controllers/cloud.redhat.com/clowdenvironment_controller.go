@@ -249,12 +249,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Delete all resources that are not used anymore
 	rErr := cache.Reconcile(&env)
 	if rErr != nil {
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, nil
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, rErr
 	}
 
-	err = SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, err)
+	err = SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil)
 	if err != nil {
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, nil
+		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
 
 	return ctrl.Result{}, nil
