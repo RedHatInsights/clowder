@@ -102,6 +102,11 @@ func init() {
 	gvk, _ := utils.GetKindFromObj(scheme, &strimzi.KafkaTopic{})
 	protectedGVKs[gvk] = true
 
+	if !clowder_config.LoadedConfig.Features.KedaResources {
+		gvk, _ := utils.GetKindFromObj(scheme, &keda.ScaledObject{})
+		protectedGVKs[gvk] = true
+	}
+
 	secretCompare, _ = utils.GetKindFromObj(scheme, &core.Secret{})
 }
 
