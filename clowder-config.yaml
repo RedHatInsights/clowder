@@ -4,7 +4,8 @@ data:
     {
         "features": {
             "createServiceMonitor": true,
-            "watchStrimziResources": true
+            "watchStrimziResources": true,
+            "enableKedaResources": true
         }
     }
 kind: ConfigMap

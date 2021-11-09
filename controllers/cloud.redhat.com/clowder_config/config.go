@@ -39,6 +39,7 @@ type ClowderConfig struct {
 		WatchStrimziResources       bool `json:"watchStrimziResources"`
 		UseComplexStrimziTopicNames bool `json:"useComplexStrimziTopicNames"`
 		EnableAuthSidecarHook       bool `json:"enableAuthSidecarHook"`
+		KedaResources               bool `json:"enableKedaResources"`
 	} `json:"features"`
 }
 
