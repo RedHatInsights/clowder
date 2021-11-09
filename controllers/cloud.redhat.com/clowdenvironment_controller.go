@@ -243,9 +243,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
 
-	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
-	log.Info("Reconciliation successful", "env", env.Name)
-
 	// Delete all resources that are not used anymore
 	rErr := cache.Reconcile(&env)
 	if rErr != nil {
@@ -256,6 +253,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if err != nil {
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
+
+	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
+	log.Info("Reconciliation successful", "env", env.Name)
 
 	return ctrl.Result{}, nil
 }

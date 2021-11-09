@@ -219,8 +219,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Delete all resources that are not used anymore
-	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
-	log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 	rErr := cache.Reconcile(&app)
 	if rErr != nil {
 		log.Info("Reconcile error", "error", rErr)
@@ -238,6 +236,9 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
+
+	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
+	log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
 
 	return ctrl.Result{}, nil
 }
