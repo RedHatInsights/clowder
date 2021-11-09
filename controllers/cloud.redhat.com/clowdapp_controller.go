@@ -147,7 +147,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if ReadEnv() == app.Spec.EnvName {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
 		log.Info("Env currently being reconciled", "app", app.Name, "namespace", app.Namespace, "env", app.Spec.EnvName)
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, nil
+		return ctrl.Result{Requeue: true}, nil
 	}
 
 	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
@@ -198,9 +198,9 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
 		err := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr)
 		if err != nil {
-			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
+			return ctrl.Result{Requeue: true}, err
 		}
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, provErr
+		return ctrl.Result{Requeue: true}, provErr
 	}
 
 	cacheErr := cache.ApplyAll()
@@ -209,13 +209,13 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
 		err := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, cacheErr)
 		if err != nil {
-			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
+			return ctrl.Result{Requeue: true}, err
 		}
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, cacheErr
+		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
 	if statusErr := SetAppResourceStatus(ctx, r.Client, &app); statusErr != nil {
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
+		return ctrl.Result{Requeue: true}, err
 	}
 
 	// Delete all resources that are not used anymore
@@ -224,7 +224,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	rErr := cache.Reconcile(&app)
 	if rErr != nil {
 		log.Info("Reconcile error", "error", rErr)
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, nil
+		return ctrl.Result{Requeue: true}, nil
 	}
 	err = SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil)
 
