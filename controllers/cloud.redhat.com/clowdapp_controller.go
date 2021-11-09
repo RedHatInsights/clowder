@@ -226,16 +226,14 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	err = SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil)
 
-	if err == nil {
-		if _, ok := managedApps[app.GetIdent()]; !ok {
-			managedApps[app.GetIdent()] = true
-		}
-		managedAppsMetric.Set(float64(len(managedApps)))
-	}
-
 	if err != nil {
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
 	}
+
+	if _, ok := managedApps[app.GetIdent()]; !ok {
+		managedApps[app.GetIdent()] = true
+	}
+	managedAppsMetric.Set(float64(len(managedApps)))
 
 	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
 	log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
