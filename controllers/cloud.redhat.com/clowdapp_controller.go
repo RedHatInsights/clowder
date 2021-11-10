@@ -492,21 +492,21 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
 		prov, err := provAcc.SetupProvider(provider)
-		elapsed := time.Since(start).Milliseconds()
-		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(float64(elapsed))
+		elapsed := time.Since(start).Seconds()
+		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(elapsed)
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
 		start = time.Now()
 		err = prov.Provide(a, &c)
-		elapsed = time.Since(start).Milliseconds()
-		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdapp"}).Observe(float64(elapsed))
+		elapsed = time.Since(start).Seconds()
+		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdapp"}).Observe(elapsed)
 		if err != nil {
 			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
 			reterr.Requeue = true
 			return reterr
 		}
-		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%d", elapsed))
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}
 
 	return nil
