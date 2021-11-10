@@ -117,7 +117,7 @@ shown below:
 [source,shell]
 ----
 # Be sure to get the latest release in the link above!
-minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/v0.18.1/clowder-manifest-v0.18.1.yaml --validate=false
+minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/v0.22.0/clowder-manifest-v0.22.0.yaml --validate=false
 ----
 
 ## Usage
