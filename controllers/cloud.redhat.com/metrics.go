@@ -35,9 +35,16 @@ var (
 		},
 		[]string{"version"},
 	)
+	providerMetrics = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "clowder_provider_runtime",
+			Help: "Provider runtime",
+		},
+		[]string{"provider", "source"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, clientOpsMetric, clowderVersion)
+	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, clientOpsMetric, clowderVersion, providerMetrics)
 }

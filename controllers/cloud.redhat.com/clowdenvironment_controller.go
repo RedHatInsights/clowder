@@ -25,6 +25,7 @@ import (
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -277,10 +278,14 @@ func setPrometheusStatus(env *crd.ClowdEnvironment) {
 func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
-		if _, err := provAcc.SetupProvider(&provider); err != nil {
+		start := time.Now()
+		_, err := provAcc.SetupProvider(&provider)
+		elapsed := time.Since(start).Milliseconds()
+		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(float64(elapsed))
+		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
-		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order)
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%d", elapsed))
 	}
 	return nil
 }
