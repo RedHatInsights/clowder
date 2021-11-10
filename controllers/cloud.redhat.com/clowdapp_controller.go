@@ -23,6 +23,7 @@ import (
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -489,17 +490,23 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
+		start := time.Now()
 		prov, err := provAcc.SetupProvider(provider)
+		elapsed := time.Since(start).Milliseconds()
+		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(float64(elapsed))
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
+		start = time.Now()
 		err = prov.Provide(a, &c)
+		elapsed = time.Since(start).Milliseconds()
+		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdapp"}).Observe(float64(elapsed))
 		if err != nil {
 			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
 			reterr.Requeue = true
 			return reterr
 		}
-		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order)
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%d", elapsed))
 	}
 
 	return nil
