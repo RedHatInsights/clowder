@@ -89,8 +89,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		// Warn, and set the CJI not to reconcile again. If you can see "jobs", the cji has been invoked previously
 		r.Log.Info("jobinvocation", cji.Name, "Warning: deprecated CJI status; please remove this CJI and reinvoke to reset the Completed status")
 		cji.Status.JobMap = map[string]crd.JobConditionState{}
-		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-			return ctrl.Result{}, err
+		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); condErr != nil {
+			return ctrl.Result{}, condErr
 		}
 		return ctrl.Result{}, nil
 	}
@@ -99,16 +99,17 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if cji.Status.Completed {
 		r.Log.Info("Job has been completed", "jobinvocation", cji.Name)
 		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationComplete", "ClowdJobInvocation [%s] has completed all jobs", cji.Name)
-		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-			return ctrl.Result{}, err
+		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); condErr != nil {
+			return ctrl.Result{}, condErr
 		}
 		return ctrl.Result{}, nil
 	}
 
-	// CJI has already invoked a job, we'll update the status
-	if cji.Status.JobMap != nil {
-		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-			return ctrl.Result{}, err
+	// CJI has already invoked a job, we'll update the status. The Job map must have entries
+	// because it can exist to update the status without having done any work.
+	if cji.Status.JobMap != nil && len(cji.Status.JobMap) > 0 {
+		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); condErr != nil {
+			return ctrl.Result{}, condErr
 		}
 		return ctrl.Result{}, nil
 	} else {
@@ -123,23 +124,31 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			Namespace: req.Namespace,
 		}, &app)
 
+		// Set the base map here so we can update the status on errors
+		cji.Status.JobMap = map[string]crd.JobConditionState{}
+
 		// Determine if the ClowdApp containing the Job exists
 		if appErr != nil {
 			r.Recorder.Eventf(&cji, "Warning", "ClowdAppMissing", "ClowdApp [%s] is missing; Job cannot be invoked", cji.Spec.AppName)
-			if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-				return ctrl.Result{}, err
+			r.Log.Error(appErr, "App not found", "ClowdApp", cji.Spec.AppName, "namespace", cji.Namespace)
+			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, appErr); condErr != nil {
+				return ctrl.Result{}, condErr
 			}
+			// requeue with a buffer to let the app come up
 			return ctrl.Result{Requeue: true}, appErr
 		}
 
 		// Determine if the ClowdApp containing the Job is ready
-		if !app.IsReady() {
+		if !app.Status.Ready {
 			r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 			r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-			if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-				return ctrl.Result{}, err
+			readyErr := errors.New(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
+			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, readyErr); condErr != nil {
+				return ctrl.Result{}, condErr
 			}
-			return ctrl.Result{Requeue: true}, appErr
+
+			// requeue with a buffer to let the app come up
+			return ctrl.Result{Requeue: true}, readyErr
 		}
 
 		// Get the ClowdEnv for InvokeJob. Env is needed to build out our pod
@@ -151,9 +160,10 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		if envErr != nil {
 			r.Recorder.Eventf(&cji, "Warning", "ClowdEnvMissing", "ClowdEnv [%s] is missing; Job cannot be invoked", app.Spec.EnvName)
-			if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-				return ctrl.Result{}, err
+			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, envErr); condErr != nil {
+				return ctrl.Result{}, condErr
 			}
+			// requeue with a buffer to let the env come up
 			return ctrl.Result{Requeue: true}, envErr
 		}
 
@@ -162,10 +172,10 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			// Match the crd.Job name to the JobTemplate in ClowdApp
 			job, err := getJobFromName(jobName, &app)
 			if err != nil {
-				r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job named", jobName)
+				r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job defined for that name", jobName)
 				r.Log.Info("Missing Job Definition", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-				if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-					return ctrl.Result{}, err
+				if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
+					return ctrl.Result{}, condErr
 				}
 				return ctrl.Result{}, err
 			}
@@ -176,8 +186,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 			if err := r.InvokeJob(ctx, &cache, &job, &app, &env, &cji); err != nil {
 				r.Log.Error(err, "Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
-				if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-					return ctrl.Result{}, err
+				if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
+					return ctrl.Result{}, condErr
 				}
 				r.Recorder.Eventf(&cji, "Warning", "JobNotInvoked", "Job [%s] could not be invoked", jobName)
 				return ctrl.Result{Requeue: true}, err
@@ -197,8 +207,8 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			j := batchv1.Job{}
 			if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
 				r.Log.Error(err, "Iqe Job could not be created via cache", "jobinvocation", nn.Name)
-				if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-					return ctrl.Result{}, err
+				if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
+					return ctrl.Result{}, condErr
 				}
 				return ctrl.Result{}, err
 			}
@@ -206,16 +216,16 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			if err := iqe.CreateIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j, r.Log, r.Client); err != nil {
 				r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 				r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
-				if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-					return ctrl.Result{}, err
+				if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
+					return ctrl.Result{}, condErr
 				}
 				return ctrl.Result{}, err
 			}
 
 			if err := cache.Update(IqeClowdJob, &j); err != nil {
 				r.Log.Error(err, "Iqe Job could not update via cache", "jobinvocation", nn.Name)
-				if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-					return ctrl.Result{}, err
+				if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
+					return ctrl.Result{}, condErr
 				}
 				return ctrl.Result{}, err
 
@@ -231,16 +241,16 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 
 		if cacheErr := cache.ApplyAll(); cacheErr != nil {
-			if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-				return ctrl.Result{}, err
+			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, cacheErr); condErr != nil {
+				return ctrl.Result{}, condErr
 			}
 			return ctrl.Result{}, cacheErr
 		}
 
 		// Short running jobs may be done by the time the loop is ranged,
 		// so we update again before the reconcile ends
-		if err := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); err != nil {
-			return ctrl.Result{}, err
+		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); condErr != nil {
+			return ctrl.Result{}, condErr
 		}
 	}
 
@@ -347,7 +357,6 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 		for s := range cji.Status.JobMap {
 			if s == j.ObjectMeta.Name {
 				if len(j.Status.Conditions) > 0 {
-					//
 					condition := j.Status.Conditions[0].Type
 					if condition == "Complete" || condition == "Failed" {
 						jobsCompleted++

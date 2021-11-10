@@ -609,28 +609,26 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 		conditions = append(conditions, *condition)
 	}
 
+	// Setup custom status for CJI
+	condition := &crd.ClowdCondition{}
+	condition.Type = crd.JobInvocationComplete
+	condition.Status = core.ConditionFalse
+	condition.Message = "Some Jobs are still incomplete"
+	condition.LastTransitionTime = v1.Now()
+	if err != nil {
+		condition.Reason = err.Error()
+	}
+
 	jobs, err := o.GetInvokedJobs(ctx, client)
 	if err != nil {
 		return err
 	}
 	jobStatus := GetJobsStatus(jobs, o)
 
-	condition := &crd.ClowdCondition{}
-
-	condition.Status = core.ConditionFalse
-	condition.Message = "Some Jobs are still incomplete"
-
 	if jobStatus {
 		condition.Status = core.ConditionTrue
 		condition.Message = "All ClowdJob invocations complete"
 	}
-
-	condition.Type = crd.JobInvocationComplete
-	condition.LastTransitionTime = v1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
-
 	conditions = append(conditions, *condition)
 
 	for _, condition := range conditions {
