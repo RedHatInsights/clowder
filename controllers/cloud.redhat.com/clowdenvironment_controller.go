@@ -280,12 +280,12 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
 		_, err := provAcc.SetupProvider(&provider)
-		elapsed := time.Since(start).Milliseconds()
-		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(float64(elapsed))
+		elapsed := time.Since(start).Seconds()
+		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(elapsed)
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
-		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%d", elapsed))
+		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}
 	return nil
 }
