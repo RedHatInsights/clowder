@@ -113,8 +113,8 @@ func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.Na
 	return nobj, nil
 }
 
-func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object client.Object, opts ...CacheOption) error {
-	err := cache.Update(resourceIdent, object, opts...)
+func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object client.Object) error {
+	err := cache.Update(resourceIdent, object)
 
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ type ObjectMap map[ResourceIdent]client.Object
 
 // CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
-func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool, opts ...CacheOption) error {
+func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
 	nn := GetNamespacedName(o, suffix)
 
 	makeFnMap := make(map[ResourceIdent]client.Object)
@@ -146,7 +146,7 @@ func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.Clow
 	fn(o, makeFnMap, usePVC, nodePort)
 
 	for k, v := range makeFnMap {
-		err := updateResource(cache, k, v, opts...)
+		err := updateResource(cache, k, v)
 
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
@@ -241,7 +241,7 @@ func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, cache *ObjectCach
 		}
 	}
 
-	if err := cache.Update(resourceIdent, secret, CacheOption{WriteNow: true}); err != nil {
+	if err := cache.Update(resourceIdent, secret); err != nil {
 		return nil, err
 	}
 
