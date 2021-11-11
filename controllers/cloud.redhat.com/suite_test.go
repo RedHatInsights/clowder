@@ -773,12 +773,12 @@ func scaledObjectValidation(t *testing.T, app *crd.ClowdApp, scaler *keda.Scaled
 		},
 	}
 	for _, trigger := range scaler.Spec.Triggers {
-		assert.Equal(t, trigger.Type, expectedTrigger.Type)
-		assert.Equal(t, trigger.Metadata, expectedTrigger.Metadata)
+		assert.Equal(t, expectedTrigger.Type, trigger.Type)
+		assert.Equal(t, expectedTrigger.Metadata, trigger.Metadata)
 	}
 
-	assert.Equal(t, scaler.Spec.ScaleTargetRef.Kind, expectTarget.Kind)
-	assert.Equal(t, scaler.Spec.ScaleTargetRef.Name, expectTarget.Name)
+	assert.Equal(t, expectTarget.Kind, scaler.Spec.ScaleTargetRef.Kind)
+	assert.Equal(t, expectTarget.Name, scaler.Spec.ScaleTargetRef.Name)
 }
 
 func fetchWithDefaults(name types.NamespacedName, resource client.Object) error {
