@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
@@ -29,9 +30,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	// Import the providers to initialize them
@@ -286,7 +289,7 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
-	controller := ctrl.NewControllerManagedBy(mgr).
+	ctrlr := ctrl.NewControllerManagedBy(mgr).
 		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
 		Watches(
@@ -297,13 +300,16 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&crd.ClowdEnvironment{})
 
 	if clowder_config.LoadedConfig.Features.WatchStrimziResources {
-		controller.Owns(&strimzi.Kafka{})
-		controller.Owns(&strimzi.KafkaConnect{})
-		controller.Owns(&strimzi.KafkaUser{})
-		controller.Owns(&strimzi.KafkaTopic{})
+		ctrlr.Owns(&strimzi.Kafka{})
+		ctrlr.Owns(&strimzi.KafkaConnect{})
+		ctrlr.Owns(&strimzi.KafkaUser{})
+		ctrlr.Owns(&strimzi.KafkaTopic{})
 	}
 
-	return controller.Complete(r)
+	ctrlr.WithOptions(controller.Options{
+		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+	})
+	return ctrlr.Complete(r)
 }
 
 func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a client.Object) []reconcile.Request {
