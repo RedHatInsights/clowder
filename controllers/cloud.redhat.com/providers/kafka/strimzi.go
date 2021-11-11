@@ -24,25 +24,25 @@ import (
 )
 
 // KafkaTopic is the resource ident for a KafkaTopic object.
-var KafkaTopic = providers.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{})
+var KafkaTopic = providers.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{}, providers.ResourceOptions{WriteNow: true})
 
 // KafkaInstance is the resource ident for a Kafka object.
-var KafkaInstance = providers.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{})
+var KafkaInstance = providers.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{}, providers.ResourceOptions{WriteNow: true})
 
 // KafkaConnect is the resource ident for a KafkaConnect object.
-var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{})
+var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, providers.ResourceOptions{WriteNow: true})
 
 // KafkaUser is the resource ident for a KafkaUser object.
-var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{})
+var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{}, providers.ResourceOptions{WriteNow: true})
 
 // KafkaUser is the resource ident for a KafkaUser object.
-var KafkaConnectUser = providers.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{})
+var KafkaConnectUser = providers.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{}, providers.ResourceOptions{WriteNow: true})
 
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
-var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{})
+var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{}, providers.ResourceOptions{WriteNow: true})
 
 // KafkaNetworkPolicy is the resource ident for the KafkaNetworkPolicy
-var KafkaNetworkPolicy = providers.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{})
+var KafkaNetworkPolicy = providers.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{}, providers.ResourceOptions{WriteNow: true})
 
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
@@ -283,7 +283,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
-	if err := s.Cache.Update(KafkaInstance, k, providers.CacheOption{WriteNow: true}); err != nil {
+	if err := s.Cache.Update(KafkaInstance, k); err != nil {
 		return err
 	}
 
@@ -308,7 +308,7 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	cm.SetLabels(providers.Labels{"env": s.Env.Name})
 	cm.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
-	if err := s.Cache.Update(KafkaMetricsConfigMap, cm, providers.CacheOption{WriteNow: true}); err != nil {
+	if err := s.Cache.Update(KafkaMetricsConfigMap, cm); err != nil {
 		return types.NamespacedName{}, err
 	}
 
@@ -380,7 +380,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 		},
 	})
 
-	if err := s.Cache.Update(KafkaConnectUser, ku, providers.CacheOption{WriteNow: true}); err != nil {
+	if err := s.Cache.Update(KafkaConnectUser, ku); err != nil {
 		return err
 	}
 
@@ -480,7 +480,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	k.SetNamespace(getConnectNamespace(s.Env))
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 
-	if err := s.Cache.Update(KafkaConnect, k, providers.CacheOption{WriteNow: true}); err != nil {
+	if err := s.Cache.Update(KafkaConnect, k); err != nil {
 		return err
 	}
 
@@ -641,7 +641,7 @@ func createNetworkPolicies(p *providers.Provider) error {
 	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
 	labeler(np)
 
-	if err := p.Cache.Update(KafkaNetworkPolicy, np, providers.CacheOption{WriteNow: true}); err != nil {
+	if err := p.Cache.Update(KafkaNetworkPolicy, np); err != nil {
 		return err
 	}
 
@@ -783,7 +783,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		},
 	})
 
-	if err := s.Cache.Update(KafkaUser, ku, providers.CacheOption{WriteNow: true}); err != nil {
+	if err := s.Cache.Update(KafkaUser, ku); err != nil {
 		return err
 	}
 
@@ -837,7 +837,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if err := s.Cache.Update(KafkaTopic, k, providers.CacheOption{WriteNow: true}); err != nil {
+		if err := s.Cache.Update(KafkaTopic, k); err != nil {
 			return err
 		}
 

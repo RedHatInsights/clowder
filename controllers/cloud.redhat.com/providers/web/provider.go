@@ -17,10 +17,10 @@ var ProvName = "web"
 var CoreService = providers.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
 
 // WebKeycloakDeployment is the mocked keycloak deployment
-var WebKeycloakDeployment = providers.NewSingleResourceIdent(ProvName, "web_keycloak_deployment", &apps.Deployment{})
+var WebKeycloakDeployment = providers.NewSingleResourceIdent(ProvName, "web_keycloak_deployment", &apps.Deployment{}, providers.ResourceOptions{WriteNow: true})
 
 // WebKeycloakService is the mocked keycloak deployment
-var WebKeycloakService = providers.NewSingleResourceIdent(ProvName, "web_keycloak_service", &core.Service{})
+var WebKeycloakService = providers.NewSingleResourceIdent(ProvName, "web_keycloak_service", &core.Service{}, providers.ResourceOptions{WriteNow: true})
 
 // WebKeycloakIngress is the keycloak ingress
 var WebKeycloakIngress = providers.NewSingleResourceIdent(ProvName, "web_keycloak_ingress", &networking.Ingress{})
@@ -38,7 +38,7 @@ var WebBOPIngress = providers.NewSingleResourceIdent(ProvName, "web_bop_ingress"
 var WebSecret = providers.NewMultiResourceIdent(ProvName, "web_secret", &core.Secret{})
 
 // WebKeycloakSecret is the mocked secret config
-var WebKeycloakSecret = providers.NewSingleResourceIdent(ProvName, "web_keycloak_secret", &core.Secret{})
+var WebKeycloakSecret = providers.NewSingleResourceIdent(ProvName, "web_keycloak_secret", &core.Secret{}, providers.ResourceOptions{WriteNow: true})
 
 // WebIngress is the mocked secret config
 var WebIngress = providers.NewMultiResourceIdent(ProvName, "web_ingress", &networking.Ingress{})
