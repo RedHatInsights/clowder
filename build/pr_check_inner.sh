@@ -88,6 +88,7 @@ kubectl krew install kuttl
 set +e
 
 kubectl get env
+kubectl get env
 
 source build/run_kuttl.sh --report xml
 KUTTL_RESULT=$?
