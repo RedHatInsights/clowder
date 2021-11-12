@@ -85,6 +85,8 @@ kubectl rollout status deployment clowder-controller-manager -n clowder-system
 
 kubectl krew install kuttl
 
+kubectl get env
+
 set +e
 source build/run_kuttl.sh --report xml
 KUTTL_RESULT=$?
