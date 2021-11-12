@@ -111,8 +111,7 @@ func TestMain(m *testing.M) {
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
 	k8sClient.Create(ctx, nsSpec)
 
-	stopManager, cancel := context.WithCancel(context.Background())
-	go Run(":8080", ":8081", false, testEnv.Config, stopManager, false)
+	go Run(":8080", ":8081", false, testEnv.Config, ctrl.SetupSignalHandler(), false)
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
@@ -135,7 +134,7 @@ func TestMain(m *testing.M) {
 
 	retCode := m.Run()
 	logger.Info("Stopping test env...")
-	cancel()
+
 	err = testEnv.Stop()
 
 	if err != nil {
