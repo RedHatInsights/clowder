@@ -37,6 +37,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
 
+	d.Kind = "Deployment"
+
 	pod := deployment.PodSpec
 	d.Spec.Template.SetAnnotations(make(map[string]string))
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
