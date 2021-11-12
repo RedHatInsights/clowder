@@ -3,6 +3,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: sleep 1
+- script: kubectl get env
 - script: kubectl get secret --namespace=test-kafka-strimzi-topic puptoo -o json > /tmp/test-kafka-strimzi-topic
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-strimzi-topic | base64 -d > /tmp/test-kafka-strimzi-topic-json
 

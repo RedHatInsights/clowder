@@ -3,6 +3,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: sleep 5
+- script: kubectl get env
 - script: kubectl get secret --namespace=test-kafka-app-autoscale puptoo -o json > /tmp/test-kafka-app-autoscale
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-app-autoscale | base64 -d > /tmp/test-kafka-app-autoscale-json
 

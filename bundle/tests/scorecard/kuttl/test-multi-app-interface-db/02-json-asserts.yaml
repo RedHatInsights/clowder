@@ -3,6 +3,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: sleep 5
+- script: kubectl get env
 - script: kubectl get secret --namespace=test-multi-app-interface-db app-c -o json > /tmp/test-multi-app-interface-db-c
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-app-interface-db-c | base64 -d > /tmp/test-multi-app-interface-db-json-c
 
