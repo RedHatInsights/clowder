@@ -160,13 +160,10 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config:   &kConfig,
-			Version:  &version,
-			Replicas: replicas,
-			Resources: &strimzi.KafkaSpecKafkaResources{
-				Requests: &kRequests,
-				Limits:   &kLimits,
-			},
+			Config:    &kConfig,
+			Version:   &version,
+			Replicas:  replicas,
+			Resources: &s.Env.Spec.Providers.Kafka.Cluster.Resources,
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
@@ -220,7 +217,6 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 
 	k.Spec.Kafka.MetricsConfig = &metricsConfig
-	k.Spec.Kafka.Resources = &s.Env.Spec.Providers.Kafka.Cluster.Resources
 
 	listener := strimzi.KafkaSpecKafkaListenersElem{
 		Type: "internal",
@@ -449,6 +445,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		Version:          &version,
 		Config:           &config,
 		Image:            &image,
+		Resources:        &s.Env.Spec.Providers.Kafka.Connect.Resources,
 	}
 	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{

@@ -150,6 +150,9 @@ type KafkaConnectClusterConfig struct {
 
 	// Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
 	Image string `json:"image,omitempty"`
+
+	// Resource Limits
+	Resources strimzi.KafkaConnectSpecResources `json:"resources,omitempty"`
 }
 
 // NamespacedName type to represent a real Namespaced Name
