@@ -16,8 +16,22 @@ spec:
     kafka:
       cluster:
         namespace: test-kafka-strimzi-ephemeral-kafka
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 600Mi
       connect:
         namespace: test-kafka-strimzi-ephemeral-connect
+        resources:
+          limits:
+            cpu: 400m
+            memory: 800Mi
+          requests:
+            cpu: 200m
+            memory: 500Mi
       mode: operator
       pvc: false
       enableLegacyStrimzi: true

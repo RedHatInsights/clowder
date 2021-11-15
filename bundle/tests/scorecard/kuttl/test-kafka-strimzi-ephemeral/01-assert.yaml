@@ -19,6 +19,13 @@ spec:
         tls: false
     storage:
       type: ephemeral
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 600Mi
   zookeeper:
     replicas: 1
     storage:
@@ -42,3 +49,10 @@ spec:
     offset.storage.topic: connect-cluster-offsets
     config.storage.topic: connect-cluster-configs
     status.storage.topic: connect-cluster-status
+  resources:
+    limits:
+      cpu: 400m
+      memory: 800Mi
+    requests:
+      cpu: 200m
+      memory: 500Mi
