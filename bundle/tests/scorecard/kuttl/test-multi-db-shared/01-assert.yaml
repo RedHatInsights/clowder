@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-multi-db-shared-db-v12
+  namespace: test-multi-db-shared
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-12-9ee2984
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-multi-db-shared-db-v10
+  namespace: test-multi-db-shared
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-10-9ee2984
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-multi-db-shared
+status:
+  ready: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-c
+  namespace: test-multi-db-shared
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-a
+  namespace: test-multi-db-shared

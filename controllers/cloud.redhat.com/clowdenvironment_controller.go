@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
@@ -29,9 +30,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	// Import the providers to initialize them
@@ -114,7 +117,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 		return ctrl.Result{}, err
 	}
-
+	GetEnvResourceStatus(ctx, r.Client, &env)
 	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
 	if isEnvMarkedForDeletion {
 		if contains(env.GetFinalizers(), envFinalizer) {
@@ -187,32 +190,26 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		Log:    log,
 	}
 
-	var requeue = false
-
 	SetEnv(env.Name)
 	defer ReleaseEnv()
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
-		if non_fatal := errors.HandleError(ctx, provErr); !non_fatal {
-			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
-			return ctrl.Result{}, provErr
-
-		} else {
-			requeue = true
+		err := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
+		if err != nil {
+			return ctrl.Result{Requeue: true}, err
 		}
+		return ctrl.Result{Requeue: true}, provErr
 	}
 
 	cacheErr := cache.ApplyAll()
 
 	if cacheErr != nil {
-		if non_fatal := errors.HandleError(ctx, cacheErr); !non_fatal {
-			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
-			return ctrl.Result{}, cacheErr
-
-		} else {
-			requeue = true
+		err := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
+		if err != nil {
+			return ctrl.Result{Requeue: true}, err
 		}
+		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
 	if err == nil {
@@ -230,42 +227,39 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if statusErr := SetEnvResourceStatus(ctx, r.Client, &env); statusErr != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true}, err
 	}
 
 	setPrometheusStatus(&env)
 
-	env.Status.Ready = env.IsReady()
+	ready, err := GetEnvResourceStatus(ctx, r.Client, &env)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+
+	env.Status.Ready = ready
 	env.Status.Generation = env.Generation
 
 	if err := r.Client.Status().Update(ctx, &env); err != nil {
 		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true}, err
 	}
 
-	if !requeue {
-		r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
-		log.Info("Reconciliation successful", "env", env.Name)
-
-		// Delete all resources that are not used anymore
-		err := cache.Reconcile(&env)
-		if err != nil {
-			return ctrl.Result{Requeue: requeue}, nil
-		}
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, err)
-	} else {
-		var err error
-		if provErr != nil {
-			err = provErr
-		} else if cacheErr != nil {
-			err = cacheErr
-		}
-		log.Info("Reconciliation partially successful", "env", fmt.Sprintf("%s:%s", env.Namespace, env.Name))
-		r.Recorder.Eventf(&env, "Warning", "SuccessfulPartialReconciliation", "Environment requeued [%s]", env.GetClowdName())
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationPartiallySuccessful, err)
+	// Delete all resources that are not used anymore
+	rErr := cache.Reconcile(&env)
+	if rErr != nil {
+		return ctrl.Result{Requeue: true}, rErr
 	}
 
-	return ctrl.Result{Requeue: requeue}, nil
+	err = SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+
+	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
+	log.Info("Reconciliation successful", "env", env.Name)
+
+	return ctrl.Result{}, nil
 }
 
 func setPrometheusStatus(env *crd.ClowdEnvironment) {
@@ -295,7 +289,7 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
-	controller := ctrl.NewControllerManagedBy(mgr).
+	ctrlr := ctrl.NewControllerManagedBy(mgr).
 		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
 		Watches(
@@ -306,11 +300,16 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&crd.ClowdEnvironment{})
 
 	if clowder_config.LoadedConfig.Features.WatchStrimziResources {
-		controller.Owns(&strimzi.Kafka{})
-		controller.Owns(&strimzi.KafkaConnect{})
+		ctrlr.Owns(&strimzi.Kafka{})
+		ctrlr.Owns(&strimzi.KafkaConnect{})
+		ctrlr.Owns(&strimzi.KafkaUser{})
+		ctrlr.Owns(&strimzi.KafkaTopic{})
 	}
 
-	return controller.Complete(r)
+	ctrlr.WithOptions(controller.Options{
+		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+	})
+	return ctrlr.Complete(r)
 }
 
 func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a client.Object) []reconcile.Request {

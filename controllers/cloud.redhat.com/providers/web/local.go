@@ -93,7 +93,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebKeycloakService,
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "keycloak", makeKeycloak, false, p.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "keycloak", makeKeycloak, false, p.Env.IsNodePort(), providers.CacheOption{WriteNow: true}); err != nil {
 		return nil, err
 	}
 
@@ -230,7 +230,7 @@ func makeAuthIngress(p *providers.Provider) error {
 		},
 	}
 
-	if err := p.Cache.Update(WebKeycloakIngress, netobj); err != nil {
+	if err := p.Cache.Update(WebKeycloakIngress, netobj, providers.CacheOption{WriteNow: true}); err != nil {
 		return err
 	}
 	return nil

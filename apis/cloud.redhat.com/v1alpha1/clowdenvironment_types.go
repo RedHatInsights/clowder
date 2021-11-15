@@ -214,7 +214,7 @@ type KafkaConfig struct {
 // TODO: Other potential modes: RDS and Operator (e.g. CrunchyDB)
 
 // DatabaseMode details the mode of operation of the Clowder Database Provider
-// +kubebuilder:validation:Enum=app-interface;local;none
+// +kubebuilder:validation:Enum=shared;app-interface;local;none
 type DatabaseMode string
 
 // DatabaseConfig configures the Clowder provider controlling the creation of
@@ -573,9 +573,17 @@ func (i *ClowdEnvironment) GenerateTargetNamespace() string {
 	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
 }
 
-// IsReady returns true when all the ManagedDeployments are Ready
+// IsReady returns true when all deployments are ready and the reconciliation is successful
 func (i *ClowdEnvironment) IsReady() bool {
-	return (i.Status.Deployments.ManagedDeployments == i.Status.Deployments.ReadyDeployments)
+	conditionCheck := false
+
+	for _, condition := range i.Status.Conditions {
+		if condition.Type == ReconciliationSuccessful {
+			conditionCheck = true
+		}
+	}
+
+	return i.Status.Ready && conditionCheck
 }
 
 // ConvertDeprecatedKafkaSpec converts values from the old Kafka provider spec into the new format

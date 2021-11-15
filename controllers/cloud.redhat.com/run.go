@@ -12,6 +12,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	keda "github.com/kedacore/keda/v2/api/v1alpha1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -51,6 +52,7 @@ func init() {
 	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(strimzi.AddToScheme(scheme))
 	utilruntime.Must(cyndi.AddToScheme(scheme))
+	utilruntime.Must(keda.AddToScheme(scheme))
 	utilruntime.Must(prom.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 

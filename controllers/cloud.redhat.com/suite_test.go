@@ -44,6 +44,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	keda "github.com/kedacore/keda/v2/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -87,6 +88,12 @@ func TestMain(m *testing.M) {
 		logger.Fatal("Failed to add scheme", zap.Error(err))
 	}
 
+	err = keda.AddToScheme(clientgoscheme.Scheme)
+
+	if err != nil {
+		logger.Fatal("Failed to add scheme", zap.Error(err))
+	}
+
 	// +kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: clientgoscheme.Scheme})
@@ -104,8 +111,7 @@ func TestMain(m *testing.M) {
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
 	k8sClient.Create(ctx, nsSpec)
 
-	stopManager, cancel := context.WithCancel(context.Background())
-	go Run(":8080", ":8081", false, testEnv.Config, stopManager, false)
+	go Run(":8080", ":8081", false, testEnv.Config, ctrl.SetupSignalHandler(), false)
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
@@ -128,7 +134,7 @@ func TestMain(m *testing.M) {
 
 	retCode := m.Run()
 	logger.Info("Stopping test env...")
-	cancel()
+
 	err = testEnv.Stop()
 
 	if err != nil {
@@ -287,6 +293,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	}
 
 	replicas := int32(32)
+	maxReplicas := int32(64)
 	partitions := int32(5)
 	dbVersion := int32(12)
 	topicName := "inventory"
@@ -310,6 +317,17 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					Image: "test:test",
 				},
 				Name: "testpod",
+				AutoScaler: &crd.AutoScaler{
+					MaxReplicaCount: &maxReplicas,
+					Triggers: []keda.ScaleTriggers{
+						{
+							Type: "cpu",
+							Metadata: map[string]string{
+								"type":  "Utilization",
+								"value": "50",
+							},
+						},
+					}},
 			}},
 			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
@@ -632,6 +650,17 @@ func TestCreateClowdApp(t *testing.T) {
 	kafkaValidation(t, env, app, jsonContent, clowdAppNN)
 
 	clowdWatchValidation(t, jsonContent, cwData)
+
+	scaler := keda.ScaledObject{}
+
+	err = fetchWithDefaults(appnn, &scaler)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	scaledObjectValidation(t, app, &scaler, &d)
 }
 
 func metadataValidation(t *testing.T, app *crd.ClowdApp, jsonContent *config.AppConfig) {
@@ -727,6 +756,28 @@ func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData ma
 			return
 		}
 	}
+}
+
+func scaledObjectValidation(t *testing.T, app *crd.ClowdApp, scaler *keda.ScaledObject, deployment *apps.Deployment) {
+	// Scaled object validation
+	expectTarget := keda.ScaleTarget{
+		Kind: "Deployment",
+		Name: "test-testpod",
+	}
+	expectedTrigger := keda.ScaleTriggers{
+		Type: "cpu",
+		Metadata: map[string]string{
+			"type":  "Utilization",
+			"value": "50",
+		},
+	}
+	for _, trigger := range scaler.Spec.Triggers {
+		assert.Equal(t, expectedTrigger.Type, trigger.Type)
+		assert.Equal(t, expectedTrigger.Metadata, trigger.Metadata)
+	}
+
+	assert.Equal(t, expectTarget.Kind, scaler.Spec.ScaleTargetRef.Kind)
+	assert.Equal(t, expectTarget.Name, scaler.Spec.ScaleTargetRef.Name)
 }
 
 func fetchWithDefaults(name types.NamespacedName, resource client.Object) error {
