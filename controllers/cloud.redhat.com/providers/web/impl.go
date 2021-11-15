@@ -37,6 +37,10 @@ func makeService(cache *providers.ObjectCache, deployment *crd.Deployment, app *
 
 	cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment))
 
+	if d.Spec.Replicas == nil {
+		return nil
+	}
+
 	servicePorts := []core.ServicePort{}
 	containerPorts := []core.ContainerPort{}
 

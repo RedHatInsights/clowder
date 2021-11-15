@@ -307,6 +307,9 @@ type TestingSpec struct {
 // ClowdAppSpec is the main specification for a single Clowder Application
 // it defines n pods along with dependencies that are shared between them.
 type ClowdAppSpec struct {
+	// A pre-hook job to run between deployments
+	PreHookJob Job `json:"preHookJob,omitempty"`
+
 	// A list of deployments
 	Deployments []Deployment `json:"deployments,omitempty"`
 

@@ -19,7 +19,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 	"time"
+
+	batchv1 "k8s.io/api/batch/v1"
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
@@ -380,9 +384,14 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &crd.ClowdEnvironment{}},
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 		).
+		Watches(
+			&source.Kind{Type: &batchv1.Job{}},
+			handler.EnqueueRequestsFromMapFunc(r.appToEnqueueOnJobCompletion),
+		).
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
 		Owns(&core.ConfigMap{}).
+		// Owns(&batchv1.Job{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
@@ -421,6 +430,64 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 
 	for _, app := range appList.Items {
 		if app.Spec.EnvName == env.Name {
+			// Add filtered resources to return result
+			reqs = append(reqs, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      app.Name,
+					Namespace: app.Namespace,
+				},
+			})
+		}
+	}
+
+	return reqs
+}
+func (r *ClowdAppReconciler) appToEnqueueOnJobCompletion(a client.Object) []reconcile.Request {
+	reqs := []reconcile.Request{}
+	ctx := context.Background()
+	obj := types.NamespacedName{
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
+	}
+
+	// Get the Job Resource
+	job := batchv1.Job{}
+	err := r.Client.Get(ctx, obj, &job)
+
+	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return reqs
+		}
+		r.Log.Error(err, "Failed to fetch Job")
+		return nil
+	}
+
+	switch {
+	case job.Status.Active == 1:
+		return reqs
+	case job.Status.Failed == 1:
+		return reqs
+	case job.Status.Succeeded == 0:
+		return reqs
+	}
+
+	// Get all the ClowdApp resources
+
+	appList := crd.ClowdAppList{}
+	err = r.Client.List(ctx, &appList)
+	if err != nil {
+		r.Log.Error(err, "Failed to list ClowdApps")
+		return nil
+	}
+
+	// Filter based on job name
+	for _, app := range appList.Items {
+		if strings.HasPrefix(job.Name, app.Spec.PreHookJob.Name) {
+			app.ObjectMeta.Annotations["clowder/pre-hook-status"] = "done"
+			app.ObjectMeta.Annotations["clowder/pre-hook-generation"] = strconv.Itoa(int(app.GetGeneration()))
+			r.Client.Update(context.TODO(), &app)
+
 			// Add filtered resources to return result
 			reqs = append(reqs, reconcile.Request{
 				NamespacedName: types.NamespacedName{
