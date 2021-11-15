@@ -605,6 +605,7 @@ KafkaConnectClusterConfig defines options related to the Kafka Connect cluster m
 | *`replicas`* __integer__ | The requested number of replicas for kafka connect. If unset, default is '1'
 | *`version`* __string__ | Version. If unset, default is '2.5.0'
 | *`image`* __string__ | Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+| *`resources`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta2-kafkaconnectspecresources[$$KafkaConnectSpecResources$$]__ | Resource Limits
 |===
 
 
