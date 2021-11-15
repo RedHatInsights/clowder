@@ -99,7 +99,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
-	var kConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
+	var kConfig, zLimits, zRequests apiextensions.JSON
 	var entityUserLimits, entityUserRequests apiextensions.JSON
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
 	var entityTlsLimits, entityTlsRequests apiextensions.JSON
@@ -107,16 +107,6 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
-
-	kRequests.UnmarshalJSON([]byte(`{
-        "cpu": "250m",
-        "memory": "600Mi"
-	}`))
-
-	kLimits.UnmarshalJSON([]byte(`{
-        "cpu": "500m",
-        "memory": "1Gi"
-	}`))
 
 	zRequests.UnmarshalJSON([]byte(`{
         "cpu": "100m",
