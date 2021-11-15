@@ -136,7 +136,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 
 		// Determine if the ClowdApp containing the Job is ready
-		if !app.Status.Ready {
+		if !app.IsReady() {
 			r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 			r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
 			readyErr := errors.New(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
