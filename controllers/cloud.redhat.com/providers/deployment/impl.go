@@ -48,12 +48,16 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		d.Spec.Template.Annotations["clowder/authsidecar-config"] = fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name)
 	}
 
-	// let autoscaler scale without reconciliation re-writing the replicas
-	if d.Spec.Replicas == nil {
-		// Replicas is nil during deployment initialisation
-		d.Spec.Replicas = deployment.MinReplicas
-	} else if deployment.MinReplicas != nil && *d.Spec.Replicas < *deployment.MinReplicas {
-		// Reset replicas to minReplicas if it somehow falls below minReplicas
+	if deployment.AutoScaler != nil {
+		// let autoscaler scale without reconciliation re-writing the replicas
+		if d.Spec.Replicas == nil {
+			// Replicas is nil during deployment initialisation
+			d.Spec.Replicas = deployment.MinReplicas
+		} else if deployment.MinReplicas != nil && *d.Spec.Replicas < *deployment.MinReplicas {
+			// Reset replicas to minReplicas if it somehow falls below minReplicas
+			d.Spec.Replicas = deployment.MinReplicas
+		}
+	} else {
 		d.Spec.Replicas = deployment.MinReplicas
 	}
 
