@@ -21,12 +21,26 @@ spec:
       type: persistent-claim
       size: 100Mi
       deleteClaim: false
+    resources:  # assert default resource settings are used
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 600Mi
   zookeeper:
     replicas: 1
     storage:
       type: persistent-claim
       size: 100Mi
       deleteClaim: false
+    resources:  # assert default resource settings are used
+      limits:
+        cpu: 250m
+        memory: 600Mi
+      requests:
+        cpu: 100m
+        memory: 300Mi
   entityOperator:
     topicOperator: {}
 ---
@@ -46,3 +60,10 @@ spec:
     offset.storage.topic: connect-cluster-offsets
     config.storage.topic: connect-cluster-configs
     status.storage.topic: connect-cluster-status
+  resources:  # assert default resource settings are used
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi

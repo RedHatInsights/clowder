@@ -99,7 +99,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
-	var kConfig, zLimits, zRequests apiextensions.JSON
+	// default values for config/requests/limits in Strimzi resource specs
+	var kConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
 	var entityUserLimits, entityUserRequests apiextensions.JSON
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
 	var entityTlsLimits, entityTlsRequests apiextensions.JSON
@@ -107,6 +108,16 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
+
+	kRequests.UnmarshalJSON([]byte(`{
+        "cpu": "250m",
+        "memory": "600Mi"
+	}`))
+
+	kLimits.UnmarshalJSON([]byte(`{
+        "cpu": "500m",
+        "memory": "1Gi"
+	}`))
 
 	zRequests.UnmarshalJSON([]byte(`{
         "cpu": "100m",
@@ -148,12 +159,23 @@ func (s *strimziProvider) configureKafkaCluster() error {
         "memory": "100Mi"
 	}`))
 
+	// check if defaults have been overridden in ClowdEnvironment
+	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests != nil {
+		kRequests = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests
+	}
+	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits != nil {
+		kLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
+	}
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config:    &kConfig,
-			Version:   &version,
-			Replicas:  replicas,
-			Resources: &s.Env.Spec.Providers.Kafka.Cluster.Resources,
+			Config:   &kConfig,
+			Version:  &version,
+			Replicas: replicas,
+			Resources: &strimzi.KafkaSpecKafkaResources{
+				Requests: &kRequests,
+				Limits:   &kLimits,
+			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
@@ -374,6 +396,27 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 }
 
 func (s *strimziProvider) configureKafkaConnectCluster() error {
+	var kcRequests, kcLimits apiextensions.JSON
+
+	// default values for config/requests/limits in Strimzi resource specs
+	kcRequests.UnmarshalJSON([]byte(`{
+        "cpu": "250m",
+        "memory": "256Mi"
+	}`))
+
+	kcLimits.UnmarshalJSON([]byte(`{
+        "cpu": "500m",
+        "memory": "512Mi"
+	}`))
+
+	// check if defaults have been overridden in ClowdEnvironment
+	if s.Env.Spec.Providers.Kafka.Connect.Resources.Requests != nil {
+		kcRequests = *s.Env.Spec.Providers.Kafka.Connect.Resources.Requests
+	}
+	if s.Env.Spec.Providers.Kafka.Connect.Resources.Limits != nil {
+		kcLimits = *s.Env.Spec.Providers.Kafka.Connect.Resources.Limits
+	}
+
 	clusterNN := types.NamespacedName{
 		Namespace: getConnectNamespace(s.Env),
 		Name:      getConnectClusterName(s.Env),
@@ -435,8 +478,12 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 		Version:          &version,
 		Config:           &config,
 		Image:            &image,
-		Resources:        &s.Env.Spec.Providers.Kafka.Connect.Resources,
+		Resources: &strimzi.KafkaConnectSpecResources{
+			Requests: &kcRequests,
+			Limits:   &kcLimits,
+		},
 	}
+
 	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
 			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
