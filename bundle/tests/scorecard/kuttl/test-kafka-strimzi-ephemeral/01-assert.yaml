@@ -19,7 +19,7 @@ spec:
         tls: false
     storage:
       type: ephemeral
-    resources:
+  resources:  # assert resource settings from ClowdEnvironment are used
       limits:
         cpu: 500m
         memory: 1Gi
@@ -49,7 +49,7 @@ spec:
     offset.storage.topic: connect-cluster-offsets
     config.storage.topic: connect-cluster-configs
     status.storage.topic: connect-cluster-status
-  resources:
+  resources:  # assert resource settings from ClowdEnvironment are used
     limits:
       cpu: 400m
       memory: 800Mi
