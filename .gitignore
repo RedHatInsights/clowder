@@ -47,3 +47,5 @@ _build
 # Downloaded operator bundles
 build/operator_bundles
 build/.build_venv
+
+version.go

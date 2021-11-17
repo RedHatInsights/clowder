@@ -2,6 +2,7 @@
 
 import yaml
 import sys
+import subprocess
 
 yamls = yaml.safe_load_all(sys.stdin)
 

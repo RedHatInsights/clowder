@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM registry.access.redhat.com/ubi8/go-toolset:1.15.14-14 as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.16.7 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -23,6 +23,7 @@ COPY apis/ apis/
 COPY controllers/ controllers/
 
 RUN make manifests generate fmt vet release
+RUN make update-version
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go

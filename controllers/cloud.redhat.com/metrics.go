@@ -28,9 +28,16 @@ var (
 		},
 		[]string{"operation"},
 	)
+	clowderVersion = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "clowder_version",
+			Help: "ClowderVersion 1 if present, 0 if not",
+		},
+		[]string{"version"},
+	)
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, clientOpsMetric)
+	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, clientOpsMetric, clowderVersion)
 }
