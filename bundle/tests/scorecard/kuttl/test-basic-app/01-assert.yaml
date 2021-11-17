@@ -33,12 +33,12 @@ spec:
           value: /cdapp/cdappconfig.json
       initContainers:
       - env:
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
         - name: ENV_VAR_1
           value: "override_1"
         - name: ENV_VAR_3
           value: "env_var_3"
-        - name: ACG_CONFIG
-          value: /cdapp/cdappconfig.json
 ---
 apiVersion: v1
 kind: Service
