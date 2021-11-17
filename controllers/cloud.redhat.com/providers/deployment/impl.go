@@ -198,6 +198,11 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 				}
 			}
 		} else {
+
+			icStruct.Env = append(
+				icStruct.Env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
+			)
+
 			for _, envvar := range ic.Env {
 				icStruct.Env = append(icStruct.Env, core.EnvVar{
 					Name:      envvar.Name,
@@ -206,10 +211,6 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 				})
 			}
 		}
-
-		icStruct.Env = append(
-			icStruct.Env, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
-		)
 
 		containerList[i] = icStruct
 	}
