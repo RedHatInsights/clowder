@@ -113,7 +113,7 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
-test: manifests generate fmt vet
+test: manifests update-version generate fmt vet
 	mkdir -p ${ENVTEST_ASSETS_DIR}
 	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
 	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools ${ENVTEST_ASSETS_DIR}; setup_envtest_env ${ENVTEST_ASSETS_DIR}; go test ./... -coverprofile cover.out
@@ -123,7 +123,7 @@ test: manifests generate fmt vet
 genconfig:
 	cd controllers/cloud.redhat.com/config && gojsonschema -p config -o types.go schema.json
 
-build: generate fmt vet ## Build manager binary.
+build: generate update-version fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
 run: manifests generate fmt vet ## Run a controller from your host.
@@ -169,6 +169,9 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
+VERSION=$(shell git describe --tags)
+update-version: ## Updates the version in the image
+	$(shell echo -en "package controllers\n\nvar Version = \"$(VERSION)\"\n" > controllers/cloud.redhat.com/version.go)
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
