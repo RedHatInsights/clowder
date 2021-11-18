@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -151,12 +152,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if ReadEnv() == app.Spec.EnvName {
-		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
-		log.Info("Env currently being reconciled")
-		return ctrl.Result{Requeue: true}, nil
-	}
-
 	log.Info("Reconciliation started")
 
 	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
@@ -165,6 +160,10 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if app.Spec.Disabled {
 		log.Info("Reconciliation aborted - set to be disabled")
+		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, fmt.Errorf("clowd app has been disabled")); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
 		return ctrl.Result{}, nil
 	}
 
@@ -189,7 +188,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{}, nil
 	}
 
 	if !env.IsReady() {
@@ -200,7 +199,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{}, nil
 	}
 
 	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
@@ -243,9 +242,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, statusErr
 	}
 
-	var opts []client.ListOption
-
-	opts = []client.ListOption{
+	opts := []client.ListOption{
 		client.MatchingLabels{app.GetPrimaryLabel(): app.GetClowdName()},
 	}
 	opts = append(opts, client.InNamespace(app.Namespace))
@@ -341,6 +338,18 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 					if !objOld.Status.Ready && objNew.Status.Ready {
 						return true
 					}
+					condData := map[clusterv1.ConditionType]core.ConditionStatus{}
+					for _, cond := range objOld.Status.Conditions {
+						condData[cond.Type] = cond.Status
+					}
+					for _, cond := range objNew.Status.Conditions {
+						if condData[cond.Type] != cond.Status {
+							return true
+						}
+					}
+					if objOld.Status.Generation != objNew.Generation {
+						return true
+					}
 				}
 			}
 
@@ -416,7 +425,8 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&core.ConfigMap{}).
 		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
 		WithOptions(controller.Options{
-			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+			RateLimiter:             workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+			MaxConcurrentReconciles: 4,
 		}).
 		Complete(r)
 }
@@ -446,20 +456,18 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 	// Get all the ClowdApp resources
 
 	appList := crd.ClowdAppList{}
-	r.Client.List(ctx, &appList)
+	r.Client.List(ctx, &appList, client.MatchingFields{"spec.envName": env.Name})
 
 	// Filter based on base attribute
 
 	for _, app := range appList.Items {
-		if app.Spec.EnvName == env.Name {
-			// Add filtered resources to return result
-			reqs = append(reqs, reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      app.Name,
-					Namespace: app.Namespace,
-				},
-			})
-		}
+		// Add filtered resources to return result
+		reqs = append(reqs, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      app.Name,
+				Namespace: app.Namespace,
+			},
+		})
 	}
 
 	return reqs

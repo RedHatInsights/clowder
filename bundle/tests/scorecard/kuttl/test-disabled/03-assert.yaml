@@ -5,7 +5,6 @@ metadata:
   name: app-deployment
   namespace: test-disabled
 status:
-  replicas: 1
   observedGeneration: 2
 ---
 apiVersion: apps/v1
@@ -14,5 +13,4 @@ metadata:
   name: app-db
   namespace: test-disabled
 status:
-  replicas: 1
   observedGeneration: 2

@@ -307,7 +307,8 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		For(&crd.ClowdJobInvocation{}).
 		Owns(&batchv1.Job{}).
 		WithOptions(controller.Options{
-			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+			RateLimiter:             workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
+			MaxConcurrentReconciles: 4,
 		}).
 		Complete(r)
 }
