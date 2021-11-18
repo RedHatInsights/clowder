@@ -25,7 +25,7 @@ spec:
       mode: none
     sidecars:
       tokenRefresher:
-        enabled: False
+        enabled: false
   resourceDefaults:
     limits:
       cpu: 400m
