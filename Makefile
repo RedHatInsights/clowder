@@ -108,10 +108,10 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
-fmt: ## Run go fmt against code.
+fmt: update-version ## Run go fmt against code.
 	go fmt ./...
 
-vet: ## Run go vet against code.
+vet: update-version ## Run go vet against code.
 	go vet ./...
 
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
@@ -125,7 +125,7 @@ test: manifests update-version generate fmt vet
 genconfig:
 	cd controllers/cloud.redhat.com/config && gojsonschema -p config -o types.go schema.json
 
-build: generate update-version fmt vet ## Build manager binary.
+build: generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
 run: manifests generate fmt vet ## Run a controller from your host.
@@ -173,6 +173,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 update-version: ## Updates the version in the image
 	$(shell echo -en "package controllers\n\nvar Version = \"$(CLOWDER_VERSION)\"\n" > controllers/cloud.redhat.com/version.go)
+	echo "Building version: $(CLOWDER_VERSION)"
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
