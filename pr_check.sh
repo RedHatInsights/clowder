@@ -35,6 +35,8 @@ docker create --name clowdercopy $IMAGE_NAME:$IMAGE_TAG
 docker cp clowdercopy:/manifest.yaml .
 docker rm clowdercopy || true
 
+CLOWDER_VERSION=`git describe --tags`
+
 CONTAINER_NAME="clowder-pr-check-$ghprbPullId"
 # NOTE: Make sure this volume is mounted 'ro', otherwise Jenkins cannot clean up the workspace due to file permission errors
 set +e
@@ -48,6 +50,7 @@ docker run -i \
     -e MINIKUBE_HOST=$MINIKUBE_HOST \
     -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR \
     -e MINIKUBE_USER=$MINIKUBE_USER \
+    -e CLOWDER_VERSION=$CLOWDER_VERSION \
     quay.io/psav/clowder_pr_check:v2.5 \
     /workspace/build/pr_check_inner.sh
 TEST_RESULT=$?

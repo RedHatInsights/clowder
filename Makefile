@@ -42,6 +42,8 @@ else
 IMG ?= quay.io/cloudservices/clowder:$(CLOWDER_BUILD_TAG)
 endif
 
+CLOWDER_VERSION ?= $(shell git describe --tags)
+
 # Use podman by default, docker as fallback
 ifeq (,$(shell which podman))
 $(info "no podman in $(PATH), using docker")
@@ -169,9 +171,8 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
-VERSION=$(shell git describe --tags)
 update-version: ## Updates the version in the image
-	$(shell echo -en "package controllers\n\nvar Version = \"$(VERSION)\"\n" > controllers/cloud.redhat.com/version.go)
+	$(shell echo -en "package controllers\n\nvar Version = \"$(CLOWDER_VERSION)\"\n" > controllers/cloud.redhat.com/version.go)
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
