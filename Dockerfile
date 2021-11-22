@@ -22,8 +22,8 @@ COPY config/ config/
 COPY apis/ apis/
 COPY controllers/ controllers/
 
-RUN make manifests generate fmt vet release
 RUN make update-version
+RUN make manifests generate fmt vet release
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
