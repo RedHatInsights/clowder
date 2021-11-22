@@ -27,6 +27,8 @@ mkdir -p $ENVTEST_ASSETS_DIR
 test -f $ENVTEST_ASSETS_DIR/setup-envtest.sh || curl -sSLo $ENVTEST_ASSETS_DIR/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
 source $ENVTEST_ASSETS_DIR/setup-envtest.sh; fetch_envtest_tools $ENVTEST_ASSETS_DIR; setup_envtest_env $ENVTEST_ASSETS_DIR;
 
+CLOWDER_VERSION=`git describe --tags`
+
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-push
 
@@ -34,8 +36,6 @@ docker rm clowdercopy || true
 docker create --name clowdercopy $IMAGE_NAME:$IMAGE_TAG
 docker cp clowdercopy:/manifest.yaml .
 docker rm clowdercopy || true
-
-CLOWDER_VERSION=`git describe --tags`
 
 CONTAINER_NAME="clowder-pr-check-$ghprbPullId"
 # NOTE: Make sure this volume is mounted 'ro', otherwise Jenkins cannot clean up the workspace due to file permission errors
