@@ -6796,6 +6796,4 @@ parameters:
   value: 'false'
 - name: WATCH_STRIMZI_RESOURCES
   value: 'false'
-- name: VERSION
-  value: v0.21.0-28-g62e6410f
 
