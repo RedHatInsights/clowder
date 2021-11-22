@@ -18,21 +18,28 @@ data:
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
             "type": "dashboard"
           }
         ]
       },
       "editable": true,
+      "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1628191488164,
+      "iteration": 1637599715921,
       "links": [],
+      "liveNow": false,
       "panels": [
         {
           "datasource": "$datasource",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "decimals": 0,
               "mappings": [],
               "thresholds": {
@@ -70,9 +77,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
               "expr": "sum(clowd_app_managed_apps)",
@@ -91,7 +99,6 @@ data:
           "datasource": "$datasource",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "decimals": 0,
               "mappings": [],
               "thresholds": {
@@ -129,9 +136,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
               "expr": "sum(clowd_env_managed_envs)",
@@ -152,12 +160,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -184,7 +186,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -249,12 +251,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 0,
           "fillGradient": 0,
           "gridPos": {
@@ -281,7 +277,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -346,12 +342,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -378,7 +368,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -443,12 +433,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -475,7 +459,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -485,7 +469,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(workqueue_depth{service=\"clowder-controller-manager\"}) by (name)",
+              "exemplar": true,
+              "expr": "sum(workqueue_depth{service=\"clowder-controller-manager-metrics-service-non-auth\"}) by (name)",
               "interval": "",
               "legendFormat": "{{name}}",
               "refId": "A"
@@ -540,12 +525,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 0,
           "fillGradient": 0,
           "gridPos": {
@@ -572,7 +551,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -638,10 +617,9 @@ data:
           }
         },
         {
-          "datasource": "crcp01ue1-cluster-prometheus",
+          "datasource": "c-rh-c-eph-prometheus",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [],
               "thresholds": {
                 "mode": "absolute",
@@ -665,7 +643,7 @@ data:
             "x": 0,
             "y": 6
           },
-          "id": 20,
+          "id": 27,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -678,12 +656,14 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "name"
           },
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
+              "exemplar": true,
+              "expr": "sum(clowder_version) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -692,14 +672,13 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Production version",
+          "title": "Ephemeral version",
           "type": "stat"
         },
         {
-          "datasource": "crcgovp01ue1-cluster-prometheus",
+          "datasource": "crcs02ue1-prometheus",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [],
               "thresholds": {
                 "mode": "absolute",
@@ -723,7 +702,7 @@ data:
             "x": 0,
             "y": 9
           },
-          "id": 24,
+          "id": 19,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -736,12 +715,14 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "name"
           },
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
+              "exemplar": true,
+              "expr": "sum(clowder_version) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -750,14 +731,13 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Fedramp Production version",
+          "title": "Stage version",
           "type": "stat"
         },
         {
-          "datasource": "crcs02ue1-cluster-prometheus",
+          "datasource": "crcgovs02ue1-cluster-prometheus",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [],
               "thresholds": {
                 "mode": "absolute",
@@ -781,7 +761,7 @@ data:
             "x": 0,
             "y": 12
           },
-          "id": 19,
+          "id": 21,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -794,9 +774,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "name"
           },
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
@@ -808,7 +789,7 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Stage version",
+          "title": "Fedramp Stage version",
           "type": "stat"
         },
         {
@@ -817,12 +798,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -849,7 +824,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -914,12 +889,6 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -946,7 +915,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1013,7 +982,6 @@ data:
           "datasource": "$datasource",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "unit": "decbytes"
             },
             "overrides": []
@@ -1044,7 +1012,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1116,10 +1084,9 @@ data:
           }
         },
         {
-          "datasource": "crcgovs02ue1-cluster-prometheus",
+          "datasource": "crcgovp01ue1-cluster-prometheus",
           "fieldConfig": {
             "defaults": {
-              "custom": {},
               "mappings": [],
               "thresholds": {
                 "mode": "absolute",
@@ -1143,7 +1110,7 @@ data:
             "x": 0,
             "y": 15
           },
-          "id": 21,
+          "id": 24,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -1156,9 +1123,10 @@ data:
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "name"
           },
-          "pluginVersion": "7.2.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
@@ -1170,12 +1138,70 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Fedramp Stage version",
+          "title": "Fedramp Production version",
+          "type": "stat"
+        },
+        {
+          "datasource": "crcp01ue1-cluster-prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 7,
+            "x": 0,
+            "y": 18
+          },
+          "id": 20,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "name"
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{version}}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Production version",
           "type": "stat"
         }
       ],
       "refresh": false,
-      "schemaVersion": 26,
+      "schemaVersion": 31,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1183,9 +1209,11 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "crcp01ue1-prometheus",
-              "value": "crcp01ue1-prometheus"
+              "text": "c-rh-c-eph-prometheus",
+              "value": "c-rh-c-eph-prometheus"
             },
+            "description": null,
+            "error": null,
             "hide": 0,
             "includeAll": false,
             "label": null,
@@ -1202,12 +1230,12 @@ data:
         ]
       },
       "time": {
-        "from": "now-15m",
+        "from": "now-30m",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 9
+      "version": 1
     }
