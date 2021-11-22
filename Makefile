@@ -108,10 +108,10 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
-fmt: update-version ## Run go fmt against code.
+fmt: ## Run go fmt against code.
 	go fmt ./...
 
-vet: update-version ## Run go vet against code.
+vet: ## Run go vet against code.
 	go vet ./...
 
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
@@ -125,10 +125,10 @@ test: manifests update-version generate fmt vet
 genconfig:
 	cd controllers/cloud.redhat.com/config && gojsonschema -p config -o types.go schema.json
 
-build: generate fmt vet ## Build manager binary.
+build: update-version generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
-run: manifests generate fmt vet ## Run a controller from your host.
+run: update-version manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 # Build the docker image

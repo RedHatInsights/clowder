@@ -22,7 +22,6 @@ COPY config/ config/
 COPY apis/ apis/
 COPY controllers/ controllers/
 
-RUN make update-version
 RUN make manifests generate fmt vet release
 
 # Build
