@@ -26,6 +26,7 @@ export GOROOT="/opt/go/1.16.10"
 export PATH="${GOROOT}/bin:${PATH}"
 
 make envtest
+make update-version
 
 KUBEBUILDER_ASSETS=`bin/setup-envtest use 1.22 -p path ` go test ./... -coverprofile cover.out
 
