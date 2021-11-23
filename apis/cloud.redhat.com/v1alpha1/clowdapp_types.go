@@ -16,6 +16,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	keda "github.com/kedacore/keda/v2/api/v1alpha1"
@@ -541,6 +542,26 @@ func (i *ClowdApp) IsReady() bool {
 // GetClowdSAName returns the ServiceAccount Name for the App
 func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
+}
+
+func (i *ClowdApp) RunPreHook() bool {
+	// is there a better way to find out if the app has a job?
+	if i.Spec.PreHookJob.Name == "" || i.Annotations["clowder/pre-hook-status"] == "pending" {
+		return false
+	} else if i.Annotations["clowder/pre-hook-generation"] == "" {
+		return true
+	}
+
+	preHookGen, err := strconv.Atoi(i.ObjectMeta.Annotations["clowder/pre-hook-generation"])
+	if err != nil {
+		return true
+	}
+
+	return preHookGen < int(i.ObjectMeta.Generation)
+}
+
+func (i *ClowdApp) PreHookDone() bool {
+	return i.Spec.PreHookJob.Name == "" || i.Annotations["clowder/pre-hook-status"] == "done"
 }
 
 // Omfunc is a utility function that performs an operation on a metav1.Object.

@@ -11,5 +11,5 @@ func GetJob(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetJob, 5, ProvName)
+	p.ProvidersRegistration.Register(GetJob, 0, ProvName)
 }

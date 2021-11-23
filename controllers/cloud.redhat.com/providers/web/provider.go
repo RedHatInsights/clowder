@@ -59,5 +59,5 @@ func GetWeb(c *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func init() {
-	providers.ProvidersRegistration.Register(GetWeb, 1, ProvName)
+	providers.ProvidersRegistration.Register(GetWeb, 2, ProvName)
 }

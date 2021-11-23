@@ -17,5 +17,5 @@ func GetDeployment(c *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func init() {
-	providers.ProvidersRegistration.Register(GetDeployment, 0, ProvName)
+	providers.ProvidersRegistration.Register(GetDeployment, 1, ProvName)
 }

@@ -15,6 +15,9 @@ func NewNoneMetricsProvider(p *providers.Provider) (providers.ClowderProvider, e
 }
 
 func (m *noneMetricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if !app.PreHookDone() {
+		return nil
+	}
 
 	if err := createMetricsOnDeployments(m.Cache, m.Env, app, c); err != nil {
 		return err

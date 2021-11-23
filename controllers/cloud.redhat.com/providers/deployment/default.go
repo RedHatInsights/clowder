@@ -15,6 +15,9 @@ func NewDeploymentProvider(p *providers.Provider) (providers.ClowderProvider, er
 }
 
 func (dp *deploymentProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if !app.PreHookDone() {
+		return nil
+	}
 
 	for _, deployment := range app.Spec.Deployments {
 

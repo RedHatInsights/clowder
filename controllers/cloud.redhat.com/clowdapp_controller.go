@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -483,7 +482,10 @@ func (r *ClowdAppReconciler) appToEnqueueOnJobCompletion(a client.Object) []reco
 
 	// Filter based on job name
 	for _, app := range appList.Items {
-		if strings.HasPrefix(job.Name, app.Spec.PreHookJob.Name) {
+		// find the app that the job belongs to
+		if job.OwnerReferences[0].Name == app.Name {
+			// update the job with "done" state and mark the generation we last
+			// ran the job for.
 			app.ObjectMeta.Annotations["clowder/pre-hook-status"] = "done"
 			app.ObjectMeta.Annotations["clowder/pre-hook-generation"] = strconv.Itoa(int(app.GetGeneration()))
 			r.Client.Update(context.TODO(), &app)

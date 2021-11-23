@@ -16,6 +16,9 @@ func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func (web *webProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if !app.PreHookDone() {
+		return nil
+	}
 
 	c.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	c.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))

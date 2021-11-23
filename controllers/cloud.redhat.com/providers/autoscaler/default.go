@@ -20,6 +20,10 @@ func NewAutoScalerProvider(p *p.Provider) (p.ClowderProvider, error) {
 }
 
 func (asp *autoscalerProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+	if !app.PreHookDone() {
+		return nil
+	}
+
 	for _, deployment := range app.Spec.Deployments {
 
 		// Create the autoscaler if one is defined
