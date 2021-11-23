@@ -22,10 +22,9 @@ docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 export IMAGE_TAG=`git rev-parse --short HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-export ENVTEST_ASSETS_DIR=$PWD/testbin
-mkdir -p $ENVTEST_ASSETS_DIR
-test -f $ENVTEST_ASSETS_DIR/setup-envtest.sh || curl -sSLo $ENVTEST_ASSETS_DIR/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.10.0/hack/setup-envtest.sh
-source $ENVTEST_ASSETS_DIR/setup-envtest.sh; fetch_envtest_tools $ENVTEST_ASSETS_DIR; setup_envtest_env $ENVTEST_ASSETS_DIR;
+make envtest
+
+KUBEBUILDER_ASSETS=`bin/setup-envtest use 1.22 -p path ` go test ./... -coverprofile cover.out
 
 CLOWDER_VERSION=`git describe --tags`
 
