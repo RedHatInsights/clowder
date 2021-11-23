@@ -32,7 +32,7 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1637599715921,
+      "iteration": 1637605574409,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -59,8 +59,8 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 6,
-            "w": 4,
+            "h": 4,
+            "w": 3,
             "x": 0,
             "y": 0
           },
@@ -93,6 +93,7 @@ data:
           "timeFrom": null,
           "timeShift": null,
           "title": "ClowdApps",
+          "transparent": true,
           "type": "stat"
         },
         {
@@ -118,9 +119,9 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 3,
-            "x": 4,
+            "x": 3,
             "y": 0
           },
           "id": 13,
@@ -152,6 +153,7 @@ data:
           "timeFrom": null,
           "timeShift": null,
           "title": "ClowdEnvs",
+          "transparent": true,
           "type": "stat"
         },
         {
@@ -163,191 +165,9 @@ data:
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 5,
-            "w": 6,
-            "x": 7,
-            "y": 0
-          },
-          "hiddenSeries": false,
-          "id": 8,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"clowder-system\", container=\"manager\"}[5m]))",
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod Container Restarts",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:457",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "$$hashKey": "object:458",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "$datasource",
-          "fill": 0,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 5,
-            "w": 6,
-            "x": 13,
-            "y": 0
-          },
-          "hiddenSeries": false,
-          "id": 17,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "kube_deployment_status_replicas_available{namespace=\"clowder-system\"}",
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Pod Replica Count",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:848",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "$$hashKey": "object:849",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "$datasource",
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 12,
-            "w": 5,
-            "x": 19,
+            "h": 8,
+            "w": 9,
+            "x": 6,
             "y": 0
           },
           "hiddenSeries": false,
@@ -394,6 +214,7 @@ data:
             "sort": 0,
             "value_type": "individual"
           },
+          "transparent": true,
           "type": "graph",
           "xaxis": {
             "buckets": null,
@@ -433,105 +254,13 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": "$datasource",
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 7,
-            "w": 6,
-            "x": 7,
-            "y": 5
-          },
-          "hiddenSeries": false,
-          "id": 10,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "sum(workqueue_depth{service=\"clowder-controller-manager-metrics-service-non-auth\"}) by (name)",
-              "interval": "",
-              "legendFormat": "{{name}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "WorkQueue Depth",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:637",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "$$hashKey": "object:638",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "$datasource",
           "fill": 0,
           "fillGradient": 0,
           "gridPos": {
-            "h": 7,
-            "w": 6,
-            "x": 13,
-            "y": 5
+            "h": 8,
+            "w": 9,
+            "x": 15,
+            "y": 0
           },
           "hiddenSeries": false,
           "id": 2,
@@ -583,6 +312,7 @@ data:
             "sort": 0,
             "value_type": "individual"
           },
+          "transparent": true,
           "type": "graph",
           "xaxis": {
             "buckets": null,
@@ -617,182 +347,6 @@ data:
           }
         },
         {
-          "datasource": "c-rh-c-eph-prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 7,
-            "x": 0,
-            "y": 6
-          },
-          "id": 27,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "none",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "text": {},
-            "textMode": "name"
-          },
-          "pluginVersion": "8.2.1",
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "sum(clowder_version) by (version)",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "{{version}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Ephemeral version",
-          "type": "stat"
-        },
-        {
-          "datasource": "crcs02ue1-prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 7,
-            "x": 0,
-            "y": 9
-          },
-          "id": 19,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "none",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "text": {},
-            "textMode": "name"
-          },
-          "pluginVersion": "8.2.1",
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "sum(clowder_version) by (version)",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "{{version}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Stage version",
-          "type": "stat"
-        },
-        {
-          "datasource": "crcgovs02ue1-cluster-prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 7,
-            "x": 0,
-            "y": 12
-          },
-          "id": 21,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "none",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "text": {},
-            "textMode": "name"
-          },
-          "pluginVersion": "8.2.1",
-          "targets": [
-            {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "{{version}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Fedramp Stage version",
-          "type": "stat"
-        },
-        {
           "aliasColors": {},
           "bars": false,
           "dashLength": 10,
@@ -801,19 +355,19 @@ data:
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 6,
-            "x": 7,
-            "y": 12
+            "x": 0,
+            "y": 4
           },
           "hiddenSeries": false,
-          "id": 5,
+          "id": 8,
           "legend": {
             "avg": false,
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -834,9 +388,9 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\",result=\"error\"}[5m])) by (controller)",
+              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"clowder-system\", container=\"manager\"}[5m]))",
               "interval": "",
-              "legendFormat": "{{controller}}",
+              "legendFormat": "",
               "refId": "A"
             }
           ],
@@ -844,12 +398,13 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Reconciliation Errors",
+          "title": "Pod Container Restarts",
           "tooltip": {
             "shared": true,
             "sort": 0,
             "value_type": "individual"
           },
+          "transparent": true,
           "type": "graph",
           "xaxis": {
             "buckets": null,
@@ -860,7 +415,7 @@ data:
           },
           "yaxes": [
             {
-              "$$hashKey": "object:296",
+              "$$hashKey": "object:457",
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -869,13 +424,105 @@ data:
               "show": true
             },
             {
-              "$$hashKey": "object:297",
+              "$$hashKey": "object:458",
               "format": "short",
               "label": null,
               "logBase": 1,
               "max": null,
               "min": null,
-              "show": false
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 0,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 8
+          },
+          "hiddenSeries": false,
+          "id": 17,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "8.2.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas_available{namespace=\"clowder-system\"}",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Pod Replica Count",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": true,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:848",
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "$$hashKey": "object:849",
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
             }
           ],
           "yaxis": {
@@ -892,10 +539,10 @@ data:
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 6,
-            "w": 6,
-            "x": 13,
-            "y": 12
+            "h": 8,
+            "w": 9,
+            "x": 6,
+            "y": 8
           },
           "hiddenSeries": false,
           "id": 6,
@@ -941,6 +588,7 @@ data:
             "sort": 0,
             "value_type": "individual"
           },
+          "transparent": true,
           "type": "graph",
           "xaxis": {
             "buckets": null,
@@ -989,10 +637,10 @@ data:
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 6,
-            "w": 5,
-            "x": 19,
-            "y": 12
+            "h": 8,
+            "w": 9,
+            "x": 15,
+            "y": 8
           },
           "hiddenSeries": false,
           "id": 26,
@@ -1050,6 +698,7 @@ data:
             "sort": 0,
             "value_type": "individual"
           },
+          "transparent": true,
           "type": "graph",
           "xaxis": {
             "buckets": null,
@@ -1084,6 +733,370 @@ data:
           }
         },
         {
+          "datasource": "c-rh-c-eph-prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 0,
+            "y": 12
+          },
+          "id": 27,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "name"
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "sum(clowder_version) by (version)",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{version}}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Ephemeral version",
+          "transparent": true,
+          "type": "stat"
+        },
+        {
+          "datasource": "crcs02ue1-prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 0,
+            "y": 15
+          },
+          "id": 19,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "name"
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "sum(clowder_version) by (version)",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{version}}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Stage version",
+          "transparent": true,
+          "type": "stat"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 9,
+            "x": 6,
+            "y": 16
+          },
+          "hiddenSeries": false,
+          "id": 5,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "8.2.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\",result=\"error\"}[5m])) by (controller)",
+              "interval": "",
+              "legendFormat": "{{controller}}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Reconciliation Errors",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": true,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:296",
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "$$hashKey": "object:297",
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "$datasource",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 9,
+            "x": 15,
+            "y": 16
+          },
+          "hiddenSeries": false,
+          "id": 10,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "8.2.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "sum(workqueue_depth{service=\"clowder-controller-manager-metrics-service-non-auth\"}) by (name)",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "WorkQueue Depth",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": true,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:637",
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "$$hashKey": "object:638",
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "datasource": "crcgovs02ue1-cluster-prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 0,
+            "y": 18
+          },
+          "id": 21,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "name"
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{version}}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fedramp Stage version",
+          "transparent": true,
+          "type": "stat"
+        },
+        {
           "datasource": "crcgovp01ue1-cluster-prometheus",
           "fieldConfig": {
             "defaults": {
@@ -1106,9 +1119,9 @@ data:
           },
           "gridPos": {
             "h": 3,
-            "w": 7,
+            "w": 6,
             "x": 0,
-            "y": 15
+            "y": 21
           },
           "id": 24,
           "options": {
@@ -1139,6 +1152,7 @@ data:
           "timeFrom": null,
           "timeShift": null,
           "title": "Fedramp Production version",
+          "transparent": true,
           "type": "stat"
         },
         {
@@ -1164,9 +1178,9 @@ data:
           },
           "gridPos": {
             "h": 3,
-            "w": 7,
+            "w": 6,
             "x": 0,
-            "y": 18
+            "y": 24
           },
           "id": 20,
           "options": {
@@ -1197,7 +1211,90 @@ data:
           "timeFrom": null,
           "timeShift": null,
           "title": "Production version",
+          "transparent": true,
           "type": "stat"
+        },
+        {
+          "datasource": "${datasource}",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 17,
+            "x": 6,
+            "y": 24
+          },
+          "id": 29,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "avg(clowder_provider_runtime_sum / clowder_provider_runtime_count) by (provider)",
+              "interval": "",
+              "legendFormat": "{{provider}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Avg Time taken per provider",
+          "transparent": true,
+          "type": "timeseries"
         }
       ],
       "refresh": false,
@@ -1208,7 +1305,7 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "c-rh-c-eph-prometheus",
               "value": "c-rh-c-eph-prometheus"
             },
@@ -1230,12 +1327,12 @@ data:
         ]
       },
       "time": {
-        "from": "now-30m",
+        "from": "now-1h",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 1
+      "version": 2
     }
