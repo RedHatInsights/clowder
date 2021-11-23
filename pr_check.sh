@@ -22,6 +22,7 @@ docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 export IMAGE_TAG=`git rev-parse --short HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
+go version
 make envtest
 
 KUBEBUILDER_ASSETS=`bin/setup-envtest use 1.22 -p path ` go test ./... -coverprofile cover.out
