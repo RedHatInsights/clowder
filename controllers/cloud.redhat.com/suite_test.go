@@ -106,12 +106,14 @@ func TestMain(m *testing.M) {
 		logger.Fatal("k8sClient was returned nil", zap.Error(err))
 	}
 
-	ctx := context.Background()
+	//ctx := context.Background()
+
+	ctx, stopController := context.WithCancel(context.Background())
 
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
 	k8sClient.Create(ctx, nsSpec)
 
-	go Run(":8080", ":8081", false, testEnv.Config, ctrl.SetupSignalHandler(), false)
+	go Run(":8080", ":8081", false, testEnv.Config, ctx, false)
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
@@ -134,6 +136,8 @@ func TestMain(m *testing.M) {
 
 	retCode := m.Run()
 	logger.Info("Stopping test env...")
+
+	stopController()
 
 	err = testEnv.Stop()
 
