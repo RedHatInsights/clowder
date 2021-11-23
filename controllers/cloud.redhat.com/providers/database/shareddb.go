@@ -150,7 +150,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			return nil, err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env)
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, providers.DB_DEFAULT)
 
 		if err = p.Cache.Update(SharedDBPVC, pvc); err != nil {
 			return nil, err
