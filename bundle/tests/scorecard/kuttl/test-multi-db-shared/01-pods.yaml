@@ -62,6 +62,8 @@ spec:
   database:
     name: app-b
     version: 10
+    pvc: true
+    dbVolumeSize: small
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp

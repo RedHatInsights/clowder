@@ -39,3 +39,17 @@ kind: Secret
 metadata:
   name: app-a
   namespace: test-multi-db-shared
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-b-db
+  namespace: test-multi-db-shared
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: standard
+  volumeMode: Filesystem
