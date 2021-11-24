@@ -58,6 +58,20 @@ spec:
                 description: A ProvidersConfig object, detailing the setup and configuration
                   of all the providers used in this ClowdEnvironment.
                 properties:
+                  autoScaler:
+                    description: Defines the autoscaler configuration
+                    properties:
+                      mode:
+                        description: 'The mode of operation of the Clowder InMemory
+                          Provider. Valid options are: (*_redis_*) where a local Minio
+                          instance will be created, and (*_elasticache_*) which will
+                          search the namespace of the ClowdApp for a secret called
+                          ''elasticache'''
+                        enum:
+                        - keda
+                        - none
+                        type: string
+                    type: object
                   db:
                     description: Defines the Configuration for the Clowder Database
                       Provider.
