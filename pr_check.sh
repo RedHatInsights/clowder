@@ -29,7 +29,8 @@ make envtest
 make update-version
 
 KUBEBUILDER_ASSETS=`bin/setup-envtest use 1.22 -p path ` go test ./... -coverprofile cover.out
-
+mkdir -p testbin/bin
+cp `bin/setup-envtest use 1.22 -p path `/* testbin/bin -r
 CLOWDER_VERSION=`git describe --tags`
 
 IMG=$IMAGE_NAME:$IMAGE_TAG make docker-build
