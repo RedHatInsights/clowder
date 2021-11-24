@@ -391,14 +391,16 @@ objects:
                                   type: string
                                 value:
                                   description: 'Variable references $(VAR_NAME) are
-                                    expanded using the previous defined environment
+                                    expanded using the previously defined environment
                                     variables in the container and any service environment
                                     variables. If a variable cannot be resolved, the
                                     reference in the input string will be unchanged.
-                                    The $(VAR_NAME) syntax can be escaped with a double
-                                    $$, ie: $$(VAR_NAME). Escaped references will
-                                    never be expanded, regardless of whether the variable
-                                    exists or not. Defaults to "".'
+                                    Double $$ are reduced to a single $, which allows
+                                    for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)"
+                                    will produce the string literal "$(VAR_NAME)".
+                                    Escaped references will never be expanded, regardless
+                                    of whether the variable exists or not. Defaults
+                                    to "".'
                                   type: string
                                 valueFrom:
                                   description: Source for the environment variable's
@@ -531,16 +533,17 @@ objects:
                                         type: string
                                       value:
                                         description: 'Variable references $(VAR_NAME)
-                                          are expanded using the previous defined
+                                          are expanded using the previously defined
                                           environment variables in the container and
                                           any service environment variables. If a
                                           variable cannot be resolved, the reference
-                                          in the input string will be unchanged. The
-                                          $(VAR_NAME) syntax can be escaped with a
-                                          double $$, ie: $$(VAR_NAME). Escaped references
-                                          will never be expanded, regardless of whether
-                                          the variable exists or not. Defaults to
-                                          "".'
+                                          in the input string will be unchanged. Double
+                                          $$ are reduced to a single $, which allows
+                                          for escaping the $(VAR_NAME) syntax: i.e.
+                                          "$$(VAR_NAME)" will produce the string literal
+                                          "$(VAR_NAME)". Escaped references will never
+                                          be expanded, regardless of whether the variable
+                                          exists or not. Defaults to "".'
                                         type: string
                                       valueFrom:
                                         description: Source for the environment variable's
@@ -763,6 +766,24 @@ objects:
                                 required:
                                 - port
                                 type: object
+                              terminationGracePeriodSeconds:
+                                description: Optional duration in seconds the pod
+                                  needs to terminate gracefully upon probe failure.
+                                  The grace period is the duration in seconds after
+                                  the processes running in the pod are sent a termination
+                                  signal and the time when the processes are forcibly
+                                  halted with a kill signal. Set this value longer
+                                  than the expected cleanup time for your process.
+                                  If this value is nil, the pod's terminationGracePeriodSeconds
+                                  will be used. Otherwise, this value overrides the
+                                  value provided by the pod spec. Value must be non-negative
+                                  integer. The value zero indicates stop immediately
+                                  via the kill signal (no opportunity to shut down).
+                                  This is a beta field and requires enabling ProbeTerminationGracePeriod
+                                  feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds
+                                  is used if unset.
+                                format: int64
+                                type: integer
                               timeoutSeconds:
                                 description: 'Number of seconds after which the probe
                                   times out. Defaults to 1 second. Minimum value is
@@ -883,6 +904,24 @@ objects:
                                 required:
                                 - port
                                 type: object
+                              terminationGracePeriodSeconds:
+                                description: Optional duration in seconds the pod
+                                  needs to terminate gracefully upon probe failure.
+                                  The grace period is the duration in seconds after
+                                  the processes running in the pod are sent a termination
+                                  signal and the time when the processes are forcibly
+                                  halted with a kill signal. Set this value longer
+                                  than the expected cleanup time for your process.
+                                  If this value is nil, the pod's terminationGracePeriodSeconds
+                                  will be used. Otherwise, this value overrides the
+                                  value provided by the pod spec. Value must be non-negative
+                                  integer. The value zero indicates stop immediately
+                                  via the kill signal (no opportunity to shut down).
+                                  This is a beta field and requires enabling ProbeTerminationGracePeriod
+                                  feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds
+                                  is used if unset.
+                                format: int64
+                                type: integer
                               timeoutSeconds:
                                 description: 'Number of seconds after which the probe
                                   times out. Defaults to 1 second. Minimum value is
@@ -904,7 +943,7 @@ objects:
                                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                   x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
-                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                               requests:
                                 additionalProperties:
@@ -917,7 +956,7 @@ objects:
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
                                   explicitly specified, otherwise to an implementation-defined
-                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
                           sidecars:
@@ -1420,33 +1459,31 @@ objects:
                                   type: object
                                 ephemeral:
                                   description: "Ephemeral represents a volume that\
-                                    \ is handled by a cluster storage driver (Alpha\
-                                    \ feature). The volume's lifecycle is tied to\
-                                    \ the pod that defines it - it will be created\
-                                    \ before the pod starts, and deleted when the\
-                                    \ pod is removed. \n Use this if: a) the volume\
-                                    \ is only needed while the pod runs, b) features\
-                                    \ of normal volumes like restoring from snapshot\
-                                    \ or capacity    tracking are needed, c) the storage\
-                                    \ driver is specified through a storage class,\
-                                    \ and d) the storage driver supports dynamic volume\
-                                    \ provisioning through    a PersistentVolumeClaim\
-                                    \ (see EphemeralVolumeSource for more    information\
-                                    \ on the connection between this volume type \
-                                    \   and PersistentVolumeClaim). \n Use PersistentVolumeClaim\
-                                    \ or one of the vendor-specific APIs for volumes\
-                                    \ that persist for longer than the lifecycle of\
-                                    \ an individual pod. \n Use CSI for light-weight\
-                                    \ local ephemeral volumes if the CSI driver is\
-                                    \ meant to be used that way - see the documentation\
-                                    \ of the driver for more information. \n A pod\
-                                    \ can use both types of ephemeral volumes and\
-                                    \ persistent volumes at the same time."
+                                    \ is handled by a cluster storage driver. The\
+                                    \ volume's lifecycle is tied to the pod that defines\
+                                    \ it - it will be created before the pod starts,\
+                                    \ and deleted when the pod is removed. \n Use\
+                                    \ this if: a) the volume is only needed while\
+                                    \ the pod runs, b) features of normal volumes\
+                                    \ like restoring from snapshot or capacity   \
+                                    \ tracking are needed, c) the storage driver is\
+                                    \ specified through a storage class, and d) the\
+                                    \ storage driver supports dynamic volume provisioning\
+                                    \ through    a PersistentVolumeClaim (see EphemeralVolumeSource\
+                                    \ for more    information on the connection between\
+                                    \ this volume type    and PersistentVolumeClaim).\
+                                    \ \n Use PersistentVolumeClaim or one of the vendor-specific\
+                                    \ APIs for volumes that persist for longer than\
+                                    \ the lifecycle of an individual pod. \n Use CSI\
+                                    \ for light-weight local ephemeral volumes if\
+                                    \ the CSI driver is meant to be used that way\
+                                    \ - see the documentation of the driver for more\
+                                    \ information. \n A pod can use both types of\
+                                    \ ephemeral volumes and persistent volumes at\
+                                    \ the same time. \n This is a beta feature and\
+                                    \ only available when the GenericEphemeralVolume\
+                                    \ feature gate is enabled."
                                   properties:
-                                    readOnly:
-                                      description: Specifies a read-only configuration
-                                        for the volume. Defaults to false (read/write).
-                                      type: boolean
                                     volumeClaimTemplate:
                                       description: "Will be used to create a stand-alone\
                                         \ PVC to provision the volume. The pod in\
@@ -1499,16 +1536,68 @@ objects:
                                                 to specify either: * An existing VolumeSnapshot
                                                 object (snapshot.storage.k8s.io/VolumeSnapshot)
                                                 * An existing PVC (PersistentVolumeClaim)
-                                                * An existing custom resource that
-                                                implements data population (Alpha)
-                                                In order to use custom resource types
-                                                that implement data population, the
-                                                AnyVolumeDataSource feature gate must
-                                                be enabled. If the provisioner or
-                                                an external controller can support
-                                                the specified data source, it will
-                                                create a new volume based on the contents
-                                                of the specified data source.'
+                                                If the provisioner or an external
+                                                controller can support the specified
+                                                data source, it will create a new
+                                                volume based on the contents of the
+                                                specified data source. If the AnyVolumeDataSource
+                                                feature gate is enabled, this field
+                                                will always have the same contents
+                                                as the DataSourceRef field.'
+                                              properties:
+                                                apiGroup:
+                                                  description: APIGroup is the group
+                                                    for the resource being referenced.
+                                                    If APIGroup is not specified,
+                                                    the specified Kind must be in
+                                                    the core API group. For any other
+                                                    third-party types, APIGroup is
+                                                    required.
+                                                  type: string
+                                                kind:
+                                                  description: Kind is the type of
+                                                    resource being referenced
+                                                  type: string
+                                                name:
+                                                  description: Name is the name of
+                                                    resource being referenced
+                                                  type: string
+                                              required:
+                                              - kind
+                                              - name
+                                              type: object
+                                            dataSourceRef:
+                                              description: 'Specifies the object from
+                                                which to populate the volume with
+                                                data, if a non-empty volume is desired.
+                                                This may be any local object from
+                                                a non-empty API group (non core object)
+                                                or a PersistentVolumeClaim object.
+                                                When this field is specified, volume
+                                                binding will only succeed if the type
+                                                of the specified object matches some
+                                                installed volume populator or dynamic
+                                                provisioner. This field will replace
+                                                the functionality of the DataSource
+                                                field and as such if both fields are
+                                                non-empty, they must have the same
+                                                value. For backwards compatibility,
+                                                both fields (DataSource and DataSourceRef)
+                                                will be set to the same value automatically
+                                                if one of them is empty and the other
+                                                is non-empty. There are two important
+                                                differences between DataSource and
+                                                DataSourceRef: * While DataSource
+                                                only allows two specific types of
+                                                objects, DataSourceRef   allows any
+                                                non-core object, as well as PersistentVolumeClaim
+                                                objects. * While DataSource ignores
+                                                disallowed values (dropping them),
+                                                DataSourceRef   preserves all values,
+                                                and generates an error if a disallowed
+                                                value is   specified. (Alpha) Using
+                                                this field requires the AnyVolumeDataSource
+                                                feature gate to be enabled.'
                                               properties:
                                                 apiGroup:
                                                   description: APIGroup is the group
@@ -1545,7 +1634,7 @@ objects:
                                                     x-kubernetes-int-or-string: true
                                                   description: 'Limits describes the
                                                     maximum amount of compute resources
-                                                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                                   type: object
                                                 requests:
                                                   additionalProperties:
@@ -1561,7 +1650,7 @@ objects:
                                                     defaults to Limits if that is
                                                     explicitly specified, otherwise
                                                     to an implementation-defined value.
-                                                    More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                                    More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                                   type: object
                                               type: object
                                             selector:
@@ -2744,14 +2833,16 @@ objects:
                                   type: string
                                 value:
                                   description: 'Variable references $(VAR_NAME) are
-                                    expanded using the previous defined environment
+                                    expanded using the previously defined environment
                                     variables in the container and any service environment
                                     variables. If a variable cannot be resolved, the
                                     reference in the input string will be unchanged.
-                                    The $(VAR_NAME) syntax can be escaped with a double
-                                    $$, ie: $$(VAR_NAME). Escaped references will
-                                    never be expanded, regardless of whether the variable
-                                    exists or not. Defaults to "".'
+                                    Double $$ are reduced to a single $, which allows
+                                    for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)"
+                                    will produce the string literal "$(VAR_NAME)".
+                                    Escaped references will never be expanded, regardless
+                                    of whether the variable exists or not. Defaults
+                                    to "".'
                                   type: string
                                 valueFrom:
                                   description: Source for the environment variable's
@@ -2884,16 +2975,17 @@ objects:
                                         type: string
                                       value:
                                         description: 'Variable references $(VAR_NAME)
-                                          are expanded using the previous defined
+                                          are expanded using the previously defined
                                           environment variables in the container and
                                           any service environment variables. If a
                                           variable cannot be resolved, the reference
-                                          in the input string will be unchanged. The
-                                          $(VAR_NAME) syntax can be escaped with a
-                                          double $$, ie: $$(VAR_NAME). Escaped references
-                                          will never be expanded, regardless of whether
-                                          the variable exists or not. Defaults to
-                                          "".'
+                                          in the input string will be unchanged. Double
+                                          $$ are reduced to a single $, which allows
+                                          for escaping the $(VAR_NAME) syntax: i.e.
+                                          "$$(VAR_NAME)" will produce the string literal
+                                          "$(VAR_NAME)". Escaped references will never
+                                          be expanded, regardless of whether the variable
+                                          exists or not. Defaults to "".'
                                         type: string
                                       valueFrom:
                                         description: Source for the environment variable's
@@ -3116,6 +3208,24 @@ objects:
                                 required:
                                 - port
                                 type: object
+                              terminationGracePeriodSeconds:
+                                description: Optional duration in seconds the pod
+                                  needs to terminate gracefully upon probe failure.
+                                  The grace period is the duration in seconds after
+                                  the processes running in the pod are sent a termination
+                                  signal and the time when the processes are forcibly
+                                  halted with a kill signal. Set this value longer
+                                  than the expected cleanup time for your process.
+                                  If this value is nil, the pod's terminationGracePeriodSeconds
+                                  will be used. Otherwise, this value overrides the
+                                  value provided by the pod spec. Value must be non-negative
+                                  integer. The value zero indicates stop immediately
+                                  via the kill signal (no opportunity to shut down).
+                                  This is a beta field and requires enabling ProbeTerminationGracePeriod
+                                  feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds
+                                  is used if unset.
+                                format: int64
+                                type: integer
                               timeoutSeconds:
                                 description: 'Number of seconds after which the probe
                                   times out. Defaults to 1 second. Minimum value is
@@ -3236,6 +3346,24 @@ objects:
                                 required:
                                 - port
                                 type: object
+                              terminationGracePeriodSeconds:
+                                description: Optional duration in seconds the pod
+                                  needs to terminate gracefully upon probe failure.
+                                  The grace period is the duration in seconds after
+                                  the processes running in the pod are sent a termination
+                                  signal and the time when the processes are forcibly
+                                  halted with a kill signal. Set this value longer
+                                  than the expected cleanup time for your process.
+                                  If this value is nil, the pod's terminationGracePeriodSeconds
+                                  will be used. Otherwise, this value overrides the
+                                  value provided by the pod spec. Value must be non-negative
+                                  integer. The value zero indicates stop immediately
+                                  via the kill signal (no opportunity to shut down).
+                                  This is a beta field and requires enabling ProbeTerminationGracePeriod
+                                  feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds
+                                  is used if unset.
+                                format: int64
+                                type: integer
                               timeoutSeconds:
                                 description: 'Number of seconds after which the probe
                                   times out. Defaults to 1 second. Minimum value is
@@ -3257,7 +3385,7 @@ objects:
                                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                   x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
-                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                               requests:
                                 additionalProperties:
@@ -3270,7 +3398,7 @@ objects:
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
                                   explicitly specified, otherwise to an implementation-defined
-                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
                           sidecars:
@@ -3773,33 +3901,31 @@ objects:
                                   type: object
                                 ephemeral:
                                   description: "Ephemeral represents a volume that\
-                                    \ is handled by a cluster storage driver (Alpha\
-                                    \ feature). The volume's lifecycle is tied to\
-                                    \ the pod that defines it - it will be created\
-                                    \ before the pod starts, and deleted when the\
-                                    \ pod is removed. \n Use this if: a) the volume\
-                                    \ is only needed while the pod runs, b) features\
-                                    \ of normal volumes like restoring from snapshot\
-                                    \ or capacity    tracking are needed, c) the storage\
-                                    \ driver is specified through a storage class,\
-                                    \ and d) the storage driver supports dynamic volume\
-                                    \ provisioning through    a PersistentVolumeClaim\
-                                    \ (see EphemeralVolumeSource for more    information\
-                                    \ on the connection between this volume type \
-                                    \   and PersistentVolumeClaim). \n Use PersistentVolumeClaim\
-                                    \ or one of the vendor-specific APIs for volumes\
-                                    \ that persist for longer than the lifecycle of\
-                                    \ an individual pod. \n Use CSI for light-weight\
-                                    \ local ephemeral volumes if the CSI driver is\
-                                    \ meant to be used that way - see the documentation\
-                                    \ of the driver for more information. \n A pod\
-                                    \ can use both types of ephemeral volumes and\
-                                    \ persistent volumes at the same time."
+                                    \ is handled by a cluster storage driver. The\
+                                    \ volume's lifecycle is tied to the pod that defines\
+                                    \ it - it will be created before the pod starts,\
+                                    \ and deleted when the pod is removed. \n Use\
+                                    \ this if: a) the volume is only needed while\
+                                    \ the pod runs, b) features of normal volumes\
+                                    \ like restoring from snapshot or capacity   \
+                                    \ tracking are needed, c) the storage driver is\
+                                    \ specified through a storage class, and d) the\
+                                    \ storage driver supports dynamic volume provisioning\
+                                    \ through    a PersistentVolumeClaim (see EphemeralVolumeSource\
+                                    \ for more    information on the connection between\
+                                    \ this volume type    and PersistentVolumeClaim).\
+                                    \ \n Use PersistentVolumeClaim or one of the vendor-specific\
+                                    \ APIs for volumes that persist for longer than\
+                                    \ the lifecycle of an individual pod. \n Use CSI\
+                                    \ for light-weight local ephemeral volumes if\
+                                    \ the CSI driver is meant to be used that way\
+                                    \ - see the documentation of the driver for more\
+                                    \ information. \n A pod can use both types of\
+                                    \ ephemeral volumes and persistent volumes at\
+                                    \ the same time. \n This is a beta feature and\
+                                    \ only available when the GenericEphemeralVolume\
+                                    \ feature gate is enabled."
                                   properties:
-                                    readOnly:
-                                      description: Specifies a read-only configuration
-                                        for the volume. Defaults to false (read/write).
-                                      type: boolean
                                     volumeClaimTemplate:
                                       description: "Will be used to create a stand-alone\
                                         \ PVC to provision the volume. The pod in\
@@ -3852,16 +3978,68 @@ objects:
                                                 to specify either: * An existing VolumeSnapshot
                                                 object (snapshot.storage.k8s.io/VolumeSnapshot)
                                                 * An existing PVC (PersistentVolumeClaim)
-                                                * An existing custom resource that
-                                                implements data population (Alpha)
-                                                In order to use custom resource types
-                                                that implement data population, the
-                                                AnyVolumeDataSource feature gate must
-                                                be enabled. If the provisioner or
-                                                an external controller can support
-                                                the specified data source, it will
-                                                create a new volume based on the contents
-                                                of the specified data source.'
+                                                If the provisioner or an external
+                                                controller can support the specified
+                                                data source, it will create a new
+                                                volume based on the contents of the
+                                                specified data source. If the AnyVolumeDataSource
+                                                feature gate is enabled, this field
+                                                will always have the same contents
+                                                as the DataSourceRef field.'
+                                              properties:
+                                                apiGroup:
+                                                  description: APIGroup is the group
+                                                    for the resource being referenced.
+                                                    If APIGroup is not specified,
+                                                    the specified Kind must be in
+                                                    the core API group. For any other
+                                                    third-party types, APIGroup is
+                                                    required.
+                                                  type: string
+                                                kind:
+                                                  description: Kind is the type of
+                                                    resource being referenced
+                                                  type: string
+                                                name:
+                                                  description: Name is the name of
+                                                    resource being referenced
+                                                  type: string
+                                              required:
+                                              - kind
+                                              - name
+                                              type: object
+                                            dataSourceRef:
+                                              description: 'Specifies the object from
+                                                which to populate the volume with
+                                                data, if a non-empty volume is desired.
+                                                This may be any local object from
+                                                a non-empty API group (non core object)
+                                                or a PersistentVolumeClaim object.
+                                                When this field is specified, volume
+                                                binding will only succeed if the type
+                                                of the specified object matches some
+                                                installed volume populator or dynamic
+                                                provisioner. This field will replace
+                                                the functionality of the DataSource
+                                                field and as such if both fields are
+                                                non-empty, they must have the same
+                                                value. For backwards compatibility,
+                                                both fields (DataSource and DataSourceRef)
+                                                will be set to the same value automatically
+                                                if one of them is empty and the other
+                                                is non-empty. There are two important
+                                                differences between DataSource and
+                                                DataSourceRef: * While DataSource
+                                                only allows two specific types of
+                                                objects, DataSourceRef   allows any
+                                                non-core object, as well as PersistentVolumeClaim
+                                                objects. * While DataSource ignores
+                                                disallowed values (dropping them),
+                                                DataSourceRef   preserves all values,
+                                                and generates an error if a disallowed
+                                                value is   specified. (Alpha) Using
+                                                this field requires the AnyVolumeDataSource
+                                                feature gate to be enabled.'
                                               properties:
                                                 apiGroup:
                                                   description: APIGroup is the group
@@ -3898,7 +4076,7 @@ objects:
                                                     x-kubernetes-int-or-string: true
                                                   description: 'Limits describes the
                                                     maximum amount of compute resources
-                                                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                                   type: object
                                                 requests:
                                                   additionalProperties:
@@ -3914,7 +4092,7 @@ objects:
                                                     defaults to Limits if that is
                                                     explicitly specified, otherwise
                                                     to an implementation-defined value.
-                                                    More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                                    More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                                   type: object
                                               type: object
                                             selector:
@@ -5610,7 +5788,7 @@ objects:
                                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                     x-kubernetes-int-or-string: true
                                   description: 'Limits describes the maximum amount
-                                    of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                   type: object
                                 requests:
                                   additionalProperties:
@@ -5623,7 +5801,7 @@ objects:
                                     of compute resources required. If Requests is
                                     omitted for a container, it defaults to Limits
                                     if that is explicitly specified, otherwise to
-                                    an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                    an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                   type: object
                               type: object
                             vaultSecretRef:
@@ -5719,7 +5897,7 @@ objects:
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                       description: 'Limits describes the maximum amount of compute
-                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       type: object
                     requests:
                       additionalProperties:
@@ -5731,7 +5909,7 @@ objects:
                       description: 'Requests describes the minimum amount of compute
                         resources required. If Requests is omitted for a container,
                         it defaults to Limits if that is explicitly specified, otherwise
-                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       type: object
                   type: object
                 serviceConfig:
@@ -6759,8 +6937,6 @@ objects:
   webhooks:
   - admissionReviewVersions:
     - v1
-    - v1beta1
-    - v1alpha1
     clientConfig:
       service:
         name: clowder-webhook-service
@@ -6788,8 +6964,6 @@ objects:
   webhooks:
   - admissionReviewVersions:
     - v1
-    - v1beta1
-    - v1alpha1
     clientConfig:
       service:
         name: clowder-webhook-service
