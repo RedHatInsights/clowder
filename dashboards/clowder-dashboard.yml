@@ -32,7 +32,7 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1637605574409,
+      "iteration": 1637743757032,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1038,7 +1038,7 @@ data:
           }
         },
         {
-          "datasource": "crcgovs02ue1-cluster-prometheus",
+          "datasource": "crcs02ue1-prometheus",
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1083,7 +1083,8 @@ data:
           "pluginVersion": "8.2.1",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
+              "exemplar": true,
+              "expr": "clowder_version",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -1334,5 +1335,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 2
+      "version": 12
     }
