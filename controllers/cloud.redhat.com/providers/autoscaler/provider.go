@@ -1,6 +1,9 @@
 package autoscaler
 
 import (
+	"errors"
+	"fmt"
+
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -9,7 +12,17 @@ var ProvName = "autoscaler"
 
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
-	return NewAutoScalerProvider(c)
+
+	autoMode := c.Env.Spec.Providers.AutoScaler.Mode
+	switch autoMode {
+	case "keda":
+		return NewAutoScalerProvider(c)
+	case "none", "":
+		return NewNoneAutoScalerProvider(c)
+	default:
+		errStr := fmt.Sprintf("No matching db mode for %s", autoMode)
+		return nil, errors.New(errStr)
+	}
 }
 
 func init() {

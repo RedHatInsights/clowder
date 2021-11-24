@@ -320,6 +320,20 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
+// AutoScalerMode details the mode of operation of the Clowder AutoScaler
+// Provider
+// +kubebuilder:validation:Enum=keda;none
+type AutoScalerMode string
+
+// AutoScalerConfig configures the Clowder provider controlling the creation of
+// AutoScaler configuration.
+type AutoScalerConfig struct {
+	// The mode of operation of the Clowder InMemory Provider. Valid options are:
+	// (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)
+	// which will search the namespace of the ClowdApp for a secret called 'elasticache'
+	Mode AutoScalerMode `json:"mode,omitempty"`
+}
+
 // Describes what amount of app config is mounted to the pod
 // +kubebuilder:validation:Enum={"none", "app", "", "environment"}
 type ConfigAccessMode string
@@ -425,6 +439,9 @@ type ProvidersConfig struct {
 
 	// Defines the sidecar configuration
 	Sidecars Sidecars `json:"sidecars,omitempty"`
+
+	// Defines the autoscaler configuration
+	AutoScaler AutoScalerConfig `json:"autoScaler,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
