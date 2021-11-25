@@ -11,7 +11,7 @@ import (
 	"time"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -197,8 +197,8 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 
 	image := "quay.io/keycloak/keycloak:11.0.3"
 
-	if clowder_config.LoadedConfig.Images.Keycloak != "" {
-		image = clowder_config.LoadedConfig.Images.Keycloak
+	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
+		image = clowderconfig.LoadedConfig.Images.Keycloak
 	}
 
 	c := core.Container{
@@ -316,8 +316,8 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	image := "quay.io/cloudservices/mbop:a8be5e9"
 
-	if clowder_config.LoadedConfig.Images.MBOP != "" {
-		image = clowder_config.LoadedConfig.Images.MBOP
+	if clowderconfig.LoadedConfig.Images.MBOP != "" {
+		image = clowderconfig.LoadedConfig.Images.MBOP
 	}
 
 	c := core.Container{

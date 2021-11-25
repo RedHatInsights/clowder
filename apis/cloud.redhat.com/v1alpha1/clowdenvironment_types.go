@@ -646,7 +646,7 @@ func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient clien
 
 	namespaceList := []string{}
 
-	for namespace, _ := range tmpNamespace {
+	for namespace := range tmpNamespace {
 		namespaceList = append(namespaceList, namespace)
 	}
 

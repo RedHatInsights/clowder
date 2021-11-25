@@ -60,7 +60,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -304,7 +304,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		For(&crd.ClowdEnvironment{})
 
-	if clowder_config.LoadedConfig.Features.WatchStrimziResources {
+	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
 		ctrlr.Owns(&strimzi.Kafka{})
 		ctrlr.Owns(&strimzi.KafkaConnect{})
 		ctrlr.Owns(&strimzi.KafkaUser{})

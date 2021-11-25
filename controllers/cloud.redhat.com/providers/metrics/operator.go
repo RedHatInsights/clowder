@@ -2,7 +2,7 @@ package metrics
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
@@ -70,7 +70,7 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return err
 	}
 
-	if clowder_config.LoadedConfig.Features.CreateServiceMonitor {
+	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
 		if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
 			return err
 		}

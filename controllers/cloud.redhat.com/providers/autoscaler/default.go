@@ -11,10 +11,10 @@ type autoscalerProvider struct {
 	p.Provider
 }
 
-// CoreConfigSecret is the config that is presented as the cdappconfig.json file.
+// CoreAutoScaler is the config that is presented as the cdappconfig.json file.
 var CoreAutoScaler = p.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
 
-// NewConfigHashProvider returns a new End provider run at the end of the provider set.
+// NewAutoScalerProvider returns a new End provider run at the end of the provider set.
 func NewAutoScalerProvider(p *p.Provider) (p.ClowderProvider, error) {
 	return &autoscalerProvider{Provider: *p}, nil
 }

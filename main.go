@@ -33,7 +33,7 @@ import (
 
 	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	controllers "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -66,8 +66,8 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	if clowder_config.LoadedConfig.DebugOptions.Pprof.Enable {
+	if clowderconfig.LoadedConfig.DebugOptions.Pprof.Enable {
 		go http.ListenAndServe("localhost:8000", nil)
 	}
-	controllers.Run(metricsAddr, probeAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler(), !clowder_config.LoadedConfig.Features.DisableWebhooks)
+	controllers.Run(metricsAddr, probeAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler(), !clowderconfig.LoadedConfig.Features.DisableWebhooks)
 }

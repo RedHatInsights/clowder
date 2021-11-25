@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
@@ -50,8 +50,8 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 
 		image := "quay.io/cloudservices/crc-caddy-plugin:a76bb81"
 
-		if clowder_config.LoadedConfig.Images.Caddy != "" {
-			image = clowder_config.LoadedConfig.Images.Caddy
+		if clowderconfig.LoadedConfig.Images.Caddy != "" {
+			image = clowderconfig.LoadedConfig.Images.Caddy
 		}
 
 		container := core.Container{
@@ -115,7 +115,7 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledObj)
 }
 
-func (a *mutantPod) InjectDecoder(d *admission.Decoder) error {
-	a.decoder = d
+func (p *mutantPod) InjectDecoder(d *admission.Decoder) error {
+	p.decoder = d
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -55,12 +55,12 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	nn := providers.GetNamespacedName(p.Env, "keycloak")
 
 	dataInit := func() map[string]string {
-		username := clowder_config.LoadedConfig.Credentials.Keycloak.Username
+		username := clowderconfig.LoadedConfig.Credentials.Keycloak.Username
 		if username == "" {
 			username = utils.RandString(8)
 		}
 
-		password := clowder_config.LoadedConfig.Credentials.Keycloak.Password
+		password := clowderconfig.LoadedConfig.Credentials.Keycloak.Password
 		if password == "" {
 			password = utils.RandString(8)
 		}
