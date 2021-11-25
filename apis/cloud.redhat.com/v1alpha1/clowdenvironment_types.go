@@ -97,8 +97,6 @@ type MetricsConfig struct {
 	Prometheus PrometheusConfig `json:"prometheus,omitempty"`
 }
 
-// TODO: Other potential mode: saas
-
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
 // +kubebuilder:validation:Enum=managed;operator;app-interface;local;none
 type KafkaMode string
@@ -211,8 +209,6 @@ type KafkaConfig struct {
 	Suffix string `json:"suffix,omitempty"`
 }
 
-// TODO: Other potential modes: RDS and Operator (e.g. CrunchyDB)
-
 // DatabaseMode details the mode of operation of the Clowder Database Provider
 // +kubebuilder:validation:Enum=shared;app-interface;local;none
 type DatabaseMode string
@@ -230,8 +226,6 @@ type DatabaseConfig struct {
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
 }
-
-// TODO: Other potential modes: splunk, kafka
 
 // LoggingMode details the mode of operation of the Clowder Logging Provider
 // +kubebuilder:validation:Enum=app-interface;null;none
@@ -255,8 +249,6 @@ type ServiceMeshMode string
 type ServiceMeshConfig struct {
 	Mode ServiceMeshMode `json:"mode,omitempty"`
 }
-
-// TODO: Other potential mode: ceph, S3
 
 // ObjectStoreMode details the mode of operation of the Clowder ObjectStore
 // Provider
@@ -637,7 +629,7 @@ func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient clien
 
 	namespaceList := []string{}
 
-	for namespace, _ := range tmpNamespace {
+	for namespace := range tmpNamespace {
 		namespaceList = append(namespaceList, namespace)
 	}
 

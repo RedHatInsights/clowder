@@ -1,4 +1,4 @@
-package clowder_config
+package clowderconfig
 
 import (
 	"encoding/json"

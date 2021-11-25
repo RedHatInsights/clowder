@@ -9,7 +9,7 @@ import (
 
 	"database/sql"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Required to load postgres
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -66,7 +66,7 @@ func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	configs := map[int32]*config.DatabaseConfig{}
 
-	for v, _ := range versionsRequired {
+	for v := range versionsRequired {
 		dbCfg, err := createVersionedDatabase(p, v)
 		if err != nil {
 			return nil, err

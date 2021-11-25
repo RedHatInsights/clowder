@@ -11,7 +11,7 @@ var ProvName = "cronjob"
 // CoreCronJob is the croncronjob for the apps cronjobs.
 var CoreCronJob = p.NewMultiResourceIdent(ProvName, "core_cronjob", &batch.CronJob{})
 
-// GetEnd returns the correct end provider.
+// GetCronJob returns the correct cronjob provider.
 func GetCronJob(c *p.Provider) (p.ClowderProvider, error) {
 	return NewCronJobProvider(c)
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
@@ -117,7 +117,7 @@ func init() {
 	gvk, _ := utils.GetKindFromObj(scheme, &strimzi.KafkaTopic{})
 	protectedGVKs[gvk] = true
 
-	if !clowder_config.LoadedConfig.Features.KedaResources {
+	if !clowderconfig.LoadedConfig.Features.KedaResources {
 		gvk, _ := utils.GetKindFromObj(scheme, &keda.ScaledObject{})
 		protectedGVKs[gvk] = true
 	}
@@ -247,7 +247,7 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 	}
 
 	var jsonData []byte
-	if clowder_config.LoadedConfig.DebugOptions.Cache.Create || clowder_config.LoadedConfig.DebugOptions.Cache.Apply {
+	if clowderconfig.LoadedConfig.DebugOptions.Cache.Create || clowderconfig.LoadedConfig.DebugOptions.Cache.Apply {
 		jsonData, _ = json.MarshalIndent(object, "", "  ")
 	}
 
@@ -258,7 +258,7 @@ func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedNam
 		jsonData: string(jsonData),
 	}
 
-	if clowder_config.LoadedConfig.DebugOptions.Cache.Create {
+	if clowderconfig.LoadedConfig.DebugOptions.Cache.Create {
 		diffVal := "hidden"
 
 		if object.GetObjectKind().GroupVersionKind() != secretCompare {
@@ -310,7 +310,7 @@ func (o *ObjectCache) Update(resourceIdent ResourceIdent, object client.Object) 
 
 	o.data[resourceIdent][nn].Object = object.DeepCopyObject().(client.Object)
 
-	if clowder_config.LoadedConfig.DebugOptions.Cache.Update {
+	if clowderconfig.LoadedConfig.DebugOptions.Cache.Update {
 		var jsonData []byte
 		jsonData, _ = json.MarshalIndent(o.data[resourceIdent][nn].Object, "", "  ")
 		if object.GetObjectKind().GroupVersionKind() == secretCompare {
@@ -451,7 +451,7 @@ func (o *ObjectCache) ApplyAll() error {
 		}
 		for n, i := range v {
 			o.log.Info("APPLY resource ", "namespace", n.Namespace, "name", n.Name, "provider", k.GetProvider(), "purpose", k.GetPurpose(), "kind", i.Object.GetObjectKind().GroupVersionKind().Kind, "update", i.Update)
-			if clowder_config.LoadedConfig.DebugOptions.Cache.Apply {
+			if clowderconfig.LoadedConfig.DebugOptions.Cache.Apply {
 				jsonData, _ := json.MarshalIndent(i.Object, "", "  ")
 				diff := difflib.UnifiedDiff{
 					A:        difflib.SplitLines(string(jsonData)),

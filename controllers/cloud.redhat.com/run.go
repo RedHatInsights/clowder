@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/prometheus/client_golang/prometheus"
 
 	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -62,7 +62,7 @@ func init() {
 
 // Run inits the manager and controllers and then starts the manager
 func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config *rest.Config, signalHandler context.Context, enableWebHooks bool) {
-	setupLog.Info("Loaded config", "config", clowder_config.LoadedConfig)
+	setupLog.Info("Loaded config", "config", clowderconfig.LoadedConfig)
 
 	clowderVersion.With(prometheus.Labels{"version": Version}).Inc()
 

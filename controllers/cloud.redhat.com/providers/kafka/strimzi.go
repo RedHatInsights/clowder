@@ -10,7 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -853,11 +853,10 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 }
 
 func getTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment, namespace string) string {
-	if clowder_config.LoadedConfig.Features.UseComplexStrimziTopicNames {
+	if clowderconfig.LoadedConfig.Features.UseComplexStrimziTopicNames {
 		return fmt.Sprintf("%s-%s-%s", topic.TopicName, env.Name, namespace)
-	} else {
-		return topic.TopicName
 	}
+	return topic.TopicName
 }
 
 func processTopicValues(

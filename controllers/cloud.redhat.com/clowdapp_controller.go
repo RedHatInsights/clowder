@@ -45,7 +45,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	// Import the providers to initialize them
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowder_config"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
@@ -279,7 +280,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 
-			if clowder_config.LoadedConfig.DebugOptions.Trigger.Diff {
+			if clowderconfig.LoadedConfig.DebugOptions.Trigger.Diff {
 				if e.ObjectNew.GetObjectKind().GroupVersionKind() == secretCompare {
 					logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 				} else {
