@@ -347,18 +347,17 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a client.Object) 
 
 func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 	// Get all the ClowdApp resources
-	appList := crd.ClowdAppList{}
-	r.Client.List(p.Ctx, &appList)
+	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
+
+	if err != nil {
+		return err
+	}
 	apps := []crd.AppInfo{}
 
 	appMap := map[string]crd.ClowdApp{}
 	names := []string{}
 
 	for _, app := range appList.Items {
-
-		if app.Spec.EnvName != p.Env.Name {
-			continue
-		}
 		name := fmt.Sprintf("%s-%s", app.Name, app.Namespace)
 		names = append(names, name)
 		appMap[name] = app
@@ -369,10 +368,6 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 	// Populate
 	for _, name := range names {
 		app := appMap[name]
-
-		if app.Spec.EnvName != p.Env.Name {
-			continue
-		}
 
 		if app.GetDeletionTimestamp() != nil {
 			continue

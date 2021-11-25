@@ -37,8 +37,6 @@ func validateCyndiPipeline(
 		Name:      appName,
 	}
 
-	// TODO: potentially do several more validation checks here to ensure the CyndiPipeline
-	// is configured properly
 	pipeline := cyndi.CyndiPipeline{}
 	err := cl.Get(ctx, nn, &pipeline)
 
@@ -119,7 +117,6 @@ func createCyndiPipeline(
 
 func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *providers.ObjectCache, app *crd.ClowdApp, name string, env *crd.ClowdEnvironment) (*core.Secret, error) {
 	// locate the clowdapp named 'name' in the same env as 'app' and return its DB secret
-	// TODO: switch this to use cache instead of getting secret out of k8s?
 	appList := &crd.ClowdAppList{}
 
 	err := crd.GetAppInSameEnv(ctx, cl, app, appList)

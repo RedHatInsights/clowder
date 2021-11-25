@@ -2,7 +2,6 @@ package objectstore
 
 import (
 	"context"
-	errlib "errors"
 	"strconv"
 	"testing"
 
@@ -12,14 +11,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
 )
-
-// TODO: replace with assert.ErrorIs whenever testify is next released...
-func assertErrorIs(t *testing.T, got error, want error) {
-	t.Helper()
-	if !errlib.Is(got, want) {
-		t.Errorf("got error: %s, want error: %s", got, want)
-	}
-}
 
 type mockBucket struct {
 	Name        string
@@ -139,8 +130,7 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 0)
 		assert.Contains(handler.ExistsCalls, bucketName)
-
-		assertErrorIs(t, gotErr, wantErr)
+		assert.ErrorIs(gotErr, wantErr)
 	})
 
 	t.Run("createBucketsHitsCreateError", func(t *testing.T) {
@@ -157,7 +147,7 @@ func TestMinio(t *testing.T) {
 		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCreateErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
-		assertErrorIs(t, gotErr, wantErr)
+		assert.ErrorIs(gotErr, wantErr)
 
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 1)
@@ -268,7 +258,7 @@ func TestMinio(t *testing.T) {
 		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCheckErrorMsg, b2, fakeError)
 		assert.Error(gotErr)
-		assertErrorIs(t, wantErr, gotErr)
+		assert.ErrorIs(gotErr, wantErr)
 
 		// Provide should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
@@ -292,7 +282,7 @@ func TestMinio(t *testing.T) {
 		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCreateErrorMsg, b2, fakeError)
 		assert.Error(gotErr)
-		assertErrorIs(t, wantErr, gotErr)
+		assert.ErrorIs(gotErr, wantErr)
 
 		// Provide should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
