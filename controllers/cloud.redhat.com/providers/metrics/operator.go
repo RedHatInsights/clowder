@@ -12,19 +12,21 @@ import (
 	rbac "k8s.io/api/rbac/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 type metricsProvider struct {
 	providers.Provider
 }
 
-var PrometheusInstance = providers.NewSingleResourceIdent(ProvName, "prometheus_instance", &prom.Prometheus{})
+var PrometheusInstance = rc.NewSingleResourceIdent(ProvName, "prometheus_instance", &prom.Prometheus{})
 
-var PrometheusRole = providers.NewSingleResourceIdent(ProvName, "prometheus_role", &rbac.Role{})
+var PrometheusRole = rc.NewSingleResourceIdent(ProvName, "prometheus_role", &rbac.Role{})
 
-var PrometheusRoleBinding = providers.NewSingleResourceIdent(ProvName, "prometheus_role_binding", &rbac.RoleBinding{})
+var PrometheusRoleBinding = rc.NewSingleResourceIdent(ProvName, "prometheus_role_binding", &rbac.RoleBinding{})
 
-var PrometheusServiceAccount = providers.NewSingleResourceIdent(ProvName, "prometheus_service_account", &core.ServiceAccount{})
+var PrometheusServiceAccount = rc.NewSingleResourceIdent(ProvName, "prometheus_service_account", &core.ServiceAccount{})
 
 func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	if !p.Env.Spec.Providers.Metrics.Prometheus.Deploy {
@@ -83,7 +85,7 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 	return nil
 }
 
-func createPrometheusServiceAccount(cache *providers.ObjectCache, env *crd.ClowdEnvironment) error {
+func createPrometheusServiceAccount(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
 
 	cr := &core.ServiceAccount{}
 
@@ -106,7 +108,7 @@ func createPrometheusServiceAccount(cache *providers.ObjectCache, env *crd.Clowd
 	return nil
 }
 
-func createPrometheusRoleBinding(cache *providers.ObjectCache, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
+func createPrometheusRoleBinding(cache *rc.ObjectCache, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	crb := &rbac.RoleBinding{}
 

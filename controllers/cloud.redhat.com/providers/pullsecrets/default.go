@@ -11,6 +11,8 @@ import (
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 type pullsecretProvider struct {
@@ -18,7 +20,7 @@ type pullsecretProvider struct {
 }
 
 // CoreConfigSecret is the config that is presented as the cdappconfig.json file.
-var CoreConfigSecret = providers.NewSingleResourceIdent(ProvName, "core_config_secret", &core.Secret{})
+var CoreConfigSecret = rc.NewSingleResourceIdent(ProvName, "core_config_secret", &core.Secret{})
 
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {

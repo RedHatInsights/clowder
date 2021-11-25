@@ -22,22 +22,24 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // SharedDBDeployment is the ident referring to the local DB deployment object.
-var SharedDBDeployment = providers.NewMultiResourceIdent(ProvName, "shared_db_deployment", &apps.Deployment{})
+var SharedDBDeployment = rc.NewMultiResourceIdent(ProvName, "shared_db_deployment", &apps.Deployment{})
 
 // SharedDBService is the ident referring to the local DB service object.
-var SharedDBService = providers.NewMultiResourceIdent(ProvName, "shared_db_service", &core.Service{})
+var SharedDBService = rc.NewMultiResourceIdent(ProvName, "shared_db_service", &core.Service{})
 
 // SharedDBPVC is the ident referring to the local DB PVC object.
-var SharedDBPVC = providers.NewMultiResourceIdent(ProvName, "shared_db_pvc", &core.PersistentVolumeClaim{})
+var SharedDBPVC = rc.NewMultiResourceIdent(ProvName, "shared_db_pvc", &core.PersistentVolumeClaim{})
 
 // SharedDBSecret is the ident referring to the local DB secret object.
-var SharedDBSecret = providers.NewMultiResourceIdent(ProvName, "shared_db_secret", &core.Secret{})
+var SharedDBSecret = rc.NewMultiResourceIdent(ProvName, "shared_db_secret", &core.Secret{})
 
 // SharedDBSecret is the ident referring to the local DB secret object.
-var SharedDBAppSecret = providers.NewSingleResourceIdent(ProvName, "shared_db_app_secret", &core.Secret{})
+var SharedDBAppSecret = rc.NewSingleResourceIdent(ProvName, "shared_db_app_secret", &core.Secret{})
 
 type sharedDbProvider struct {
 	providers.Provider

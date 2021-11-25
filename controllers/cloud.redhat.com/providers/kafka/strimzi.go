@@ -21,28 +21,30 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // KafkaTopic is the resource ident for a KafkaTopic object.
-var KafkaTopic = providers.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{}, providers.ResourceOptions{WriteNow: true})
+var KafkaTopic = rc.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaInstance is the resource ident for a Kafka object.
-var KafkaInstance = providers.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{}, providers.ResourceOptions{WriteNow: true})
+var KafkaInstance = rc.NewSingleResourceIdent(ProvName, "kafka_instance", &strimzi.Kafka{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaConnect is the resource ident for a KafkaConnect object.
-var KafkaConnect = providers.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, providers.ResourceOptions{WriteNow: true})
+var KafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaUser is the resource ident for a KafkaUser object.
-var KafkaUser = providers.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{}, providers.ResourceOptions{WriteNow: true})
+var KafkaUser = rc.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaUser is the resource ident for a KafkaUser object.
-var KafkaConnectUser = providers.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{}, providers.ResourceOptions{WriteNow: true})
+var KafkaConnectUser = rc.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
-var KafkaMetricsConfigMap = providers.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{}, providers.ResourceOptions{WriteNow: true})
+var KafkaMetricsConfigMap = rc.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaNetworkPolicy is the resource ident for the KafkaNetworkPolicy
-var KafkaNetworkPolicy = providers.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{}, providers.ResourceOptions{WriteNow: true})
+var KafkaNetworkPolicy = rc.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{}, rc.ResourceOptions{WriteNow: true})
 
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,

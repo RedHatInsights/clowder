@@ -16,25 +16,27 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // LocalFFDeployment is the ident referring to the local Feature Flags deployment object.
-var LocalFFDeployment = providers.NewSingleResourceIdent(ProvName, "ff_deployment", &apps.Deployment{})
+var LocalFFDeployment = rc.NewSingleResourceIdent(ProvName, "ff_deployment", &apps.Deployment{})
 
 // LocalFFService is the ident referring to the local Feature Flags service object.
-var LocalFFService = providers.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
+var LocalFFService = rc.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
 
 // LocalFFDBDeployment is the ident referring to the local Feature Flags DB deployment object.
-var LocalFFDBDeployment = providers.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
+var LocalFFDBDeployment = rc.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
 
 // LocalFFDBService is the ident referring to the local Feature Flags DB service object.
-var LocalFFDBService = providers.NewSingleResourceIdent(ProvName, "ff_db_service", &core.Service{})
+var LocalFFDBService = rc.NewSingleResourceIdent(ProvName, "ff_db_service", &core.Service{})
 
 // LocalFFDBPVC is the ident referring to the local Feature Flags DB PVC object.
-var LocalFFDBPVC = providers.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.PersistentVolumeClaim{})
+var LocalFFDBPVC = rc.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.PersistentVolumeClaim{})
 
 // LocalFFDBSecret is the ident referring to the local Feature Flags DB secret object.
-var LocalFFDBSecret = providers.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
+var LocalFFDBSecret = rc.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
 
 type localFeatureFlagsProvider struct {
 	providers.Provider
@@ -46,7 +48,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 
 	ffp := &localFeatureFlagsProvider{Provider: *p, Config: config.FeatureFlagsConfig{}}
 
-	objList := []providers.ResourceIdent{
+	objList := []rc.ResourceIdent{
 		LocalFFDeployment,
 		LocalFFService,
 	}

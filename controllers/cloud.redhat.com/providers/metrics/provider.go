@@ -6,9 +6,11 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-var MetricsServiceMonitor = providers.NewMultiResourceIdent(ProvName, "metrics-service-monitor", &prom.ServiceMonitor{})
+var MetricsServiceMonitor = rc.NewMultiResourceIdent(ProvName, "metrics-service-monitor", &prom.ServiceMonitor{})
 
 // ProvName sets the provider name identifier
 var ProvName = "metrics"

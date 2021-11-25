@@ -22,9 +22,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-func makeService(cache *providers.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
+func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
 	nn := app.GetDeploymentNamespacedName(deployment)

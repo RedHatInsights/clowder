@@ -4,6 +4,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	keda "github.com/kedacore/keda/v2/api/v1alpha1"
 )
 
@@ -12,7 +13,7 @@ type autoscalerProvider struct {
 }
 
 // CoreAutoScaler is the config that is presented as the cdappconfig.json file.
-var CoreAutoScaler = p.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
+var CoreAutoScaler = rc.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
 
 // NewAutoScalerProvider returns a new End provider run at the end of the provider set.
 func NewAutoScalerProvider(p *p.Provider) (p.ClowderProvider, error) {

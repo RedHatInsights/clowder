@@ -5,7 +5,6 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	webProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
@@ -14,9 +13,11 @@ import (
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-func makeMetrics(cache *providers.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, port int32) error {
+func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, port int32) error {
 
 	s := &core.Service{}
 
@@ -55,7 +56,7 @@ func makeMetrics(cache *providers.ObjectCache, deployment *crd.Deployment, app *
 	return nil
 }
 
-func createMetricsOnDeployments(cache *providers.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig) error {
+func createMetricsOnDeployments(cache *rc.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig) error {
 	c.MetricsPort = int(env.Spec.Providers.Metrics.Port)
 	c.MetricsPath = env.Spec.Providers.Metrics.Path
 
@@ -69,7 +70,7 @@ func createMetricsOnDeployments(cache *providers.ObjectCache, env *crd.ClowdEnvi
 	return nil
 }
 
-func createServiceMonitorObjects(cache *providers.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig, promLabel string, namespace string) error {
+func createServiceMonitorObjects(cache *rc.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig, promLabel string, namespace string) error {
 	for _, deployment := range app.Spec.Deployments {
 		sm := &prom.ServiceMonitor{}
 		name := fmt.Sprintf("%s-%s", app.Name, deployment.Name)

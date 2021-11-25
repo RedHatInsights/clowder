@@ -10,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
+
 	"github.com/go-logr/logr"
 
 	core "k8s.io/api/core/v1"
@@ -18,6 +19,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 type providerAccessor struct {
@@ -67,7 +70,7 @@ type Provider struct {
 	Client client.Client
 	Ctx    context.Context
 	Env    *crd.ClowdEnvironment
-	Cache  *ObjectCache
+	Cache  *rc.ObjectCache
 	Log    logr.Logger
 }
 
@@ -85,8 +88,8 @@ func StrPtr(s string) *string {
 
 type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool)
 
-func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName) (client.Object, error) {
-	gvks, nok, err := cache.scheme.ObjectKinds(resourceIdent.GetType())
+func createResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName) (client.Object, error) {
+	gvks, nok, err := cache.GetScheme().ObjectKinds(resourceIdent.GetType())
 
 	if err != nil {
 		return nil, err
@@ -98,7 +101,7 @@ func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.Na
 
 	gvk := gvks[0]
 
-	cobj, err := cache.scheme.New(gvk)
+	cobj, err := cache.GetScheme().New(gvk)
 	nobj := cobj.(client.Object)
 
 	if err != nil {
@@ -113,7 +116,7 @@ func createResource(cache *ObjectCache, resourceIdent ResourceIdent, nn types.Na
 	return nobj, nil
 }
 
-func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object client.Object) error {
+func updateResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, object client.Object) error {
 	err := cache.Update(resourceIdent, object)
 
 	if err != nil {
@@ -123,14 +126,14 @@ func updateResource(cache *ObjectCache, resourceIdent ResourceIdent, object clie
 }
 
 // ObjectMap providers a map of ResourceIdents to objects, it is used internally and for testing.
-type ObjectMap map[ResourceIdent]client.Object
+type ObjectMap map[rc.ResourceIdent]client.Object
 
 // CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
-func CachedMakeComponent(cache *ObjectCache, objList []ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
+func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
 	nn := GetNamespacedName(o, suffix)
 
-	makeFnMap := make(map[ResourceIdent]client.Object)
+	makeFnMap := make(map[rc.ResourceIdent]client.Object)
 
 	for _, v := range objList {
 		obj, err := createResource(cache, v, nn)
@@ -218,7 +221,7 @@ func ExtractSecretDataAnno(secrets []core.Secret, fn ExtractFnAnno, annoKey stri
 // MakeOrGetSecret tries to get the secret described by nn, if it exists it populates a map with the
 // key/value pairs from the secret. If it doesn't exist the dataInit function is run and the
 // resulting data is returned, as well as the secret being created.
-func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, cache *ObjectCache, resourceIdent ResourceIdent, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
+func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	if err := cache.Create(resourceIdent, nn, secret); err != nil {
 		return nil, err

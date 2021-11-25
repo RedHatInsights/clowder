@@ -16,15 +16,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
-var VaultSecret = providers.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
+var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
+var VaultSecret = rc.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
 
 func joinNullableSlice(s *[]string) string {
 	if s != nil {
@@ -34,7 +35,7 @@ func joinNullableSlice(s *[]string) string {
 }
 
 // CreateIqeJobResource will create a Job that contains a pod spec for running IQE
-func CreateIqeJobResource(cache *providers.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
+func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
@@ -224,7 +225,7 @@ func buildVaultEnvVars(vaultSecret *core.Secret) []core.EnvVar {
 	return vaultEnvVars
 }
 
-func addVaultSecretToCache(cache *providers.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, srcRef crd.NamespacedName, logger logr.Logger, client client.Client) (error, *core.Secret) {
+func addVaultSecretToCache(cache *rc.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, srcRef crd.NamespacedName, logger logr.Logger, client client.Client) (error, *core.Secret) {
 	dstSecretRef := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-vault", cji.Name),
 		Namespace: cji.Namespace,
@@ -250,7 +251,7 @@ func addVaultSecretToCache(cache *providers.ObjectCache, ctx context.Context, cj
 	return nil, vaultSecret
 }
 
-func addIqeSecretToCache(cache *providers.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string, logger logr.Logger, client client.Client) error {
+func addIqeSecretToCache(cache *rc.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string, logger logr.Logger, client client.Client) error {
 	iqeSecret := &core.Secret{}
 	secretName := fmt.Sprintf("%s-iqe", cji.Name)
 

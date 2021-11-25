@@ -23,6 +23,7 @@ import (
 	"sync"
 	"time"
 
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
@@ -57,6 +58,7 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
+
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -198,7 +200,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
 
-	cache := providers.NewObjectCache(ctx, r.Client, scheme)
+	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
+
+	cache := rc.NewObjectCache(ctx, r.Client, cacheConfig)
 
 	provider := providers.Provider{
 		Ctx:    ctx,
@@ -275,8 +279,14 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, finalStatusErr
 	}
 
+	var opts []client.ListOption
+
+	opts = []client.ListOption{
+		client.MatchingLabels{env.GetPrimaryLabel(): env.GetClowdName()},
+	}
+
 	// Delete all resources that are not used anymore
-	rErr := cache.Reconcile(&env)
+	rErr := cache.Reconcile(env.GetUID(), opts...)
 	if rErr != nil {
 		return ctrl.Result{Requeue: true}, rErr
 	}
