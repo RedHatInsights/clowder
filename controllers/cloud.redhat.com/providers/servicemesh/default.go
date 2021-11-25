@@ -33,7 +33,7 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 			annotations = make(map[string]string)
 		}
 		annotations["sidecar.istio.io/inject"] = "true"
-		annotations["traffic.sidecar.istio.io/excludeOutboundPorts"] = "443,9093,5432"
+		annotations["traffic.sidecar.istio.io/excludeOutboundPorts"] = "443,9093,5432,10000"
 
 		deployment.Spec.Template.SetAnnotations(annotations)
 
