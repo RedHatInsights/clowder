@@ -22,6 +22,7 @@ import (
 	"time"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -36,7 +37,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
 	jobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/job"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -52,9 +52,9 @@ type ClowdJobInvocationReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var IqeClowdJob = providers.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
-var ClowdJob = providers.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
-var IqeSecret = providers.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
+var IqeClowdJob = rc.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
+var ClowdJob = rc.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
+var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
@@ -81,7 +81,9 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	cache := providers.NewObjectCache(ctx, r.Client, r.Scheme)
+	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
+
+	cache := rc.NewObjectCache(ctx, r.Client, cacheConfig)
 
 	// Deprecated, used to handle any lagging CJIs that would otherwise throw errors
 	if cji.Status.Jobs != nil {
@@ -258,7 +260,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 // InvokeJob is responsible for applying the Job. It also updates and reports
 // the status of that job
-func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *providers.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
+func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
 	// Update job name to avoid collisions
 	randomString := utils.RandStringLower(7)
 	nn := types.NamespacedName{

@@ -6,7 +6,6 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	db "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
@@ -16,6 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	core "k8s.io/api/core/v1"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // ensures that a CyndiPipeline resource exists
@@ -59,7 +60,7 @@ func validateCyndiPipeline(
 func createCyndiPipeline(
 	ctx context.Context,
 	cl client.Client,
-	cache *providers.ObjectCache,
+	cache *rc.ObjectCache,
 	app *crd.ClowdApp,
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
@@ -115,7 +116,7 @@ func createCyndiPipeline(
 	return nil
 }
 
-func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *providers.ObjectCache, app *crd.ClowdApp, name string, env *crd.ClowdEnvironment) (*core.Secret, error) {
+func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *rc.ObjectCache, app *crd.ClowdApp, name string, env *crd.ClowdEnvironment) (*core.Secret, error) {
 	// locate the clowdapp named 'name' in the same env as 'app' and return its DB secret
 	appList := &crd.ClowdAppList{}
 
@@ -185,12 +186,12 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *provider
 func applySecretToConnectNamespace(
 	ctx context.Context,
 	cl client.Client,
-	cache *providers.ObjectCache,
+	cache *rc.ObjectCache,
 	env *crd.ClowdEnvironment,
 	secretName string,
 	connectClusterNamespace string,
 	secretData map[string]string,
-	resourceIdent providers.ResourceIdent,
+	resourceIdent rc.ResourceIdent,
 ) error {
 	outNN := types.NamespacedName{
 		Name:      secretName,
@@ -224,7 +225,7 @@ func applySecretToConnectNamespace(
 func createCyndiAppDbSecret(
 	ctx context.Context,
 	cl client.Client,
-	cache *providers.ObjectCache,
+	cache *rc.ObjectCache,
 	app *crd.ClowdApp,
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,
@@ -261,7 +262,7 @@ func createCyndiAppDbSecret(
 func createCyndiInventoryDbSecret(
 	ctx context.Context,
 	cl client.Client,
-	cache *providers.ObjectCache,
+	cache *rc.ObjectCache,
 	app *crd.ClowdApp,
 	env *crd.ClowdEnvironment,
 	connectClusterNamespace string,

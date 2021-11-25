@@ -19,22 +19,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // MinioDeployment is the resource ident for the Minio deployment object.
-var MinioDeployment = providers.NewSingleResourceIdent(ProvName, "minio_db_deployment", &apps.Deployment{})
+var MinioDeployment = rc.NewSingleResourceIdent(ProvName, "minio_db_deployment", &apps.Deployment{})
 
 // MinioService is the resource ident for the Minio service object.
-var MinioService = providers.NewSingleResourceIdent(ProvName, "minio_db_service", &core.Service{})
+var MinioService = rc.NewSingleResourceIdent(ProvName, "minio_db_service", &core.Service{})
 
 // MinioPVC is the resource ident for the Minio PVC object.
-var MinioPVC = providers.NewSingleResourceIdent(ProvName, "minio_db_pvc", &core.PersistentVolumeClaim{})
+var MinioPVC = rc.NewSingleResourceIdent(ProvName, "minio_db_pvc", &core.PersistentVolumeClaim{})
 
 // MinioSecret is the resource ident for the Minio secret object.
-var MinioSecret = providers.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.Secret{})
+var MinioSecret = rc.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.Secret{})
 
 // MinioNetworkPolicy is the resource ident for the KafkaNetworkPolicy
-var MinioNetworkPolicy = providers.NewSingleResourceIdent(ProvName, "minio_network_policy", &networking.NetworkPolicy{})
+var MinioNetworkPolicy = rc.NewSingleResourceIdent(ProvName, "minio_network_policy", &networking.NetworkPolicy{})
 
 const bucketCheckErrorMsg = "failed to check if bucket exists"
 const bucketCreateErrorMsg = "failed to create bucket"
@@ -186,7 +188,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		return nil, err
 	}
 
-	minioCacheMap := []providers.ResourceIdent{
+	minioCacheMap := []rc.ResourceIdent{
 		MinioDeployment,
 		MinioService,
 	}

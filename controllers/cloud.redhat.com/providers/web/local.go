@@ -20,6 +20,8 @@ import (
 	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 type KeycloakConfig struct {
@@ -88,7 +90,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace())
 	wp.config.KeycloakConfig.URL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "keycloak", wp.Env.GetClowdNamespace())
 
-	objList := []providers.ResourceIdent{
+	objList := []rc.ResourceIdent{
 		WebKeycloakDeployment,
 		WebKeycloakService,
 	}
@@ -97,7 +99,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
-	objList = []providers.ResourceIdent{
+	objList = []rc.ResourceIdent{
 		WebBOPDeployment,
 		WebBOPService,
 	}

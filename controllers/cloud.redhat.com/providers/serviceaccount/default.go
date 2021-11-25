@@ -16,6 +16,8 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 type serviceaccountProvider struct {
@@ -32,7 +34,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 		return nil, err
 	}
 
-	resourceIdentsToUpdate := []providers.ResourceIdent{
+	resourceIdentsToUpdate := []rc.ResourceIdent{
 		featureflags.LocalFFDBDeployment,
 		kafka.LocalKafkaDeployment,
 		kafka.LocalZookeeperDeployment,
@@ -41,7 +43,7 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 	}
 
 	for _, resourceIdent := range resourceIdentsToUpdate {
-		if obj, ok := resourceIdent.(providers.ResourceIdentSingle); ok {
+		if obj, ok := resourceIdent.(rc.ResourceIdentSingle); ok {
 			dd := &apps.Deployment{}
 			if err := p.Cache.Get(obj, dd); err != nil {
 				if strings.Contains(err.Error(), "not found") {
@@ -64,13 +66,13 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 		return err
 	}
 
-	resourceIdentsToUpdate := []providers.ResourceIdent{
+	resourceIdentsToUpdate := []rc.ResourceIdent{
 		database.LocalDBDeployment,
 		inmemorydb.RedisDeployment,
 	}
 
 	for _, resourceIdent := range resourceIdentsToUpdate {
-		if obj, ok := resourceIdent.(providers.ResourceIdentSingle); ok {
+		if obj, ok := resourceIdent.(rc.ResourceIdentSingle); ok {
 			dd := &apps.Deployment{}
 			if err := sa.Cache.Get(obj, dd); err != nil {
 				if strings.Contains(err.Error(), "not found") {

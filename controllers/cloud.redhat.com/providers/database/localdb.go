@@ -14,19 +14,21 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // LocalDBDeployment is the ident referring to the local DB deployment object.
-var LocalDBDeployment = providers.NewSingleResourceIdent(ProvName, "local_db_deployment", &apps.Deployment{})
+var LocalDBDeployment = rc.NewSingleResourceIdent(ProvName, "local_db_deployment", &apps.Deployment{})
 
 // LocalDBService is the ident referring to the local DB service object.
-var LocalDBService = providers.NewSingleResourceIdent(ProvName, "local_db_service", &core.Service{})
+var LocalDBService = rc.NewSingleResourceIdent(ProvName, "local_db_service", &core.Service{})
 
 // LocalDBPVC is the ident referring to the local DB PVC object.
-var LocalDBPVC = providers.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.PersistentVolumeClaim{})
+var LocalDBPVC = rc.NewSingleResourceIdent(ProvName, "local_db_pvc", &core.PersistentVolumeClaim{})
 
 // LocalDBSecret is the ident referring to the local DB secret object.
-var LocalDBSecret = providers.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
+var LocalDBSecret = rc.NewSingleResourceIdent(ProvName, "local_db_secret", &core.Secret{})
 
 type localDbProvider struct {
 	providers.Provider

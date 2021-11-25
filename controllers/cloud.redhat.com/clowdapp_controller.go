@@ -76,6 +76,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	"github.com/RedHatInsights/go-difflib/difflib"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
@@ -202,7 +203,10 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, nil
 	}
 
-	cache := providers.NewObjectCache(ctx, r.Client, scheme)
+	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
+
+	cache := rc.NewObjectCache(ctx, r.Client, cacheConfig)
+	//cache := providers.NewObjectCache(ctx, r.Client, scheme)
 
 	provider := providers.Provider{
 		Client: r.Client,
@@ -239,8 +243,15 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, statusErr
 	}
 
+	var opts []client.ListOption
+
+	opts = []client.ListOption{
+		client.MatchingLabels{app.GetPrimaryLabel(): app.GetClowdName()},
+	}
+	opts = append(opts, client.InNamespace(app.Namespace))
+
 	// Delete all resources that are not used anymore
-	rErr := cache.Reconcile(&app)
+	rErr := cache.Reconcile(app.GetUID(), opts...)
 	if rErr != nil {
 		log.Info("Reconcile error", "err", rErr)
 		return ctrl.Result{Requeue: true}, nil
@@ -284,7 +295,7 @@ func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
 func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			gvk, _ := utils.GetKindFromObj(scheme, e.Object)
+			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
 			if !isOurs(e.Object, gvk) {
 				return false
 			}
@@ -292,7 +303,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			gvk, _ := utils.GetKindFromObj(scheme, e.ObjectNew)
+			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
 			if !isOurs(e.ObjectNew, gvk) {
 				return false
 			}
@@ -363,7 +374,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			gvk, _ := utils.GetKindFromObj(scheme, e.Object)
+			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
 			if !isOurs(e.Object, gvk) {
 				return false
 			}
@@ -371,7 +382,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			return true
 		},
 		GenericFunc: func(e event.GenericEvent) bool {
-			gvk, _ := utils.GetKindFromObj(scheme, e.Object)
+			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
 			if !isOurs(e.Object, gvk) {
 				return false
 			}

@@ -5,15 +5,16 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-func createServiceAccountForClowdObj(cache *providers.ObjectCache, ident providers.ResourceIdent, obj object.ClowdObject) error {
+func createServiceAccountForClowdObj(cache *rc.ObjectCache, ident rc.ResourceIdent, obj object.ClowdObject) error {
 
 	if obj.GetClowdNamespace() == "" {
 		err := errors.New("targetNamespace not yet populated")
@@ -31,7 +32,7 @@ func createServiceAccountForClowdObj(cache *providers.ObjectCache, ident provide
 	return CreateServiceAccount(cache, ident, nn, labeler)
 }
 
-func CreateServiceAccount(cache *providers.ObjectCache, ident providers.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object)) error {
+func CreateServiceAccount(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object)) error {
 
 	sa := &core.ServiceAccount{}
 
@@ -48,7 +49,7 @@ func CreateServiceAccount(cache *providers.ObjectCache, ident providers.Resource
 	return nil
 }
 
-func CreateRoleBinding(cache *providers.ObjectCache, ident providers.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object), accessLevel crd.K8sAccessLevel) error {
+func CreateRoleBinding(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object), accessLevel crd.K8sAccessLevel) error {
 	if accessLevel == "default" || accessLevel == "" {
 		return nil
 	}

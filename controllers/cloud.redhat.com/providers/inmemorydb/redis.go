@@ -11,16 +11,18 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // RedisDeployment identifies the main redis deployment
-var RedisDeployment = providers.NewSingleResourceIdent(ProvName, "redis_deployment", &apps.Deployment{})
+var RedisDeployment = rc.NewSingleResourceIdent(ProvName, "redis_deployment", &apps.Deployment{})
 
 // RedisService identifies the main redis service
-var RedisService = providers.NewSingleResourceIdent(ProvName, "redis_service", &core.Service{})
+var RedisService = rc.NewSingleResourceIdent(ProvName, "redis_service", &core.Service{})
 
 // RedisConfigMap identifies the main redis configmap
-var RedisConfigMap = providers.NewSingleResourceIdent(ProvName, "redis_config_map", &core.ConfigMap{})
+var RedisConfigMap = rc.NewSingleResourceIdent(ProvName, "redis_config_map", &core.ConfigMap{})
 
 type localRedis struct {
 	providers.Provider
@@ -58,7 +60,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 
 	config.InMemoryDb = &r.Config
 
-	objList := []providers.ResourceIdent{
+	objList := []rc.ResourceIdent{
 		RedisDeployment,
 		RedisService,
 	}

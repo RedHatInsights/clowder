@@ -10,19 +10,21 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
 // ProvName is the name/ident of the provider
 var ProvName = "kafka"
 
 // CyndiPipeline identifies the main cyndi pipeline object.
-var CyndiPipeline = providers.NewSingleResourceIdent(ProvName, "cyndi_pipeline", &cyndi.CyndiPipeline{})
+var CyndiPipeline = rc.NewSingleResourceIdent(ProvName, "cyndi_pipeline", &cyndi.CyndiPipeline{})
 
 // CyndiAppSecret identifies the cyndi app secret object.
-var CyndiAppSecret = providers.NewSingleResourceIdent(ProvName, "cyndi_app_secret", &core.Secret{})
+var CyndiAppSecret = rc.NewSingleResourceIdent(ProvName, "cyndi_app_secret", &core.Secret{})
 
 // CyndiHostInventoryAppSecret identifies the cyndi host-inventory app secret object.
-var CyndiHostInventoryAppSecret = providers.NewSingleResourceIdent(ProvName, "cyndi_host_inventory_secret", &core.Secret{})
+var CyndiHostInventoryAppSecret = rc.NewSingleResourceIdent(ProvName, "cyndi_host_inventory_secret", &core.Secret{})
 
 // GetKafka returns the correct kafka provider based on the environment.
 func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
