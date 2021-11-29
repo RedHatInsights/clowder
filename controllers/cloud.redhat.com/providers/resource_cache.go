@@ -498,53 +498,52 @@ func (o *ObjectCache) Debug() {
 }
 
 // Reconcile performs the delete on objects that are no longer required
-func (o *ObjectCache) Reconcile(clowdObj object.ClowdObject) error {
-	clowdApp, isClowdApp := clowdObj.(*crd.ClowdApp)
+func (o *ObjectCache) Reconcile(clowdObj object.ClowdObject, namespaces []string) error {
 
 	//fmt.Print("-----------------" + clowdObj.GetPrimaryLabel())
-	for gvk := range possibleGVKs {
-		v, ok := o.resourceTracker[gvk]
+	for _, namespace := range namespaces {
+		for gvk := range possibleGVKs {
+			v, ok := o.resourceTracker[gvk]
 
-		if !ok {
-			v = make(map[types.NamespacedName]bool)
-		}
+			if !ok {
+				v = make(map[types.NamespacedName]bool)
+			}
 
-		nobjList := unstructured.UnstructuredList{}
-		nobjList.SetGroupVersionKind(gvk)
+			nobjList := unstructured.UnstructuredList{}
+			nobjList.SetGroupVersionKind(gvk)
 
-		var opts []client.ListOption
+			var opts []client.ListOption
 
-		opts = []client.ListOption{
-			client.MatchingLabels{clowdObj.GetPrimaryLabel(): clowdObj.GetClowdName()},
-		}
+			opts = []client.ListOption{
+				client.MatchingLabels{clowdObj.GetPrimaryLabel(): clowdObj.GetClowdName()},
+			}
 
-		if isClowdApp {
-			opts = append(opts, client.InNamespace(clowdApp.Namespace))
-		}
+			opts = append(opts, client.InNamespace(namespace))
 
-		err := o.client.List(o.ctx, &nobjList, opts...)
-		if err != nil {
-			return err
-		}
+			err := o.client.List(o.ctx, &nobjList, opts...)
+			if err != nil {
+				return err
+			}
 
-		//fmt.Printf("\n%v %v", gvk, len(nobjList.Items))
+			//fmt.Printf("\n%v %v", gvk, len(nobjList.Items))
 
-		for _, obj := range nobjList.Items {
-			for _, ownerRef := range obj.GetOwnerReferences() {
-				if ownerRef.UID == clowdObj.GetUID() {
-					nn := types.NamespacedName{
-						Name:      obj.GetName(),
-						Namespace: obj.GetNamespace(),
-					}
-					if err != nil {
-						return err
-					}
-					//fmt.Printf("\n%v\n", v)
-					if _, ok := v[nn]; !ok {
-						o.log.Info("DELETE resource ", "namespace", obj.GetNamespace(), "name", obj.GetName(), "kind", obj.GetObjectKind().GroupVersionKind().Kind)
-						err := o.client.Delete(o.ctx, &obj)
+			for _, obj := range nobjList.Items {
+				for _, ownerRef := range obj.GetOwnerReferences() {
+					if ownerRef.UID == clowdObj.GetUID() {
+						nn := types.NamespacedName{
+							Name:      obj.GetName(),
+							Namespace: obj.GetNamespace(),
+						}
 						if err != nil {
 							return err
+						}
+						//fmt.Printf("\n%v\n", v)
+						if _, ok := v[nn]; !ok {
+							o.log.Info("DELETE resource ", "namespace", obj.GetNamespace(), "name", obj.GetName(), "kind", obj.GetObjectKind().GroupVersionKind().Kind)
+							err := o.client.Delete(o.ctx, &obj)
+							if err != nil {
+								return err
+							}
 						}
 					}
 				}

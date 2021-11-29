@@ -247,7 +247,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Delete all resources that are not used anymore
-	rErr := cache.Reconcile(&env)
+
+	namespaces, nErr := env.GetNamespacesInEnv(ctx, r.Client)
+	if nErr != nil {
+		return ctrl.Result{Requeue: true}, nErr
+	}
+
+	rErr := cache.Reconcile(&env, namespaces)
 	if rErr != nil {
 		return ctrl.Result{Requeue: true}, rErr
 	}

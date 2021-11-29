@@ -220,7 +220,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Delete all resources that are not used anymore
-	rErr := cache.Reconcile(&app)
+	rErr := cache.Reconcile(&app, []string{app.Namespace})
 	if rErr != nil {
 		log.Info("Reconcile error", "error", rErr)
 		return ctrl.Result{Requeue: true}, nil
