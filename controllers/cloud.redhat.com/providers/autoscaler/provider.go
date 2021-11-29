@@ -20,7 +20,7 @@ func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 	case "none", "":
 		return NewNoneAutoScalerProvider(c)
 	default:
-		errStr := fmt.Sprintf("No matching db mode for %s", autoMode)
+		errStr := fmt.Sprintf("No matching autoscaler mode for %s", autoMode)
 		return nil, errors.New(errStr)
 	}
 }
