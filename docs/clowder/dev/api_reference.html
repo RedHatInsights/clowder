@@ -387,6 +387,46 @@
 </table>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig"></a>AutoScalerConfig</h4>
+<div class="paragraph">
+<p>AutoScalerConfig configures the Clowder provider controlling the creation of AutoScaler configuration.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig">ProvidersConfig</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>mode</code></strong> <em>AutoScalerMode</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The mode of operation of the Clowder InMemory Provider. Valid options are: (<strong><em>redis</em></strong>) where a local Minio instance will be created, and (<strong><em>elasticache</em></strong>) which will search the namespace of the ClowdApp for a secret called 'elasticache'</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp"></a>ClowdApp</h4>
 <div class="paragraph">
 <p>ClowdApp is the Schema for the clowdapps API</p>
@@ -2841,6 +2881,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Defines the sidecar configuration</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>autoScaler</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig">AutoScalerConfig</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines the autoscaler configuration</p>
 </div></div></td>
 </tr>
 </tbody>
