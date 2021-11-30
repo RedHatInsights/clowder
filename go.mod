@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/RedHatInsights/cyndi-operator v0.1.4
 	github.com/RedHatInsights/go-difflib v1.0.0
+	github.com/RedHatInsights/rhc-osdk-utils v0.2.0
 	github.com/RedHatInsights/strimzi-client-go v0.24.0-1
 	github.com/go-logr/logr v0.4.0
 	github.com/kedacore/keda/v2 v2.4.0

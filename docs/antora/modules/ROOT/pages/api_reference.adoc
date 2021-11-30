@@ -168,28 +168,6 @@ ClowdAppSpec is the main specification for a single Clowder Application it defin
 
 
 
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdcondition"]
-==== ClowdCondition 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappstatus[$$ClowdAppStatus$$]
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentstatus[$$ClowdEnvironmentStatus$$]
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationstatus[$$ClowdJobInvocationStatus$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`type`* __ClowdConditionType__ | Type is the type of the condition.
-| *`lastTransitionTime`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#time-v1-meta[$$Time$$]__ | Last time the condition transitioned from one status to another.
-| *`reason`* __string__ | Unique, one-word, CamelCase reason for the condition's last transition.
-| *`message`* __string__ | Human-readable message indicating details about last transition.
-|===
-
-
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironment"]
 ==== ClowdEnvironment 
 

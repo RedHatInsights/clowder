@@ -101,7 +101,7 @@ type ClowdJobInvocationStatus struct {
 	Jobs []string `json:"jobs,omitempty"`
 	// JobMap is a map of the job names run by Job invocation and their outcomes
 	JobMap     map[string]JobConditionState `json:"jobMap"`
-	Conditions []ClowdCondition             `json:"conditions,omitempty"`
+	Conditions []metav1.Condition           `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

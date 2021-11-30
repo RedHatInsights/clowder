@@ -370,41 +370,27 @@ type ClowdAppSpec struct {
 	Disabled bool `json:"disabled,omitempty"`
 }
 
-type ClowdConditionType string
+type ConditionType string
 
 const (
 	// Ready means all the deployments are ready
-	DeploymentsReady ClowdConditionType = "DeploymentsReady"
+	DeploymentsReady = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
-	ReconciliationSuccessful ClowdConditionType = "ReconciliationSuccessful"
+	ReconciliationSuccessful = "ReconciliationSuccessful"
 	// ReconciliationFailed means the reconciliation failed
-	ReconciliationFailed ClowdConditionType = "ReconciliationFailed"
+	ReconciliationFailed = "ReconciliationFailed"
 	// JobInvocationComplete means all the Jobs have finished
-	JobInvocationComplete ClowdConditionType = "JobInvocationComplete"
+	JobInvocationComplete = "JobInvocationComplete"
 )
-
-type ClowdCondition struct {
-	// Type is the type of the condition.
-	Type ClowdConditionType `json:"type"`
-	// Status is the status of the condition.
-	// Can be True, False, Unknown.
-	Status v1.ConditionStatus `json:"status"`
-	// Last time the condition transitioned from one status to another.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-	// Unique, one-word, CamelCase reason for the condition's last transition.
-	Reason string `json:"reason,omitempty"`
-	// Human-readable message indicating details about last transition.
-	Message string `json:"message,omitempty"`
-}
 
 // ClowdAppStatus defines the observed state of ClowdApp
 type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments AppResourceStatus `json:"deployments,omitempty"`
-	Ready       bool              `json:"ready"`
-	Conditions  []ClowdCondition  `json:"conditions,omitempty"`
+	Deployments AppResourceStatus  `json:"deployments,omitempty"`
+	Ready       bool               `json:"ready"`
+	Conditions  []metav1.Condition `json:"conditions,omitempty"`
 }
 
 type AppResourceStatus struct {
