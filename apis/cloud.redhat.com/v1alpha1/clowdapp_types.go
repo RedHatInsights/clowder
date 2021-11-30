@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -381,9 +382,9 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments AppResourceStatus  `json:"deployments,omitempty"`
-	Ready       bool               `json:"ready"`
-	Conditions  []metav1.Condition `json:"conditions,omitempty"`
+	Deployments AppResourceStatus     `json:"deployments,omitempty"`
+	Ready       bool                  `json:"ready"`
+	Conditions  []clusterv1.Condition `json:"conditions,omitempty"`
 }
 
 type AppResourceStatus struct {
@@ -422,6 +423,14 @@ type ClowdAppList struct {
 
 func init() {
 	SchemeBuilder.Register(&ClowdApp{}, &ClowdAppList{})
+}
+
+func (i *ClowdApp) GetConditions() clusterv1.Conditions {
+	return i.Status.Conditions
+}
+
+func (i *ClowdApp) SetConditions(conditions clusterv1.Conditions) {
+	i.Status.Conditions = conditions
 }
 
 // GetLabels returns a base set of labels relating to the ClowdApp.
