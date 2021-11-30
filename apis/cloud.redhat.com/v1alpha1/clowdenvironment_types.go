@@ -460,14 +460,14 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Conditions      []ClowdCondition  `json:"conditions,omitempty"`
-	TargetNamespace string            `json:"targetNamespace,omitempty"`
-	Ready           bool              `json:"ready,omitempty"`
-	Deployments     EnvResourceStatus `json:"deployments,omitempty"`
-	Apps            []AppInfo         `json:"apps,omitempty"`
-	Generation      int64             `json:"generation,omitempty"`
-	Hostname        string            `json:"hostname,omitempty"`
-	Prometheus      PrometheusStatus  `json:"prometheus,omitempty"`
+	Conditions      []metav1.Condition `json:"conditions,omitempty"`
+	TargetNamespace string             `json:"targetNamespace,omitempty"`
+	Ready           bool               `json:"ready,omitempty"`
+	Deployments     EnvResourceStatus  `json:"deployments,omitempty"`
+	Apps            []AppInfo          `json:"apps,omitempty"`
+	Generation      int64              `json:"generation,omitempty"`
+	Hostname        string             `json:"hostname,omitempty"`
+	Prometheus      PrometheusStatus   `json:"prometheus,omitempty"`
 }
 
 type EnvResourceStatus struct {
