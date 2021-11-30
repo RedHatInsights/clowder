@@ -27,6 +27,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -101,7 +102,7 @@ type ClowdJobInvocationStatus struct {
 	Jobs []string `json:"jobs,omitempty"`
 	// JobMap is a map of the job names run by Job invocation and their outcomes
 	JobMap     map[string]JobConditionState `json:"jobMap"`
-	Conditions []metav1.Condition           `json:"conditions,omitempty"`
+	Conditions []clusterv1.Condition        `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -125,6 +126,14 @@ type ClowdJobInvocationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []ClowdJobInvocation `json:"items"`
+}
+
+func (i *ClowdJobInvocation) GetConditions() clusterv1.Conditions {
+	return i.Status.Conditions
+}
+
+func (i *ClowdJobInvocation) SetConditions(conditions clusterv1.Conditions) {
+	i.Status.Conditions = conditions
 }
 
 func init() {
