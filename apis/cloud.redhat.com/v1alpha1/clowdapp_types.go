@@ -371,17 +371,15 @@ type ClowdAppSpec struct {
 	Disabled bool `json:"disabled,omitempty"`
 }
 
-type ConditionType string
-
 const (
 	// Ready means all the deployments are ready
-	DeploymentsReady = "DeploymentsReady"
+	DeploymentsReady clusterv1.ConditionType = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
-	ReconciliationSuccessful = "ReconciliationSuccessful"
+	ReconciliationSuccessful clusterv1.ConditionType = "ReconciliationSuccessful"
 	// ReconciliationFailed means the reconciliation failed
-	ReconciliationFailed = "ReconciliationFailed"
+	ReconciliationFailed clusterv1.ConditionType = "ReconciliationFailed"
 	// JobInvocationComplete means all the Jobs have finished
-	JobInvocationComplete = "JobInvocationComplete"
+	JobInvocationComplete clusterv1.ConditionType = "JobInvocationComplete"
 )
 
 // ClowdAppStatus defines the observed state of ClowdApp
