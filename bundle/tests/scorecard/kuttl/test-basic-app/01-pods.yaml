@@ -63,7 +63,6 @@ spec:
         enabled: true
       private:
         enabled: true
-        appProtocol: redis
   - name: processor2
     podSpec:
       image: quay.io/psav/clowder-hello
@@ -83,6 +82,7 @@ spec:
         enabled: true
       private:
         enabled: true
+        appProtocol: redis
 ---
 apiVersion: v1
 data:

@@ -10,4 +10,13 @@ commands:
 - script: jq -r '.metricsPort == 9000' -e < /tmp/test-basic-app-json
 - script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-basic-app-json
 
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | .name == "processor"' -e < /tmp/test-basic-app-json
+- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .hostname == "puptoo-processor.test-basic-app.svc"' -e < /tmp/test-basic-app-json
+- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .hostname == "puptoo-processor2.test-basic-app.svc"' -e < /tmp/test-basic-app-json
+- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .port == 8000' -e < /tmp/test-basic-app-json
+- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .port == 8000' -e < /tmp/test-basic-app-json
+
+
+- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor") | .hostname == "puptoo-processor.test-basic-app.svc"' -e < /tmp/test-basic-app-json
+- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .hostname == "puptoo-processor2.test-basic-app.svc"' -e < /tmp/test-basic-app-json
+- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor") | .port == 10000' -e < /tmp/test-basic-app-json
+- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .port == 10000' -e < /tmp/test-basic-app-json
