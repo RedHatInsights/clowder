@@ -35,12 +35,10 @@ def print_message(line):
 
     app = "[%s]" % js["app"] if "app" in js else ""
     string += f'[{ts}] {js["level"].upper()} {js.get("ctrl", "").upper()} {app} {js["msg"]} '
-    del(js['msg'])
-    del(js['ts'])
-    del(js['level'])
-    if 'ctrl' in js:
-        del(js['ctrl'])
-    del(js['logger'])
+    rms = ["msg", "ts", "level", "ctrl", "logger"]
+    for key in rms:
+        if key in js:
+            del(js[key])
     s_key = sorted(js.keys())
     string += " ".join([f"{col_wrap(k, collev)}:{js[k]}" for k in s_key])
     string += cancel_colour
