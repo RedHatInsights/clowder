@@ -40,8 +40,8 @@ func makeService(cache *providers.ObjectCache, deployment *crd.Deployment, app *
 	servicePorts := []core.ServicePort{}
 	containerPorts := []core.ContainerPort{}
 
-	appProtocol := "http"
 	if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
+		appProtocol := "http"
 		// Create the core service port
 		webPort := core.ServicePort{
 			Name:        "public",
@@ -78,6 +78,11 @@ func makeService(cache *providers.ObjectCache, deployment *crd.Deployment, app *
 
 	if deployment.WebServices.Private.Enabled {
 		privatePort := env.Spec.Providers.Web.PrivatePort
+
+		appProtocol := "http"
+		if deployment.WebServices.Private.AppProtocol != "" {
+			appProtocol = string(deployment.WebServices.Private.AppProtocol)
+		}
 
 		if privatePort == 0 {
 			privatePort = 10000

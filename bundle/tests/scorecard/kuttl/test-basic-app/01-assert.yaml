@@ -57,6 +57,32 @@ spec:
     targetPort: 9000
     name: metrics
     appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    appProtocol: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-processor2
+  namespace: test-basic-app
+spec:
+  selector:
+    pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    appProtocol: http
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
