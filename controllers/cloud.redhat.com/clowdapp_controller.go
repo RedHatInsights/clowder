@@ -108,7 +108,7 @@ type ClowdAppReconciler struct {
 
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("app", req.Name).WithValues("id", utils.RandString(5)).WithValues("namespace", req.Namespace)
+	log := r.Log.WithValues("app", req.Name).WithValues("rid", utils.RandString(5)).WithValues("namespace", req.Namespace)
 	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	app := crd.ClowdApp{}

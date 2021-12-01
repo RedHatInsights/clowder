@@ -105,7 +105,7 @@ func ReadEnv() string {
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("env", req.Name).WithValues("id", utils.RandString(5))
+	log := r.Log.WithValues("env", req.Name).WithValues("rid", utils.RandString(5))
 	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	env := crd.ClowdEnvironment{}
