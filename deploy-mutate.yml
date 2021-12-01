@@ -6959,6 +6959,31 @@ objects:
           - --leader-elect
           command:
           - /manager
+          env:
+          - name: AWS_CW_KEY
+            valueFrom:
+              secretKeyRef:
+                key: aws_access_key_id
+                name: cloudwatch
+                optional: true
+          - name: AWS_CW_REGION
+            valueFrom:
+              secretKeyRef:
+                key: aws_region
+                name: cloudwatch
+                optional: true
+          - name: AWS_CW_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: aws_secret_access_key
+                name: cloudwatch
+                optional: true
+          - name: AWS_CW_LOG_GROUP
+            valueFrom:
+              secretKeyRef:
+                key: log_group_name
+                name: cloudwatch
+                optional: true
           image: ${IMAGE}:${IMAGE_TAG}
           livenessProbe:
             httpGet:

@@ -44,6 +44,7 @@ type ClowderConfig struct {
 		EnableAuthSidecarHook       bool `json:"enableAuthSidecarHook"`
 		KedaResources               bool `json:"enableKedaResources"`
 		PerProviderMetrics          bool `json:"perProviderMetrics"`
+		DisableCloudWatchLogging    bool `json:"disableCloudWatchLogging"`
 	} `json:"features"`
 }
 
