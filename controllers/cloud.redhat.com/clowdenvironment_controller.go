@@ -143,7 +143,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	log.Info("Reconciliation started", "env", env.Name)
-	requestMetrics.With(prometheus.Labels{"type": "env", "name": env.Name}).Inc()
+
+	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
+		requestMetrics.With(prometheus.Labels{"type": "env", "name": env.Name}).Inc()
+	}
 
 	if env.Spec.Disabled {
 		log.Info("Reconciliation aborted - set to be disabled", "env", env.Name)
