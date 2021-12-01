@@ -794,6 +794,7 @@ PrivateWebService is the definition of the private web service. There can be onl
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the private service and provide the configuration in the cdappconfig.
+| *`appProtocol`* __AppProtocol__ | AppProtocol determines the protocol to be used for the private port, (defaults to http)
 |===
 
 

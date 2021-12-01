@@ -126,12 +126,19 @@ type PublicWebService struct {
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
 }
 
+// AppProtocol is used to define an appProtocol for Istio
+// +kubebuilder:validation:Enum={"http", "http2", "https", "tcp", "tls", "grpc", "grpc-web", "mongo", "mysql", "redis"}
+type AppProtocol string
+
 // PrivateWebService is the definition of the private web service. There can be only
 // one private service managed by Clowder.
 type PrivateWebService struct {
 	// Enabled describes if Clowder should enable the private service and provide the
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
+
+	// AppProtocol determines the protocol to be used for the private port, (defaults to http)
+	AppProtocol AppProtocol `json:"appProtocol,omitempty"`
 }
 
 // MetricsWebService is the definition of the metrics web service. This is automatically
