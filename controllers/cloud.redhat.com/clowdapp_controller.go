@@ -153,7 +153,10 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
-	requestMetrics.With(prometheus.Labels{"type": "app", "name": app.GetIdent()}).Inc()
+
+	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
+		requestMetrics.With(prometheus.Labels{"type": "app", "name": app.GetIdent()}).Inc()
+	}
 
 	if app.Spec.Disabled {
 		log.Info("Reconciliation aborted - set to be disabled", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
