@@ -1,7 +1,16 @@
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM registry.access.redhat.com/ubi8/ubi-minimal as source
+
+FROM scratch
 WORKDIR /
+COPY --from=source /etc/pki .
+COPY --from=source /etc/ssl .
+COPY --from=source /usr/share/pki .
+COPY --from=source /usr/bin/ca-legacy .
+COPY --from=source /usr/bin/update-ca-trust .
+COPY --from=source /etc/passwd .
+
 COPY bin/manager-cgo ./manager
 USER 65532:65532
 
