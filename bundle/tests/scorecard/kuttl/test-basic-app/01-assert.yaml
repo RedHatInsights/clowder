@@ -53,14 +53,14 @@ spec:
     targetPort: 8000
     name: public
     appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    appProtocol: http
   - port: 9000
     targetPort: 9000
     name: metrics
     appProtocol: http
-  - port: 10000
-    targetPort: 10000
-    name: private
-    appProtocol: redis
 ---
 apiVersion: v1
 kind: Service
@@ -69,19 +69,19 @@ metadata:
   namespace: test-basic-app
 spec:
   selector:
-    pod: puptoo-processor
+    pod: puptoo-processor2
   ports:
   - port: 8000
     targetPort: 8000
     name: public
     appProtocol: http
-  - port: 9000
-    targetPort: 9000
-    name: metrics
-    appProtocol: http
   - port: 10000
     targetPort: 10000
     name: private
+    appProtocol: redis
+  - port: 9000
+    targetPort: 9000
+    name: metrics
     appProtocol: http
 ---
 apiVersion: cloud.redhat.com/v1alpha1
@@ -94,6 +94,9 @@ status:
       deployments:
       - hostname: puptoo-processor.test-basic-app.svc
         name: puptoo-processor
+        port: 8000
+      - hostname: puptoo-processor2.test-basic-app.svc
+        name: puptoo-processor2
         port: 8000
 ---
 apiVersion: v1
