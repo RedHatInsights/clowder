@@ -20,6 +20,9 @@ type ClowderConfig struct {
 		Keycloak string `json:"Keycloak"`
 	} `json:"images"`
 	DebugOptions struct {
+		Logging struct {
+			DebugLogging bool `json:"debugLogging"`
+		}
 		Trigger struct {
 			Diff bool `json:"diff"`
 		} `json:"trigger"`

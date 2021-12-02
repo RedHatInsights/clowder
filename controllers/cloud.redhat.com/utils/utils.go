@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/go-logr/logr"
@@ -325,4 +326,10 @@ func CopySecret(ctx context.Context, client client.Client, srcSecretRef types.Na
 	newSecret.SetNamespace(dstSecretRef.Namespace)
 
 	return nil, newSecret
+}
+
+func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
+	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
+		logger.Info(msg, keysAndValues...)
+	}
 }

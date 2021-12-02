@@ -108,32 +108,35 @@ type ClowdAppReconciler struct {
 
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
-	log := r.Log.WithValues("app", qualifiedName).WithValues("id", utils.RandString(5))
+	log := r.Log.WithValues("app", req.Name).WithValues("id", utils.RandString(5)).WithValues("namespace", req.Namespace)
 	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	app := crd.ClowdApp{}
-	err := r.Client.Get(ctx, req.NamespacedName, &app)
 
-	if err != nil {
-		if k8serr.IsNotFound(err) {
+	if getAppErr := r.Client.Get(ctx, req.NamespacedName, &app); getAppErr != nil {
+		if k8serr.IsNotFound(getAppErr) {
 			// Must have been deleted
 			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, err
+		log.Info("App not found", "env", app.Spec.EnvName, "app", app.GetIdent(), "err", getAppErr)
+		return ctrl.Result{}, getAppErr
 	}
+
+	log = log.WithValues("env", app.Spec.EnvName)
 
 	isAppMarkedForDeletion := app.GetDeletionTimestamp() != nil
 	if isAppMarkedForDeletion {
 		if contains(app.GetFinalizers(), appFinalizer) {
-			if err := r.finalizeApp(log, &app); err != nil {
-				return ctrl.Result{}, err
+			if finalizeErr := r.finalizeApp(log, &app); finalizeErr != nil {
+				log.Info("Cloud not finalize", "err", finalizeErr)
+				return ctrl.Result{}, finalizeErr
 			}
 
 			controllerutil.RemoveFinalizer(&app, appFinalizer)
-			err := r.Update(ctx, &app)
-			if err != nil {
-				return ctrl.Result{}, err
+			removeFinalizeErr := r.Update(ctx, &app)
+			if removeFinalizeErr != nil {
+				log.Info("Cloud not remove finalizer", "err", removeFinalizeErr)
+				return ctrl.Result{}, removeFinalizeErr
 			}
 		}
 		return ctrl.Result{}, nil
@@ -141,50 +144,61 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Add finalizer for this CR
 	if !contains(app.GetFinalizers(), appFinalizer) {
-		if err := r.addFinalizer(log, &app); err != nil {
-			return ctrl.Result{}, err
+		if addFinalizeErr := r.addFinalizer(log, &app); addFinalizeErr != nil {
+			log.Info("Cloud not add finalizer", "err", addFinalizeErr)
+			return ctrl.Result{}, addFinalizeErr
 		}
 	}
 
 	if ReadEnv() == app.Spec.EnvName {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
-		log.Info("Env currently being reconciled", "app", app.Name, "namespace", app.Namespace, "env", app.Spec.EnvName)
+		log.Info("Env currently being reconciled")
 		return ctrl.Result{Requeue: true}, nil
 	}
 
-	log.Info("Reconciliation started", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+	log.Info("Reconciliation started")
 
 	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
 		requestMetrics.With(prometheus.Labels{"type": "app", "name": app.GetIdent()}).Inc()
 	}
 
 	if app.Spec.Disabled {
-		log.Info("Reconciliation aborted - set to be disabled", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+		log.Info("Reconciliation aborted - set to be disabled")
 		return ctrl.Result{}, nil
 	}
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &app)
 
 	env := crd.ClowdEnvironment{}
-	err = r.Client.Get(ctx, types.NamespacedName{
-		Name: app.Spec.EnvName,
-	}, &env)
 
-	if err != nil {
+	if getEnvErr := r.Client.Get(ctx, types.NamespacedName{Name: app.Spec.EnvName}, &env); getEnvErr != nil {
+		log.Info("ClowdEnv missing", "err", getEnvErr)
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", app.Spec.EnvName)
-		SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
+		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, getEnvErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
+		return ctrl.Result{Requeue: true}, getEnvErr
 	}
 
 	if env.Generation != env.Status.Generation {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReconciled", "Clowder Environment [%s] is not reconciled", app.Spec.EnvName)
-		log.Info("Env not yet reconciled", "app", app.Name, "namespace", app.Namespace)
+		log.Info("Env not yet reconciled")
+		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, fmt.Errorf("clowd env not reconciled")); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
 		return ctrl.Result{Requeue: true}, nil
 	}
 
 	if !env.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", app.Spec.EnvName)
-		log.Info("Env not yet ready", "app", app.Name, "namespace", app.Namespace)
+		log.Info("Env not yet ready")
+		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, fmt.Errorf("clowd env not ready")); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
+
 		return ctrl.Result{Requeue: true}, nil
 	}
 
@@ -198,14 +212,13 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		Log:    log,
 	}
 
-	provErr := r.runProviders(log, &provider, &app)
-
-	if provErr != nil {
+	if provErr := r.runProviders(log, &provider, &app); provErr != nil {
 		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
-		err := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr)
-		if err != nil {
-			return ctrl.Result{Requeue: true}, err
+		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
+		log.Info("Provider error", "err", provErr)
 		return ctrl.Result{Requeue: true}, provErr
 	}
 
@@ -213,27 +226,29 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if cacheErr != nil {
 		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
-		err := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, cacheErr)
-		if err != nil {
-			return ctrl.Result{Requeue: true}, err
+		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, cacheErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
+		log.Info("Cache error", "err", cacheErr)
 		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
 	if statusErr := SetAppResourceStatus(ctx, r.Client, &app); statusErr != nil {
-		return ctrl.Result{Requeue: true}, err
+		log.Info("Set status error", "err", statusErr)
+		return ctrl.Result{Requeue: true}, statusErr
 	}
 
 	// Delete all resources that are not used anymore
 	rErr := cache.Reconcile(&app)
 	if rErr != nil {
-		log.Info("Reconcile error", "error", rErr)
+		log.Info("Reconcile error", "err", rErr)
 		return ctrl.Result{Requeue: true}, nil
 	}
-	err = SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil)
 
-	if err != nil {
-		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 2}, err
+	if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationSuccessful, nil); setClowdStatusErr != nil {
+		log.Info("Set status error", "err", setClowdStatusErr)
+		return ctrl.Result{Requeue: true}, setClowdStatusErr
 	}
 
 	if _, ok := managedApps[app.GetIdent()]; !ok {
@@ -242,7 +257,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	managedAppsMetric.Set(float64(len(managedApps)))
 
 	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
-	log.Info("Reconciliation successful", "app", fmt.Sprintf("%s:%s", app.Namespace, app.Name))
+	log.Info("Reconciliation successful")
 
 	return ctrl.Result{}, nil
 }
@@ -494,7 +509,7 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 	updateMetadata(a, &c)
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
-		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
+		utils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
 		prov, err := provAcc.SetupProvider(provider)
 		elapsed := time.Since(start).Seconds()
@@ -511,7 +526,7 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 			reterr.Requeue = true
 			return reterr
 		}
-		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
+		utils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}
 
 	return nil

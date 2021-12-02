@@ -109,27 +109,29 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	env := crd.ClowdEnvironment{}
-	err := r.Client.Get(ctx, req.NamespacedName, &env)
 
-	if err != nil {
-		if k8serr.IsNotFound(err) {
+	if getEnvErr := r.Client.Get(ctx, req.NamespacedName, &env); getEnvErr != nil {
+		if k8serr.IsNotFound(getEnvErr) {
 			// Must have been deleted
 			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, err
+		log.Info("Namespace not found", "err", getEnvErr)
+		return ctrl.Result{}, getEnvErr
 	}
-	GetEnvResourceStatus(ctx, r.Client, &env)
+
 	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
 	if isEnvMarkedForDeletion {
 		if contains(env.GetFinalizers(), envFinalizer) {
-			if err := r.finalizeEnvironment(log, &env); err != nil {
-				return ctrl.Result{}, err
+			if finalizeErr := r.finalizeEnvironment(log, &env); finalizeErr != nil {
+				log.Info("Cloud not finalize", "err", finalizeErr)
+				return ctrl.Result{}, finalizeErr
 			}
 
 			controllerutil.RemoveFinalizer(&env, envFinalizer)
-			err := r.Update(ctx, &env)
-			if err != nil {
-				return ctrl.Result{}, err
+			removeFinalizeErr := r.Update(ctx, &env)
+			if removeFinalizeErr != nil {
+				log.Info("Cloud not remove finalizer", "err", removeFinalizeErr)
+				return ctrl.Result{}, removeFinalizeErr
 			}
 		}
 		return ctrl.Result{}, nil
@@ -137,19 +139,20 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	// Add finalizer for this CR
 	if !contains(env.GetFinalizers(), envFinalizer) {
-		if err := r.addFinalizer(log, &env); err != nil {
-			return ctrl.Result{}, err
+		if addFinalizeErr := r.addFinalizer(log, &env); addFinalizeErr != nil {
+			log.Info("Cloud not add finalizer", "err", addFinalizeErr)
+			return ctrl.Result{}, addFinalizeErr
 		}
 	}
 
-	log.Info("Reconciliation started", "env", env.Name)
+	log.Info("Reconciliation started")
 
 	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
 		requestMetrics.With(prometheus.Labels{"type": "env", "name": env.Name}).Inc()
 	}
 
 	if env.Spec.Disabled {
-		log.Info("Reconciliation aborted - set to be disabled", "env", env.Name)
+		log.Info("Reconciliation aborted - set to be disabled")
 		return ctrl.Result{}, nil
 	}
 
@@ -159,27 +162,37 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			namespaceName := types.NamespacedName{
 				Name: env.Spec.TargetNamespace,
 			}
-			err := r.Client.Get(ctx, namespaceName, &namespace)
-			if err != nil {
+			if nErr := r.Client.Get(ctx, namespaceName, &namespace); nErr != nil {
+				log.Info("Namespace get error", "err", nErr)
 				r.Recorder.Eventf(&env, "Warning", "NamespaceMissing", "Requested Target Namespace [%s] is missing", env.Spec.TargetNamespace)
-				SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-				return ctrl.Result{Requeue: true}, err
+				if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, nErr); setClowdStatusErr != nil {
+					log.Info("Set status error", "err", setClowdStatusErr)
+					return ctrl.Result{Requeue: true}, setClowdStatusErr
+				}
+				return ctrl.Result{Requeue: true}, nErr
 			}
 			env.Status.TargetNamespace = env.Spec.TargetNamespace
 		} else {
 			env.Status.TargetNamespace = env.GenerateTargetNamespace()
 			namespace := &core.Namespace{}
 			namespace.SetName(env.Status.TargetNamespace)
-			err := r.Client.Create(ctx, namespace)
-			if err != nil {
-				SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-				return ctrl.Result{Requeue: true}, err
+			if snErr := r.Client.Create(ctx, namespace); snErr != nil {
+				log.Info("Namespace create error", "err", snErr)
+				if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, snErr); setClowdStatusErr != nil {
+					log.Info("Set status error", "err", setClowdStatusErr)
+					return ctrl.Result{Requeue: true}, setClowdStatusErr
+				}
+				return ctrl.Result{Requeue: true}, snErr
 			}
 		}
-		err := r.Client.Status().Update(ctx, &env)
-		if err != nil {
-			SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-			return ctrl.Result{Requeue: true}, err
+
+		if statErr := r.Client.Status().Update(ctx, &env); statErr != nil {
+			log.Info("Namespace create error", "err", statErr)
+			if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statErr); setClowdStatusErr != nil {
+				log.Info("Set status error", "err", setClowdStatusErr)
+				return ctrl.Result{Requeue: true}, setClowdStatusErr
+			}
+			return ctrl.Result{Requeue: true}, statErr
 		}
 	}
 
@@ -200,9 +213,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
-		err := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr)
-		if err != nil {
-			return ctrl.Result{Requeue: true}, err
+		log.Info("Set status error", "err", provErr)
+		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 		return ctrl.Result{Requeue: true}, provErr
 	}
@@ -210,44 +224,55 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	cacheErr := cache.ApplyAll()
 
 	if cacheErr != nil {
-		err := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr)
-		if err != nil {
-			return ctrl.Result{Requeue: true}, err
+		log.Info("Cache error", "err", cacheErr)
+		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
-	if err == nil {
-		if _, ok := managedEnvironments[env.Name]; !ok {
-			managedEnvironments[env.Name] = true
-		}
-		managedEnvsMetric.Set(float64(len(managedEnvironments)))
+	if _, ok := managedEnvironments[env.Name]; !ok {
+		managedEnvironments[env.Name] = true
 	}
+	managedEnvsMetric.Set(float64(len(managedEnvironments)))
 
-	err = r.setAppInfo(provider)
-	if err != nil {
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
+	if setAppErr := r.setAppInfo(provider); setAppErr != nil {
+		log.Info("setAppInfo error", "err", setAppErr)
+		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, setAppErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
+		return ctrl.Result{Requeue: true}, setAppErr
 	}
 
 	if statusErr := SetEnvResourceStatus(ctx, r.Client, &env); statusErr != nil {
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
+		log.Info("SetEnvResourceStatus error", "err", statusErr)
+		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statusErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
+		return ctrl.Result{Requeue: true}, statusErr
 	}
 
 	setPrometheusStatus(&env)
 
-	ready, err := GetEnvResourceStatus(ctx, r.Client, &env)
-	if err != nil {
-		return ctrl.Result{Requeue: true}, err
+	ready, getEnvResErr := GetEnvResourceStatus(ctx, r.Client, &env)
+	if getEnvResErr != nil {
+		log.Info("SetEnvResourceStatus error", "err", getEnvResErr)
+		return ctrl.Result{Requeue: true}, getEnvResErr
 	}
 
 	env.Status.Ready = ready
 	env.Status.Generation = env.Generation
 
-	if err := r.Client.Status().Update(ctx, &env); err != nil {
-		SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, err)
-		return ctrl.Result{Requeue: true}, err
+	if finalStatusErr := r.Client.Status().Update(ctx, &env); finalStatusErr != nil {
+		log.Info("Final Status error", "err", finalStatusErr)
+		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, finalStatusErr); setClowdStatusErr != nil {
+			log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
+		return ctrl.Result{Requeue: true}, finalStatusErr
 	}
 
 	// Delete all resources that are not used anymore
@@ -256,13 +281,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, rErr
 	}
 
-	err = SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil)
-	if err != nil {
-		return ctrl.Result{Requeue: true}, err
+	if successSetErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil); successSetErr != nil {
+		log.Info("Set status error", "err", successSetErr)
+		return ctrl.Result{Requeue: true}, successSetErr
 	}
 
 	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
-	log.Info("Reconciliation successful", "env", env.Name)
+	log.Info("Reconciliation successful")
 
 	return ctrl.Result{}, nil
 }
@@ -281,7 +306,7 @@ func setPrometheusStatus(env *crd.ClowdEnvironment) {
 
 func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
-		log.Info("running provider:", "name", provAcc.Name, "order", provAcc.Order)
+		utils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
 		_, err := provAcc.SetupProvider(&provider)
 		elapsed := time.Since(start).Seconds()
@@ -289,7 +314,7 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
-		log.Info("running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
+		utils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}
 	return nil
 }
