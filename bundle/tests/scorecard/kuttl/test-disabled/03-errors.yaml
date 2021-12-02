@@ -5,6 +5,7 @@ metadata:
   name: app-deployment
   namespace: test-disabled
 status:
+  # 'replicas' will be absent from status when scaled to 0
   replicas: 1
   observedGeneration: 2
 ---
@@ -14,5 +15,6 @@ metadata:
   name: app-db
   namespace: test-disabled
 status:
+  # 'replicas' will be absent from status when scaled to 0
   replicas: 1
   observedGeneration: 2
