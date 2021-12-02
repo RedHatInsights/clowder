@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
@@ -70,6 +71,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+var mu sync.RWMutex
+var cEnv = ""
+
 const envFinalizer = "finalizer.env.cloud.redhat.com"
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -82,6 +86,24 @@ type ClowdEnvironmentReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
+
+func SetEnv(name string) {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = name
+}
+
+func ReleaseEnv() {
+	mu.Lock()
+	defer mu.Unlock()
+	cEnv = ""
+}
+
+func ReadEnv() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return cEnv
+}
 
 //Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -132,11 +154,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	if env.Spec.Disabled {
-		log.Info("Reconciliation aborted - set to be disabled", "env", env.Name)
-		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, fmt.Errorf("clowd env has been disabled")); setClowdStatusErr != nil {
-			log.Info("Set status error", "err", setClowdStatusErr)
-			return ctrl.Result{Requeue: true}, setClowdStatusErr
-		}
+		log.Info("Reconciliation aborted - set to be disabled")
 		return ctrl.Result{}, nil
 	}
 
@@ -194,7 +212,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		Log:    log,
 	}
 
-	if provErr := runProvidersForEnv(log, provider); provErr != nil {
+	SetEnv(env.Name)
+	defer ReleaseEnv()
+	provErr := runProvidersForEnv(log, provider)
+
+	if provErr != nil {
 		log.Info("Set status error", "err", provErr)
 		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
@@ -257,7 +279,9 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, finalStatusErr
 	}
 
-	opts := []client.ListOption{
+	var opts []client.ListOption
+
+	opts = []client.ListOption{
 		client.MatchingLabels{env.GetPrimaryLabel(): env.GetClowdName()},
 	}
 
@@ -327,8 +351,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	ctrlr.WithOptions(controller.Options{
-		RateLimiter:             workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
-		MaxConcurrentReconciles: 4,
+		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 	})
 	return ctrlr.Complete(r)
 }
