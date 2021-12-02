@@ -34,7 +34,9 @@ def print_message(line):
     string += collev
 
     app = "[%s]" % js["app"] if "app" in js else ""
-    string += f'[{ts}] {js["level"].upper()} {js.get("ctrl", "").upper()} {app} {js["msg"]} '
+    env = "[%s]" % js["env"] if "env" in js else ""
+
+    string += f'[{ts}] {js["level"].upper()} {js.get("ctrl", "").upper()} {app or env} {js["msg"]} '
     rms = ["msg", "ts", "level", "ctrl", "logger"]
     for key in rms:
         if key in js:
