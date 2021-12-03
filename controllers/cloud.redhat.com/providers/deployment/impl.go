@@ -41,7 +41,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	pod := deployment.PodSpec
 	d.Spec.Template.SetAnnotations(make(map[string]string))
-	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
+	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled) {
 		d.Spec.Template.Annotations["clowder/authsidecar-image"] = "a76bb81"
 		d.Spec.Template.Annotations["clowder/authsidecar-enabled"] = "true"
 		d.Spec.Template.Annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
@@ -97,12 +97,12 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
-	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
+	} else if deployment.WebServices.Public.Enabled {
 		livenessProbe = baseProbe
 	}
 	if pod.ReadinessProbe != nil {
 		readinessProbe = *pod.ReadinessProbe
-	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
+	} else if deployment.WebServices.Public.Enabled {
 		readinessProbe = baseProbe
 		readinessProbe.InitialDelaySeconds = 45
 	}

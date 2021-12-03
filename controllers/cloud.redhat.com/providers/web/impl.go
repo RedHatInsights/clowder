@@ -42,7 +42,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	servicePorts := []core.ServicePort{}
 	containerPorts := []core.ContainerPort{}
 
-	if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
+	if deployment.WebServices.Public.Enabled {
 		appProtocol := "http"
 		// Create the core service port
 		webPort := core.ServicePort{

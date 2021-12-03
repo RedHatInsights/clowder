@@ -109,7 +109,7 @@ func processAppEndpoints(
 		// If app has public endpoint, add it to app config
 
 		for _, deployment := range depApp.Spec.Deployments {
-			if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
+			if deployment.WebServices.Public.Enabled {
 				name := depApp.GetDeploymentNamespacedName(&deployment).Name
 				*depConfig = append(*depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),

@@ -79,7 +79,9 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-    web: True
+    webServices: 
+      public:
+        enabled: True
   dependencies:
     - puptoo-2
 ---
@@ -94,7 +96,9 @@ spec:
   - name: processor-2
     podSpec:
       image: quay.io/psav/clowder-hello
-    web: True
+    webServices: 
+      public:
+        enabled: True
   optionalDependencies:
     - puptoo
 ---
@@ -109,7 +113,9 @@ spec:
   - name: processor-b
     podSpec:
       image: quay.io/psav/clowder-hello
-    web: True
+    webServices: 
+      public:
+        enabled: True
   dependencies:
     - puptoo-b-2
 ---
@@ -124,6 +130,8 @@ spec:
   - name: processor-b-2
     podSpec:
       image: quay.io/psav/clowder-hello
-    web: True
+    webServices: 
+      public:
+        enabled: True
   optionalDependencies:
     - puptoo-b

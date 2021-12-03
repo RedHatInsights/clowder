@@ -172,11 +172,6 @@ type Deployment struct {
 	// Defines the minimum replica count for the pod.
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 
-	// If set to true, creates a service on the webPort defined in
-	// the ClowdEnvironment resource, along with the relevant liveness and
-	// readiness probes.
-	Web WebDeprecated `json:"web,omitempty"`
-
 	WebServices WebServices `json:"webServices,omitempty"`
 
 	// PodSpec defines a container running inside a ClowdApp.

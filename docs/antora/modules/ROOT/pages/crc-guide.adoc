@@ -92,7 +92,9 @@ spec:
   envName: dev-env 
   deployments:
   - name: ingress
-    web: true
+    webServices: 
+      public:
+        enabled: True
     podSpec:
       image: quay.io/cloudservices/insights-ingress-go-poc:5bcb3d14
       livenessProbe:

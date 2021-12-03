@@ -311,7 +311,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 
 func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.Deployment) error {
 
-	if !deployment.WebServices.Public.Enabled && !bool(deployment.Web) {
+	if !deployment.WebServices.Public.Enabled {
 		return nil
 	}
 
