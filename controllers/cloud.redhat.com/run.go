@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	_ "embed"
 	"os"
 
 	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -64,6 +65,9 @@ func init() {
 		Apply:  clowderconfig.LoadedConfig.DebugOptions.Cache.Apply,
 	}
 }
+
+//go:embed version.txt
+var Version string
 
 // Run inits the manager and controllers and then starts the manager
 func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config *rest.Config, signalHandler context.Context, enableWebHooks bool) {

@@ -48,4 +48,4 @@ _build
 build/operator_bundles
 build/.build_venv
 
-controllers/cloud.redhat.com/version.go
+version.txt
