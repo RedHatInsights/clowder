@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-pull-policy
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-pull-policy-always
+spec:
+  finalizers:
+  - kubernetes

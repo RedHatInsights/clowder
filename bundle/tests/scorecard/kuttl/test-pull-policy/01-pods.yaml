@@ -1,0 +1,90 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-pull-policy
+spec:
+  targetNamespace: test-pull-policy
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-pull-policy
+spec:
+  envName: test-pull-policy
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello:latest
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-pull-policy-always
+spec:
+  targetNamespace: test-pull-policy-always
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    deployment:
+      omitPullPolicy: true
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-pull-policy-always
+spec:
+  envName: test-pull-policy-always
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello

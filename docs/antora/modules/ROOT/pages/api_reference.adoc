@@ -369,6 +369,23 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentconfig"]
+==== DeploymentConfig 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`omitPullPolicy`* __boolean__ | 
+|===
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"]
 ==== DeploymentInfo 
 
@@ -837,6 +854,7 @@ ProvidersConfig defines a group of providers configuration for a ClowdEnvironmen
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]__ | Defines the environment for iqe/smoke testing
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecars[$$Sidecars$$]__ | Defines the sidecar configuration
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig[$$AutoScalerConfig$$]__ | Defines the autoscaler configuration
+| *`deployment`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentconfig[$$DeploymentConfig$$]__ | Defines the Deployment provider options
 |===
 
 

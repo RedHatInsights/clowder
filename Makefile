@@ -155,6 +155,8 @@ deploy-minikube-quick: bundle docker-build-no-test-quick docker-push-minikube de
 
 ##@ Deployment
 
+pre-push: manifests generate build-template api-docs
+
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -
 

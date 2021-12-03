@@ -108,14 +108,17 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	c := core.Container{
-		Name:            nn.Name,
-		Image:           pod.Image,
-		Command:         pod.Command,
-		Args:            pod.Args,
-		Env:             envvar,
-		Resources:       ProcessResources(&pod, env),
-		VolumeMounts:    pod.VolumeMounts,
-		ImagePullPolicy: core.PullIfNotPresent,
+		Name:         nn.Name,
+		Image:        pod.Image,
+		Command:      pod.Command,
+		Args:         pod.Args,
+		Env:          envvar,
+		Resources:    ProcessResources(&pod, env),
+		VolumeMounts: pod.VolumeMounts,
+	}
+
+	if !env.Spec.Providers.Deployment.OmitPullPolicy {
+		c.ImagePullPolicy = core.PullIfNotPresent
 	}
 
 	if (core.Probe{}) != livenessProbe {
