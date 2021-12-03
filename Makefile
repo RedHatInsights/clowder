@@ -169,7 +169,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
 update-version: ## Updates the version in the image
-	$(shell echo -en "package controllers\n\nvar Version = \"$(CLOWDER_VERSION)\"\n" > controllers/cloud.redhat.com/version.go)
+	$(shell echo -n $(CLOWDER_VERSION) > controllers/cloud.redhat.com/version.txt)
 	echo "Building version: $(CLOWDER_VERSION)"
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
