@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -179,7 +180,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
-		return ctrl.Result{Requeue: true}, getEnvErr
+		return ctrl.Result{}, getEnvErr
 	}
 
 	if env.Generation != env.Status.Generation {
@@ -189,7 +190,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{}, nil
 	}
 
 	if !env.IsReady() {
@@ -243,12 +244,10 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, statusErr
 	}
 
-	var opts []client.ListOption
-
-	opts = []client.ListOption{
+	opts := []client.ListOption{
 		client.MatchingLabels{app.GetPrimaryLabel(): app.GetClowdName()},
+		client.InNamespace(app.Namespace),
 	}
-	opts = append(opts, client.InNamespace(app.Namespace))
 
 	// Delete all resources that are not used anymore
 	rErr := cache.Reconcile(app.GetUID(), opts...)
@@ -339,6 +338,18 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			if objOld, ok := e.ObjectOld.(*crd.ClowdEnvironment); ok {
 				if objNew, ok := e.ObjectNew.(*crd.ClowdEnvironment); ok {
 					if !objOld.Status.Ready && objNew.Status.Ready {
+						return true
+					}
+					condData := map[clusterv1.ConditionType]core.ConditionStatus{}
+					for _, cond := range objOld.Status.Conditions {
+						condData[cond.Type] = cond.Status
+					}
+					for _, cond := range objNew.Status.Conditions {
+						if condData[cond.Type] != cond.Status {
+							return true
+						}
+					}
+					if objOld.Status.Generation != objNew.Generation {
 						return true
 					}
 				}
@@ -446,20 +457,17 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 	// Get all the ClowdApp resources
 
 	appList := crd.ClowdAppList{}
-	r.Client.List(ctx, &appList)
+	r.Client.List(ctx, &appList, client.MatchingFields{"spec.envName": env.Name})
 
 	// Filter based on base attribute
 
 	for _, app := range appList.Items {
-		if app.Spec.EnvName == env.Name {
-			// Add filtered resources to return result
-			reqs = append(reqs, reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      app.Name,
-					Namespace: app.Namespace,
-				},
-			})
-		}
+		reqs = append(reqs, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      app.Name,
+				Namespace: app.Namespace,
+			},
+		})
 	}
 
 	return reqs
