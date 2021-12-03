@@ -32,7 +32,7 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1638475134782,
+      "iteration": 1638538138643,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1541,7 +1541,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "rate(clowder_reconcile_requests{type=\"app\"}[5m])",
+              "expr": "sum(rate(clowder_reconcile_requests{type=\"app\"}[5m])) by (name)",
               "interval": "",
               "legendFormat": "{{name}}",
               "refId": "A"
@@ -1589,5 +1589,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 14
+      "version": 15
     }
