@@ -406,6 +406,10 @@ type Sidecars struct {
 	TokenRefresher TokenRefresherConfig `json:"tokenRefresher,omitempty"`
 }
 
+type DeploymentConfig struct {
+	OmitPullPolicy bool `json:"omitPullPolicy,omitempty"`
+}
+
 // ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
 type ProvidersConfig struct {
 	// Defines the Configuration for the Clowder Database Provider.
@@ -446,6 +450,9 @@ type ProvidersConfig struct {
 
 	// Defines the autoscaler configuration
 	AutoScaler AutoScalerConfig `json:"autoScaler,omitempty"`
+
+	// Defines the Deployment provider options
+	Deployment DeploymentConfig `json:"deployment,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.

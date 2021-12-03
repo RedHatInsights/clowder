@@ -5429,6 +5429,12 @@ objects:
                       required:
                       - mode
                       type: object
+                    deployment:
+                      description: Defines the Deployment provider options
+                      properties:
+                        omitPullPolicy:
+                          type: boolean
+                      type: object
                     featureFlags:
                       description: Defines the Configuration for the Clowder FeatureFlags
                         Provider.

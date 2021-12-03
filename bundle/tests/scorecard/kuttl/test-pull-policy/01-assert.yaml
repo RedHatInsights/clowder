@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-pull-policy
+spec:
+  template:
+    spec:
+      containers:
+        - imagePullPolicy: IfNotPresent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-pull-policy-always
+spec:
+  template:
+    spec:
+      containers:
+        - imagePullPolicy: Always
+
