@@ -17,6 +17,7 @@ data:
         },
         "features": {
             "createServiceMonitor": ${CREATE_SERVICE_MONITORS},
-            "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES}
+            "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES},
+            "perProviderMetrics": ${PER_PROVIDER_METRICS}
         }
     }

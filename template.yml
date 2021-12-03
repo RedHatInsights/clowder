@@ -19,4 +19,6 @@ parameters:
   value: "false"
 - name: WATCH_STRIMZI_RESOURCES
   value: "false"
+- name: PER_PROVIDER_METRICS
+  value: "false"
 objects: []
