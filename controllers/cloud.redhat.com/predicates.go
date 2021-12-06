@@ -68,14 +68,12 @@ func environmentPredicates(logr logr.Logger, ctrlName string) predicate.Predicat
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
 			if isOurs(e.ObjectNew, gvk) {
-				if objOld, ok := e.ObjectOld.(*crd.ClowdEnvironment); ok {
-					if objNew, ok := e.ObjectNew.(*crd.ClowdEnvironment); ok {
-						displayUpdateDiff(e, logr, ctrlName, gvk)
-						if !objOld.Status.Ready && objNew.Status.Ready {
-							logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-							return true
-						}
-					}
+				objOld := e.ObjectOld.(*crd.ClowdEnvironment)
+				objNew := e.ObjectNew.(*crd.ClowdEnvironment)
+				displayUpdateDiff(e, logr, ctrlName, gvk)
+				if !objOld.Status.Ready && objNew.Status.Ready {
+					logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
+					return true
 				}
 			}
 			return false
@@ -107,13 +105,11 @@ func kafkaPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
 			if isOurs(e.ObjectNew, gvk) {
-				if objOld, ok := e.ObjectOld.(*strimzi.Kafka); ok {
-					if objNew, ok := e.ObjectNew.(*strimzi.Kafka); ok {
-						displayUpdateDiff(e, logr, ctrlName, gvk)
-						if (objOld.Status != nil && objNew.Status != nil) && len(objOld.Status.Listeners) != len(objNew.Status.Listeners) {
-							return true
-						}
-					}
+				objOld := e.ObjectOld.(*strimzi.Kafka)
+				objNew := e.ObjectNew.(*strimzi.Kafka)
+				displayUpdateDiff(e, logr, ctrlName, gvk)
+				if (objOld.Status != nil && objNew.Status != nil) && len(objOld.Status.Listeners) != len(objNew.Status.Listeners) {
+					return true
 				}
 			}
 			return false
