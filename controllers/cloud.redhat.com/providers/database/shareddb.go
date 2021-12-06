@@ -150,7 +150,30 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			return nil, err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env, providers.DB_DEFAULT)
+		largestDB := providers.DB_DEFAULT
+		// Can we assume apps in a shared db mode are in a separate env?
+		appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
+		if err != nil {
+			return nil, err
+		}
+		for _, app := range appList.Items {
+			dbSize := app.Spec.Database.DBVolumeSize
+			switch dbSize {
+			case "small":
+				// Not the cleanest, but we're comparing string enums, and not ints
+				if largestDB != providers.DB_MEDIUM || largestDB != providers.DB_LARGE {
+					largestDB = providers.DB_SMALL
+				}
+			case "medium":
+				if largestDB != providers.DB_LARGE {
+					largestDB = providers.DB_MEDIUM
+				}
+			case "large":
+				largestDB = providers.DB_LARGE
+			}
+		}
+
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, largestDB)
 
 		if err = p.Cache.Update(SharedDBPVC, pvc); err != nil {
 			return nil, err

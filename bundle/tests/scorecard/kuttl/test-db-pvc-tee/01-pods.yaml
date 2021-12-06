@@ -48,5 +48,4 @@ spec:
   database:
     name: app-a
     version: 12
-    pvc: true
     dbVolumeSize: small
