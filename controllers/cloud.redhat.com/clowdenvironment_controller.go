@@ -334,20 +334,20 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).
-		Owns(&apps.Deployment{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
-		Owns(&core.Service{}, builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "app"))).
+		For(&crd.ClowdEnvironment{}).
+		Owns(&apps.Deployment{}, builder.WithPredicates(alwaysPredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(genericPredicate(r.Log, "app"))).
 		Watches(
 			&source.Kind{Type: &crd.ClowdApp{}},
 			handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
-			builder.WithPredicates(ignoreStatusUpdatePredicate(r.Log, "env")),
-		).
-		For(&crd.ClowdEnvironment{})
+			builder.WithPredicates(genericPredicate(r.Log, "env")),
+		)
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		ctrlr.Owns(&strimzi.Kafka{})
-		ctrlr.Owns(&strimzi.KafkaConnect{})
-		ctrlr.Owns(&strimzi.KafkaUser{})
-		ctrlr.Owns(&strimzi.KafkaTopic{})
+		ctrlr.Owns(&strimzi.Kafka{}, builder.WithPredicates(kafkaPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaConnect{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaUser{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaTopic{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
 	}
 
 	ctrlr.WithOptions(controller.Options{
