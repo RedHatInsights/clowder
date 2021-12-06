@@ -17,23 +17,18 @@ import (
 func isOursCreateFunc(logr logr.Logger, ctrlName string) func(event.CreateEvent) bool {
 	return func(e event.CreateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-		if isOurs(e.Object, gvk) {
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
-		}
-		return false
+		logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
+		return true
 	}
 }
 
 func isOursUpdateFunc(logr logr.Logger, ctrlName string) func(event.UpdateEvent) bool {
 	return func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		if isOurs(e.ObjectNew, gvk) {
-			displayUpdateDiff(e, logr, ctrlName, gvk)
-			if res := e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration(); res {
-				logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
-				return true
-			}
+		displayUpdateDiff(e, logr, ctrlName, gvk)
+		if res := e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration(); res {
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			return true
 		}
 		return false
 	}
@@ -42,22 +37,16 @@ func isOursUpdateFunc(logr logr.Logger, ctrlName string) func(event.UpdateEvent)
 func isOursDeleteFunc(logr logr.Logger, ctrlName string) func(event.DeleteEvent) bool {
 	return func(e event.DeleteEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-		if isOurs(e.Object, gvk) {
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
-		}
-		return false
+		logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
+		return true
 	}
 }
 
 func isOursGenericFunc(logr logr.Logger, ctrlName string) func(event.GenericEvent) bool {
 	return func(e event.GenericEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-		if isOurs(e.Object, gvk) {
-			logr.Info("Reconciliation trigger", "generic", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
-		}
-		return false
+		logr.Info("Reconciliation trigger", "generic", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
+		return true
 	}
 }
 
@@ -67,14 +56,12 @@ func environmentPredicates(logr logr.Logger, ctrlName string) predicate.Predicat
 		DeleteFunc: isOursDeleteFunc(logr, ctrlName),
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			if isOurs(e.ObjectNew, gvk) {
-				objOld := e.ObjectOld.(*crd.ClowdEnvironment)
-				objNew := e.ObjectNew.(*crd.ClowdEnvironment)
-				displayUpdateDiff(e, logr, ctrlName, gvk)
-				if !objOld.Status.Ready && objNew.Status.Ready {
-					logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-					return true
-				}
+			objOld := e.ObjectOld.(*crd.ClowdEnvironment)
+			objNew := e.ObjectNew.(*crd.ClowdEnvironment)
+			displayUpdateDiff(e, logr, ctrlName, gvk)
+			if !objOld.Status.Ready && objNew.Status.Ready {
+				logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
+				return true
 			}
 			return false
 		},
@@ -88,11 +75,8 @@ func alwaysPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 		DeleteFunc: isOursDeleteFunc(logr, ctrlName),
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			if isOurs(e.ObjectNew, gvk) {
-				displayUpdateDiff(e, logr, ctrlName, gvk)
-				return true
-			}
-			return false
+			displayUpdateDiff(e, logr, ctrlName, gvk) //Pass in client.Object so swe don't need to always do it
+			return true
 		},
 		GenericFunc: isOursGenericFunc(logr, ctrlName),
 	}
@@ -104,13 +88,11 @@ func kafkaPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 		DeleteFunc: isOursDeleteFunc(logr, ctrlName),
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			if isOurs(e.ObjectNew, gvk) {
-				objOld := e.ObjectOld.(*strimzi.Kafka)
-				objNew := e.ObjectNew.(*strimzi.Kafka)
-				displayUpdateDiff(e, logr, ctrlName, gvk)
-				if (objOld.Status != nil && objNew.Status != nil) && len(objOld.Status.Listeners) != len(objNew.Status.Listeners) {
-					return true
-				}
+			objOld := e.ObjectOld.(*strimzi.Kafka)
+			objNew := e.ObjectNew.(*strimzi.Kafka)
+			displayUpdateDiff(e, logr, ctrlName, gvk)
+			if (objOld.Status != nil && objNew.Status != nil) && len(objOld.Status.Listeners) != len(objNew.Status.Listeners) {
+				return true
 			}
 			return false
 		},
