@@ -69,11 +69,9 @@ func getGenerationOnlyPredicate(logr logr.Logger, ctrlName string) predicate.Pre
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		return generationOnlyPredicateWithLog(logr, ctrlName)
 	}
-	return generationOnlyPredicate
-}
-
-var generationOnlyPredicate = predicate.Funcs{
-	UpdateFunc: generationUpdateFunc,
+	return predicate.Funcs{
+		UpdateFunc: generationUpdateFunc,
+	}
 }
 
 func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
@@ -114,11 +112,9 @@ func getKafkaPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		return kafkaPredicateWithLog(logr, ctrlName)
 	}
-	return kafkaPredicate
-}
-
-var kafkaPredicate = predicate.Funcs{
-	UpdateFunc: kafkaUpdateFunc,
+	return predicate.Funcs{
+		UpdateFunc: kafkaUpdateFunc,
+	}
 }
 
 func kafkaPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
@@ -140,11 +136,9 @@ func getEnvironmentPredicate(logr logr.Logger, ctrlName string) predicate.Predic
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		return environmentPredicateWithLog(logr, ctrlName)
 	}
-	return environmentPredicate
-}
-
-var environmentPredicate = predicate.Funcs{
-	UpdateFunc: environmentUpdateFunc,
+	return predicate.Funcs{
+		UpdateFunc: environmentUpdateFunc,
+	}
 }
 
 func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
