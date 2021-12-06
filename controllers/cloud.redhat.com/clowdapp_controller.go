@@ -24,9 +24,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -266,25 +264,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return ctrl.Result{}, nil
 }
 
-func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
-	if gvk.Kind == "ClowdEnvironment" {
-		return true
-	} else if gvk.Kind == "ClowdApp" {
-		return true
-	} else if gvk.Kind == "ClowdJobInvocation" {
-		return true
-	} else if len(meta.GetOwnerReferences()) == 0 {
-		return false
-	} else if meta.GetOwnerReferences()[0].Kind == "ClowdApp" {
-		return true
-	} else if meta.GetOwnerReferences()[0].Kind == "ClowdEnvironment" {
-		return true
-	} else if meta.GetOwnerReferences()[0].Kind == "ClowdJobInvocation" {
-		return true
-	}
-	return false
-}
-
 // SetupWithManager sets up with Manager
 func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager")
@@ -303,11 +282,11 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &crd.ClowdEnvironment{}},
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
-			builder.WithPredicates(environmentPredicates(r.Log, "app")),
+			builder.WithPredicates(getEnvironmentPredicate(r.Log, "app")),
 		).
-		Owns(&apps.Deployment{}, builder.WithPredicates(alwaysPredicate(r.Log, "app"))).
-		Owns(&core.Service{}, builder.WithPredicates(genericPredicate(r.Log, "app"))).
-		Owns(&core.ConfigMap{}, builder.WithPredicates(genericPredicate(r.Log, "app"))).
+		Owns(&apps.Deployment{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
+		Owns(&core.ConfigMap{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).
