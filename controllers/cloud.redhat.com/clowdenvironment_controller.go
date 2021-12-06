@@ -268,7 +268,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, getEnvResErr
 	}
 
-	env.Status.Ready = envReady && (cond.Get(&env, crd.ReconciliationSuccessful).Status == core.ConditionTrue)
+	envStatus := core.ConditionFalse
+	successCond := cond.Get(&env, crd.ReconciliationSuccessful)
+	if successCond != nil {
+		envStatus = successCond.Status
+	}
+
+	env.Status.Ready = envReady && (envStatus == core.ConditionTrue)
 	env.Status.Generation = env.Generation
 
 	if finalStatusErr := r.Client.Status().Update(ctx, &env); finalStatusErr != nil {
