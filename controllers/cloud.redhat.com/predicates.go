@@ -39,13 +39,6 @@ func defaultPredicateLog(logr logr.Logger, ctrlName string) predicate.Funcs {
 	}
 }
 
-func generationUpdateFunc(e event.UpdateEvent) bool {
-	if res := e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration(); res {
-		return true
-	}
-	return false
-}
-
 func kafkaUpdateFunc(e event.UpdateEvent) bool {
 	objOld := e.ObjectOld.(*strimzi.Kafka)
 	objNew := e.ObjectNew.(*strimzi.Kafka)
@@ -69,17 +62,16 @@ func getGenerationOnlyPredicate(logr logr.Logger, ctrlName string) predicate.Pre
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		return generationOnlyPredicateWithLog(logr, ctrlName)
 	}
-	return predicate.Funcs{
-		UpdateFunc: generationUpdateFunc,
-	}
+	return predicate.GenerationChangedPredicate{}
 }
 
 func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
+	genPredicate := predicate.GenerationChangedPredicate{}
 	predicates := defaultPredicateLog(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
 		displayUpdateDiff(e, logr, ctrlName, gvk)
-		result := generationUpdateFunc(e)
+		result := genPredicate.Update(e)
 		if result {
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 		}
