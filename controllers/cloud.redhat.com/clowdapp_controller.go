@@ -16,12 +16,9 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"reflect"
 	"time"
 
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
@@ -34,14 +31,12 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
@@ -76,7 +71,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
-	"github.com/RedHatInsights/go-difflib/difflib"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
@@ -291,118 +285,6 @@ func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
 	return false
 }
 
-func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	return predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			if !isOurs(e.Object, gvk) {
-				return false
-			}
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			if !isOurs(e.ObjectNew, gvk) {
-				return false
-			}
-
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-
-			if clowderconfig.LoadedConfig.DebugOptions.Trigger.Diff {
-				if e.ObjectNew.GetObjectKind().GroupVersionKind() == secretCompare {
-					logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-				} else {
-					oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
-					newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
-
-					diff := difflib.UnifiedDiff{
-						A:        difflib.SplitLines(string(oldObjJSON)),
-						B:        difflib.SplitLines(string(newObjJSON)),
-						FromFile: "old",
-						ToFile:   "new",
-						Context:  3,
-					}
-					text, _ := difflib.GetUnifiedDiffString(diff)
-					logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-				}
-			}
-
-			// Always update if a deployment being watched changes - this allows
-			// status rollups to occur
-			if reflect.TypeOf(e.ObjectNew).String() == "*v1.Deployment" {
-				return true
-			}
-
-			// Allow reconciliation if the env changed status
-			if objOld, ok := e.ObjectOld.(*crd.ClowdEnvironment); ok {
-				if objNew, ok := e.ObjectNew.(*crd.ClowdEnvironment); ok {
-					if !objOld.Status.Ready && objNew.Status.Ready {
-						return true
-					}
-					condData := map[clusterv1.ConditionType]core.ConditionStatus{}
-					for _, cond := range objOld.Status.Conditions {
-						condData[cond.Type] = cond.Status
-					}
-					for _, cond := range objNew.Status.Conditions {
-						if condData[cond.Type] != cond.Status {
-							return true
-						}
-					}
-					if objOld.Status.Generation != objNew.Generation {
-						return true
-					}
-				}
-			}
-
-			if objOld, ok := e.ObjectOld.(*strimzi.Kafka); ok {
-				if objNew, ok := e.ObjectNew.(*strimzi.Kafka); ok {
-					if (objOld.Status != nil && objNew.Status != nil) && len(objOld.Status.Listeners) != len(objNew.Status.Listeners) {
-						return true
-					}
-				}
-			}
-
-			if _, ok := e.ObjectOld.(*strimzi.KafkaTopic); ok {
-				if _, ok := e.ObjectNew.(*strimzi.KafkaTopic); ok {
-					return true
-				}
-			}
-
-			if _, ok := e.ObjectOld.(*strimzi.KafkaUser); ok {
-				if _, ok := e.ObjectNew.(*strimzi.KafkaUser); ok {
-					return true
-				}
-			}
-
-			if _, ok := e.ObjectOld.(*strimzi.KafkaConnect); ok {
-				if _, ok := e.ObjectNew.(*strimzi.KafkaConnect); ok {
-					return true
-				}
-			}
-
-			// Ignore updates to CR status in which case metadata.Generation does not change
-			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
-		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			if !isOurs(e.Object, gvk) {
-				return false
-			}
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
-		},
-		GenericFunc: func(e event.GenericEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			if !isOurs(e.Object, gvk) {
-				return false
-			}
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
-		},
-	}
-}
-
 // SetupWithManager sets up with Manager
 func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager")
@@ -421,11 +303,11 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &crd.ClowdEnvironment{}},
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
+			builder.WithPredicates(environmentPredicates(r.Log, "app")),
 		).
-		Owns(&apps.Deployment{}).
-		Owns(&core.Service{}).
-		Owns(&core.ConfigMap{}).
-		WithEventFilter(ignoreStatusUpdatePredicate(r.Log, "app")).
+		Owns(&apps.Deployment{}, builder.WithPredicates(alwaysPredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(genericPredicate(r.Log, "app"))).
+		Owns(&core.ConfigMap{}, builder.WithPredicates(genericPredicate(r.Log, "app"))).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).
