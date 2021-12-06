@@ -69,13 +69,11 @@ func getGenerationOnlyPredicate(logr logr.Logger, ctrlName string) predicate.Pre
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		return generationOnlyPredicateWithLog(logr, ctrlName)
 	}
-	return generationOnlyPredicate()
+	return generationOnlyPredicate
 }
 
-func generationOnlyPredicate() predicate.Predicate {
-	return predicate.Funcs{
-		UpdateFunc: generationUpdateFunc,
-	}
+var generationOnlyPredicate = predicate.Funcs{
+	UpdateFunc: generationUpdateFunc,
 }
 
 func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
