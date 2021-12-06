@@ -161,7 +161,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			switch dbSize {
 			case "small":
 				// Not the cleanest, but we're comparing string enums, and not ints
-				if largestDB != providers.DB_MEDIUM || largestDB != providers.DB_LARGE {
+				if largestDB != providers.DB_MEDIUM && largestDB != providers.DB_LARGE {
 					largestDB = providers.DB_SMALL
 				}
 			case "medium":
