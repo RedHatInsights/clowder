@@ -66,6 +66,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	cond "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -217,7 +218,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
-		log.Info("Set status error", "err", provErr)
+		log.Info("Prov err", "err", provErr)
 		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
@@ -261,13 +262,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	setPrometheusStatus(&env)
 
-	ready, getEnvResErr := GetEnvResourceStatus(ctx, r.Client, &env)
+	envReady, getEnvResErr := GetEnvResourceStatus(ctx, r.Client, &env)
 	if getEnvResErr != nil {
 		log.Info("SetEnvResourceStatus error", "err", getEnvResErr)
 		return ctrl.Result{Requeue: true}, getEnvResErr
 	}
 
-	env.Status.Ready = ready
+	env.Status.Ready = envReady && (cond.Get(&env, crd.ReconciliationSuccessful).Status == core.ConditionTrue)
 	env.Status.Generation = env.Generation
 
 	if finalStatusErr := r.Client.Status().Update(ctx, &env); finalStatusErr != nil {
@@ -279,9 +280,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, finalStatusErr
 	}
 
-	var opts []client.ListOption
-
-	opts = []client.ListOption{
+	opts := []client.ListOption{
 		client.MatchingLabels{env.GetPrimaryLabel(): env.GetClowdName()},
 	}
 
@@ -333,21 +332,21 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
-	ctrlr := ctrl.NewControllerManagedBy(mgr).
-		For(&crd.ClowdEnvironment{}).
-		Owns(&apps.Deployment{}, builder.WithPredicates(alwaysPredicate(r.Log, "app"))).
-		Owns(&core.Service{}, builder.WithPredicates(genericPredicate(r.Log, "app"))).
-		Watches(
-			&source.Kind{Type: &crd.ClowdApp{}},
-			handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
-			builder.WithPredicates(genericPredicate(r.Log, "env")),
-		)
+	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
+
+	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
+	ctrlr.Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app")))
+	ctrlr.Watches(
+		&source.Kind{Type: &crd.ClowdApp{}},
+		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
+		builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "env")),
+	)
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		ctrlr.Owns(&strimzi.Kafka{}, builder.WithPredicates(kafkaPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaConnect{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaUser{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaTopic{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.Kafka{}, builder.WithPredicates(getKafkaPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaConnect{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaUser{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaTopic{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
 	}
 
 	ctrlr.WithOptions(controller.Options{
