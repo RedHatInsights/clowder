@@ -623,10 +623,10 @@ func scaledObjectValidation(t *testing.T, app *crd.ClowdApp, scaler *keda.Scaled
 }
 
 func fetchWithDefaults(name types.NamespacedName, resource client.Object) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	return fetch(ctx, name, resource, 20, 500*time.Millisecond)
+	return fetch(ctx, name, resource, 20*6, 500*time.Millisecond)
 }
 
 func fetch(ctx context.Context, name types.NamespacedName, resource client.Object, retryCount int, sleepTime time.Duration) error {
