@@ -46,10 +46,10 @@ func deploymentUpdateFunc(e event.UpdateEvent) bool {
 	if objNew.GetGeneration() != objOld.GetGeneration() {
 		return true
 	}
-	if (objOld.Status.AvailableReplicas != objNew.Status.AvailableReplicas) && (objNew.Status.AvailableReplicas == objNew.Status.Replicas) {
+	if (objOld.Status.AvailableReplicas != objNew.Status.AvailableReplicas) && (objNew.Status.AvailableReplicas == objNew.Status.ReadyReplicas) {
 		return true
 	}
-	if (objOld.Status.AvailableReplicas == objOld.Status.Replicas) && (objNew.Status.AvailableReplicas != objOld.Status.ReadyReplicas) {
+	if (objOld.Status.AvailableReplicas == objOld.Status.ReadyReplicas) && (objNew.Status.AvailableReplicas != objNew.Status.ReadyReplicas) {
 		return true
 	}
 	return false
