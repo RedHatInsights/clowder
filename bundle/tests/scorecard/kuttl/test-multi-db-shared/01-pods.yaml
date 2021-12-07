@@ -33,22 +33,22 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
-# ---
-# apiVersion: cloud.redhat.com/v1alpha1
-# kind: ClowdApp
-# metadata:
-#   name: app-a
-#   namespace: test-multi-db-shared
-# spec:
-#   envName: test-multi-db-shared
-#   deployments:
-#   - name: processor
-#     podSpec:
-#       image: quay.io/psav/clowder-hello
-#   database:
-#     name: app-a
-#     version: 12
-#     dbVolumeSize: medium
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-a
+  namespace: test-multi-db-shared
+spec:
+  envName: test-multi-db-shared
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  database:
+    name: app-a
+    version: 12
+    dbVolumeSize: medium
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp

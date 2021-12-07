@@ -151,16 +151,20 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 		}
 
 		largestDB := providers.DB_DEFAULT
-		// Can we assume apps in a shared db mode are in a separate env?
 		appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 		if err != nil {
 			return nil, err
 		}
+		// Iterate through the list of dbs to find the largest pvc request and
+		// use that for its particular version.
 		for _, app := range appList.Items {
+			// Don't take the largest for a different versioned db
+			if version != *app.Spec.Database.Version {
+				continue
+			}
 			dbSize := app.Spec.Database.DBVolumeSize
 			switch dbSize {
 			case "small":
-				// Not the cleanest, but we're comparing string enums, and not ints
 				if largestDB != providers.DB_MEDIUM && largestDB != providers.DB_LARGE {
 					largestDB = providers.DB_SMALL
 				}
