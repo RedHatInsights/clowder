@@ -7,6 +7,8 @@ import (
 
 var managedApps = map[string]bool{}
 var managedEnvironments = map[string]bool{}
+var presentApps = map[string]bool{}
+var presentEnvironments = map[string]bool{}
 
 var (
 	managedAppsMetric = prometheus.NewGauge(
@@ -19,6 +21,18 @@ var (
 		prometheus.GaugeOpts{
 			Name: "clowd_env_managed_envs",
 			Help: "ClowdEnv Managed Envs",
+		},
+	)
+	presentAppsMetric = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "clowd_app_present_apps",
+			Help: "ClowdApp Present Apps",
+		},
+	)
+	presentEnvsMetric = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "clowd_env_present_envs",
+			Help: "ClowdEnv Present Envs",
 		},
 	)
 	clowderVersion = prometheus.NewGaugeVec(
@@ -46,5 +60,13 @@ var (
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(managedAppsMetric, managedEnvsMetric, clowderVersion, providerMetrics, requestMetrics)
+	metrics.Registry.MustRegister(
+		managedAppsMetric,
+		managedEnvsMetric,
+		clowderVersion,
+		providerMetrics,
+		requestMetrics,
+		presentAppsMetric,
+		presentEnvsMetric,
+	)
 }

@@ -107,6 +107,11 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	app := crd.ClowdApp{}
 
+	if _, ok := presentApps[app.GetIdent()]; !ok {
+		presentApps[app.GetIdent()] = true
+	}
+	presentAppsMetric.Set(float64(len(presentApps)))
+
 	if getAppErr := r.Client.Get(ctx, req.NamespacedName, &app); getAppErr != nil {
 		if k8serr.IsNotFound(getAppErr) {
 			// Must have been deleted
@@ -337,8 +342,11 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 func (r *ClowdAppReconciler) finalizeApp(reqLogger logr.Logger, a *crd.ClowdApp) error {
 
 	delete(managedApps, a.GetIdent())
-
 	managedAppsMetric.Set(float64(len(managedApps)))
+
+	delete(presentApps, a.GetIdent())
+	presentAppsMetric.Set(float64(len(presentApps)))
+
 	reqLogger.Info("Successfully finalized ClowdApp")
 	return nil
 }

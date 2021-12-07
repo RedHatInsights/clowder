@@ -113,6 +113,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	env := crd.ClowdEnvironment{}
 
+	if _, ok := presentEnvironments[env.Name]; !ok {
+		presentEnvironments[env.Name] = true
+	}
+	presentEnvsMetric.Set(float64(len(presentEnvironments)))
+
 	if getEnvErr := r.Client.Get(ctx, req.NamespacedName, &env); getEnvErr != nil {
 		if k8serr.IsNotFound(getEnvErr) {
 			// Must have been deleted
@@ -453,8 +458,6 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 
 func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, e *crd.ClowdEnvironment) error {
 
-	delete(managedEnvironments, e.Name)
-
 	if e.Spec.TargetNamespace == "" {
 		namespace := &core.Namespace{}
 		namespace.SetName(e.Status.TargetNamespace)
@@ -462,7 +465,12 @@ func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, 
 		r.Recorder.Eventf(e, "Warning", "NamespaceDeletion", "Clowder Environment [%s] had no targetNamespace, deleting generated namespace", e.Name)
 		r.Delete(context.TODO(), namespace)
 	}
+	delete(managedEnvironments, e.Name)
 	managedEnvsMetric.Set(float64(len(managedEnvironments)))
+
+	delete(presentEnvironments, e.Name)
+	presentEnvsMetric.Set(float64(len(presentEnvironments)))
+
 	reqLogger.Info("Successfully finalized ClowdEnvironment")
 	return nil
 }
