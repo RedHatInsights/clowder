@@ -284,7 +284,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 			builder.WithPredicates(getEnvironmentPredicate(r.Log, "app")),
 		).
-		Owns(&apps.Deployment{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app"))).
+		Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
 		Owns(&core.ConfigMap{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
 		WithOptions(controller.Options{
