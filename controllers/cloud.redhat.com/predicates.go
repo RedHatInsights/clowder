@@ -9,6 +9,7 @@ import (
 	"github.com/RedHatInsights/go-difflib/difflib"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
+	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -37,6 +38,21 @@ func defaultPredicateLog(logr logr.Logger, ctrlName string) predicate.Funcs {
 			return true
 		},
 	}
+}
+
+func deploymentUpdateFunc(e event.UpdateEvent) bool {
+	objOld := e.ObjectOld.(*apps.Deployment)
+	objNew := e.ObjectNew.(*apps.Deployment)
+	if objNew.GetGeneration() != objOld.GetGeneration() {
+		return true
+	}
+	if (objOld.Status.AvailableReplicas != objNew.Status.AvailableReplicas) && (objNew.Status.AvailableReplicas == objNew.Status.Replicas) {
+		return true
+	}
+	if (objOld.Status.AvailableReplicas == objOld.Status.Replicas) && (objNew.Status.AvailableReplicas != objOld.Status.ReadyReplicas) {
+		return true
+	}
+	return false
 }
 
 func kafkaUpdateFunc(e event.UpdateEvent) bool {
@@ -76,6 +92,32 @@ func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 		}
 		return result
+	}
+	return predicates
+}
+
+// These functions are returned for deployments
+// These functions always return on an update
+func getDeploymentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
+		return deploymentPredicateWithLog(logr, ctrlName)
+	}
+	return predicate.Funcs{
+		UpdateFunc: deploymentUpdateFunc,
+	}
+}
+
+func deploymentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
+	predicates := defaultPredicateLog(logr, ctrlName)
+	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
+		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
+		displayUpdateDiff(e, logr, ctrlName, gvk)
+		result := deploymentUpdateFunc(e)
+		if result {
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			return true
+		}
+		return false
 	}
 	return predicates
 }

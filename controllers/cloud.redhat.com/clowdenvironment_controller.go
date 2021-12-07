@@ -345,7 +345,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
-	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
+	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app")))
 	ctrlr.Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app")))
 	ctrlr.Watches(
 		&source.Kind{Type: &crd.ClowdApp{}},
