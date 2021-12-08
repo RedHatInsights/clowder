@@ -32,7 +32,7 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1638962175781,
+      "iteration": 1638974861480,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -76,7 +76,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "expr": "sum(clowd_app_managed_apps)",
@@ -132,7 +132,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "expr": "sum(clowd_env_managed_envs)",
@@ -180,7 +180,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -277,7 +277,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -406,7 +406,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "exemplar": true,
@@ -468,7 +468,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "exemplar": true,
@@ -517,7 +517,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -614,7 +614,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -716,7 +716,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -816,7 +816,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -916,10 +916,12 @@ data:
               "fields": "",
               "values": false
             },
-            "text": {},
+            "text": {
+              "valueSize": 40
+            },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "exemplar": true,
@@ -972,7 +974,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1179,10 +1181,12 @@ data:
               "fields": "",
               "values": false
             },
-            "text": {},
+            "text": {
+              "valueSize": 40
+            },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "exemplar": true,
@@ -1239,10 +1243,12 @@ data:
               "fields": "",
               "values": false
             },
-            "text": {},
+            "text": {
+              "valueSize": 40
+            },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "exemplar": true,
@@ -1377,7 +1383,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1481,7 +1487,7 @@ data:
             "text": {},
             "textMode": "name"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
@@ -1540,7 +1546,7 @@ data:
             "text": {},
             "textMode": "name"
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "8.2.7",
           "targets": [
             {
               "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
@@ -1738,7 +1744,7 @@ data:
         }
       ],
       "refresh": false,
-      "schemaVersion": 31,
+      "schemaVersion": 32,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1774,5 +1780,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 17
+      "version": 18
     }
