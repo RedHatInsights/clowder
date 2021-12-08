@@ -32,7 +32,7 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1638962175777,
+      "iteration": 1638962175781,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -46,7 +46,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "light-blue",
                     "value": null
                   }
                 ]
@@ -102,7 +102,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "semi-dark-purple",
                     "value": null
                   }
                 ]
@@ -241,7 +241,12 @@ data:
           }
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "ClowdApps": "dark-blue",
+            "ClowdEnvs": "dark-purple",
+            "Present ClowdApps": "light-blue",
+            "Present ClowdEnvs": "light-purple"
+          },
           "bars": false,
           "dashLength": 10,
           "dashes": false,
@@ -282,16 +287,34 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(clowd_app_managed_apps)",
+              "exemplar": true,
+              "expr": "avg(sum(clowd_app_managed_apps))",
               "interval": "",
               "legendFormat": "ClowdApps",
               "refId": "A"
             },
             {
-              "expr": "sum(clowd_env_managed_envs)",
+              "exemplar": true,
+              "expr": "avg(sum(clowd_app_present_apps))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Present ClowdApps",
+              "refId": "D"
+            },
+            {
+              "exemplar": true,
+              "expr": "avg(sum(clowd_env_managed_envs))",
               "interval": "",
               "legendFormat": "ClowdEnvs",
               "refId": "B"
+            },
+            {
+              "exemplar": true,
+              "expr": "avg(sum(clowd_env_present_envs))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Present ClowdEnvs",
+              "refId": "C"
             }
           ],
           "thresholds": [],
@@ -317,7 +340,7 @@ data:
             {
               "$$hashKey": "object:927",
               "format": "short",
-              "label": null,
+              "label": "Count",
               "logBase": 1,
               "max": null,
               "min": "0",
@@ -326,11 +349,11 @@ data:
             {
               "$$hashKey": "object:928",
               "format": "short",
-              "label": null,
+              "label": "Error percentage",
               "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
+              "max": "1",
+              "min": "0",
+              "show": false
             }
           ],
           "yaxis": {
@@ -348,7 +371,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "semi-dark-blue",
                     "value": null
                   },
                   {
@@ -410,7 +433,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "dark-purple",
                     "value": null
                   },
                   {
@@ -504,9 +527,10 @@ data:
           "steppedLine": false,
           "targets": [
             {
+              "exemplar": true,
               "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"clowder-system\", container=\"manager\"}[5m]))",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Restarts",
               "refId": "A"
             }
           ],
@@ -555,7 +579,11 @@ data:
           }
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "clowdapp": "light-blue",
+            "clowdenvironment": "semi-dark-purple",
+            "clowdjobinvocation": "light-green"
+          },
           "bars": false,
           "dashLength": 10,
           "dashes": false,
@@ -596,7 +624,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(increase(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\"}[1m])) by (controller)",
+              "exemplar": true,
+              "expr": "sum(increase(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp|clowdjobinvocation\"}[1m])) by (controller)",
               "interval": "",
               "legendFormat": "{{controller}}",
               "refId": "A"
@@ -647,7 +676,10 @@ data:
           }
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "Alloc Bytes": "semi-dark-purple",
+            "K8s Usage": "dark-blue"
+          },
           "bars": false,
           "dashLength": 10,
           "dashes": false,
@@ -694,22 +726,18 @@ data:
           "steppedLine": false,
           "targets": [
             {
+              "exemplar": true,
               "expr": "avg(container_memory_working_set_bytes{namespace=\"clowder-system\", container=\"manager\"})",
               "interval": "",
-              "legendFormat": "Usage",
+              "legendFormat": "K8s Usage",
               "refId": "A"
             },
             {
-              "expr": "avg(kube_pod_container_resource_requests_memory_bytes{namespace=\"clowder-system\", container=\"manager\"})",
+              "exemplar": true,
+              "expr": "avg(go_memstats_alloc_bytes{container=\"manager\", namespace=\"clowder-system\"})",
               "interval": "",
-              "legendFormat": "Request",
+              "legendFormat": "Alloc Bytes",
               "refId": "B"
-            },
-            {
-              "expr": "avg(kube_pod_container_resource_limits_memory_bytes{namespace=\"clowder-syste\", container=\"manager\"})",
-              "interval": "",
-              "legendFormat": "Limit",
-              "refId": "C"
             }
           ],
           "thresholds": [],
@@ -857,7 +885,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "light-blue",
                     "value": null
                   },
                   {
@@ -909,7 +937,11 @@ data:
           "type": "stat"
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "clowdapp": "light-blue",
+            "clowdenvironment": "semi-dark-purple",
+            "clowdjobinvocation": "light-green"
+          },
           "bars": false,
           "dashLength": 10,
           "dashes": false,
@@ -950,7 +982,8 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp\",result=\"error\"}[5m])) by (controller)",
+              "exemplar": true,
+              "expr": "sum(rate(controller_runtime_reconcile_total{controller=~\"clowdenvironment|clowdapp|clowdjobinvocation\",result=\"error\"}[5m])) by (controller)",
               "interval": "",
               "legendFormat": "{{controller}}",
               "refId": "A"
@@ -1012,8 +1045,8 @@ data:
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
+                "fillOpacity": 25,
+                "gradientMode": "opacity",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
@@ -1025,7 +1058,7 @@ data:
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
@@ -1050,7 +1083,23 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Usage"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -1099,7 +1148,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "light-blue",
                     "value": null
                   },
                   {
@@ -1159,7 +1208,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "light-blue",
                     "value": null
                   },
                   {
@@ -1293,7 +1342,11 @@ data:
           "type": "timeseries"
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "clowdapp": "light-blue",
+            "clowdenvironment": "semi-dark-purple",
+            "clowdjobinvocation": "light-green"
+          },
           "bars": false,
           "dashLength": 10,
           "dashes": false,
@@ -1394,7 +1447,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "light-blue",
                     "value": null
                   },
                   {
@@ -1553,7 +1606,23 @@ data:
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 5,
@@ -1575,7 +1644,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "rate(clowder_reconcile_requests{type=\"env\"}[5m])",
+              "expr": "avg(rate(clowder_reconcile_requests{type=\"env\"}[5m])) by (name)",
               "interval": "",
               "legendFormat": "{{name}}",
               "refId": "A"
@@ -1705,5 +1774,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 16
+      "version": 17
     }
