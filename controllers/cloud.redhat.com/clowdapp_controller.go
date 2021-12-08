@@ -107,11 +107,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	app := crd.ClowdApp{}
 
-	if _, ok := presentApps[app.GetIdent()]; !ok {
-		presentApps[app.GetIdent()] = true
-	}
-	presentAppsMetric.Set(float64(len(presentApps)))
-
 	if getAppErr := r.Client.Get(ctx, req.NamespacedName, &app); getAppErr != nil {
 		if k8serr.IsNotFound(getAppErr) {
 			// Must have been deleted
@@ -120,6 +115,11 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		log.Info("App not found", "env", app.Spec.EnvName, "app", app.GetIdent(), "err", getAppErr)
 		return ctrl.Result{}, getAppErr
 	}
+
+	if _, ok := presentApps[app.GetIdent()]; !ok {
+		presentApps[app.GetIdent()] = true
+	}
+	presentAppsMetric.Set(float64(len(presentApps)))
 
 	log = log.WithValues("env", app.Spec.EnvName)
 

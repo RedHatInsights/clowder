@@ -113,11 +113,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	env := crd.ClowdEnvironment{}
 
-	if _, ok := presentEnvironments[env.Name]; !ok {
-		presentEnvironments[env.Name] = true
-	}
-	presentEnvsMetric.Set(float64(len(presentEnvironments)))
-
 	if getEnvErr := r.Client.Get(ctx, req.NamespacedName, &env); getEnvErr != nil {
 		if k8serr.IsNotFound(getEnvErr) {
 			// Must have been deleted
@@ -126,6 +121,11 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		log.Info("Namespace not found", "err", getEnvErr)
 		return ctrl.Result{}, getEnvErr
 	}
+
+	if _, ok := presentEnvironments[env.Name]; !ok {
+		presentEnvironments[env.Name] = true
+	}
+	presentEnvsMetric.Set(float64(len(presentEnvironments)))
 
 	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
 	if isEnvMarkedForDeletion {
