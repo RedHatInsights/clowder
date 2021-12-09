@@ -25,20 +25,7 @@ var CoreConfigSecret = rc.NewSingleResourceIdent(ProvName, "core_config_secret",
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	var appList *crd.ClowdAppList
-	var err error
-
-	if appList, err = p.Env.GetAppsInEnv(p.Ctx, p.Client); err != nil {
-		return nil, err
-	}
-
-	namespaceSet := map[string]bool{}
-
-	for _, app := range appList.Items {
-		namespaceSet[app.Namespace] = true
-	}
-
-	secList, err := copyPullSecrets(p, namespaceSet)
+	secList, err := copyPullSecrets(p, p.Env.Status.TargetNamespace)
 
 	if err != nil {
 		return nil, err
@@ -55,23 +42,10 @@ func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, er
 		return nil, err
 	}
 
-	iqeServiceAccounts := &core.ServiceAccountList{}
-	if err := p.Cache.List(serviceaccount.IQEServiceAccount, iqeServiceAccounts); err != nil {
-		return nil, err
-	}
-
-	for _, iqeSA := range iqeServiceAccounts.Items {
-		addAllSecrets(secList, &iqeSA)
-
-		if err := p.Cache.Update(serviceaccount.IQEServiceAccount, &iqeSA); err != nil {
-			return nil, err
-		}
-	}
-
 	return &pullsecretProvider{Provider: *p}, nil
 }
 
-func copyPullSecrets(prov *providers.Provider, namespaceList map[string]bool) ([]string, error) {
+func copyPullSecrets(prov *providers.Provider, namespace string) ([]string, error) {
 	var secList []string
 
 	for _, pullSecretName := range prov.Env.Spec.Providers.PullSecrets {
@@ -87,47 +61,53 @@ func copyPullSecrets(prov *providers.Provider, namespaceList map[string]bool) ([
 		secName := fmt.Sprintf("%s-%s-clowder-copy", prov.Env.Name, pullSecretName.Name)
 		secList = append(secList, secName)
 
-		for namespace := range namespaceList {
+		newPullSecObj := &core.Secret{}
 
-			newPullSecObj := &core.Secret{}
+		newSecNN := types.NamespacedName{
+			Name:      secName,
+			Namespace: namespace,
+		}
 
-			newSecNN := types.NamespacedName{
-				Name:      secName,
-				Namespace: namespace,
-			}
+		if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
+			return nil, err
+		}
 
-			if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
-				return nil, err
-			}
+		newPullSecObj.Data = sourcePullSecObj.Data
+		newPullSecObj.Type = sourcePullSecObj.Type
 
-			newPullSecObj.Data = sourcePullSecObj.Data
-			newPullSecObj.Type = sourcePullSecObj.Type
+		labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
+		labeler(newPullSecObj)
 
-			labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
-			labeler(newPullSecObj)
+		newPullSecObj.Name = newSecNN.Name
+		newPullSecObj.Namespace = newSecNN.Namespace
 
-			newPullSecObj.Name = newSecNN.Name
-			newPullSecObj.Namespace = newSecNN.Namespace
-
-			if err := prov.Cache.Update(CoreEnvPullSecrets, newPullSecObj); err != nil {
-				return nil, err
-			}
+		if err := prov.Cache.Update(CoreEnvPullSecrets, newPullSecObj); err != nil {
+			return nil, err
 		}
 	}
 	return secList, nil
 }
 
-func (ps *pullsecretProvider) getSecretList() []string {
-	secList := []string{}
-	for _, pullSecretName := range ps.Env.Spec.Providers.PullSecrets {
-		secName := fmt.Sprintf("%s-%s-clowder-copy", ps.Env.Name, pullSecretName.Name)
-		secList = append(secList, secName)
-	}
-	return secList
-}
-
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	secList := ps.getSecretList()
+
+	secList, err := copyPullSecrets(&ps.Provider, app.Namespace)
+
+	if err != nil {
+		return err
+	}
+
+	iqeServiceAccounts := &core.ServiceAccountList{}
+	if err := ps.Cache.List(serviceaccount.IQEServiceAccount, iqeServiceAccounts); err != nil {
+		return err
+	}
+
+	for _, iqeSA := range iqeServiceAccounts.Items {
+		addAllSecrets(secList, &iqeSA)
+
+		if err := ps.Cache.Update(serviceaccount.IQEServiceAccount, &iqeSA); err != nil {
+			return err
+		}
+	}
 
 	saList := &core.ServiceAccountList{}
 	if err := ps.Cache.List(serviceaccount.CoreDeploymentServiceAccount, saList); err != nil {
