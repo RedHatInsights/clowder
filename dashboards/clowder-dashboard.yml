@@ -32,7 +32,7 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1638974861480,
+      "iteration": 1639073401560,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1445,7 +1445,7 @@ data:
           }
         },
         {
-          "datasource": "crcgovp01ue1-cluster-prometheus",
+          "datasource": "crcp01ue1-prometheus",
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1455,10 +1455,6 @@ data:
                   {
                     "color": "light-blue",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               }
@@ -1470,65 +1466,6 @@ data:
             "w": 6,
             "x": 0,
             "y": 25
-          },
-          "id": 24,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "none",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "text": {},
-            "textMode": "name"
-          },
-          "pluginVersion": "8.2.7",
-          "targets": [
-            {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
-              "instant": true,
-              "interval": "",
-              "legendFormat": "{{version}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Fedramp Production version",
-          "transparent": true,
-          "type": "stat"
-        },
-        {
-          "datasource": "crcp01ue1-cluster-prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 6,
-            "x": 0,
-            "y": 28
           },
           "id": 20,
           "options": {
@@ -1543,13 +1480,16 @@ data:
               "fields": "",
               "values": false
             },
-            "text": {},
+            "text": {
+              "valueSize": 40
+            },
             "textMode": "name"
           },
           "pluginVersion": "8.2.7",
           "targets": [
             {
-              "expr": "sum(csv_succeeded{exported_namespace=\"clowder-system\"}) by (version)",
+              "exemplar": true,
+              "expr": "clowder_version",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -1634,7 +1574,7 @@ data:
             "h": 5,
             "w": 6,
             "x": 0,
-            "y": 31
+            "y": 28
           },
           "id": 34,
           "options": {
@@ -1716,7 +1656,7 @@ data:
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 36
+            "y": 33
           },
           "id": 33,
           "options": {
@@ -1780,5 +1720,5 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 18
+      "version": 19
     }
