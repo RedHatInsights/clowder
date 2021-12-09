@@ -2,6 +2,7 @@ package object
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -14,6 +15,7 @@ type ClowdObject interface {
 	GetUID() types.UID
 	GetClowdSAName() string
 	GetPrimaryLabel() string
+	GroupVersionKind() schema.GroupVersionKind
 }
 
 // LabeledClowdObject is used to be able to treat ClowdEnv and ClowdApp as the same type
