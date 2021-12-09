@@ -26,10 +26,6 @@ type serviceaccountProvider struct {
 
 func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	if err := createIQEServiceAccounts(p, p.Env); err != nil {
-		return nil, err
-	}
-
 	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env); err != nil {
 		return nil, err
 	}
@@ -61,6 +57,10 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 }
 
 func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+
+	if err := createIQEServiceAccounts(&sa.Provider, app); err != nil {
+		return err
+	}
 
 	if err := createServiceAccountForClowdObj(sa.Cache, CoreAppServiceAccount, app); err != nil {
 		return err
@@ -114,38 +114,30 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 	return nil
 }
 
-func createIQEServiceAccounts(p *providers.Provider, env *crd.ClowdEnvironment) error {
+func createIQEServiceAccounts(p *providers.Provider, app *crd.ClowdApp) error {
 
-	accessLevel := env.Spec.Providers.Testing.K8SAccessLevel
+	accessLevel := p.Env.Spec.Providers.Testing.K8SAccessLevel
 
-	namespaces, err := env.GetNamespacesInEnv(p.Ctx, p.Client)
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("iqe-%s", p.Env.Name),
+		Namespace: app.Namespace,
+	}
 
-	if err != nil {
+	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
+	if err := CreateServiceAccount(p.Cache, IQEServiceAccount, nn, labeler); err != nil {
 		return err
 	}
 
-	for _, namespace := range namespaces {
-
-		nn := types.NamespacedName{
-			Name:      fmt.Sprintf("iqe-%s", env.Name),
-			Namespace: namespace,
-		}
-
-		labeler := utils.GetCustomLabeler(nil, nn, p.Env)
-		if err := CreateServiceAccount(p.Cache, IQEServiceAccount, nn, labeler); err != nil {
+	switch accessLevel {
+	// Use edit level service account to create and delete resources
+	// one per app when the app is created
+	case "edit", "view":
+		if err := CreateRoleBinding(p.Cache, IQERoleBinding, nn, labeler, accessLevel); err != nil {
 			return err
 		}
 
-		switch accessLevel {
-		// Use edit level service account to create and delete resources
-		// one per app when the app is created
-		case "edit", "view":
-			if err := CreateRoleBinding(p.Cache, IQERoleBinding, nn, labeler, accessLevel); err != nil {
-				return err
-			}
-
-		default:
-		}
+	default:
 	}
+
 	return nil
 }
