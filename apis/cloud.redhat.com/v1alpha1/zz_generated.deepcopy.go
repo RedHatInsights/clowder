@@ -22,6 +22,7 @@ package v1alpha1
 
 import (
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api/api/v1beta1"
@@ -545,6 +546,11 @@ func (in *Deployment) DeepCopyInto(out *Deployment) {
 	if in.AutoScaler != nil {
 		in, out := &in.AutoScaler, &out.AutoScaler
 		*out = new(AutoScaler)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.DeploymentStrategy != nil {
+		in, out := &in.DeploymentStrategy, &out.DeploymentStrategy
+		*out = new(appsv1.DeploymentStrategy)
 		(*in).DeepCopyInto(*out)
 	}
 }

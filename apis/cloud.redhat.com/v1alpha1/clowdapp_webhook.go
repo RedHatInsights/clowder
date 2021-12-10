@@ -50,6 +50,7 @@ func (r *ClowdApp) ValidateCreate() error {
 		validateDatabase,
 		validateSidecars,
 		validateInit,
+		validateDeploymentStrategy,
 	)
 }
 
@@ -61,6 +62,7 @@ func (r *ClowdApp) ValidateUpdate(old runtime.Object) error {
 		validateDatabase,
 		validateSidecars,
 		validateInit,
+		validateDeploymentStrategy,
 	)
 }
 
@@ -159,6 +161,22 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 					),
 				)
 			}
+		}
+	}
+	return allErrs
+}
+
+func validateDeploymentStrategy(r *ClowdApp) field.ErrorList {
+	allErrs := field.ErrorList{}
+	for depIndex, deployment := range r.Spec.Deployments {
+		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled {
+			allErrs = append(
+				allErrs,
+				field.Forbidden(
+					field.NewPath(fmt.Sprintf("spec.Deployment[%d]", depIndex)),
+					"deploymentStrategy cannot be set for public web enabled deployments",
+				),
+			)
 		}
 	}
 	return allErrs

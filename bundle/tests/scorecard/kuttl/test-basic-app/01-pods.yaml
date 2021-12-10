@@ -63,6 +63,8 @@ spec:
         enabled: true
       private:
         enabled: true
+    deploymentStrategy:
+      type: Recreate
   - name: processor2
     podSpec:
       image: quay.io/psav/clowder-hello

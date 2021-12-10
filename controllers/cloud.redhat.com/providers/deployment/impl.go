@@ -75,6 +75,10 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	d.Spec.ProgressDeadlineSeconds = common.Int32Ptr(600)
 
+	if deployment.DeploymentStrategy != nil && !deployment.WebServices.Public.Enabled {
+		d.Spec.Strategy = *deployment.DeploymentStrategy
+	}
+
 	envvar := pod.Env
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
