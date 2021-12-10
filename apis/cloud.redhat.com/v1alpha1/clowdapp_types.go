@@ -21,6 +21,7 @@ import (
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -192,6 +193,10 @@ type Deployment struct {
 
 	// AutoScaler defines the configuration for the auto scaler
 	AutoScaler *AutoScaler `json:"autoScaler,omitempty"`
+
+	// DeploymentStrategy allws the deployment strategy to be set only if the
+	// deployment has no public service enabled
+	DeploymentStrategy *apps.DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 }
 
 type Sidecar struct {
