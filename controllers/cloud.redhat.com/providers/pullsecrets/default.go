@@ -26,7 +26,7 @@ var CoreConfigSecret = rc.NewSingleResourceIdent(ProvName, "core_config_secret",
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	secList, err := copyPullSecrets(p, p.Env)
+	secList, err := copyPullSecrets(p, p.Env.Status.TargetNamespace, p.Env)
 
 	if err != nil {
 		return nil, err
@@ -46,13 +46,7 @@ func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, er
 	return &pullsecretProvider{Provider: *p}, nil
 }
 
-func copyPullSecrets(prov *providers.Provider, obj object.ClowdObject) ([]string, error) {
-	var namespace string
-	if env, ok := obj.(*crd.ClowdEnvironment); ok {
-		namespace = env.Status.TargetNamespace
-	} else if app, ok := obj.(*crd.ClowdApp); ok {
-		namespace = app.Namespace
-	}
+func copyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
 
 	var secList []string
 
@@ -102,7 +96,7 @@ func copyPullSecrets(prov *providers.Provider, obj object.ClowdObject) ([]string
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
-	secList, err := copyPullSecrets(&ps.Provider, app)
+	secList, err := copyPullSecrets(&ps.Provider, app.Namespace, app)
 
 	if err != nil {
 		return err
