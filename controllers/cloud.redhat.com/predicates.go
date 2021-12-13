@@ -70,6 +70,9 @@ func environmentUpdateFunc(e event.UpdateEvent) bool {
 	if !objOld.Status.Ready && objNew.Status.Ready {
 		return true
 	}
+	if objOld.GetGeneration() != objNew.GetGeneration() {
+		return true
+	}
 	return false
 }
 
