@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	apiv1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api/api/v1beta1"
@@ -82,19 +82,19 @@ func (in *AutoScaler) DeepCopyInto(out *AutoScaler) {
 	}
 	if in.Advanced != nil {
 		in, out := &in.Advanced, &out.Advanced
-		*out = new(apiv1alpha1.AdvancedConfig)
+		*out = new(kedav1alpha1.AdvancedConfig)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Triggers != nil {
 		in, out := &in.Triggers, &out.Triggers
-		*out = make([]apiv1alpha1.ScaleTriggers, len(*in))
+		*out = make([]kedav1alpha1.ScaleTriggers, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.Fallback != nil {
 		in, out := &in.Fallback, &out.Fallback
-		*out = new(apiv1alpha1.Fallback)
+		*out = new(kedav1alpha1.Fallback)
 		**out = **in
 	}
 }
