@@ -829,8 +829,9 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 	topicConfig := []config.TopicConfig{}
 
-	appList := crd.ClowdAppList{}
-	if err := s.Client.List(s.Ctx, &appList); err != nil {
+	appList, err := s.Env.GetAppsInEnv(s.Ctx, s.Client)
+
+	if err != nil {
 		return errors.Wrap("Topic creation failed: Error listing apps", err)
 	}
 
@@ -899,7 +900,7 @@ func processTopicValues(
 	k *strimzi.KafkaTopic,
 	env *crd.ClowdEnvironment,
 	app *crd.ClowdApp,
-	appList crd.ClowdAppList,
+	appList *crd.ClowdAppList,
 	topic crd.KafkaTopicSpec,
 	replicaValList []string,
 	partitionValList []string,
@@ -908,11 +909,6 @@ func processTopicValues(
 	keys := map[string]bool{}
 
 	for _, iapp := range appList.Items {
-
-		if iapp.Spec.EnvName != app.Spec.EnvName {
-			// Only consider apps within this ClowdEnvironment
-			continue
-		}
 		if iapp.Spec.KafkaTopics != nil {
 			for _, itopic := range iapp.Spec.KafkaTopics {
 				if itopic.TopicName != topic.TopicName {
@@ -933,10 +929,6 @@ func processTopicValues(
 	for key := range keys {
 		valList := []string{}
 		for _, iapp := range appList.Items {
-			if iapp.Spec.EnvName != app.Spec.EnvName {
-				// Only consider apps within this ClowdEnvironment
-				continue
-			}
 			if iapp.Spec.KafkaTopics != nil {
 				for _, itopic := range app.Spec.KafkaTopics {
 					if itopic.TopicName != topic.TopicName {
