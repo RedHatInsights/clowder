@@ -38,8 +38,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.A
 
 	// Get all ClowdApps
 
-	apps := crd.ClowdAppList{}
-	err := dep.Client.List(dep.Ctx, &apps)
+	apps, err := dep.Env.GetAppsInEnv(dep.Ctx, dep.Client)
 
 	if err != nil {
 		return errors.Wrap("Failed to list apps", err)
@@ -52,7 +51,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.A
 		dep.Provider.Env.Spec.Providers.Web.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
 		app,
-		&apps,
+		apps,
 	)
 
 	if len(missingDeps) > 0 {
@@ -77,9 +76,7 @@ func makeDepConfig(
 	appMap := map[string]crd.ClowdApp{}
 
 	for _, iapp := range apps.Items {
-		if iapp.Spec.EnvName == app.Spec.EnvName {
-			appMap[iapp.Name] = iapp
-		}
+		appMap[iapp.Name] = iapp
 	}
 
 	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, privatePort)

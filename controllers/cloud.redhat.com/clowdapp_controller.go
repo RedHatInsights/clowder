@@ -322,8 +322,11 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 
 	// Get all the ClowdApp resources
 
-	appList := crd.ClowdAppList{}
-	r.Client.List(ctx, &appList, client.MatchingFields{"spec.envName": env.Name})
+	appList, err := env.GetAppsInEnv(ctx, r.Client)
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch ClowdApps")
+		return nil
+	}
 
 	// Filter based on base attribute
 
