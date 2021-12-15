@@ -18,6 +18,8 @@ import (
 	"fmt"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -619,17 +621,17 @@ func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *Cl
 // GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
 func (i *ClowdApp) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
 
-	var env *ClowdEnvironment
+	var env = &ClowdEnvironment{}
 	var err error
 
 	if err = i.GetOurEnv(ctx, pClient, env); err != nil {
-		return nil, err
+		return nil, cerrors.Wrap("get our env: ", err)
 	}
 
 	var appList *ClowdAppList
 
 	if appList, err = env.GetAppsInEnv(ctx, pClient); err != nil {
-		return nil, err
+		return nil, cerrors.Wrap("get apps in env: ", err)
 	}
 
 	tmpNamespace := map[string]bool{}

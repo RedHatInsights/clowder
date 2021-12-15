@@ -9,6 +9,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	apps "k8s.io/api/apps/v1"
@@ -376,12 +377,12 @@ func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 
 	namespaces, err := o.GetNamespacesInEnv(ctx, client)
 	if err != nil {
-		return crd.AppResourceStatus{}, "", err
+		return crd.AppResourceStatus{}, "", errors.Wrap("get namespaces: ", err)
 	}
 
 	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, o, namespaces)
 	if err != nil {
-		return crd.AppResourceStatus{}, "", err
+		return crd.AppResourceStatus{}, "", errors.Wrap("count deploys: ", err)
 	}
 	totalManagedDeployments += managedDeployments
 	totalReadyDeployments += readyDeployments
