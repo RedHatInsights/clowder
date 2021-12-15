@@ -76,7 +76,7 @@ AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting t
 | *`cooldownPeriod`* __integer__ | CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before scaling the deployment down. Default is 5 minutes (300 seconds).
 | *`maxReplicaCount`* __integer__ | MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to. Default is 10.
 | *`advanced`* __AdvancedConfig__ | 
-| *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-api-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
+| *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
 | *`fallback`* __Fallback__ | 
 |===
 

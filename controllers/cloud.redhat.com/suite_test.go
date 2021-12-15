@@ -43,7 +43,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
-	keda "github.com/kedacore/keda/v2/api/v1alpha1"
+	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 

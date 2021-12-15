@@ -6,7 +6,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	keda "github.com/kedacore/keda/v2/api/v1alpha1"
+	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 )

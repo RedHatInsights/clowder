@@ -5,7 +5,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
-	keda "github.com/kedacore/keda/v2/api/v1alpha1"
+	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 )
 
 type autoscalerProvider struct {
