@@ -611,3 +611,38 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 	}
 	return nil, errors.New("could not get app for db in env")
 }
+
+func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *ClowdEnvironment) error {
+	return pClient.Get(ctx, types.NamespacedName{Name: i.Spec.EnvName}, env)
+}
+
+// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+func (i *ClowdApp) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
+
+	var env *ClowdEnvironment
+	var err error
+
+	if err = i.GetOurEnv(ctx, pClient, env); err != nil {
+		return nil, err
+	}
+
+	var appList *ClowdAppList
+
+	if appList, err = env.GetAppsInEnv(ctx, pClient); err != nil {
+		return nil, err
+	}
+
+	tmpNamespace := map[string]bool{}
+
+	for _, app := range appList.Items {
+		tmpNamespace[app.Namespace] = true
+	}
+
+	namespaceList := []string{}
+
+	for namespace := range tmpNamespace {
+		namespaceList = append(namespaceList, namespace)
+	}
+
+	return namespaceList, nil
+}
