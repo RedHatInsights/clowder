@@ -639,6 +639,7 @@ func (i *ClowdApp) GetNamespacesInEnv(ctx context.Context, pClient client.Client
 	for _, app := range appList.Items {
 		tmpNamespace[app.Namespace] = true
 	}
+	tmpNamespace[env.Status.TargetNamespace] = true
 
 	namespaceList := []string{}
 
