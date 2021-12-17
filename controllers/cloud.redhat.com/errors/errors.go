@@ -32,11 +32,11 @@ func (a *ClowderError) Unwrap() error {
 }
 
 func (a *ClowderError) Error() string {
-	for unwrapped := errlib.Unwrap(a); unwrapped != nil; unwrapped = errlib.Unwrap(unwrapped) {
-		a.Msg = fmt.Sprintf("%s: %s", a.Msg, unwrapped.Error())
+	var causeMsg = ""
+	if cause := a.Unwrap(); cause != nil {
+		causeMsg = cause.Error()
 	}
-
-	return a.Msg
+	return a.Msg + ": " + causeMsg
 }
 
 // Is checks that a target is the same as a given error, that is, it has the same message and cause.
