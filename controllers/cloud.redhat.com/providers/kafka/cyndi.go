@@ -157,8 +157,16 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *rc.Objec
 			return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
 		}
 	} else {
+		if app.Spec.Database.SharedDBAppName != "" {
+			return nil, errors.New("Shared DB app cannot use Cyndi")
+		}
+
 		if env.Spec.Providers.Database.Mode == "local" {
 			if err = cache.Get(db.LocalDBSecret, dbSecret); err != nil {
+				return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
+			}
+		} else if env.Spec.Providers.Database.Mode == "shared" {
+			if err = cache.Get(db.SharedDBAppSecret, dbSecret); err != nil {
 				return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
 			}
 		} else if env.Spec.Providers.Database.Mode == "app-interface" {
@@ -166,7 +174,7 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *rc.Objec
 				dbConfig, err := database.GetDbConfig(ctx, cl, app.Namespace, app.Name, app.Name, app.Spec.Database)
 
 				if err != nil {
-					return nil, errors.New("could not get database config")
+					return nil, errors.Wrap("could not get database config", err)
 				}
 
 				err = cl.Get(ctx, dbConfig.Ref, dbSecret)
@@ -174,8 +182,6 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *rc.Objec
 				if err != nil {
 					return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
 				}
-			} else if app.Spec.Database.SharedDBAppName != "" {
-				return nil, errors.New("Shared DB app cannot use Cyndi")
 			}
 		}
 	}

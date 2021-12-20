@@ -91,12 +91,21 @@ func (r *ClowdApp) processValidations(o *ClowdApp, vfns ...appValidationFunc) er
 }
 
 func validateDatabase(r *ClowdApp) field.ErrorList {
+	allErrs := field.ErrorList{}
+
 	if r.Spec.Database.Name != "" && r.Spec.Database.SharedDBAppName != "" {
-		return field.ErrorList{field.Forbidden(
+		allErrs = append(allErrs, field.Forbidden(
 			field.NewPath("spec.Database.Name", "spec.Database.SharedDBAppName"), "cannot set db name and sharedDbApp Name together"),
-		}
+		)
 	}
-	return nil
+
+	if r.Spec.Database.SharedDBAppName != "" && r.Spec.Cyndi.Enabled {
+		allErrs = append(allErrs, field.Forbidden(
+			field.NewPath("spec.Database.SharedDBAppName", "spec.Cyndi.Enabled"), "cannot use cyndi with a shared database"),
+		)
+	}
+
+	return allErrs
 }
 
 func validateSidecars(r *ClowdApp) field.ErrorList {
