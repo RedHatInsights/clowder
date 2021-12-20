@@ -132,7 +132,7 @@ func countDeployments(ctx context.Context, pClient client.Client, o object.Clowd
 	}
 
 	if len(brokenDeployments) > 0 {
-		msg = fmt.Sprintf("broken deployments: [%s]", strings.Join(brokenDeployments, ","))
+		msg = fmt.Sprintf("broken deployments: [%s]", strings.Join(brokenDeployments, ", "))
 	}
 
 	return managedDeployments, readyDeployments, msg, nil
@@ -173,7 +173,7 @@ func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObjec
 	}
 
 	if len(brokenKafkas) > 0 {
-		msg = fmt.Sprintf("broken kafkas: [%s]", strings.Join(brokenKafkas, ","))
+		msg = fmt.Sprintf("broken kafkas: [%s]", strings.Join(brokenKafkas, ", "))
 	}
 
 	return managedKafkas, readyKafka, msg, nil
@@ -214,7 +214,7 @@ func countKafkaTopics(ctx context.Context, pClient client.Client, o object.Clowd
 	}
 
 	if len(brokenTopics) > 0 {
-		msg = fmt.Sprintf("broken topics: [%s]", strings.Join(brokenTopics, ","))
+		msg = fmt.Sprintf("broken topics: [%s]", strings.Join(brokenTopics, ", "))
 	}
 
 	return managedTopics, readyTopics, msg, nil
@@ -255,7 +255,7 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, o object.Clo
 	}
 
 	if len(brokenConnects) > 0 {
-		msg = fmt.Sprintf("broken connects: [%s]", strings.Join(brokenConnects, ","))
+		msg = fmt.Sprintf("broken connects: [%s]", strings.Join(brokenConnects, ", "))
 	}
 
 	return managedConnects, readyConnects, msg, nil
