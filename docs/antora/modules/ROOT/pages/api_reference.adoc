@@ -366,7 +366,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the auto scaler
-| *`deploymentStrategy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#deploymentstrategy-v1-apps[$$DeploymentStrategy$$]__ | DeploymentStrategy allws the deployment strategy to be set only if the deployment has no public service enabled
+| *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
 |===
 
 
@@ -403,6 +403,23 @@ DeploymentInfo defailts information about a specific deployment.
 | *`name`* __string__ | 
 | *`hostname`* __string__ | 
 | *`port`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy"]
+==== DeploymentStrategy 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`overridePrivate`* __boolean__ | OverridePrivate allows a deployment that only uses a private port to use the Rolling update, as the default is Recreate.
 |===
 
 

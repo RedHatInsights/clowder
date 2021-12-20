@@ -169,12 +169,12 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 func validateDeploymentStrategy(r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 	for depIndex, deployment := range r.Spec.Deployments {
-		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled {
+		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.OverridePrivate {
 			allErrs = append(
 				allErrs,
 				field.Forbidden(
 					field.NewPath(fmt.Sprintf("spec.Deployment[%d]", depIndex)),
-					"deploymentStrategy cannot be set for public web enabled deployments",
+					"deploymentStrategy override cannot be set for public web enabled deployments",
 				),
 			)
 		}

@@ -75,8 +75,10 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	d.Spec.ProgressDeadlineSeconds = common.Int32Ptr(600)
 
-	if deployment.DeploymentStrategy != nil && !deployment.WebServices.Public.Enabled {
-		d.Spec.Strategy = *deployment.DeploymentStrategy
+	if deployment.DeploymentStrategy != nil && !deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.OverridePrivate {
+		d.Spec.Strategy = *&apps.DeploymentStrategy{
+			Type: "Recreate",
+		}
 	}
 
 	envvar := pod.Env
