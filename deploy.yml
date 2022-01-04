@@ -651,6 +651,10 @@ objects:
                                   description: If true, inheirts the environment variables
                                     from the parent pod. specification
                                   type: boolean
+                                name:
+                                  description: Name gives an identifier in the situation
+                                    where multiple init containers exist
+                                  type: string
                               type: object
                             type: array
                           livenessProbe:
@@ -3108,6 +3112,10 @@ objects:
                                   description: If true, inheirts the environment variables
                                     from the parent pod. specification
                                   type: boolean
+                                name:
+                                  description: Name gives an identifier in the situation
+                                    where multiple init containers exist
+                                  type: string
                               type: object
                             type: array
                           livenessProbe:

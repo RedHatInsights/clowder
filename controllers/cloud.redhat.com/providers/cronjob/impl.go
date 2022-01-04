@@ -23,7 +23,10 @@ func (j *cronjobProvider) makeCronJob(cronjob *crd.Job, app *crd.ClowdApp) error
 	}
 
 	pt := core.PodTemplateSpec{}
-	buildPodTemplate(app, j.Env, &pt, nn, cronjob)
+
+	if err := buildPodTemplate(app, j.Env, &pt, nn, cronjob); err != nil {
+		return err
+	}
 
 	c := &batch.CronJob{}
 	if err := j.Cache.Create(CoreCronJob, nn, c); err != nil {
@@ -38,7 +41,7 @@ func (j *cronjobProvider) makeCronJob(cronjob *crd.Job, app *crd.ClowdApp) error
 	return nil
 }
 
-func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.PodTemplateSpec, nn types.NamespacedName, cronjob *crd.Job) {
+func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.PodTemplateSpec, nn types.NamespacedName, cronjob *crd.Job) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 
@@ -98,7 +101,12 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 
 	pt.Spec.Containers = []core.Container{c}
 
-	pt.Spec.InitContainers = deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
+	ics, err := deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
+
+	if err != nil {
+		return err
+	}
+	pt.Spec.InitContainers = ics
 
 	pt.Spec.Volumes = pod.Volumes
 	pt.Spec.Volumes = append(pt.Spec.Volumes, core.Volume{
@@ -111,6 +119,8 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 	})
 
 	deployProvider.ApplyPodAntiAffinity(pt)
+
+	return nil
 }
 
 func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, pt *core.PodTemplateSpec, nn types.NamespacedName, cronjob *crd.Job) {
