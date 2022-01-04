@@ -1,0 +1,19 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo-broken
+  namespace: test-init-containers
+spec:
+  envName: test-init-containers
+  deployments:
+  - name: processor-broken
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      initContainers:
+        - env:
+          - name: "name"
+            value: "explain"
+        - env:
+          - name: "name"
+            value: "explain"

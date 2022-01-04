@@ -33,6 +33,9 @@ import (
 // deployed along with the parent pod and is used to carry out one time
 // initialization procedures.
 type InitContainer struct {
+	// Name gives an identifier in the situation where multiple init containers exist
+	Name string `json:"name,omitempty"`
+
 	// Image refers to the container image used to create the init container
 	// (if different from the primary pod image).
 	Image string `json:"image,omitempty"`

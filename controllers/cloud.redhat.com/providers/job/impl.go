@@ -12,7 +12,7 @@ import (
 
 // applyJob build the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
-func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) {
+func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
@@ -80,7 +80,13 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 
 	j.Spec.Template.Spec.Containers = []core.Container{c}
 
-	j.Spec.Template.Spec.InitContainers = deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
+	ics, err := deployProvider.ProcessInitContainers(nn, &c, pod.InitContainers)
+
+	if err != nil {
+		return err
+	}
+
+	j.Spec.Template.Spec.InitContainers = ics
 
 	j.Spec.Template.Spec.Volumes = pod.Volumes
 	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
@@ -91,4 +97,5 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 			},
 		},
 	})
+	return nil
 }

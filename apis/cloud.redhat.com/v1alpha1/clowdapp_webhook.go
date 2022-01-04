@@ -49,6 +49,7 @@ func (r *ClowdApp) ValidateCreate() error {
 	return r.processValidations(r,
 		validateDatabase,
 		validateSidecars,
+		validateInit,
 	)
 }
 
@@ -59,6 +60,7 @@ func (r *ClowdApp) ValidateUpdate(old runtime.Object) error {
 	return r.processValidations(r,
 		validateDatabase,
 		validateSidecars,
+		validateInit,
 	)
 }
 
@@ -103,6 +105,26 @@ func validateDatabase(r *ClowdApp) field.ErrorList {
 		allErrs = append(allErrs, field.Forbidden(
 			field.NewPath("spec.Database.SharedDBAppName", "spec.Cyndi.Enabled"), "cannot use cyndi with a shared database"),
 		)
+	}
+
+	return allErrs
+}
+
+func validateInit(r *ClowdApp) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	for depIdx, deployment := range r.Spec.Deployments {
+		if len(deployment.PodSpec.InitContainers) > 1 {
+			for icIdx, ic := range deployment.PodSpec.InitContainers {
+				if ic.Name == "" {
+					allErrs = append(allErrs, field.Forbidden(
+						field.NewPath(
+							fmt.Sprintf("spec.Deployments[%d].PodSpec.InitContainers[%d]", depIdx, icIdx),
+						), "multiple initcontainers must have a name"),
+					)
+				}
+			}
+		}
 	}
 
 	return allErrs

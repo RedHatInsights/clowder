@@ -23,7 +23,9 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 		return err
 	}
 
-	initDeployment(app, dp.Env, d, nn, deployment)
+	if err := initDeployment(app, dp.Env, d, nn, deployment); err != nil {
+		return err
+	}
 
 	if err := dp.Cache.Update(CoreDeployment, d); err != nil {
 		return err
@@ -32,7 +34,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 	return nil
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment) {
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
@@ -135,7 +137,13 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	d.Spec.Template.Spec.Containers = []core.Container{c}
 
-	d.Spec.Template.Spec.InitContainers = ProcessInitContainers(nn, &c, pod.InitContainers)
+	ics, err := ProcessInitContainers(nn, &c, pod.InitContainers)
+
+	if err != nil {
+		return err
+	}
+
+	d.Spec.Template.Spec.InitContainers = ics
 
 	d.Spec.Template.Spec.Volumes = pod.Volumes
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
@@ -157,22 +165,35 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	ApplyPodAntiAffinity(&d.Spec.Template)
+
+	return nil
 }
 
 // ProcessInitContainers returns a container object which has been processed from the container spec.
-func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd.InitContainer) []core.Container {
+func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd.InitContainer) ([]core.Container, error) {
 	if len(ics) == 0 {
-		return []core.Container{}
+		return []core.Container{}, nil
 	}
 	containerList := make([]core.Container, len(ics))
 
 	for i, ic := range ics {
+
 		image := c.Image
 		if ic.Image != "" {
 			image = ic.Image
 		}
+
+		if len(ics) > 1 && ic.Name == "" {
+			return []core.Container{}, fmt.Errorf("multiple init containers must have name")
+		}
+
+		name := nn.Name
+		if ic.Name != "" {
+			name = ic.Name
+		}
+
 		icStruct := core.Container{
-			Name:            nn.Name + "-init",
+			Name:            name + "-init",
 			Image:           image,
 			Command:         ic.Command,
 			Args:            ic.Args,
@@ -221,7 +242,7 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 
 		containerList[i] = icStruct
 	}
-	return containerList
+	return containerList, nil
 }
 
 // ApplyPodAntiAffinity applies pod anti affinity rules to a pod template
