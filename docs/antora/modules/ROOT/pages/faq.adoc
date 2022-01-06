@@ -1,0 +1,24 @@
+= Frequently Asked Questions
+
+This document is intended to give answers to some of the more common question surrounding the use of
+Clowder. If a question that you think should be included here has been omitted, please raise a
+ticket and the team will do their best to answer it swiftly.
+
+== How can I share a database from another ClowdApp?
+
+Clowder allows you to share an apps database credentials to secondary apps. One app will be the
+_owner_ of the database and would be responsible for performing migrations etc, other apps can then
+consume those credentials. Currently secondary apps consuming those credentials will get full write
+access to the database and are responsible for ensuring they do not negatively affect it.
+
+To set this up, use the https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasespec[`spec.providers.database.sharedDbAppName`].
+
+NOTE: The `spec.providers.database.name` cannot be set with this feature. App interface mode also
+supports this feature. `spec.providers.database.version` is ignored in shared db mode.
+
+== How do I set up an internal port for inter-app communication?
+
+Two allow two apps to talk together internally without exposing a port to the public use the https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice[`spec.deployments.webServices.private`] configuration stanza.
+
+This will enable the use of a private port that will not be exposed via public mechanisms.
+
