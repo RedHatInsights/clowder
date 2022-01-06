@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Frequently Asked Questions :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/faq.html">
+    <meta name="generator" content="Antora 3.0.0">
+    <link rel="stylesheet" href="../../ui/css/site.css">
+    <script>var uiRootPath = '../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="developer-guide.html">Developer Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="crc-guide.html">CodeReady Containers Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="#cop.adoc">SOP</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="providers/index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="providers/web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Clowder</a></li>
+    <li><a href="faq.html">Frequently Asked Questions</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/ROOT/pages/faq.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Frequently Asked Questions</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document is intended to give answers to some of the more common question surrounding the use of
+Clowder. If a question that you think should be included here has been omitted, please raise a
+ticket and the team will do their best to answer it swiftly.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operations"><a class="anchor" href="#_operations"></a>Operations</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_is_there_an_easy_way_to_see_what_is_happening_with_all_my_clowdappsclowdenvironment"><a class="anchor" href="#_is_there_an_easy_way_to_see_what_is_happening_with_all_my_clowdappsclowdenvironment"></a>Is there an easy way to see what is happening with all my ClowdApps/ClowdEnvironment?</h3>
+<div class="paragraph">
+<p>On the console, listing the apps in a namespace by using <code>oc get app</code> should give enough
+information about the ready state of each app. If you need more information, then the <code>status</code>
+section of the resource should provide conditions detailing why a reconciliation has failed. For the
+more visual developer, there is a link at the bottom of the ephemeral env which will show
+ClowdApp/ClowdEnvironment status on a page and will auto update. This is expected to land in
+stage/prod soon.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_whenever_i_make_changes_to_a_deployment_they_just_get_overwritten_why_is_this"><a class="anchor" href="#_whenever_i_make_changes_to_a_deployment_they_just_get_overwritten_why_is_this"></a>Whenever I make changes to a deployment, they just get overwritten, why is this?</h3>
+<div class="paragraph">
+<p>This is a core concept in Clowder that we should always be ensuring that the deployment be kept
+inline with the application&#8217;s specification. By making changes to a deployment directly on a
+cluster, it&#8217;s possible that changes will be introduced that will affect its operation. Thus, Clowder
+tries to ensure that any such changes are reverted as quickly as possible. If changes are needed to
+be made to a deployment the following options are available.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Make a change to the ClowdApp</p>
+</li>
+<li>
+<p>Temporarily disable Clowder&#8217;s control of the application by setting the <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp"><code>spec.disabled</code></a> flag.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Using app-sre&#8217;s tooling changes to resources managed by app-interface would be changed in much
+the same way as Clowder, except at a much slower rate, say once every 15 minutes. Clowder watches
+many resources and will respond to changes instantaneously.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_can_i_add_multiple_containers_to_my_deployments_pod"><a class="anchor" href="#_how_can_i_add_multiple_containers_to_my_deployments_pod"></a>How can I add multiple containers to my deployment&#8217;s pod?</h3>
+<div class="paragraph">
+<p>In short, you can&#8217;t. One of the core tenets of Clowder is to create homogenous deployment setups, in
+this regard a particular pod will only have one single configurable container. That is not to say
+that a pod will never have multiple containers. The use of the ephemeral environment and sidecar
+features do add other sidecars to the pod, but Clowder restricts an app to one application container
+per pod.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_should_i_set_up_liveness_and_readiness_probes"><a class="anchor" href="#_how_should_i_set_up_liveness_and_readiness_probes"></a>How should I set up liveness and readiness probes?</h3>
+<div class="paragraph">
+<p>Clowder tries to use the Kubernetes best practice of listening to the <code>/healthz</code> endpoint on the
+<code>webPort</code> which has been defined (default 8000). If this does not exist because either the app has
+decided on a different approach or has not yet created a <em>healthz</em> endpoint, then the liveness and
+readiness probes can be overridden using the
+<a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec"><code>spec.deployments.podSpec.livenessProbe</code></a>
+and
+<a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec"><code>spec.deployments.podSpec.readinessProbe</code></a>
+stanzas. These follow the same structure as normal Kubernetes liveness/readiness probes.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You should always use port names like <code>web</code>, <code>private</code> or <code>metrics</code> in your probes, as the
+port values can be changed by Clowder. Using a name insulates the application from these changes.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_database"><a class="anchor" href="#_database"></a>Database</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_how_can_i_share_a_database_from_another_clowdapp"><a class="anchor" href="#_how_can_i_share_a_database_from_another_clowdapp"></a>How can I share a database from another ClowdApp?</h3>
+<div class="paragraph">
+<p>Clowder allows you to share an app&#8217;s database credentials to secondary apps. One app will be the
+<em>owner</em> of the database and would be responsible for performing migrations etc, other apps can then
+consume those credentials. Currently secondary apps consuming those credentials will get full write
+access to the database and are responsible for ensuring they do not negatively affect it.</p>
+</div>
+<div class="paragraph">
+<p>To set this up, use the <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasespec"><code>spec.providers.database.sharedDbAppName</code></a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>spec.providers.database.name</code> cannot be set with this feature. App interface mode also
+supports this feature. <code>spec.providers.database.version</code> is ignored in shared db mode.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_web_services"><a class="anchor" href="#_web_services"></a>Web Services</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_how_do_i_set_up_an_internal_port_for_inter_app_communication"><a class="anchor" href="#_how_do_i_set_up_an_internal_port_for_inter_app_communication"></a>How do I set up an internal port for inter-app communication?</h3>
+<div class="paragraph">
+<p>Two allow two apps to talk together internally without exposing a port to the public use the
+<a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice"><code>spec.deployments.webServices.private</code></a>
+configuration stanza.</p>
+</div>
+<div class="paragraph">
+<p>This will enable the use of a private port that will not be exposed via public mechanisms.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_can_i_disable_the_metrics_port"><a class="anchor" href="#_can_i_disable_the_metrics_port"></a>Can I disable the metrics port?</h3>
+<div class="paragraph">
+<p>No. Clowder will always set up a metrics port and service for you. You can of course choose not to
+run any service on that port, but then when Clowder manages service monitors, it will have nothing
+to monitor and alerts will probably fail. It is seen to be a best practice for an application to
+always have a metrics port and serve some kind of prometheus scrapable metrics, however limited.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_storage"><a class="anchor" href="#_storage"></a>Storage</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_can_i_enable_pvcs_for_my_pods"><a class="anchor" href="#_can_i_enable_pvcs_for_my_pods"></a>Can I enable PVCs for my pods?</h3>
+<div class="paragraph">
+<p>You <em>can</em>, but you should really consider if this is the best option. Clowder allows for the use of
+many infrastructure storage options, kafka, rds, s3, elasticache, using a PVC should be considered a
+last resort. Clowder has no way to specifically request a PVC either, this must be done outside the
+ClowdApp and referenced using the volumes portion of the deployment spec.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_misc"><a class="anchor" href="#_misc"></a>Misc</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_how_should_i_set_up_dependencies"><a class="anchor" href="#_how_should_i_set_up_dependencies"></a>How should I set up dependencies?</h3>
+<div class="paragraph">
+<p>Though there is talk about changing the definition at a later date, dependencies currently work with
+these assumptions.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A <strong>Dependency</strong> listed in the
+<a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec"><code>spec.dependencies</code></a>
+section of a ClowdApp lists those dependencies which are required for the application to run. That
+is to say if the dependency is not present, the application will fail to start properly, or perform
+at all.</p>
+</li>
+<li>
+<p>An <strong>Optional Dependency</strong> listed in the
+<a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec"><code>spec.dependencies</code></a>
+section is one which the application can tolerate a failure of gracefully. The application will also
+be restarted should one of its <em>optional dependencies</em> appear or disappear from the cluster. This is
+because the configuration for an <em>optional dependency</em> is added to or removed from the
+<code>cdappconfig,json</code> in line with the presence of the application on the cluster.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_can_i_have_two_different_applications_using_two_different_provider_modes"><a class="anchor" href="#_can_i_have_two_different_applications_using_two_different_provider_modes"></a>Can I have two different applications using two different provider modes?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>No. Currently Clowder is not able to differentiate different modes for different apps. This is
+largely because it would be for a very special use case and would be difficult to define. A key
+concept of the ClowdApp is that it embodies all the information required to run the app, regardless
+of environment. Having to define environmental modes in the ClowdApp would break this model. It is
+possible they could be added to a section on the ClowdEnvironment, but this is not a feature on the
+roadmap currently.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../ui/js/site.js"></script>
+<script async src="../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>
