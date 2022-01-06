@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"fmt"
 
+	apps "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -169,7 +170,7 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 func validateDeploymentStrategy(r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 	for depIndex, deployment := range r.Spec.Deployments {
-		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.OverridePrivate {
+		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.PrivateStrategy == apps.RecreateDeploymentStrategyType {
 			allErrs = append(
 				allErrs,
 				field.Forbidden(

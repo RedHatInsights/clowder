@@ -329,11 +329,13 @@ spec:
                       description: DeploymentStrategy allows the deployment strategy
                         to be set only if the deployment has no public service enabled
                       properties:
-                        overridePrivate:
-                          description: OverridePrivate allows a deployment that only
-                            uses a private port to use the Rolling update, as the
-                            default is Recreate.
-                          type: boolean
+                        strategy:
+                          description: PrivateStrategy allows a deployment that only
+                            uses a private port to set the deployment strategy one
+                            of Recreate or Rolling, default for a private service
+                            is Recreate. This is to enable a quicker roll out for
+                            services that do not have public facing endpoints.
+                          type: string
                       type: object
                     k8sAccessLevel:
                       description: K8sAccessLevel defines the level of access for
