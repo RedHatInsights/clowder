@@ -14,4 +14,4 @@ spec:
       public:
         enabled: true
     deploymentStrategy:
-      overridePrivate: true
+      strategy: Recreate

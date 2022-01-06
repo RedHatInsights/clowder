@@ -21,6 +21,7 @@ import (
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -199,9 +200,11 @@ type Deployment struct {
 }
 
 type DeploymentStrategy struct {
-	// OverridePrivate allows a deployment that only uses a private port to use
-	// the Rolling update, as the default is Recreate.
-	OverridePrivate bool `json:"overridePrivate,omitempty"`
+	// PrivateStrategy allows a deployment that only uses a private port to set
+	// the deployment strategy one of Recreate or Rolling, default for a
+	// private service is Recreate. This is to enable a quicker roll out for
+	// services that do not have public facing endpoints.
+	PrivateStrategy apps.DeploymentStrategyType `json:"strategy,omitempty"`
 }
 
 type Sidecar struct {

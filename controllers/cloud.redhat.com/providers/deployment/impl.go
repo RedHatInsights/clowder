@@ -75,9 +75,15 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	d.Spec.ProgressDeadlineSeconds = common.Int32Ptr(600)
 
-	if deployment.DeploymentStrategy != nil && !deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.OverridePrivate {
-		d.Spec.Strategy = *&apps.DeploymentStrategy{
-			Type: "Recreate",
+	if !deployment.WebServices.Public.Enabled && deployment.WebServices.Private.Enabled {
+		if deployment.DeploymentStrategy != nil && deployment.DeploymentStrategy.PrivateStrategy != "" {
+			d.Spec.Strategy = apps.DeploymentStrategy{
+				Type: deployment.DeploymentStrategy.PrivateStrategy,
+			}
+		} else {
+			d.Spec.Strategy = apps.DeploymentStrategy{
+				Type: apps.RecreateDeploymentStrategyType,
+			}
 		}
 	}
 
