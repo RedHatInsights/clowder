@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-deployment-strategy
+spec:
+  strategy:
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor2
+  namespace: test-deployment-strategy
+spec:
+  strategy:
+    type: Recreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor3
+  namespace: test-deployment-strategy
+spec:
+  strategy:
+    type: RollingUpdate

@@ -419,7 +419,7 @@ DeploymentInfo defailts information about a specific deployment.
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`strategy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#deploymentstrategytype-v1-apps[$$DeploymentStrategyType$$]__ | PrivateStrategy allows a deployment that only uses a private port to set the deployment strategy one of Recreate or Rolling, default for a private service is Recreate. This is to enable a quicker roll out for services that do not have public facing endpoints.
+| *`privateStrategy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#deploymentstrategytype-v1-apps[$$DeploymentStrategyType$$]__ | PrivateStrategy allows a deployment that only uses a private port to set the deployment strategy one of Recreate or Rolling, default for a private service is Recreate. This is to enable a quicker roll out for services that do not have public facing endpoints.
 |===
 
 

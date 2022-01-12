@@ -4,4 +4,4 @@ kind: TestStep
 commands:
 - script: sleep 1
 - script: kubectl apply -f pods.yaml --namespace=test-deployment-strategy 2>&1 | grep "Forbidden"
-- script: sleep 20
+- script: sleep 5
