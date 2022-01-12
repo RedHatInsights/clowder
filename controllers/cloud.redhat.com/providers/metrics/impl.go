@@ -13,6 +13,7 @@ import (
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
@@ -33,7 +34,11 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	appProtocol := "http"
 	metricsPort := core.ServicePort{
-		Name: "metrics", Port: port, Protocol: "TCP", AppProtocol: &appProtocol,
+		Name:        "metrics",
+		Port:        port,
+		Protocol:    "TCP",
+		AppProtocol: &appProtocol,
+		TargetPort:  intstr.FromInt(int(port)),
 	}
 
 	s.Spec.Ports = append(s.Spec.Ports, metricsPort)
@@ -42,6 +47,7 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		core.ContainerPort{
 			Name:          "metrics",
 			ContainerPort: port,
+			Protocol:      core.ProtocolTCP,
 		},
 	)
 

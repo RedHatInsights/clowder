@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 
 	batch "k8s.io/api/batch/v1"
@@ -52,6 +53,16 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 	envvar := pod.Env
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
+	for _, env := range envvar {
+		if env.ValueFrom != nil {
+			if env.ValueFrom.FieldRef != nil {
+				if env.ValueFrom.FieldRef.APIVersion == "" {
+					env.ValueFrom.FieldRef.APIVersion = "v1"
+				}
+			}
+		}
+	}
+
 	var livenessProbe core.Probe
 	var readinessProbe core.Probe
 
@@ -77,7 +88,10 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
 			ContainerPort: env.Spec.Providers.Metrics.Port,
+			Protocol:      core.ProtocolTCP,
 		}},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
 	}
 
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {
@@ -86,6 +100,10 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 
 	// set service account for pod
 	pt.Spec.ServiceAccountName = app.GetClowdSAName()
+	pt.Spec.TerminationGracePeriodSeconds = common.Int64Ptr(30)
+	pt.Spec.SecurityContext = &core.PodSecurityContext{}
+	pt.Spec.SchedulerName = "default-scheduler"
+	pt.Spec.DNSPolicy = core.DNSClusterFirst
 
 	if (core.Probe{}) != livenessProbe {
 		c.LivenessProbe = &livenessProbe
@@ -113,10 +131,19 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: app.ObjectMeta.Name,
+				DefaultMode: common.Int32Ptr(420),
+				SecretName:  app.ObjectMeta.Name,
 			},
 		},
 	})
+
+	for _, vol := range pt.Spec.Volumes {
+		if vol.VolumeSource.ConfigMap != nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
+			vol.VolumeSource.ConfigMap.DefaultMode = common.Int32Ptr(420)
+		} else if vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
+			vol.VolumeSource.Secret.DefaultMode = common.Int32Ptr(420)
+		}
+	}
 
 	deployProvider.ApplyPodAntiAffinity(pt)
 

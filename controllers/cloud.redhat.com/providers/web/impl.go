@@ -50,6 +50,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			Port:        env.Spec.Providers.Web.Port,
 			Protocol:    "TCP",
 			AppProtocol: &appProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.Port)),
 		}
 
 		servicePorts = append(servicePorts, webPort)
@@ -59,6 +60,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			core.ContainerPort{
 				Name:          "web",
 				ContainerPort: env.Spec.Providers.Web.Port,
+				Protocol:      core.ProtocolTCP,
 			},
 		)
 
@@ -73,6 +75,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 				Port:        authPortNumber,
 				Protocol:    "TCP",
 				AppProtocol: &appProtocol,
+				TargetPort:  intstr.FromInt(int(authPortNumber)),
 			}
 			servicePorts = append(servicePorts, authPort)
 		}
@@ -95,6 +98,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			Port:        privatePort,
 			Protocol:    "TCP",
 			AppProtocol: &appProtocol,
+			TargetPort:  intstr.FromInt(int(privatePort)),
 		}
 		servicePorts = append(servicePorts, webPort)
 
@@ -103,6 +107,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			core.ContainerPort{
 				Name:          "private",
 				ContainerPort: privatePort,
+				Protocol:      core.ProtocolTCP,
 			},
 		)
 	}
@@ -180,6 +185,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 	ports := []core.ContainerPort{{
 		Name:          "service",
 		ContainerPort: port,
+		Protocol:      core.ProtocolTCP,
 	}}
 
 	probeHandler := core.Handler{
@@ -195,11 +201,17 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		Handler:             probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	image := "quay.io/keycloak/keycloak:11.0.3"
@@ -225,15 +237,19 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 				"cpu":    resource.MustParse("100m"),
 			},
 		},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:     "keycloak",
-		Port:     port,
-		Protocol: "TCP",
+		Name:       "keycloak",
+		Port:       port,
+		Protocol:   "TCP",
+		TargetPort: intstr.FromInt(int(port)),
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
@@ -295,6 +311,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 	ports := []core.ContainerPort{{
 		Name:          "service",
 		ContainerPort: port,
+		Protocol:      core.ProtocolTCP,
 	}}
 
 	probeHandler := core.Handler{
@@ -340,15 +357,19 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 				"cpu":    resource.MustParse("100m"),
 			},
 		},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:     "mbop",
-		Port:     port,
-		Protocol: "TCP",
+		Name:       "mbop",
+		Port:       port,
+		Protocol:   "TCP",
+		TargetPort: intstr.FromInt(int(port)),
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)

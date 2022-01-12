@@ -86,6 +86,9 @@ func getTokenRefresher(appName string) *core.Container {
 		"--url=$(URL)",
 		"--web.listen=:8082",
 	}
+	cont.TerminationMessagePath = "/dev/termination-log"
+	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
+	cont.ImagePullPolicy = core.PullIfNotPresent
 	cont.Resources = core.ResourceRequirements{
 		Limits: core.ResourceList{
 			"cpu":    resource.MustParse("100m"),

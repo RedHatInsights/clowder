@@ -202,6 +202,7 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		{
 			Name:          "kafka",
 			ContainerPort: 9092,
+			Protocol:      core.ProtocolTCP,
 		},
 	}
 
@@ -218,11 +219,17 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		Handler:             probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	c := core.Container{
@@ -244,14 +251,22 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 				MountPath: "/var/lib/kafka/data",
 			},
 		},
-		ReadinessProbe: &readinessProbe,
-		LivenessProbe:  &livenessProbe,
+		ReadinessProbe:           &readinessProbe,
+		LivenessProbe:            &livenessProbe,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	servicePorts := []core.ServicePort{{Name: "kafka", Port: 29092, Protocol: "TCP"}}
+	servicePorts := []core.ServicePort{{
+		Name:       "kafka",
+		Port:       29092,
+		Protocol:   core.ProtocolTCP,
+		TargetPort: intstr.FromInt(int(29092)),
+	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 	if usePVC {
@@ -327,14 +342,17 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		{
 			Name:          "zookeeper",
 			ContainerPort: 2181,
+			Protocol:      core.ProtocolTCP,
 		},
 		{
 			Name:          "zookeeper-1",
 			ContainerPort: 2888,
+			Protocol:      core.ProtocolTCP,
 		},
 		{
 			Name:          "zookeeper-2",
 			ContainerPort: 3888,
+			Protocol:      core.ProtocolTCP,
 		},
 	}
 
@@ -358,11 +376,17 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		Handler:             probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	c := core.Container{
@@ -388,8 +412,11 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 				MountPath: "/var/lib/zookeeper/log",
 			},
 		},
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
+		LivenessProbe:            &livenessProbe,
+		ReadinessProbe:           &readinessProbe,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
@@ -397,13 +424,22 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 
 	servicePorts := []core.ServicePort{
 		{
-			Name: "zookeeper1", Port: 32181, Protocol: "TCP",
+			Name:       "zookeeper1",
+			Port:       32181,
+			Protocol:   core.ProtocolTCP,
+			TargetPort: intstr.FromInt(32181),
 		},
 		{
-			Name: "zookeeper2", Port: 2888, Protocol: "TCP",
+			Name:       "zookeeper2",
+			Port:       2888,
+			Protocol:   core.ProtocolTCP,
+			TargetPort: intstr.FromInt(2888),
 		},
 		{
-			Name: "zookeeper3", Port: 3888, Protocol: "TCP",
+			Name:       "zookeeper3",
+			Port:       3888,
+			Protocol:   core.ProtocolTCP,
+			TargetPort: intstr.FromInt(3888),
 		},
 	}
 

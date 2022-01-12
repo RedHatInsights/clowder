@@ -114,7 +114,9 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		Args:         args,
 		// Because the tags on iqe plugins are not commit based, we need to pull everytime we run.
 		// A leftover tag from a previous run is never guaranteed to be up to date
-		ImagePullPolicy: core.PullAlways,
+		ImagePullPolicy:          core.PullAlways,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
 	}
 
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
@@ -136,7 +138,8 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 			Name: "cdenvconfig",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: secretName,
+					DefaultMode: common.Int32Ptr(420),
+					SecretName:  secretName,
 				},
 			},
 		})
@@ -154,7 +157,8 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 			Name: "config-secret",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: cji.Spec.AppName,
+					DefaultMode: common.Int32Ptr(420),
+					SecretName:  cji.Spec.AppName,
 				},
 			},
 		})

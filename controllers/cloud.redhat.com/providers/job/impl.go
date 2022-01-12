@@ -57,7 +57,11 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		Ports: []core.ContainerPort{{
 			Name:          "metrics",
 			ContainerPort: env.Spec.Providers.Metrics.Port,
+			Protocol:      core.ProtocolTCP,
 		}},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {

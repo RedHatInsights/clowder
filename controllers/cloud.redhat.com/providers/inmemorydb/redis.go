@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -11,6 +12,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
@@ -107,17 +109,24 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		Handler:             probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 45,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	dd.Spec.Template.Spec.Volumes = []core.Volume{{
 		Name: nn.Name,
 		VolumeSource: core.VolumeSource{
 			ConfigMap: &core.ConfigMapVolumeSource{
+				DefaultMode: common.Int32Ptr(420),
 				LocalObjectReference: core.LocalObjectReference{
 					Name: nn.Name,
 				},
@@ -136,6 +145,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		Ports: []core.ContainerPort{{
 			Name:          "redis",
 			ContainerPort: 6379,
+			Protocol:      core.ProtocolTCP,
 		}},
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
@@ -143,12 +153,16 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 			Name:      nn.Name,
 			MountPath: "/usr/local/etc/redis/",
 		}},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}}
 
 	servicePorts := []core.ServicePort{{
-		Name:     "redis",
-		Port:     6379,
-		Protocol: "TCP",
+		Name:       "redis",
+		Port:       6379,
+		Protocol:   core.ProtocolTCP,
+		TargetPort: intstr.FromInt(int(6379)),
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)

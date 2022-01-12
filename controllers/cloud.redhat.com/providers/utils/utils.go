@@ -61,6 +61,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 			VolumeSource: volSource,
 		},
 	}
+
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	envVars := []core.EnvVar{
@@ -74,6 +75,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 	ports := []core.ContainerPort{{
 		Name:          "database",
 		ContainerPort: 5432,
+		Protocol:      core.ProtocolTCP,
 	}}
 
 	probeHandler := core.Handler{
@@ -94,11 +96,17 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		Handler:             probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 45,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	c := core.Container{
@@ -122,6 +130,9 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 			Name:      nn.Name,
 			MountPath: "/var/lib/pgsql/data",
 		}},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
@@ -130,9 +141,10 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 // MakeLocalDBService populates the given service object with the local DB struct.
 func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string) {
 	servicePorts := []core.ServicePort{{
-		Name:     "database",
-		Port:     5432,
-		Protocol: "TCP",
+		Name:       "database",
+		Port:       5432,
+		Protocol:   "TCP",
+		TargetPort: intstr.FromInt(5432),
 	}}
 	labels := providers.Labels{"service": "db", "app": baseResource.GetClowdName()}
 	for k, v := range *extraLabels {
