@@ -178,6 +178,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 	ports := []core.ContainerPort{{
 		Name:          "service",
 		ContainerPort: port,
+		Protocol:      "TCP",
 	}}
 
 	probeHandler := core.Handler{
@@ -193,29 +194,39 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		Handler:             probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	c := core.Container{
-		Name:           nn.Name,
-		Image:          "quay.io/cloudservices/unleash-docker:3.9",
-		Env:            envVars,
-		Ports:          ports,
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
+		Name:                     nn.Name,
+		Image:                    "quay.io/cloudservices/unleash-docker:3.9",
+		Env:                      envVars,
+		Ports:                    ports,
+		LivenessProbe:            &livenessProbe,
+		ReadinessProbe:           &readinessProbe,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:     "featureflags",
-		Port:     port,
-		Protocol: "TCP",
+		Name:       "featureflags",
+		Port:       port,
+		Protocol:   "TCP",
+		TargetPort: intstr.FromInt(int(port)),
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)

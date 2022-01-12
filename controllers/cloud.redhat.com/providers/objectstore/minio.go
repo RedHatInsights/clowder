@@ -315,6 +315,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 	ports := []core.ContainerPort{{
 		Name:          "minio",
 		ContainerPort: port,
+		Protocol:      core.ProtocolTCP,
 	}}
 
 	probeHandler := core.Handler{
@@ -330,11 +331,17 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		Handler:             probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		Handler:             probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
 	}
 
 	c := core.Container{
@@ -350,17 +357,21 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 			"server",
 			"/storage",
 		},
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
+		LivenessProbe:            &livenessProbe,
+		ReadinessProbe:           &readinessProbe,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:     "minio",
-		Port:     port,
-		Protocol: "TCP",
+		Name:       "minio",
+		Port:       port,
+		Protocol:   "TCP",
+		TargetPort: intstr.FromInt(int(port)),
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)

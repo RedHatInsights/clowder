@@ -9,6 +9,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -74,9 +75,10 @@ func TestLocalDBService(t *testing.T) {
 	nn, app := getBaseElements()
 
 	servicePorts := []core.ServicePort{{
-		Name:     "database",
-		Port:     5432,
-		Protocol: "TCP",
+		Name:       "database",
+		Port:       5432,
+		Protocol:   core.ProtocolTCP,
+		TargetPort: intstr.FromInt(5432),
 	}}
 
 	s := core.Service{}

@@ -77,6 +77,16 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	envvar := pod.Env
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
+	for _, env := range envvar {
+		if env.ValueFrom != nil {
+			if env.ValueFrom.FieldRef != nil {
+				if env.ValueFrom.FieldRef.APIVersion == "" {
+					env.ValueFrom.FieldRef.APIVersion = "v1"
+				}
+			}
+		}
+	}
+
 	var livenessProbe core.Probe
 	var readinessProbe core.Probe
 
@@ -109,14 +119,43 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		readinessProbe.InitialDelaySeconds = 45
 	}
 
+	if livenessProbe.SuccessThreshold == 0 {
+		livenessProbe.SuccessThreshold = 1
+	}
+	if livenessProbe.TimeoutSeconds == 0 {
+		livenessProbe.TimeoutSeconds = 1
+	}
+	if livenessProbe.PeriodSeconds == 0 {
+		livenessProbe.PeriodSeconds = 10
+	}
+	if livenessProbe.FailureThreshold == 0 {
+		livenessProbe.FailureThreshold = 3
+	}
+
+	if readinessProbe.SuccessThreshold == 0 {
+		readinessProbe.SuccessThreshold = 1
+	}
+	if readinessProbe.TimeoutSeconds == 0 {
+		readinessProbe.TimeoutSeconds = 1
+	}
+	if readinessProbe.PeriodSeconds == 0 {
+		readinessProbe.PeriodSeconds = 10
+	}
+	if readinessProbe.FailureThreshold == 0 {
+		readinessProbe.FailureThreshold = 3
+	}
+
 	c := core.Container{
-		Name:         nn.Name,
-		Image:        pod.Image,
-		Command:      pod.Command,
-		Args:         pod.Args,
-		Env:          envvar,
-		Resources:    ProcessResources(&pod, env),
-		VolumeMounts: pod.VolumeMounts,
+		Name:                     nn.Name,
+		Image:                    pod.Image,
+		Command:                  pod.Command,
+		Args:                     pod.Args,
+		Env:                      envvar,
+		Resources:                ProcessResources(&pod, env),
+		VolumeMounts:             pod.VolumeMounts,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {
@@ -150,7 +189,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: app.ObjectMeta.Name,
+				DefaultMode: common.Int32Ptr(420),
+				SecretName:  app.ObjectMeta.Name,
 			},
 		},
 	})
@@ -161,6 +201,10 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 				Type: apps.RecreateDeploymentStrategyType,
 			}
 			break
+		} else if vol.VolumeSource.ConfigMap != nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
+			vol.VolumeSource.ConfigMap.DefaultMode = common.Int32Ptr(420)
+		} else if vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
+			vol.VolumeSource.Secret.DefaultMode = common.Int32Ptr(420)
 		}
 	}
 
@@ -193,13 +237,15 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 		}
 
 		icStruct := core.Container{
-			Name:            name + "-init",
-			Image:           image,
-			Command:         ic.Command,
-			Args:            ic.Args,
-			Resources:       c.Resources,
-			VolumeMounts:    c.VolumeMounts,
-			ImagePullPolicy: c.ImagePullPolicy,
+			Name:                     name + "-init",
+			Image:                    image,
+			Command:                  ic.Command,
+			Args:                     ic.Args,
+			Resources:                c.Resources,
+			VolumeMounts:             c.VolumeMounts,
+			ImagePullPolicy:          c.ImagePullPolicy,
+			TerminationMessagePath:   "/dev/termination-log",
+			TerminationMessagePolicy: core.TerminationMessageReadFile,
 		}
 
 		if ic.InheritEnv {

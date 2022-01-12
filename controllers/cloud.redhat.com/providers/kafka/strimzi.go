@@ -464,14 +464,14 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	var config apiextensions.JSON
 
 	config.UnmarshalJSON([]byte(`{
-		"group.id":                                "connect-cluster",
-		"offset.storage.topic":                    "connect-cluster-offsets",
-		"config.storage.topic":                    "connect-cluster-configs",
-		"status.storage.topic":                    "connect-cluster-status",
-		"offset.storage.replication.factor":       "1",
 		"config.storage.replication.factor":       "1",
+		"config.storage.topic":                    "connect-cluster-configs",
+		"connector.client.config.override.policy": "All",
+		"group.id":                                "connect-cluster",
+		"offset.storage.replication.factor":       "1",
+		"offset.storage.topic":                    "connect-cluster-offsets",
 		"status.storage.replication.factor":       "1",
-		"connector.client.config.override.policy": "All"
+		"status.storage.topic":                    "connect-cluster-status"
 	}`))
 
 	k.Spec = &strimzi.KafkaConnectSpec{
