@@ -1,0 +1,29 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-deployment-strategy
+spec:
+  envName: test-deployment-strategy
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    webServices:
+      public:
+        enabled: true
+  - name: processor2
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    webServices:
+      private:
+        enabled: true
+  - name: processor3
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    webServices:
+      private:
+        enabled: true
+    deploymentStrategy:
+      privateStrategy: RollingUpdate

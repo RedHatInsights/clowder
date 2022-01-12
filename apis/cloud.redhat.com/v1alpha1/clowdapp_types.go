@@ -204,7 +204,7 @@ type DeploymentStrategy struct {
 	// the deployment strategy one of Recreate or Rolling, default for a
 	// private service is Recreate. This is to enable a quicker roll out for
 	// services that do not have public facing endpoints.
-	PrivateStrategy apps.DeploymentStrategyType `json:"strategy,omitempty"`
+	PrivateStrategy apps.DeploymentStrategyType `json:"privateStrategy,omitempty"`
 }
 
 type Sidecar struct {

@@ -329,7 +329,7 @@ spec:
                       description: DeploymentStrategy allows the deployment strategy
                         to be set only if the deployment has no public service enabled
                       properties:
-                        strategy:
+                        privateStrategy:
                           description: PrivateStrategy allows a deployment that only
                             uses a private port to set the deployment strategy one
                             of Recreate or Rolling, default for a private service
