@@ -194,18 +194,21 @@ func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Pr
 
 func displayUpdateDiff(e event.UpdateEvent, logr logr.Logger, ctrlName string, gvk schema.GroupVersionKind) {
 	if clowderconfig.LoadedConfig.DebugOptions.Trigger.Diff {
-		oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
-		newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
+		if e.ObjectNew.GetObjectKind().GroupVersionKind() == secretCompare {
+			logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
+		} else {
+			oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
+			newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
 
-		diff := difflib.UnifiedDiff{
-			A:        difflib.SplitLines(string(oldObjJSON)),
-			B:        difflib.SplitLines(string(newObjJSON)),
-			FromFile: "old",
-			ToFile:   "new",
-			Context:  3,
+			diff := difflib.UnifiedDiff{
+				A:        difflib.SplitLines(string(oldObjJSON)),
+				B:        difflib.SplitLines(string(newObjJSON)),
+				FromFile: "old",
+				ToFile:   "new",
+				Context:  3,
+			}
+			text, _ := difflib.GetUnifiedDiffString(diff)
+			logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 		}
-		text, _ := difflib.GetUnifiedDiffString(diff)
-		logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-
 	}
 }
