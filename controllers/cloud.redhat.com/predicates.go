@@ -89,10 +89,10 @@ func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate
 	predicates := defaultPredicateLog(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		displayUpdateDiff(e, logr, ctrlName, gvk)
 		result := genPredicate.Update(e)
 		if result {
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			displayUpdateDiff(e, logr, ctrlName, gvk)
 		}
 		return result
 	}
@@ -114,10 +114,10 @@ func deploymentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Pre
 	predicates := defaultPredicateLog(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		displayUpdateDiff(e, logr, ctrlName, gvk)
 		result := deploymentUpdateFunc(e)
 		if result {
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			displayUpdateDiff(e, logr, ctrlName, gvk)
 			return true
 		}
 		return false
@@ -137,8 +137,8 @@ func alwaysPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predica
 	predicates := defaultPredicateLog(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		displayUpdateDiff(e, logr, ctrlName, gvk)
 		logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+		displayUpdateDiff(e, logr, ctrlName, gvk)
 		return true
 	}
 	return predicates
@@ -158,10 +158,10 @@ func kafkaPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicat
 	predicates := defaultPredicateLog(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		displayUpdateDiff(e, logr, ctrlName, gvk)
 		result := kafkaUpdateFunc(e)
 		if result {
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			displayUpdateDiff(e, logr, ctrlName, gvk)
 		}
 		return result
 	}
@@ -182,9 +182,9 @@ func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Pr
 	predicates := defaultPredicateLog(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
 		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		displayUpdateDiff(e, logr, ctrlName, gvk)
 		result := environmentUpdateFunc(e)
 		if result {
+			displayUpdateDiff(e, logr, ctrlName, gvk)
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 		}
 		return result
@@ -194,21 +194,18 @@ func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Pr
 
 func displayUpdateDiff(e event.UpdateEvent, logr logr.Logger, ctrlName string, gvk schema.GroupVersionKind) {
 	if clowderconfig.LoadedConfig.DebugOptions.Trigger.Diff {
-		if e.ObjectNew.GetObjectKind().GroupVersionKind() == secretCompare {
-			logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
-		} else {
-			oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
-			newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
+		oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
+		newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
 
-			diff := difflib.UnifiedDiff{
-				A:        difflib.SplitLines(string(oldObjJSON)),
-				B:        difflib.SplitLines(string(newObjJSON)),
-				FromFile: "old",
-				ToFile:   "new",
-				Context:  3,
-			}
-			text, _ := difflib.GetUnifiedDiffString(diff)
-			logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
+		diff := difflib.UnifiedDiff{
+			A:        difflib.SplitLines(string(oldObjJSON)),
+			B:        difflib.SplitLines(string(newObjJSON)),
+			FromFile: "old",
+			ToFile:   "new",
+			Context:  3,
 		}
+		text, _ := difflib.GetUnifiedDiffString(diff)
+		logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
+
 	}
 }
