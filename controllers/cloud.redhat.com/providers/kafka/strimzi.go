@@ -863,12 +863,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 
 		k.Spec = &strimzi.KafkaTopicSpec{}
 
-		// This can be improved from an efficiency PoV
-		// Loop through all key/value pairs in the config
-		replicaValList := []string{}
-		partitionValList := []string{}
-
-		err := processTopicValues(k, s.Env, app, appList, topic, replicaValList, partitionValList)
+		err := processTopicValues(k, s.Env, app, appList, topic)
 
 		if err != nil {
 			return err
@@ -902,11 +897,11 @@ func processTopicValues(
 	app *crd.ClowdApp,
 	appList *crd.ClowdAppList,
 	topic crd.KafkaTopicSpec,
-	replicaValList []string,
-	partitionValList []string,
 ) error {
 
-	keys := map[string]bool{}
+	keys := map[string][]string{}
+	replicaValList := []string{}
+	partitionValList := []string{}
 
 	for _, iapp := range appList.Items {
 		if iapp.Spec.KafkaTopics != nil {
@@ -917,8 +912,11 @@ func processTopicValues(
 				}
 				replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
 				partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
-				for key := range topic.Config {
-					keys[key] = true
+				for key := range itopic.Config {
+					if _, ok := keys[key]; !ok {
+						keys[key] = []string{}
+					}
+					keys[key] = append(keys[key], itopic.Config[key])
 				}
 			}
 		}
@@ -926,25 +924,7 @@ func processTopicValues(
 
 	jsonData := "{"
 
-	for key := range keys {
-		valList := []string{}
-		for _, iapp := range appList.Items {
-			if iapp.Spec.KafkaTopics != nil {
-				for _, itopic := range app.Spec.KafkaTopics {
-					if itopic.TopicName != topic.TopicName {
-						// Only consider a topic that matches the name
-						continue
-					}
-					replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
-					partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
-					if itopic.Config != nil {
-						if val, ok := itopic.Config[key]; ok {
-							valList = append(valList, val)
-						}
-					}
-				}
-			}
-		}
+	for key, valList := range keys {
 		f, ok := conversionMap[key]
 		if ok {
 			out, _ := f(valList)
