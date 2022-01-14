@@ -264,9 +264,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, setClowdStatusErr
 	}
 
-	if _, ok := managedApps[app.GetIdent()]; !ok {
-		managedApps[app.GetIdent()] = true
-	}
+	managedApps[app.GetIdent()] = true
 
 	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
 	log.Info("Reconciliation successful")

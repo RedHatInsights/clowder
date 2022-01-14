@@ -307,9 +307,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, successSetErr
 	}
 
-	if _, ok := managedEnvironments[env.Name]; !ok {
-		managedEnvironments[env.Name] = true
-	}
+	managedEnvironments[env.Name] = true
 
 	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
 	log.Info("Reconciliation successful")
