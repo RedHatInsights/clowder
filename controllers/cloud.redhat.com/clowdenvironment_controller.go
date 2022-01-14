@@ -127,6 +127,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	presentEnvsMetric.Set(float64(len(presentEnvironments)))
 
+	delete(managedEnvironments, env.Name)
+
+	defer func() {
+		managedEnvsMetric.Set(float64(len(managedEnvironments)))
+	}()
+
 	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
 	if isEnvMarkedForDeletion {
 		if contains(env.GetFinalizers(), envFinalizer) {
@@ -242,11 +248,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
-	if _, ok := managedEnvironments[env.Name]; !ok {
-		managedEnvironments[env.Name] = true
-	}
-	managedEnvsMetric.Set(float64(len(managedEnvironments)))
-
 	if setAppErr := r.setAppInfo(provider); setAppErr != nil {
 		log.Info("setAppInfo error", "err", setAppErr)
 		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, setAppErr); setClowdStatusErr != nil {
@@ -304,6 +305,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if successSetErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil); successSetErr != nil {
 		log.Info("Set status error", "err", successSetErr)
 		return ctrl.Result{Requeue: true}, successSetErr
+	}
+
+	if _, ok := managedEnvironments[env.Name]; !ok {
+		managedEnvironments[env.Name] = true
 	}
 
 	r.Recorder.Eventf(&env, "Normal", "SuccessfulReconciliation", "Environment reconciled [%s]", env.GetClowdName())
