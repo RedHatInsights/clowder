@@ -3,6 +3,7 @@ package deployment
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
@@ -109,40 +110,40 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
+
+		if livenessProbe.SuccessThreshold == 0 {
+			livenessProbe.SuccessThreshold = 1
+		}
+		if livenessProbe.TimeoutSeconds == 0 {
+			livenessProbe.TimeoutSeconds = 1
+		}
+		if livenessProbe.PeriodSeconds == 0 {
+			livenessProbe.PeriodSeconds = 10
+		}
+		if livenessProbe.FailureThreshold == 0 {
+			livenessProbe.FailureThreshold = 3
+		}
 	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		livenessProbe = baseProbe
 	}
 	if pod.ReadinessProbe != nil {
 		readinessProbe = *pod.ReadinessProbe
+
+		if readinessProbe.SuccessThreshold == 0 {
+			readinessProbe.SuccessThreshold = 1
+		}
+		if readinessProbe.TimeoutSeconds == 0 {
+			readinessProbe.TimeoutSeconds = 1
+		}
+		if readinessProbe.PeriodSeconds == 0 {
+			readinessProbe.PeriodSeconds = 10
+		}
+		if readinessProbe.FailureThreshold == 0 {
+			readinessProbe.FailureThreshold = 3
+		}
 	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
 		readinessProbe = baseProbe
 		readinessProbe.InitialDelaySeconds = 45
-	}
-
-	if livenessProbe.SuccessThreshold == 0 {
-		livenessProbe.SuccessThreshold = 1
-	}
-	if livenessProbe.TimeoutSeconds == 0 {
-		livenessProbe.TimeoutSeconds = 1
-	}
-	if livenessProbe.PeriodSeconds == 0 {
-		livenessProbe.PeriodSeconds = 10
-	}
-	if livenessProbe.FailureThreshold == 0 {
-		livenessProbe.FailureThreshold = 3
-	}
-
-	if readinessProbe.SuccessThreshold == 0 {
-		readinessProbe.SuccessThreshold = 1
-	}
-	if readinessProbe.TimeoutSeconds == 0 {
-		readinessProbe.TimeoutSeconds = 1
-	}
-	if readinessProbe.PeriodSeconds == 0 {
-		readinessProbe.PeriodSeconds = 10
-	}
-	if readinessProbe.FailureThreshold == 0 {
-		readinessProbe.FailureThreshold = 3
 	}
 
 	c := core.Container{
@@ -159,6 +160,14 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {
+		c.ImagePullPolicy = core.PullIfNotPresent
+	} else {
+		imageComponents := strings.Split(c.Image, ":")
+		if len(imageComponents) > 1 {
+			if imageComponents[1] == "latest" {
+				c.ImagePullPolicy = core.PullAlways
+			}
+		}
 		c.ImagePullPolicy = core.PullIfNotPresent
 	}
 

@@ -1,6 +1,8 @@
 package job
 
 import (
+	"strings"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -65,6 +67,14 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	}
 
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {
+		c.ImagePullPolicy = core.PullIfNotPresent
+	} else {
+		imageComponents := strings.Split(c.Image, ":")
+		if len(imageComponents) > 1 {
+			if imageComponents[1] == "latest" {
+				c.ImagePullPolicy = core.PullAlways
+			}
+		}
 		c.ImagePullPolicy = core.PullIfNotPresent
 	}
 
