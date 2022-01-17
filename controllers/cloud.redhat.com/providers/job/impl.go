@@ -73,9 +73,12 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		if len(imageComponents) > 1 {
 			if imageComponents[1] == "latest" {
 				c.ImagePullPolicy = core.PullAlways
+			} else {
+				c.ImagePullPolicy = core.PullIfNotPresent
 			}
+		} else {
+			c.ImagePullPolicy = core.PullIfNotPresent
 		}
-		c.ImagePullPolicy = core.PullIfNotPresent
 	}
 
 	if (core.Probe{}) != livenessProbe {
