@@ -28,7 +28,9 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/psav/clowder-hello:latest
+        - args:
+          - "clowder"
+          image: quay.io/psav/clowder-hello:latest
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke

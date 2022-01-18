@@ -99,7 +99,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	// set service account for pod
 	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
 
-	args := []string{}
+	args := []string{"clowder"}
 	if cji.Spec.Testing.Iqe.Debug {
 		args = []string{"container-debug"}
 	}
