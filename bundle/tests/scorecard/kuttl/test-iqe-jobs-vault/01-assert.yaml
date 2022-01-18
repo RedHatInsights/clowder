@@ -28,9 +28,7 @@ spec:
   template:
     spec:
       containers:
-        - args:
-          - "iqe_runner.sh"
-          image: quay.io/psav/clowder-hello:latest
+        - image: quay.io/psav/clowder-hello:latest
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke
@@ -40,8 +38,6 @@ spec:
               value: "true"
             - name: ACG_CONFIG
               value: /cdapp/cdappconfig.json
-            - name: IQE_DEBUG_POD
-              value: "false"
             - name: IQE_PLUGINS
               value: "host-inventory"
             - name: IQE_MARKER_EXPRESSION
