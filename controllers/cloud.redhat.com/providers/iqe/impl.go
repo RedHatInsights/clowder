@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -62,7 +61,6 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		{Name: "NAMESPACE", Value: nn.Namespace},
 		{Name: "CLOWDER_ENABLED", Value: "true"},
 		{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
-		{Name: "IQE_DEBUG_POD", Value: strconv.FormatBool(cji.Spec.Testing.Iqe.Debug)},
 		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
 		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
@@ -101,6 +99,11 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	// set service account for pod
 	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
 
+	args := []string{}
+	if cji.Spec.Testing.Iqe.Debug {
+		args = []string{"container-debug"}
+	}
+
 	// create pod container
 	c := core.Container{
 		Name:         j.Name,
@@ -108,7 +111,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		Env:          envVars,
 		Resources:    deployProvider.ProcessResources(&pod, env),
 		VolumeMounts: []core.VolumeMount{},
-		Args:         []string{"iqe_runner.sh"},
+		Args:         args,
 		// Because the tags on iqe plugins are not commit based, we need to pull everytime we run.
 		// A leftover tag from a previous run is never guaranteed to be up to date
 		ImagePullPolicy: core.PullAlways,
