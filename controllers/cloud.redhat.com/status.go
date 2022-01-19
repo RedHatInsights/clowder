@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -214,6 +215,7 @@ func countKafkaTopics(ctx context.Context, pClient client.Client, o object.Clowd
 	}
 
 	if len(brokenTopics) > 0 {
+		sort.Strings(brokenTopics)
 		msg = fmt.Sprintf("broken topics: [%s]", strings.Join(brokenTopics, ", "))
 	}
 
