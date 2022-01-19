@@ -700,14 +700,12 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		return i.Name
 	}
 
-	randomIdent := strings.ToLower(utils.RandString(8))
-
 	obj := ic.Object
 	if obj["spec"] != nil {
 		spec := obj["spec"].(map[string]interface{})
 		domain := spec["domain"]
 		if domain != "" {
-			return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
+			return fmt.Sprintf("%s.%s", i.Name, domain)
 		}
 	}
 
