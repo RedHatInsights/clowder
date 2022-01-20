@@ -263,10 +263,6 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	envVars := []core.EnvVar{
 		{
-			Name:  "ALL_PASS",
-			Value: "true",
-		},
-		{
 			Name:  "KEYCLOAK_SERVER",
 			Value: fmt.Sprintf("http://%s-keycloak.%s.svc:8080", o.GetClowdName(), o.GetClowdNamespace()),
 		},
@@ -321,7 +317,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:a8be5e9"
+	image := "quay.io/cloudservices/mbop:aeddd59"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -463,6 +459,12 @@ func (k *KeyCloakClient) Post(url string, body string, headers map[string]string
 	return k.rawMethod("POST", url, body, headers)
 }
 
+func (k *KeyCloakClient) Put(url string, body string, headers map[string]string) (*http.Response, error) {
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", k.AccessToken)
+
+	return k.rawMethod("PUT", url, body, headers)
+}
+
 type Realm struct {
 	Realm string `json:"realm"`
 }
@@ -537,32 +539,32 @@ type User struct {
 
 type UserResponse []User
 
-func (k *KeyCloakClient) doesUserExist(realm string, requestedUsername string) (bool, error) {
+func (k *KeyCloakClient) doesUserExist(realm string, requestedUsername string) (bool, *updateUserStruct, error) {
 	resp, err := k.Get(fmt.Sprintf("/auth/admin/realms/%s/users", realm), "", make(map[string]string))
 
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
-	iface := &UserResponse{}
+	iface := &[]updateUserStruct{}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
 	err = json.Unmarshal(data, iface)
 
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
 	for _, user := range *iface {
 		if user.Username == requestedUsername {
-			return true, nil
+			return true, &user, nil
 		}
 	}
-	return false, nil
+	return false, nil, nil
 }
 
 type createUserStruct struct {
@@ -576,15 +578,40 @@ type createUserStruct struct {
 }
 
 type userAttributes struct {
-	FirstName     string `json:"first_name"`
-	LastName      string `json:"last_name"`
-	AccountID     string `json:"account_id"`
-	AccountNumber string `json:"account_number"`
-	OrdID         string `json:"org_id"`
-	IsInternal    bool   `json:"is_internal"`
-	IsOrgAdmin    bool   `json:"is_org_admin"`
-	IsActive      bool   `json:"is_active"`
-	Entitlements  string `json:"entitlements"`
+	FirstName       string `json:"first_name"`
+	LastName        string `json:"last_name"`
+	AccountID       string `json:"account_id"`
+	AccountNumber   string `json:"account_number"`
+	OrdID           string `json:"org_id"`
+	IsInternal      bool   `json:"is_internal"`
+	IsOrgAdmin      bool   `json:"is_org_admin"`
+	IsActive        bool   `json:"is_active"`
+	Entitlements    string `json:"entitlements"`
+	NewEntitlements string `json:"newEntitlements"`
+}
+
+type updateUserStruct struct {
+	ID          string               `json:"id"`
+	Enabled     bool                 `json:"enabled"`
+	Username    string               `json:"username"`
+	FirstName   string               `json:"firstName"`
+	LastName    string               `json:"lastName"`
+	Email       string               `json:"email"`
+	Attributes  updateUserAttributes `json:"attributes"`
+	Credentials []userCredentials    `json:"credentials"`
+}
+
+type updateUserAttributes struct {
+	FirstName       []string `json:"first_name"`
+	LastName        []string `json:"last_name"`
+	AccountID       []string `json:"account_id"`
+	AccountNumber   []string `json:"account_number"`
+	OrdID           []string `json:"org_id"`
+	IsInternal      []string `json:"is_internal"`
+	IsOrgAdmin      []string `json:"is_org_admin"`
+	IsActive        []string `json:"is_active"`
+	Entitlements    []string `json:"entitlements"`
+	NewEntitlements []string `json:"newEntitlements"`
 }
 
 type userCredentials struct {
@@ -634,6 +661,7 @@ type mapperConfig struct {
 	AccessTokenClaim   bool   `json:"access.token.claim"`
 	ClaimName          string `json:"claim.name"`
 	JSONTypeLabel      string `json:"jsonType.label"`
+	Multivalued        bool   `json:"multivalued"`
 }
 
 type mapperStruct struct {
@@ -645,7 +673,7 @@ type mapperStruct struct {
 	Config          mapperConfig `json:"config"`
 }
 
-func createMapper(attr string, mtype string) mapperStruct {
+func createMapper(attr string, mtype string, multi bool) mapperStruct {
 	return mapperStruct{
 		Name:            attr,
 		ID:              attr,
@@ -659,6 +687,7 @@ func createMapper(attr string, mtype string) mapperStruct {
 			AccessTokenClaim:   true,
 			ClaimName:          attr,
 			JSONTypeLabel:      mtype,
+			Multivalued:        multi,
 		},
 	}
 }
@@ -690,17 +719,18 @@ func (k *KeyCloakClient) createClient(realmName, clientName, envName string) err
 		BaseURL:                   fmt.Sprintf("https://%s", envName),
 		DirectAccessGrantsEnabled: true,
 		ProtocolMappers: []mapperStruct{
-			createMapper("account_number", "String"),
-			createMapper("account_id", "String"),
-			createMapper("org_id", "String"),
-			createMapper("username", "String"),
-			createMapper("email", "String"),
-			createMapper("first_name", "String"),
-			createMapper("last_name", "String"),
-			createMapper("is_org_admin", "boolean"),
-			createMapper("is_internal", "boolean"),
-			createMapper("is_active", "boolean"),
-			createMapper("entitlements", "String"),
+			createMapper("account_number", "String", false),
+			createMapper("account_id", "String", false),
+			createMapper("org_id", "String", false),
+			createMapper("username", "String", false),
+			createMapper("email", "String", false),
+			createMapper("first_name", "String", false),
+			createMapper("last_name", "String", false),
+			createMapper("is_org_admin", "boolean", false),
+			createMapper("is_internal", "boolean", false),
+			createMapper("is_active", "boolean", false),
+			createMapper("entitlements", "String", false),
+			createMapper("newEntitlements", "String", true),
 		},
 	}
 
@@ -737,6 +767,31 @@ func (k *KeyCloakClient) createUser(realmName string, user *createUserStruct) er
 
 	resp, err := k.Post(
 		fmt.Sprintf("/auth/admin/realms/%s/users", realmName),
+		string(b), headers,
+	)
+
+	if err != nil {
+		v, _ := ioutil.ReadAll(resp.Body)
+		k.Log.Error(err, string(v))
+		return err
+	}
+
+	return nil
+}
+
+func (k *KeyCloakClient) putUser(realmName string, user *updateUserStruct) error {
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	b, err := json.Marshal(user)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := k.Put(
+		fmt.Sprintf("/auth/admin/realms/%s/users/%s", realmName, user.ID),
 		string(b), headers,
 	)
 
@@ -787,7 +842,7 @@ func (m *localWebProvider) configureKeycloak() error {
 		}
 	}
 
-	exists, err = client.doesUserExist("redhat-external", m.config.KeycloakConfig.DefaultUsername)
+	exists, _, err = client.doesUserExist("redhat-external", m.config.KeycloakConfig.DefaultUsername)
 
 	if err != nil {
 		return err
@@ -822,6 +877,33 @@ func (m *localWebProvider) configureKeycloak() error {
 		}
 
 		err := client.createUser("redhat-external", user)
+		if err != nil {
+			return err
+		}
+
+		_, nUser, err := client.doesUserExist("redhat-external", m.config.KeycloakConfig.DefaultUsername)
+
+		if err != nil {
+			return err
+		}
+
+		nUser.Attributes.NewEntitlements = []string{
+			`"ansible": {"is_entitled": true, "is_trial": false}`,
+			`"cost_management": {"is_entitled": true, "is_trial": false}`,
+			`"insights": {"is_entitled": true, "is_trial": false}`,
+			`"advisor": {"is_entitled": true, "is_trial": false}`,
+			`"migrations": {"is_entitled": true, "is_trial": false}`,
+			`"openshift": {"is_entitled": true, "is_trial": false}`,
+			`"settings": {"is_entitled": true, "is_trial": false}`,
+			`"smart_management": {"is_entitled": true, "is_trial": false}`,
+			`"subscriptions": {"is_entitled": true, "is_trial": false}`,
+			`"user_preferences": {"is_entitled": true, "is_trial": false}`,
+			`"notifications": {"is_entitled": true, "is_trial": false}`,
+			`"integrations": {"is_entitled": true, "is_trial": false}`,
+			`"automation_analytics": {"is_entitled": true, "is_trial": false}`,
+		}
+
+		err = client.putUser("redhat-external", nUser)
 		if err != nil {
 			return err
 		}
