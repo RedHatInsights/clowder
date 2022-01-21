@@ -175,7 +175,7 @@ func validateDeploymentStrategy(r *ClowdApp) field.ErrorList {
 				allErrs,
 				field.Forbidden(
 					field.NewPath(fmt.Sprintf("spec.Deployment[%d]", depIndex)),
-					"deploymentStrategy override cannot be set for public web enabled deployments",
+					"privateStrategy cannot be set to recreate for public web enabled deployments",
 				),
 			)
 		}
