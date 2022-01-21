@@ -75,7 +75,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	d.Spec.ProgressDeadlineSeconds = common.Int32Ptr(600)
 
-	if !deployment.WebServices.Public.Enabled && deployment.WebServices.Private.Enabled {
+	if !deployment.WebServices.Public.Enabled {
 		if deployment.DeploymentStrategy != nil && deployment.DeploymentStrategy.PrivateStrategy != "" {
 			d.Spec.Strategy = apps.DeploymentStrategy{
 				Type: deployment.DeploymentStrategy.PrivateStrategy,
