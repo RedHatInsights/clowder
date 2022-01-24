@@ -102,6 +102,11 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			TerminationMessagePath:   "/dev/termination-log",
 			TerminationMessagePolicy: core.TerminationMessageReadFile,
 			ImagePullPolicy:          core.PullIfNotPresent,
+			Ports: []core.ContainerPort{{
+				Name:          "auth",
+				ContainerPort: 8080,
+				Protocol:      "TCP",
+			}},
 		}
 
 		if ridx == -1 {
