@@ -277,6 +277,11 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
+	dd.Spec.Template.Annotations["clowder/authsidecar-image"] = "a76bb81"
+	dd.Spec.Template.Annotations["clowder/authsidecar-enabled"] = "true"
+	dd.Spec.Template.Annotations["clowder/authsidecar-port"] = "8090"
+	dd.Spec.Template.Annotations["clowder/authsidecar-config"] = "caddy-config-mbop"
+
 	envVars := []core.EnvVar{
 		{
 			Name:  "KEYCLOAK_SERVER",
@@ -306,7 +311,8 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		},
 	}
 
-	port := int32(8080)
+	port := int32(8090)
+	authPort := int32(8080)
 
 	ports := []core.ContainerPort{{
 		Name:          "service",
@@ -334,7 +340,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:aeddd59"
+	image := "quay.io/cloudservices/mbop:aaac4c1"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -365,12 +371,20 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
-	servicePorts := []core.ServicePort{{
-		Name:       "mbop",
-		Port:       port,
-		Protocol:   "TCP",
-		TargetPort: intstr.FromInt(int(port)),
-	}}
+	servicePorts := []core.ServicePort{
+		{
+			Name:       "mbop",
+			Port:       port,
+			Protocol:   "TCP",
+			TargetPort: intstr.FromInt(int(port)),
+		},
+		{
+			Name:       "auth",
+			Port:       authPort,
+			Protocol:   "TCP",
+			TargetPort: intstr.FromInt(int(port)),
+		},
+	}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 

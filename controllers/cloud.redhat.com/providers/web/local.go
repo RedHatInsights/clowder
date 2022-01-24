@@ -108,6 +108,10 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
+	if err := makeBOPSecret(p, wp); err != nil {
+		return nil, err
+	}
+
 	if err := makeBOPIngress(p); err != nil {
 		return nil, err
 	}
@@ -126,6 +130,55 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	return wp, nil
 
+}
+
+func makeBOPSecret(p *providers.Provider, web *localWebProvider) error {
+	nn := types.NamespacedName{
+		Name:      "caddy-config-mbop",
+		Namespace: p.Env.GetNamespace(),
+	}
+
+	sec := &core.Secret{}
+	if err := web.Cache.Create(WebSecret, nn, sec); err != nil {
+		return err
+	}
+
+	sec.Name = nn.Name
+	sec.Namespace = nn.Namespace
+	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
+	sec.Type = core.SecretTypeOpaque
+
+	sec.StringData = map[string]string{
+		"bopurl":      web.config.BOPURL,
+		"keycloakurl": web.config.KeycloakConfig.URL,
+		"whitelist":   "",
+	}
+
+	jsonData, err := json.Marshal(sec)
+	if err != nil {
+		return errors.Wrap("Failed to marshal config JSON", err)
+	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	d := &apps.Deployment{}
+	dnn := providers.GetNamespacedName(p.Env, "mbop")
+	if err := web.Cache.Get(WebBOPDeployment, d, dnn); err != nil {
+		return err
+	}
+
+	d.Spec.Template.Annotations["clowder/authsidecar-confighash"] = hash
+
+	if err := web.Cache.Update(WebBOPDeployment, d); err != nil {
+		return err
+	}
+
+	if err := web.Cache.Update(WebSecret, sec); err != nil {
+		return err
+	}
+	return nil
 }
 
 func makeBOPIngress(p *providers.Provider) error {
@@ -166,7 +219,7 @@ func makeBOPIngress(p *providers.Provider) error {
 								Service: &networking.IngressServiceBackend{
 									Name: fmt.Sprintf("%s-mbop", p.Env.Name),
 									Port: networking.ServiceBackendPort{
-										Name: "mbop",
+										Name: "auth",
 									},
 								},
 							},
