@@ -72,7 +72,7 @@ spec:
           service:
             name: test-ephemeral-gateway-mocktitlements
             port:
-              name: mocktitlements
+              name: auth
         path: /api/entitlements/
         pathType: Prefix
 ---
