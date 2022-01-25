@@ -87,7 +87,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	wp.config.KeycloakConfig.DefaultUsername = (*dataMap)["defaultUsername"]
 	wp.config.KeycloakConfig.DefaultPassword = (*dataMap)["defaultPassword"]
 
-	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace())
+	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8090", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace())
 	wp.config.KeycloakConfig.URL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "keycloak", wp.Env.GetClowdNamespace())
 
 	objList := []rc.ResourceIdent{
