@@ -113,7 +113,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebMocktitlementsService,
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mbop", makeMocktitlements, false, p.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mocktitlements", makeMocktitlements, false, p.Env.IsNodePort()); err != nil {
 		return nil, err
 	}
 
@@ -144,7 +144,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) error {
 	nn := types.NamespacedName{
 		Name:      "caddy-config-mocktitlements",
-		Namespace: p.Env.GetNamespace(),
+		Namespace: p.Env.GetClowdNamespace(),
 	}
 
 	sec := &core.Secret{}
