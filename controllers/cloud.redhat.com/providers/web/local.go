@@ -108,11 +108,20 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
-	if err := makeBOPSecret(p, wp); err != nil {
+	objList = []rc.ResourceIdent{
+		WebMocktitlementsDeployment,
+		WebMocktitlementsService,
+	}
+
+	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mbop", makeMocktitlements, false, p.Env.IsNodePort()); err != nil {
 		return nil, err
 	}
 
-	if err := makeBOPIngress(p); err != nil {
+	if err := makeMocktitlementsSecret(p, wp); err != nil {
+		return nil, err
+	}
+
+	if err := makeMocktitlementsIngress(p); err != nil {
 		return nil, err
 	}
 
@@ -132,9 +141,9 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 }
 
-func makeBOPSecret(p *providers.Provider, web *localWebProvider) error {
+func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) error {
 	nn := types.NamespacedName{
-		Name:      "caddy-config-mbop",
+		Name:      "caddy-config-mocktitlements",
 		Namespace: p.Env.GetNamespace(),
 	}
 
@@ -165,13 +174,13 @@ func makeBOPSecret(p *providers.Provider, web *localWebProvider) error {
 
 	d := &apps.Deployment{}
 	dnn := providers.GetNamespacedName(p.Env, "mbop")
-	if err := web.Cache.Get(WebBOPDeployment, d, dnn); err != nil {
+	if err := web.Cache.Get(WebMocktitlementsDeployment, d, dnn); err != nil {
 		return err
 	}
 
 	d.Spec.Template.Annotations["clowder/authsidecar-confighash"] = hash
 
-	if err := web.Cache.Update(WebBOPDeployment, d); err != nil {
+	if err := web.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
 		return err
 	}
 
@@ -181,15 +190,15 @@ func makeBOPSecret(p *providers.Provider, web *localWebProvider) error {
 	return nil
 }
 
-func makeBOPIngress(p *providers.Provider) error {
+func makeMocktitlementsIngress(p *providers.Provider) error {
 	netobj := &networking.Ingress{}
 
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-mbop", p.Env.Name),
+		Name:      fmt.Sprintf("%s-mocktitlements", p.Env.Name),
 		Namespace: p.Env.Status.TargetNamespace,
 	}
 
-	if err := p.Cache.Create(WebBOPIngress, nn, netobj); err != nil {
+	if err := p.Cache.Create(WebMocktitlementsIngress, nn, netobj); err != nil {
 		return err
 	}
 
@@ -217,7 +226,7 @@ func makeBOPIngress(p *providers.Provider) error {
 							PathType: (*networking.PathType)(common.StringPtr("Prefix")),
 							Backend: networking.IngressBackend{
 								Service: &networking.IngressServiceBackend{
-									Name: fmt.Sprintf("%s-mbop", p.Env.Name),
+									Name: fmt.Sprintf("%s-mocktitlements", p.Env.Name),
 									Port: networking.ServiceBackendPort{
 										Name: "auth",
 									},
@@ -230,7 +239,7 @@ func makeBOPIngress(p *providers.Provider) error {
 		},
 	}
 
-	if err := p.Cache.Update(WebBOPIngress, netobj); err != nil {
+	if err := p.Cache.Update(WebMocktitlementsIngress, netobj); err != nil {
 		return err
 	}
 	return nil

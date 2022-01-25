@@ -61,7 +61,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-ephemeral-gateway-mbop
+  name: test-ephemeral-gateway-mocktitlements
   namespace: test-ephemeral-gateway
 spec:
   rules:
@@ -70,9 +70,9 @@ spec:
       paths:
       - backend:
           service:
-            name: test-ephemeral-gateway-mbop
+            name: test-ephemeral-gateway-mocktitlements
             port:
-              name: mbop
+              name: mocktitlements
         path: /api/entitlements/
         pathType: Prefix
 ---
@@ -109,4 +109,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-ephemeral-gateway-mbop
+  namespace: test-ephemeral-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-gateway-mocktitlements
   namespace: test-ephemeral-gateway
