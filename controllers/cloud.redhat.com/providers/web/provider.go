@@ -33,8 +33,14 @@ var WebBOPDeployment = rc.NewSingleResourceIdent(ProvName, "web_bop_deployment",
 // WebKeycloakService is the mocked keycloak deployment
 var WebBOPService = rc.NewSingleResourceIdent(ProvName, "web_bop_service", &core.Service{})
 
+// WebBOPDeployment is the mocked bop deployment
+var WebMocktitlementsDeployment = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_deployment", &apps.Deployment{})
+
+// WebKeycloakService is the mocked keycloak deployment
+var WebMocktitlementsService = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_service", &core.Service{})
+
 // WebKeycloakIngress is the mocked bop ingress
-var WebBOPIngress = rc.NewSingleResourceIdent(ProvName, "web_bop_ingress", &networking.Ingress{})
+var WebMocktitlementsIngress = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_ingress", &networking.Ingress{})
 
 // WebSecret is the mocked secret config
 var WebSecret = rc.NewMultiResourceIdent(ProvName, "web_secret", &core.Secret{})
