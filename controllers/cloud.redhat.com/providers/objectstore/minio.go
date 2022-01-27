@@ -17,7 +17,6 @@ import (
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
@@ -205,48 +204,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		return nil, raisedErr
 	}
 
-	return mp, createNetworkPolicy(p)
-}
-
-func createNetworkPolicy(p *providers.Provider) error {
-	clowderNs, err := utils.GetClowderNamespace()
-
-	if err != nil {
-		return nil
-	}
-
-	np := &networking.NetworkPolicy{}
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("allow-from-%s-namespace", clowderNs),
-		Namespace: p.Env.Status.TargetNamespace,
-	}
-
-	if err := p.Cache.Create(MinioNetworkPolicy, nn, np); err != nil {
-		return err
-	}
-
-	npFrom := []networking.NetworkPolicyPeer{{
-		NamespaceSelector: &metav1.LabelSelector{
-			MatchLabels: map[string]string{
-				"kubernetes.io/metadata.name": clowderNs,
-			},
-		},
-	}}
-
-	np.Spec.Ingress = []networking.NetworkPolicyIngressRule{{
-		From: npFrom,
-	}}
-
-	np.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
-
-	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
-	labeler(np)
-
-	if err := p.Cache.Update(MinioNetworkPolicy, np); err != nil {
-		return err
-	}
-
-	return nil
+	return mp, nil
 }
 
 func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
