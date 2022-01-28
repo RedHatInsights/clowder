@@ -328,7 +328,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:fea2b5c"
+	image := "quay.io/cloudservices/mbop:47ae3f6"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -457,7 +457,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mocktitlements:d84b9f8"
+	image := "quay.io/cloudservices/mocktitlements:814df48"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
