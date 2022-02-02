@@ -13,6 +13,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -100,7 +101,19 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 	labels := &map[string]string{"sub": "feature_flags"}
-	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash")
+
+	res := core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"memory": resource.MustParse("20Mi"),
+			"cpu":    resource.MustParse("100m"),
+		},
+		Requests: core.ResourceList{
+			"memory": resource.MustParse("100Mi"),
+			"cpu":    resource.MustParse("50m"),
+		},
+	}
+
+	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
 
 	if err = p.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return nil, err
@@ -217,6 +230,16 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
+		Resources: core.ResourceRequirements{
+			Limits: core.ResourceList{
+				"memory": resource.MustParse("20Mi"),
+				"cpu":    resource.MustParse("100m"),
+			},
+			Requests: core.ResourceList{
+				"memory": resource.MustParse("100Mi"),
+				"cpu":    resource.MustParse("50m"),
+			},
+		},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}

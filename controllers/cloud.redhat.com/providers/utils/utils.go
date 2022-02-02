@@ -16,7 +16,7 @@ import (
 )
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
-func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string) {
+func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
 	labels := baseResource.GetLabels()
 	labels["service"] = "db"
 
@@ -109,14 +109,12 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		FailureThreshold:    3,
 	}
 
-	c := core.Container{
-		Name:           nn.Name,
-		Image:          image,
-		Env:            envVars,
-		LivenessProbe:  &livenessProbe,
-		ReadinessProbe: &readinessProbe,
-		Ports:          ports,
-		Resources: core.ResourceRequirements{
+	var requestResource core.ResourceRequirements
+
+	if res != nil {
+		requestResource = *res
+	} else {
+		requestResource = core.ResourceRequirements{
 			Limits: core.ResourceList{
 				"memory": resource.MustParse("1Gi"),
 				"cpu":    resource.MustParse("1200m"),
@@ -125,7 +123,17 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 				"memory": resource.MustParse("512Mi"),
 				"cpu":    resource.MustParse("200m"),
 			},
-		},
+		}
+	}
+
+	c := core.Container{
+		Name:           nn.Name,
+		Image:          image,
+		Env:            envVars,
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
+		Ports:          ports,
+		Resources:      requestResource,
 		VolumeMounts: []core.VolumeMount{{
 			Name:      nn.Name,
 			MountPath: "/var/lib/pgsql/data",
