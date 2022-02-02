@@ -110,7 +110,7 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			}},
 			Resources: core.ResourceRequirements{
 				Limits: core.ResourceList{
-					"memory": resource.MustParse("20Mi"),
+					"memory": resource.MustParse("200Mi"),
 					"cpu":    resource.MustParse("100m"),
 				},
 				Requests: core.ResourceList{
