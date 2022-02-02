@@ -9,6 +9,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -107,6 +108,16 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 				ContainerPort: 8080,
 				Protocol:      "TCP",
 			}},
+			Resources: core.ResourceRequirements{
+				Limits: core.ResourceList{
+					"memory": resource.MustParse("20Mi"),
+					"cpu":    resource.MustParse("100m"),
+				},
+				Requests: core.ResourceList{
+					"memory": resource.MustParse("100Mi"),
+					"cpu":    resource.MustParse("50m"),
+				},
+			},
 		}
 
 		if ridx == -1 {
