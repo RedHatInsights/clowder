@@ -127,7 +127,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 
 	labels := &map[string]string{"sub": fmt.Sprintf("shared_db_%s", strconv.Itoa(int(version)))}
 
-	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, image, p.Env.Spec.Providers.Database.PVC, p.Env.Name)
+	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, image, p.Env.Spec.Providers.Database.PVC, p.Env.Name, nil)
 
 	if err = p.Cache.Update(SharedDBDeployment, dd); err != nil {
 		return nil, err
