@@ -104,7 +104,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 
 	res := core.ResourceRequirements{
 		Limits: core.ResourceList{
-			"memory": resource.MustParse("20Mi"),
+			"memory": resource.MustParse("200Mi"),
 			"cpu":    resource.MustParse("100m"),
 		},
 		Requests: core.ResourceList{
@@ -232,7 +232,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		ImagePullPolicy:          core.PullIfNotPresent,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("20Mi"),
+				"memory": resource.MustParse("200Mi"),
 				"cpu":    resource.MustParse("100m"),
 			},
 			Requests: core.ResourceList{
