@@ -343,12 +343,12 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("500Mi"),
-				"cpu":    resource.MustParse("1"),
+				"memory": resource.MustParse("200Mi"),
+				"cpu":    resource.MustParse("100m"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("384Mi"),
-				"cpu":    resource.MustParse("100m"),
+				"memory": resource.MustParse("100Mi"),
+				"cpu":    resource.MustParse("50m"),
 			},
 		},
 		TerminationMessagePath:   "/dev/termination-log",
@@ -472,12 +472,12 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("500Mi"),
-				"cpu":    resource.MustParse("1"),
+				"memory": resource.MustParse("200Mi"),
+				"cpu":    resource.MustParse("100m"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("384Mi"),
-				"cpu":    resource.MustParse("100m"),
+				"memory": resource.MustParse("100Mi"),
+				"cpu":    resource.MustParse("50m"),
 			},
 		},
 		TerminationMessagePath:   "/dev/termination-log",

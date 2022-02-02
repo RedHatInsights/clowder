@@ -106,7 +106,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	}
 
 	labels := &map[string]string{"sub": "local_db"}
-	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name)
+	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, nil)
 
 	if err = db.Cache.Update(LocalDBDeployment, dd); err != nil {
 		return err
