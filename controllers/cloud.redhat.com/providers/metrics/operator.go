@@ -10,6 +10,7 @@ import (
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -55,6 +56,16 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 		},
 	}
 	promObj.Spec.ServiceAccountName = "prometheus"
+	promObj.Spec.Resources = core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"memory": resource.MustParse("400Mi"),
+			"cpu":    resource.MustParse("400m"),
+		},
+		Requests: core.ResourceList{
+			"memory": resource.MustParse("200Mi"),
+			"cpu":    resource.MustParse("50m"),
+		},
+	}
 
 	labeler := utils.GetCustomLabeler(map[string]string{"env": p.Env.Name}, nn, p.Env)
 	labeler(promObj)
