@@ -1,6 +1,6 @@
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5
+FROM registry.access.redhat.com/ubi8/ubi-micro:8.5
 WORKDIR /
 COPY bin/manager-cgo ./manager
 USER 65532:65532
