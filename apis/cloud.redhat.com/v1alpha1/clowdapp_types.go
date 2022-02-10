@@ -54,7 +54,7 @@ type InitContainer struct {
 	Env []v1.EnvVar `json:"env,omitempty"`
 }
 
-// VolumeSize defines the size for the db, one of 'small', 'medium' or 'large' => [2, 3, and 4 GB respectively]
+// VolumeSize defines the size for the db, one of 'small', 'medium' or 'large' => [2, 3, and 5 GB respectively]
 // +kubebuilder:validation:Enum={"small", "medium", "large"}
 type VolumeSize string
 
