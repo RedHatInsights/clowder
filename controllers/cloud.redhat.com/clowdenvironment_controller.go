@@ -210,6 +210,16 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
+	ens := &core.Namespace{}
+	if getNSErr := r.Client.Get(ctx, types.NamespacedName{Name: env.Status.TargetNamespace}, ens); getNSErr != nil {
+		return ctrl.Result{Requeue: true}, getNSErr
+	}
+
+	if ens.ObjectMeta.DeletionTimestamp != nil {
+		log.Info("Env target namespace is to be deleted - skipping reconcile")
+		return ctrl.Result{}, nil
+	}
+
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
 
 	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
