@@ -16,7 +16,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -252,16 +251,6 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 				MountPath: "/var/lib/kafka/data",
 			},
 		},
-		Resources: core.ResourceRequirements{
-			Limits: core.ResourceList{
-				"memory": resource.MustParse("1Gi"),
-				"cpu":    resource.MustParse("1200m"),
-			},
-			Requests: core.ResourceList{
-				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("600m"),
-			},
-		},
 		ReadinessProbe:           &readinessProbe,
 		LivenessProbe:            &livenessProbe,
 		TerminationMessagePath:   "/dev/termination-log",
@@ -421,16 +410,6 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 			{
 				Name:      "mq-zookeeper-3",
 				MountPath: "/var/lib/zookeeper/log",
-			},
-		},
-		Resources: core.ResourceRequirements{
-			Limits: core.ResourceList{
-				"memory": resource.MustParse("1Gi"),
-				"cpu":    resource.MustParse("1200m"),
-			},
-			Requests: core.ResourceList{
-				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("600m"),
 			},
 		},
 		LivenessProbe:            &livenessProbe,

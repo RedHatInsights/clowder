@@ -13,7 +13,6 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -218,16 +217,6 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
-		Resources: core.ResourceRequirements{
-			Limits: core.ResourceList{
-				"memory": resource.MustParse("1Gi"),
-				"cpu":    resource.MustParse("1200m"),
-			},
-			Requests: core.ResourceList{
-				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("600m"),
-			},
-		},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
