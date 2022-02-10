@@ -186,6 +186,26 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, getEnvErr
 	}
 
+	ens := &core.Namespace{}
+	if getNSErr := r.Client.Get(ctx, types.NamespacedName{Name: env.Status.TargetNamespace}, ens); getNSErr != nil {
+		return ctrl.Result{Requeue: true}, getNSErr
+	}
+
+	if ens.ObjectMeta.DeletionTimestamp != nil {
+		log.Info("Env target namespace is to be deleted - skipping reconcile")
+		return ctrl.Result{}, nil
+	}
+
+	ans := &core.Namespace{}
+	if getAppNSErr := r.Client.Get(ctx, types.NamespacedName{Name: app.Namespace}, ans); getAppNSErr != nil {
+		return ctrl.Result{Requeue: true}, getAppNSErr
+	}
+
+	if ans.ObjectMeta.DeletionTimestamp != nil {
+		log.Info("App namespace is to be deleted - skipping reconcile")
+		return ctrl.Result{}, nil
+	}
+
 	if env.Generation != env.Status.Generation {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvNotReconciled", "Clowder Environment [%s] is not reconciled", app.Spec.EnvName)
 		log.Info("Env not yet reconciled")
