@@ -133,6 +133,7 @@ func countDeployments(ctx context.Context, pClient client.Client, o object.Clowd
 	}
 
 	if len(brokenDeployments) > 0 {
+		sort.Strings(brokenDeployments)
 		msg = fmt.Sprintf("broken deployments: [%s]", strings.Join(brokenDeployments, ", "))
 	}
 
