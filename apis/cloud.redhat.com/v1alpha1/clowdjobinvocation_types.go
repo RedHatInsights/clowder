@@ -52,7 +52,7 @@ type IqeJobSpec struct {
 
 	// Indiciates the presence of a selenium container
 	// Note: currently not implemented
-	UI UiSpec `json:"ui,omitempty"`
+	UI IqeUISpec `json:"ui,omitempty"`
 
 	// sets the pytest -m args
 	Marker string `json:"marker,omitempty"`
@@ -76,9 +76,17 @@ type IqeJobSpec struct {
 	TestImportance *[]string `json:"testImportance,omitempty"`
 }
 
-type UiSpec struct {
-	// Indiciates the presence of a selenium container
-	Enabled bool `json:"enabled"`
+type IqeUISpec struct {
+	// Configuration options for running IQE with a selenium container
+	Selenium IqeSeleniumSpec `json:"selenium,omitempty"`
+}
+
+type IqeSeleniumSpec struct {
+	// Whether or not a selenium container should be deployed in the IQE pod
+	Deploy bool `json:"deploy,omitempty"`
+
+	// Name of selenium image tag to use if not using the environment's default
+	ImageTag string `json:"imageTag,omitempty"`
 }
 
 // ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation

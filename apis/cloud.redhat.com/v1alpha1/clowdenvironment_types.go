@@ -368,6 +368,25 @@ type IqeConfig struct {
 
 	// Defines the secret reference for loading vault credentials into the IQE job
 	VaultSecretRef NamespacedName `json:"vaultSecretRef,omitempty"`
+
+	// Defines configurations related to UI testing containers
+	UI IqeUIConfig `json:"ui,omitempty"`
+}
+
+type IqeUIConfig struct {
+	// Defines configurations for selenium containers in this environment
+	Selenium IqeUISeleniumConfig `json:"selenium,omitempty"`
+}
+
+type IqeUISeleniumConfig struct {
+	// Defines the image used for selenium containers in this environment
+	ImageBase string `json:"imageBase,omitempty"`
+
+	// Defines the default image tag used for selenium containers in this environment
+	DefaultImageTag string `json:"defaultImageTag,omitempty"`
+
+	// Defines the resource requests/limits set on selenium containers
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ServiceConfig provides options for k8s Service resources

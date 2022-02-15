@@ -97,11 +97,19 @@ spec:
                         description: 'Indiciates the presence of a selenium container
                           Note: currently not implemented'
                         properties:
-                          enabled:
-                            description: Indiciates the presence of a selenium container
-                            type: boolean
-                        required:
-                        - enabled
+                          selenium:
+                            description: Configuration options for running IQE with
+                              a selenium container
+                            properties:
+                              deploy:
+                                description: Whether or not a selenium container should
+                                  be deployed in the IQE pod
+                                type: boolean
+                              imageTag:
+                                description: Name of selenium image tag to use if
+                                  not using the environment's default
+                                type: string
+                            type: object
                         type: object
                     required:
                     - dynaconfEnvName
