@@ -33,29 +33,8 @@ func joinNullableSlice(s *[]string) string {
 	return ""
 }
 
-// CreateIqeJobResource will create a Job that contains a pod spec for running IQE
-func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
-	labels := cji.GetLabels()
-	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
-
-	// Because the ns name now has a suffix attached, we need to specify
-	// that the secret name does not include it (and can't because the
-	// env creates the secret)
-	secretName := cji.GetIQEName()
-
-	j.ObjectMeta.Labels = labels
-	j.ObjectMeta.Labels["job"] = secretName
-	j.Name = nn.Name
-	j.Spec.Template.ObjectMeta.Labels = labels
-
-	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
-	j.Spec.BackoffLimit = common.Int32Ptr(0)
-
-	pod := crd.PodSpec{
-		Resources: env.Spec.Providers.Testing.Iqe.Resources,
-	}
-
-	// create base pod env vars
+func createIqeContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
+	// create env vars
 	envVars := []core.EnvVar{
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
 		{Name: "NAMESPACE", Value: nn.Namespace},
@@ -69,21 +48,9 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		{Name: "IQE_TEST_IMPORTANCE", Value: joinNullableSlice(cji.Spec.Testing.Iqe.TestImportance)},
 	}
 
-	// apply vault env vars if vaultSecretRef exists in environment
-	nullSecretRef := crd.NamespacedName{}
-	vaultSecretRef := env.Spec.Providers.Testing.Iqe.VaultSecretRef
-	if env.Spec.Providers.Testing.Iqe.VaultSecretRef != nullSecretRef {
-		// copy vault secret into destination namespace
-		err, vaultSecret := addVaultSecretToCache(cache, ctx, cji, vaultSecretRef, logger, client)
-		if err != nil {
-			logger.Error(err, "unable to add vault secret to cache")
-			return err
-		}
-		vaultEnvVars := buildVaultEnvVars(vaultSecret)
-		envVars = append(envVars, vaultEnvVars...)
-	}
+	// set image tag
+	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
 
-	// set image tag for pod
 	tag := "latest"
 	if app.Spec.Testing.IqePlugin != "" {
 		// ClowdApp has an IQE Plugin defined, use that image tag by default
@@ -94,19 +61,16 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		tag = cji.Spec.Testing.Iqe.ImageTag
 	}
 
-	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
-
-	// set service account for pod
-	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
-
 	args := []string{"clowder"}
 	if cji.Spec.Testing.Iqe.Debug {
 		args = []string{"container-debug"}
 	}
 
 	// create pod container
+	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.Resources}
+
 	c := core.Container{
-		Name:         j.Name,
+		Name:         name,
 		Image:        fmt.Sprintf("%s:%s", iqeImage, tag),
 		Env:          envVars,
 		Resources:    deployProvider.ProcessResources(&pod, env),
@@ -119,7 +83,12 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 	}
 
+	return c
+}
+
+func attachConfigVolumes(c core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
+
 	configAccess := env.Spec.Providers.Testing.ConfigAccess
 
 	switch configAccess {
@@ -133,6 +102,11 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 			Name:      "cdenvconfig",
 			MountPath: "/cdenv",
 		})
+
+		// Because the ns name now has a suffix attached, we need to specify
+		// that the secret name does not include it (and can't because the
+		// env creates the secret)
+		secretName := cji.GetIQEName()
 
 		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
 			Name: "cdenvconfig",
@@ -167,7 +141,49 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		logger.Info("No config mounted to the iqe pod")
 	}
 
-	j.Spec.Template.Spec.Containers = []core.Container{c}
+	return nil
+}
+
+// CreateIqeJobResource will create a Job that contains a pod spec for running IQE
+func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
+	labels := cji.GetLabels()
+	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
+
+	j.ObjectMeta.Labels = labels
+	j.ObjectMeta.Labels["job"] = cji.GetIQEName()
+	j.Name = nn.Name
+	j.Spec.Template.ObjectMeta.Labels = labels
+
+	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
+	j.Spec.BackoffLimit = common.Int32Ptr(0)
+
+	// set service account for pod
+	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
+
+	// build IQE container config
+	iqeContainer := createIqeContainer(j.Name, nn, cji, env, app)
+
+	// apply vault env vars to container if vaultSecretRef exists in environment
+	nullSecretRef := crd.NamespacedName{}
+	vaultSecretRef := env.Spec.Providers.Testing.Iqe.VaultSecretRef
+	if env.Spec.Providers.Testing.Iqe.VaultSecretRef != nullSecretRef {
+		// copy vault secret into destination namespace
+		err, vaultSecret := addVaultSecretToCache(cache, ctx, cji, vaultSecretRef, logger, client)
+		if err != nil {
+			logger.Error(err, "unable to add vault secret to cache")
+			return err
+		}
+		vaultEnvVars := buildVaultEnvVars(vaultSecret)
+		iqeContainer.Env = append(iqeContainer.Env, vaultEnvVars...)
+	}
+
+	// Mount volumes to the IQE container
+	if err := attachConfigVolumes(iqeContainer, cache, cji, env, app, nn, ctx, j, logger, client); err != nil {
+		return err
+	}
+
+	// attach IQE container to the job's podSpec
+	j.Spec.Template.Spec.Containers = []core.Container{iqeContainer}
 
 	return nil
 }
