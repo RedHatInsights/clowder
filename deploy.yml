@@ -5876,6 +5876,54 @@ objects:
                                     an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                   type: object
                               type: object
+                            ui:
+                              description: Defines configurations related to UI testing
+                                containers
+                              properties:
+                                selenium:
+                                  description: Defines configurations for selenium
+                                    containers in this environment
+                                  properties:
+                                    defaultImageTag:
+                                      description: Defines the default image tag used
+                                        for selenium containers in this environment
+                                      type: string
+                                    imageBase:
+                                      description: Defines the image used for selenium
+                                        containers in this environment
+                                      type: string
+                                    resources:
+                                      description: Defines the resource requests/limits
+                                        set on selenium containers
+                                      properties:
+                                        limits:
+                                          additionalProperties:
+                                            anyOf:
+                                            - type: integer
+                                            - type: string
+                                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                            x-kubernetes-int-or-string: true
+                                          description: 'Limits describes the maximum
+                                            amount of compute resources allowed. More
+                                            info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                          type: object
+                                        requests:
+                                          additionalProperties:
+                                            anyOf:
+                                            - type: integer
+                                            - type: string
+                                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                            x-kubernetes-int-or-string: true
+                                          description: 'Requests describes the minimum
+                                            amount of compute resources required.
+                                            If Requests is omitted for a container,
+                                            it defaults to Limits if that is explicitly
+                                            specified, otherwise to an implementation-defined
+                                            value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                          type: object
+                                      type: object
+                                  type: object
+                              type: object
                             vaultSecretRef:
                               description: Defines the secret reference for loading
                                 vault credentials into the IQE job
@@ -6232,11 +6280,19 @@ objects:
                           description: 'Indiciates the presence of a selenium container
                             Note: currently not implemented'
                           properties:
-                            enabled:
-                              description: Indiciates the presence of a selenium container
-                              type: boolean
-                          required:
-                          - enabled
+                            selenium:
+                              description: Configuration options for running IQE with
+                                a selenium container
+                              properties:
+                                deploy:
+                                  description: Whether or not a selenium container
+                                    should be deployed in the IQE pod
+                                  type: boolean
+                                imageTag:
+                                  description: Name of selenium image tag to use if
+                                    not using the environment's default
+                                  type: string
+                              type: object
                           type: object
                       required:
                       - dynaconfEnvName
