@@ -86,6 +86,43 @@ func createIqeContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobI
 	return c
 }
 
+func createSeleniumContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
+	// create env vars
+	envVars := []core.EnvVar{
+		{Name: "HOME", Value: "/home/selenium"},
+	}
+
+	// set image tag
+	image := env.Spec.Providers.Testing.Iqe.UI.Selenium.ImageBase
+	if image == "" {
+		image = "quay.io/redhatqe/selenium-standalone"
+	}
+	tag := env.Spec.Providers.Testing.Iqe.UI.Selenium.DefaultImageTag
+	if tag == "" {
+		tag = "ff_91.5.1esr_gecko_v0.30.0_chrome_98.0.4758.80"
+	}
+
+	// check if this CJI has specified an image tag override
+	if cji.Spec.Testing.Iqe.UI.Selenium.ImageTag != "" {
+		tag = cji.Spec.Testing.Iqe.ImageTag
+	}
+
+	// create pod container
+	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.UI.Selenium.Resources}
+
+	c := core.Container{
+		Name:                     fmt.Sprintf(name, "-sel"),
+		Image:                    fmt.Sprintf("%s:%s", image, tag),
+		Env:                      envVars,
+		Resources:                deployProvider.ProcessResources(&pod, env),
+		ImagePullPolicy:          core.PullIfNotPresent,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+	}
+
+	return c
+}
+
 func attachConfigVolumes(c core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
 
@@ -182,8 +219,14 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		return err
 	}
 
-	// attach IQE container to the job's podSpec
-	j.Spec.Template.Spec.Containers = []core.Container{iqeContainer}
+	containers := []core.Container{iqeContainer}
+
+	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
+		selContainer := createSeleniumContainer(j.Name, nn, cji, env, app)
+		containers = append(containers, selContainer)
+	}
+
+	j.Spec.Template.Spec.Containers = containers
 
 	return nil
 }
