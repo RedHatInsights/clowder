@@ -8,7 +8,7 @@ cp -r /workspace/. /container_workspace
 cd /container_workspace
 
 mkdir -p /container_workspace/bin
-cp /root/go/bin/* /container_workspace/bin
+cp /opt/app-root/src/go/bin/* /container_workspace/bin
 
 export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
