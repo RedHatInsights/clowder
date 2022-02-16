@@ -1,0 +1,37 @@
+# Build the manager binary
+FROM registry.access.redhat.com/ubi8/go-toolset:1.16.7 as builder
+USER 0
+RUN dnf install -y openssh-clients git podman make which go jq python3
+
+RUN GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 \
+    && GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3@v3.8.7
+RUN ln -s /usr/bin/podman /usr/bin/docker
+COPY build/pr_check_inner.sh .
+RUN chmod 775 pr_check_inner.sh
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+
+RUN go mod download
+
+COPY Makefile Makefile
+
+RUN make controller-gen kustomize
+
+COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
+
+COPY main.go main.go
+COPY config/ config/
+COPY apis/ apis/
+COPY controllers/ controllers/
+
+RUN make manifests generate fmt vet release
+
+RUN rm main.go
+RUN rm -rf config
+RUN rm -rf apis
+RUN rm -rf controllers
