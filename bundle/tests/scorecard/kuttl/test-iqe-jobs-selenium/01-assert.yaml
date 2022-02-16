@@ -28,20 +28,8 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/psav/clowder-hello:latest
-          env:
-            - name: "HOME"
-              value: "/home/selenium"
-          resources:
-            limits:
-              cpu: 400m
-              memory: 200Mi
-            requests:
-              cpu: 200m
-              memory: 100Mi
         - args:
           - "clowder"
-          image: quay.io/psav/clowder-hello:latest
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke
@@ -94,6 +82,7 @@ spec:
                   key: githubToken
                   name: host-inventory-smoke-vault
                   optional: true
+          image: quay.io/psav/clowder-hello:latest
           resources:
             limits:
               cpu: "2"
@@ -101,6 +90,17 @@ spec:
             requests:
               cpu: 200m
               memory: 256Mi
+        - env:
+          - name: "HOME"
+            value: "/home/selenium" 
+          image: quay.io/psav/clowder-hello:latest
+          resources:
+            limits:
+              cpu: 400m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 100Mi
 ---
 apiVersion: v1
 kind: Secret
