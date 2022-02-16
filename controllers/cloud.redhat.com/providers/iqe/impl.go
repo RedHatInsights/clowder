@@ -111,7 +111,7 @@ func createSeleniumContainer(name string, nn types.NamespacedName, cji *crd.Clow
 	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.UI.Selenium.Resources}
 
 	c := core.Container{
-		Name:                     fmt.Sprintf(name, "-sel"),
+		Name:                     fmt.Sprintf("%s-%s", name, "-sel"),
 		Image:                    fmt.Sprintf("%s:%s", image, tag),
 		Env:                      envVars,
 		Resources:                deployProvider.ProcessResources(&pod, env),

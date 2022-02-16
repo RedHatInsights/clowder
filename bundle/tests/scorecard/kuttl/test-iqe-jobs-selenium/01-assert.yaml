@@ -29,7 +29,6 @@ spec:
     spec:
       containers:
         - image: quay.io/psav/clowder-hello:latest
-          name: host-inventory-smoke-iqe-sel
           env:
             - name: "HOME"
               value: "/home/selenium"
@@ -43,7 +42,6 @@ spec:
         - args:
           - "clowder"
           image: quay.io/psav/clowder-hello:latest
-          name: host-inventory-smoke-iqe
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke
@@ -109,19 +107,6 @@ kind: Secret
 metadata:
   name: host-inventory-smoke-iqe
   namespace: test-iqe-jobs-selenium 
-type: Opaque
----
-apiVersion: v1
-data:
-  roleId: c29tZS1yb2xlLWlkCg==
-  secretId: c29tZS1zZWNyZXQtaWQK
-  githubToken: c29tZS10b2tlbgo=
-  mountPoint: c29tZS1tb3VudHBvaW50Cg==
-  url: aHR0cHM6Ly9zb21lLXVybC5jb20K
-kind: Secret
-metadata:
-  name: host-inventory-smoke-vault
-  namespace: test-iqe-jobs-selenium
 type: Opaque
 ---
 apiVersion: v1
