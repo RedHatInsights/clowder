@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-iqe-jobs-selenium
+spec:
+  finalizers:
+  - kubernetes

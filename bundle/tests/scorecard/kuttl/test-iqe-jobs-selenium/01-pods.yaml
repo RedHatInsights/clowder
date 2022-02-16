@@ -1,0 +1,91 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-iqe-jobs-selenium
+spec:
+  targetNamespace: test-iqe-jobs-selenium
+  providers:
+    testing:
+      # Level of access this pod has in the namespace
+      k8sAccessLevel: edit
+      # gather configuraiton for the specified environment
+      configAccess: environment
+      iqe:
+        # Base image for iqe-tests
+        imageBase: "quay.io/psav/clowder-hello"
+        resources:
+          limits:
+            cpu: 2
+            memory: 600Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        ui:
+          selenium:
+            imageBase: "quay.io/psav/clowder-hello"
+            defaultImageTag: "latest"
+            resources:
+              limits:
+                cpu: 400m
+                memory: 200Mi
+              requests:
+                cpu: 200m
+                memory: 100Mi
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: host-inventory
+  namespace: test-iqe-jobs-selenium
+spec:
+  testing:
+    iqePlugin: host-inventory 
+  envName: test-iqe-jobs-selenium
+  deployments:
+    - name: service
+      podSpec:
+        image: quay.io/psav/clowder-hello
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: host-inventory-smoke 
+  namespace: test-iqe-jobs-selenium
+spec:
+  appName: host-inventory
+  testing:
+    iqe:
+      imageTag: latest
+      ui:
+        selenium:
+          deploy: true
+      marker: "smoke"
+      dynaconfEnvName: "clowder_smoke"
+      filter: "test_plugin_accessible"
