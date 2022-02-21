@@ -6280,6 +6280,9 @@ objects:
                           description: 'Indiciates the presence of a selenium container
                             Note: currently not implemented'
                           properties:
+                            enabled:
+                              description: No longer used
+                              type: boolean
                             selenium:
                               description: Configuration options for running IQE with
                                 a selenium container
@@ -6293,6 +6296,8 @@ objects:
                                     not using the environment's default
                                   type: string
                               type: object
+                          required:
+                          - enabled
                           type: object
                       required:
                       - dynaconfEnvName
