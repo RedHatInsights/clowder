@@ -13,6 +13,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -229,7 +230,6 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
-<<<<<<< HEAD
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
 				"memory": resource.MustParse("200Mi"),
@@ -240,8 +240,6 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 				"cpu":    resource.MustParse("50m"),
 			},
 		},
-=======
->>>>>>> 8931d04a... split resource defaults to another PR
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
