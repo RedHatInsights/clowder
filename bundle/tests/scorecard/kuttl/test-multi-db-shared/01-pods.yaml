@@ -48,7 +48,7 @@ spec:
   database:
     name: app-a
     version: 12
-    dbVolumeSize: large
+    dbVolumeSize: medium
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -64,6 +64,7 @@ spec:
   database:
     name: app-b
     version: 10
+    dbVolumeSize: large
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
