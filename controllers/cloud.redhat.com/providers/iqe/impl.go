@@ -87,11 +87,6 @@ func createIqeContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobI
 }
 
 func createSeleniumContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
-	// create env vars
-	envVars := []core.EnvVar{
-		{Name: "HOME", Value: "/home/selenium"},
-	}
-
 	// set image tag
 	image := env.Spec.Providers.Testing.Iqe.UI.Selenium.ImageBase
 	if image == "" {
@@ -113,7 +108,6 @@ func createSeleniumContainer(name string, nn types.NamespacedName, cji *crd.Clow
 	c := core.Container{
 		Name:                     fmt.Sprintf("%s-%s", name, "sel"),
 		Image:                    fmt.Sprintf("%s:%s", image, tag),
-		Env:                      envVars,
 		Resources:                deployProvider.ProcessResources(&pod, env),
 		ImagePullPolicy:          core.PullIfNotPresent,
 		TerminationMessagePath:   "/dev/termination-log",

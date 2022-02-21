@@ -56,10 +56,7 @@ spec:
             requests:
               cpu: 200m
               memory: 256Mi
-        - env:
-          - name: "HOME"
-            value: "/home/selenium" 
-          image: quay.io/psav/clowder-hello:latest
+        - image: quay.io/psav/clowder-hello:latest
           resources:
             limits:
               cpu: 400m
