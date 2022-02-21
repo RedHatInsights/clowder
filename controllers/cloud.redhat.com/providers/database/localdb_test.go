@@ -52,7 +52,7 @@ func TestLocalDBPVC(t *testing.T) {
 	nn, app := getBaseElements()
 
 	pvc := core.PersistentVolumeClaim{}
-	provutils.MakeLocalDBPVC(&pvc, nn, &app)
+	provutils.MakeLocalDBPVC(&pvc, nn, &app, p.DB_DEFAULT)
 
 	if pvc.Name != nn.Name {
 		t.Fatalf("Name %v did not match expected %v", pvc.Name, nn.Name)

@@ -31,11 +31,57 @@ status:
 apiVersion: v1
 kind: Secret
 metadata:
+  name: app-a
+  namespace: test-multi-db-shared
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-b
+  namespace: test-multi-db-shared
+---
+apiVersion: v1
+kind: Secret
+metadata:
   name: app-c
   namespace: test-multi-db-shared
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: app-a
+  name: app-aa-db
   namespace: test-multi-db-shared
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-b-db
+  namespace: test-multi-db-shared
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-multi-db-shared-db-v12
+  namespace: test-multi-db-shared
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+  storageClassName: standard
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-multi-db-shared-db-v10
+  namespace: test-multi-db-shared
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+  volumeMode: Filesystem

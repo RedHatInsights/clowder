@@ -17,6 +17,7 @@ spec:
       mode: none
     db:
       mode: shared
+      pvc: true
     logging:
       mode: none
     objectStore:
@@ -47,6 +48,7 @@ spec:
   database:
     name: app-a
     version: 12
+    dbVolumeSize: large
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp

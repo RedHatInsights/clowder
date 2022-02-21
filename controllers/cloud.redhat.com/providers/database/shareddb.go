@@ -150,7 +150,34 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			return nil, err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env)
+		largestDB := providers.DB_DEFAULT
+		appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
+		if err != nil {
+			return nil, err
+		}
+		// Iterate through the list of dbs to find the largest pvc request and
+		// use that for its particular version.
+		for _, app := range appList.Items {
+			// Don't take the largest for a different versioned db
+			if version != *app.Spec.Database.Version {
+				continue
+			}
+			dbSize := app.Spec.Database.DBVolumeSize
+			switch dbSize {
+			case "small":
+				if largestDB != providers.DB_MEDIUM && largestDB != providers.DB_LARGE {
+					largestDB = providers.DB_SMALL
+				}
+			case "medium":
+				if largestDB != providers.DB_LARGE {
+					largestDB = providers.DB_MEDIUM
+				}
+			case "large":
+				largestDB = providers.DB_LARGE
+			}
+		}
+
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, largestDB)
 
 		if err = p.Cache.Update(SharedDBPVC, pvc); err != nil {
 			return nil, err

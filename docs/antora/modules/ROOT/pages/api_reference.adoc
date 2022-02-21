@@ -26,7 +26,7 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"]
 ==== AppInfo 
 
-AppInfo details information about a specific app.
+
 
 .Appears In:
 ****
@@ -62,7 +62,7 @@ AppInfo details information about a specific app.
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"]
 ==== AutoScaler 
 
-AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
+
 
 .Appears In:
 ****
@@ -283,7 +283,7 @@ ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 |===
 | Field | Description
 | *`appName`* __string__ | Name of the ClowdApp who owns the jobs
-| *`jobs`* __string array__ | Jobs is the set of jobs to be run by the invocation
+| *`jobs`* __string__ | Jobs is the set of jobs to be run by the invocation
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobtestingspec[$$JobTestingSpec$$]__ | Testing is the struct for building out test jobs (iqe, etc) in a CJI
 |===
 
@@ -343,6 +343,7 @@ DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 | *`version`* __integer__ | Defines the Version of the PostGreSQL database, defaults to 12.
 | *`name`* __string__ | Defines the Name of the database to be created. This will be used as the name of the logical database inside the database server in (*_local_*) mode and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
 | *`sharedDbAppName`* __string__ | Defines the Name of the app to share a database from
+| *`dbVolumeSize`* __VolumeSize__ | T-shirt size, one of small, medium, large
 |===
 
 
@@ -389,7 +390,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"]
 ==== DeploymentInfo 
 
-DeploymentInfo defailts information about a specific deployment.
+
 
 .Appears In:
 ****
@@ -766,7 +767,7 @@ PodSpec defines a container running inside a ClowdApp.
 | *`initContainers`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$]__ | A list of init containers used to perform at-startup operations.
 | *`command`* __string array__ | The command that will be invoked inside the pod at startup.
 | *`args`* __string array__ | A list of args to be passed to the pod container.
-| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$]__ | A list of environment variables in k8s defined format.
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables in k8s defined format.
 | *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
 | *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Liveness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
 | *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.

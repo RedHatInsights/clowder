@@ -129,7 +129,21 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, app)
+		var size string
+		if app.Spec.Database.DBVolumeSize == "" {
+			size = providers.DB_DEFAULT
+		} else {
+			switch app.Spec.Database.DBVolumeSize {
+			case "small":
+				size = providers.DB_SMALL
+			case "medium":
+				size = providers.DB_MEDIUM
+			case "large":
+				size = providers.DB_LARGE
+			}
+		}
+
+		provutils.MakeLocalDBPVC(pvc, nn, app, size)
 
 		if err = db.Cache.Update(LocalDBPVC, pvc); err != nil {
 			return err
