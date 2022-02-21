@@ -598,6 +598,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`enabled`* __boolean__ | No longer used
 | *`selenium`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeseleniumspec[$$IqeSeleniumSpec$$]__ | Configuration options for running IQE with a selenium container
 |===
 
