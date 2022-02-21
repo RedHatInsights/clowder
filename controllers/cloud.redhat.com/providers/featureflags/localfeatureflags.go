@@ -136,7 +136,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 			return nil, err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env)
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, providers.DB_DEFAULT)
 
 		if err = p.Cache.Update(LocalFFDBPVC, pvc); err != nil {
 			return nil, err

@@ -23,6 +23,13 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+const (
+	DB_DEFAULT = "1Gi"
+	DB_SMALL   = "2Gi"
+	DB_MEDIUM  = "3Gi"
+	DB_LARGE   = "5Gi"
+)
+
 type providerAccessor struct {
 	SetupProvider func(c *Provider) (ClowderProvider, error)
 	Order         int
