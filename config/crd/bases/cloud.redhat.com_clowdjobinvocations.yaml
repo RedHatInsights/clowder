@@ -113,8 +113,6 @@ spec:
                                   not using the environment's default
                                 type: string
                             type: object
-                        required:
-                        - enabled
                         type: object
                     required:
                     - dynaconfEnvName
