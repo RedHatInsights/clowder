@@ -6,9 +6,10 @@ https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig
 
 Logging Configuration
 
-| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                   |
-| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :----------------------------------------------------------- |
-| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json*](../../out/schema.json "open original schema") |
+
+| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
+| :------------------ | ---------- | -------------- | ------------ | :---------------- | --------------------- | ------------------- | ------------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json\*](../../out/schema.json "open original schema") |
 
 ## LoggingConfig Type
 
@@ -16,24 +17,22 @@ Logging Configuration
 
 # LoggingConfig Properties
 
-| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                                       |
-| :------------------------ | :------- | :------- | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#type)             | `string` | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig-properties-type.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/type") |
-| [cloudwatch](#cloudwatch) | `object` | Optional | cannot be null | [AppConfig](schema-definitions-cloudwatchconfig.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch")        |
+| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                                            |
+| :------------------------ | -------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#type)             | `string` | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig-properties-type.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/type") |
+| [cloudwatch](#cloudwatch) | `object` | Optional | cannot be null | [AppConfig](schema-definitions-cloudwatchconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch")        |
 
 ## type
 
 Defines the type of logging configuration
 
+
 `type`
 
-*   is required
-
-*   Type: `string`
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-loggingconfig-properties-type.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/type")
+-   is required
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-loggingconfig-properties-type.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/type")
 
 ### type Type
 
@@ -43,15 +42,13 @@ Defines the type of logging configuration
 
 Cloud Watch configuration
 
+
 `cloudwatch`
 
-*   is optional
-
-*   Type: `object` ([CloudWatchConfig](schema-definitions-cloudwatchconfig.md))
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-cloudwatchconfig.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch")
+-   is optional
+-   Type: `object` ([CloudWatchConfig](schema-definitions-cloudwatchconfig.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-cloudwatchconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch")
 
 ### cloudwatch Type
 
