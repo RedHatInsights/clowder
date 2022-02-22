@@ -6,37 +6,36 @@ https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig
 
 Broker Configuration
 
-| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                   |
-| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :----------------------------------------------------------- |
-| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json*](../../out/schema.json "open original schema") |
+
+| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
+| :------------------ | ---------- | -------------- | ------------ | :---------------- | --------------------- | ------------------- | ------------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json\*](../../out/schema.json "open original schema") |
 
 ## BrokerConfig Type
 
 `object` ([Details](schema-definitions-brokerconfig.md))
 
-# BrokerConfig Properties
+# undefined Properties
 
-| Property              | Type      | Required | Nullable       | Defined by                                                                                                                                                             |
-| :-------------------- | :-------- | :------- | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [hostname](#hostname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname") |
-| [port](#port)         | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-port.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")         |
-| [cacert](#cacert)     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")     |
-| [authtype](#authtype) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype") |
-| [sasl](#sasl)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")                      |
+| Property              | Type      | Required | Nullable       | Defined by                                                                                                                                                                  |
+| :-------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [hostname](#hostname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname") |
+| [port](#port)         | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")         |
+| [cacert](#cacert)     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")     |
+| [authtype](#authtype) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype") |
+| [sasl](#sasl)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")                      |
 
 ## hostname
 
 
 
+
 `hostname`
 
-*   is required
-
-*   Type: `string`
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname")
+-   is required
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname")
 
 ### hostname Type
 
@@ -46,15 +45,13 @@ Broker Configuration
 
 
 
+
 `port`
 
-*   is optional
-
-*   Type: `integer`
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-brokerconfig-properties-port.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")
+-   is optional
+-   Type: `integer`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")
 
 ### port Type
 
@@ -64,15 +61,13 @@ Broker Configuration
 
 
 
+
 `cacert`
 
-*   is optional
-
-*   Type: `string`
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")
 
 ### cacert Type
 
@@ -82,15 +77,13 @@ Broker Configuration
 
 
 
+
 `authtype`
 
-*   is optional
-
-*   Type: `string`
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype")
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype")
 
 ### authtype Type
 
@@ -101,7 +94,7 @@ Broker Configuration
 **enum**: the value of this property must be equal to one of the following values:
 
 | Value    | Explanation |
-| :------- | :---------- |
+| :------- | ----------- |
 | `"mtls"` |             |
 | `"sasl"` |             |
 
@@ -109,15 +102,13 @@ Broker Configuration
 
 SASL Configuration for Kafka
 
+
 `sasl`
 
-*   is optional
-
-*   Type: `object` ([Details](schema-definitions-kafkasaslconfig.md))
-
-*   cannot be null
-
-*   defined in: [AppConfig](schema-definitions-kafkasaslconfig.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")
+-   is optional
+-   Type: `object` ([Details](schema-definitions-kafkasaslconfig.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkasaslconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")
 
 ### sasl Type
 

@@ -502,7 +502,6 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`imageBase`* __string__ | 
 | *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
 | *`vaultSecretRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret reference for loading vault credentials into the IQE job
-| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiconfig[$$IqeUIConfig$$]__ | Defines configurations related to UI testing containers
 |===
 
 
@@ -520,7 +519,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 |===
 | Field | Description
 | *`imageTag`* __string__ | By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here
-| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec[$$IqeUISpec$$]__ | Indiciates the presence of a selenium container Note: currently not implemented
+| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-uispec[$$UiSpec$$]__ | Indiciates the presence of a selenium container Note: currently not implemented
 | *`marker`* __string__ | sets the pytest -m args
 | *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
 | *`filter`* __string__ | sets pytest -k args
@@ -528,78 +527,6 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`requirements`* __string__ | sets values passed to IQE '--requirements' arg
 | *`requirementsPriority`* __string__ | sets values passed to IQE '--requirements-priority' arg
 | *`testImportance`* __string__ | sets values passed to IQE '--test-importance' arg
-|===
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeseleniumspec"]
-==== IqeSeleniumSpec 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec[$$IqeUISpec$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`deploy`* __boolean__ | Whether or not a selenium container should be deployed in the IQE pod
-| *`imageTag`* __string__ | Name of selenium image tag to use if not using the environment's default
-|===
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiconfig"]
-==== IqeUIConfig 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeconfig[$$IqeConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`selenium`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiseleniumconfig[$$IqeUISeleniumConfig$$]__ | Defines configurations for selenium containers in this environment
-|===
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiseleniumconfig"]
-==== IqeUISeleniumConfig 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiconfig[$$IqeUIConfig$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`imageBase`* __string__ | Defines the image used for selenium containers in this environment
-| *`defaultImageTag`* __string__ | Defines the default image tag used for selenium containers in this environment
-| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the resource requests/limits set on selenium containers
-|===
-
-
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec"]
-==== IqeUISpec 
-
-
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqejobspec[$$IqeJobSpec$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`enabled`* __boolean__ | No longer used
-| *`selenium`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeseleniumspec[$$IqeSeleniumSpec$$]__ | Configuration options for running IQE with a selenium container
 |===
 
 
@@ -1070,6 +997,23 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enables or disables token refresher sidecars
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-uispec"]
+==== UiSpec 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqejobspec[$$IqeJobSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Indiciates the presence of a selenium container
 |===
 
 
