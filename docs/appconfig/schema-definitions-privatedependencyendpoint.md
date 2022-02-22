@@ -6,35 +6,36 @@ https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependenc
 
 Dependent service connection info
 
-
-| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
-| :------------------ | ---------- | -------------- | ------------ | :---------------- | --------------------- | ------------------- | ------------------------------------------------------------- |
-| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json\*](../../out/schema.json "open original schema") |
+| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                   |
+| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :----------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json*](../../out/schema.json "open original schema") |
 
 ## PrivateDependencyEndpoint Type
 
 `object` ([Details](schema-definitions-privatedependencyendpoint.md))
 
-# undefined Properties
+# PrivateDependencyEndpoint Properties
 
-| Property              | Type      | Required | Nullable       | Defined by                                                                                                                                                                                            |
-| :-------------------- | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name")         |
-| [hostname](#hostname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/hostname") |
-| [port](#port)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/port")         |
-| [app](#app)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/app")           |
+| Property              | Type      | Required | Nullable       | Defined by                                                                                                                                                                                       |
+| :-------------------- | :-------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-name.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name")         |
+| [hostname](#hostname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-hostname.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/hostname") |
+| [port](#port)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-port.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/port")         |
+| [app](#app)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-app.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/app")           |
 
 ## name
 
 The PodSpec name of the dependent service inside the ClowdApp.
 
-
 `name`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-name.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/name")
 
 ### name Type
 
@@ -44,13 +45,15 @@ The PodSpec name of the dependent service inside the ClowdApp.
 
 The hostname of the dependent service.
 
-
 `hostname`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/hostname")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-hostname.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/hostname")
 
 ### hostname Type
 
@@ -60,13 +63,15 @@ The hostname of the dependent service.
 
 The port of the dependent service.
 
-
 `port`
 
--   is required
--   Type: `integer`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/port")
+*   is required
+
+*   Type: `integer`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-port.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/port")
 
 ### port Type
 
@@ -76,13 +81,15 @@ The port of the dependent service.
 
 The app name of the ClowdApp hosting the service.
 
-
 `app`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/app")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-app.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/app")
 
 ### app Type
 
