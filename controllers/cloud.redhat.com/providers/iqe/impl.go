@@ -33,7 +33,7 @@ func joinNullableSlice(s *[]string) string {
 	return ""
 }
 
-func createIqeContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
+func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
 	// create env vars
 	envVars := []core.EnvVar{
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
@@ -70,7 +70,7 @@ func createIqeContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobI
 	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.Resources}
 
 	c := core.Container{
-		Name:         name,
+		Name:         j.Name,
 		Image:        fmt.Sprintf("%s:%s", iqeImage, tag),
 		Env:          envVars,
 		Resources:    deployProvider.ProcessResources(&pod, env),
@@ -86,7 +86,7 @@ func createIqeContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobI
 	return c
 }
 
-func createSeleniumContainer(name string, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
+func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
 	// set image tag
 	image := env.Spec.Providers.Testing.Iqe.UI.Selenium.ImageBase
 	if image == "" {
@@ -106,13 +106,24 @@ func createSeleniumContainer(name string, nn types.NamespacedName, cji *crd.Clow
 	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.UI.Selenium.Resources}
 
 	c := core.Container{
-		Name:                     fmt.Sprintf("%s-%s", name, "sel"),
+		Name:                     fmt.Sprintf("%s-%s", j.Name, "sel"),
 		Image:                    fmt.Sprintf("%s:%s", image, tag),
 		Resources:                deployProvider.ProcessResources(&pod, env),
 		ImagePullPolicy:          core.PullIfNotPresent,
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 	}
+
+	// attach /dev/shm volume
+	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
+		Name:         "shm",
+		VolumeSource: core.VolumeSource{EmptyDir: &core.EmptyDirVolumeSource{Medium: "Memory"}},
+	})
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "shm",
+		MountPath: "/dev/shm",
+	})
 
 	return c
 }
@@ -192,7 +203,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
 
 	// build IQE container config
-	iqeContainer := createIqeContainer(j.Name, nn, cji, env, app)
+	iqeContainer := createIqeContainer(j, nn, cji, env, app)
 
 	// apply vault env vars to container if vaultSecretRef exists in environment
 	nullSecretRef := crd.NamespacedName{}
@@ -216,7 +227,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	containers := []core.Container{iqeContainer}
 
 	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
-		selContainer := createSeleniumContainer(j.Name, nn, cji, env, app)
+		selContainer := createSeleniumContainer(j, nn, cji, env, app)
 		containers = append(containers, selContainer)
 	}
 
