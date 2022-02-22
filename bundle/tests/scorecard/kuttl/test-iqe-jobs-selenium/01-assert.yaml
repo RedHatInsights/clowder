@@ -28,9 +28,6 @@ spec:
   template:
     spec:
       volumes:
-      - name: shm
-        emptyDir:
-          medium: Memory
       - name: cdenvconfig
         secret:
           defaultMode: 420
@@ -39,6 +36,9 @@ spec:
         secret:
           defaultMode: 420
           secretName: host-inventory
+      - emptyDir:
+          medium: Memory
+        name: shm
       containers:
         - args:
           - "clowder"
