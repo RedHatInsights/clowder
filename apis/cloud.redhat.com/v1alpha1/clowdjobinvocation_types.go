@@ -78,7 +78,7 @@ type IqeJobSpec struct {
 
 type IqeUISpec struct {
 	// No longer used
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 
 	// Configuration options for running IQE with a selenium container
 	Selenium IqeSeleniumSpec `json:"selenium,omitempty"`
