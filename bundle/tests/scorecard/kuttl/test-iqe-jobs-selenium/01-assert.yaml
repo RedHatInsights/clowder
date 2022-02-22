@@ -30,7 +30,15 @@ spec:
       volumes:
       - name: shm
         emptyDir:
-          medium: memory
+          medium: Memory
+      - name: cdenvconfig
+        secret:
+          defaultMode: 420
+          secretName: host-inventory-smoke-iqe
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: host-inventory
       containers:
         - args:
           - "clowder"
