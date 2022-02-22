@@ -42,7 +42,7 @@ docker cp clowdercopy:/manifest.yaml .
 docker rm clowdercopy || true
 
 CONTAINER_NAME="clowder-pr-check-$ghprbPullId"
-docker rm -f CONTAINER_NAME
+docker rm -f $CONTAINER_NAME
 # NOTE: Make sure this volume is mounted 'ro', otherwise Jenkins cannot clean up the workspace due to file permission errors
 set +e
 docker run -i \

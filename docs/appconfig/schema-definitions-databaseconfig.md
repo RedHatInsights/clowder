@@ -6,10 +6,9 @@ https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig
 
 Database Configuration
 
-
-| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
-| :------------------ | ---------- | -------------- | ------------ | :---------------- | --------------------- | ------------------- | ------------------------------------------------------------- |
-| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json\*](../../out/schema.json "open original schema") |
+| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                   |
+| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :----------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [schema.json*](../../out/schema.json "open original schema") |
 
 ## DatabaseConfig Type
 
@@ -17,29 +16,31 @@ Database Configuration
 
 # DatabaseConfig Properties
 
-| Property                        | Type      | Required | Nullable       | Defined by                                                                                                                                                                                |
-| :------------------------------ | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)                   | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")                   |
-| [username](#username)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
-| [password](#password)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
-| [hostname](#hostname)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")           |
-| [port](#port)                   | `integer` | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/port")                   |
-| [adminUsername](#adminusername) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername") |
-| [adminPassword](#adminpassword) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminpassword.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminPassword") |
-| [rdsCa](#rdsca)                 | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-rdsca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/rdsCa")                 |
-| [sslMode](#sslmode)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-sslmode.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/sslMode")             |
+| Property                        | Type      | Required | Nullable       | Defined by                                                                                                                                                                           |
+| :------------------------------ | :-------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)                   | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-name.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")                   |
+| [username](#username)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
+| [password](#password)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
+| [hostname](#hostname)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")           |
+| [port](#port)                   | `integer` | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-port.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/port")                   |
+| [adminUsername](#adminusername) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername") |
+| [adminPassword](#adminpassword) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminpassword.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminPassword") |
+| [rdsCa](#rdsca)                 | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-rdsca.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/rdsCa")                 |
+| [sslMode](#sslmode)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-sslmode.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/sslMode")             |
 
 ## name
 
 Defines the database name.
 
-
 `name`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-name.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")
 
 ### name Type
 
@@ -49,13 +50,15 @@ Defines the database name.
 
 Defines a username with standard access to the database.
 
-
 `username`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-username.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")
 
 ### username Type
 
@@ -65,13 +68,15 @@ Defines a username with standard access to the database.
 
 Defines the password for the standard user.
 
-
 `password`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-password.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")
 
 ### password Type
 
@@ -81,13 +86,15 @@ Defines the password for the standard user.
 
 Defines the hostname of the database configured for the ClowdApp.
 
-
 `hostname`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")
 
 ### hostname Type
 
@@ -97,13 +104,15 @@ Defines the hostname of the database configured for the ClowdApp.
 
 Defines the port of the database configured for the ClowdApp.
 
-
 `port`
 
--   is required
--   Type: `integer`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/port")
+*   is required
+
+*   Type: `integer`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-port.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/port")
 
 ### port Type
 
@@ -113,13 +122,15 @@ Defines the port of the database configured for the ClowdApp.
 
 Defines the pgAdmin username.
 
-
 `adminUsername`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername")
 
 ### adminUsername Type
 
@@ -129,13 +140,15 @@ Defines the pgAdmin username.
 
 Defines the pgAdmin password.
 
-
 `adminPassword`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-adminpassword.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminPassword")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-adminpassword.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminPassword")
 
 ### adminPassword Type
 
@@ -145,13 +158,15 @@ Defines the pgAdmin password.
 
 Defines the CA used to access the database.
 
-
 `rdsCa`
 
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-rdsca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/rdsCa")
+*   is optional
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-rdsca.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/rdsCa")
 
 ### rdsCa Type
 
@@ -161,13 +176,15 @@ Defines the CA used to access the database.
 
 Defines the postgres SSL mode that should be used.
 
-
 `sslMode`
 
--   is required
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig-properties-sslmode.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/sslMode")
+*   is required
+
+*   Type: `string`
+
+*   cannot be null
+
+*   defined in: [AppConfig](schema-definitions-databaseconfig-properties-sslmode.md "https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/sslMode")
 
 ### sslMode Type
 
