@@ -40,6 +40,11 @@ spec:
         - args:
           - "clowder"
           image: quay.io/psav/clowder-hello:latest
+          volumeMounts:
+          - mountPath: /cdapp
+            name: config-secret
+          - mountPath: /cdenv
+            name: cdenvconfig
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke
