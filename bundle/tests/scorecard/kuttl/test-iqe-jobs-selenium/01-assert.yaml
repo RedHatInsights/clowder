@@ -68,6 +68,11 @@ spec:
             requests:
               cpu: 200m
               memory: 256Mi
+          volumeMounts:
+          - mountPath: /cdapp
+            name: config-secret
+          - mountPath: /cdenv
+            name: cdenvconfig
         - image: quay.io/psav/clowder-hello:latest
           resources:
             limits:

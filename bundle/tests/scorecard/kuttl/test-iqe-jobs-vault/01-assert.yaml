@@ -27,6 +27,15 @@ metadata:
 spec:
   template:
     spec:
+      volumes:
+      - name: cdenvconfig
+        secret:
+          defaultMode: 420
+          secretName: host-inventory-smoke-iqe
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: host-inventory
       containers:
         - args:
           - "clowder"
