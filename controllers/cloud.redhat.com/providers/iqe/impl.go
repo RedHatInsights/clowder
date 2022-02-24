@@ -33,7 +33,7 @@ func joinNullableSlice(s *[]string) string {
 	return ""
 }
 
-func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
+func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) *core.Container {
 	// create env vars
 	envVars := []core.EnvVar{
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
@@ -83,10 +83,10 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 	}
 
-	return c
+	return &c
 }
 
-func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) core.Container {
+func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) *core.Container {
 	// set image tag
 	image := env.Spec.Providers.Testing.Iqe.UI.Selenium.ImageBase
 	if image == "" {
@@ -125,10 +125,10 @@ func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.C
 		MountPath: "/dev/shm",
 	})
 
-	return c
+	return &c
 }
 
-func attachConfigVolumes(c core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
+func attachConfigVolumes(c *core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
 
 	configAccess := env.Spec.Providers.Testing.ConfigAccess
@@ -224,11 +224,11 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 		return err
 	}
 
-	containers := []core.Container{iqeContainer}
+	containers := []core.Container{*iqeContainer}
 
 	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
 		selContainer := createSeleniumContainer(j, nn, cji, env, app)
-		containers = append(containers, selContainer)
+		containers = append(containers, *selContainer)
 	}
 
 	j.Spec.Template.Spec.Containers = containers

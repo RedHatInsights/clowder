@@ -27,10 +27,24 @@ metadata:
 spec:
   template:
     spec:
+      volumes:
+      - name: cdenvconfig
+        secret:
+          defaultMode: 420
+          secretName: host-inventory-smoke-iqe
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: host-inventory
       containers:
         - args:
           - "clowder"
           image: quay.io/psav/clowder-hello:latest
+          volumeMounts:
+          - mountPath: /cdenv
+            name: cdenvconfig
+          - mountPath: /cdapp
+            name: config-secret
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke
