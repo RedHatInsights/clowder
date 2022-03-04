@@ -233,9 +233,6 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"></a>AppInfo</h4>
-<div class="paragraph">
-<p>AppInfo details information about a specific app.</p>
-</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -318,9 +315,6 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"></a>AutoScaler</h4>
-<div class="paragraph">
-<p>AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.</p>
-</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -1019,7 +1013,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>jobs</code></strong> <em>string array</em></p>
+<p><strong><code>jobs</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Jobs is the set of jobs to be run by the invocation</p>
@@ -1187,6 +1181,14 @@
 <p>Defines the Name of the app to share a database from</p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>dbVolumeSize</code></strong> <em>VolumeSize</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>T-shirt size, one of small, medium, large</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1321,9 +1323,6 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"></a>DeploymentInfo</h4>
-<div class="paragraph">
-<p>DeploymentInfo defailts information about a specific deployment.</p>
-</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -2799,7 +2798,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of environment variables in k8s defined format.</p>
