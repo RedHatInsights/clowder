@@ -47,11 +47,8 @@ spec:
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
             - name: IQE_REQUIREMENTS
-              value: "some,requirements"
             - name: IQE_REQUIREMENTS_PRIORITY
-              value: "some-priority"
             - name: IQE_TEST_IMPORTANCE
-              value: "critical,high"
           resources:
             limits:
               cpu: "2"
