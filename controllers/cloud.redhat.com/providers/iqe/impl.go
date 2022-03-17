@@ -35,12 +35,16 @@ func joinNullableSlice(s *[]string) string {
 
 func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) *core.Container {
 	// create env vars
+	iqePlugins := app.Spec.Testing.IqePlugin
+	if cji.Spec.Testing.Iqe.IqePlugins != "" {
+		iqePlugins = cji.Spec.Testing.Iqe.IqePlugins
+	}
 	envVars := []core.EnvVar{
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
 		{Name: "NAMESPACE", Value: nn.Namespace},
 		{Name: "CLOWDER_ENABLED", Value: "true"},
 		{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"},
-		{Name: "IQE_PLUGINS", Value: app.Spec.Testing.IqePlugin},
+		{Name: "IQE_PLUGINS", Value: iqePlugins},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
 		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
 		{Name: "IQE_REQUIREMENTS", Value: joinNullableSlice(cji.Spec.Testing.Iqe.Requirements)},

@@ -72,6 +72,7 @@ spec:
   testing:
     iqe:
       imageTag: latest
+      plugins: "some,different,plugins"
       ui:
         enabled: false
       marker: "smoke"

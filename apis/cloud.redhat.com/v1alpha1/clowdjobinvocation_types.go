@@ -50,6 +50,11 @@ type IqeJobSpec struct {
 	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
 	ImageTag string `json:"imageTag,omitempty"`
 
+	// By default, Clowder will use the plugin name indicated in the ClowdApp's
+	// spec.testing.iqePlugin field. A comma,separated,list of plugins can be supplied
+	// here if you wish you override the plugins.
+	IqePlugins string `json:"plugins,omitempty"`
+
 	// Indiciates the presence of a selenium container
 	// Note: currently not implemented
 	UI IqeUISpec `json:"ui,omitempty"`
