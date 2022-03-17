@@ -41,7 +41,7 @@ spec:
             - name: ACG_CONFIG
               value: /cdapp/cdappconfig.json
             - name: IQE_PLUGINS
-              value: "host-inventory"
+              value: "some,different,plugins"
             - name: IQE_MARKER_EXPRESSION
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
