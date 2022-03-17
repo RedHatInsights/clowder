@@ -6277,6 +6277,12 @@ objects:
                         marker:
                           description: sets the pytest -m args
                           type: string
+                        plugins:
+                          description: By default, Clowder will use the plugin name
+                            indicated in the ClowdApp's spec.testing.iqePlugin field.
+                            A comma,separated,list of plugins can be supplied here
+                            if you wish you override the plugins.
+                          type: string
                         requirements:
                           description: sets values passed to IQE '--requirements'
                             arg
