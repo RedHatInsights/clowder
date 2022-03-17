@@ -65,7 +65,7 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
 metadata:
-  name: host-inventory-smoke 
+  name: host-inventory-smoke
   namespace: test-iqe-jobs
 spec:
   appName: host-inventory

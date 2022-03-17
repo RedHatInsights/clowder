@@ -8,3 +8,7 @@ delete:
 - apiVersion: rbac.authorization.k8s.io/v1 
   kind: RoleBinding 
   name: iqe-test-iqe-jobs
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdJobInvocation
+  name: host-inventory-smoke 
+  namespace: test-iqe-jobs
