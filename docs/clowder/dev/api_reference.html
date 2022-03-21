@@ -233,6 +233,9 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"></a>AppInfo</h4>
+<div class="paragraph">
+<p>AppInfo details information about a specific app.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -315,6 +318,9 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"></a>AutoScaler</h4>
+<div class="paragraph">
+<p>AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -1013,7 +1019,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>jobs</code></strong> <em>string</em></p>
+<p><strong><code>jobs</code></strong> <em>string array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Jobs is the set of jobs to be run by the invocation</p>
@@ -1323,6 +1329,9 @@
 </div>
 <div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"></a>DeploymentInfo</h4>
+<div class="paragraph">
+<p>DeploymentInfo defailts information about a specific deployment.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -1749,6 +1758,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>plugins</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>By default, Clowder will use the plugin name indicated in the ClowdApp&#8217;s spec.testing.iqePlugin field. A comma,separated,list of plugins can be supplied here if you wish you override the plugins.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -2798,7 +2815,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of environment variables in k8s defined format.</p>
