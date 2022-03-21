@@ -10,7 +10,7 @@ instance. It will also create two new custom resource types that are easy to
 query: ``env`` for ``ClowdEnvs`` and ``app`` for ``ClowdApps``.
 
 If you would like to install Clowder manually and set up a contributing
-developer environment, https://github.com/RedHatInsights/clowder/blob/master/docs/developer-guide.md[follow the developer guide].
+developer environment, https://redhatinsights.github.io/clowder/clowder/dev/developer-guide.html[follow the developer guide].
 
 == Create your first ``ClowdEnvironment``
 
