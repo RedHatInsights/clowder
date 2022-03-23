@@ -116,3 +116,143 @@ kind: Deployment
 metadata:
   name: test-ephemeral-gateway-mocktitlements
   namespace: test-ephemeral-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-ephemeral-gateway-keycloak
+  namespace: test-ephemeral-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-ephemeral-gateway
+spec:
+  ports:
+  - name: keycloak
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: test-ephemeral-gateway
+    env-app: test-ephemeral-gateway-keycloak
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: test-ephemeral-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-ephemeral-gateway
+spec:
+  ports:
+  - name: keycloak
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: test-ephemeral-gateway
+    env-app: test-ephemeral-gateway-keycloak
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-ephemeral-gateway-mbop
+  namespace: test-ephemeral-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-ephemeral-gateway
+spec:
+  ports:
+  - name: mbop
+    port: 8090
+    protocol: TCP
+    targetPort: 8090
+  selector:
+    app: test-ephemeral-gateway
+    env-app: test-ephemeral-gateway-mbop
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mbop
+  namespace: test-ephemeral-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-ephemeral-gateway
+spec:
+  ports:
+  - name: mbop
+    port: 8090
+    protocol: TCP
+    targetPort: 8090
+  selector:
+    app: test-ephemeral-gateway
+    env-app: test-ephemeral-gateway-mbop
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-ephemeral-gateway-mocktitlements
+  namespace: test-ephemeral-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-ephemeral-gateway
+spec:
+  ports:
+  - name: mocktitlements
+    port: 8090
+    protocol: TCP
+    targetPort: 8090
+  - name: auth
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: test-ephemeral-gateway
+    env-app: test-ephemeral-gateway-mocktitlements
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mocktitlements
+  namespace: test-ephemeral-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-ephemeral-gateway
+spec:
+  ports:
+  - name: mocktitlements
+    port: 8090
+    protocol: TCP
+    targetPort: 8090
+  - name: auth
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: test-ephemeral-gateway
+    env-app: test-ephemeral-gateway-mocktitlements
+  sessionAffinity: None
+  type: ClusterIP

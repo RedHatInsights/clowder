@@ -15,6 +15,7 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
@@ -122,10 +123,12 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 }
 
 func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
-	nn := providers.GetNamespacedName(o, "keycloak")
+	name := "keycloak"
+	nn := providers.GetNamespacedName(o, name)
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)
 	svc := objMap[WebKeycloakService].(*core.Service)
+	svcNonPrefixed := objMap[WebKeycloakServiceNonPrefixed].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -248,14 +251,19 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 
+	// create a non-prefixed Service in the same namespace
+	nonPrefixedNn := types.NamespacedName{Name: name, Namespace: nn.Namespace}
+	utils.MakeService(svcNonPrefixed, nonPrefixedNn, labels, servicePorts, o, nodePort)
 }
 
 func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	snn := providers.GetNamespacedName(o, "keycloak")
-	nn := providers.GetNamespacedName(o, "mbop")
+	name := "mbop"
+	nn := providers.GetNamespacedName(o, name)
 
 	dd := objMap[WebBOPDeployment].(*apps.Deployment)
 	svc := objMap[WebBOPService].(*core.Service)
+	svcNonPrefixed := objMap[WebBOPServiceNonPrefixed].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -370,14 +378,19 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 
+	// create a non-prefixed Service in the same namespace
+	nonPrefixedNn := types.NamespacedName{Name: name, Namespace: nn.Namespace}
+	utils.MakeService(svcNonPrefixed, nonPrefixedNn, labels, servicePorts, o, nodePort)
 }
 
 func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	snn := providers.GetNamespacedName(o, "keycloak")
-	nn := providers.GetNamespacedName(o, "mocktitlements")
+	name := "mocktitlements"
+	nn := providers.GetNamespacedName(o, name)
 
 	dd := objMap[WebMocktitlementsDeployment].(*apps.Deployment)
 	svc := objMap[WebMocktitlementsService].(*core.Service)
+	svcNonPrefixed := objMap[WebMocktitlementsServiceNonPrefixed].(*core.Service)
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
@@ -505,6 +518,9 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 
+	// create a non-prefixed Service in the same namespace
+	nonPrefixedNn := types.NamespacedName{Name: name, Namespace: nn.Namespace}
+	utils.MakeService(svcNonPrefixed, nonPrefixedNn, labels, servicePorts, o, nodePort)
 }
 
 func (m *localWebProvider) configureKeycloak() error {

@@ -93,6 +93,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	objList := []rc.ResourceIdent{
 		WebKeycloakDeployment,
 		WebKeycloakService,
+		WebKeycloakServiceNonPrefixed,
 	}
 
 	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "keycloak", makeKeycloak, false, p.Env.IsNodePort()); err != nil {
@@ -102,6 +103,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	objList = []rc.ResourceIdent{
 		WebBOPDeployment,
 		WebBOPService,
+		WebBOPServiceNonPrefixed,
 	}
 
 	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mbop", makeBOP, false, p.Env.IsNodePort()); err != nil {
@@ -111,6 +113,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	objList = []rc.ResourceIdent{
 		WebMocktitlementsDeployment,
 		WebMocktitlementsService,
+		WebMocktitlementsServiceNonPrefixed,
 	}
 
 	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mocktitlements", makeMocktitlements, false, p.Env.IsNodePort()); err != nil {
