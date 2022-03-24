@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-db
+  namespace: test-localdb
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:12-9ee2984
+          resources:
+            limits:
+              cpu: 400m
+              memory: 1024Mi
+            requests:
+              cpu: 30m
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-b-db
+  namespace: test-localdb
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:10-9ee2984
