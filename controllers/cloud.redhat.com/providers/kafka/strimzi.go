@@ -290,7 +290,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.SetName(getKafkaName(s.Env))
 	k.SetNamespace(getKafkaNamespace(s.Env))
-	k.SetLabels(providers.Labels{"env": s.Env.Name})
+	k.SetLabels(providers.Labels{"app": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
 	if err := s.Cache.Update(KafkaInstance, k); err != nil {
@@ -315,7 +315,7 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 
 	cm.SetName(nn.Name)
 	cm.SetNamespace(nn.Namespace)
-	cm.SetLabels(providers.Labels{"env": s.Env.Name})
+	cm.SetLabels(providers.Labels{"app": s.Env.Name})
 	cm.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
 	if err := s.Cache.Update(KafkaMetricsConfigMap, cm); err != nil {
@@ -514,7 +514,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 	k.SetName(getConnectClusterName(s.Env))
 	k.SetNamespace(getConnectNamespace(s.Env))
-	k.SetLabels(providers.Labels{"env": s.Env.Name})
+	k.SetLabels(providers.Labels{"app": s.Env.Name})
 
 	if err := s.Cache.Update(KafkaConnect, k); err != nil {
 		return err
@@ -850,7 +850,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 
 		labels := providers.Labels{
 			"strimzi.io/cluster": getKafkaName(s.Env),
-			"env":                app.Spec.EnvName,
+			"app":                app.Spec.EnvName,
 			// If we label it with the app name, since app names should be
 			// unique? can we use for delete selector?
 		}

@@ -22,7 +22,7 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   labels:
-    env: test-kafka-strimzi-topic-auth
+    app: test-kafka-strimzi-topic-auth
     strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: topicone
   namespace: test-kafka-strimzi-topic-auth-kafka
@@ -38,7 +38,7 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   labels:
-    env: test-kafka-strimzi-topic-auth
+    app: test-kafka-strimzi-topic-auth
     strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: topictwo
   namespace: test-kafka-strimzi-topic-auth-kafka
@@ -54,7 +54,7 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   labels:
-    env: test-kafka-strimzi-topic-auth
+    app: test-kafka-strimzi-topic-auth
     strimzi.io/cluster: test-kafka-strimzi-topic-auth
   name: topicthree
   namespace: test-kafka-strimzi-topic-auth-kafka

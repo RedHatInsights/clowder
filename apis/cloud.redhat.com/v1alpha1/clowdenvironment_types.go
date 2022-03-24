@@ -597,7 +597,7 @@ func (i *ClowdEnvironment) GetClowdName() string {
 
 // GetPrimaryLabel returns the primary label name use for igentification.
 func (i *ClowdEnvironment) GetPrimaryLabel() string {
-	return "env"
+	return "app"
 }
 
 // GetClowdSAName returns the ServiceAccount Name for the App

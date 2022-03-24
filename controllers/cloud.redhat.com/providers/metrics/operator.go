@@ -67,7 +67,7 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 		},
 	}
 
-	labeler := utils.GetCustomLabeler(map[string]string{"env": p.Env.Name}, nn, p.Env)
+	labeler := utils.GetCustomLabeler(map[string]string{"app": p.Env.Name}, nn, p.Env)
 	labeler(promObj)
 
 	if err := p.Cache.Update(PrometheusInstance, promObj); err != nil {
