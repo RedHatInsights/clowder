@@ -75,6 +75,11 @@ type DatabaseSpec struct {
 
 	// T-shirt size, one of small, medium, large
 	DBVolumeSize VolumeSize `json:"dbVolumeSize,omitempty"`
+
+	// A pass-through of a resource requirements in k8s ResourceRequirements
+	// format. If omitted, the default resource requirements from the
+	// DatabaseProvider will be used.
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // Job defines a ClowdJob
