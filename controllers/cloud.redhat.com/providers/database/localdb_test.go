@@ -7,6 +7,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -126,8 +127,19 @@ func TestLocalDBDeployment(t *testing.T) {
 
 	image := "imagename:tag"
 
+	defaultDatabaseRequirements := core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"memory": resource.MustParse("1Gi"),
+			"cpu":    resource.MustParse("1200m"),
+		},
+		Requests: core.ResourceList{
+			"memory": resource.MustParse("512Mi"),
+			"cpu":    resource.MustParse("600m"),
+		},
+	}
+
 	labels := &map[string]string{"sub": "test_db"}
-	provutils.MakeLocalDB(&d, nn, &app, labels, &cfg, image, true, "", nil)
+	provutils.MakeLocalDB(&d, nn, &app, labels, &cfg, image, true, "", &defaultDatabaseRequirements)
 
 	if d.Spec.Template.Spec.Containers[0].Image != image {
 		t.Fatalf("Image requested %v does not match the one in spec: %v ", image, d.Spec.Template.Spec.Containers[0].Image)
