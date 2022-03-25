@@ -265,6 +265,9 @@ type PodSpec struct {
 
 	// Lists the expected side cars, will be validated in the validating webhook
 	Sidecars []Sidecar `json:"sidecars,omitempty"`
+
+	// MachinePool allows the pod to be scheduled on a particular machine pool
+	MachinePool string `json:"machinePool,omitempty"`
 }
 
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.

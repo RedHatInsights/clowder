@@ -66,6 +66,15 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
+	if pod.MachinePool != "" {
+		j.Spec.Template.Spec.Tolerations = []core.Toleration{{
+			Key:      pod.MachinePool,
+			Effect:   core.TaintEffectNoSchedule,
+			Operator: core.TolerationOpEqual,
+			Value:    "true",
+		}}
+	}
+
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {
 		c.ImagePullPolicy = core.PullIfNotPresent
 	} else {
