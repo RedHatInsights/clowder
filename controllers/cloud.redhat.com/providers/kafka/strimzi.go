@@ -349,6 +349,8 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 		return err
 	}
 
+	ku.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
+
 	labeler := utils.GetCustomLabeler(
 		map[string]string{"strimzi.io/cluster": getKafkaName(s.Env)}, clusterNN, s.Env,
 	)
@@ -779,6 +781,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		map[string]string{"strimzi.io/cluster": getKafkaName(s.Env)}, nn, s.Env,
 	)
 
+	ku.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 	labeler(ku)
 
 	ku.Spec = &strimzi.KafkaUserSpec{
