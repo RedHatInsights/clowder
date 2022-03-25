@@ -792,6 +792,10 @@ spec:
                               format: int32
                               type: integer
                           type: object
+                        machinePool:
+                          description: MachinePool allows the pod to be scheduled
+                            to a particular machine pool.
+                          type: string
                         readinessProbe:
                           description: A pass-through of a Readiness Probe specification
                             in standard k8s format. If omitted, a standard probe will
@@ -3199,6 +3203,10 @@ spec:
                               format: int32
                               type: integer
                           type: object
+                        machinePool:
+                          description: MachinePool allows the pod to be scheduled
+                            to a particular machine pool.
+                          type: string
                         readinessProbe:
                           description: A pass-through of a Readiness Probe specification
                             in standard k8s format. If omitted, a standard probe will

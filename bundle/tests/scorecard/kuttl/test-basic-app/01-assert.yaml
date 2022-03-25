@@ -50,6 +50,11 @@ spec:
     type: Recreate
   template:
     spec:
+      tolerations:
+      - key: "memory"
+        value: "true"
+        operator: "Equal"
+        effect: "NoSchedule"
       serviceAccountName: puptoo-processor3
       containers:
       - env:

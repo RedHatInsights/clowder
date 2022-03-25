@@ -39,6 +39,11 @@ spec:
             - name: puptoo-standard-cron
               image: quay.io/psav/clowder-hello
           restartPolicy: Never
+          tolerations:
+          - key: "memory"
+            value: "true"
+            operator: "Equal"
+            effect: "NoSchedule"
 ---
 apiVersion: batch/v1
 kind: CronJob
