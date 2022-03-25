@@ -266,7 +266,7 @@ type PodSpec struct {
 	// Lists the expected side cars, will be validated in the validating webhook
 	Sidecars []Sidecar `json:"sidecars,omitempty"`
 
-	// MachinePool allows the pod to be scheduled on a particular machine pool.
+	// MachinePool allows the pod to be scheduled to a particular machine pool.
 	MachinePool string `json:"machinePool,omitempty"`
 }
 

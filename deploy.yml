@@ -816,7 +816,7 @@ objects:
                             type: object
                           machinePool:
                             description: MachinePool allows the pod to be scheduled
-                              on a particular machine pool.
+                              to a particular machine pool.
                             type: string
                           readinessProbe:
                             description: A pass-through of a Readiness Probe specification
@@ -3281,7 +3281,7 @@ objects:
                             type: object
                           machinePool:
                             description: MachinePool allows the pod to be scheduled
-                              on a particular machine pool.
+                              to a particular machine pool.
                             type: string
                           readinessProbe:
                             description: A pass-through of a Readiness Probe specification
