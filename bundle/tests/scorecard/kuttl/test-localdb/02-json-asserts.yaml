@@ -3,8 +3,8 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: sleep 5
-- script: kubectl get secret --namespace=test-multi-db app-c -o json > /tmp/test-multi-db
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-db | base64 -d > /tmp/test-multi-db-json
+- script: kubectl get secret --namespace=test-localdb app-c -o json > /tmp/test-localdb
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-localdb | base64 -d > /tmp/test-localdb-json
 
-- script: jq -r '.database.hostname == "app-b-db.test-multi-db.svc"' -e < /tmp/test-multi-db-json
-- script: jq -r '.database.sslMode == "disable"' -e < /tmp/test-multi-db-json
+- script: jq -r '.database.hostname == "app-b-db.test-localdb.svc"' -e < /tmp/test-localdb-json
+- script: jq -r '.database.sslMode == "disable"' -e < /tmp/test-localdb-json

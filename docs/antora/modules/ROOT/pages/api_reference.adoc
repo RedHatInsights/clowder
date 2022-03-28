@@ -867,6 +867,7 @@ PodSpec defines a container running inside a ClowdApp.
 | *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volume-v1-core[$$Volume$$] array__ | A pass-through of a list of Volumes in standa k8s format.
 | *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecar[$$Sidecar$$] array__ | Lists the expected side cars, will be validated in the validating webhook
+| *`machinePool`* __string__ | MachinePool allows the pod to be scheduled to a particular machine pool.
 |===
 
 
