@@ -206,6 +206,15 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		return err
 	}
 
+	if pod.MachinePool != "" {
+		d.Spec.Template.Spec.Tolerations = []core.Toleration{{
+			Key:      pod.MachinePool,
+			Effect:   core.TaintEffectNoSchedule,
+			Operator: core.TolerationOpEqual,
+			Value:    "true",
+		}}
+	}
+
 	d.Spec.Template.Spec.InitContainers = ics
 
 	d.Spec.Template.Spec.Volumes = pod.Volumes

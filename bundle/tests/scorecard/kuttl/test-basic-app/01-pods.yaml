@@ -97,6 +97,7 @@ spec:
             value: override_1
           - name: ENV_VAR_3
             value: env_var_3
+      machinePool: "memory"
     webServices:
       private:
         enabled: true

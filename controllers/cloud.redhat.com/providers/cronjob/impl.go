@@ -98,6 +98,15 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		c.ImagePullPolicy = core.PullIfNotPresent
 	}
 
+	if pod.MachinePool != "" {
+		pt.Spec.Tolerations = []core.Toleration{{
+			Key:      pod.MachinePool,
+			Effect:   core.TaintEffectNoSchedule,
+			Operator: core.TolerationOpEqual,
+			Value:    "true",
+		}}
+	}
+
 	// set service account for pod
 	pt.Spec.ServiceAccountName = app.GetClowdSAName()
 	pt.Spec.TerminationGracePeriodSeconds = common.Int64Ptr(30)
