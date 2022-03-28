@@ -49,7 +49,7 @@ func validateCyndiPipeline(
 
 	if pipeline.Status.ActiveTableName == "" {
 		return &errors.MissingDependencies{
-			MissingDeps: map[string][]string{"cyndiPipeline": {nn.Name}},
+			MissingDeps: map[string][]string{"cyndiPipelineActiveTable": {nn.Name}},
 		}
 	}
 
