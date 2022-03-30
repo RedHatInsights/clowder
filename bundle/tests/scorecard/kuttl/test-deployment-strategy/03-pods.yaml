@@ -26,4 +26,4 @@ spec:
       private:
         enabled: true
     deploymentStrategy:
-      privateStrategy: RollingUpdate
+      privateStrategy: Recreate

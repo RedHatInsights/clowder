@@ -15,7 +15,7 @@ metadata:
   namespace: test-deployment-strategy
 spec:
   strategy:
-    type: Recreate
+    type: RollingUpdate
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -24,4 +24,4 @@ metadata:
   namespace: test-deployment-strategy
 spec:
   strategy:
-    type: RollingUpdate
+    type: Recreate
