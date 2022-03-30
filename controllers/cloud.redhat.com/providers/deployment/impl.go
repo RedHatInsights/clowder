@@ -82,7 +82,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			}
 		} else {
 			d.Spec.Strategy = apps.DeploymentStrategy{
-				Type: apps.RecreateDeploymentStrategyType,
+				Type: apps.RollingUpdateDeploymentStrategyType,
 			}
 		}
 	}
