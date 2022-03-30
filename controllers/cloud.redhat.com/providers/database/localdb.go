@@ -10,7 +10,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
-	"k8s.io/apimachinery/pkg/api/resource"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -108,21 +107,10 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 	labels := &map[string]string{"sub": "local_db"}
 
-	defaultDatabaseRequirements := core.ResourceRequirements{
-		Limits: core.ResourceList{
-			"memory": resource.MustParse("1Gi"),
-			"cpu":    resource.MustParse("1200m"),
-		},
-		Requests: core.ResourceList{
-			"memory": resource.MustParse("512Mi"),
-			"cpu":    resource.MustParse("600m"),
-		},
-	}
-
 	databaseResourceRequirements := app.Spec.Database.Resources
 
 	if databaseResourceRequirements.Limits == nil || databaseResourceRequirements.Requests == nil {
-		databaseResourceRequirements = defaultDatabaseRequirements
+		databaseResourceRequirements = provutils.DatabaseResourceDefaults()
 	}
 
 	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, &databaseResourceRequirements)
