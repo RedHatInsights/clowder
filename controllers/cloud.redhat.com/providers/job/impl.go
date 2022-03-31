@@ -73,6 +73,8 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 			Operator: core.TolerationOpEqual,
 			Value:    "true",
 		}}
+	} else {
+		j.Spec.Template.Spec.Tolerations = []core.Toleration{}
 	}
 
 	if !env.Spec.Providers.Deployment.OmitPullPolicy {

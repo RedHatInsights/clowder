@@ -213,6 +213,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			Operator: core.TolerationOpEqual,
 			Value:    "true",
 		}}
+	} else {
+		d.Spec.Template.Spec.Tolerations = []core.Toleration{}
 	}
 
 	d.Spec.Template.Spec.InitContainers = ics

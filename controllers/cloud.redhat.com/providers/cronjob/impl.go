@@ -105,6 +105,8 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 			Operator: core.TolerationOpEqual,
 			Value:    "true",
 		}}
+	} else {
+		pt.Spec.Tolerations = []core.Toleration{}
 	}
 
 	// set service account for pod
