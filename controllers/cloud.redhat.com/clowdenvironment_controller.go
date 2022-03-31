@@ -73,8 +73,10 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var mu sync.RWMutex
-var cEnv = ""
+var envMutex sync.RWMutex
+var envCurrentEnv = ""
+var appMutex sync.RWMutex
+var appCurrentEnv = ""
 
 const envFinalizer = "finalizer.env.cloud.redhat.com"
 
@@ -89,22 +91,22 @@ type ClowdEnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
 
-func SetEnv(name string) {
-	mu.Lock()
-	defer mu.Unlock()
-	cEnv = name
+func SetEnv(name string, mutex *sync.RWMutex, store *string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	*store = name
 }
 
-func ReleaseEnv() {
-	mu.Lock()
-	defer mu.Unlock()
-	cEnv = ""
+func ReleaseEnv(mutex *sync.RWMutex, store *string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	*store = ""
 }
 
-func ReadEnv() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return cEnv
+func ReadEnv(mutex *sync.RWMutex, store *string) string {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return *store
 }
 
 //Reconcile fn
@@ -158,6 +160,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			log.Info("Cloud not add finalizer", "err", addFinalizeErr)
 			return ctrl.Result{}, addFinalizeErr
 		}
+	}
+
+	if ReadEnv(&appMutex, &appCurrentEnv) == env.Name {
+		r.Recorder.Eventf(&env, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", env.Name)
+		log.Info("Env currently being reconciled by app")
+		return ctrl.Result{Requeue: true}, nil
 	}
 
 	log.Info("Reconciliation started")
@@ -235,8 +243,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		Log:    log,
 	}
 
-	SetEnv(env.Name)
-	defer ReleaseEnv()
+	SetEnv(env.Name, &envMutex, &envCurrentEnv)
+	defer ReleaseEnv(&envMutex, &envCurrentEnv)
 	provErr := runProvidersForEnv(log, provider)
 
 	if provErr != nil {
