@@ -27,3 +27,15 @@ spec:
     spec:
       containers:
         - image: quay.io/cloudservices/postgresql-rds:10-9ee2984
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:10-9ee2984
+          resources:
+            limits:
+              cpu: 1200m
+              memory: 1Gi
+            requests:
+              cpu: 600m
+              memory: 512Mi
