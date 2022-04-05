@@ -155,6 +155,7 @@ deploy-minikube-quick: bundle docker-build-no-test-quick docker-push-minikube de
 
 # we can't git ignore these files, but we want to avoid overwriting them
 no-update:
+	git fetch origin
 	git checkout origin/master -- config/manager/kustomization.yaml \
 								  bundle/metadata/annotations.yaml \
 								  controllers/cloud.redhat.com/version.txt \
