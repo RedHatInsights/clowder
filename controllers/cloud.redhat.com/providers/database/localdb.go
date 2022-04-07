@@ -109,7 +109,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 	databaseResourceRequirements := app.Spec.Database.Resources
 
-	if databaseResourceRequirements.Limits == nil && databaseResourceRequirements.Requests == nil {
+	if databaseResourceRequirements.Limits == nil || databaseResourceRequirements.Requests == nil {
 		databaseResourceRequirements = provutils.DatabaseResourceDefaults()
 	}
 
