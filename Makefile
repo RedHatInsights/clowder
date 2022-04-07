@@ -153,9 +153,17 @@ deploy-minikube: bundle docker-build-no-test docker-push-minikube deploy
 
 deploy-minikube-quick: bundle docker-build-no-test-quick docker-push-minikube deploy
 
+# we can't git ignore these files, but we want to avoid overwriting them
+no-update:
+	git fetch origin
+	git checkout origin/master -- config/manager/kustomization.yaml \
+								  bundle/metadata/annotations.yaml \
+								  controllers/cloud.redhat.com/version.txt \
+								  config/manifests/bases/clowder.clusterserviceversion.yaml
+
 ##@ Deployment
 
-pre-push: manifests generate build-template api-docs
+pre-push: manifests generate build-template api-docs no-update
 
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -

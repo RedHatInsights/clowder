@@ -47,7 +47,7 @@ metadata:
   namespace: test-basic-app
 spec:
   strategy:
-    type: Recreate
+    type: RollingUpdate
   template:
     spec:
       tolerations:
