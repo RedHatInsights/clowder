@@ -24,78 +24,27 @@ import (
 )
 
 func deploymentStatusChecker(deployment apps.Deployment) bool {
-	if deployment.Generation > deployment.Status.ObservedGeneration {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range deployment.Status.Conditions {
-		if condition.Type == "Available" && condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
+	s := StatusProcessor{}
+	s.ProcessDeployment(deployment)
+	return s.GetStatus()
 }
 
 func kafkaStatusChecker(kafka strimzi.Kafka) bool {
-	// nil checks needed since these are all pointers in strimzi-client-go
-	if kafka.Status == nil {
-		return false
-	}
-
-	if kafka.Status.ObservedGeneration != nil && kafka.Generation > int64(*kafka.Status.ObservedGeneration) {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range kafka.Status.Conditions {
-		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
+	s := StatusProcessor{}
+	s.ProcessKafka(kafka)
+	return s.GetStatus()
 }
 
-func kafkaTopicStatusChecker(kafka strimzi.KafkaTopic) bool {
-	// nil checks needed since these are all pointers in strimzi-client-go
-	if kafka.Status == nil {
-		return false
-	}
-
-	if kafka.Status.ObservedGeneration != nil && kafka.Generation > int64(*kafka.Status.ObservedGeneration) {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range kafka.Status.Conditions {
-		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
+func kafkaTopicStatusChecker(kafkaTopic strimzi.KafkaTopic) bool {
+	s := StatusProcessor{}
+	s.ProcessKafkaTopic(kafkaTopic)
+	return s.GetStatus()
 }
 
 func kafkaConnectStatusChecker(kafkaConnect strimzi.KafkaConnect) bool {
-	// nil checks needed since these are all pointers in strimzi-client-go
-	if kafkaConnect.Status == nil {
-		return false
-	}
-
-	if kafkaConnect.Status.ObservedGeneration != nil && kafkaConnect.Generation > int64(*kafkaConnect.Status.ObservedGeneration) {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range kafkaConnect.Status.Conditions {
-		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
+	s := StatusProcessor{}
+	s.ProcessKafkaConnect(kafkaConnect)
+	return s.GetStatus()
 }
 
 func countDeployments(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
