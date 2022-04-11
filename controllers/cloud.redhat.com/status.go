@@ -23,6 +23,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+//Defines an interface for objects that want to participate in the status system
+type StatusSource interface {
+	SetReady(bool)
+	SetCompleted(bool)
+	GetStatus() *crd.EnvResourceStatus
+	GetUID() types.UID
+	GetNamespaces(context.Context, client.Client) ([]string, error)
+	GetDeploymentStatus()
+	GetName() string
+	GetNamespace() string
+}
+
 func deploymentStatusChecker(deployment apps.Deployment) bool {
 	if deployment.Generation > deployment.Status.ObservedGeneration {
 		// The status on this resource needs to update
