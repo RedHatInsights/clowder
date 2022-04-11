@@ -11,7 +11,6 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -25,14 +24,10 @@ import (
 
 //Defines an interface for objects that want to participate in the status system
 type StatusSource interface {
-	SetReady(bool)
-	SetCompleted(bool)
-	GetStatus() *crd.EnvResourceStatus
-	GetUID() types.UID
-	GetNamespaces(context.Context, client.Client) ([]string, error)
-	GetDeploymentStatus()
-	GetName() string
-	GetNamespace() string
+	SetStatusReady(bool)
+	GetNamespaces(ctx context.Context, client client.Client) ([]string, error)
+	GetWrappedDeploymentStatus() crd.WrappedDeploymentStatus
+	cond.Setter
 }
 
 func deploymentStatusChecker(deployment apps.Deployment) bool {
@@ -110,7 +105,7 @@ func kafkaConnectStatusChecker(kafkaConnect strimzi.KafkaConnect) bool {
 	return false
 }
 
-func countDeployments(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countDeployments(ctx context.Context, pClient client.Client, statusSource StatusSource, namespaces []string) (int32, int32, string, error) {
 	var managedDeployments int32
 	var readyDeployments int32
 	var brokenDeployments []string
@@ -132,7 +127,7 @@ func countDeployments(ctx context.Context, pClient client.Client, o object.Clowd
 	// filter for resources owned by the ClowdObject and check their status
 	for _, deployment := range deployments {
 		for _, owner := range deployment.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
+			if owner.UID == statusSource.GetUID() {
 				managedDeployments++
 				if ok := deploymentStatusChecker(deployment); ok {
 					readyDeployments++
@@ -152,7 +147,7 @@ func countDeployments(ctx context.Context, pClient client.Client, o object.Clowd
 	return managedDeployments, readyDeployments, msg, nil
 }
 
-func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countKafkas(ctx context.Context, pClient client.Client, statusSource StatusSource, namespaces []string) (int32, int32, string, error) {
 	var managedKafkas int32
 	var readyKafka int32
 	var brokenKafkas []string
@@ -174,7 +169,7 @@ func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObjec
 	// filter for resources owned by the ClowdObject and check their status
 	for _, kafka := range kafkas {
 		for _, owner := range kafka.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
+			if owner.UID == statusSource.GetUID() {
 				managedKafkas++
 				if ok := kafkaStatusChecker(kafka); ok {
 					readyKafka++
@@ -193,7 +188,7 @@ func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObjec
 	return managedKafkas, readyKafka, msg, nil
 }
 
-func countKafkaTopics(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countKafkaTopics(ctx context.Context, pClient client.Client, statusSource StatusSource, namespaces []string) (int32, int32, string, error) {
 	var managedTopics int32
 	var readyTopics int32
 	var brokenTopics []string
@@ -215,7 +210,7 @@ func countKafkaTopics(ctx context.Context, pClient client.Client, o object.Clowd
 	// filter for resources owned by the ClowdObject and check their status
 	for _, kafkaTopic := range topics {
 		for _, owner := range kafkaTopic.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
+			if owner.UID == statusSource.GetUID() {
 				managedTopics++
 				if ok := kafkaTopicStatusChecker(kafkaTopic); ok {
 					readyTopics++
@@ -235,7 +230,7 @@ func countKafkaTopics(ctx context.Context, pClient client.Client, o object.Clowd
 	return managedTopics, readyTopics, msg, nil
 }
 
-func countKafkaConnects(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countKafkaConnects(ctx context.Context, pClient client.Client, statusSource StatusSource, namespaces []string) (int32, int32, string, error) {
 	var managedConnects int32
 	var readyConnects int32
 	var brokenConnects []string
@@ -257,7 +252,7 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, o object.Clo
 	// filter for resources owned by the ClowdObject and check their status
 	for _, kafkaConnect := range connects {
 		for _, owner := range kafkaConnect.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
+			if owner.UID == statusSource.GetUID() {
 				managedConnects++
 				if ok := kafkaConnectStatusChecker(kafkaConnect); ok {
 					readyConnects++
@@ -277,13 +272,14 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, o object.Clo
 }
 
 // SetEnvResourceStatus the status on the passed ClowdObject interface.
-func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) error {
-	stats, _, err := GetEnvResourceFigures(ctx, client, o)
+func SetEnvResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) error {
+	stats, _, err := GetEnvResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
 
-	status := o.GetDeploymentStatus()
+	wds := statusSource.GetWrappedDeploymentStatus()
+	status := wds.Env
 	status.ManagedDeployments = stats.ManagedDeployments
 	status.ReadyDeployments = stats.ReadyDeployments
 	status.ManagedTopics = stats.ManagedTopics
@@ -292,7 +288,7 @@ func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
-func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, string, error) {
+func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.EnvResourceStatus, string, error) {
 
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
@@ -302,12 +298,12 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 
 	deploymentStats := crd.EnvResourceStatus{}
 
-	namespaces, err := o.GetNamespacesInEnv(ctx, client)
+	namespaces, err := statusSource.GetNamespaces(ctx, client)
 	if err != nil {
 		return crd.EnvResourceStatus{}, "", err
 	}
 
-	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, o, namespaces)
+	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, statusSource, namespaces)
 	if err != nil {
 		return crd.EnvResourceStatus{}, "", err
 	}
@@ -318,7 +314,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	}
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		managedDeployments, readyDeployments, msg, err = countKafkas(ctx, client, o, namespaces)
+		managedDeployments, readyDeployments, msg, err = countKafkas(ctx, client, statusSource, namespaces)
 		if err != nil {
 			return crd.EnvResourceStatus{}, "", err
 		}
@@ -328,7 +324,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 			msgs = append(msgs, msg)
 		}
 
-		managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, o, namespaces)
+		managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, statusSource, namespaces)
 		if err != nil {
 			return crd.EnvResourceStatus{}, "", err
 		}
@@ -338,7 +334,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 			msgs = append(msgs, msg)
 		}
 
-		managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, o, namespaces)
+		managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, statusSource, namespaces)
 		if err != nil {
 			return crd.EnvResourceStatus{}, "", err
 		}
@@ -357,8 +353,8 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	return deploymentStats, msg, nil
 }
 
-func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) (bool, error) {
-	stats, _, err := GetAppResourceFigures(ctx, client, o)
+func GetAppResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, error) {
+	stats, _, err := GetAppResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return false, err
 	}
@@ -369,20 +365,26 @@ func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 }
 
 // SetAppResourceStatus the status on the passed ClowdObject interface.
-func SetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) error {
-	stats, _, err := GetAppResourceFigures(ctx, client, o)
+func SetAppResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) error {
+	stats, _, err := GetAppResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
 
-	status := o.GetDeploymentStatus()
+	wrappedDeploymentStatus := statusSource.GetWrappedDeploymentStatus()
+	status := wrappedDeploymentStatus.App
+
+	if err != nil {
+		return err
+	}
+
 	status.ManagedDeployments = stats.ManagedDeployments
 	status.ReadyDeployments = stats.ReadyDeployments
 
 	return nil
 }
 
-func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdApp) (crd.AppResourceStatus, string, error) {
+func GetAppResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.AppResourceStatus, string, error) {
 
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
@@ -390,12 +392,12 @@ func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 
 	deploymentStats := crd.AppResourceStatus{}
 
-	namespaces, err := o.GetNamespacesInEnv(ctx, client)
+	namespaces, err := statusSource.GetNamespaces(ctx, client)
 	if err != nil {
 		return crd.AppResourceStatus{}, "", errors.Wrap("get namespaces: ", err)
 	}
 
-	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, o, namespaces)
+	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, statusSource, namespaces)
 	if err != nil {
 		return crd.AppResourceStatus{}, "", errors.Wrap("count deploys: ", err)
 	}
@@ -411,8 +413,8 @@ func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	return deploymentStats, msg, nil
 }
 
-func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (bool, string, error) {
-	stats, msg, err := GetEnvResourceFigures(ctx, client, o)
+func GetEnvResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, string, error) {
+	stats, msg, err := GetEnvResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return false, msg, err
 	}
@@ -422,7 +424,7 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return false, msg, nil
 }
 
-func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, err error) error {
+func SetClowdEnvConditions(ctx context.Context, client client.Client, statusSource StatusSource, state clusterv1.ConditionType, err error) error {
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
@@ -442,7 +444,7 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, msg, err := GetEnvResourceStatus(ctx, client, o)
+	deploymentStatus, msg, err := GetEnvResourceStatus(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
@@ -465,18 +467,18 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 	conditions = append(conditions, *condition)
 
 	for _, condition := range conditions {
-		cond.Set(o, &condition)
+		cond.Set(statusSource, &condition)
 	}
 
-	o.Status.Ready = deploymentStatus
+	statusSource.SetStatusReady(deploymentStatus)
 
-	if err := client.Status().Update(ctx, o); err != nil {
+	if err := client.Status().Update(ctx, statusSource); err != nil {
 		return err
 	}
 	return nil
 }
 
-func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state clusterv1.ConditionType, err error) error {
+func SetClowdAppConditions(ctx context.Context, client client.Client, statusSource StatusSource, state clusterv1.ConditionType, err error) error {
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
@@ -496,7 +498,7 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, err := GetAppResourceStatus(ctx, client, o)
+	deploymentStatus, err := GetAppResourceStatus(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
@@ -519,12 +521,12 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	conditions = append(conditions, *condition)
 
 	for _, condition := range conditions {
-		cond.Set(o, &condition)
+		cond.Set(statusSource, &condition)
 	}
 
-	o.Status.Ready = deploymentStatus
+	statusSource.SetStatusReady(deploymentStatus)
 
-	if err := client.Status().Update(ctx, o); err != nil {
+	if err := client.Status().Update(ctx, statusSource); err != nil {
 		return err
 	}
 	return nil
