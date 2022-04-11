@@ -754,3 +754,8 @@ func (i *ClowdEnvironment) SetDeploymentFigures(figures StatusSourceFigures) {
 	i.Status.Deployments.ManagedTopics = figures.ManagedTopics
 	i.Status.Deployments.ReadyTopics = figures.ReadyTopics
 }
+func (i *ClowdEnvironment) AreDeploymentsReady(figures StatusSourceFigures) bool {
+	depReady := figures.ManagedDeployments == figures.ReadyDeployments
+	topReady := figures.ManagedTopics == figures.ReadyTopics
+	return depReady && topReady
+}

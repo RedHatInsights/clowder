@@ -27,6 +27,7 @@ type StatusSource interface {
 	SetStatusReady(bool)
 	GetNamespaces(ctx context.Context, client client.Client) ([]string, error)
 	SetDeploymentFigures(crd.StatusSourceFigures)
+	AreDeploymentsReady(crd.StatusSourceFigures) bool
 	cond.Setter
 }
 
@@ -271,9 +272,8 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, statusSource
 	return managedConnects, readyConnects, msg, nil
 }
 
-// SetEnvResourceStatus the status on the passed ClowdObject interface.
 func SetResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) error {
-	stats, _, err := GetEnvResourceFigures(ctx, client, statusSource)
+	stats, _, err := GetResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
@@ -283,120 +283,87 @@ func SetResourceStatus(ctx context.Context, client client.Client, statusSource S
 	return nil
 }
 
-func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {
+func GetEnvStrimziResources(ctx context.Context, client client.Client, statusSource StatusSource, namespaces []string, figures crd.StatusSourceFigures) (crd.StatusSourceFigures, error, []string) {
+	var msgs = []string{}
 
-	var totalManagedDeployments int32
-	var totalReadyDeployments int32
-	var totalManagedTopics int32
-	var totalReadyTopics int32
-	var msgs []string
-
-	deploymentStats := crd.StatusSourceFigures{}
-
-	namespaces, err := statusSource.GetNamespaces(ctx, client)
+	managedDeployments, readyDeployments, msg, err := countKafkas(ctx, client, statusSource, namespaces)
 	if err != nil {
-		return crd.StatusSourceFigures{}, "", err
+		return figures, err, msgs
 	}
-
-	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, statusSource, namespaces)
-	if err != nil {
-		return crd.StatusSourceFigures{}, "", err
-	}
-	totalManagedDeployments += managedDeployments
-	totalReadyDeployments += readyDeployments
+	figures.ManagedDeployments += managedDeployments
+	figures.ReadyDeployments += readyDeployments
 	if msg != "" {
 		msgs = append(msgs, msg)
 	}
 
-	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		managedDeployments, readyDeployments, msg, err = countKafkas(ctx, client, statusSource, namespaces)
-		if err != nil {
-			return crd.StatusSourceFigures{}, "", err
-		}
-		totalManagedDeployments += managedDeployments
-		totalReadyDeployments += readyDeployments
-		if msg != "" {
-			msgs = append(msgs, msg)
-		}
-
-		managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, statusSource, namespaces)
-		if err != nil {
-			return crd.StatusSourceFigures{}, "", err
-		}
-		totalManagedDeployments += managedDeployments
-		totalReadyDeployments += readyDeployments
-		if msg != "" {
-			msgs = append(msgs, msg)
-		}
-
-		managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, statusSource, namespaces)
-		if err != nil {
-			return crd.StatusSourceFigures{}, "", err
-		}
-		totalManagedTopics += managedTopics
-		totalReadyTopics += readyTopics
-		if msg != "" {
-			msgs = append(msgs, msg)
-		}
+	managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, statusSource, namespaces)
+	if err != nil {
+		return figures, err, msgs
+	}
+	figures.ManagedDeployments += managedDeployments
+	figures.ReadyDeployments += readyDeployments
+	if msg != "" {
+		msgs = append(msgs, msg)
 	}
 
-	msg = fmt.Sprintf("dependency failure: [%s]", strings.Join(msgs, ","))
-	deploymentStats.ManagedDeployments = totalManagedDeployments
-	deploymentStats.ReadyDeployments = totalReadyDeployments
-	deploymentStats.ManagedTopics = totalManagedTopics
-	deploymentStats.ReadyTopics = totalReadyTopics
-	return deploymentStats, msg, nil
+	managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, statusSource, namespaces)
+	if err != nil {
+		return figures, err, msgs
+	}
+	figures.ManagedTopics += managedTopics
+	figures.ReadyTopics += readyTopics
+	if msg != "" {
+		msgs = append(msgs, msg)
+	}
+
+	return figures, nil, msgs
+}
+
+func GetResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {
+	figures := crd.StatusSourceFigures{}
+	var messages []string
+
+	namespaces, err := statusSource.GetNamespaces(ctx, client)
+	if err != nil {
+		return figures, "", errors.Wrap("get namespaces: ", err)
+	}
+
+	managedDeployments, readyDeployments, _, err := countDeployments(ctx, client, statusSource, namespaces)
+	if err != nil {
+		return figures, "", errors.Wrap("count deploys: ", err)
+	}
+
+	figures.ManagedDeployments += managedDeployments
+	figures.ReadyDeployments += readyDeployments
+
+	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
+		retFigs, error, retMes := GetEnvStrimziResources(ctx, client, statusSource, namespaces, figures)
+		if error != nil {
+			return crd.StatusSourceFigures{}, "", errors.Wrap("count strimzi resources: ", err)
+		}
+		figures = retFigs
+		messages = append(messages, retMes...)
+	}
+
+	msg := fmt.Sprintf("dependency failure: [%s]", strings.Join(messages, ","))
+
+	return figures, msg, nil
 }
 
 func GetAppResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, error) {
-	stats, _, err := GetAppResourceFigures(ctx, client, statusSource)
+	stats, _, err := GetResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return false, err
 	}
-	if stats.ManagedDeployments == stats.ReadyDeployments {
-		return true, nil
-	}
-	return false, nil
-}
-
-func GetAppResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {
-
-	var totalManagedDeployments int32
-	var totalReadyDeployments int32
-	var msgs []string
-
-	deploymentStats := crd.StatusSourceFigures{}
-
-	namespaces, err := statusSource.GetNamespaces(ctx, client)
-	if err != nil {
-		return crd.StatusSourceFigures{}, "", errors.Wrap("get namespaces: ", err)
-	}
-
-	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, statusSource, namespaces)
-	if err != nil {
-		return crd.StatusSourceFigures{}, "", errors.Wrap("count deploys: ", err)
-	}
-	totalManagedDeployments += managedDeployments
-	totalReadyDeployments += readyDeployments
-	if msg != "" {
-		msgs = append(msgs, msg)
-	}
-
-	msg = fmt.Sprintf("dependency failure: [%s]", strings.Join(msgs, ","))
-	deploymentStats.ManagedDeployments = totalManagedDeployments
-	deploymentStats.ReadyDeployments = totalReadyDeployments
-	return deploymentStats, msg, nil
+	return statusSource.AreDeploymentsReady(stats), nil
 }
 
 func GetEnvResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, string, error) {
-	stats, msg, err := GetEnvResourceFigures(ctx, client, statusSource)
+	stats, msg, err := GetResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return false, msg, err
 	}
-	if stats.ManagedDeployments == stats.ReadyDeployments && stats.ManagedTopics == stats.ReadyTopics {
-		return true, msg, nil
-	}
-	return false, msg, nil
+	return statusSource.AreDeploymentsReady(stats), msg, nil
 }
 
 func SetClowdEnvConditions(ctx context.Context, client client.Client, statusSource StatusSource, state clusterv1.ConditionType, err error) error {

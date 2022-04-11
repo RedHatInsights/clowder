@@ -686,3 +686,6 @@ func (i *ClowdApp) SetDeploymentFigures(figures StatusSourceFigures) {
 	i.Status.Deployments.ManagedDeployments = figures.ManagedDeployments
 	i.Status.Deployments.ReadyDeployments = figures.ReadyDeployments
 }
+func (i *ClowdApp) AreDeploymentsReady(figures StatusSourceFigures) bool {
+	return figures.ManagedDeployments == figures.ReadyDeployments
+}
