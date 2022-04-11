@@ -425,6 +425,13 @@ type AppResourceStatus struct {
 	ReadyDeployments   int32 `json:"readyDeployments"`
 }
 
+func (a *AppResourceStatus) SetManagedDeployments(m int32) {
+	a.ManagedDeployments = m
+}
+func (a *AppResourceStatus) SetReadyDeployments(r int32) {
+	a.ReadyDeployments = r
+}
+
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=app
