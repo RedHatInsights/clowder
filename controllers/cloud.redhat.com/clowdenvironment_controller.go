@@ -179,7 +179,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			if nErr := r.Client.Get(ctx, namespaceName, &namespace); nErr != nil {
 				log.Info("Namespace get error", "err", nErr)
 				r.Recorder.Eventf(&env, "Warning", "NamespaceMissing", "Requested Target Namespace [%s] is missing", env.Spec.TargetNamespace)
-				if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, nErr); setClowdStatusErr != nil {
+				if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, nErr); setClowdStatusErr != nil {
 					log.Info("Set status error", "err", setClowdStatusErr)
 					return ctrl.Result{Requeue: true}, setClowdStatusErr
 				}
@@ -192,7 +192,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			namespace.SetName(env.Status.TargetNamespace)
 			if snErr := r.Client.Create(ctx, namespace); snErr != nil {
 				log.Info("Namespace create error", "err", snErr)
-				if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, snErr); setClowdStatusErr != nil {
+				if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, snErr); setClowdStatusErr != nil {
 					log.Info("Set status error", "err", setClowdStatusErr)
 					return ctrl.Result{Requeue: true}, setClowdStatusErr
 				}
@@ -202,7 +202,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 		if statErr := r.Client.Status().Update(ctx, &env); statErr != nil {
 			log.Info("Namespace create error", "err", statErr)
-			if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statErr); setClowdStatusErr != nil {
+			if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statErr); setClowdStatusErr != nil {
 				log.Info("Set status error", "err", setClowdStatusErr)
 				return ctrl.Result{Requeue: true}, setClowdStatusErr
 			}
@@ -240,7 +240,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if provErr != nil {
 		log.Info("Prov err", "err", provErr)
-		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -251,7 +251,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if cacheErr != nil {
 		log.Info("Cache error", "err", cacheErr)
-		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, cacheErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -260,7 +260,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if setAppErr := r.setAppInfo(provider); setAppErr != nil {
 		log.Info("setAppInfo error", "err", setAppErr)
-		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, setAppErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, setAppErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -269,7 +269,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if statusErr := SetResourceStatus(ctx, r.Client, &env); statusErr != nil {
 		log.Info("SetEnvResourceStatus error", "err", statusErr)
-		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statusErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statusErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -278,7 +278,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	setPrometheusStatus(&env)
 
-	envReady, _, getEnvResErr := GetEnvResourceStatus(ctx, r.Client, &env)
+	envReady, _, getEnvResErr := GetResourceStatus(ctx, r.Client, &env)
 	if getEnvResErr != nil {
 		log.Info("GetEnvResourceStatus error", "err", getEnvResErr)
 		return ctrl.Result{Requeue: true}, getEnvResErr
@@ -295,7 +295,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if finalStatusErr := r.Client.Status().Update(ctx, &env); finalStatusErr != nil {
 		log.Info("Final Status error", "err", finalStatusErr)
-		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, finalStatusErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationFailed, finalStatusErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -312,7 +312,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, rErr
 	}
 
-	if successSetErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil); successSetErr != nil {
+	if successSetErr := SetConditions(ctx, r.Client, &env, crd.ReconciliationSuccessful, nil); successSetErr != nil {
 		log.Info("Set status error", "err", successSetErr)
 		return ctrl.Result{Requeue: true}, successSetErr
 	}
