@@ -735,14 +735,22 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 	return i.Name
 }
 
+type StatusSourceFigures struct {
+	ManagedDeployments int32
+	ReadyDeployments   int32
+	ManagedTopics      int32
+	ReadyTopics        int32
+}
+
 func (i *ClowdEnvironment) SetStatusReady(ready bool) {
 	i.Status.Ready = ready
 }
 func (i *ClowdEnvironment) GetNamespaces(ctx context.Context, pClient client.Client) ([]string, error) {
 	return i.GetNamespacesInEnv(ctx, pClient)
 }
-func (i *ClowdEnvironment) GetWrappedDeploymentStatus() WrappedDeploymentStatus {
-	wds := WrappedDeploymentStatus{}
-	wds.Env = i.GetDeploymentStatus()
-	return wds
+func (i *ClowdEnvironment) SetDeploymentFigures(figures StatusSourceFigures) {
+	i.Status.Deployments.ManagedDeployments = figures.ManagedDeployments
+	i.Status.Deployments.ReadyDeployments = figures.ReadyDeployments
+	i.Status.Deployments.ManagedTopics = figures.ManagedTopics
+	i.Status.Deployments.ReadyTopics = figures.ReadyTopics
 }
