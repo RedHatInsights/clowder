@@ -734,3 +734,15 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 
 	return i.Name
 }
+
+func (i *ClowdEnvironment) SetStatusReady(ready bool) {
+	i.Status.Ready = ready
+}
+func (i *ClowdEnvironment) GetNamespaces(ctx context.Context, pClient client.Client) ([]string, error) {
+	return i.GetNamespacesInEnv(ctx, pClient)
+}
+func (i *ClowdEnvironment) GetWrappedDeploymentStatus() WrappedDeploymentStatus {
+	wds := WrappedDeploymentStatus{}
+	wds.Env = i.GetDeploymentStatus()
+	return wds
+}

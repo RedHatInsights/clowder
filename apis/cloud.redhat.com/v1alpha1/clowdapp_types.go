@@ -675,3 +675,20 @@ func (i *ClowdApp) GetNamespacesInEnv(ctx context.Context, pClient client.Client
 
 	return namespaceList, nil
 }
+
+type WrappedDeploymentStatus struct {
+	App *AppResourceStatus
+	Env *EnvResourceStatus
+}
+
+func (i *ClowdApp) SetStatusReady(ready bool) {
+	i.Status.Ready = ready
+}
+func (i *ClowdApp) GetNamespaces(ctx context.Context, pClient client.Client) ([]string, error) {
+	return i.GetNamespacesInEnv(ctx, pClient)
+}
+func (i *ClowdApp) GetWrappedDeploymentStatus() WrappedDeploymentStatus {
+	wds := WrappedDeploymentStatus{}
+	wds.App = i.GetDeploymentStatus()
+	return wds
+}
