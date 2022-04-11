@@ -245,3 +245,59 @@ func (i *ClowdJobInvocation) GenerateJobName() string {
 	randomString := utils.RandStringLower(7)
 	return fmt.Sprintf("%s-iqe-%s", i.Name, randomString)
 }
+
+func (i *ClowdJobInvocation) GetJobsStatus(jobs *batchv1.JobList) bool {
+	jobsRequired := len(i.Spec.Jobs)
+	var emptyTesting IqeJobSpec
+	if i.Spec.Testing.Iqe != emptyTesting {
+		jobsRequired += 1
+	}
+	jobsCompleted := i.countCompletedJobs(jobs)
+	return jobsCompleted == jobsRequired
+}
+
+func (i *ClowdJobInvocation) UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList) error {
+
+	for j := range i.Status.JobMap {
+		for _, s := range jobs.Items {
+			jobName := s.ObjectMeta.Name
+			if j == jobName {
+				if len(s.Status.Conditions) > 0 {
+					condition := s.Status.Conditions[0].Type
+					switch condition {
+					case "Complete":
+						i.Status.JobMap[jobName] = JobComplete
+					case "Failed":
+						i.Status.JobMap[jobName] = JobFailed
+					default:
+						i.Status.JobMap[jobName] = JobInvoked
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (i *ClowdJobInvocation) countCompletedJobs(jobs *batchv1.JobList) int {
+
+	jobsCompleted := 0
+
+	// A job either completes successfully, or fails to succeed within the
+	// backoffLimit threshold. The Condition status is only populated when
+	// the jobs have succeeded or passed the backoff limit
+	for _, j := range jobs.Items {
+		for s := range i.Status.JobMap {
+			if s == j.ObjectMeta.Name {
+				if len(j.Status.Conditions) > 0 {
+					condition := j.Status.Conditions[0].Type
+					if condition == "Complete" || condition == "Failed" {
+						jobsCompleted++
+					}
+				}
+			}
+
+		}
+	}
+	return jobsCompleted
+}

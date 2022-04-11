@@ -20,8 +20,12 @@ import (
 	"strings"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	statusCounters "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/status/counters"
+	statusTypes "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/status/types"
+
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
@@ -736,32 +740,25 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 	return i.Name
 }
 
-type StatusSourceFigures struct {
-	ManagedDeployments int32
-	ReadyDeployments   int32
-	ManagedTopics      int32
-	ReadyTopics        int32
-}
-
 func (i *ClowdEnvironment) SetStatusReady(ready bool) {
 	i.Status.Ready = ready
 }
 func (i *ClowdEnvironment) GetNamespaces(ctx context.Context, pClient client.Client) ([]string, error) {
 	return i.GetNamespacesInEnv(ctx, pClient)
 }
-func (i *ClowdEnvironment) SetDeploymentFigures(figures StatusSourceFigures) {
+func (i *ClowdEnvironment) SetDeploymentFigures(figures statusTypes.StatusSourceFigures) {
 	i.Status.Deployments.ManagedDeployments = figures.ManagedDeployments
 	i.Status.Deployments.ReadyDeployments = figures.ReadyDeployments
 	i.Status.Deployments.ManagedTopics = figures.ManagedTopics
 	i.Status.Deployments.ReadyTopics = figures.ReadyTopics
 }
-func (i *ClowdEnvironment) AreDeploymentsReady(figures StatusSourceFigures) bool {
+func (i *ClowdEnvironment) AreDeploymentsReady(figures statusTypes.StatusSourceFigures) bool {
 	depReady := figures.ManagedDeployments == figures.ReadyDeployments
 	topReady := figures.ManagedTopics == figures.ReadyTopics
 	return depReady && topReady
 }
-func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client client.Client) (StatusSourceFigures, string, error) {
-	figures := StatusSourceFigures{}
+func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client client.Client) (statusTypes.StatusSourceFigures, string, error) {
+	figures := statusTypes.StatusSourceFigures{}
 
 	if !clowderconfig.LoadedConfig.Features.WatchStrimziResources {
 		return figures, "", nil
@@ -774,7 +771,7 @@ func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client 
 		return figures, "", errors.Wrap("get namespaces: ", err)
 	}
 
-	managedDeployments, readyDeployments, msg, err := controllers.countKafkas(ctx, client, i, namespaces)
+	managedDeployments, readyDeployments, msg, err := statusCounters.CountKafkas(ctx, client, i, namespaces)
 	if err != nil {
 		return figures, msg, errors.Wrap("count kafkas: ", err)
 	}
@@ -784,7 +781,7 @@ func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client 
 		msgs = append(msgs, msg)
 	}
 
-	managedDeployments, readyDeployments, msg, err = controllers.countKafkaConnects(ctx, client, i, namespaces)
+	managedDeployments, readyDeployments, msg, err = statusCounters.CountKafkaConnects(ctx, client, i, namespaces)
 	if err != nil {
 		return figures, msg, errors.Wrap("count kafka connects: ", err)
 	}
@@ -794,7 +791,7 @@ func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client 
 		msgs = append(msgs, msg)
 	}
 
-	managedTopics, readyTopics, msg, err := controllers.countKafkaTopics(ctx, client, i, namespaces)
+	managedTopics, readyTopics, msg, err := statusCounters.CountKafkaTopics(ctx, client, i, namespaces)
 	if err != nil {
 		return figures, msg, errors.Wrap("count kafka connects: ", err)
 	}
@@ -808,7 +805,7 @@ func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client 
 
 	return figures, erMsg, err
 }
-func (i *ClowdEnvironment) AddDeploymentFigures(figsA StatusSourceFigures, figsB StatusSourceFigures) StatusSourceFigures {
+func (i *ClowdEnvironment) AddDeploymentFigures(figsA statusTypes.StatusSourceFigures, figsB statusTypes.StatusSourceFigures) statusTypes.StatusSourceFigures {
 	figsA.ManagedDeployments += figsB.ManagedDeployments
 	figsA.ReadyDeployments += figsB.ReadyDeployments
 	figsA.ManagedTopics += figsB.ManagedTopics

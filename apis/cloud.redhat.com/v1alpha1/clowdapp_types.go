@@ -19,6 +19,7 @@ import (
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	statusTypes "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/status/types"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
@@ -682,17 +683,17 @@ func (i *ClowdApp) SetStatusReady(ready bool) {
 func (i *ClowdApp) GetNamespaces(ctx context.Context, pClient client.Client) ([]string, error) {
 	return i.GetNamespacesInEnv(ctx, pClient)
 }
-func (i *ClowdApp) SetDeploymentFigures(figures StatusSourceFigures) {
+func (i *ClowdApp) SetDeploymentFigures(figures statusTypes.StatusSourceFigures) {
 	i.Status.Deployments.ManagedDeployments = figures.ManagedDeployments
 	i.Status.Deployments.ReadyDeployments = figures.ReadyDeployments
 }
-func (i *ClowdApp) AreDeploymentsReady(figures StatusSourceFigures) bool {
+func (i *ClowdApp) AreDeploymentsReady(figures statusTypes.StatusSourceFigures) bool {
 	return figures.ManagedDeployments == figures.ReadyDeployments
 }
-func (i *ClowdApp) GetObjectSpecificFigures(context.Context, client.Client) (StatusSourceFigures, string, error) {
-	return StatusSourceFigures{}, "", nil
+func (i *ClowdApp) GetObjectSpecificFigures(context.Context, client.Client) (statusTypes.StatusSourceFigures, string, error) {
+	return statusTypes.StatusSourceFigures{}, "", nil
 }
-func (i *ClowdApp) AddDeploymentFigures(figsA StatusSourceFigures, figsB StatusSourceFigures) StatusSourceFigures {
+func (i *ClowdApp) AddDeploymentFigures(figsA statusTypes.StatusSourceFigures, figsB statusTypes.StatusSourceFigures) statusTypes.StatusSourceFigures {
 	figsA.ManagedDeployments += figsB.ManagedDeployments
 	figsA.ReadyDeployments += figsB.ReadyDeployments
 	return figsA
