@@ -267,7 +267,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{Requeue: true}, setAppErr
 	}
 
-	if statusErr := SetEnvResourceStatus(ctx, r.Client, &env); statusErr != nil {
+	if statusErr := SetResourceStatus(ctx, r.Client, &env); statusErr != nil {
 		log.Info("SetEnvResourceStatus error", "err", statusErr)
 		if setClowdStatusErr := SetClowdEnvConditions(ctx, r.Client, &env, crd.ReconciliationFailed, statusErr); setClowdStatusErr != nil {
 			log.Info("Set status error", "err", setClowdStatusErr)

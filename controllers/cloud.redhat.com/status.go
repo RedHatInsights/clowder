@@ -272,7 +272,7 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, statusSource
 }
 
 // SetEnvResourceStatus the status on the passed ClowdObject interface.
-func SetEnvResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) error {
+func SetResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) error {
 	stats, _, err := GetEnvResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return err
@@ -357,18 +357,6 @@ func GetAppResourceStatus(ctx context.Context, client client.Client, statusSourc
 		return true, nil
 	}
 	return false, nil
-}
-
-// SetAppResourceStatus the status on the passed ClowdObject interface.
-func SetAppResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) error {
-	stats, _, err := GetAppResourceFigures(ctx, client, statusSource)
-	if err != nil {
-		return err
-	}
-
-	statusSource.SetDeploymentFigures(stats)
-
-	return nil
 }
 
 func GetAppResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {

@@ -262,7 +262,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
-	if statusErr := SetAppResourceStatus(ctx, r.Client, &app); statusErr != nil {
+	if statusErr := SetResourceStatus(ctx, r.Client, &app); statusErr != nil {
 		log.Info("Set status error", "err", statusErr)
 		return ctrl.Result{Requeue: true}, statusErr
 	}
