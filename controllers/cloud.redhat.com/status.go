@@ -9,7 +9,6 @@ import (
 	"time"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	apps "k8s.io/api/apps/v1"
@@ -28,6 +27,12 @@ type StatusSource interface {
 	GetNamespaces(ctx context.Context, client client.Client) ([]string, error)
 	SetDeploymentFigures(crd.StatusSourceFigures)
 	AreDeploymentsReady(crd.StatusSourceFigures) bool
+	GetObjectSpecificFigures(context.Context, client.Client) (crd.StatusSourceFigures, string, error)
+	//Why is this part of the interface and not just some function here in status or something?
+	//The thinking is that each object can decide what part of the figures struct it cares
+	//about. This allows us to encapsulate the implementation and get some more polymoprhism out
+	//of the code
+	AddDeploymentFigures(crd.StatusSourceFigures, crd.StatusSourceFigures) crd.StatusSourceFigures
 	cond.Setter
 }
 
@@ -283,46 +288,9 @@ func SetResourceStatus(ctx context.Context, client client.Client, statusSource S
 	return nil
 }
 
-func GetEnvStrimziResources(ctx context.Context, client client.Client, statusSource StatusSource, namespaces []string, figures crd.StatusSourceFigures) (crd.StatusSourceFigures, error, []string) {
-	var msgs = []string{}
-
-	managedDeployments, readyDeployments, msg, err := countKafkas(ctx, client, statusSource, namespaces)
-	if err != nil {
-		return figures, err, msgs
-	}
-	figures.ManagedDeployments += managedDeployments
-	figures.ReadyDeployments += readyDeployments
-	if msg != "" {
-		msgs = append(msgs, msg)
-	}
-
-	managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, statusSource, namespaces)
-	if err != nil {
-		return figures, err, msgs
-	}
-	figures.ManagedDeployments += managedDeployments
-	figures.ReadyDeployments += readyDeployments
-	if msg != "" {
-		msgs = append(msgs, msg)
-	}
-
-	managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, statusSource, namespaces)
-	if err != nil {
-		return figures, err, msgs
-	}
-	figures.ManagedTopics += managedTopics
-	figures.ReadyTopics += readyTopics
-	if msg != "" {
-		msgs = append(msgs, msg)
-	}
-
-	return figures, nil, msgs
-}
-
 func GetResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {
 	figures := crd.StatusSourceFigures{}
-	var messages []string
-
+	msg := ""
 	namespaces, err := statusSource.GetNamespaces(ctx, client)
 	if err != nil {
 		return figures, "", errors.Wrap("get namespaces: ", err)
@@ -336,29 +304,16 @@ func GetResourceFigures(ctx context.Context, client client.Client, statusSource 
 	figures.ManagedDeployments += managedDeployments
 	figures.ReadyDeployments += readyDeployments
 
-	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		retFigs, error, retMes := GetEnvStrimziResources(ctx, client, statusSource, namespaces, figures)
-		if error != nil {
-			return crd.StatusSourceFigures{}, "", errors.Wrap("count strimzi resources: ", err)
-		}
-		figures = retFigs
-		messages = append(messages, retMes...)
+	specialFigures, msg, err := statusSource.GetObjectSpecificFigures(ctx, client)
+	if err != nil {
+		return figures, msg, err
 	}
-
-	msg := fmt.Sprintf("dependency failure: [%s]", strings.Join(messages, ","))
+	figures = statusSource.AddDeploymentFigures(figures, specialFigures)
 
 	return figures, msg, nil
 }
 
-func GetAppResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, error) {
-	stats, _, err := GetResourceFigures(ctx, client, statusSource)
-	if err != nil {
-		return false, err
-	}
-	return statusSource.AreDeploymentsReady(stats), nil
-}
-
-func GetEnvResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, string, error) {
+func GetResourceStatus(ctx context.Context, client client.Client, statusSource StatusSource) (bool, string, error) {
 	stats, msg, err := GetResourceFigures(ctx, client, statusSource)
 	if err != nil {
 		return false, msg, err
@@ -386,7 +341,7 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, statusSour
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, msg, err := GetEnvResourceStatus(ctx, client, statusSource)
+	deploymentStatus, msg, err := GetResourceStatus(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
@@ -440,7 +395,7 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, statusSour
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, err := GetAppResourceStatus(ctx, client, statusSource)
+	deploymentStatus, _, err := GetResourceStatus(ctx, client, statusSource)
 	if err != nil {
 		return err
 	}
