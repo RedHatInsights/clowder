@@ -321,61 +321,7 @@ func GetResourceStatus(ctx context.Context, client client.Client, statusSource S
 	return statusSource.AreDeploymentsReady(stats), msg, nil
 }
 
-func SetClowdEnvConditions(ctx context.Context, client client.Client, statusSource StatusSource, state clusterv1.ConditionType, err error) error {
-	conditions := []clusterv1.Condition{}
-
-	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
-	for _, conditionType := range loopConditions {
-		condition := &clusterv1.Condition{}
-		condition.Type = conditionType
-		condition.Status = core.ConditionFalse
-
-		if state == conditionType {
-			condition.Status = core.ConditionTrue
-			if err != nil {
-				condition.Reason = err.Error()
-			}
-		}
-
-		condition.LastTransitionTime = v1.Now()
-		conditions = append(conditions, *condition)
-	}
-
-	deploymentStatus, msg, err := GetResourceStatus(ctx, client, statusSource)
-	if err != nil {
-		return err
-	}
-
-	condition := &clusterv1.Condition{}
-
-	condition.Status = core.ConditionFalse
-	condition.Message = fmt.Sprintf("Deployments are not yet ready: %s", msg)
-	if deploymentStatus {
-		condition.Status = core.ConditionTrue
-		condition.Message = "All managed deployments ready"
-	}
-
-	condition.Type = crd.DeploymentsReady
-	condition.LastTransitionTime = v1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
-
-	conditions = append(conditions, *condition)
-
-	for _, condition := range conditions {
-		cond.Set(statusSource, &condition)
-	}
-
-	statusSource.SetStatusReady(deploymentStatus)
-
-	if err := client.Status().Update(ctx, statusSource); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SetClowdAppConditions(ctx context.Context, client client.Client, statusSource StatusSource, state clusterv1.ConditionType, err error) error {
+func SetConditions(ctx context.Context, client client.Client, statusSource StatusSource, state clusterv1.ConditionType, err error) error {
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
