@@ -26,7 +26,7 @@ import (
 type StatusSource interface {
 	SetStatusReady(bool)
 	GetNamespaces(ctx context.Context, client client.Client) ([]string, error)
-	GetWrappedDeploymentStatus() crd.WrappedDeploymentStatus
+	SetDeploymentFigures(crd.StatusSourceFigures)
 	cond.Setter
 }
 
@@ -278,17 +278,12 @@ func SetEnvResourceStatus(ctx context.Context, client client.Client, statusSourc
 		return err
 	}
 
-	wds := statusSource.GetWrappedDeploymentStatus()
-	status := wds.Env
-	status.ManagedDeployments = stats.ManagedDeployments
-	status.ReadyDeployments = stats.ReadyDeployments
-	status.ManagedTopics = stats.ManagedTopics
-	status.ReadyTopics = stats.ReadyTopics
+	statusSource.SetDeploymentFigures(stats)
 
 	return nil
 }
 
-func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.EnvResourceStatus, string, error) {
+func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {
 
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
@@ -296,16 +291,16 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSour
 	var totalReadyTopics int32
 	var msgs []string
 
-	deploymentStats := crd.EnvResourceStatus{}
+	deploymentStats := crd.StatusSourceFigures{}
 
 	namespaces, err := statusSource.GetNamespaces(ctx, client)
 	if err != nil {
-		return crd.EnvResourceStatus{}, "", err
+		return crd.StatusSourceFigures{}, "", err
 	}
 
 	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, statusSource, namespaces)
 	if err != nil {
-		return crd.EnvResourceStatus{}, "", err
+		return crd.StatusSourceFigures{}, "", err
 	}
 	totalManagedDeployments += managedDeployments
 	totalReadyDeployments += readyDeployments
@@ -316,7 +311,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSour
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
 		managedDeployments, readyDeployments, msg, err = countKafkas(ctx, client, statusSource, namespaces)
 		if err != nil {
-			return crd.EnvResourceStatus{}, "", err
+			return crd.StatusSourceFigures{}, "", err
 		}
 		totalManagedDeployments += managedDeployments
 		totalReadyDeployments += readyDeployments
@@ -326,7 +321,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSour
 
 		managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, statusSource, namespaces)
 		if err != nil {
-			return crd.EnvResourceStatus{}, "", err
+			return crd.StatusSourceFigures{}, "", err
 		}
 		totalManagedDeployments += managedDeployments
 		totalReadyDeployments += readyDeployments
@@ -336,7 +331,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, statusSour
 
 		managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, statusSource, namespaces)
 		if err != nil {
-			return crd.EnvResourceStatus{}, "", err
+			return crd.StatusSourceFigures{}, "", err
 		}
 		totalManagedTopics += managedTopics
 		totalReadyTopics += readyTopics
@@ -371,35 +366,27 @@ func SetAppResourceStatus(ctx context.Context, client client.Client, statusSourc
 		return err
 	}
 
-	wrappedDeploymentStatus := statusSource.GetWrappedDeploymentStatus()
-	status := wrappedDeploymentStatus.App
-
-	if err != nil {
-		return err
-	}
-
-	status.ManagedDeployments = stats.ManagedDeployments
-	status.ReadyDeployments = stats.ReadyDeployments
+	statusSource.SetDeploymentFigures(stats)
 
 	return nil
 }
 
-func GetAppResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.AppResourceStatus, string, error) {
+func GetAppResourceFigures(ctx context.Context, client client.Client, statusSource StatusSource) (crd.StatusSourceFigures, string, error) {
 
 	var totalManagedDeployments int32
 	var totalReadyDeployments int32
 	var msgs []string
 
-	deploymentStats := crd.AppResourceStatus{}
+	deploymentStats := crd.StatusSourceFigures{}
 
 	namespaces, err := statusSource.GetNamespaces(ctx, client)
 	if err != nil {
-		return crd.AppResourceStatus{}, "", errors.Wrap("get namespaces: ", err)
+		return crd.StatusSourceFigures{}, "", errors.Wrap("get namespaces: ", err)
 	}
 
 	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, statusSource, namespaces)
 	if err != nil {
-		return crd.AppResourceStatus{}, "", errors.Wrap("count deploys: ", err)
+		return crd.StatusSourceFigures{}, "", errors.Wrap("count deploys: ", err)
 	}
 	totalManagedDeployments += managedDeployments
 	totalReadyDeployments += readyDeployments
