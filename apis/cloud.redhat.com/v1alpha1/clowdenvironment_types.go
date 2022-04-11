@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
@@ -758,4 +759,59 @@ func (i *ClowdEnvironment) AreDeploymentsReady(figures StatusSourceFigures) bool
 	depReady := figures.ManagedDeployments == figures.ReadyDeployments
 	topReady := figures.ManagedTopics == figures.ReadyTopics
 	return depReady && topReady
+}
+func (i *ClowdEnvironment) GetObjectSpecificFigures(ctx context.Context, client client.Client) (StatusSourceFigures, string, error) {
+	figures := StatusSourceFigures{}
+
+	if !clowderconfig.LoadedConfig.Features.WatchStrimziResources {
+		return figures, "", nil
+	}
+
+	var msgs = []string{}
+
+	namespaces, err := i.GetNamespaces(ctx, client)
+	if err != nil {
+		return figures, "", errors.Wrap("get namespaces: ", err)
+	}
+
+	managedDeployments, readyDeployments, msg, err := controllers.countKafkas(ctx, client, i, namespaces)
+	if err != nil {
+		return figures, msg, errors.Wrap("count kafkas: ", err)
+	}
+	figures.ManagedDeployments += managedDeployments
+	figures.ReadyDeployments += readyDeployments
+	if msg != "" {
+		msgs = append(msgs, msg)
+	}
+
+	managedDeployments, readyDeployments, msg, err = controllers.countKafkaConnects(ctx, client, i, namespaces)
+	if err != nil {
+		return figures, msg, errors.Wrap("count kafka connects: ", err)
+	}
+	figures.ManagedDeployments += managedDeployments
+	figures.ReadyDeployments += readyDeployments
+	if msg != "" {
+		msgs = append(msgs, msg)
+	}
+
+	managedTopics, readyTopics, msg, err := controllers.countKafkaTopics(ctx, client, i, namespaces)
+	if err != nil {
+		return figures, msg, errors.Wrap("count kafka connects: ", err)
+	}
+	figures.ManagedTopics += managedTopics
+	figures.ReadyTopics += readyTopics
+	if msg != "" {
+		msgs = append(msgs, msg)
+	}
+
+	erMsg := fmt.Sprintf("dependency failure: [%s]", strings.Join(msgs, ","))
+
+	return figures, erMsg, err
+}
+func (i *ClowdEnvironment) AddDeploymentFigures(figsA StatusSourceFigures, figsB StatusSourceFigures) StatusSourceFigures {
+	figsA.ManagedDeployments += figsB.ManagedDeployments
+	figsA.ReadyDeployments += figsB.ReadyDeployments
+	figsA.ManagedTopics += figsB.ManagedTopics
+	figsA.ReadyTopics += figsB.ReadyTopics
+	return figsA
 }

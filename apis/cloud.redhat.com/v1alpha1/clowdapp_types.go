@@ -689,3 +689,11 @@ func (i *ClowdApp) SetDeploymentFigures(figures StatusSourceFigures) {
 func (i *ClowdApp) AreDeploymentsReady(figures StatusSourceFigures) bool {
 	return figures.ManagedDeployments == figures.ReadyDeployments
 }
+func (i *ClowdApp) GetObjectSpecificFigures(context.Context, client.Client) (StatusSourceFigures, string, error) {
+	return StatusSourceFigures{}, "", nil
+}
+func (i *ClowdApp) AddDeploymentFigures(figsA StatusSourceFigures, figsB StatusSourceFigures) StatusSourceFigures {
+	figsA.ManagedDeployments += figsB.ManagedDeployments
+	figsA.ReadyDeployments += figsB.ReadyDeployments
+	return figsA
+}
