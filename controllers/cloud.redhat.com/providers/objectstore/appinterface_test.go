@@ -64,7 +64,7 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 	c, err := genObjStoreConfig(testSecretSpecs.ToSecrets())
 
 	if err != nil {
-		t.Errorf("Error calling genObjStoreConfig: %w", err)
+		t.Errorf("Error calling genObjStoreConfig: %e", err)
 	}
 
 	expected := config.ObjectStoreConfig{
