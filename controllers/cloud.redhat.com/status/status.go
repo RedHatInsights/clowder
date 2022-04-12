@@ -3,10 +3,8 @@ package status
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"sort"
 	"strings"
-	"time"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
@@ -14,8 +12,6 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	cond "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -174,76 +170,6 @@ func SetConditions(ctx context.Context, client client.Client, statusSource statu
 
 	if err := client.Status().Update(ctx, statusSource); err != nil {
 		return err
-	}
-	return nil
-}
-
-func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state clusterv1.ConditionType, err error) error {
-	conditions := []clusterv1.Condition{}
-
-	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
-	for _, conditionType := range loopConditions {
-		condition := &clusterv1.Condition{}
-		condition.Type = conditionType
-		condition.Status = core.ConditionFalse
-
-		if state == conditionType {
-			condition.Status = core.ConditionTrue
-			if err != nil {
-				condition.Reason = err.Error()
-			}
-		}
-
-		condition.LastTransitionTime = v1.Now()
-		conditions = append(conditions, *condition)
-	}
-
-	// Setup custom status for CJI
-	condition := &clusterv1.Condition{}
-	condition.Type = crd.JobInvocationComplete
-	condition.Status = core.ConditionFalse
-	condition.Message = "Some Jobs are still incomplete"
-	condition.LastTransitionTime = v1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
-
-	jobs, err := o.GetInvokedJobs(ctx, client)
-	if err != nil {
-		return err
-	}
-	jobStatus := o.GetJobsStatus(jobs)
-
-	if jobStatus {
-		condition.Status = core.ConditionTrue
-		condition.Message = "All ClowdJob invocations complete"
-	}
-	conditions = append(conditions, *condition)
-
-	for _, condition := range conditions {
-		cond.Set(o, &condition)
-	}
-
-	o.Status.Completed = jobStatus
-	o.UpdateInvokedJobStatus(ctx, jobs)
-
-	if err := client.Status().Update(ctx, o); err != nil {
-		return err
-	}
-	// https://github.com/kubernetes-sigs/controller-runtime/issues/1464#issuecomment-811930090
-	// Handle the lag between the client and the k8s cache
-	cjiState := o.Status
-	nn := types.NamespacedName{
-		Name:      o.Name,
-		Namespace: o.Namespace,
-	}
-	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
-		if err := client.Get(ctx, nn, o); err != nil {
-			return false, fmt.Errorf("failed to get cji: %w", err)
-		}
-		return reflect.DeepEqual(o.Status, cjiState), nil
-	}); err != nil {
-		return fmt.Errorf("failed to wait for cached cji %s to get into state %s: %w", nn.String(), state, err)
 	}
 	return nil
 }
