@@ -131,8 +131,8 @@ github.com/RedHatInsights/rhc-osdk-utils v0.4.1 h1:wAd0oy+O9e6hsy13VG0mqhX0EHBwI
 github.com/RedHatInsights/rhc-osdk-utils v0.4.1/go.mod h1:kzhoWdsajLo0R2/S8f2EEtozJgkooUAmadB8giwuq+4=
 github.com/RedHatInsights/simple-kc-client v0.0.5 h1:NGXHyIo+ToP21THrIUh5ONnqN1zvfVg3Tmi1dvDjB4Q=
 github.com/RedHatInsights/simple-kc-client v0.0.5/go.mod h1:ctTJFcWGT/Tec/S4l7RnDV2ddVjZ0OqxDMF7XK4iT1U=
-github.com/RedHatInsights/strimzi-client-go v0.26.0 h1:wa2H2eugQVrUbn3mZRTv/Uil8W/bfh66We+siAuTRPk=
-github.com/RedHatInsights/strimzi-client-go v0.26.0/go.mod h1:Z488n7yGdCVT3AFYuamQ9F7b6c99OSMr4lPYzgEEpzY=
+github.com/RedHatInsights/strimzi-client-go v0.28.0 h1:WcnFKI6ZuxS3y3e1P/R4vLRfbTEVk57mMkkB9+X9UPE=
+github.com/RedHatInsights/strimzi-client-go v0.28.0/go.mod h1:Z488n7yGdCVT3AFYuamQ9F7b6c99OSMr4lPYzgEEpzY=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/sarama v1.30.0/go.mod h1:zujlQQx1kzHsh4jfV1USnptCQrHAEZ2Hk8fTKCulPVs=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
