@@ -49,3 +49,5 @@ build/operator_bundles
 build/.build_venv
 
 controllers/cloud.redhat.com/version.txt
+
+tmp/*
