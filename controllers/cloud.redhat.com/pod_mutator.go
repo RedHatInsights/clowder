@@ -49,7 +49,7 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar config"))
 		}
 
-		image := "quay.io/cloudservices/crc-caddy-plugin:b195225"
+		image := "quay.io/cloudservices/crc-caddy-plugin:0d139d1"
 
 		if clowderconfig.LoadedConfig.Images.Caddy != "" {
 			image = clowderconfig.LoadedConfig.Images.Caddy
