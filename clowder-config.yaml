@@ -5,7 +5,8 @@ data:
         "features": {
             "createServiceMonitor": true,
             "watchStrimziResources": true,
-            "enableKedaResources": true
+            "enableKedaResources": true,
+            "reconciliationMetrics": true
         }
     }
 kind: ConfigMap
