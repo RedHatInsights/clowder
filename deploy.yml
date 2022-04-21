@@ -6969,7 +6969,8 @@ objects:
       \            \"apply\": ${DEBUG_CACHE_APPLY}\n        }\n    },\n    \"features\"\
       : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
       \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
-      : ${PER_PROVIDER_METRICS}\n    }\n}\n"
+      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
+      \    }\n}\n"
   kind: ConfigMap
   metadata:
     name: clowder-clowder-config
@@ -7197,5 +7198,7 @@ parameters:
 - name: WATCH_STRIMZI_RESOURCES
   value: 'false'
 - name: PER_PROVIDER_METRICS
+  value: 'false'
+- name: RECONCILIATION_METRICS
   value: 'false'
 

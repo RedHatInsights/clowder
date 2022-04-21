@@ -15,6 +15,7 @@
     },
     "features": {
         "createServiceMonitor": false,
-        "disableWebhooks": true
+        "disableWebhooks": true,
+        "reconciliationMetrics": true
     }
 }
