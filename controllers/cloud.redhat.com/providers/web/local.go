@@ -341,7 +341,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
 		}
 
-		jsonData, err := json.Marshal(sec.StringData)
+		jsonData, err := json.Marshal(sec)
 		if err != nil {
 			return errors.Wrap("Failed to marshal config JSON", err)
 		}
