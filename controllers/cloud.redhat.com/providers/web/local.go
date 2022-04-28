@@ -163,7 +163,7 @@ func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) erro
 		"whitelist":   "",
 	}
 
-	jsonData, err := json.Marshal(sec.StringData)
+	jsonData, err := json.Marshal(sec)
 	if err != nil {
 		return errors.Wrap("Failed to marshal config JSON", err)
 	}
