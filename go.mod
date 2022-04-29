@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/RedHatInsights/cyndi-operator v0.1.4
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/rhc-osdk-utils v0.4.1
+	github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220429143931-e9f6f9e14da7
 	github.com/RedHatInsights/simple-kc-client v0.0.5
 	github.com/RedHatInsights/strimzi-client-go v0.28.0
 	github.com/go-logr/logr v0.4.0
@@ -18,7 +18,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/segmentio/kafka-go v0.4.16
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	go.uber.org/zap v1.19.1
 	k8s.io/api v0.22.4
 	k8s.io/apiextensions-apiserver v0.22.4

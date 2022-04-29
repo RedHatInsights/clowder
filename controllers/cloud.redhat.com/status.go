@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sort"
 	"strings"
 	"time"
 
@@ -12,10 +11,10 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
-	apps "k8s.io/api/apps/v1"
+	"github.com/RedHatInsights/rhc-osdk-utils/resources"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -23,245 +22,92 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func deploymentStatusChecker(deployment apps.Deployment) bool {
-	if deployment.Generation > deployment.Status.ObservedGeneration {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range deployment.Status.Conditions {
-		if condition.Type == "Available" && condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
-}
-
-func kafkaStatusChecker(kafka strimzi.Kafka) bool {
-	// nil checks needed since these are all pointers in strimzi-client-go
-	if kafka.Status == nil {
-		return false
-	}
-
-	if kafka.Status.ObservedGeneration != nil && kafka.Generation > int64(*kafka.Status.ObservedGeneration) {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range kafka.Status.Conditions {
-		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
-}
-
-func kafkaTopicStatusChecker(kafka strimzi.KafkaTopic) bool {
-	// nil checks needed since these are all pointers in strimzi-client-go
-	if kafka.Status == nil {
-		return false
-	}
-
-	if kafka.Status.ObservedGeneration != nil && kafka.Generation > int64(*kafka.Status.ObservedGeneration) {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range kafka.Status.Conditions {
-		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
-}
-
-func kafkaConnectStatusChecker(kafkaConnect strimzi.KafkaConnect) bool {
-	// nil checks needed since these are all pointers in strimzi-client-go
-	if kafkaConnect.Status == nil {
-		return false
-	}
-
-	if kafkaConnect.Status.ObservedGeneration != nil && kafkaConnect.Generation > int64(*kafkaConnect.Status.ObservedGeneration) {
-		// The status on this resource needs to update
-		return false
-	}
-
-	for _, condition := range kafkaConnect.Status.Conditions {
-		if condition.Type != nil && *condition.Type == "Ready" && condition.Status != nil && *condition.Status == "True" {
-			return true
-		}
-	}
-
-	return false
-}
-
 func countDeployments(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	var managedDeployments int32
-	var readyDeployments int32
-	var brokenDeployments []string
-	var msg = ""
-
-	deployments := []apps.Deployment{}
-	for _, namespace := range namespaces {
-		opts := []client.ListOption{
-			client.InNamespace(namespace),
-		}
-		tmpDeployments := apps.DeploymentList{}
-		err := pClient.List(ctx, &tmpDeployments, opts...)
-		if err != nil {
-			return 0, 0, "", err
-		}
-		deployments = append(deployments, tmpDeployments.Items...)
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			GVK: schema.GroupVersionKind{
+				Group:   "apps",
+				Kind:    "Deployment",
+				Version: "v1",
+			},
+			OwnerGUID: string(o.GetUID()),
+		},
+		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+			Type:   "Available",
+			Status: "True",
+		},
 	}
 
-	// filter for resources owned by the ClowdObject and check their status
-	for _, deployment := range deployments {
-		for _, owner := range deployment.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
-				managedDeployments++
-				if ok := deploymentStatusChecker(deployment); ok {
-					readyDeployments++
-				} else {
-					brokenDeployments = append(brokenDeployments, fmt.Sprintf("%s/%s", deployment.Name, deployment.Namespace))
-				}
-				break
-			}
-		}
-	}
+	results := counter.Count(ctx, pClient)
 
-	if len(brokenDeployments) > 0 {
-		sort.Strings(brokenDeployments)
-		msg = fmt.Sprintf("broken deployments: [%s]", strings.Join(brokenDeployments, ", "))
-	}
-
-	return managedDeployments, readyDeployments, msg, nil
+	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
 }
 
 func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	var managedKafkas int32
-	var readyKafka int32
-	var brokenKafkas []string
-	var msg = ""
-
-	kafkas := []strimzi.Kafka{}
-	for _, namespace := range namespaces {
-		opts := []client.ListOption{
-			client.InNamespace(namespace),
-		}
-		tmpKafkas := strimzi.KafkaList{}
-		err := pClient.List(ctx, &tmpKafkas, opts...)
-		if err != nil {
-			return 0, 0, "", err
-		}
-		kafkas = append(kafkas, tmpKafkas.Items...)
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			GVK: schema.GroupVersionKind{
+				Group:   "kafka.strimzi.io",
+				Kind:    "Kafka",
+				Version: "v1beta2",
+			},
+			OwnerGUID: string(o.GetUID()),
+		},
+		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+			Type:   "Ready",
+			Status: "True",
+		},
 	}
 
-	// filter for resources owned by the ClowdObject and check their status
-	for _, kafka := range kafkas {
-		for _, owner := range kafka.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
-				managedKafkas++
-				if ok := kafkaStatusChecker(kafka); ok {
-					readyKafka++
-				} else {
-					brokenKafkas = append(brokenKafkas, fmt.Sprintf("%s/%s", kafka.Name, kafka.Namespace))
-				}
-				break
-			}
-		}
-	}
+	results := counter.Count(ctx, pClient)
 
-	if len(brokenKafkas) > 0 {
-		msg = fmt.Sprintf("broken kafkas: [%s]", strings.Join(brokenKafkas, ", "))
-	}
-
-	return managedKafkas, readyKafka, msg, nil
-}
-
-func countKafkaTopics(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	var managedTopics int32
-	var readyTopics int32
-	var brokenTopics []string
-	var msg = ""
-
-	topics := []strimzi.KafkaTopic{}
-	for _, namespace := range namespaces {
-		opts := []client.ListOption{
-			client.InNamespace(namespace),
-		}
-		tmpTopics := strimzi.KafkaTopicList{}
-		err := pClient.List(ctx, &tmpTopics, opts...)
-		if err != nil {
-			return 0, 0, "", err
-		}
-		topics = append(topics, tmpTopics.Items...)
-	}
-
-	// filter for resources owned by the ClowdObject and check their status
-	for _, kafkaTopic := range topics {
-		for _, owner := range kafkaTopic.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
-				managedTopics++
-				if ok := kafkaTopicStatusChecker(kafkaTopic); ok {
-					readyTopics++
-				} else {
-					brokenTopics = append(brokenTopics, fmt.Sprintf("%s/%s", kafkaTopic.Name, kafkaTopic.Namespace))
-				}
-				break
-			}
-		}
-	}
-
-	if len(brokenTopics) > 0 {
-		sort.Strings(brokenTopics)
-		msg = fmt.Sprintf("broken topics: [%s]", strings.Join(brokenTopics, ", "))
-	}
-
-	return managedTopics, readyTopics, msg, nil
+	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
 }
 
 func countKafkaConnects(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	var managedConnects int32
-	var readyConnects int32
-	var brokenConnects []string
-	var msg = ""
-
-	connects := []strimzi.KafkaConnect{}
-	for _, namespace := range namespaces {
-		opts := []client.ListOption{
-			client.InNamespace(namespace),
-		}
-		tmpConnects := strimzi.KafkaConnectList{}
-		err := pClient.List(ctx, &tmpConnects, opts...)
-		if err != nil {
-			return 0, 0, "", err
-		}
-		connects = append(connects, tmpConnects.Items...)
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			GVK: schema.GroupVersionKind{
+				Group:   "kafka.strimzi.io",
+				Kind:    "KafkaConnect",
+				Version: "v1beta2",
+			},
+			OwnerGUID: string(o.GetUID()),
+		},
+		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+			Type:   "Ready",
+			Status: "True",
+		},
 	}
 
-	// filter for resources owned by the ClowdObject and check their status
-	for _, kafkaConnect := range connects {
-		for _, owner := range kafkaConnect.GetOwnerReferences() {
-			if owner.UID == o.GetUID() {
-				managedConnects++
-				if ok := kafkaConnectStatusChecker(kafkaConnect); ok {
-					readyConnects++
-				} else {
-					brokenConnects = append(brokenConnects, fmt.Sprintf("%s/%s", kafkaConnect.Name, kafkaConnect.Namespace))
-				}
-				break
-			}
-		}
+	results := counter.Count(ctx, pClient)
+
+	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+}
+
+func countKafkaTopics(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			GVK: schema.GroupVersionKind{
+				Group:   "kafka.strimzi.io",
+				Kind:    "KafkaTopic",
+				Version: "v1beta2",
+			},
+			OwnerGUID: string(o.GetUID()),
+		},
+		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+			Type:   "Ready",
+			Status: "True",
+		},
 	}
 
-	if len(brokenConnects) > 0 {
-		msg = fmt.Sprintf("broken connects: [%s]", strings.Join(brokenConnects, ", "))
-	}
+	results := counter.Count(ctx, pClient)
 
-	return managedConnects, readyConnects, msg, nil
+	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
 }
 
 // SetEnvResourceStatus the status on the passed ClowdObject interface.
