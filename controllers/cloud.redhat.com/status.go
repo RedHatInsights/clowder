@@ -22,92 +22,91 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func countDeployments(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countResources(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string, gvk schema.GroupVersionKind, reqs resources.ResourceConditionReadyRequirements) (int32, int32, string, error) {
 	counter := resources.ResourceCounter{
 		Query: resources.ResourceCounterQuery{
 			Namespaces: namespaces,
-			GVK: schema.GroupVersionKind{
-				Group:   "apps",
-				Kind:    "Deployment",
-				Version: "v1",
-			},
-			OwnerGUID: string(o.GetUID()),
+			GVK:        gvk,
+			OwnerGUID:  string(o.GetUID()),
 		},
-		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+		ReadyRequirements: reqs,
+	}
+
+	results := counter.Count(ctx, pClient)
+
+	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+}
+
+func countDeployments(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+	return countResources(
+		ctx,
+		pClient,
+		o,
+		namespaces,
+		schema.GroupVersionKind{
+			Group:   "apps",
+			Kind:    "Deployment",
+			Version: "v1",
+		},
+		resources.ResourceConditionReadyRequirements{
 			Type:   "Available",
 			Status: "True",
 		},
-	}
-
-	results := counter.Count(ctx, pClient)
-
-	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+	)
 }
 
 func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	counter := resources.ResourceCounter{
-		Query: resources.ResourceCounterQuery{
-			Namespaces: namespaces,
-			GVK: schema.GroupVersionKind{
-				Group:   "kafka.strimzi.io",
-				Kind:    "Kafka",
-				Version: "v1beta2",
-			},
-			OwnerGUID: string(o.GetUID()),
+	return countResources(
+		ctx,
+		pClient,
+		o,
+		namespaces,
+		schema.GroupVersionKind{
+			Group:   "kafka.strimzi.io",
+			Kind:    "Kafka",
+			Version: "v1beta2",
 		},
-		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+		resources.ResourceConditionReadyRequirements{
 			Type:   "Ready",
 			Status: "True",
 		},
-	}
-
-	results := counter.Count(ctx, pClient)
-
-	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+	)
 }
 
 func countKafkaConnects(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	counter := resources.ResourceCounter{
-		Query: resources.ResourceCounterQuery{
-			Namespaces: namespaces,
-			GVK: schema.GroupVersionKind{
-				Group:   "kafka.strimzi.io",
-				Kind:    "KafkaConnect",
-				Version: "v1beta2",
-			},
-			OwnerGUID: string(o.GetUID()),
+	return countResources(
+		ctx,
+		pClient,
+		o,
+		namespaces,
+		schema.GroupVersionKind{
+			Group:   "kafka.strimzi.io",
+			Kind:    "KafkaConnect",
+			Version: "v1beta2",
 		},
-		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+		resources.ResourceConditionReadyRequirements{
 			Type:   "Ready",
 			Status: "True",
 		},
-	}
-
-	results := counter.Count(ctx, pClient)
-
-	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+	)
 }
 
 func countKafkaTopics(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
-	counter := resources.ResourceCounter{
-		Query: resources.ResourceCounterQuery{
-			Namespaces: namespaces,
-			GVK: schema.GroupVersionKind{
-				Group:   "kafka.strimzi.io",
-				Kind:    "KafkaTopic",
-				Version: "v1beta2",
-			},
-			OwnerGUID: string(o.GetUID()),
+	return countResources(
+		ctx,
+		pClient,
+		o,
+		namespaces,
+		schema.GroupVersionKind{
+			Group:   "kafka.strimzi.io",
+			Kind:    "KafkaTopic",
+			Version: "v1beta2",
 		},
-		ReadyRequirements: resources.ResourceConditionReadyRequirements{
+		resources.ResourceConditionReadyRequirements{
 			Type:   "Ready",
 			Status: "True",
 		},
-	}
-
-	results := counter.Count(ctx, pClient)
-
-	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+	)
 }
 
 // SetEnvResourceStatus the status on the passed ClowdObject interface.
