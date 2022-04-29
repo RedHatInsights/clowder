@@ -5677,6 +5677,10 @@ objects:
                         enableLegacyStrimzi:
                           description: EnableLegacyStrimzi disables TLS + user auth
                           type: boolean
+                        managedPrefix:
+                          description: Managed topic prefix for the managed cluster.
+                            Only used in (*_managed_*) mode.
+                          type: string
                         managedSecretRef:
                           description: Defines the secret reference for the Managed
                             Kafka mode. Only used in (*_managed_*) mode.

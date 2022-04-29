@@ -113,7 +113,7 @@ ClowdApp is the Schema for the clowdapps API
 | Field | Description
 | *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
 | *`kind`* __string__ | `ClowdApp`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappspec[$$ClowdAppSpec$$]__ | A ClowdApp specification.
 |===
@@ -131,9 +131,9 @@ ClowdAppList contains a list of ClowdApp
 | Field | Description
 | *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
 | *`kind`* __string__ | `ClowdAppList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp[$$ClowdApp$$] array__ | A list of ClowdApp Resources.
+| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp[$$ClowdApp$$]__ | A list of ClowdApp Resources.
 |===
 
 
@@ -150,10 +150,10 @@ ClowdAppSpec is the main specification for a single Clowder Application it defin
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`deployments`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$] array__ | A list of deployments
-| *`jobs`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-job[$$Job$$] array__ | A list of jobs
+| *`deployments`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]__ | A list of deployments
+| *`jobs`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-job[$$Job$$]__ | A list of jobs
 | *`envName`* __string__ | The name of the ClowdEnvironment resource that this ClowdApp will use as its base. This does not mean that the ClowdApp needs to be placed in the same directory as the targetNamespace of the ClowdEnvironment.
-| *`kafkaTopics`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkatopicspec[$$KafkaTopicSpec$$] array__ | A list of Kafka topics that will be created and made available to all the pods listed in the ClowdApp.
+| *`kafkaTopics`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkatopicspec[$$KafkaTopicSpec$$]__ | A list of Kafka topics that will be created and made available to all the pods listed in the ClowdApp.
 | *`database`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasespec[$$DatabaseSpec$$]__ | The database specification defines a single database, the configuration of which will be made available to all the pods in the ClowdApp.
 | *`objectStore`* __string array__ | A list of string names defining storage buckets. In certain modes, defined by the ClowdEnvironment, Clowder will create those buckets.
 | *`inMemoryDb`* __boolean__ | If inMemoryDb is set to true, Clowder will pass configuration of an In Memory Database to the pods in the ClowdApp. This single instance will be shared between all apps.
@@ -183,7 +183,7 @@ ClowdEnvironment is the Schema for the clowdenvironments API
 | Field | Description
 | *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
 | *`kind`* __string__ | `ClowdEnvironment`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentspec[$$ClowdEnvironmentSpec$$]__ | A ClowdEnvironmentSpec object.
 |===
@@ -201,9 +201,9 @@ ClowdEnvironmentList contains a list of ClowdEnvironment
 | Field | Description
 | *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
 | *`kind`* __string__ | `ClowdEnvironmentList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironment[$$ClowdEnvironment$$] array__ | A list of ClowdEnvironment objects.
+| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironment[$$ClowdEnvironment$$]__ | A list of ClowdEnvironment objects.
 |===
 
 
@@ -222,7 +222,7 @@ ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 | Field | Description
 | *`targetNamespace`* __string__ | TargetNamespace describes the namespace where any generated environmental resources should end up, this is particularly important in (*_local_*) mode.
 | *`providers`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]__ | A ProvidersConfig object, detailing the setup and configuration of all the providers used in this ClowdEnvironment.
-| *`resourceDefaults`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.
+| *`resourceDefaults`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the default resource requirements in standard k8s format in the event that they omitted from a PodSpec inside a ClowdApp.
 | *`serviceConfig`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-serviceconfig[$$ServiceConfig$$]__ | 
 | *`disabled`* __boolean__ | Disabled turns off reconciliation for this ClowdEnv
 |===
@@ -245,7 +245,7 @@ ClowdJobInvocation is the Schema for the jobinvocations API
 | Field | Description
 | *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
 | *`kind`* __string__ | `ClowdJobInvocation`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
 | *`spec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationspec[$$ClowdJobInvocationSpec$$]__ | 
 |===
@@ -263,9 +263,9 @@ ClowdJobInvocationList contains a list of ClowdJobInvocation
 | Field | Description
 | *`apiVersion`* __string__ | `cloud.redhat.com/v1alpha1`
 | *`kind`* __string__ | `ClowdJobInvocationList`
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
-| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation[$$ClowdJobInvocation$$] array__ | 
+| *`items`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation[$$ClowdJobInvocation$$]__ | 
 |===
 
 
@@ -420,7 +420,7 @@ DeploymentInfo defailts information about a specific deployment.
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`privateStrategy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#deploymentstrategytype-v1-apps[$$DeploymentStrategyType$$]__ | PrivateStrategy allows a deployment that only uses a private port to set the deployment strategy one of Recreate or Rolling, default for a private service is Recreate. This is to enable a quicker roll out for services that do not have public facing endpoints.
+| *`privateStrategy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#deploymentstrategytype-v1-apps[$$DeploymentStrategyType$$]__ | PrivateStrategy allows a deployment that only uses a private port to set the deployment strategy one of Recreate or Rolling, default for a private service is Recreate. This is to enable a quicker roll out for services that do not have public facing endpoints.
 |===
 
 
@@ -501,7 +501,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`command`* __string array__ | A list of commands to run inside the parent Pod.
 | *`args`* __string array__ | A list of args to be passed to the init container.
 | *`inheritEnv`* __boolean__ | If true, inheirts the environment variables from the parent pod. specification
-| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables used only by the initContainer.
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables used only by the initContainer.
 |===
 
 
@@ -519,7 +519,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 |===
 | Field | Description
 | *`imageBase`* __string__ | 
-| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
 | *`vaultSecretRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret reference for loading vault credentials into the IQE job
 | *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiconfig[$$IqeUIConfig$$]__ | Defines configurations related to UI testing containers
 |===
@@ -601,7 +601,7 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | Field | Description
 | *`imageBase`* __string__ | Defines the image used for selenium containers in this environment
 | *`defaultImageTag`* __string__ | Defines the default image tag used for selenium containers in this environment
-| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the resource requests/limits set on selenium containers
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | Defines the resource requests/limits set on selenium containers
 |===
 
 
@@ -639,8 +639,8 @@ Job defines a ClowdJob A Job struct will deploy as a CronJob if `schedule` is se
 | *`name`* __string__ | Name defines identifier of the Job. This name will be used to name the CronJob resource, the container will be name identically.
 | *`schedule`* __string__ | Defines the schedule for the job to run
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside the CronJob.
-| *`restartPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#restartpolicy-v1-core[$$RestartPolicy$$]__ | Defines the restart policy for the CronJob, defaults to never
-| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#concurrencypolicy-v1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow Only applies to Cronjobs
+| *`restartPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#restartpolicy-v1-core[$$RestartPolicy$$]__ | Defines the restart policy for the CronJob, defaults to never
+| *`concurrencyPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#concurrencypolicy-v1-batch[$$ConcurrencyPolicy$$]__ | Defines the concurrency policy for the CronJob, defaults to Allow Only applies to Cronjobs
 | *`suspend`* __boolean__ | This flag tells the controller to suspend subsequent executions, it does not apply to already started executions.  Defaults to false. Only applies to Cronjobs
 | *`successfulJobsHistoryLimit`* __integer__ | The number of successful finished jobs to retain. Value must be non-negative integer. Defaults to 3. Only applies to Cronjobs
 | *`failedJobsHistoryLimit`* __integer__ | The number of failed finished jobs to retain. Value must be non-negative integer. Defaults to 1. Only applies to Cronjobs
@@ -685,7 +685,7 @@ KafkaClusterConfig defines options related to the Kafka cluster managed/monitore
 | *`storageSize`* __string__ | Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
 | *`deleteClaim`* __boolean__ | Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'
 | *`version`* __string__ | Version. If unset, default is '2.5.0'
-| *`config`* __map[string]string__ | Config full options
+| *`config`* __object (keys:string, values:string)__ | Config full options
 | *`jvmOptions`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta2-kafkaspeckafkajvmoptions[$$KafkaSpecKafkaJvmOptions$$]__ | JVM Options
 | *`resources`* __xref:{anchor_prefix}-github-com-redhatinsights-strimzi-client-go-apis-kafka-strimzi-io-v1beta2-kafkaspeckafkaresources[$$KafkaSpecKafkaResources$$]__ | Resource Limits
 |===
@@ -710,6 +710,7 @@ KafkaConfig configures the Clowder provider controlling the creation of Kafka in
 | *`cluster`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaclusterconfig[$$KafkaClusterConfig$$]__ | Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode.
 | *`connect`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaconnectclusterconfig[$$KafkaConnectClusterConfig$$]__ | Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode.
 | *`managedSecretRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode.
+| *`managedPrefix`* __string__ | Managed topic prefix for the managed cluster. Only used in (*_managed_*) mode.
 | *`clusterName`* __string__ | (Deprecated) Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance.
 | *`namespace`* __string__ | (Deprecated) The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
 | *`connectNamespace`* __string__ | (Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
@@ -856,15 +857,15 @@ PodSpec defines a container running inside a ClowdApp.
 |===
 | Field | Description
 | *`image`* __string__ | Image refers to the container image used to create the pod.
-| *`initContainers`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$] array__ | A list of init containers used to perform at-startup operations.
+| *`initContainers`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$]__ | A list of init containers used to perform at-startup operations.
 | *`command`* __string array__ | The command that will be invoked inside the pod at startup.
 | *`args`* __string array__ | A list of args to be passed to the pod container.
-| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables in k8s defined format.
-| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
-| *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#probe-v1-core[$$Probe$$]__ | A pass-through of a Liveness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
-| *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
-| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volume-v1-core[$$Volume$$] array__ | A pass-through of a list of Volumes in standa k8s format.
-| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core[$$EnvVar$$]__ | A list of environment variables in k8s defined format.
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | A pass-through of a resource requirements in k8s ResourceRequirements format. If omitted, the default resource requirements from the ClowdEnvironment will be used.
+| *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Liveness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
+| *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
+| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volume-v1-core[$$Volume$$] array__ | A pass-through of a list of Volumes in standa k8s format.
+| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecar[$$Sidecar$$] array__ | Lists the expected side cars, will be validated in the validating webhook
 | *`machinePool`* __string__ | MachinePool allows the pod to be scheduled to a particular machine pool.
 |===
@@ -945,7 +946,7 @@ ProvidersConfig defines a group of providers configuration for a ClowdEnvironmen
 | *`web`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]__ | Defines the Configuration for the Clowder Web Provider.
 | *`featureFlags`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsconfig[$$FeatureFlagsConfig$$]__ | Defines the Configuration for the Clowder FeatureFlags Provider.
 | *`serviceMesh`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshconfig[$$ServiceMeshConfig$$]__ | Defines the Configuration for the Clowder ServiceMesh Provider.
-| *`pullSecrets`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$] array__ | Defines the pull secret to use for the service accounts.
+| *`pullSecrets`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the pull secret to use for the service accounts.
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]__ | Defines the environment for iqe/smoke testing
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecars[$$Sidecars$$]__ | Defines the sidecar configuration
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig[$$AutoScalerConfig$$]__ | Defines the autoscaler configuration
