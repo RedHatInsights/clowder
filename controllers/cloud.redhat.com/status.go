@@ -22,26 +22,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func countResources(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string, gvk schema.GroupVersionKind, reqs resources.ResourceConditionReadyRequirements) (int32, int32, string, error) {
+func countResources(ctx context.Context, pClient client.Client, uid string, namespaces []string, gvk schema.GroupVersionKind, reqs resources.ResourceConditionReadyRequirements) resources.ResourceCounterResults {
 	counter := resources.ResourceCounter{
 		Query: resources.ResourceCounterQuery{
 			Namespaces: namespaces,
 			GVK:        gvk,
-			OwnerGUID:  string(o.GetUID()),
+			OwnerGUID:  uid,
 		},
 		ReadyRequirements: reqs,
 	}
 
 	results := counter.Count(ctx, pClient)
 
-	return int32(results.Managed), int32(results.Ready), results.BrokenMessage, nil
+	return results
 }
 
-func countDeployments(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countDeployments(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
 	return countResources(
 		ctx,
 		pClient,
-		o,
+		uid,
 		namespaces,
 		schema.GroupVersionKind{
 			Group:   "apps",
@@ -55,11 +55,11 @@ func countDeployments(ctx context.Context, pClient client.Client, o object.Clowd
 	)
 }
 
-func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countKafkas(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
 	return countResources(
 		ctx,
 		pClient,
-		o,
+		uid,
 		namespaces,
 		schema.GroupVersionKind{
 			Group:   "kafka.strimzi.io",
@@ -73,11 +73,11 @@ func countKafkas(ctx context.Context, pClient client.Client, o object.ClowdObjec
 	)
 }
 
-func countKafkaConnects(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countKafkaConnects(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
 	return countResources(
 		ctx,
 		pClient,
-		o,
+		uid,
 		namespaces,
 		schema.GroupVersionKind{
 			Group:   "kafka.strimzi.io",
@@ -91,11 +91,11 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, o object.Clo
 	)
 }
 
-func countKafkaTopics(ctx context.Context, pClient client.Client, o object.ClowdObject, namespaces []string) (int32, int32, string, error) {
+func countKafkaTopics(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
 	return countResources(
 		ctx,
 		pClient,
-		o,
+		uid,
 		namespaces,
 		schema.GroupVersionKind{
 			Group:   "kafka.strimzi.io",
@@ -126,11 +126,6 @@ func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 }
 
 func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, string, error) {
-
-	var totalManagedDeployments int32
-	var totalReadyDeployments int32
-	var totalManagedTopics int32
-	var totalReadyTopics int32
 	var msgs []string
 
 	deploymentStats := crd.EnvResourceStatus{}
@@ -140,53 +135,40 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 		return crd.EnvResourceStatus{}, "", err
 	}
 
-	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, o, namespaces)
-	if err != nil {
-		return crd.EnvResourceStatus{}, "", err
-	}
-	totalManagedDeployments += managedDeployments
-	totalReadyDeployments += readyDeployments
-	if msg != "" {
-		msgs = append(msgs, msg)
+	uid := string(o.GetUID())
+
+	deploymentResults := countDeployments(ctx, client, uid, namespaces)
+	deploymentStats.ManagedDeployments += int32(deploymentResults.Managed)
+	deploymentStats.ReadyDeployments += int32(deploymentResults.Ready)
+	if deploymentResults.BrokenMessage != "" {
+		msgs = append(msgs, deploymentResults.BrokenMessage)
 	}
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		managedDeployments, readyDeployments, msg, err = countKafkas(ctx, client, o, namespaces)
-		if err != nil {
-			return crd.EnvResourceStatus{}, "", err
-		}
-		totalManagedDeployments += managedDeployments
-		totalReadyDeployments += readyDeployments
-		if msg != "" {
-			msgs = append(msgs, msg)
+		kafkaResults := countKafkas(ctx, client, uid, namespaces)
+		deploymentStats.ManagedDeployments += int32(kafkaResults.Managed)
+		deploymentStats.ReadyDeployments += int32(kafkaResults.Ready)
+		if kafkaResults.BrokenMessage != "" {
+			msgs = append(msgs, kafkaResults.BrokenMessage)
 		}
 
-		managedDeployments, readyDeployments, msg, err = countKafkaConnects(ctx, client, o, namespaces)
-		if err != nil {
-			return crd.EnvResourceStatus{}, "", err
-		}
-		totalManagedDeployments += managedDeployments
-		totalReadyDeployments += readyDeployments
-		if msg != "" {
-			msgs = append(msgs, msg)
+		kafkaConnectResults := countKafkaConnects(ctx, client, uid, namespaces)
+		deploymentStats.ManagedDeployments += int32(kafkaConnectResults.Managed)
+		deploymentStats.ReadyDeployments += int32(kafkaConnectResults.Ready)
+		if kafkaConnectResults.BrokenMessage != "" {
+			msgs = append(msgs, kafkaConnectResults.BrokenMessage)
 		}
 
-		managedTopics, readyTopics, msg, err := countKafkaTopics(ctx, client, o, namespaces)
-		if err != nil {
-			return crd.EnvResourceStatus{}, "", err
-		}
-		totalManagedTopics += managedTopics
-		totalReadyTopics += readyTopics
-		if msg != "" {
-			msgs = append(msgs, msg)
+		kafkaTopicResults := countKafkaTopics(ctx, client, uid, namespaces)
+		deploymentStats.ManagedTopics += int32(kafkaTopicResults.Managed)
+		deploymentStats.ReadyTopics += int32(kafkaTopicResults.Ready)
+		if kafkaTopicResults.BrokenMessage != "" {
+			msgs = append(msgs, kafkaTopicResults.BrokenMessage)
 		}
 	}
 
-	msg = fmt.Sprintf("dependency failure: [%s]", strings.Join(msgs, ","))
-	deploymentStats.ManagedDeployments = totalManagedDeployments
-	deploymentStats.ReadyDeployments = totalReadyDeployments
-	deploymentStats.ManagedTopics = totalManagedTopics
-	deploymentStats.ReadyTopics = totalReadyTopics
+	msg := fmt.Sprintf("dependency failure: [%s]", strings.Join(msgs, ","))
+
 	return deploymentStats, msg, nil
 }
 
@@ -215,12 +197,7 @@ func SetAppResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
-func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdApp) (crd.AppResourceStatus, string, error) {
-
-	var totalManagedDeployments int32
-	var totalReadyDeployments int32
-	var msgs []string
-
+func GetAppResourceFigures(ctx context.Context, client client.Client, o object.ClowdObject) (crd.AppResourceStatus, string, error) {
 	deploymentStats := crd.AppResourceStatus{}
 
 	namespaces, err := o.GetNamespacesInEnv(ctx, client)
@@ -228,20 +205,13 @@ func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 		return crd.AppResourceStatus{}, "", errors.Wrap("get namespaces: ", err)
 	}
 
-	managedDeployments, readyDeployments, msg, err := countDeployments(ctx, client, o, namespaces)
-	if err != nil {
-		return crd.AppResourceStatus{}, "", errors.Wrap("count deploys: ", err)
-	}
-	totalManagedDeployments += managedDeployments
-	totalReadyDeployments += readyDeployments
-	if msg != "" {
-		msgs = append(msgs, msg)
-	}
+	uid := string(o.GetUID())
 
-	msg = fmt.Sprintf("dependency failure: [%s]", strings.Join(msgs, ","))
-	deploymentStats.ManagedDeployments = totalManagedDeployments
-	deploymentStats.ReadyDeployments = totalReadyDeployments
-	return deploymentStats, msg, nil
+	results := countDeployments(ctx, client, uid, namespaces)
+
+	deploymentStats.ManagedDeployments = int32(results.Managed)
+	deploymentStats.ReadyDeployments = int32(results.Ready)
+	return deploymentStats, results.BrokenMessage, nil
 }
 
 func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (bool, string, error) {
