@@ -194,6 +194,9 @@ type KafkaConfig struct {
 	// Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode.
 	ManagedSecretRef NamespacedName `json:"managedSecretRef,omitempty"`
 
+	// Managed topic prefix for the managed cluster. Only used in (*_managed_*) mode.
+	ManagedPrefix string `json:"managedPrefix,omitempty"`
+
 	// (Deprecated) Defines the cluster name to be used by the Kafka Provider this will
 	// be used in some modes to locate the Kafka instance.
 	ClusterName string `json:"clusterName,omitempty"`
