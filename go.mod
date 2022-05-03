@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/RedHatInsights/cyndi-operator v0.1.4
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220429143931-e9f6f9e14da7
+	github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220503184328-4580125819c2
 	github.com/RedHatInsights/simple-kc-client v0.0.5
 	github.com/RedHatInsights/strimzi-client-go v0.28.0
 	github.com/go-logr/logr v0.4.0

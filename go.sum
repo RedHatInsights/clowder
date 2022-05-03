@@ -133,6 +133,8 @@ github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220429122851-4d18867f19aa h1
 github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220429122851-4d18867f19aa/go.mod h1:n4qCLh67dIDdumbHHSknxQjn3jK8z/4S9f6pMnMxhCs=
 github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220429143931-e9f6f9e14da7 h1:k+3fs2jxZSHncdAMc4cfgkUHqSHqLN8f8WmIZTVZzPs=
 github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220429143931-e9f6f9e14da7/go.mod h1:n4qCLh67dIDdumbHHSknxQjn3jK8z/4S9f6pMnMxhCs=
+github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220503184328-4580125819c2 h1:SsjwXLvy/r+RJ5AoJa6XGy+mENG4ie3EHH+KvHlArCM=
+github.com/RedHatInsights/rhc-osdk-utils v0.4.2-0.20220503184328-4580125819c2/go.mod h1:n4qCLh67dIDdumbHHSknxQjn3jK8z/4S9f6pMnMxhCs=
 github.com/RedHatInsights/simple-kc-client v0.0.5 h1:NGXHyIo+ToP21THrIUh5ONnqN1zvfVg3Tmi1dvDjB4Q=
 github.com/RedHatInsights/simple-kc-client v0.0.5/go.mod h1:ctTJFcWGT/Tec/S4l7RnDV2ddVjZ0OqxDMF7XK4iT1U=
 github.com/RedHatInsights/strimzi-client-go v0.28.0 h1:WcnFKI6ZuxS3y3e1P/R4vLRfbTEVk57mMkkB9+X9UPE=
