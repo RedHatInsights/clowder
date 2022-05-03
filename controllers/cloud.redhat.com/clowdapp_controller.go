@@ -74,32 +74,12 @@ import (
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
 
-type ReconciliationMetrics struct {
-	appName            string
-	envName            string
-	reconcileStartTime time.Time
-	metricsEnabled     bool
-}
-
-func (rm *ReconciliationMetrics) init(clowdAppName string, clowdEnvName string) {
-	rm.appName = clowdAppName
-	rm.envName = clowdEnvName
-	rm.metricsEnabled = clowderconfig.LoadedConfig.Features.ReconciliationMetrics
-}
-
-func (rm *ReconciliationMetrics) start() {
-	if !rm.metricsEnabled {
-		return
-	}
-	rm.reconcileStartTime = time.Now()
-}
-
-func (rm *ReconciliationMetrics) stop() {
-	if !rm.metricsEnabled {
-		return
-	}
-	elapsedTime := time.Since(rm.reconcileStartTime).Seconds()
-	reconciliationMetrics.With(prometheus.Labels{"app": rm.appName, "env": rm.envName}).Observe(elapsedTime)
+// ClowdAppReconciler reconciles a ClowdApp object
+type ClowdAppReconciler struct {
+	client.Client
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch;create;update;patch;delete
@@ -119,14 +99,6 @@ func (rm *ReconciliationMetrics) stop() {
 // +kubebuilder:rbac:groups="",resources=endpoints;pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses;networkpolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=config.openshift.io,resources=ingresses,verbs=get;list
-
-// ClowdAppReconciler reconciles a ClowdApp object
-type ClowdAppReconciler struct {
-	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
-}
 
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -190,9 +162,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	log.Info("Reconciliation started")
-	reconciliationMetrics := ReconciliationMetrics{}
-	reconciliationMetrics.init(app.Name, app.Spec.EnvName)
-	reconciliationMetrics.start()
 
 	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
 		requestMetrics.With(prometheus.Labels{"type": "app", "name": app.GetIdent()}).Inc()
@@ -320,7 +289,6 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	r.Recorder.Eventf(&app, "Normal", "SuccessfulReconciliation", "Clowdapp reconciled [%s]", app.GetClowdName())
 	log.Info("Reconciliation successful")
 
-	reconciliationMetrics.stop()
 	return ctrl.Result{}, nil
 }
 

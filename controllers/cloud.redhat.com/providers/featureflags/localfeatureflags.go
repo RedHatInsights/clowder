@@ -8,6 +8,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
@@ -136,7 +137,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 			return nil, err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env, providers.DB_DEFAULT)
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, sizing.GetDefaultVolCapacity())
 
 		if err = p.Cache.Update(LocalFFDBPVC, pvc); err != nil {
 			return nil, err

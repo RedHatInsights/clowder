@@ -591,10 +591,6 @@ func (m *localWebProvider) configureKeycloak() error {
 			return err
 		}
 
-		if nUser == nil {
-			return fmt.Errorf("returned user struct was nil")
-		}
-
 		nUser.Attributes.NewEntitlements = []string{
 			`"ansible": {"is_entitled": true, "is_trial": false}`,
 			`"cost_management": {"is_entitled": true, "is_trial": false}`,
