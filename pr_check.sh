@@ -23,16 +23,11 @@ mkdir -p "$DOCKER_CONF"
 docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 
 RESPONSE=$( \
-        curl -Ls -H "Authorization: Bearer $QUAY_API_TOKEN" \
-        "https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/?specificTag=$BASE_TAG" \
+        curl -Ls -I -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $QUAY_API_TOKEN" \
+        https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/$BASE_TAG/images \
     )
-
-echo "received HTTP response: $RESPONSE"
-
-# find all non-expired tags
-VALID_TAGS_LENGTH=$(echo $RESPONSE | jq '[ .tags[] | select(.end_ts == null) ] | length')
-
-if [[ "$VALID_TAGS_LENGTH" -eq 0 ]]; then
+    echo "received HTTP response: $RESPONSE"
+if [[ $RESPONSE != 200 ]]; then
     BASE_IMG=$BASE_IMG make docker-build-and-push-base
 fi
 

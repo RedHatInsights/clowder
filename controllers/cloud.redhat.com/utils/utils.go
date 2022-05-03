@@ -253,13 +253,13 @@ func MakeService(service *core.Service, nn types.NamespacedName, labels map[stri
 }
 
 // MakePVC takes a PVC object and applies the correct ownership and labels to it.
-func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels map[string]string, size string, baseResource obj.ClowdObject) {
+func MakePVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, labels map[string]string, capacity string, baseResource obj.ClowdObject) {
 	labeler := GetCustomLabeler(labels, nn, baseResource)
 	labeler(pvc)
 	pvc.Spec.AccessModes = []core.PersistentVolumeAccessMode{core.ReadWriteOnce}
 	pvc.Spec.Resources = core.ResourceRequirements{
 		Requests: core.ResourceList{
-			core.ResourceName(core.ResourceStorage): resource.MustParse(size),
+			core.ResourceName(core.ResourceStorage): resource.MustParse(capacity),
 		},
 	}
 }

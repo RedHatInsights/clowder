@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"fmt"
 	"strconv"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -66,16 +65,10 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 
 	for _, topic := range app.Spec.KafkaTopics {
 
-		topicName := topic.TopicName
-
-		if k.Env.Spec.Providers.Kafka.ManagedPrefix != "" {
-			topicName = fmt.Sprintf("%s-%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
-		}
-
 		kafkaConfig.Topics = append(
 			kafkaConfig.Topics,
 			config.TopicConfig{
-				Name:          topicName,
+				Name:          topic.TopicName,
 				RequestedName: topic.TopicName,
 			},
 		)

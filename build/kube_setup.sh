@@ -38,10 +38,10 @@ fi
 # kubectl is required for interactions with the cluster.
 if [ -n "${KUBECTL_CMD}" ]; then
     :  # already set via env var
-elif command -v minikube; then
-    KUBECTL_CMD='minikube kubectl --'
 elif command -v kubectl; then
     KUBECTL_CMD=kubectl
+elif command -v minikube; then
+    KUBECTL_CMD='minikube kubectl --'
 else
     echo "*** 'kubectl' not found in path. Please install it or minikube, or set KUBECTL_CMD"
     exit 1

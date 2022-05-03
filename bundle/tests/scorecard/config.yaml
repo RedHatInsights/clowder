@@ -12,9 +12,6 @@ stages:
     labels:
       suite: basic
       test: basic-check-spec-test
-    storage:
-      spec:
-        mountPath: {}
   - entrypoint:
     - scorecard-test
     - olm-bundle-validation
@@ -22,9 +19,6 @@ stages:
     labels:
       suite: olm
       test: olm-bundle-validation-test
-    storage:
-      spec:
-        mountPath: {}
   - entrypoint:
     - scorecard-test
     - olm-crds-have-validation
@@ -32,9 +26,6 @@ stages:
     labels:
       suite: olm
       test: olm-crds-have-validation-test
-    storage:
-      spec:
-        mountPath: {}
   - entrypoint:
     - scorecard-test
     - olm-crds-have-resources
@@ -42,9 +33,6 @@ stages:
     labels:
       suite: olm
       test: olm-crds-have-resources-test
-    storage:
-      spec:
-        mountPath: {}
   - entrypoint:
     - scorecard-test
     - olm-spec-descriptors
@@ -52,9 +40,6 @@ stages:
     labels:
       suite: olm
       test: olm-spec-descriptors-test
-    storage:
-      spec:
-        mountPath: {}
   - entrypoint:
     - scorecard-test
     - olm-status-descriptors
@@ -62,16 +47,7 @@ stages:
     labels:
       suite: olm
       test: olm-status-descriptors-test
-    storage:
-      spec:
-        mountPath: {}
   - image: quay.io/psav/skuttl-jq:v1.0.1
     labels:
       suite: kuttlsuite
       test: kuttltest1
-    storage:
-      spec:
-        mountPath: {}
-storage:
-  spec:
-    mountPath: {}

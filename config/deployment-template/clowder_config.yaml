@@ -18,7 +18,6 @@ data:
         "features": {
             "createServiceMonitor": ${CREATE_SERVICE_MONITORS},
             "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES},
-            "perProviderMetrics": ${PER_PROVIDER_METRICS},
-            "reconciliationMetrics": ${RECONCILIATION_METRICS}
+            "perProviderMetrics": ${PER_PROVIDER_METRICS}
         }
     }

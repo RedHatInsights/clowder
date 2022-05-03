@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-kafka-managed
+  name: test-db-resource-tee
 spec:
-  targetNamespace: test-kafka-managed
+  targetNamespace: test-db-resource-tee
   providers:
     web:
       port: 8000
@@ -14,13 +14,10 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      mode: managed
-      managedPrefix: test-kafka
-      managedSecretRef:
-        name: managed-secret
-        namespace: test-kafka-managed
-    db:
       mode: none
+    db:
+      mode: local
+      pvc: true
     logging:
       mode: none
     objectStore:
@@ -36,3 +33,19 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-a
+  namespace: test-db-resource-tee
+spec:
+  envName: test-db-resource-tee
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  database:
+    name: app-a
+    version: 12
+    dbResourceSize: medium
