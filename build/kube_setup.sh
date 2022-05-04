@@ -143,7 +143,7 @@ function install_cert_manager {
 
     echo "*** Will wait for cert manager to come up in background"
     ${KUBECTL_CMD} rollout status deployment/cert-manager -n cert-manager | sed "s/^/[cert-manager] /" &
-    ${KUBECTL_CMD} rollout status deployment/cert-manager-webhook -n cert-manager-webhook | sed "s/^/[cert-manager] /" &
+    ${KUBECTL_CMD} rollout status deployment/cert-manager-webhook -n cert-manager | sed "s/^/[cert-manager] /" &
     BG_PIDS+=($!)
 
     cd "$ROOT_DIR"
