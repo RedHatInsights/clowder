@@ -86,13 +86,6 @@ objects:
                     the configuration of which will be made available to all the pods
                     in the ClowdApp.
                   properties:
-                    dbResourceSize:
-                      description: T-shirt size, one of small, medium, large
-                      enum:
-                      - small
-                      - medium
-                      - large
-                      type: string
                     dbVolumeSize:
                       description: T-shirt size, one of small, medium, large
                       enum:
@@ -5684,6 +5677,10 @@ objects:
                         enableLegacyStrimzi:
                           description: EnableLegacyStrimzi disables TLS + user auth
                           type: boolean
+                        managedPrefix:
+                          description: Managed topic prefix for the managed cluster.
+                            Only used in (*_managed_*) mode.
+                          type: string
                         managedSecretRef:
                           description: Defines the secret reference for the Managed
                             Kafka mode. Only used in (*_managed_*) mode.
@@ -6976,7 +6973,8 @@ objects:
       \            \"apply\": ${DEBUG_CACHE_APPLY}\n        }\n    },\n    \"features\"\
       : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
       \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
-      : ${PER_PROVIDER_METRICS}\n    }\n}\n"
+      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
+      \    }\n}\n"
   kind: ConfigMap
   metadata:
     name: clowder-clowder-config
@@ -7204,5 +7202,7 @@ parameters:
 - name: WATCH_STRIMZI_RESOURCES
   value: 'false'
 - name: PER_PROVIDER_METRICS
+  value: 'false'
+- name: RECONCILIATION_METRICS
   value: 'false'
 

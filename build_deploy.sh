@@ -24,12 +24,16 @@ docker --config="$DOCKER_CONF" login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 docker --config="$DOCKER_CONF" login -u="$RH_REGISTRY_USER" -p="$RH_REGISTRY_TOKEN" registry.redhat.io
 
 RESPONSE=$( \
-        curl -Ls -I -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $QUAY_API_TOKEN" \
-        https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/$BASE_TAG/images \
+        curl -Ls -H "Authorization: Bearer $QUAY_API_TOKEN" \
+        "https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/?specificTag=$BASE_TAG" \
     )
-    echo "received HTTP response: $RESPONSE"
 
-if [[ $RESPONSE != 200 ]]; then
+echo "received HTTP response: $RESPONSE"
+
+# find all non-expired tags
+VALID_TAGS_LENGTH=$(echo $RESPONSE | jq '[ .tags[] | select(.end_ts == null) ] | length')
+
+if [[ "$VALID_TAGS_LENGTH" -eq 0 ]]; then
     docker --config="$DOCKER_CONF" build -f Dockerfile.base . -t "$BASE_IMG"
 	docker --config="$DOCKER_CONF" push "$BASE_IMG"
 fi

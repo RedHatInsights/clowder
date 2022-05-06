@@ -58,3 +58,11 @@ spec:
     kind: Deployment
     name: puptoo-processor
   targetCPUUtilizationPercentage: 50
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-hpa-processor
+  namespace: test-autoscaler
+spec:
+  replicas: 2

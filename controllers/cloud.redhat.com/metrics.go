@@ -56,6 +56,13 @@ var (
 		},
 		[]string{"type", "name"},
 	)
+	reconciliationMetrics = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "clowder_app_reconciliation_time",
+			Help: "Clowder App reconciliation time",
+		},
+		[]string{"app", "env"},
+	)
 )
 
 func init() {
@@ -68,5 +75,6 @@ func init() {
 		requestMetrics,
 		presentAppsMetric,
 		presentEnvsMetric,
+		reconciliationMetrics,
 	)
 }
