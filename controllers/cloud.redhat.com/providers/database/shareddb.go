@@ -15,7 +15,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
@@ -145,16 +144,13 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 		return nil, err
 	}
 
-	defaultVolSize := sizing.GetDefaultSizeVol()
-
 	if p.Env.Spec.Providers.Database.PVC {
 		pvc := &core.PersistentVolumeClaim{}
 		if err := p.Cache.Create(SharedDBPVC, nn, pvc); err != nil {
 			return nil, err
 		}
 
-		largestDBVolSize := defaultVolSize
-
+		largestDB := providers.DB_DEFAULT
 		appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 		if err != nil {
 			return nil, err
@@ -167,17 +163,21 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 				continue
 			}
 			dbSize := app.Spec.Database.DBVolumeSize
-			if dbSize == "" {
-				dbSize = defaultVolSize
+			switch dbSize {
+			case "small":
+				if largestDB != providers.DB_MEDIUM && largestDB != providers.DB_LARGE {
+					largestDB = providers.DB_SMALL
+				}
+			case "medium":
+				if largestDB != providers.DB_LARGE {
+					largestDB = providers.DB_MEDIUM
+				}
+			case "large":
+				largestDB = providers.DB_LARGE
 			}
-
-			if sizing.IsSizeLarger(dbSize, largestDBVolSize) {
-				largestDBVolSize = dbSize
-			}
-
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env, sizing.GetVolCapacityForSize(largestDBVolSize))
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, largestDB)
 
 		if err = p.Cache.Update(SharedDBPVC, pvc); err != nil {
 			return nil, err

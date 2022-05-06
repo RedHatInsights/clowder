@@ -8,7 +8,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
@@ -106,10 +105,8 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		image = imgComponents[0] + ":" + tag
 	}
 
-	resources := sizing.GetResourceRequirementsForSize(app.Spec.Database.DBResourceSize)
-
 	labels := &map[string]string{"sub": "local_db"}
-	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, &resources)
+	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, nil)
 
 	if err = db.Cache.Update(LocalDBDeployment, dd); err != nil {
 		return err
@@ -132,9 +129,21 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 
-		volCapacity := sizing.GetVolCapacityForSize(app.Spec.Database.DBVolumeSize)
+		var size string
+		if app.Spec.Database.DBVolumeSize == "" {
+			size = providers.DB_DEFAULT
+		} else {
+			switch app.Spec.Database.DBVolumeSize {
+			case "small":
+				size = providers.DB_SMALL
+			case "medium":
+				size = providers.DB_MEDIUM
+			case "large":
+				size = providers.DB_LARGE
+			}
+		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, app, volCapacity)
+		provutils.MakeLocalDBPVC(pvc, nn, app, size)
 
 		if err = db.Cache.Update(LocalDBPVC, pvc); err != nil {
 			return err

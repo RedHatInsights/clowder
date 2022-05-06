@@ -60,3 +60,32 @@ spec:
           metricName: http_requests_total
           threshold: '4'
           query: summation_query
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo-hpa
+  namespace: test-autoscaler
+spec:
+  envName: test-autoscaler
+  deployments:
+  - name: processor
+    minReplicas: 1
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    autoScaler:
+      simpleAutoscale: true
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: puptoo-hpa
+  namespace: test-autoscaler
+spec:
+  maxReplicas: 5
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: puptoo-hpa-processor
+  targetCPUUtilizationPercentage: 50
