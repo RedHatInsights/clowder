@@ -5,11 +5,11 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -109,21 +109,10 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		FailureThreshold:    3,
 	}
 
-	var requestResource core.ResourceRequirements
+	requestResource := sizing.GetDefaultResourceRequirements()
 
 	if res != nil {
 		requestResource = *res
-	} else {
-		requestResource = core.ResourceRequirements{
-			Limits: core.ResourceList{
-				"memory": resource.MustParse("1Gi"),
-				"cpu":    resource.MustParse("1200m"),
-			},
-			Requests: core.ResourceList{
-				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("600m"),
-			},
-		}
 	}
 
 	c := core.Container{
@@ -162,6 +151,6 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 }
 
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
-func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, size string) {
-	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, size, baseResource)
+func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, capacity string) {
+	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
 }
