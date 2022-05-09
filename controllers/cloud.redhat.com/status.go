@@ -12,9 +12,10 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/rhc-osdk-utils/resources"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -22,91 +23,68 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func countResources(ctx context.Context, pClient client.Client, uid string, namespaces []string, gvk schema.GroupVersionKind, reqs resources.ResourceConditionReadyRequirements) resources.ResourceCounterResults {
+func countDeployments(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
 	counter := resources.ResourceCounter{
 		Query: resources.ResourceCounterQuery{
 			Namespaces: namespaces,
-			GVK:        gvk,
+			OfType:     &apps.Deployment{},
 			OwnerGUID:  uid,
 		},
-		ReadyRequirements: reqs,
+		ReadyRequirements: []resources.ResourceConditionReadyRequirements{{
+			Type:   "Available",
+			Status: "True",
+		}},
 	}
-
 	results := counter.Count(ctx, pClient)
-
 	return results
 }
 
-func countDeployments(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
-	return countResources(
-		ctx,
-		pClient,
-		uid,
-		namespaces,
-		schema.GroupVersionKind{
-			Group:   "apps",
-			Kind:    "Deployment",
-			Version: "v1",
-		},
-		resources.ResourceConditionReadyRequirements{
-			Type:   "Available",
-			Status: "True",
-		},
-	)
-}
-
 func countKafkas(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
-	return countResources(
-		ctx,
-		pClient,
-		uid,
-		namespaces,
-		schema.GroupVersionKind{
-			Group:   "kafka.strimzi.io",
-			Kind:    "Kafka",
-			Version: "v1beta2",
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			OfType:     &strimzi.Kafka{},
+			OwnerGUID:  uid,
 		},
-		resources.ResourceConditionReadyRequirements{
+		ReadyRequirements: []resources.ResourceConditionReadyRequirements{{
 			Type:   "Ready",
 			Status: "True",
-		},
-	)
+		}},
+	}
+	results := counter.Count(ctx, pClient)
+	return results
 }
 
 func countKafkaConnects(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
-	return countResources(
-		ctx,
-		pClient,
-		uid,
-		namespaces,
-		schema.GroupVersionKind{
-			Group:   "kafka.strimzi.io",
-			Kind:    "KafkaConnect",
-			Version: "v1beta2",
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			OfType:     &strimzi.KafkaConnect{},
+			OwnerGUID:  uid,
 		},
-		resources.ResourceConditionReadyRequirements{
+		ReadyRequirements: []resources.ResourceConditionReadyRequirements{{
 			Type:   "Ready",
 			Status: "True",
-		},
-	)
+		}},
+	}
+	results := counter.Count(ctx, pClient)
+	return results
 }
 
 func countKafkaTopics(ctx context.Context, pClient client.Client, uid string, namespaces []string) resources.ResourceCounterResults {
-	return countResources(
-		ctx,
-		pClient,
-		uid,
-		namespaces,
-		schema.GroupVersionKind{
-			Group:   "kafka.strimzi.io",
-			Kind:    "KafkaTopic",
-			Version: "v1beta2",
+	counter := resources.ResourceCounter{
+		Query: resources.ResourceCounterQuery{
+			Namespaces: namespaces,
+			OfType:     &strimzi.KafkaTopic{},
+			OwnerGUID:  uid,
 		},
-		resources.ResourceConditionReadyRequirements{
+		ReadyRequirements: []resources.ResourceConditionReadyRequirements{{
 			Type:   "Ready",
 			Status: "True",
-		},
-	)
+		}},
+	}
+	results := counter.Count(ctx, pClient)
+	return results
 }
 
 // SetEnvResourceStatus the status on the passed ClowdObject interface.
