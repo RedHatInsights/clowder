@@ -290,6 +290,9 @@ type AutoScaler struct {
 	Triggers []keda.ScaleTriggers `json:"triggers,omitempty"`
 	// +optional
 	Fallback *keda.Fallback `json:"fallback,omitempty"`
+	// ExternalHPA allows replicas on deployments to be controlled by another resource, but will
+	// not be allowed to fall under the minReplicas as set in the ClowdApp.
+	ExternalHPA bool `json:"externalHPA,omitempty"`
 }
 
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the

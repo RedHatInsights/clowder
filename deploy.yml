@@ -290,6 +290,12 @@ objects:
                               seconds).
                             format: int32
                             type: integer
+                          externalHPA:
+                            description: ExternalHPA allows replicas on deployments
+                              to be controlled by another resource, but will not be
+                              allowed to fall under the minReplicas as set in the
+                              ClowdApp.
+                            type: boolean
                           fallback:
                             description: Fallback is the spec for fallback options
                             properties:

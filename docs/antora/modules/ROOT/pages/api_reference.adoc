@@ -78,6 +78,7 @@ AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting t
 | *`advanced`* __AdvancedConfig__ | 
 | *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
 | *`fallback`* __Fallback__ | 
+| *`externalHPA`* __boolean__ | ExternalHPA allows replicas on deployments to be controlled by another resource, but will not be allowed to fall under the minReplicas as set in the ClowdApp.
 |===
 
 
