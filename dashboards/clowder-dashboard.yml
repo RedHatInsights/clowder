@@ -30,14 +30,15 @@ data:
       },
       "editable": true,
       "fiscalYearStartMonth": 0,
-      "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1639073401560,
+      "iteration": 1652193626373,
       "links": [],
       "liveNow": false,
       "panels": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fieldConfig": {
             "defaults": {
               "decimals": 0,
@@ -76,7 +77,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "expr": "sum(clowd_app_managed_apps)",
@@ -86,14 +87,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Managed ClowdApps",
           "transparent": true,
           "type": "stat"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fieldConfig": {
             "defaults": {
               "decimals": 0,
@@ -132,7 +133,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "expr": "sum(clowd_env_managed_envs)",
@@ -142,8 +143,6 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Managed ClowdEnvs",
           "transparent": true,
           "type": "stat"
@@ -153,7 +152,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -180,7 +181,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -197,9 +198,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Operation Rates per minute",
           "tooltip": {
             "shared": true,
@@ -209,9 +208,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -219,25 +216,18 @@ data:
             {
               "$$hashKey": "object:72",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "$$hashKey": "object:73",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -250,7 +240,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 0,
           "fillGradient": 0,
           "gridPos": {
@@ -277,7 +269,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -318,9 +310,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Managed Resources",
           "tooltip": {
             "shared": true,
@@ -330,9 +320,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -342,7 +330,6 @@ data:
               "format": "short",
               "label": "Count",
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
@@ -357,12 +344,13 @@ data:
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fieldConfig": {
             "defaults": {
               "decimals": 2,
@@ -406,7 +394,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "exemplar": true,
@@ -417,14 +405,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Failing ClowdApps",
           "transparent": true,
           "type": "stat"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fieldConfig": {
             "defaults": {
               "decimals": 2,
@@ -468,7 +456,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "exemplar": true,
@@ -479,8 +467,6 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Failing ClowdEnvs",
           "transparent": true,
           "type": "stat"
@@ -490,7 +476,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -517,7 +505,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -535,9 +523,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Pod Container Restarts",
           "tooltip": {
             "shared": true,
@@ -547,9 +533,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -557,25 +541,19 @@ data:
             {
               "$$hashKey": "object:457",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:458",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -587,7 +565,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -614,7 +594,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -632,9 +612,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Reconciliations Per Minute",
           "tooltip": {
             "shared": true,
@@ -644,9 +622,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -654,25 +630,19 @@ data:
             {
               "$$hashKey": "object:783",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:784",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -683,7 +653,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fieldConfig": {
             "defaults": {
               "unit": "decbytes"
@@ -716,7 +688,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -741,9 +713,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Clowder Memory Usage",
           "tooltip": {
             "shared": true,
@@ -753,9 +723,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -763,25 +731,19 @@ data:
             {
               "$$hashKey": "object:76",
               "format": "decbytes",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:77",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -789,7 +751,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 0,
           "fillGradient": 0,
           "gridPos": {
@@ -816,7 +780,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -833,9 +797,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Pod Replica Count",
           "tooltip": {
             "shared": true,
@@ -845,9 +807,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -855,29 +815,26 @@ data:
             {
               "$$hashKey": "object:848",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:849",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
-          "datasource": "c-rh-c-eph-prometheus",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mOIyqZB7k"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -921,7 +878,7 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "exemplar": true,
@@ -932,8 +889,6 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Ephemeral version",
           "transparent": true,
           "type": "stat"
@@ -947,7 +902,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -974,7 +931,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -992,9 +949,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Reconciliation Errors",
           "tooltip": {
             "shared": true,
@@ -1004,9 +959,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -1014,29 +967,25 @@ data:
             {
               "$$hashKey": "object:296",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:297",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": false
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1117,7 +1066,8 @@ data:
               "placement": "bottom"
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
@@ -1142,7 +1092,10 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": "crcs02ue1-prometheus",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "skSy3ZB7k"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1186,7 +1139,7 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "exemplar": true,
@@ -1197,14 +1150,15 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Stage version",
           "transparent": true,
           "type": "stat"
         },
         {
-          "datasource": "crcs02ue1-prometheus",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "skSy3ZB7k"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1248,7 +1202,7 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "exemplar": true,
@@ -1259,14 +1213,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Fedramp Stage version",
           "transparent": true,
           "type": "stat"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1331,7 +1285,8 @@ data:
               "placement": "bottom"
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
@@ -1356,7 +1311,9 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "uid": "$datasource"
+          },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1383,7 +1340,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1401,9 +1358,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "WorkQueue Depth",
           "tooltip": {
             "shared": true,
@@ -1413,9 +1368,7 @@ data:
           "transparent": true,
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
@@ -1423,29 +1376,26 @@ data:
             {
               "$$hashKey": "object:637",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
               "min": "0",
               "show": true
             },
             {
               "$$hashKey": "object:638",
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
-          "datasource": "crcp01ue1-prometheus",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "pKSsqZB7k"
+          },
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1485,7 +1435,7 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.2.7",
+          "pluginVersion": "8.4.1",
           "targets": [
             {
               "exemplar": true,
@@ -1496,14 +1446,14 @@ data:
               "refId": "A"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "Production version",
           "transparent": true,
           "type": "stat"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1584,7 +1534,8 @@ data:
               "placement": "bottom"
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
@@ -1601,7 +1552,100 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 9,
+            "x": 6,
+            "y": 32
+          },
+          "id": 38,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "avg(clowder_app_reconciliation_time_sum/clowder_app_reconciliation_time_count) by (app)",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 10,
+              "legendFormat": "{{app}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Avg reconciliation time by app",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1656,7 +1700,7 @@ data:
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 33
+            "y": 40
           },
           "id": 33,
           "options": {
@@ -1666,7 +1710,8 @@ data:
               "placement": "bottom"
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
@@ -1684,22 +1729,19 @@ data:
         }
       ],
       "refresh": false,
-      "schemaVersion": 32,
+      "schemaVersion": 35,
       "style": "dark",
       "tags": [],
       "templating": {
         "list": [
           {
             "current": {
-              "selected": false,
+              "selected": true,
               "text": "c-rh-c-eph-prometheus",
               "value": "c-rh-c-eph-prometheus"
             },
-            "description": null,
-            "error": null,
             "hide": 0,
             "includeAll": false,
-            "label": null,
             "multi": false,
             "name": "datasource",
             "options": [],
@@ -1720,5 +1762,6 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 19
+      "version": 1,
+      "weekStart": ""
     }
