@@ -197,6 +197,12 @@
                 },
                 "password": {
                     "type": "string"
+                },
+                "securityProtocol": {
+                    "type": "string"
+                },
+                "saslMechanism": {
+                    "type": "string"
                 }
             },
             "required": []

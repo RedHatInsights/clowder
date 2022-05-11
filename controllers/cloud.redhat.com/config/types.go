@@ -560,6 +560,12 @@ type KafkaSASLConfig struct {
 	// Password corresponds to the JSON schema field "password".
 	Password *string `json:"password,omitempty"`
 
+	// SaslMechanism corresponds to the JSON schema field "saslMechanism".
+	SaslMechanism *string `json:"saslMechanism,omitempty"`
+
+	// SecurityProtocol corresponds to the JSON schema field "securityProtocol".
+	SecurityProtocol *string `json:"securityProtocol,omitempty"`
+
 	// Username corresponds to the JSON schema field "username".
 	Username *string `json:"username,omitempty"`
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -57,8 +58,10 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 		Hostname: string(s.Data["hostname"]),
 		Port:     &port,
 		Sasl: &config.KafkaSASLConfig{
-			Password: &password,
-			Username: &username,
+			Password:         &password,
+			Username:         &username,
+			SecurityProtocol: utils.StringPtr("SASL_SSL"),
+			SaslMechanism:    utils.StringPtr("PLAIN"),
 		},
 	}
 

@@ -15,6 +15,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	osdkutil "github.com/RedHatInsights/rhc-osdk-utils/utils"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -759,6 +760,8 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
 			}
 			password := string(kafkaSecret.Data["password"])
 			broker.Sasl.Password = &password
+			broker.Sasl.SecurityProtocol = osdkutil.StringPtr("SASL_SSL")
+			broker.Sasl.SaslMechanism = osdkutil.StringPtr("SCRAM-SHA-512")
 		}
 	}
 	return nil
