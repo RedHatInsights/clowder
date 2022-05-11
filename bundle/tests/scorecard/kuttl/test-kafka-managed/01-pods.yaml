@@ -18,6 +18,7 @@ spec:
       managedSecretRef:
         name: managed-secret
         namespace: test-kafka-managed
+      managedPrefix: ""
     db:
       mode: none
     logging:
