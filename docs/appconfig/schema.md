@@ -567,10 +567,12 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig"}
 ```
 
-| Property              | Type     | Required | Nullable       | Defined by                                                                                                                                                                        |
-| :-------------------- | -------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [username](#username) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/username") |
-| [password](#password) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/password") |
+| Property                              | Type     | Required | Nullable       | Defined by                                                                                                                                                                                        |
+| :------------------------------------ | -------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [username](#username)                 | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/username")                 |
+| [password](#password)                 | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/password")                 |
+| [securityProtocol](#securityprotocol) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-securityprotocol.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/securityProtocol") |
+| [saslMechanism](#saslmechanism)       | `string` | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig-properties-saslmechanism.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/saslMechanism")       |
 
 ### username
 
@@ -601,6 +603,38 @@ Reference this group by using
 -   defined in: [AppConfig](schema-definitions-kafkasaslconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/password")
 
 #### password Type
+
+`string`
+
+### securityProtocol
+
+
+
+
+`securityProtocol`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkasaslconfig-properties-securityprotocol.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/securityProtocol")
+
+#### securityProtocol Type
+
+`string`
+
+### saslMechanism
+
+
+
+
+`saslMechanism`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-kafkasaslconfig-properties-saslmechanism.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/saslMechanism")
+
+#### saslMechanism Type
 
 `string`
 

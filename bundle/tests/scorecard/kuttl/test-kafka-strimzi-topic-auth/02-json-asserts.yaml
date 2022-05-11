@@ -9,3 +9,5 @@ commands:
 - script: jq -r '.kafka.brokers[0].hostname == "test-kafka-strimzi-topic-auth-kafka-bootstrap.test-kafka-strimzi-topic-auth-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-auth-json
 - script: jq -r '.kafka.brokers[0].port == 9093' -e < /tmp/test-kafka-strimzi-topic-auth-json
 - script: jq -r '.kafka.brokers[0].sasl.username == "test-kafka-strimzi-topic-auth-puptoo"' -e < /tmp/test-kafka-strimzi-topic-auth-json
+- script: jq -r '.kafka.brokers[0].sasl.securityProtocol == "SASL_SSL"' -e < /tmp/test-kafka-strimzi-topic-auth-json
+- script: jq -r '.kafka.brokers[0].sasl.saslMechanism == "SCRAM-SHA-512"' -e < /tmp/test-kafka-strimzi-topic-auth-json
