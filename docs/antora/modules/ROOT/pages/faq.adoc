@@ -66,6 +66,32 @@ To set this up, use the https://redhatinsights.github.io/clowder/clowder/dev/api
 NOTE: The `spec.providers.database.name` cannot be set with this feature. App interface mode also
 supports this feature. `spec.providers.database.version` is ignored in shared db mode.
 
+=== How can I migrate to a new database?
+
+Clowder only supports connection to one database at a time. In *app-interface* mode, this can be
+problematic as there are occasions where a database snapshot restore is necessary. When performing
+this the app effectively needs to connect to a new database. As a part of this setup, the new
+database will receive a new hostname. With the legacy way of choosing database secrets in
+*app-interface* mode, this would mean changing the name of the database in the ClowdApp stanza
+which will end up causing much disruption. 
+
+In Clwoder 0.16.0, a new way of declaring database secrets in *app-interface* mode was added, this
+makes use of annotations to decide which database credential to expose to the application. This
+takes the form of the following example and should be applied in app-interface
+
+[source,yaml]
+----
+terraformResources:
+  - name: my_resource
+    annotations:
+      clowder/database: app-d
+----
+
+In this example, the ClowdApp would have the database name set to ``app-d``. To migrate to a new
+database, bring up the second secret with the annotation applied to it, and remove it from the
+first.
+
+
 == Web Services
 
 === How do I set up an internal port for inter-app communication?
