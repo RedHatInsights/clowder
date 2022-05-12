@@ -195,7 +195,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		Protocol:      "TCP",
 	}}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -205,7 +205,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -213,7 +213,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,

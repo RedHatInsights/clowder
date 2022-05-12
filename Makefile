@@ -36,7 +36,7 @@ CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=7 HEAD)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:$(BUNDLE_IMAGE_TAG)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.22
+ENVTEST_K8S_VERSION = 1.23
 
 # Image URL to use all building/pushing image targets
 ifeq ($(findstring -minikube,${MAKECMDGOALS}), -minikube)
@@ -188,7 +188,7 @@ update-version: ## Updates the version in the image
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1)
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.

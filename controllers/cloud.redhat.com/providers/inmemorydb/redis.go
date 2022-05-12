@@ -97,7 +97,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 	dd.Spec.Replicas = &oneReplica
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		Exec: &core.ExecAction{
 			Command: []string{
 				"redis-cli",
@@ -106,7 +106,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -114,7 +114,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 45,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,

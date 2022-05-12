@@ -78,7 +78,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		Protocol:      core.ProtocolTCP,
 	}}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		Exec: &core.ExecAction{
 			Command: []string{
 				"psql",
@@ -93,7 +93,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -101,7 +101,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 45,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,

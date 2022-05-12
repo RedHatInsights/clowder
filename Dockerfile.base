@@ -1,11 +1,10 @@
 # Build the manager binary
-FROM registry.access.redhat.com/ubi8/go-toolset:1.16.7 as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.17.7 as builder
 USER 0
-RUN dnf install -y openssh-clients git podman make which go jq python3
+RUN dnf install -y openssh-clients git make which jq python3
 
 RUN GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 \
     && GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3@v3.8.7
-RUN ln -s /usr/bin/podman /usr/bin/docker
 COPY build/pr_check_inner.sh .
 RUN chmod 775 pr_check_inner.sh
 
