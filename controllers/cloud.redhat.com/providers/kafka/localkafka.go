@@ -206,7 +206,7 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		},
 	}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -216,7 +216,7 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -224,7 +224,7 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -356,7 +356,7 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		},
 	}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		Exec: &core.ExecAction{
 			Command: []string{
 				"echo",
@@ -373,7 +373,7 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -381,7 +381,7 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,

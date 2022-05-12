@@ -25,6 +25,7 @@ export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 source build/template_check.sh
 
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+export PATH="/bins:$PATH"
 
 chmod 600 minikube-ssh-ident
 
@@ -65,15 +66,16 @@ export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
-kubectl config use-context remote-minikube
-kubectl get pods --all-namespaces=true
+export KUBECTL_CMD="kubectl "
+$KUBECTL_CMD config use-context remote-minikube
+$KUBECTL_CMD get pods --all-namespaces=true
 
 source build/kube_setup.sh
 
 export IMAGE_TAG=`git rev-parse --short HEAD`
 
-kubectl create namespace clowder-system
-kubectl apply -f clowder-config.yaml -n clowder-system
+$KUBECTL_CMD create namespace clowder-system
+$KUBECTL_CMD apply -f clowder-config.yaml -n clowder-system
 
 mkdir artifacts
 
@@ -81,31 +83,31 @@ cat manifest.yaml > artifacts/manifest.yaml
 
 sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
 
-kubectl apply -f manifest.yaml --validate=false
+$KUBECTL_CMD apply -f manifest.yaml --validate=false
 
 # Wait for operator deployment...
-kubectl rollout status deployment clowder-controller-manager -n clowder-system
+$KUBECTL_CMD rollout status deployment clowder-controller-manager -n clowder-system
 
-kubectl krew install kuttl
+$KUBECTL_CMD krew install kuttl
 
 set +e
 
-kubectl get env
-kubectl get env
+$KUBECTL_CMD get env
+$KUBECTL_CMD get env
 
 source build/run_kuttl.sh --report xml
 KUTTL_RESULT=$?
 mv kuttl-test.xml artifacts/junit-kuttl.xml
 
-CLOWDER_PODS=$(kubectl get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}')
+CLOWDER_PODS=$($KUBECTL_CMD get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}')
 for pod in $CLOWDER_PODS; do
-    kubectl logs $pod -n clowder-system > artifacts/$pod.log
-    kubectl logs $pod -n clowder-system | ./parse-controller-logs > artifacts/$pod-parsed-controller-logs.log
+    $KUBECTL_CMD logs $pod -n clowder-system > artifacts/$pod.log
+    $KUBECTL_CMD logs $pod -n clowder-system | ./parse-controller-logs > artifacts/$pod-parsed-controller-logs.log
 done
 
-STRIMZI_PODS=$(kubectl get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
+STRIMZI_PODS=$($KUBECTL_CMD get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
 for pod in $STRIMZI_PODS; do
-    kubectl logs $pod -n strimzi > artifacts/$pod.log
+    $KUBECTL_CMD logs $pod -n strimzi > artifacts/$pod.log
 done
 set -e
 

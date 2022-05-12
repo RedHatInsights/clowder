@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -35,7 +34,7 @@ func init() {
 }
 
 // Log is a null logger instance.
-var Log logr.Logger = ctrllog.NullLogger{}
+var Log logr.Logger = logr.Discard()
 
 // RandString generates a random string of length n
 func RandString(n int) string {

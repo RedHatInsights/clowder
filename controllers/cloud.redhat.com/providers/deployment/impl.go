@@ -96,7 +96,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	var readinessProbe core.Probe
 
 	baseProbe := core.Probe{
-		Handler: core.Handler{
+		ProbeHandler: core.ProbeHandler{
 			HTTPGet: &core.HTTPGetAction{
 				Path:   "/healthz",
 				Scheme: "HTTP",

@@ -182,7 +182,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		Protocol:      core.ProtocolTCP,
 	}}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -192,7 +192,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -200,7 +200,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -308,7 +308,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		Protocol:      core.ProtocolTCP,
 	}}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -318,12 +318,12 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 	}
@@ -437,7 +437,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		Protocol:      core.ProtocolTCP,
 	}}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -447,12 +447,12 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 	}

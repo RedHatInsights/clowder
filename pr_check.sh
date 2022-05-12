@@ -39,15 +39,13 @@ fi
 export IMAGE_TAG=`git rev-parse --short HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-export GOROOT="/opt/go/1.16.10"
+export GOROOT="/opt/go/1.17.7"
 export PATH="${GOROOT}/bin:${PATH}"
 
 make envtest
 make update-version
+make test
 
-KUBEBUILDER_ASSETS=`bin/setup-envtest use 1.22 -p path ` go test ./... -coverprofile cover.out
-mkdir -p testbin/bin
-cp `bin/setup-envtest use 1.22 -p path `/* testbin/bin -r
 CLOWDER_VERSION=`git describe --tags`
 
 IMG=$IMAGE_NAME:$IMAGE_TAG BASE_IMG=$BASE_IMG make docker-build
@@ -65,6 +63,7 @@ set +e
 docker run -i \
     --name $CONTAINER_NAME \
     -v $PWD:/workspace:ro \
+    -v `$PWD/bin/setup-envtest use -p path`:/bins:ro \
     -e IMAGE_NAME=$IMAGE_NAME \
     -e IMAGE_TAG=$IMAGE_TAG \
     -e QUAY_USER=$QUAY_USER \

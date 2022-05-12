@@ -318,7 +318,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		Protocol:      core.ProtocolTCP,
 	}}
 
-	probeHandler := core.Handler{
+	probeHandler := core.ProbeHandler{
 		TCPSocket: &core.TCPSocketAction{
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
@@ -328,7 +328,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 	}
 
 	livenessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -336,7 +336,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		Handler:             probeHandler,
+		ProbeHandler:        probeHandler,
 		InitialDelaySeconds: 20,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
