@@ -255,6 +255,27 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.Spec.Kafka.Listeners = []strimzi.KafkaSpecKafkaListenersElem{listener}
 
+	if s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		externalHost := "localhost"
+		externalPort := int32(9094)
+		externalListener := strimzi.KafkaSpecKafkaListenersElem{
+			Name: "ext",
+			Port: 9094,
+			Tls:  false,
+			Type: "nodeport",
+			Configuration: &strimzi.KafkaSpecKafkaListenersElemConfiguration{
+				Brokers: []strimzi.KafkaSpecKafkaListenersElemConfigurationBrokersElem{
+					{
+						AdvertisedHost: &externalHost,
+						AdvertisedPort: &externalPort,
+						Broker:         0,
+					},
+				},
+			},
+		}
+		k.Spec.Kafka.Listeners = append(k.Spec.Kafka.Listeners, externalListener)
+	}
+
 	if s.Env.Spec.Providers.Kafka.PVC {
 		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
 			Type:        strimzi.KafkaSpecKafkaStorageTypePersistentClaim,
