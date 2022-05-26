@@ -32,6 +32,10 @@ spec:
     spec:
       activeDeadlineSeconds: 6000
       template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
         spec:
           serviceAccount: puptoo-app
           serviceAccountName: puptoo-app
@@ -58,6 +62,10 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
         spec:
           serviceAccount: puptoo-app
           serviceAccountName: puptoo-app
@@ -76,6 +84,10 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
         spec:
           serviceAccount: puptoo-app
           serviceAccountName: puptoo-app
@@ -93,6 +105,10 @@ metadata:
 spec:
   activeDeadlineSeconds: 6000
   template:
+    metadata:
+      annotations:
+        "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+        "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
     spec:
       serviceAccount: puptoo-app
       serviceAccountName: puptoo-app

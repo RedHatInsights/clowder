@@ -26,6 +26,10 @@ metadata:
     job : host-inventory-smoke-iqe
 spec:
   template:
+    metadata:
+      annotations:
+        "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+        "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
     spec:
       containers:
         - args:

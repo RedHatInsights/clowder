@@ -237,6 +237,10 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 
 	j.Spec.Template.Spec.Containers = containers
 
+	// add kubelinter annotations to ignore liveness/readiness probes on Jobs
+	j.Spec.Template.ObjectMeta.Annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
+	j.Spec.Template.ObjectMeta.Annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
+
 	return nil
 }
 
