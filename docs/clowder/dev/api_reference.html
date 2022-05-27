@@ -545,7 +545,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>items</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp">ClowdApp</a></em></p>
+<p><strong><code>items</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp">ClowdApp</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of ClowdApp Resources.</p>
@@ -585,7 +585,7 @@
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>deployments</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment">Deployment</a></em></p>
+<p><strong><code>deployments</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment">Deployment</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of deployments</p>
@@ -593,7 +593,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>jobs</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-job">Job</a></em></p>
+<p><strong><code>jobs</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-job">Job</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of jobs</p>
@@ -609,7 +609,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>kafkaTopics</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkatopicspec">KafkaTopicSpec</a></em></p>
+<p><strong><code>kafkaTopics</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkatopicspec">KafkaTopicSpec</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of Kafka topics that will be created and made available to all the pods listed in the ClowdApp.</p>
@@ -797,7 +797,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>items</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironment">ClowdEnvironment</a></em></p>
+<p><strong><code>items</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironment">ClowdEnvironment</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of ClowdEnvironment objects.</p>
@@ -981,7 +981,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>items</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation">ClowdJobInvocation</a></em></p>
+<p><strong><code>items</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation">ClowdJobInvocation</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
@@ -2259,7 +2259,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>config</code></strong> <em>object (keys:string, values:string)</em></p>
+<p><strong><code>config</code></strong> <em>map[string]string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Config full options</p>
@@ -2815,7 +2815,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>initContainers</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer">InitContainer</a></em></p>
+<p><strong><code>initContainers</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer">InitContainer</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of init containers used to perform at-startup operations.</p>
@@ -2839,7 +2839,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a></em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#envvar-v1-core">EnvVar</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A list of environment variables in k8s defined format.</p>
@@ -3138,7 +3138,7 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>pullSecrets</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname">NamespacedName</a></em></p>
+<p><strong><code>pullSecrets</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname">NamespacedName</a> array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Defines the pull secret to use for the service accounts.</p>
