@@ -7,6 +7,8 @@ import (
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -167,8 +169,10 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
 
 	// add kubelinter annotations to ignore liveness/readiness probes on CronJobs
-	pt.ObjectMeta.Annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
-	pt.ObjectMeta.Annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
+	annotations := make(map[string]string)
+	annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
+	annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
+	utils.UpdateAnnotations(pt.ObjectMeta, annotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
 
