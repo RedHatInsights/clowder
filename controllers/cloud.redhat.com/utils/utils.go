@@ -332,3 +332,16 @@ func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 		logger.Info(msg, keysAndValues...)
 	}
 }
+
+func UpdateAnnotations(objMeta metav1.ObjectMeta, desiredAnnotations map[string]string) {
+	annotations := objMeta.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	for k, v := range desiredAnnotations {
+		annotations[k] = v
+	}
+
+	objMeta.SetAnnotations(annotations)
+}
