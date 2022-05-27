@@ -241,7 +241,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	annotations := make(map[string]string)
 	annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
 	annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
-	utils.UpdateAnnotations(j.Spec.Template.ObjectMeta, annotations)
+	utils.UpdatePodTemplateAnnotations(&j.Spec.Template, annotations)
 
 	return nil
 }

@@ -132,7 +132,7 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	annotations := make(map[string]string)
 	annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
 	annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
-	utils.UpdateAnnotations(j.Spec.Template.ObjectMeta, annotations)
+	utils.UpdatePodTemplateAnnotations(&j.Spec.Template, annotations)
 
 	return nil
 }
