@@ -333,8 +333,8 @@ func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 	}
 }
 
-func UpdateAnnotations(objMeta metav1.ObjectMeta, desiredAnnotations map[string]string) {
-	annotations := objMeta.GetAnnotations()
+func UpdatePodTemplateAnnotations(podTemplateSpec *core.PodTemplateSpec, desiredAnnotations map[string]string) {
+	annotations := podTemplateSpec.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
@@ -343,5 +343,5 @@ func UpdateAnnotations(objMeta metav1.ObjectMeta, desiredAnnotations map[string]
 		annotations[k] = v
 	}
 
-	objMeta.SetAnnotations(annotations)
+	podTemplateSpec.SetAnnotations(annotations)
 }

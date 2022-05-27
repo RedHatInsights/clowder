@@ -172,7 +172,7 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 	annotations := make(map[string]string)
 	annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
 	annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
-	utils.UpdateAnnotations(pt.ObjectMeta, annotations)
+	utils.UpdatePodTemplateAnnotations(pt, annotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
 

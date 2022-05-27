@@ -6,6 +6,8 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 )
 
 type servicemeshProvider struct {
@@ -28,14 +30,11 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	}
 
 	for _, deployment := range dList.Items {
-		annotations := deployment.Spec.Template.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
+		annotations := make(map[string]string)
 		annotations["sidecar.istio.io/inject"] = "true"
 		annotations["traffic.sidecar.istio.io/excludeOutboundPorts"] = "443,9093,5432,10000"
 
-		deployment.Spec.Template.SetAnnotations(annotations)
+		utils.UpdatePodTemplateAnnotations(&deployment.Spec.Template, annotations)
 
 		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
 	}

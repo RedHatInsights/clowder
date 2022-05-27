@@ -10,6 +10,8 @@ import (
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
@@ -39,13 +41,9 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 	}
 
 	for _, deployment := range dList.Items {
-		annotations := deployment.Spec.Template.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
+		annotations := make(map[string]string)
 		annotations["configHash"] = hash
-
-		deployment.Spec.Template.SetAnnotations(annotations)
+		utils.UpdatePodTemplateAnnotations(&deployment.Spec.Template, annotations)
 
 		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
 	}
@@ -56,13 +54,9 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 	}
 
 	for _, job := range jList.Items {
-
-		annotations := job.Spec.JobTemplate.Spec.Template.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
+		annotations := make(map[string]string)
 		annotations["configHash"] = hash
-		job.Spec.JobTemplate.Spec.Template.SetAnnotations(annotations)
+		utils.UpdatePodTemplateAnnotations(&job.Spec.JobTemplate.Spec.Template, annotations)
 
 		ch.Cache.Update(cronjobProvider.CoreCronJob, &job)
 	}

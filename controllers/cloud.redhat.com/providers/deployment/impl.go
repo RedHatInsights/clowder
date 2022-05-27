@@ -13,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 )
 
 func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
@@ -43,12 +45,13 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	d.Kind = "Deployment"
 
 	pod := deployment.PodSpec
-	d.Spec.Template.SetAnnotations(make(map[string]string))
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
-		d.Spec.Template.Annotations["clowder/authsidecar-image"] = "a76bb81"
-		d.Spec.Template.Annotations["clowder/authsidecar-enabled"] = "true"
-		d.Spec.Template.Annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
-		d.Spec.Template.Annotations["clowder/authsidecar-config"] = fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name)
+		annotations := make(map[string]string)
+		annotations["clowder/authsidecar-image"] = "a76bb81"
+		annotations["clowder/authsidecar-enabled"] = "true"
+		annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
+		annotations["clowder/authsidecar-config"] = fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name)
+		utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
 	}
 
 	if d.Spec.Replicas == nil || (deployment.MinReplicas != nil && *d.Spec.Replicas < *deployment.MinReplicas) {
