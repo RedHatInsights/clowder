@@ -67,6 +67,8 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 			password = utils.RandString(8)
 		}
 
+		version := KEYCLOAK_VERSION
+
 		defaultPassword := utils.RandString(8)
 
 		return map[string]string{
@@ -74,6 +76,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 			"password":        password,
 			"defaultUsername": "jdoe",
 			"defaultPassword": defaultPassword,
+			"version":         version,
 		}
 	}
 

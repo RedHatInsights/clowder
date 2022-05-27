@@ -20,6 +20,8 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+var KEYCLOAK_VERSION = "15.0.2"
+
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
@@ -208,7 +210,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		FailureThreshold:    3,
 	}
 
-	image := "quay.io/keycloak/keycloak:11.0.3"
+	image := fmt.Sprintf("quay.io/keycloak/keycloak:%s", KEYCLOAK_VERSION)
 
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
 		image = clowderconfig.LoadedConfig.Images.Keycloak
@@ -298,6 +300,17 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 				},
 			},
 		},
+		{
+			Name: "KEYCLOAK_VERSION",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: snn.Name,
+					},
+					Key: "version",
+				},
+			},
+		},
 	}
 
 	port := int32(8090)
@@ -328,7 +341,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:7ca0c5e"
+	image := "quay.io/cloudservices/mbop:dd6c49a"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -429,6 +442,17 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 				},
 			},
 		},
+		{
+			Name: "KEYCLOAK_VERSION",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: snn.Name,
+					},
+					Key: "version",
+				},
+			},
+		},
 	}
 
 	port := int32(8090)
@@ -460,7 +484,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mocktitlements:814df48"
+	image := "quay.io/cloudservices/mocktitlements:130433d"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -517,7 +541,7 @@ func (m *localWebProvider) configureKeycloak() error {
 	}
 
 	hostname := fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace)
-	client, err := keycloak.NewKeyCloakClient(hostname, m.config.KeycloakConfig.Username, m.config.KeycloakConfig.Password, m.Ctx, "master", m.Log)
+	client, err := keycloak.NewKeyCloakClient(hostname, m.config.KeycloakConfig.Username, m.config.KeycloakConfig.Password, m.Ctx, "master", m.Log, KEYCLOAK_VERSION)
 
 	if err != nil {
 		return err
