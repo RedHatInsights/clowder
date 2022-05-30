@@ -4,7 +4,6 @@ https://github.com/RedHatInsights/clowder/tree/master/docs/[Design docs]
 
 == Dev Environment Setup
 
-* Install https://sdk.operatorframework.io/docs/installation/#install-from-github-release[operator-sdk]
 * Install the latest https://kubernetes.io/docs/tasks/tools/install-kubectl/[kubectl]
 * Install https://krew.sigs.k8s.io/docs/user-guide/setup/install/[krew]
 * Install kuttl:
