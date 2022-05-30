@@ -1,7 +1,0 @@
-- op: add
-  path: /stages/0/tests/-
-  value:
-    image: quay.io/psav/skuttl-jq:v1.0.1
-    labels:
-      suite: kuttlsuite
-      test: kuttltest1

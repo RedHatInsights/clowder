@@ -337,10 +337,10 @@ default for `+kubectl+`, the following command will run **all** the e2e tests.
 
 KUBEBUILDER_ASSETS=~/kubebuilder_2.3.1_linux_amd64/bin/ \
     kubectl kuttl test \
-    --config bundle/tests/scorecard/kuttl/kuttl-test.yaml \
+    --config tests/kuttl/kuttl-test.yaml \
     --manifest-dir config/crd/bases/ \
     --manifest-dir config/crd/static/ \
-    bundle/tests/scorecard/kuttl/
+    tests/kuttl/
 
 
 Single tests can be targetted using the `+--test+` command line flag and using
