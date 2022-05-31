@@ -55,6 +55,8 @@ else
 RUNTIME ?= podman
 endif
 
+KUTTL_TEST ?= ""
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -116,6 +118,13 @@ vet: ## Run go vet against code.
 
 test: update-version manifests envtest generate fmt vet
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+
+kuttl: manifests generate fmt vet envtest
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" kubectl kuttl test \
+	--config bundle/tests/scorecard/kuttl/kuttl-test.yaml \
+	--manifest-dir config/crd/bases/ \
+	bundle/tests/scorecard/kuttl/ \
+	$(KUTTL_TEST)
 
 ##@ Build
 
