@@ -13,7 +13,10 @@ data:
         "list": [
           {
             "builtIn": 1,
-            "datasource": "-- Grafana --",
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
             "enable": true,
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
@@ -31,7 +34,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1652193626373,
+      "iteration": 1653996468534,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -77,7 +80,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "expr": "sum(clowd_app_managed_apps)",
@@ -133,7 +136,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "expr": "sum(clowd_env_managed_envs)",
@@ -181,7 +184,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -269,7 +272,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -394,7 +397,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "exemplar": true,
@@ -456,7 +459,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "exemplar": true,
@@ -505,7 +508,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -594,7 +597,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -688,7 +691,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -780,7 +783,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -833,8 +836,9 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "mOIyqZB7k"
+            "uid": "73Hs3WBnk"
           },
+          "description": "",
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -860,7 +864,7 @@ data:
             "x": 0,
             "y": 16
           },
-          "id": 27,
+          "id": 39,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -878,9 +882,13 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "73Hs3WBnk"
+              },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
               "instant": true,
@@ -889,7 +897,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Ephemeral version",
+          "title": "Development version",
           "transparent": true,
           "type": "stat"
         },
@@ -931,7 +939,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1094,7 +1102,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "skSy3ZB7k"
+            "uid": "mOIyqZB7k"
           },
           "fieldConfig": {
             "defaults": {
@@ -1121,7 +1129,7 @@ data:
             "x": 0,
             "y": 19
           },
-          "id": 19,
+          "id": 27,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -1139,7 +1147,7 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "exemplar": true,
@@ -1150,7 +1158,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Stage version",
+          "title": "Ephemeral version",
           "transparent": true,
           "type": "stat"
         },
@@ -1184,7 +1192,7 @@ data:
             "x": 0,
             "y": 22
           },
-          "id": 21,
+          "id": 19,
           "options": {
             "colorMode": "value",
             "graphMode": "none",
@@ -1202,18 +1210,18 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "exemplar": true,
-              "expr": "clowder_version",
+              "expr": "sum(clowder_version) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
               "refId": "A"
             }
           ],
-          "title": "Fedramp Stage version",
+          "title": "Stage version",
           "transparent": true,
           "type": "stat"
         },
@@ -1340,7 +1348,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1394,6 +1402,69 @@ data:
         {
           "datasource": {
             "type": "prometheus",
+            "uid": "skSy3ZB7k"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "light-blue",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 0,
+            "y": 25
+          },
+          "id": 21,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {
+              "valueSize": 40
+            },
+            "textMode": "name"
+          },
+          "pluginVersion": "8.5.2",
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "clowder_version",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{version}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Fedramp Stage version",
+          "transparent": true,
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
             "uid": "pKSsqZB7k"
           },
           "fieldConfig": {
@@ -1415,7 +1486,7 @@ data:
             "h": 3,
             "w": 6,
             "x": 0,
-            "y": 25
+            "y": 28
           },
           "id": 20,
           "options": {
@@ -1435,7 +1506,7 @@ data:
             },
             "textMode": "name"
           },
-          "pluginVersion": "8.4.1",
+          "pluginVersion": "8.5.2",
           "targets": [
             {
               "exemplar": true,
@@ -1524,7 +1595,7 @@ data:
             "h": 5,
             "w": 6,
             "x": 0,
-            "y": 28
+            "y": 31
           },
           "id": 34,
           "options": {
@@ -1729,7 +1800,7 @@ data:
         }
       ],
       "refresh": false,
-      "schemaVersion": 35,
+      "schemaVersion": 36,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1755,13 +1826,13 @@ data:
         ]
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-3h",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 1,
+      "version": 2,
       "weekStart": ""
     }
