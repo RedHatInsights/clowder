@@ -41,8 +41,7 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 	}
 
 	for _, deployment := range dList.Items {
-		annotations := make(map[string]string)
-		annotations["configHash"] = hash
+		annotations := map[string]string{"configHash": hash}
 		utils.UpdatePodTemplateAnnotations(&deployment.Spec.Template, annotations)
 
 		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
@@ -54,8 +53,7 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 	}
 
 	for _, job := range jList.Items {
-		annotations := make(map[string]string)
-		annotations["configHash"] = hash
+		annotations := map[string]string{"configHash": hash}
 		utils.UpdatePodTemplateAnnotations(&job.Spec.JobTemplate.Spec.Template, annotations)
 
 		ch.Cache.Update(cronjobProvider.CoreCronJob, &job)

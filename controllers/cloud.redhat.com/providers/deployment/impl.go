@@ -46,11 +46,12 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	pod := deployment.PodSpec
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
-		annotations := make(map[string]string)
-		annotations["clowder/authsidecar-image"] = "a76bb81"
-		annotations["clowder/authsidecar-enabled"] = "true"
-		annotations["clowder/authsidecar-port"] = strconv.Itoa(int(env.Spec.Providers.Web.Port))
-		annotations["clowder/authsidecar-config"] = fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name)
+		annotations := map[string]string{
+			"clowder/authsidecar-image":   "a76bb81",
+			"clowder/authsidecar-enabled": "true",
+			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
+			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
+		}
 		utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
 	}
 

@@ -169,9 +169,10 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
 
 	// add kubelinter annotations to ignore liveness/readiness probes on CronJobs
-	annotations := make(map[string]string)
-	annotations["ignore-check.kube-linter.io/no-liveness-probe"] = "probes not required on Job pods"
-	annotations["ignore-check.kube-linter.io/no-readiness-probe"] = "probes not required on Job pods"
+	annotations := map[string]string{
+		"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
+		"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
+	}
 	utils.UpdatePodTemplateAnnotations(pt, annotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
@@ -201,8 +202,6 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 	if cronjob.FailedJobsHistoryLimit != nil {
 		cj.Spec.FailedJobsHistoryLimit = cronjob.FailedJobsHistoryLimit
 	} // implicit else => default is 1
-
-	cj.Spec.JobTemplate.Spec.Template.Annotations = make(map[string]string)
 
 	if cronjob.RestartPolicy == "" {
 		cj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
