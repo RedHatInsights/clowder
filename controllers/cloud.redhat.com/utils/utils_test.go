@@ -173,3 +173,72 @@ func TestRandString(t *testing.T) {
 	b := utils.RandString(12)
 	assert.NotEqual(t, a, b)
 }
+
+func TestPodAnnotationsUpdate(t *testing.T) {
+	table := []struct {
+		name        string
+		podTemplate core.PodTemplateSpec
+		labels      map[string]string
+		result      map[string]string
+	}{
+		{
+			name: "test-pod-annotations-only",
+			podTemplate: core.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"test": "result",
+					},
+				},
+			},
+			labels: map[string]string{},
+			result: map[string]string{
+				"test": "result",
+			},
+		},
+		{
+			name: "test-pod-labels-only",
+			podTemplate: core.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{},
+			},
+			labels: map[string]string{
+				"test2": "result2",
+			},
+			result: map[string]string{
+				"test2": "result2",
+			},
+		},
+		{
+			name: "test-pod-labels-and annotations",
+			podTemplate: core.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"test": "result",
+					},
+				},
+			},
+			labels: map[string]string{
+				"test2": "result2",
+			},
+			result: map[string]string{
+				"test":  "result",
+				"test2": "result2",
+			},
+		},
+		{
+			name: "test-pod-labels-and annotations",
+			podTemplate: core.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{},
+			},
+			labels: map[string]string{},
+			result: map[string]string{},
+		},
+	}
+
+	for i := range table {
+		i := i
+		t.Run(table[i].name, func(t *testing.T) {
+			utils.UpdatePodTemplateAnnotations(&table[i].podTemplate, table[i].labels)
+			assert.Equal(t, table[i].result, table[i].podTemplate.GetAnnotations(), "labels don't match")
+		})
+	}
+}
