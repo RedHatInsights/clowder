@@ -393,11 +393,12 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	annotations := make(map[string]string)
-	annotations["clowder/authsidecar-image"] = "a76bb81"
-	annotations["clowder/authsidecar-enabled"] = "true"
-	annotations["clowder/authsidecar-port"] = "8090"
-	annotations["clowder/authsidecar-config"] = "caddy-config-mocktitlements"
+	annotations := map[string]string{
+		"clowder/authsidecar-image":   "a76bb81",
+		"clowder/authsidecar-enabled": "true",
+		"clowder/authsidecar-port":    "8090",
+		"clowder/authsidecar-config":  "caddy-config-mocktitlements",
+	}
 
 	utils.UpdatePodTemplateAnnotations(&dd.Spec.Template, annotations)
 

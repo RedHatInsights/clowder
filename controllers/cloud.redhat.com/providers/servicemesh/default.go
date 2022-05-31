@@ -30,10 +30,10 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	}
 
 	for _, deployment := range dList.Items {
-		annotations := make(map[string]string)
-		annotations["sidecar.istio.io/inject"] = "true"
-		annotations["traffic.sidecar.istio.io/excludeOutboundPorts"] = "443,9093,5432,10000"
-
+		annotations := map[string]string{
+			"sidecar.istio.io/inject":                       "true",
+			"traffic.sidecar.istio.io/excludeOutboundPorts": "443,9093,5432,10000",
+		}
 		utils.UpdatePodTemplateAnnotations(&deployment.Spec.Template, annotations)
 
 		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
