@@ -102,6 +102,10 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
+	if err := makeKeycloakImportSecretRealm(p.Cache, p.Env, wp.config.KeycloakConfig.DefaultPassword); err != nil {
+		return nil, err
+	}
+
 	objList = []rc.ResourceIdent{
 		WebBOPDeployment,
 		WebBOPService,
@@ -131,8 +135,6 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	if err := makeAuthIngress(p); err != nil {
 		return nil, err
 	}
-
-	err = wp.configureKeycloak()
 
 	if err != nil {
 		newErr := errors.Wrap("couldn't config", err)

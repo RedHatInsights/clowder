@@ -45,6 +45,26 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
     webServices:
       public:
         enabled: true

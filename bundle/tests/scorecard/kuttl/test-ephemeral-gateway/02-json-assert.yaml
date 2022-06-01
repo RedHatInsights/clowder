@@ -2,7 +2,8 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 5
+- script: sleep 10
 - script: kubectl get secret test-ephemeral-gateway-keycloak -n test-ephemeral-gateway -o json | jq -r '.data.defaultUsername == "amRvZQ=="'
 - script: kubectl get pod -l pod=puptoo-processor -n test-ephemeral-gateway -o json  | jq -r '.items[0].spec.containers[0].name=="puptoo-processor"'
 - script: kubectl get pod -l pod=puptoo-processor -n test-ephemeral-gateway -o json  | jq -r '.items[0].spec.containers[1].name=="crcauth"'
+- script: sh test_creds.sh

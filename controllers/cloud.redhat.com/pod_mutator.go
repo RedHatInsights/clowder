@@ -10,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -55,9 +56,37 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			image = clowderconfig.LoadedConfig.Images.Caddy
 		}
 
+		probeHandler := core.ProbeHandler{
+			TCPSocket: &core.TCPSocketAction{
+				Port: intstr.IntOrString{
+					Type:   intstr.Int,
+					IntVal: 8080,
+				},
+			},
+		}
+
+		livenessProbe := core.Probe{
+			ProbeHandler:        probeHandler,
+			InitialDelaySeconds: 10,
+			TimeoutSeconds:      2,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
+		}
+		readinessProbe := core.Probe{
+			ProbeHandler:        probeHandler,
+			InitialDelaySeconds: 15,
+			TimeoutSeconds:      2,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
+		}
+
 		container := core.Container{
-			Name:  "crcauth",
-			Image: image,
+			Name:           "crcauth",
+			Image:          image,
+			LivenessProbe:  &livenessProbe,
+			ReadinessProbe: &readinessProbe,
 			Env: []core.EnvVar{
 				{
 					Name:  "CADDY_PORT",

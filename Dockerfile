@@ -23,6 +23,7 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/manifest.yaml .
+COPY jsons ./jsons/
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]

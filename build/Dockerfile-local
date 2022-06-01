@@ -3,6 +3,7 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5
 WORKDIR /
 COPY bin/manager-cgo ./manager
+COPY jsons/ ./jsons/
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]

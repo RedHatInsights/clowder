@@ -2,7 +2,8 @@ package web
 
 import (
 	"fmt"
-	"strconv"
+	"os"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -10,7 +11,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
-	keycloak "github.com/RedHatInsights/simple-kc-client"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -21,6 +21,8 @@ import (
 )
 
 var KEYCLOAK_VERSION = "15.0.2"
+var MBOP_IMAGE = "quay.io/cloudservices/mbop:dd6c49a"
+var MOCKTITLEMENTS_IMAGE = "quay.io/cloudservices/mocktitlements:130433d"
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
@@ -123,6 +125,39 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	return nil
 }
 
+func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, password string) error {
+	userData := &core.Secret{}
+	userDataNN := providers.GetNamespacedName(o, "keycloak-realm-import")
+
+	if err := cache.Create(WebKeycloakImportSecret, userDataNN, userData); err != nil {
+		return err
+	}
+
+	labels := o.GetLabels()
+	labels["env-app"] = userDataNN.Name
+
+	labeler := utils.MakeLabeler(userDataNN, labels, o)
+
+	labeler(userData)
+
+	userImportData, err := os.ReadFile("./jsons/redhat-external-realm.json")
+	if err != nil {
+		return fmt.Errorf("could not read user data: %w", err)
+	}
+
+	userData.StringData = map[string]string{}
+	userImportDataString := string(userImportData)
+	userImportDataString = strings.Replace(userImportDataString, "########PASSWORD########", password, 1)
+
+	userData.StringData["redhat-external-realm.json"] = string(userImportDataString)
+
+	if err := cache.Update(WebKeycloakImportSecret, userData); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
@@ -173,6 +208,10 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 					Key: "password",
 				},
 			},
+		},
+		{
+			Name:  "KEYCLOAK_IMPORT",
+			Value: "/json/redhat-external-realm.json",
 		},
 	}
 
@@ -236,6 +275,23 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
+		VolumeMounts: []core.VolumeMount{
+			{
+				Name:      "realm-import",
+				MountPath: "/json",
+			},
+		},
+	}
+
+	dd.Spec.Template.Spec.Volumes = []core.Volume{
+		{
+			Name: "realm-import",
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
+					SecretName: providers.GetNamespacedName(o, "keycloak-realm-import").Name,
+				},
+			},
+		},
 	}
 
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
@@ -341,7 +397,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:dd6c49a"
+	image := MBOP_IMAGE
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -484,7 +540,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mocktitlements:130433d"
+	image := MOCKTITLEMENTS_IMAGE
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -532,117 +588,4 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 
-}
-
-func (m *localWebProvider) configureKeycloak() error {
-	s := &core.Service{}
-	if err := m.Cache.Get(WebKeycloakService, s); err != nil {
-		return err
-	}
-
-	hostname := fmt.Sprintf("http://%s.%s.svc:8080", s.Name, s.Namespace)
-	client, err := keycloak.NewKeyCloakClient(hostname, m.config.KeycloakConfig.Username, m.config.KeycloakConfig.Password, m.Ctx, "master", m.Log, KEYCLOAK_VERSION)
-
-	if err != nil {
-		return err
-	}
-
-	exists, err := client.DoesRealmExist("redhat-external")
-
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		err := client.CreateRealm("redhat-external")
-		if err != nil {
-			return err
-		}
-	}
-
-	exists, err = client.DoesClientExist("redhat-external", "cloud-services")
-
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		err := client.CreateClient("redhat-external", "cloud-services", m.Env.Name)
-		if err != nil {
-			return err
-		}
-	}
-
-	exists, _, err = client.DoesUserExist("redhat-external", m.config.KeycloakConfig.DefaultUsername)
-
-	if err != nil {
-		return err
-	}
-
-	m.Log.Info(fmt.Sprintf("User exists: %s", strconv.FormatBool(exists)))
-
-	if !exists {
-
-		user := &keycloak.CreateUserStruct{
-			Enabled:   true,
-			Username:  "jdoe",
-			FirstName: "John",
-			LastName:  "Doe",
-			Email:     "jdoe@example.com",
-			Attributes: keycloak.UserAttributes{
-				FirstName:     "John",
-				LastName:      "Doe",
-				AccountID:     "12345",
-				AccountNumber: "12345",
-				OrdID:         "12345",
-				IsInternal:    false,
-				IsOrgAdmin:    true,
-				IsActive:      true,
-				Entitlements:  `{"insights": {"is_entitled": true, "is_trial": false}}`,
-			},
-			Credentials: []keycloak.UserCredentials{{
-				Temporary: false,
-				Type:      "password",
-				Value:     m.config.KeycloakConfig.DefaultPassword,
-			}},
-		}
-
-		err := client.CreateUser("redhat-external", user)
-		if err != nil {
-			return err
-		}
-
-		_, nUser, err := client.DoesUserExist("redhat-external", m.config.KeycloakConfig.DefaultUsername)
-
-		if err != nil {
-			return err
-		}
-
-		if nUser == nil {
-			return fmt.Errorf("returned user struct was nil")
-		}
-
-		nUser.Attributes.NewEntitlements = []string{
-			`"ansible": {"is_entitled": true, "is_trial": false}`,
-			`"cost_management": {"is_entitled": true, "is_trial": false}`,
-			`"insights": {"is_entitled": true, "is_trial": false}`,
-			`"advisor": {"is_entitled": true, "is_trial": false}`,
-			`"migrations": {"is_entitled": true, "is_trial": false}`,
-			`"openshift": {"is_entitled": true, "is_trial": false}`,
-			`"settings": {"is_entitled": true, "is_trial": false}`,
-			`"smart_management": {"is_entitled": true, "is_trial": false}`,
-			`"subscriptions": {"is_entitled": true, "is_trial": false}`,
-			`"user_preferences": {"is_entitled": true, "is_trial": false}`,
-			`"notifications": {"is_entitled": true, "is_trial": false}`,
-			`"integrations": {"is_entitled": true, "is_trial": false}`,
-			`"automation_analytics": {"is_entitled": true, "is_trial": false}`,
-		}
-
-		err = client.PutUser("redhat-external", nUser)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

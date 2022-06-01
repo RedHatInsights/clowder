@@ -119,6 +119,7 @@ vet: ## Run go vet against code.
 test: update-version manifests envtest generate fmt vet
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
+# Run kuttl tests, make kuttl. Or pass in a test to run, make kuttl KUTTL_TEST="--test=testephemeral-gateway"
 kuttl: manifests generate fmt vet envtest
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" kubectl kuttl test \
 	--config bundle/tests/scorecard/kuttl/kuttl-test.yaml \
