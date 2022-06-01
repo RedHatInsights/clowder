@@ -27,6 +27,9 @@ var WebKeycloakService = rc.NewSingleResourceIdent(ProvName, "web_keycloak_servi
 // WebKeycloakIngress is the keycloak ingress
 var WebKeycloakIngress = rc.NewSingleResourceIdent(ProvName, "web_keycloak_ingress", &networking.Ingress{})
 
+// WebKeycloakImportSecret is the keycloak import secret
+var WebKeycloakImportSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_import_secret", &core.Secret{})
+
 // WebBOPDeployment is the mocked bop deployment
 var WebBOPDeployment = rc.NewSingleResourceIdent(ProvName, "web_bop_deployment", &apps.Deployment{})
 
