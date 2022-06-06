@@ -42,6 +42,25 @@ type localWebProvider struct {
 	config backendConfig
 }
 
+func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName) error {
+	sec := &core.Secret{}
+	if err := cache.Get(WebKeycloakSecret, sec, nn); err != nil {
+		return errors.Wrap("couldn't get secret from cache", err)
+	}
+
+	if v, ok := sec.Data["version"]; !ok || string(v) != KEYCLOAK_VERSION {
+		if sec.StringData == nil {
+			sec.StringData = map[string]string{}
+		}
+		sec.StringData["version"] = KEYCLOAK_VERSION
+	}
+
+	if err := cache.Update(WebKeycloakSecret, sec); err != nil {
+		return errors.Wrap("couldn't get secret from cache", err)
+	}
+	return nil
+}
+
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
 	if p.Env.Status.Hostname == "" {
@@ -67,8 +86,6 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 			password = utils.RandString(8)
 		}
 
-		version := KEYCLOAK_VERSION
-
 		defaultPassword := utils.RandString(8)
 
 		return map[string]string{
@@ -76,13 +93,17 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 			"password":        password,
 			"defaultUsername": "jdoe",
 			"defaultPassword": defaultPassword,
-			"version":         version,
+			"version":         KEYCLOAK_VERSION,
 		}
 	}
 
 	dataMap, err := providers.MakeOrGetSecret(wp.Ctx, p.Env, wp.Cache, WebKeycloakSecret, nn, dataInit)
 	if err != nil {
-		return nil, errors.Wrap("Couldn't set/get secret", err)
+		return nil, errors.Wrap("couldn't set/get secret", err)
+	}
+
+	if err := setSecretVersion(p.Cache, nn); err != nil {
+		return nil, errors.Wrap("couldn't set secret version", err)
 	}
 
 	wp.config.KeycloakConfig.Username = (*dataMap)["username"]
