@@ -13,7 +13,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.4.1
+      controller-gen.kubebuilder.io/version: v0.8.0
     creationTimestamp: null
     name: clowdapps.cloud.redhat.com
   spec:
@@ -222,8 +222,8 @@ objects:
                                       scaleUp:
                                         description: 'scaleUp is scaling policy for
                                           scaling Up. If not set, the default value
-                                          is the higher of:   * increase no more than
-                                          4 pods per 60 seconds   * double the number
+                                          is the higher of: * increase no more than
+                                          4 pods per 60 seconds * double the number
                                           of pods per 60 seconds No stabilization
                                           is used.'
                                         properties:
@@ -1541,13 +1541,13 @@ objects:
                                     \ and deleted when the pod is removed. \n Use\
                                     \ this if: a) the volume is only needed while\
                                     \ the pod runs, b) features of normal volumes\
-                                    \ like restoring from snapshot or capacity   \
-                                    \ tracking are needed, c) the storage driver is\
-                                    \ specified through a storage class, and d) the\
-                                    \ storage driver supports dynamic volume provisioning\
-                                    \ through    a PersistentVolumeClaim (see EphemeralVolumeSource\
-                                    \ for more    information on the connection between\
-                                    \ this volume type    and PersistentVolumeClaim).\
+                                    \ like restoring from snapshot or capacity tracking\
+                                    \ are needed, c) the storage driver is specified\
+                                    \ through a storage class, and d) the storage\
+                                    \ driver supports dynamic volume provisioning\
+                                    \ through a PersistentVolumeClaim (see EphemeralVolumeSource\
+                                    \ for more information on the connection between\
+                                    \ this volume type and PersistentVolumeClaim).\
                                     \ \n Use PersistentVolumeClaim or one of the vendor-specific\
                                     \ APIs for volumes that persist for longer than\
                                     \ the lifecycle of an individual pod. \n Use CSI\
@@ -1663,13 +1663,13 @@ objects:
                                                 differences between DataSource and
                                                 DataSourceRef: * While DataSource
                                                 only allows two specific types of
-                                                objects, DataSourceRef   allows any
+                                                objects, DataSourceRef allows any
                                                 non-core object, as well as PersistentVolumeClaim
                                                 objects. * While DataSource ignores
                                                 disallowed values (dropping them),
-                                                DataSourceRef   preserves all values,
+                                                DataSourceRef preserves all values,
                                                 and generates an error if a disallowed
-                                                value is   specified. (Alpha) Using
+                                                value is specified. (Alpha) Using
                                                 this field requires the AnyVolumeDataSource
                                                 feature gate to be enabled.'
                                               properties:
@@ -4046,13 +4046,13 @@ objects:
                                     \ and deleted when the pod is removed. \n Use\
                                     \ this if: a) the volume is only needed while\
                                     \ the pod runs, b) features of normal volumes\
-                                    \ like restoring from snapshot or capacity   \
-                                    \ tracking are needed, c) the storage driver is\
-                                    \ specified through a storage class, and d) the\
-                                    \ storage driver supports dynamic volume provisioning\
-                                    \ through    a PersistentVolumeClaim (see EphemeralVolumeSource\
-                                    \ for more    information on the connection between\
-                                    \ this volume type    and PersistentVolumeClaim).\
+                                    \ like restoring from snapshot or capacity tracking\
+                                    \ are needed, c) the storage driver is specified\
+                                    \ through a storage class, and d) the storage\
+                                    \ driver supports dynamic volume provisioning\
+                                    \ through a PersistentVolumeClaim (see EphemeralVolumeSource\
+                                    \ for more information on the connection between\
+                                    \ this volume type and PersistentVolumeClaim).\
                                     \ \n Use PersistentVolumeClaim or one of the vendor-specific\
                                     \ APIs for volumes that persist for longer than\
                                     \ the lifecycle of an individual pod. \n Use CSI\
@@ -4168,13 +4168,13 @@ objects:
                                                 differences between DataSource and
                                                 DataSourceRef: * While DataSource
                                                 only allows two specific types of
-                                                objects, DataSourceRef   allows any
+                                                objects, DataSourceRef allows any
                                                 non-core object, as well as PersistentVolumeClaim
                                                 objects. * While DataSource ignores
                                                 disallowed values (dropping them),
-                                                DataSourceRef   preserves all values,
+                                                DataSourceRef preserves all values,
                                                 and generates an error if a disallowed
-                                                value is   specified. (Alpha) Using
+                                                value is specified. (Alpha) Using
                                                 this field requires the AnyVolumeDataSource
                                                 feature gate to be enabled.'
                                               properties:
@@ -5463,7 +5463,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.4.1
+      controller-gen.kubebuilder.io/version: v0.8.0
     creationTimestamp: null
     name: clowdenvironments.cloud.redhat.com
   spec:
@@ -5847,7 +5847,7 @@ objects:
                       properties:
                         mode:
                           description: The mode of operation of the Metrics provider.
-                            The allowed modes are  (*_none_*), which disables metrics
+                            The allowed modes are (*_none_*), which disables metrics
                             service generation, or (*_operator_*) where services and
                             probes are generated. (*_app-interface_*) where services
                             and probes are generated for app-interface.
@@ -6309,7 +6309,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.4.1
+      controller-gen.kubebuilder.io/version: v0.8.0
     creationTimestamp: null
     name: clowdjobinvocations.cloud.redhat.com
   spec:
