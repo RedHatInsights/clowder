@@ -29,6 +29,7 @@ kubeconfig
 launch.json
 *.code-workspace
 .vimrc
+.vscode
 
 docs/build
 docs/clowder
