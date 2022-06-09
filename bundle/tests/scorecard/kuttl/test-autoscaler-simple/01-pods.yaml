@@ -1,0 +1,136 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-autoscaler-simple
+spec:
+  targetNamespace: test-autoscaler-simple
+  providers:
+    autoScaler:
+      mode: simple
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    pullSecrets:
+    - name: test-autoscaler-simple
+      namespace: test-autoscaler-simple-secret
+    - name: test-autoscaler-simple-same-ns
+      namespace: test-autoscaler-simple
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-autoscaler-simple
+spec:
+  envName: test-autoscaler-simple
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      env: 
+        - name: ENV_VAR_1
+          value: env_var_1
+        - name: ENV_VAR_2
+          value: env_var_2
+      initContainers:
+        - env:
+          - name: ENV_VAR_1
+            value: override_1
+          - name: ENV_VAR_3
+            value: env_var_3
+    simpleAutoScaler:
+      enable: true
+    webServices:
+      public:
+        enabled: true
+      private:
+        enabled: true
+  - name: processor2
+    podSpec:
+      simpleAutoScaler:
+        enable: true
+      image: quay.io/psav/clowder-hello
+      env: 
+        - name: ENV_VAR_1
+          value: env_var_1
+        - name: ENV_VAR_2
+          value: env_var_2
+      initContainers:
+        - env:
+          - name: ENV_VAR_1
+            value: override_1
+          - name: ENV_VAR_3
+            value: env_var_3
+    webServices:
+      public:
+        enabled: true
+      private:
+        enabled: true
+        appProtocol: redis
+  - name: processor3
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      env: 
+        - name: ENV_VAR_1
+          value: env_var_1
+        - name: ENV_VAR_2
+          value: env_var_2
+      initContainers:
+        - env:
+          - name: ENV_VAR_1
+            value: override_1
+          - name: ENV_VAR_3
+            value: env_var_3
+      machinePool: "memory"
+    webServices:
+      private:
+        enabled: true
+        appProtocol: redis
+---
+apiVersion: v1
+data:
+  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
+  aws_region: dXMtZWFzdA==
+  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
+  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
+  endpoint: dGVzdC1lbmRwb2ludA==
+kind: Secret
+metadata:
+  name: test-autoscaler-simple
+  namespace: test-autoscaler-simple-secret
+type: Opaque
+---
+apiVersion: v1
+data:
+  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
+  aws_region: dXMtZWFzdA==
+  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
+  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
+  endpoint: dGVzdC1lbmRwb2ludA==
+kind: Secret
+metadata:
+  name: test-autoscaler-simple-same-ns
+  namespace: test-autoscaler-simple
+type: Opaque

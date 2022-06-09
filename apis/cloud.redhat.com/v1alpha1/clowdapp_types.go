@@ -202,6 +202,8 @@ type Deployment struct {
 	// AutoScaler defines the configuration for the auto scaler
 	AutoScaler *AutoScaler `json:"autoScaler,omitempty"`
 
+	SimpleAutoScaler *SimpleAutoScaler `json:"simpleAutoScaler,omitempty"`
+
 	// DeploymentStrategy allows the deployment strategy to be set only if the
 	// deployment has no public service enabled
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
@@ -271,6 +273,14 @@ type PodSpec struct {
 	MachinePool string `json:"machinePool,omitempty"`
 }
 
+type SimpleAutoScaler struct {
+	Enable           bool  `json:"enable,omitempty"`
+	MinReplicas      int32 `json:"minReplicas,omitempty"`
+	MaxReplicas      int32 `json:"maxReplicas,omitempty"`
+	TargetUtilPctCPU int32 `json:"targetUtilPctCPU,omitempty"`
+	TargetUtilPctRAM int32 `json:"targetUtilPctRAM,omitempty"`
+}
+
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
 type AutoScaler struct {
 	// PollingInterval is the interval (in seconds) to check each trigger on.
@@ -294,6 +304,9 @@ type AutoScaler struct {
 	// ExternalHPA allows replicas on deployments to be controlled by another resource, but will
 	// not be allowed to fall under the minReplicas as set in the ClowdApp.
 	ExternalHPA bool `json:"externalHPA,omitempty"`
+
+	//Use the simple autoscaler. Note: this only works if autoScaler mode is "simple" for the ClowdEnv
+	SimpleHPAOptIn bool `json:"simpleHPAOptIn,omitempty"`
 }
 
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the

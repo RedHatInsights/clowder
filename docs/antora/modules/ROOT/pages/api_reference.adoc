@@ -79,6 +79,7 @@ AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting t
 | *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
 | *`fallback`* __Fallback__ | 
 | *`externalHPA`* __boolean__ | ExternalHPA allows replicas on deployments to be controlled by another resource, but will not be allowed to fall under the minReplicas as set in the ClowdApp.
+| *`simpleHPAOptIn`* __boolean__ | Use the simple autoscaler. Note: this only works if autoScaler mode is "simple" for the ClowdEnv
 |===
 
 
@@ -369,6 +370,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the auto scaler
+| *`simpleAutoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler[$$SimpleAutoScaler$$]__ | 
 | *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
 |===
 
@@ -1041,6 +1043,27 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 |===
 | Field | Description
 | *`tokenRefresher`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tokenrefresherconfig[$$TokenRefresherConfig$$]__ | Sets up Token Refresher configuration
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler"]
+==== SimpleAutoScaler 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enable`* __boolean__ | 
+| *`minReplicas`* __integer__ | 
+| *`maxReplicas`* __integer__ | 
+| *`targetUtilPctCPU`* __integer__ | 
+| *`targetUtilPctRAM`* __integer__ | 
 |===
 
 
