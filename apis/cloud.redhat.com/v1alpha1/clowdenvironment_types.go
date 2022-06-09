@@ -329,7 +329,7 @@ type InMemoryDBConfig struct {
 
 // AutoScalerMode details the mode of operation of the Clowder AutoScaler
 // Provider
-// +kubebuilder:validation:Enum=Enum={"none", "keda", "", "simple"}
+// +kubebuilder:validation:Enum={"none", "keda", "", "simple"}
 type AutoScalerMode string
 
 // AutoScalerConfig configures the Clowder provider controlling the creation of
