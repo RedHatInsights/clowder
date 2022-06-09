@@ -329,15 +329,16 @@ type InMemoryDBConfig struct {
 
 // AutoScalerMode details the mode of operation of the Clowder AutoScaler
 // Provider
-// +kubebuilder:validation:Enum=keda;none
+// +kubebuilder:validation:Enum=Enum={"none", "keda", "", "simple"}
 type AutoScalerMode string
 
 // AutoScalerConfig configures the Clowder provider controlling the creation of
 // AutoScaler configuration.
 type AutoScalerConfig struct {
-	// The mode of operation of the Clowder InMemory Provider. Valid options are:
-	// (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)
-	// which will search the namespace of the ClowdApp for a secret called 'elasticache'
+	// The type of autoscaler to use:
+	// - (*_keda_*) -- Use keda as the autoscaler
+	// - (*_simple_*) -- Use Kubernetes simple HPA as the autoscaler
+	// - (*_none_*) -- No autoscaler is used
 	Mode AutoScalerMode `json:"mode,omitempty"`
 }
 

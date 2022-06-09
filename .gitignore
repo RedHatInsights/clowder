@@ -21,6 +21,8 @@ kubebuilder/
 bundle/manifests/*
 kubeconfig
 
+.vscode
+
 # editor and IDE paraphernalia
 .idea
 *.swp
