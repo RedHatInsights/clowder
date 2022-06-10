@@ -1095,7 +1095,7 @@ data:
               "refId": "B"
             }
           ],
-          "title": "CPU Isage",
+          "title": "CPU Usage",
           "transparent": true,
           "type": "timeseries"
         },
