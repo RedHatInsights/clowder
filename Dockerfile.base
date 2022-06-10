@@ -4,7 +4,7 @@ USER 0
 RUN dnf install -y openssh-clients git make which jq python3
 
 RUN GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 \
-    && GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3@v3.8.7
+    && GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v4@v4.5.2
 COPY build/pr_check_inner.sh .
 RUN chmod 775 pr_check_inner.sh
 
