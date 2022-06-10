@@ -34,7 +34,8 @@ spec:
       template:
         metadata:
           annotations:
-            "kube-linter.io/ignore-all": "kubelint disabled for job pods"
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
         spec:
           serviceAccount: puptoo-app
           serviceAccountName: puptoo-app
@@ -63,7 +64,8 @@ spec:
       template:
         metadata:
           annotations:
-            "kube-linter.io/ignore-all": "kubelint disabled for job pods"
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
         spec:
           serviceAccount: puptoo-app
           serviceAccountName: puptoo-app
@@ -84,7 +86,8 @@ spec:
       template:
         metadata:
           annotations:
-            "kube-linter.io/ignore-all": "kubelint disabled for job pods"
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
         spec:
           serviceAccount: puptoo-app
           serviceAccountName: puptoo-app
@@ -104,7 +107,8 @@ spec:
   template:
     metadata:
       annotations:
-        "kube-linter.io/ignore-all": "kubelint disabled for job pods"
+        "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+        "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
     spec:
       serviceAccount: puptoo-app
       serviceAccountName: puptoo-app
