@@ -347,6 +347,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
 		Owns(&core.ConfigMap{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
+		Owns(&core.Secret{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app"))).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).

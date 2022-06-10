@@ -360,6 +360,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app")))
 	ctrlr.Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app")))
+	ctrlr.Owns(&core.Secret{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
 	ctrlr.Watches(
 		&source.Kind{Type: &crd.ClowdApp{}},
 		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
