@@ -1,0 +1,9 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-log-none puptoo -o json > /tmp/test-log-none
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-log-none | base64 -d > /tmp/test-log-none-json
+
+- script: jq -r '.logging.type == "null"' -e < /tmp/test-log-none-json

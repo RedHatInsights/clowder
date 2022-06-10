@@ -1,0 +1,10 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-log-app-interface puptoo -o json > /tmp/test-log-app-interface
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-log-app-interface | base64 -d > /tmp/test-log-app-interface-json
+
+- script: jq -r '.logging.type == "cloudwatch"' -e < /tmp/test-log-app-interface-json
+- script: jq -r '.logging.cloudwatch.region == "us-east"' -e < /tmp/test-log-app-interface-json
