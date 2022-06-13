@@ -34,7 +34,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1653996468534,
+      "iteration": 1654875358526,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1819,7 +1819,7 @@ data:
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "/c.*/",
+            "regex": "/crc[0-9a-zA-Z]*?-prometheus|eph[0-9a-zA-Z]*?-prometheus/",
             "skipUrlSync": false,
             "type": "datasource"
           }
@@ -1833,6 +1833,6 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 2,
+      "version": 4,
       "weekStart": ""
     }
