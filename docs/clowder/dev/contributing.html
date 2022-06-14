@@ -607,10 +607,10 @@ default for <code>kubectl</code>, the following command will run <strong>all</st
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">KUBEBUILDER_ASSETS=~/kubebuilder_2.3.1_linux_amd64/bin/ \
     kubectl kuttl test \
-    --config bundle/tests/scorecard/kuttl/kuttl-test.yaml \
+    --config tests/kuttl/kuttl-test.yaml \
     --manifest-dir config/crd/bases/ \
     --manifest-dir config/crd/static/ \
-    bundle/tests/scorecard/kuttl/</code></pre>
+    tests/kuttl/</code></pre>
 </div>
 </div>
 <div class="paragraph">
