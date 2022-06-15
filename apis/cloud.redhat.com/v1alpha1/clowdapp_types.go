@@ -273,12 +273,24 @@ type PodSpec struct {
 	MachinePool string `json:"machinePool,omitempty"`
 }
 
+// SimpleAutoScalerMetric defines a metric of either a value or utilization
+type SimpleAutoScalerMetric struct {
+	ScaleAtValue       string `json:"scaleAtValue,omitempty"`
+	ScaleAtUtilization int32  `json:"scaleAtUtilization,omitempty"`
+}
+
+// SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the auto scaler
+type SimpleAutoScalerReplicas struct {
+	Min int32 `json:"min"`
+	Max int32 `json:"max"`
+}
+
+// SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+// value and utilization thresholds, along with replica count limits
 type SimpleAutoScaler struct {
-	Enable           bool  `json:"enable,omitempty"`
-	MinReplicas      int32 `json:"minReplicas,omitempty"`
-	MaxReplicas      int32 `json:"maxReplicas,omitempty"`
-	TargetUtilPctCPU int32 `json:"targetUtilPctCPU,omitempty"`
-	TargetUtilPctRAM int32 `json:"targetUtilPctRAM,omitempty"`
+	Replicas SimpleAutoScalerReplicas `json:"replicas"`
+	RAM      SimpleAutoScalerMetric   `json:"ram,omitempty"`
+	CPU      SimpleAutoScalerMetric   `json:"cpu,omitempty"`
 }
 
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
