@@ -26,16 +26,16 @@ spec:
     inMemoryDb:
       mode: none
     pullSecrets:
-    - name: test-autoscaler-simple
-      namespace: test-autoscaler-simple-secret
+    - name: test-autoscaler-simple-secret
+      namespace: test-autoscaler-simple
     - name: test-autoscaler-simple-same-ns
       namespace: test-autoscaler-simple
   resourceDefaults:
     limits:
-      cpu: 400m
+      cpu: 500m
       memory: 1024Mi
     requests:
-      cpu: 30m
+      cpu: 40m
       memory: 512Mi
 ---
 apiVersion: cloud.redhat.com/v1alpha1
@@ -46,68 +46,27 @@ metadata:
 spec:
   envName: test-autoscaler-simple
   deployments:
-  - name: processor
+  - name: highram
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
     simpleAutoScaler:
-      enable: true
-    webServices:
-      public:
-        enabled: true
-      private:
-        enabled: true
-  - name: processor2
+      replicas:
+        min: 1
+        max: 4
+      ram:
+        scaleAtValue: 1Mi
+  - name: highcpu
     podSpec:
-      simpleAutoScaler:
-        enable: true
-      image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
-    webServices:
-      public:
-        enabled: true
-      private:
-        enabled: true
-        appProtocol: redis
-  - name: processor3
+      image: quay.io/rh_ee_addrew/highload:latest
+    simpleAutoScaler:
+      replicas:
+        min: 1
+        max: 4
+      cpu:
+        scaleAtUtilization: 80
+  - name: nohpa
     podSpec:
-      image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
-      machinePool: "memory"
-    webServices:
-      private:
-        enabled: true
-        appProtocol: redis
+      image: quay.io/rh_ee_addrew/highload:latest
 ---
 apiVersion: v1
 data:
@@ -118,8 +77,8 @@ data:
   endpoint: dGVzdC1lbmRwb2ludA==
 kind: Secret
 metadata:
-  name: test-autoscaler-simple
-  namespace: test-autoscaler-simple-secret
+  name: test-autoscaler-simple-secret
+  namespace: test-autoscaler-simple
 type: Opaque
 ---
 apiVersion: v1
