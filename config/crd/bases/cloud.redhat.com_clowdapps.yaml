@@ -2714,21 +2714,46 @@ spec:
                           type: array
                       type: object
                     simpleAutoScaler:
+                      description: SimpleAutoScaler defines a simple HPA with scaling
+                        for RAM and CPU by value and utilization thresholds, along
+                        with replica count limits
                       properties:
-                        enable:
-                          type: boolean
-                        maxReplicas:
-                          format: int32
-                          type: integer
-                        minReplicas:
-                          format: int32
-                          type: integer
-                        targetUtilPctCPU:
-                          format: int32
-                          type: integer
-                        targetUtilPctRAM:
-                          format: int32
-                          type: integer
+                        cpu:
+                          description: SimpleAutoScalerMetric defines a metric of
+                            either a value or utilization
+                          properties:
+                            scaleAtUtilization:
+                              format: int32
+                              type: integer
+                            scaleAtValue:
+                              type: string
+                          type: object
+                        ram:
+                          description: SimpleAutoScalerMetric defines a metric of
+                            either a value or utilization
+                          properties:
+                            scaleAtUtilization:
+                              format: int32
+                              type: integer
+                            scaleAtValue:
+                              type: string
+                          type: object
+                        replicas:
+                          description: SimpleAutoScalerReplicas defines the minimum
+                            and maximum replica counts for the auto scaler
+                          properties:
+                            max:
+                              format: int32
+                              type: integer
+                            min:
+                              format: int32
+                              type: integer
+                          required:
+                          - max
+                          - min
+                          type: object
+                      required:
+                      - replicas
                       type: object
                     web:
                       description: If set to true, creates a service on the webPort
