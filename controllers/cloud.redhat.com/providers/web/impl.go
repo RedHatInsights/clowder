@@ -21,7 +21,7 @@ import (
 )
 
 var KEYCLOAK_VERSION = "15.0.2"
-var MBOP_IMAGE = "quay.io/cloudservices/mbop:dd6c49a"
+var MBOP_IMAGE = "quay.io/cloudservices/mbop:0d3f99f"
 var MOCKTITLEMENTS_IMAGE = "quay.io/cloudservices/mocktitlements:130433d"
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
