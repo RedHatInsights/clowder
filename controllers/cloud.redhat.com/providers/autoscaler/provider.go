@@ -3,7 +3,6 @@ package autoscaler
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
@@ -15,8 +14,6 @@ var ProvName = "autoscaler"
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 
 	autoMode := c.Env.Spec.Providers.AutoScaler.Mode
-
-	log.Println("SimpleAutoScalerLOG: GetAutoScaler - autoMode is " + autoMode)
 
 	switch autoMode {
 	case "keda":
