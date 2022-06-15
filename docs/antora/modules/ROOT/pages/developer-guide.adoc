@@ -92,7 +92,7 @@ The scripts are:
 You will usually want to run:
 
 [source,shell]
-minikube start --addons=registry --addons=ingress
+minikube start --addons=registry --addons=ingress  --addons=metrics-server --disable-optimizations
 /e2e-test-local.sh
 
 === Podman Notes
