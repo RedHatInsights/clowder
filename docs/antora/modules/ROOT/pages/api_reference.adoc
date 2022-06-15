@@ -1049,7 +1049,7 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler"]
 ==== SimpleAutoScaler 
 
-
+SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by value and utilization thresholds, along with replica count limits
 
 .Appears In:
 ****
@@ -1059,11 +1059,45 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`enable`* __boolean__ | 
-| *`minReplicas`* __integer__ | 
-| *`maxReplicas`* __integer__ | 
-| *`targetUtilPctCPU`* __integer__ | 
-| *`targetUtilPctRAM`* __integer__ | 
+| *`replicas`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas[$$SimpleAutoScalerReplicas$$]__ | 
+| *`ram`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
+| *`cpu`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric"]
+==== SimpleAutoScalerMetric 
+
+SimpleAutoScalerMetric defines a metric of either a value or utilization
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler[$$SimpleAutoScaler$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`scaleAtValue`* __string__ | 
+| *`scaleAtUtilization`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas"]
+==== SimpleAutoScalerReplicas 
+
+SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the auto scaler
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler[$$SimpleAutoScaler$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`min`* __integer__ | 
+| *`max`* __integer__ | 
 |===
 
 
