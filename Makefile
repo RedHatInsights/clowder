@@ -93,9 +93,9 @@ test: update-version manifests envtest generate fmt vet
 # Run kuttl tests, make kuttl. Or pass in a test to run, make kuttl KUTTL_TEST="--test=testephemeral-gateway"
 kuttl: manifests generate fmt vet envtest
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" kubectl kuttl test \
-	--config bundle/tests/scorecard/kuttl/kuttl-test.yaml \
+	--config tests/kuttl/kuttl-test.yaml \
 	--manifest-dir config/crd/bases/ \
-	bundle/tests/scorecard/kuttl/ \
+	tests/kuttl/ \
 	$(KUTTL_TEST)
 
 ##@ Build
