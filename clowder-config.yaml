@@ -6,7 +6,8 @@ data:
             "createServiceMonitor": true,
             "watchStrimziResources": true,
             "enableKedaResources": true,
-            "reconciliationMetrics": true
+            "reconciliationMetrics": true,
+            "enableExternalStrimzi": true
         }
     }
 kind: ConfigMap

@@ -46,6 +46,7 @@ type ClowderConfig struct {
 		PerProviderMetrics          bool `json:"perProviderMetrics"`
 		ReconciliationMetrics       bool `json:"reconciliationMetrics"`
 		DisableCloudWatchLogging    bool `json:"disableCloudWatchLogging"`
+		EnableExternalStrimzi       bool `json:"enableExternalStrimzi"`
 	} `json:"features"`
 }
 

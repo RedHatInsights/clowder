@@ -255,7 +255,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.Spec.Kafka.Listeners = []strimzi.KafkaSpecKafkaListenersElem{listener}
 
-	if s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+	if clowderconfig.LoadedConfig.Features.EnableExternalStrimzi {
 		externalHost := "localhost"
 		externalPort := int32(9094)
 		externalListener := strimzi.KafkaSpecKafkaListenersElem{
