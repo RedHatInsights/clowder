@@ -377,40 +377,42 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 
 	labeler(ku)
 
-	ku.Spec = &strimzi.KafkaUserSpec{
-		Authentication: &strimzi.KafkaUserSpecAuthentication{
-			Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
-		},
-		Authorization: &strimzi.KafkaUserSpecAuthorization{
-			Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
-			Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
-		},
+	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		ku.Spec = &strimzi.KafkaUserSpec{
+			Authentication: &strimzi.KafkaUserSpecAuthentication{
+				Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
+			},
+			Authorization: &strimzi.KafkaUserSpecAuthorization{
+				Acls: []strimzi.KafkaUserSpecAuthorizationAclsElem{},
+				Type: strimzi.KafkaUserSpecAuthorizationTypeSimple,
+			},
+		}
+
+		address := "*"
+		topic := "*"
+		patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
+
+		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+			Host:      &address,
+			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+				Name:        &topic,
+				PatternType: &patternType,
+				Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
+			},
+		})
+
+		group := "*"
+		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
+			Host:      &address,
+			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
+				Name:        &group,
+				PatternType: &patternType,
+				Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeGroup,
+			},
+		})
 	}
-
-	address := "*"
-	topic := "*"
-	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
-
-	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
-		Host:      &address,
-		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
-		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
-			Name:        &topic,
-			PatternType: &patternType,
-			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeTopic,
-		},
-	})
-
-	group := "*"
-	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
-		Host:      &address,
-		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
-		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
-			Name:        &group,
-			PatternType: &patternType,
-			Type:        strimzi.KafkaUserSpecAuthorizationAclsElemResourceTypeGroup,
-		},
-	})
 
 	if err := s.Cache.Update(KafkaConnectUser, ku); err != nil {
 		return err
