@@ -377,7 +377,9 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 
 	labeler(ku)
 
-	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+	if s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		ku.Spec = &strimzi.KafkaUserSpec{}
+	} else {
 		ku.Spec = &strimzi.KafkaUserSpec{
 			Authentication: &strimzi.KafkaUserSpecAuthentication{
 				Type: strimzi.KafkaUserSpecAuthenticationTypeScramSha512,
@@ -726,12 +728,14 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return err
 	}
 
-	if err := s.createKafkaUser(app); err != nil {
-		return err
-	}
+	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		if err := s.createKafkaUser(app); err != nil {
+			return err
+		}
 
-	if err := s.setBrokerCredentials(app); err != nil {
-		return err
+		if err := s.setBrokerCredentials(app); err != nil {
+			return err
+		}
 	}
 
 	// set our provider's config on the AppConfig
