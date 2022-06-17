@@ -130,6 +130,8 @@ github.com/RedHatInsights/go-difflib v1.0.0 h1:BoruyjZfxO81sEynhkG6c4SMAQOjuBWez
 github.com/RedHatInsights/go-difflib v1.0.0/go.mod h1:UMKOFdypYfrKT1B1nbGodM09nhOiAmcjes8qWP7Myrs=
 github.com/RedHatInsights/rhc-osdk-utils v0.4.2 h1:ASbMgR1dnP7x9MRumaXXVav71yt5h5i8g/DQAJQQnMw=
 github.com/RedHatInsights/rhc-osdk-utils v0.4.2/go.mod h1:kzhoWdsajLo0R2/S8f2EEtozJgkooUAmadB8giwuq+4=
+github.com/RedHatInsights/rhc-osdk-utils v0.5.1 h1:EWe90ps3LeZ79gkz00wH4qLgi09yeDyiAhpii+/O5/A=
+github.com/RedHatInsights/rhc-osdk-utils v0.5.1/go.mod h1:n4qCLh67dIDdumbHHSknxQjn3jK8z/4S9f6pMnMxhCs=
 github.com/RedHatInsights/strimzi-client-go v0.28.0 h1:WcnFKI6ZuxS3y3e1P/R4vLRfbTEVk57mMkkB9+X9UPE=
 github.com/RedHatInsights/strimzi-client-go v0.28.0/go.mod h1:Z488n7yGdCVT3AFYuamQ9F7b6c99OSMr4lPYzgEEpzY=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
@@ -1625,6 +1627,7 @@ k8s.io/apiextensions-apiserver v0.19.3/go.mod h1:igVEkrE9TzInc1tYE7qSqxaLg/rEAp6
 k8s.io/apiextensions-apiserver v0.21.4/go.mod h1:OoC8LhI9LnV+wKjZkXIBbLUwtnOGJiTRE33qctH5CIk=
 k8s.io/apiextensions-apiserver v0.22.1/go.mod h1:HeGmorjtRmRLE+Q8dJu6AYRoZccvCMsghwS8XTUYb2c=
 k8s.io/apiextensions-apiserver v0.22.2/go.mod h1:2E0Ve/isxNl7tWLSUDgi6+cmwHi5fQRdwGVCxbC+KFA=
+k8s.io/apiextensions-apiserver v0.22.4/go.mod h1:kH9lxD8dbJ+k0ZizGET55lFgdGjO8t45fgZnCVdZEpw=
 k8s.io/apiextensions-apiserver v0.23.0/go.mod h1:xIFAEEDlAZgpVBl/1VSjGDmLoXAWRG40+GsWhKhAxY4=
 k8s.io/apiextensions-apiserver v0.23.6 h1:v58cQ6Z0/GK1IXYr+oW0fnYl52o9LTY0WgoWvI8uv5Q=
 k8s.io/apiextensions-apiserver v0.23.6/go.mod h1:YVh17Mphv183THQJA5spNFp9XfoidFyL3WoDgZxQIZU=
