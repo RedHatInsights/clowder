@@ -20,7 +20,7 @@ https://github.com/RedHatInsights/clowder/tree/master/docs/[Design docs]
 NOTE: If you choose to place the kubebuilder executables in a different path, make sure to
 use the ``KUBEBUILDER_ASSETS`` env var when running tests (mentioned in ``Unit Tests`` section below)
 
-* Install https://kubernetes-sigs.github.io/kustomize/installation/binaries/[kustomize]
+* Install https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/[kustomize]
 ** The install script places a ``kustomize`` binary in whatever directory you ran the above script in. Move this binary to a folder that is on your ``PATH`` or make sure the directory is appended to your ``PATH``
 
 * Install https://minikube.sigs.k8s.io/docs/start/[minikube]. The latest release we have tested with is https://github.com/kubernetes/minikube/releases/tag/v1.20.0[v1.20.0].
