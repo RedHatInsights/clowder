@@ -91,6 +91,13 @@ func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
+type checkFn func(ctx context.Context, pClient client.Client, uid types.UID, namespaces []string) resources.ResourceCounterResults
+type statusChecking struct {
+	fn      checkFn
+	managed *int32
+	ready   *int32
+}
+
 func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, string, error) {
 	var msgs []string
 
@@ -103,33 +110,38 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 
 	uid := o.GetUID()
 
-	deploymentResults := countDeployments(ctx, client, uid, namespaces)
-	deploymentStats.ManagedDeployments += int32(deploymentResults.Managed)
-	deploymentStats.ReadyDeployments += int32(deploymentResults.Ready)
-	if deploymentResults.BrokenMessage != "" {
-		msgs = append(msgs, deploymentResults.BrokenMessage)
+	checkFns := []statusChecking{{
+		fn:      countDeployments,
+		managed: &deploymentStats.ManagedDeployments,
+		ready:   &deploymentStats.ReadyDeployments,
+	}}
+	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
+		kafkaFns := []statusChecking{
+			{
+				fn:      countKafkas,
+				managed: &deploymentStats.ManagedDeployments,
+				ready:   &deploymentStats.ReadyDeployments,
+			},
+			{
+				fn:      countKafkaConnects,
+				managed: &deploymentStats.ManagedDeployments,
+				ready:   &deploymentStats.ReadyDeployments,
+			},
+			{
+				fn:      countKafkaTopics,
+				managed: &deploymentStats.ManagedTopics,
+				ready:   &deploymentStats.ReadyTopics,
+			},
+		}
+		checkFns = append(checkFns, kafkaFns...)
 	}
 
-	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		kafkaResults := countKafkas(ctx, client, uid, namespaces)
-		deploymentStats.ManagedDeployments += int32(kafkaResults.Managed)
-		deploymentStats.ReadyDeployments += int32(kafkaResults.Ready)
-		if kafkaResults.BrokenMessage != "" {
-			msgs = append(msgs, kafkaResults.BrokenMessage)
-		}
-
-		kafkaConnectResults := countKafkaConnects(ctx, client, uid, namespaces)
-		deploymentStats.ManagedDeployments += int32(kafkaConnectResults.Managed)
-		deploymentStats.ReadyDeployments += int32(kafkaConnectResults.Ready)
-		if kafkaConnectResults.BrokenMessage != "" {
-			msgs = append(msgs, kafkaConnectResults.BrokenMessage)
-		}
-
-		kafkaTopicResults := countKafkaTopics(ctx, client, uid, namespaces)
-		deploymentStats.ManagedTopics += int32(kafkaTopicResults.Managed)
-		deploymentStats.ReadyTopics += int32(kafkaTopicResults.Ready)
-		if kafkaTopicResults.BrokenMessage != "" {
-			msgs = append(msgs, kafkaTopicResults.BrokenMessage)
+	for _, fn := range checkFns {
+		results := fn.fn(ctx, client, uid, namespaces)
+		*fn.managed += int32(results.Managed)
+		*fn.ready += int32(results.Ready)
+		if results.BrokenMessage != "" {
+			msgs = append(msgs, results.BrokenMessage)
 		}
 	}
 
