@@ -71,6 +71,8 @@ build-template: manifests kustomize controller-gen
 
 release: manifests kustomize controller-gen
 	echo "---" > manifest.yaml
+	cat config/manager/clowder_config.yaml >> manifest.yaml
+	echo "---" > manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd ../..
 	$(KUSTOMIZE) build config/default >> manifest.yaml
