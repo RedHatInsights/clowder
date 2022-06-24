@@ -23,6 +23,8 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+var IMAGE_IQE_SELENIUM = "quay.io/redhatqe/selenium-standalone"
+
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
 var VaultSecret = rc.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
 
@@ -94,7 +96,7 @@ func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.C
 	// set image tag
 	image := env.Spec.Providers.Testing.Iqe.UI.Selenium.ImageBase
 	if image == "" {
-		image = "quay.io/redhatqe/selenium-standalone"
+		image = IMAGE_IQE_SELENIUM
 	}
 	tag := env.Spec.Providers.Testing.Iqe.UI.Selenium.DefaultImageTag
 	if tag == "" {

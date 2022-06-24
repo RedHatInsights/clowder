@@ -65,7 +65,6 @@ spec:
             secretKeyRef:
               key: secretKey
               name: test-minio-app-minio
-        image: quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

@@ -482,7 +482,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+		image = IMAGE_KAFKA_XJOIN
 	}
 
 	username := getConnectClusterUserName(s.Env)
