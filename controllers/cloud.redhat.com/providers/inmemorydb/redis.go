@@ -136,7 +136,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
-		Image: "quay.io/cloudservices/redis-ephemeral:6",
+		Image: IMAGE_INMEMORYDB_REDIS,
 		Command: []string{
 			"redis-server",
 			"/usr/local/etc/redis/redis.conf",

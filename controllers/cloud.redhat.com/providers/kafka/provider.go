@@ -14,6 +14,10 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+var IMAGE_KAFKA_LOCAL_KAFKA = "quay.io/cloudservices/cp-kafka:5.3.2"
+var IMAGE_KAFKA_LOCAL_ZOOKEEPER = "quay.io/cloudservices/cp-zookeeper:5.3.2"
+var IMAGE_KAFKA_XJOIN = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+
 // ProvName is the name/ident of the provider
 var ProvName = "kafka"
 

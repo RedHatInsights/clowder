@@ -7,6 +7,8 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+var IMAGE_OBJECTSTORE_MINIO = "quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
+
 // ProvName is the providers ident.
 var ProvName = "objectstore"
 
