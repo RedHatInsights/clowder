@@ -24,6 +24,6 @@ WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/manifest.yaml .
 COPY jsons ./jsons/
-USER 65532:65532
+USER 65534:65534
 
 ENTRYPOINT ["/manager"]

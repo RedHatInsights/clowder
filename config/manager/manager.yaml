@@ -24,6 +24,8 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
       containers:
       - command:
         - /manager
@@ -58,6 +60,9 @@ spec:
               optional: true
         securityContext:
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsUser: 65534
+          runAsGroup: 65534
         livenessProbe:
           httpGet:
             path: /healthz
