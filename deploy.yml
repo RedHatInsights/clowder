@@ -7060,20 +7060,6 @@ objects:
     namespace: clowder-system
 - apiVersion: v1
   data:
-    clowder_config.json: "{\n    \"debugOptions\": {\n        \"trigger\": {\n   \
-      \         \"diff\": ${DEBUG_TRIGGERS}\n        },\n        \"cache\": {\n  \
-      \          \"create\": ${DEBUG_CACHE_CREATE},\n            \"update\": ${DEBUG_CACHE_UPDATE},\n\
-      \            \"apply\": ${DEBUG_CACHE_APPLY}\n        }\n    },\n    \"features\"\
-      : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
-      \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
-      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
-      \    }\n}\n"
-  kind: ConfigMap
-  metadata:
-    name: clowder-clowder-config
-    namespace: clowder-system
-- apiVersion: v1
-  data:
     controller_manager_config.yaml: "apiVersion: controller-runtime.sigs.k8s.io/v1alpha1\n\
       kind: ControllerManagerConfig\nhealth:\n  healthProbeBindAddress: :8081\nmetrics:\n\
       \  bindAddress: 127.0.0.1:8080\nwebhook:\n  port: 9443\nleaderElection:\n  leaderElect:\
@@ -7234,7 +7220,7 @@ objects:
             defaultMode: 420
             secretName: webhook-server-cert
         - configMap:
-            name: clowder-clowder-config
+            name: clowder-config
             optional: true
           name: config
 - apiVersion: networking.k8s.io/v1
@@ -7277,6 +7263,19 @@ objects:
       resources:
       - clowdapps
     sideEffects: None
+- apiVersion: v1
+  data:
+    clowder_config.json: "{\n    \"debugOptions\": {\n        \"trigger\": {\n   \
+      \         \"diff\": ${DEBUG_TRIGGERS}\n        },\n        \"cache\": {\n  \
+      \          \"create\": ${DEBUG_CACHE_CREATE},\n            \"update\": ${DEBUG_CACHE_UPDATE},\n\
+      \            \"apply\": ${DEBUG_CACHE_APPLY}\n        }\n    },\n    \"features\"\
+      : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
+      \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
+      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
+      \    }\n}\n"
+  kind: ConfigMap
+  metadata:
+    name: clowder-config
 parameters:
 - name: IMAGE_TAG
   value: latest

@@ -66,8 +66,8 @@ api-docs:
 	./build/build_config_docs.sh
 
 build-template: manifests kustomize controller-gen
-	$(KUSTOMIZE) build config/deployment-template | ./manifest2template.py --mutate > deploy-mutate.yml
-	$(KUSTOMIZE) build config/deployment-template | ./manifest2template.py > deploy.yml
+	$(KUSTOMIZE) build config/deployment-template | ./manifest2template.py --config config/deployment-template/clowder_config.yaml --mutate > deploy-mutate.yml
+	$(KUSTOMIZE) build config/deployment-template | ./manifest2template.py --config config/deployment-template/clowder_config.yaml > deploy.yml
 
 release: manifests kustomize controller-gen
 	echo "---" > manifest.yaml

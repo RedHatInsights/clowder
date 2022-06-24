@@ -56,7 +56,7 @@ func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName) error {
 	}
 
 	if err := cache.Update(WebKeycloakSecret, sec); err != nil {
-		return errors.Wrap("couldn't get secret from cache", err)
+		return errors.Wrap("couldn't update secret in cache", err)
 	}
 	return nil
 }

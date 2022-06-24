@@ -1,5 +1,5 @@
 resources:
-- clowder_config.yaml
+# - clowder_config.yaml
 - manager.yaml
 - metrics_service.yaml
 

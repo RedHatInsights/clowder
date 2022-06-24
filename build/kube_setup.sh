@@ -63,7 +63,7 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.28.0
+    STRIMZI_VERSION=0.29.0
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
@@ -93,6 +93,9 @@ function install_strimzi_operator {
     # Set namespace that operator runs in
     [[ $PLATFORM == "Darwin" ]] && sed -i '' "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml \
         || sed -i "s/namespace: .*/namespace: ${STRIMZI_OPERATOR_NS}/" *RoleBinding*.yaml
+
+    [[ $PLATFORM == "Darwin" ]] && sed -i '' "s/memory: 384Mi/memory: 768Mi/" *Deployment*.yaml \
+        || sed -i "s/memory: 384Mi/memory: 768Mi/" *Deployment*.yaml
 
     echo "*** Downloading ${FIX_NAMESPACE_SCRIPT} ..."
     curl -LsSO https://raw.githubusercontent.com/RedHatInsights/clowder/master/build/${FIX_NAMESPACE_SCRIPT} \
@@ -258,8 +261,8 @@ function install_elasticsearch_operator {
     fi
 
     echo "*** Applying elastic-operator manifest ..."
-    ${KUBECTL_CMD} create -f https://download.elastic.co/downloads/eck/1.7.1/crds.yaml
-    ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/1.7.1/operator.yaml
+    ${KUBECTL_CMD} create -f https://download.elastic.co/downloads/eck/2.2.0/crds.yaml
+    ${KUBECTL_CMD} apply -f https://download.elastic.co/downloads/eck/2.2.0/operator.yaml
 
     echo "*** Will wait for elastic-operator to come up in background"
     ${KUBECTL_CMD} rollout status statefulset/elastic-operator -n "$OPERATOR_NS" | sed "s/^/[elastic-operator] /" &
