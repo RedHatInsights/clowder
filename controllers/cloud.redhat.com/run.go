@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"os"
 
-	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
@@ -43,7 +42,7 @@ var (
 func init() {
 	secretCompare, _ = utils.GetKindFromObj(Scheme, &core.Secret{})
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
-	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(Scheme))
+	utilruntime.Must(crd.AddToScheme(Scheme))
 	utilruntime.Must(strimzi.AddToScheme(Scheme))
 	utilruntime.Must(cyndi.AddToScheme(Scheme))
 	utilruntime.Must(keda.AddToScheme(Scheme))

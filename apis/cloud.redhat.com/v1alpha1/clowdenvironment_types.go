@@ -26,7 +26,6 @@ import (
 	"github.com/go-logr/logr"
 
 	core "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -367,7 +366,7 @@ type IqeConfig struct {
 	// A pass-through of a resource requirements in k8s ResourceRequirements
 	// format. If omitted, the default resource requirements from the
 	// ClowdEnvironment will be used.
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+	Resources core.ResourceRequirements `json:"resources,omitempty"`
 
 	// Defines the secret reference for loading vault credentials into the IQE job
 	VaultSecretRef NamespacedName `json:"vaultSecretRef,omitempty"`
@@ -389,7 +388,7 @@ type IqeUISeleniumConfig struct {
 	DefaultImageTag string `json:"defaultImageTag,omitempty"`
 
 	// Defines the resource requests/limits set on selenium containers
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+	Resources core.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ServiceConfig provides options for k8s Service resources
@@ -410,7 +409,7 @@ type ClowdEnvironmentSpec struct {
 
 	// Defines the default resource requirements in standard k8s format in the
 	// event that they omitted from a PodSpec inside a ClowdApp.
-	ResourceDefaults v1.ResourceRequirements `json:"resourceDefaults"`
+	ResourceDefaults core.ResourceRequirements `json:"resourceDefaults"`
 
 	ServiceConfig ServiceConfig `json:"serviceConfig,omitempty"`
 
