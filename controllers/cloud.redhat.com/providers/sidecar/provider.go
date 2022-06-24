@@ -4,6 +4,8 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+var IMAGE_SIDECAR_TOKEN_REFRESHER = "quay.io/observatorium/token-refresher:master-2021-02-05-5da9663"
+
 // ProvName sets the provider name identifier
 var ProvName = "sidecar"
 

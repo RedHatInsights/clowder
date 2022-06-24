@@ -346,7 +346,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: "quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64",
+		Image: IMAGE_OBJECTSTORE_MINIO,
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{{

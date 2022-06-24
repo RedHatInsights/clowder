@@ -21,8 +21,8 @@ import (
 )
 
 var KEYCLOAK_VERSION = "15.0.2"
-var MBOP_IMAGE = "quay.io/cloudservices/mbop:dd6c49a"
-var MOCKTITLEMENTS_IMAGE = "quay.io/cloudservices/mocktitlements:130433d"
+var IMAGE_WEB_MBOP = "quay.io/cloudservices/mbop:dd6c49a"
+var IMAGE_WEB_MOCKTITLEMENTS = "quay.io/cloudservices/mocktitlements:130433d"
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
@@ -397,7 +397,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := MBOP_IMAGE
+	image := IMAGE_WEB_MBOP
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -540,7 +540,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := MOCKTITLEMENTS_IMAGE
+	image := IMAGE_WEB_MOCKTITLEMENTS
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
