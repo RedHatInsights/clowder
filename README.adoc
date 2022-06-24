@@ -109,15 +109,12 @@ The ``kube_setup.sh`` script then needs to be run by invoking
 ./build/kube_setup.sh
 ....
 
-Clowder can then be installed by visiting the
-https://github.com/RedHatInsights/clowder/releases/latest[latest release]
-page, copying the link to the manifest, and running something similar to that
-shown below:
+Clowder can then be installed by running:
 
 [source,shell]
 ----
 # Be sure to get the latest release in the link above!
-minikube kubectl -- apply -f https://github.com/RedHatInsights/clowder/releases/download/v0.26.0/clowder-manifest-v0.26.0.yaml --validate=false
+minikube kubectl -- apply -f $(curl https://api.github.com/repos/RedHatInsights/clowder/releases/latest | jq '.assets[0].browser_download_url' -r) --validate=false
 ----
 
 ## Usage
