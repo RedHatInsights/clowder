@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"os"
 
 	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -69,9 +70,38 @@ func init() {
 //go:embed version.txt
 var Version string
 
+func printConfig() error {
+	bytes, err := json.Marshal(clowderconfig.LoadedConfig)
+	if err != nil {
+		return err
+	}
+
+	configCopy := clowderconfig.ClowderConfig{}
+
+	err = json.Unmarshal(bytes, &configCopy)
+	if err != nil {
+		return err
+	}
+
+	if configCopy.Credentials.Keycloak.Username != "" {
+		configCopy.Credentials.Keycloak.Username = "********"
+	}
+
+	if configCopy.Credentials.Keycloak.Password != "" {
+		configCopy.Credentials.Keycloak.Password = "********"
+	}
+
+	setupLog.Info("Loaded config", "config", configCopy)
+	return nil
+}
+
 // Run inits the manager and controllers and then starts the manager
 func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config *rest.Config, signalHandler context.Context, enableWebHooks bool) {
-	setupLog.Info("Loaded config", "config", clowderconfig.LoadedConfig)
+	err := printConfig()
+	if err != nil {
+		setupLog.Error(err, "unable to print config")
+		os.Exit(1)
+	}
 
 	clowderVersion.With(prometheus.Labels{"version": Version}).Inc()
 
