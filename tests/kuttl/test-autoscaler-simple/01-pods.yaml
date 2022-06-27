@@ -28,8 +28,6 @@ spec:
     pullSecrets:
     - name: test-autoscaler-simple-secret
       namespace: test-autoscaler-simple
-    - name: test-autoscaler-simple-same-ns
-      namespace: test-autoscaler-simple
   resourceDefaults:
     limits:
       cpu: 500m
@@ -78,18 +76,5 @@ data:
 kind: Secret
 metadata:
   name: test-autoscaler-simple-secret
-  namespace: test-autoscaler-simple
-type: Opaque
----
-apiVersion: v1
-data:
-  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
-  aws_region: dXMtZWFzdA==
-  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
-  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
-  endpoint: dGVzdC1lbmRwb2ludA==
-kind: Secret
-metadata:
-  name: test-autoscaler-simple-same-ns
   namespace: test-autoscaler-simple
 type: Opaque
