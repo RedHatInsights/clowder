@@ -30,11 +30,7 @@ func (sp *simpleAutoScalerProvider) Provide(app *crd.ClowdApp, appConfig *config
 	for _, deployment := range app.Spec.Deployments {
 		// Create the autoscaler the current deployment if one is specified
 		if deployment.SimpleAutoScaler != nil {
-
 			cachedDeployment, err := sp.getDeploymentFromCache(&deployment, app)
-			//Failing to get the deployment from cache isn't fatal
-			//May just mean a resource isn't ready yet
-			//Move on to the next iteration
 			if err != nil {
 				log.Println(err)
 				return err
