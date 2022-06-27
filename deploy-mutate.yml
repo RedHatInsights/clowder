@@ -327,10 +327,6 @@ objects:
                               to check each trigger on. Default is 30 seconds.
                             format: int32
                             type: integer
-                          simpleHPAOptIn:
-                            description: 'Use the simple autoscaler. Note: this only
-                              works if autoScaler mode is "simple" for the ClowdEnv'
-                            type: boolean
                           triggers:
                             items:
                               description: ScaleTriggers reference the scaler that
