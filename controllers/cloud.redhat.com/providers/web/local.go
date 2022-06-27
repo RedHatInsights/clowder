@@ -208,7 +208,7 @@ func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) erro
 		"clowder/authsidecar-confighash": hash,
 	}
 
-	utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
+	utils.UpdateAnnotations(&d.Spec.Template, annotations)
 
 	if err := web.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
 		return err
@@ -390,7 +390,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 			"clowder/authsidecar-confighash": hash,
 		}
 
-		utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
+		utils.UpdateAnnotations(&d.Spec.Template, annotations)
 
 		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
 			return err

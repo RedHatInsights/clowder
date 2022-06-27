@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
@@ -128,12 +129,8 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		},
 	})
 
-	// add kubelinter annotations to ignore liveness/readiness probes on Jobs
-	annotations := map[string]string{
-		"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
-		"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
-	}
-	utils.UpdatePodTemplateAnnotations(&j.Spec.Template, annotations)
+	utils.UpdateAnnotations(&j.Spec.Template, common.KubeLinterAnnotations)
+	utils.UpdateAnnotations(j, common.KubeLinterAnnotations)
 
 	return nil
 }

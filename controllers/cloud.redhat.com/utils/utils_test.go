@@ -237,7 +237,7 @@ func TestPodAnnotationsUpdate(t *testing.T) {
 	for i := range table {
 		i := i
 		t.Run(table[i].name, func(t *testing.T) {
-			utils.UpdatePodTemplateAnnotations(&table[i].podTemplate, table[i].labels)
+			utils.UpdateAnnotations(&table[i].podTemplate, table[i].labels)
 			assert.Equal(t, table[i].result, table[i].podTemplate.GetAnnotations(), "labels don't match")
 		})
 	}
