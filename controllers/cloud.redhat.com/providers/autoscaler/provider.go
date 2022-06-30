@@ -16,10 +16,8 @@ func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 	autoMode := c.Env.Spec.Providers.AutoScaler.Mode
 
 	switch autoMode {
-	case "keda":
-		return NewAutoScalerProvider(c)
-	case "simple":
-		return NewSimpleAutoScalerProvider(c)
+	case "enabled":
+		return NewAutoScaleProviderRouter(c)
 	case "none", "":
 		return NewNoneAutoScalerProvider(c)
 	default:

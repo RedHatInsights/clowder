@@ -16,21 +16,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// NewNoneDBProvider returns a new none db provider object.
-func NewSimpleAutoScalerProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	return &simpleAutoScalerProvider{Provider: *p}, nil
-}
-
-type simpleAutoScalerProvider struct {
-	providers.Provider
-	Config config.DatabaseConfig
-}
-
-func (sp *simpleAutoScalerProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
+func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider) error {
 	for _, deployment := range app.Spec.Deployments {
 		// Create the autoscaler the current deployment if one is specified
 		if deployment.SimpleAutoScaler != nil {
-			cachedDeployment, err := sp.getDeploymentFromCache(&deployment, app)
+			cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
 			if err != nil {
 				log.Println(err)
 				return err
@@ -49,7 +39,7 @@ func (sp *simpleAutoScalerProvider) Provide(app *crd.ClowdApp, appConfig *config
 
 //Get the core apps.Deployment from the provider cache
 //This is in simpleAutoScalerProvider because we need access to the provider cache
-func (sp *simpleAutoScalerProvider) getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp) (*apps.Deployment, error) {
+func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, sp *providers.Provider) (*apps.Deployment, error) {
 	nn := app.GetDeploymentNamespacedName(clowdDeployment)
 	d := &apps.Deployment{}
 	if err := sp.Cache.Get(deployProvider.CoreDeployment, d, nn); err != nil {
