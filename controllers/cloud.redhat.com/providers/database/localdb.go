@@ -66,13 +66,26 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 	dbCfg := config.DatabaseConfig{}
 	dataInit := func() map[string]string {
+
+		hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
+		port := "5432"
+		username := utils.RandString(16)
+		password := utils.RandString(16)
+		pgPass := utils.RandString(16)
+		name := app.Spec.Database.Name
+
 		return map[string]string{
-			"hostname": fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-			"port":     "5432",
-			"username": utils.RandString(16),
-			"password": utils.RandString(16),
-			"pgPass":   utils.RandString(16),
-			"name":     app.Spec.Database.Name,
+			"hostname":    hostname,
+			"db.host":     hostname,
+			"port":        port,
+			"db.port":     port,
+			"username":    username,
+			"db.user":     username,
+			"password":    password,
+			"db.password": password,
+			"pgPass":      pgPass,
+			"name":        name,
+			"db.name":     name,
 		}
 	}
 
