@@ -291,7 +291,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					},
 				},
 				AutoScaler: crd.AutoScalerConfig{
-					Mode: "keda",
+					Enabled: true,
 				},
 			},
 			TargetNamespace: objMeta.Namespace,
@@ -323,7 +323,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					Image: "test:test",
 				},
 				Name: "testpod",
-				AutoScaler: &crd.AutoScaler{
+				AutoScalerKeda: &crd.AutoScalerKeda{
 					MaxReplicaCount: &maxReplicas,
 					Triggers: []keda.ScaleTriggers{
 						{
