@@ -33,7 +33,7 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 }
 
 //Get the core apps.Deployment from the provider cache
-//This is in simpleAutoScalerProvider because we need access to the provider cache
+//This is in AutoScalerSimpleProvider because we need access to the provider cache
 func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, sp *providers.Provider) (*apps.Deployment, error) {
 	nn := app.GetDeploymentNamespacedName(clowdDeployment)
 	d := &apps.Deployment{}
@@ -89,8 +89,8 @@ func (d *deployemntSimpleHPA) makeHPA() v2.HorizontalPodAutoscaler {
 				Kind:       d.coreDeployment.Kind,
 				Name:       d.coreDeployment.Name,
 			},
-			MinReplicas: &d.deployment.SimpleAutoScaler.Replicas.Min,
-			MaxReplicas: d.deployment.SimpleAutoScaler.Replicas.Max,
+			MinReplicas: &d.deployment.AutoScalerSimple.Replicas.Min,
+			MaxReplicas: d.deployment.AutoScalerSimple.Replicas.Max,
 		},
 	}
 	return hpa
@@ -99,22 +99,22 @@ func (d *deployemntSimpleHPA) makeHPA() v2.HorizontalPodAutoscaler {
 func (d *deployemntSimpleHPA) makeMetricsSpecs() []v2.MetricSpec {
 	metricsSpecs := []v2.MetricSpec{}
 
-	if d.deployment.SimpleAutoScaler.RAM.ScaleAtUtilization != 0 {
-		metricsSpec := d.makeAverageUtilizationMetricSpec(v1.ResourceMemory, d.deployment.SimpleAutoScaler.RAM.ScaleAtUtilization)
+	if d.deployment.AutoScalerSimple.RAM.ScaleAtUtilization != 0 {
+		metricsSpec := d.makeAverageUtilizationMetricSpec(v1.ResourceMemory, d.deployment.AutoScalerSimple.RAM.ScaleAtUtilization)
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
-	if d.deployment.SimpleAutoScaler.RAM.ScaleAtValue != "" {
-		threshhold := res.MustParse(d.deployment.SimpleAutoScaler.RAM.ScaleAtValue)
+	if d.deployment.AutoScalerSimple.RAM.ScaleAtValue != "" {
+		threshhold := res.MustParse(d.deployment.AutoScalerSimple.RAM.ScaleAtValue)
 		metricsSpec := d.makeAverageValueMetricSpec(v1.ResourceMemory, threshhold)
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
 
-	if d.deployment.SimpleAutoScaler.CPU.ScaleAtUtilization != 0 {
-		metricsSpec := d.makeAverageUtilizationMetricSpec(v1.ResourceCPU, d.deployment.SimpleAutoScaler.CPU.ScaleAtUtilization)
+	if d.deployment.AutoScalerSimple.CPU.ScaleAtUtilization != 0 {
+		metricsSpec := d.makeAverageUtilizationMetricSpec(v1.ResourceCPU, d.deployment.AutoScalerSimple.CPU.ScaleAtUtilization)
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
-	if d.deployment.SimpleAutoScaler.CPU.ScaleAtValue != "" {
-		threshhold := res.MustParse(d.deployment.SimpleAutoScaler.CPU.ScaleAtValue)
+	if d.deployment.AutoScalerSimple.CPU.ScaleAtValue != "" {
+		threshhold := res.MustParse(d.deployment.AutoScalerSimple.CPU.ScaleAtValue)
 		metricsSpec := d.makeAverageValueMetricSpec(v1.ResourceCPU, threshhold)
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}

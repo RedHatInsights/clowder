@@ -9,7 +9,6 @@ var ProvName = "autoscaler"
 
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
-
 	switch c.Env.Spec.Providers.AutoScaler.Enabled {
 	case true:
 		return NewAutoScaleProviderRouter(c)
