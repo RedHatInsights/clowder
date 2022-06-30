@@ -1,9 +1,6 @@
 package autoscaler
 
 import (
-	"errors"
-	"fmt"
-
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -13,16 +10,11 @@ var ProvName = "autoscaler"
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 
-	autoMode := c.Env.Spec.Providers.AutoScaler.Mode
-
-	switch autoMode {
-	case "enabled":
+	switch c.Env.Spec.Providers.AutoScaler.Enabled {
+	case true:
 		return NewAutoScaleProviderRouter(c)
-	case "none", "":
+	case false:
 		return NewNoneAutoScalerProvider(c)
-	default:
-		errStr := fmt.Sprintf("No matching autoscaler mode for %s", autoMode)
-		return nil, errors.New(errStr)
 	}
 }
 

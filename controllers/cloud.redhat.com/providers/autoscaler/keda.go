@@ -37,16 +37,9 @@ func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.Ap
 	return nil
 }
 
-func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider) error {
-	for _, deployment := range app.Spec.Deployments {
-
-		// Create the autoscaler if one is defined
-		if deployment.AutoScaler != nil {
-
-			if err := makeAutoScalers(&deployment, app, c, asp); err != nil {
-				return err
-			}
-		}
+func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment crd.Deployment) error {
+	if err := makeAutoScalers(&deployment, app, c, asp); err != nil {
+		return err
 	}
 	return nil
 }
@@ -59,10 +52,10 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deploy
 	// Set up the watcher to watch the Deployment we created earlier.
 	scalerSpec := keda.ScaledObjectSpec{
 		ScaleTargetRef:  &keda.ScaleTarget{Name: d.Name, Kind: d.Kind, APIVersion: d.APIVersion},
-		PollingInterval: deployment.AutoScaler.PollingInterval,
-		CooldownPeriod:  deployment.AutoScaler.CooldownPeriod,
-		Advanced:        deployment.AutoScaler.Advanced,
-		Fallback:        deployment.AutoScaler.Fallback,
+		PollingInterval: deployment.AutoScalerKeda.PollingInterval,
+		CooldownPeriod:  deployment.AutoScalerKeda.CooldownPeriod,
+		Advanced:        deployment.AutoScalerKeda.Advanced,
+		Fallback:        deployment.AutoScalerKeda.Fallback,
 	}
 
 	// Setting the min/max replica counts with defaults
@@ -74,15 +67,15 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deploy
 	} else {
 		scalerSpec.MinReplicaCount = deployment.MinReplicas
 	}
-	if deployment.AutoScaler.MaxReplicaCount == nil {
+	if deployment.AutoScalerKeda.MaxReplicaCount == nil {
 		scalerSpec.MaxReplicaCount = new(int32)
 		*scalerSpec.MaxReplicaCount = 10
 	} else {
-		scalerSpec.MaxReplicaCount = deployment.AutoScaler.MaxReplicaCount
+		scalerSpec.MaxReplicaCount = deployment.AutoScalerKeda.MaxReplicaCount
 	}
 
 	triggers := []keda.ScaleTriggers{}
-	for _, trigger := range deployment.AutoScaler.Triggers {
+	for _, trigger := range deployment.AutoScalerKeda.Triggers {
 
 		triggerType := getTriggerRoute(trigger.Type, c, env)
 		for k, v := range triggerType {

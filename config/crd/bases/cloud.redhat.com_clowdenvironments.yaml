@@ -60,14 +60,9 @@ spec:
                   autoScaler:
                     description: Defines the autoscaler configuration
                     properties:
-                      mode:
-                        description: 'The type of autoscaler to use: - (*_enabled_*)
-                          -- Enable autoscalers - (*_none_*) -- No autoscaler is used'
-                        enum:
-                        - none
-                        - enabled
-                        - ""
-                        type: string
+                      enabled:
+                        description: Enable the autoscaler feature
+                        type: boolean
                     type: object
                   db:
                     description: Defines the Configuration for the Clowder Database

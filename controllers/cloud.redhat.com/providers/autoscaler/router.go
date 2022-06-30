@@ -19,13 +19,13 @@ func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvide
 func (db *autoScaleProviderRouter) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	for _, deployment := range app.Spec.Deployments {
 		//If we find a SimpleAutoScaler config create one
-		if deployment.SimpleAutoScaler != nil {
-			ProvideSimpleAutoScaler(app, c, &db.Provider)
+		if deployment.AutoScalerSimple != nil {
+			ProvideSimpleAutoScaler(app, c, &db.Provider, deployment)
 			continue
 		}
 		//If we find a SimpleAutoScaler config create one
-		if deployment.SimpleAutoScaler != nil {
-			ProvideKedaAutoScaler(app, c, &db.Provider)
+		if deployment.AutoScalerKeda != nil {
+			ProvideKedaAutoScaler(app, c, &db.Provider, deployment)
 			continue
 		}
 	}

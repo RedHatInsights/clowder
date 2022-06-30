@@ -16,23 +16,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider) error {
-	for _, deployment := range app.Spec.Deployments {
-		// Create the autoscaler the current deployment if one is specified
-		if deployment.SimpleAutoScaler != nil {
-			cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
-			if err != nil {
-				log.Println(err)
-				return err
-			}
-			deploymentHPA := makeDeployemntSimpleHPA(&deployment, app, appConfig, cachedDeployment)
-			hpaResource := deploymentHPA.getResource()
+func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment crd.Deployment) error {
+	cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	deploymentHPA := makeDeployemntSimpleHPA(&deployment, app, appConfig, cachedDeployment)
+	hpaResource := deploymentHPA.getResource()
 
-			err = sp.Client.Create(sp.Ctx, &hpaResource)
-			if err != nil {
-				fmt.Println("HPA Error: ", err)
-			}
-		}
+	err = sp.Client.Create(sp.Ctx, &hpaResource)
+	if err != nil {
+		fmt.Println("HPA Error: ", err)
 	}
 	return nil
 }

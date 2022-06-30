@@ -59,8 +59,25 @@ AppInfo details information about a specific app.
 |===
 
 
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"]
-==== AutoScaler 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig"]
+==== AutoScalerConfig 
+
+AutoScalerConfig configures the Clowder provider controlling the creation of AutoScaler configuration.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Enable the autoscaler feature
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerkeda"]
+==== AutoScalerKeda 
 
 AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
 
@@ -82,20 +99,22 @@ AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting t
 |===
 
 
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig"]
-==== AutoScalerConfig 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple"]
+==== AutoScalerSimple 
 
-AutoScalerConfig configures the Clowder provider controlling the creation of AutoScaler configuration.
+SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by value and utilization thresholds, along with replica count limits
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig[$$ProvidersConfig$$]
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
 ****
 
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __AutoScalerMode__ | The type of autoscaler to use: - (*_enabled_*) -- Enable autoscalers - (*_none_*) -- No autoscaler is used
+| *`replicas`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas[$$SimpleAutoScalerReplicas$$]__ | 
+| *`ram`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
+| *`cpu`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
 |===
 
 
@@ -368,8 +387,8 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`webServices`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
-| *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the auto scaler
-| *`simpleAutoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler[$$SimpleAutoScaler$$]__ | 
+| *`autoScalerKeda`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerkeda[$$AutoScalerKeda$$]__ | AutoScaler defines the configuration for the auto scaler
+| *`autoScalerSimple`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]__ | 
 | *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
 |===
 
@@ -1045,25 +1064,6 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 |===
 
 
-[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler"]
-==== SimpleAutoScaler 
-
-SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by value and utilization thresholds, along with replica count limits
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`replicas`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas[$$SimpleAutoScalerReplicas$$]__ | 
-| *`ram`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
-| *`cpu`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
-|===
-
-
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric"]
 ==== SimpleAutoScalerMetric 
 
@@ -1071,7 +1071,7 @@ SimpleAutoScalerMetric defines a metric of either a value or utilization
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler[$$SimpleAutoScaler$$]
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]
 ****
 
 [cols="25a,75a", options="header"]
@@ -1089,7 +1089,7 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 
 .Appears In:
 ****
-- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscaler[$$SimpleAutoScaler$$]
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]
 ****
 
 [cols="25a,75a", options="header"]

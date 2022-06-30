@@ -327,18 +327,11 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
-// AutoScalerMode details the mode of operation of the Clowder AutoScaler
-// Provider
-// +kubebuilder:validation:Enum={"none", "enabled",""}
-type AutoScalerMode string
-
 // AutoScalerConfig configures the Clowder provider controlling the creation of
 // AutoScaler configuration.
 type AutoScalerConfig struct {
-	// The type of autoscaler to use:
-	// - (*_enabled_*) -- Enable autoscalers
-	// - (*_none_*) -- No autoscaler is used
-	Mode AutoScalerMode `json:"mode,omitempty"`
+	//Enable the autoscaler feature
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // Describes what amount of app config is mounted to the pod

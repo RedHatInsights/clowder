@@ -7,7 +7,7 @@ spec:
   targetNamespace: test-autoscaler-simple
   providers:
     autoScaler:
-      mode: simple
+      enabled: true
     web:
       port: 8000
       mode: operator
@@ -47,7 +47,7 @@ spec:
   - name: highram
     podSpec:
       image: quay.io/psav/clowder-hello
-    simpleAutoScaler:
+    autoScalerSimple:
       replicas:
         min: 1
         max: 4
@@ -56,7 +56,7 @@ spec:
   - name: highcpu
     podSpec:
       image: quay.io/rh_ee_addrew/highload:latest
-    simpleAutoScaler:
+    autoScalerSimple:
       replicas:
         min: 1
         max: 4

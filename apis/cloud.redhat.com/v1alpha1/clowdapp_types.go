@@ -200,9 +200,9 @@ type Deployment struct {
 	K8sAccessLevel K8sAccessLevel `json:"k8sAccessLevel,omitempty"`
 
 	// AutoScaler defines the configuration for the auto scaler
-	AutoScaler *AutoScaler `json:"autoScaler,omitempty"`
+	AutoScalerKeda *AutoScalerKeda `json:"autoScalerKeda,omitempty"`
 
-	SimpleAutoScaler *SimpleAutoScaler `json:"simpleAutoScaler,omitempty"`
+	AutoScalerSimple *AutoScalerSimple `json:"autoScalerSimple,omitempty"`
 
 	// DeploymentStrategy allows the deployment strategy to be set only if the
 	// deployment has no public service enabled
@@ -287,14 +287,14 @@ type SimpleAutoScalerReplicas struct {
 
 // SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
 // value and utilization thresholds, along with replica count limits
-type SimpleAutoScaler struct {
+type AutoScalerSimple struct {
 	Replicas SimpleAutoScalerReplicas `json:"replicas"`
 	RAM      SimpleAutoScalerMetric   `json:"ram,omitempty"`
 	CPU      SimpleAutoScalerMetric   `json:"cpu,omitempty"`
 }
 
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
-type AutoScaler struct {
+type AutoScalerKeda struct {
 	// PollingInterval is the interval (in seconds) to check each trigger on.
 	// Default is 30 seconds.
 	// +optional

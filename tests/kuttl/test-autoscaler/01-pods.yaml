@@ -28,7 +28,7 @@ spec:
     featureFlags:
       mode: none
     autoScaler:
-      mode: keda
+      enabled: true
   resourceDefaults:
     limits:
       cpu: 400m
@@ -48,7 +48,7 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-    autoScaler:
+    autoScalerKeda:
       maxReplicaCount: 5
       triggers:
       - type: cpu
@@ -73,7 +73,7 @@ spec:
     minReplicas: 1
     podSpec:
       image: quay.io/psav/clowder-hello
-    autoScaler:
+    autoScalerKeda:
       simpleAutoscale: true
 ---
 apiVersion: autoscaling/v1
