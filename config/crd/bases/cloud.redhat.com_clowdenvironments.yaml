@@ -61,15 +61,12 @@ spec:
                     description: Defines the autoscaler configuration
                     properties:
                       mode:
-                        description: 'The type of autoscaler to use: - (*_keda_*)
-                          -- Use keda as the autoscaler - (*_simple_*) -- Use Kubernetes
-                          simple HPA as the autoscaler - (*_none_*) -- No autoscaler
-                          is used'
+                        description: 'The type of autoscaler to use: - (*_enabled_*)
+                          -- Enable autoscalers - (*_none_*) -- No autoscaler is used'
                         enum:
                         - none
-                        - keda
+                        - enabled
                         - ""
-                        - simple
                         type: string
                     type: object
                   db:

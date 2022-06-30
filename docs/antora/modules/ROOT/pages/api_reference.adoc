@@ -95,7 +95,7 @@ AutoScalerConfig configures the Clowder provider controlling the creation of Aut
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __AutoScalerMode__ | The type of autoscaler to use: - (*_keda_*) -- Use keda as the autoscaler - (*_simple_*) -- Use Kubernetes simple HPA as the autoscaler - (*_none_*) -- No autoscaler is used
+| *`mode`* __AutoScalerMode__ | The type of autoscaler to use: - (*_enabled_*) -- Enable autoscalers - (*_none_*) -- No autoscaler is used
 |===
 
 
