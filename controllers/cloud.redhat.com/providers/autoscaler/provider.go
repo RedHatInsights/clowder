@@ -7,9 +7,14 @@ import (
 // ProvName sets the provider name identifier
 var ProvName = "autoscaler"
 
+const ENABLED = "enabled"
+const KEDA = "keda"
+
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
-	if c.Env.Spec.Providers.AutoScaler.Enabled {
+	mode := c.Env.Spec.Providers.AutoScaler.Mode
+	//Keda is preserved as a synonym of enabled for backwards compatibility
+	if mode == ENABLED || mode == KEDA {
 		return NewAutoScaleProviderRouter(c)
 	}
 	return NewNoneAutoScalerProvider(c)

@@ -291,7 +291,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 					},
 				},
 				AutoScaler: crd.AutoScalerConfig{
-					Enabled: true,
+					Mode: "enabled",
 				},
 			},
 			TargetNamespace: objMeta.Namespace,

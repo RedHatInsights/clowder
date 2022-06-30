@@ -327,11 +327,15 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
+//AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+// +kubebuilder:validation:Enum={"none", "enabled", "keda"}
+type AutoScalerMode string
+
 // AutoScalerConfig configures the Clowder provider controlling the creation of
 // AutoScaler configuration.
 type AutoScalerConfig struct {
 	//Enable the autoscaler feature
-	Enabled bool `json:"enabled,omitempty"`
+	Mode AutoScalerMode `json:"mode,omitempty"`
 }
 
 // Describes what amount of app config is mounted to the pod

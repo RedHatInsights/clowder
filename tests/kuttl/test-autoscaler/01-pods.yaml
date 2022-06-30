@@ -28,7 +28,7 @@ spec:
     featureFlags:
       mode: none
     autoScaler:
-      enabled: true
+      mode: enabled
   resourceDefaults:
     limits:
       cpu: 400m

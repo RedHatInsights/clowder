@@ -7,7 +7,7 @@ spec:
   targetNamespace: test-autoscaler-simple
   providers:
     autoScaler:
-      enabled: true
+      mode: enabled
     web:
       port: 8000
       mode: operator

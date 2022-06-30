@@ -72,7 +72,7 @@ AutoScalerConfig configures the Clowder provider controlling the creation of Aut
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`enabled`* __boolean__ | Enable the autoscaler feature
+| *`mode`* __AutoScalerMode__ | Enable the autoscaler feature
 |===
 
 
