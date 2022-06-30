@@ -329,15 +329,14 @@ type InMemoryDBConfig struct {
 
 // AutoScalerMode details the mode of operation of the Clowder AutoScaler
 // Provider
-// +kubebuilder:validation:Enum={"none", "keda", "", "simple"}
+// +kubebuilder:validation:Enum={"none", "enabled",""}
 type AutoScalerMode string
 
 // AutoScalerConfig configures the Clowder provider controlling the creation of
 // AutoScaler configuration.
 type AutoScalerConfig struct {
 	// The type of autoscaler to use:
-	// - (*_keda_*) -- Use keda as the autoscaler
-	// - (*_simple_*) -- Use Kubernetes simple HPA as the autoscaler
+	// - (*_enabled_*) -- Enable autoscalers
 	// - (*_none_*) -- No autoscaler is used
 	Mode AutoScalerMode `json:"mode,omitempty"`
 }
