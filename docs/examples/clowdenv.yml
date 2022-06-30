@@ -23,11 +23,9 @@ spec:
       mode: operator
       path: "/metrics"
 
-    # Creates a kafka pod in the targetNamespace
+    # Disables Kafka operator
     kafka:
-      namespace: default
-      clusterName: crc-cluster
-      mode: local 
+      mode: none 
 
     # Clowder supports postgres 10 and 12. Specify the name
     # and other details in the clowdapp
