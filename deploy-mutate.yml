@@ -7205,8 +7205,6 @@ objects:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsGroup: 65534
-            runAsUser: 65534
           volumeMounts:
           - mountPath: /tmp/k8s-webhook-server/serving-certs
             name: cert
@@ -7214,9 +7212,7 @@ objects:
           - mountPath: /config/
             name: config
         securityContext:
-          runAsGroup: 65534
           runAsNonRoot: true
-          runAsUser: 65534
         serviceAccountName: clowder-controller-manager
         terminationGracePeriodSeconds: 10
         volumes:
