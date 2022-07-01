@@ -77,7 +77,7 @@ func getTokenRefresher(appName string) *core.Container {
 	cont := core.Container{}
 
 	cont.Name = "token-refresher"
-	cont.Image = "quay.io/observatorium/token-refresher:master-2021-02-05-5da9663"
+	cont.Image = IMAGE_SIDECAR_TOKEN_REFRESHER
 	cont.Args = []string{
 		"--oidc.audience=observatorium-telemeter",
 		"--oidc.client-id=$(CLIENT_ID)",

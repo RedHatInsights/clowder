@@ -58,6 +58,7 @@ spec:
               optional: true
         securityContext:
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
         livenessProbe:
           httpGet:
             path: /healthz

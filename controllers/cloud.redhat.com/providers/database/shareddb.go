@@ -237,7 +237,11 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 			defer envDbClient.Close()
 
 			sqlStatement := fmt.Sprintf("CREATE DATABASE \"%s\" WITH OWNER=\"%s\";", app.Spec.Database.Name, dbCfg.Username)
-			_, createErr := envDbClient.ExecContext(ctx, sqlStatement)
+			preppedStatement, err := envDbClient.PrepareContext(ctx, sqlStatement)
+			if err != nil {
+				return err
+			}
+			_, createErr := preppedStatement.Exec()
 			if createErr != nil {
 				return createErr
 			}

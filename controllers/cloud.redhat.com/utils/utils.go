@@ -302,19 +302,19 @@ func GetClowderNamespace() (string, error) {
 
 // CopySecret will return a *core.Secret that is copied from a source NamespaceName and intended to
 // be applied into a destination NamespacedName
-func CopySecret(ctx context.Context, client client.Client, srcSecretRef types.NamespacedName, dstSecretRef types.NamespacedName) (error, *core.Secret) {
+func CopySecret(ctx context.Context, client client.Client, srcSecretRef types.NamespacedName, dstSecretRef types.NamespacedName) (*core.Secret, error) {
 	nullRef := types.NamespacedName{}
 	if srcSecretRef == nullRef {
-		return errors.New("srcSecretRef is an empty NamespacedName"), nil
+		return nil, errors.New("srcSecretRef is an empty NamespacedName")
 	}
 	if dstSecretRef == nullRef {
-		return errors.New("dstSecretRef is an empty NamespacedName"), nil
+		return nil, errors.New("dstSecretRef is an empty NamespacedName")
 	}
 
 	srcSecret := &core.Secret{}
 
 	if err := client.Get(ctx, srcSecretRef, srcSecret); err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	newSecret := &core.Secret{}
@@ -324,7 +324,7 @@ func CopySecret(ctx context.Context, client client.Client, srcSecretRef types.Na
 	newSecret.SetName(dstSecretRef.Name)
 	newSecret.SetNamespace(dstSecretRef.Namespace)
 
-	return nil, newSecret
+	return newSecret, nil
 }
 
 func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
@@ -333,8 +333,13 @@ func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 	}
 }
 
-func UpdatePodTemplateAnnotations(podTemplateSpec *core.PodTemplateSpec, desiredAnnotations map[string]string) {
-	annotations := podTemplateSpec.GetAnnotations()
+type Annotator interface {
+	GetAnnotations() map[string]string
+	SetAnnotations(map[string]string)
+}
+
+func UpdateAnnotations(obj Annotator, desiredAnnotations map[string]string) {
+	annotations := obj.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
@@ -343,5 +348,5 @@ func UpdatePodTemplateAnnotations(podTemplateSpec *core.PodTemplateSpec, desired
 		annotations[k] = v
 	}
 
-	podTemplateSpec.SetAnnotations(annotations)
+	obj.SetAnnotations(annotations)
 }

@@ -105,9 +105,7 @@ func createServiceMonitorObjects(cache *rc.ObjectCache, env *crd.ClowdEnvironmen
 			},
 		}
 
-		var labeler func(v1.Object)
-
-		labeler = utils.GetCustomLabeler(map[string]string{"prometheus": promLabel}, nn, env)
+		labeler := utils.GetCustomLabeler(map[string]string{"prometheus": promLabel}, nn, env)
 		labeler(sm)
 
 		sm.SetNamespace(namespace)

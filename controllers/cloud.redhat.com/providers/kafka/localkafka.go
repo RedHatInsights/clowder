@@ -234,7 +234,7 @@ func makeLocalKafka(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: "quay.io/cloudservices/cp-kafka:5.3.2",
+		Image: IMAGE_KAFKA_LOCAL_KAFKA,
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{
@@ -391,7 +391,7 @@ func makeLocalZookeeper(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: "quay.io/cloudservices/cp-zookeeper:5.3.2",
+		Image: IMAGE_KAFKA_LOCAL_ZOOKEEPER,
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{

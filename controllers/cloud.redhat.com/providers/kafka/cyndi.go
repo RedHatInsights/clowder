@@ -6,7 +6,6 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	db "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 
@@ -171,7 +170,7 @@ func getDbSecretInSameEnv(ctx context.Context, cl client.Client, cache *rc.Objec
 			}
 		} else if env.Spec.Providers.Database.Mode == "app-interface" {
 			if app.Spec.Database.Name != "" {
-				dbConfig, err := database.GetDbConfig(ctx, cl, app.Namespace, app.Name, app.Name, app.Spec.Database)
+				dbConfig, err := db.GetDbConfig(ctx, cl, app.Namespace, app.Name, app.Name, app.Spec.Database)
 
 				if err != nil {
 					return nil, errors.Wrap("could not get database config", err)

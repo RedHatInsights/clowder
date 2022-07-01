@@ -31,7 +31,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	cloudredhatcomv1alpha1 "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	controllers "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/rhc-osdk-utils/logging"
@@ -39,14 +39,13 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme = runtime.NewScheme()
 )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(cloudredhatcomv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(crd.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

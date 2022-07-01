@@ -134,7 +134,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	entityUserRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
-        "memory": "150Mi"
+        "memory": "250Mi"
 	}`))
 
 	entityUserLimits.UnmarshalJSON([]byte(`{
@@ -144,7 +144,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	entityTopicRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
-        "memory": "150Mi"
+        "memory": "250Mi"
 	}`))
 
 	entityTopicLimits.UnmarshalJSON([]byte(`{
@@ -482,7 +482,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+		image = IMAGE_KAFKA_XJOIN
 	}
 
 	username := getConnectClusterUserName(s.Env)
