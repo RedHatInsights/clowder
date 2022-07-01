@@ -52,7 +52,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
 			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
 		}
-		utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
+		utils.UpdateAnnotations(&d.Spec.Template, annotations)
 	}
 
 	if d.Spec.Replicas == nil || (deployment.MinReplicas != nil && *d.Spec.Replicas < *deployment.MinReplicas) {
