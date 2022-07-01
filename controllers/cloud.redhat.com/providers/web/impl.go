@@ -469,7 +469,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		"clowder/authsidecar-config":  "caddy-config-mocktitlements",
 	}
 
-	utils.UpdatePodTemplateAnnotations(&dd.Spec.Template, annotations)
+	utils.UpdateAnnotations(&dd.Spec.Template, annotations)
 
 	envVars := []core.EnvVar{
 		{

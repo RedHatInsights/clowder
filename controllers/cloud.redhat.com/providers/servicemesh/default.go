@@ -34,7 +34,7 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 			"sidecar.istio.io/inject":                       "true",
 			"traffic.sidecar.istio.io/excludeOutboundPorts": "443,9093,5432,10000",
 		}
-		utils.UpdatePodTemplateAnnotations(&deployment.Spec.Template, annotations)
+		utils.UpdateAnnotations(&deployment.Spec.Template, annotations)
 
 		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
 	}

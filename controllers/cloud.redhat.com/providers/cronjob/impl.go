@@ -168,12 +168,8 @@ func applyCronCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.Cr
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
 
-	// add kubelinter annotations to ignore liveness/readiness probes on CronJobs
-	annotations := map[string]string{
-		"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
-		"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
-	}
-	utils.UpdatePodTemplateAnnotations(pt, annotations)
+	utils.UpdateAnnotations(pt, common.KubeLinterAnnotations)
+	utils.UpdateAnnotations(cj, common.KubeLinterAnnotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
 
