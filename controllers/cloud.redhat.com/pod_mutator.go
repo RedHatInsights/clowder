@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-var IMAGE_MUTATE_CADDY_SIDECAR = "quay.io/cloudservices/crc-caddy-plugin:d3d0597"
+var IMAGE_MUTATE_CADDY_SIDECAR = "quay.io/cloudservices/crc-caddy-plugin:3ba6be7"
 
 type mutantPod struct {
 	Client   client.Client
