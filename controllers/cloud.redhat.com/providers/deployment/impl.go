@@ -47,7 +47,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	pod := deployment.PodSpec
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
-			"clowder/authsidecar-image":   "a76bb81",
+			"clowder/authsidecar-image":   utils.IMAGE_MUTATE_CADDY_SIDECAR,
 			"clowder/authsidecar-enabled": "true",
 			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
 			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),

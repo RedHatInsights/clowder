@@ -17,8 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-var IMAGE_MUTATE_CADDY_SIDECAR = "quay.io/cloudservices/crc-caddy-plugin:d3d0597"
-
 type mutantPod struct {
 	Client   client.Client
 	Recorder record.EventRecorder
@@ -52,7 +50,7 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar config"))
 		}
 
-		image := IMAGE_MUTATE_CADDY_SIDECAR
+		image := utils.IMAGE_MUTATE_CADDY_SIDECAR
 
 		if clowderconfig.LoadedConfig.Images.Caddy != "" {
 			image = clowderconfig.LoadedConfig.Images.Caddy

@@ -21,7 +21,7 @@ import (
 )
 
 var KEYCLOAK_VERSION = "15.0.2"
-var IMAGE_WEB_MBOP = "quay.io/cloudservices/mbop:dd6c49a"
+var IMAGE_WEB_MBOP = "quay.io/cloudservices/mbop:0d3f99f"
 var IMAGE_WEB_MOCKTITLEMENTS = "quay.io/cloudservices/mocktitlements:130433d"
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
@@ -463,7 +463,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	annotations := map[string]string{
-		"clowder/authsidecar-image":   "a76bb81",
+		"clowder/authsidecar-image":   utils.IMAGE_MUTATE_CADDY_SIDECAR,
 		"clowder/authsidecar-enabled": "true",
 		"clowder/authsidecar-port":    "8090",
 		"clowder/authsidecar-config":  "caddy-config-mocktitlements",
