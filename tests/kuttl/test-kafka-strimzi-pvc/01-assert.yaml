@@ -45,11 +45,11 @@ spec:
       deleteClaim: false
     resources:  # assert default resource settings are used
       limits:
-        cpu: 250m
-        memory: 600Mi
+        cpu: 350m
+        memory: 800Mi
       requests:
-        cpu: 100m
-        memory: 300Mi
+        cpu: 200m
+        memory: 400Mi
   entityOperator:
     topicOperator: {}
 ---
@@ -71,8 +71,8 @@ spec:
     status.storage.topic: connect-cluster-status
   resources:  # assert default resource settings are used
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 600m
+      memory: 800Mi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 300m
+      memory: 500Mi
