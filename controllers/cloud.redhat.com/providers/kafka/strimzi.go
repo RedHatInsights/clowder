@@ -123,13 +123,13 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}`))
 
 	zRequests.UnmarshalJSON([]byte(`{
-        "cpu": "100m",
-        "memory": "300Mi"
+        "cpu": "200m",
+        "memory": "400Mi"
 	}`))
 
 	zLimits.UnmarshalJSON([]byte(`{
-        "cpu": "250m",
-        "memory": "600Mi"
+        "cpu": "350m",
+        "memory": "800Mi"
 	}`))
 
 	entityUserRequests.UnmarshalJSON([]byte(`{
@@ -428,13 +428,13 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	// default values for config/requests/limits in Strimzi resource specs
 	kcRequests.UnmarshalJSON([]byte(`{
-        "cpu": "250m",
-        "memory": "256Mi"
+        "cpu": "300m",
+        "memory": "500Mi"
 	}`))
 
 	kcLimits.UnmarshalJSON([]byte(`{
-        "cpu": "500m",
-        "memory": "512Mi"
+        "cpu": "600m",
+        "memory": "800Mi"
 	}`))
 
 	// check if defaults have been overridden in ClowdEnvironment

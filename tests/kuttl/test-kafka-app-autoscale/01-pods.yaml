@@ -14,7 +14,11 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      mode: local
+      cluster:
+        name: test-kafka-app-autoscale
+        namespace: test-kafka-app-autoscale
+      mode: operator
+      enableLegacyStrimzi: true
     db:
       mode: none
     logging:
@@ -52,11 +56,11 @@ spec:
       - type: kafka
         metadata:
           consumerGroup: my-group
-          topic: topicOne
+          topic: topicone
   kafkaTopics:
     - replicas: 1
       partitions: 3
-      topicName: topicOne
+      topicName: topicone
     - replicas: 1
       partitions: 3
-      topicName: topicTwo
+      topicName: topictwo

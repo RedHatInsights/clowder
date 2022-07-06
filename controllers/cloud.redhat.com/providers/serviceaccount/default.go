@@ -11,7 +11,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/featureflags"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/inmemorydb"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/kafka"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/objectstore"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
@@ -32,8 +31,6 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 
 	resourceIdentsToUpdate := []rc.ResourceIdent{
 		featureflags.LocalFFDBDeployment,
-		kafka.LocalKafkaDeployment,
-		kafka.LocalZookeeperDeployment,
 		objectstore.MinioDeployment,
 		database.SharedDBDeployment,
 	}
