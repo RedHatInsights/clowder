@@ -75,7 +75,7 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 		topicName := topic.TopicName
 
 		if k.Env.Spec.Providers.Kafka.ManagedPrefix != "" {
-			topicName = fmt.Sprintf("%s-%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
+			topicName = fmt.Sprintf("%s%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
 		}
 
 		kafkaConfig.Topics = append(
