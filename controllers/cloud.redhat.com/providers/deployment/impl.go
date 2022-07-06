@@ -9,7 +9,7 @@ import (
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"GetCaddyGetCaddy
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
