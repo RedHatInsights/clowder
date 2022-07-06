@@ -9,11 +9,12 @@ import (
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"GetCaddyGetCaddy
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 )
 
@@ -47,7 +48,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	pod := deployment.PodSpec
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
-			"clowder/authsidecar-image":   utils.IMAGE_MUTATE_CADDY_SIDECAR,
+			"clowder/authsidecar-image":   provutils.GetCaddyImage(*env),
 			"clowder/authsidecar-enabled": "true",
 			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
 			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),

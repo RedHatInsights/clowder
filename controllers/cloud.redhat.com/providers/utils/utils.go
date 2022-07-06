@@ -1,7 +1,10 @@
 package providers
 
 import (
+	"fmt"
+
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -14,6 +17,12 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+var DEFAULT_CADDY_IMAGE = "quay.io/cloudservices/crc-caddy-plugin:3ba6be7"
+var DEFAULT_MBOP_IMAGE = "quay.io/cloudservices/mbop:0d3f99f"
+var DEFAULT_MOCKTITLEMENTS_IMAGE = "quay.io/cloudservices/mocktitlements:130433d"
+var DEFAULT_KEYCLOAK_VERSION = "15.0.2"
+var DEFAULT_KEYCLOAK_IMAGE = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DEFAULT_KEYCLOAK_VERSION)
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -153,4 +162,48 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
 func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, capacity string) {
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
+}
+
+// GetCaddyImage returns the caddy image to use in a given environment
+func GetCaddyImage(o obj.ClowdObject) string {
+	if o.GetClowdEnvironment().Spec.Providers.Web.CaddyImage != "" {
+		return env.Spec.Providers.Web.CaddyImage
+	}
+	if clowderconfig.LoadedConfig.Images.Caddy != "" {
+		return clowderconfig.LoadedConfig.Images.Caddy
+	}
+	return DEFAULT_CADDY_IMAGE
+}
+
+// GetKeycloakImage returns the keycloak image to use in a given environment
+func GetKeycloakImage(o obj.ClowdObject) string {
+	if o.GetClowdEnvironment().Spec.Providers.Web.KeycloakImage != "" {
+		return env.Spec.Providers.Web.KeycloakImage
+	}
+	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
+		return clowderconfig.LoadedConfig.Images.Keycloak
+	}
+	return DEFAULT_KEYCLOAK_IMAGE
+}
+
+// GetMocktitlementsImage returns the mocktitlements image to use in a given environment
+func GetMocktitlementsImage(o obj.ClowdObject) string {
+	if o.GetClowdEnvironment().Spec.Providers.Web.MocktitlementsImage != "" {
+		return env.Spec.Providers.Web.MocktitlementsImage
+	}
+	if clowderconfig.LoadedConfig.Images.Mocktitlements != "" {
+		return clowderconfig.LoadedConfig.Images.Mocktitlements
+	}
+	return DEFAULT_MOCKTITLEMENTS_IMAGE
+}
+
+// GetMockBOPImage returns the mock BOP image to use in a given environment
+func GetMockBOPImage(o obj.ClowdObject) string {
+	if o.GetClowdEnvironment().Spec.Providers.Web.MockBOPImage != "" {
+		return env.Spec.Providers.Web.MockBOPImage
+	}
+	if clowderconfig.LoadedConfig.Images.MBOP != "" {
+		return clowderconfig.LoadedConfig.Images.MBOP
+	}
+	return DEFAULT_MBOP_IMAGE
 }

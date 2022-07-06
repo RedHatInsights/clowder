@@ -63,6 +63,18 @@ type WebConfig struct {
 
 	// Ingress Class Name used only in (*_local_*) mode.
 	IngressClass string `json:"ingressClass,omitempty"`
+
+	// Mock entitlements image -- used only in (*_local_*) mode.
+	MocktitlementsImage string `json:"mocktitlementsImage,omitempty"`
+
+	// Keycloak image -- used only in (*_local_*) mode.
+	KeycloakImage string `json:"keycloakImage,omitempty"`
+
+	// Caddy image -- used only in (*_local_*) mode.
+	CaddyImage string `json:"caddyImage,omitempty"`
+
+	// Mock BOP image -- used only in (*_local_*) mode.
+	MockBOPImage string `json:"mockBopImage,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider
@@ -610,6 +622,11 @@ func (i *ClowdEnvironment) GetClowdSAName() string {
 // GetUID returns ObjectMeta.UID
 func (i *ClowdEnvironment) GetUID() types.UID {
 	return i.ObjectMeta.UID
+}
+
+// GetClowdEnvironment returns a pointer to this ClowdEnvironment
+func (i *ClowdEnvironment) GetClowdEnvironment() *ClowdEnvironment {
+	return i
 }
 
 // GetDeploymentStatus returns the Status.Deployments member

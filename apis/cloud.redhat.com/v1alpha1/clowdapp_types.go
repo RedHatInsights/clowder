@@ -572,6 +572,12 @@ func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
 }
 
+// GetClowdEnvironment returns the ClowdEnvironment associated with this app
+func (i *ClowdApp) GetClowdEnvironment() *ClowdEnvironment {
+	// TODO
+	return nil
+}
+
 // Omfunc is a utility function that performs an operation on a metav1.Object.
 type omfunc func(o metav1.Object)
 
