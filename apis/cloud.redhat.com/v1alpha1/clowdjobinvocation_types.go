@@ -204,12 +204,6 @@ func (i *ClowdJobInvocation) GetClowdName() string {
 	return i.Name
 }
 
-// GetClowdEnvironment returns the ClowdEnvironment associated with this ClowdJobInvocation
-func (i *ClowdJobInvocation) GetClowdEnvironment() *ClowdEnvironment {
-	// TODO
-	return nil
-}
-
 // GetClowdName returns the name of the ClowdJobInvocation object.
 func (i *ClowdJobInvocation) GetClowdSAName() string {
 	return fmt.Sprintf("%s-cji", i.Name)

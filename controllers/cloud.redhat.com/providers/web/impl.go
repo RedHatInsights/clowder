@@ -245,7 +245,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		FailureThreshold:    3,
 	}
 
-	image := provutils.GetKeycloakImage(o)
+	image := provutils.GetKeycloakImage(o.(crd.ClowdEnvironment))
 
 	c := core.Container{
 		Name:           nn.Name,
@@ -389,7 +389,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := provutils.GetMockBOPImage(o)
+	image := provutils.GetMockBOPImage(o.(crd.ClowdEnvironment))
 
 	c := core.Container{
 		Name:           nn.Name,
@@ -451,7 +451,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
 	annotations := map[string]string{
-		"clowder/authsidecar-image":   provutils.GetCaddyImage(o),
+		"clowder/authsidecar-image":   provutils.GetCaddyImage(o.(crd.ClowdEnvironment)),
 		"clowder/authsidecar-enabled": "true",
 		"clowder/authsidecar-port":    "8090",
 		"clowder/authsidecar-config":  "caddy-config-mocktitlements",
@@ -528,7 +528,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := provutils.GetMocktitlementsImage(o)
+	image := provutils.GetMocktitlementsImage(o.(crd.ClowdEnvironment))
 
 	c := core.Container{
 		Name:           nn.Name,

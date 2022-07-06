@@ -3,7 +3,6 @@ package object
 import (
 	"context"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -21,7 +20,6 @@ type ClowdObject interface {
 	GetPrimaryLabel() string
 	GroupVersionKind() schema.GroupVersionKind
 	GetNamespacesInEnv(context.Context, client.Client) ([]string, error)
-	GetClowdEnvironment() *crd.ClowdEnvironment
 }
 
 // LabeledClowdObject is used to be able to treat ClowdEnv and ClowdApp as the same type

@@ -3,6 +3,7 @@ package providers
 import (
 	"fmt"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -165,8 +166,8 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
-func GetCaddyImage(o obj.ClowdObject) string {
-	if o.GetClowdEnvironment().Spec.Providers.Web.CaddyImage != "" {
+func GetCaddyImage(env crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.CaddyImage != "" {
 		return env.Spec.Providers.Web.CaddyImage
 	}
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
@@ -176,8 +177,8 @@ func GetCaddyImage(o obj.ClowdObject) string {
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
-func GetKeycloakImage(o obj.ClowdObject) string {
-	if o.GetClowdEnvironment().Spec.Providers.Web.KeycloakImage != "" {
+func GetKeycloakImage(env crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.KeycloakImage != "" {
 		return env.Spec.Providers.Web.KeycloakImage
 	}
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
@@ -187,8 +188,8 @@ func GetKeycloakImage(o obj.ClowdObject) string {
 }
 
 // GetMocktitlementsImage returns the mocktitlements image to use in a given environment
-func GetMocktitlementsImage(o obj.ClowdObject) string {
-	if o.GetClowdEnvironment().Spec.Providers.Web.MocktitlementsImage != "" {
+func GetMocktitlementsImage(env crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.MocktitlementsImage != "" {
 		return env.Spec.Providers.Web.MocktitlementsImage
 	}
 	if clowderconfig.LoadedConfig.Images.Mocktitlements != "" {
@@ -198,12 +199,21 @@ func GetMocktitlementsImage(o obj.ClowdObject) string {
 }
 
 // GetMockBOPImage returns the mock BOP image to use in a given environment
-func GetMockBOPImage(o obj.ClowdObject) string {
-	if o.GetClowdEnvironment().Spec.Providers.Web.MockBOPImage != "" {
+func GetMockBOPImage(env crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.MockBOPImage != "" {
 		return env.Spec.Providers.Web.MockBOPImage
 	}
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		return clowderconfig.LoadedConfig.Images.MBOP
 	}
 	return DEFAULT_MBOP_IMAGE
+}
+
+// GetKeycloakVersion returns the keycloak version to use in a given environment
+func GetKeycloakVersion(env crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.KeycloakVersion != "" {
+		return env.Spec.Providers.Web.KeycloakVersion
+	}
+	// TODO: add config option in LoadedConfig for this?
+	return DEFAULT_KEYCLOAK_VERSION
 }

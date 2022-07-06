@@ -64,6 +64,9 @@ type WebConfig struct {
 	// Ingress Class Name used only in (*_local_*) mode.
 	IngressClass string `json:"ingressClass,omitempty"`
 
+	// Keycloak version -- used only in (*_local_*) mode.
+	KeycloakVersion string `json:"keycloakVersion,omitempty"`
+
 	// Mock entitlements image -- used only in (*_local_*) mode.
 	MocktitlementsImage string `json:"mocktitlementsImage,omitempty"`
 
@@ -622,11 +625,6 @@ func (i *ClowdEnvironment) GetClowdSAName() string {
 // GetUID returns ObjectMeta.UID
 func (i *ClowdEnvironment) GetUID() types.UID {
 	return i.ObjectMeta.UID
-}
-
-// GetClowdEnvironment returns a pointer to this ClowdEnvironment
-func (i *ClowdEnvironment) GetClowdEnvironment() *ClowdEnvironment {
-	return i
 }
 
 // GetDeploymentStatus returns the Status.Deployments member
