@@ -54,9 +54,12 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	password := string(s.Data["password"])
 	username := string(s.Data["username"])
 
+	saslType := config.BrokerConfigAuthtypeSasl
+
 	broker := config.BrokerConfig{
 		Hostname: string(s.Data["hostname"]),
 		Port:     &port,
+		Authtype: &saslType,
 		Sasl: &config.KafkaSASLConfig{
 			Password:         &password,
 			Username:         &username,
