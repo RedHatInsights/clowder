@@ -69,6 +69,7 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	}
 
 	kafkaConfig.Brokers = []config.BrokerConfig{broker}
+	kafkaConfig.Topics = []config.TopicConfig{}
 
 	for _, topic := range app.Spec.KafkaTopics {
 
