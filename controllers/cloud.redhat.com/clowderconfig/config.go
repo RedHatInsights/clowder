@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type ClowderConfig struct {
@@ -50,11 +52,47 @@ type ClowderConfig struct {
 	} `json:"settings"`
 }
 
+func watchConfig(config string) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		panic(err)
+	}
+	defer watcher.Close()
+
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Remove == fsnotify.Remove {
+					fmt.Printf("config file [%s] modified exiting with [%s]:", config, event.Op)
+					os.Exit(127)
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				fmt.Println("error in watching: ", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(config)
+	if err != nil {
+		panic(err)
+	}
+	<-done
+}
+
 func getConfig() ClowderConfig {
 	configPath := "/config/clowder_config.json"
 
 	if path := os.Getenv("CLOWDER_CONFIG_PATH"); path != "" {
 		configPath = path
+		go watchConfig(configPath)
 	}
 
 	fmt.Printf("Loading config from: %s\n", configPath)

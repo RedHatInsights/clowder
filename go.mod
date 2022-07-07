@@ -8,6 +8,7 @@ require (
 	github.com/RedHatInsights/rhc-osdk-utils v0.7.1
 	github.com/RedHatInsights/strimzi-client-go v0.28.1
 	github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/kedacore/keda/v2 v2.8.1
@@ -48,7 +49,6 @@ require (
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
