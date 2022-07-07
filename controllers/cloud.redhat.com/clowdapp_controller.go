@@ -344,6 +344,11 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 			builder.WithPredicates(getEnvironmentPredicate(r.Log, "app")),
 		).
+		Watches(
+			&source.Kind{Type: &core.ConfigMap{}},
+			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponConfigMapUpdate),
+			builder.WithPredicates(getConfigMapPredicate(r.Log, "app")),
+		).
 		Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
 		Owns(&core.ConfigMap{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
@@ -379,6 +384,54 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 	// Get all the ClowdApp resources
 
 	appList, err := env.GetAppsInEnv(ctx, r.Client)
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch ClowdApps")
+		return nil
+	}
+
+	// Filter based on base attribute
+
+	for _, app := range appList.Items {
+		reqs = append(reqs, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      app.Name,
+				Namespace: app.Namespace,
+			},
+		})
+	}
+
+	return reqs
+}
+
+func (r *ClowdAppReconciler) appsToEnqueueUponConfigMapUpdate(a client.Object) []reconcile.Request {
+	reqs := []reconcile.Request{}
+	ctx := context.Background()
+	nn := types.NamespacedName{
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
+	}
+
+	// Get the ClowdEnvironment resource
+
+	cm := core.ConfigMap{}
+	err := r.Client.Get(ctx, nn, &cm)
+
+	if err != nil {
+		if !k8serr.IsNotFound(err) {
+			// Must have been deleted
+			r.Log.Error(err, "Failed to fetch ConfigMap")
+			return nil
+		}
+	}
+
+	// Get all the ClowdApp resources
+
+	appList := crd.ClowdAppList{}
+
+	opts := []client.ListOption{
+		client.InNamespace(a.GetNamespace()),
+	}
+	err = r.Client.List(ctx, &appList, opts...)
 	if err != nil {
 		r.Log.Error(err, "Failed to fetch ClowdApps")
 		return nil

@@ -73,7 +73,9 @@ import (
 )
 
 var mu sync.RWMutex
+var hc sync.RWMutex
 var cEnv = ""
+var hashCache = map[string]string{}
 
 const envFinalizer = "finalizer.env.cloud.redhat.com"
 
@@ -104,6 +106,24 @@ func ReadEnv() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return cEnv
+}
+
+func ReadHashCache(key string) string {
+	hc.RLock()
+	defer hc.RUnlock()
+	return hashCache[key]
+}
+
+func SetHashCache(key string, value string) {
+	hc.Lock()
+	defer hc.Unlock()
+	hashCache[key] = value
+}
+
+func DeleteHashCache(key string) {
+	hc.Lock()
+	defer hc.Unlock()
+	delete(hashCache, key)
 }
 
 //Reconcile fn

@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -10,6 +13,7 @@ import (
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -188,6 +192,101 @@ func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Pr
 			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 		}
 		return result
+	}
+	return predicates
+}
+
+func updateHashCache(obj interface{}) (bool, error) {
+	cm := &core.ConfigMap{}
+	err := Scheme.Convert(obj, cm, context.Background())
+
+	if err != nil {
+		return true, fmt.Errorf("couldn't convert: %s", err)
+	}
+
+	jsonData, err := json.Marshal(cm.Data)
+	if err != nil {
+		return true, nil
+	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	currentHash := ReadHashCache(fmt.Sprintf("cm-%s-%s", cm.Name, cm.Namespace))
+
+	if currentHash == hash {
+		return false, nil
+	}
+
+	SetHashCache(fmt.Sprintf("cm-%s-%s", cm.Name, cm.Namespace), hash)
+
+	return true, nil
+}
+
+func configMapCreateFunc(e event.CreateEvent) bool {
+	if e.Object.GetLabels()["watch"] == "me" {
+		doReconcile, _ := updateHashCache(e.Object)
+		return doReconcile
+	}
+	return false
+}
+
+func configMapGenericFunc(e event.GenericEvent) bool {
+	if e.Object.GetLabels()["watch"] == "me" {
+		doReconcile, _ := updateHashCache(e.Object)
+		return doReconcile
+	}
+	return false
+}
+
+func configMapUpdateFunc(e event.UpdateEvent) bool {
+	if e.ObjectNew.GetLabels()["watch"] == "me" {
+		doReconcile, _ := updateHashCache(e.ObjectNew)
+		return doReconcile
+	}
+	if e.ObjectNew.GetLabels()["watch"] != "me" {
+		name := e.ObjectNew.GetName()
+		namespace := e.ObjectNew.GetNamespace()
+		DeleteHashCache(fmt.Sprintf("cm-%s-%s", name, namespace))
+		return true
+	}
+	return false
+}
+
+func configMapDeleteFunc(e event.DeleteEvent) bool {
+	name := e.Object.GetName()
+	namespace := e.Object.GetNamespace()
+	DeleteHashCache(fmt.Sprintf("cm-%s-%s", name, namespace))
+	return true
+}
+
+// These functions are for configmaps return on an update
+func getConfigMapPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
+		return configmapPredicateWithLog(logr, ctrlName)
+	}
+	return predicate.Funcs{
+		CreateFunc:  configMapCreateFunc,
+		DeleteFunc:  configMapDeleteFunc,
+		UpdateFunc:  configMapUpdateFunc,
+		GenericFunc: configMapGenericFunc,
+	}
+}
+
+func configmapPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
+	predicates := defaultPredicateLog(logr, ctrlName)
+	predicates.GenericFunc = func(e event.GenericEvent) bool {
+		return configMapGenericFunc(e)
+	}
+	predicates.CreateFunc = func(e event.CreateEvent) bool {
+		return configMapCreateFunc(e)
+	}
+	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
+		return configMapUpdateFunc(e)
+	}
+	predicates.DeleteFunc = func(e event.DeleteEvent) bool {
+		return configMapDeleteFunc(e)
 	}
 	return predicates
 }
