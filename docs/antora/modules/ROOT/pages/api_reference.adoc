@@ -1135,10 +1135,10 @@ WebImages defines optional container image overrides for the web provider compon
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mocktitlementsImage`* __string__ | Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
-| *`keycloakImage`* __string__ | Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here
-| *`caddyImage`* __string__ | Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
-| *`mockBopImage`* __string__ | Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+| *`mocktitlements`* __string__ | Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+| *`keycloak`* __string__ | Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here
+| *`caddy`* __string__ | Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+| *`mockBop`* __string__ | Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 |===
 
 

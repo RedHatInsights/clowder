@@ -41,16 +41,16 @@ type WebMode string
 // WebImages defines optional container image overrides for the web provider components
 type WebImages struct {
 	// Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
-	Mocktitlements string `json:"mocktitlementsImage,omitempty"`
+	Mocktitlements string `json:"mocktitlements,omitempty"`
 
 	// Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here
-	Keycloak string `json:"keycloakImage,omitempty"`
+	Keycloak string `json:"keycloak,omitempty"`
 
 	// Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
-	Caddy string `json:"caddyImage,omitempty"`
+	Caddy string `json:"caddy,omitempty"`
 
 	// Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
-	MockBOP string `json:"mockBopImage,omitempty"`
+	MockBOP string `json:"mockBop,omitempty"`
 }
 
 // WebConfig configures the Clowder provider controlling the creation of web

@@ -632,21 +632,21 @@ spec:
                         description: Optional images to use for web provider components
                           -- only applies when running in (*_local_*) mode.
                         properties:
-                          caddyImage:
+                          caddy:
                             description: Caddy image -- if not defined, value from
                               operator config is used if set, otherwise a hard-coded
                               default is used.
                             type: string
-                          keycloakImage:
+                          keycloak:
                             description: Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}'
                               unless overridden here
                             type: string
-                          mockBopImage:
+                          mockBop:
                             description: Mock BOP image -- if not defined, value from
                               operator config is used if set, otherwise a hard-coded
                               default is used.
                             type: string
-                          mocktitlementsImage:
+                          mocktitlements:
                             description: Mock entitlements image -- if not defined,
                               value from operator config is used if set, otherwise
                               a hard-coded default is used.
