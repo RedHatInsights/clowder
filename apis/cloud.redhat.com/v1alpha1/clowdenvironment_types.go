@@ -38,6 +38,21 @@ import (
 // +kubebuilder:validation:Enum=none;operator;local
 type WebMode string
 
+// WebImages defines optional container image overrides for the web provider components
+type WebImages struct {
+	// Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	Mocktitlements string `json:"mocktitlementsImage,omitempty"`
+
+	// Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here
+	Keycloak string `json:"keycloakImage,omitempty"`
+
+	// Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	Caddy string `json:"caddyImage,omitempty"`
+
+	// Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	MockBOP string `json:"mockBopImage,omitempty"`
+}
+
 // WebConfig configures the Clowder provider controlling the creation of web
 // services and their probes.
 type WebConfig struct {
@@ -64,20 +79,11 @@ type WebConfig struct {
 	// Ingress Class Name used only in (*_local_*) mode.
 	IngressClass string `json:"ingressClass,omitempty"`
 
-	// Keycloak version -- used only in (*_local_*) mode.
+	// Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
 	KeycloakVersion string `json:"keycloakVersion,omitempty"`
 
-	// Mock entitlements image -- used only in (*_local_*) mode.
-	MocktitlementsImage string `json:"mocktitlementsImage,omitempty"`
-
-	// Keycloak image -- used only in (*_local_*) mode.
-	KeycloakImage string `json:"keycloakImage,omitempty"`
-
-	// Caddy image -- used only in (*_local_*) mode.
-	CaddyImage string `json:"caddyImage,omitempty"`
-
-	// Mock BOP image -- used only in (*_local_*) mode.
-	MockBOPImage string `json:"mockBopImage,omitempty"`
+	// Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
+	Images WebImages `json:"images,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

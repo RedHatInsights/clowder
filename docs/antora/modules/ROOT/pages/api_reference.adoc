@@ -1117,6 +1117,28 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
 | *`bopURL`* __string__ | The URL of BOP - only used in (*_none_*/*_operator_*) mode.
 | *`ingressClass`* __string__ | Ingress Class Name used only in (*_local_*) mode.
+| *`keycloakVersion`* __string__ | Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
+| *`images`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webimages[$$WebImages$$]__ | Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webimages"]
+==== WebImages 
+
+WebImages defines optional container image overrides for the web provider components
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`mocktitlementsImage`* __string__ | Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+| *`keycloakImage`* __string__ | Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here
+| *`caddyImage`* __string__ | Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+| *`mockBopImage`* __string__ | Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 |===
 
 

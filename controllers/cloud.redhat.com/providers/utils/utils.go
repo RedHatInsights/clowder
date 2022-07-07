@@ -19,11 +19,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var DEFAULT_CADDY_IMAGE = "quay.io/cloudservices/crc-caddy-plugin:3ba6be7"
-var DEFAULT_MBOP_IMAGE = "quay.io/cloudservices/mbop:0d3f99f"
-var DEFAULT_MOCKTITLEMENTS_IMAGE = "quay.io/cloudservices/mocktitlements:130433d"
-var DEFAULT_KEYCLOAK_VERSION = "15.0.2"
-var DEFAULT_KEYCLOAK_IMAGE = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DEFAULT_KEYCLOAK_VERSION)
+var IMAGE_CADDY_SIDECAR_DEFAULT = "quay.io/cloudservices/crc-caddy-plugin:3ba6be7"
+var IMAGE_MBOP_DEFAULT = "quay.io/cloudservices/mbop:0d3f99f"
+var IMAGE_MOCKTITLEMENTS_DEFAULT = "quay.io/cloudservices/mocktitlements:130433d"
+var KEYCLOAK_VERSION_DEFAULT = "15.0.2"
+var IMAGE_KEYCLOAK_DEFAULT = fmt.Sprintf("quay.io/keycloak/keycloak:%s", KEYCLOAK_VERSION_DEFAULT)
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -167,46 +167,46 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 
 // GetCaddyImage returns the caddy image to use in a given environment
 func GetCaddyImage(env *crd.ClowdEnvironment) string {
-	if env.Spec.Providers.Web.CaddyImage != "" {
-		return env.Spec.Providers.Web.CaddyImage
+	if env.Spec.Providers.Web.Images.Caddy != "" {
+		return env.Spec.Providers.Web.Images.Caddy
 	}
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
 		return clowderconfig.LoadedConfig.Images.Caddy
 	}
-	return DEFAULT_CADDY_IMAGE
+	return IMAGE_CADDY_SIDECAR_DEFAULT
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
 func GetKeycloakImage(env *crd.ClowdEnvironment) string {
-	if env.Spec.Providers.Web.KeycloakImage != "" {
-		return env.Spec.Providers.Web.KeycloakImage
+	if env.Spec.Providers.Web.Images.Keycloak != "" {
+		return env.Spec.Providers.Web.Images.Keycloak
 	}
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
 		return clowderconfig.LoadedConfig.Images.Keycloak
 	}
-	return DEFAULT_KEYCLOAK_IMAGE
+	return IMAGE_KEYCLOAK_DEFAULT
 }
 
 // GetMocktitlementsImage returns the mocktitlements image to use in a given environment
 func GetMocktitlementsImage(env *crd.ClowdEnvironment) string {
-	if env.Spec.Providers.Web.MocktitlementsImage != "" {
-		return env.Spec.Providers.Web.MocktitlementsImage
+	if env.Spec.Providers.Web.Images.Mocktitlements != "" {
+		return env.Spec.Providers.Web.Images.Mocktitlements
 	}
 	if clowderconfig.LoadedConfig.Images.Mocktitlements != "" {
 		return clowderconfig.LoadedConfig.Images.Mocktitlements
 	}
-	return DEFAULT_MOCKTITLEMENTS_IMAGE
+	return IMAGE_MOCKTITLEMENTS_DEFAULT
 }
 
 // GetMockBOPImage returns the mock BOP image to use in a given environment
 func GetMockBOPImage(env *crd.ClowdEnvironment) string {
-	if env.Spec.Providers.Web.MockBOPImage != "" {
-		return env.Spec.Providers.Web.MockBOPImage
+	if env.Spec.Providers.Web.Images.MockBOP != "" {
+		return env.Spec.Providers.Web.Images.MockBOP
 	}
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		return clowderconfig.LoadedConfig.Images.MBOP
 	}
-	return DEFAULT_MBOP_IMAGE
+	return IMAGE_MBOP_DEFAULT
 }
 
 // GetKeycloakVersion returns the keycloak version to use in a given environment
@@ -214,6 +214,5 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.KeycloakVersion != "" {
 		return env.Spec.Providers.Web.KeycloakVersion
 	}
-	// TODO: add config option in LoadedConfig for this?
-	return DEFAULT_KEYCLOAK_VERSION
+	return KEYCLOAK_VERSION_DEFAULT
 }
