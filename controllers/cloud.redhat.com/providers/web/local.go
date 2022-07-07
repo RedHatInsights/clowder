@@ -94,7 +94,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 			"password":        password,
 			"defaultUsername": "jdoe",
 			"defaultPassword": defaultPassword,
-			"version":         provutils.GetKeycloakVersion(*p.Env),
+			"version":         provutils.GetKeycloakVersion(p.Env),
 		}
 	}
 
@@ -103,7 +103,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, errors.Wrap("couldn't set/get secret", err)
 	}
 
-	if err := setSecretVersion(p.Cache, nn, provutils.GetKeycloakVersion(*p.Env)); err != nil {
+	if err := setSecretVersion(p.Cache, nn, provutils.GetKeycloakVersion(p.Env)); err != nil {
 		return nil, errors.Wrap("couldn't set secret version", err)
 	}
 

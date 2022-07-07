@@ -166,7 +166,7 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
-func GetCaddyImage(env crd.ClowdEnvironment) string {
+func GetCaddyImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.CaddyImage != "" {
 		return env.Spec.Providers.Web.CaddyImage
 	}
@@ -177,7 +177,7 @@ func GetCaddyImage(env crd.ClowdEnvironment) string {
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
-func GetKeycloakImage(env crd.ClowdEnvironment) string {
+func GetKeycloakImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.KeycloakImage != "" {
 		return env.Spec.Providers.Web.KeycloakImage
 	}
@@ -188,7 +188,7 @@ func GetKeycloakImage(env crd.ClowdEnvironment) string {
 }
 
 // GetMocktitlementsImage returns the mocktitlements image to use in a given environment
-func GetMocktitlementsImage(env crd.ClowdEnvironment) string {
+func GetMocktitlementsImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.MocktitlementsImage != "" {
 		return env.Spec.Providers.Web.MocktitlementsImage
 	}
@@ -199,7 +199,7 @@ func GetMocktitlementsImage(env crd.ClowdEnvironment) string {
 }
 
 // GetMockBOPImage returns the mock BOP image to use in a given environment
-func GetMockBOPImage(env crd.ClowdEnvironment) string {
+func GetMockBOPImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.MockBOPImage != "" {
 		return env.Spec.Providers.Web.MockBOPImage
 	}
@@ -210,7 +210,7 @@ func GetMockBOPImage(env crd.ClowdEnvironment) string {
 }
 
 // GetKeycloakVersion returns the keycloak version to use in a given environment
-func GetKeycloakVersion(env crd.ClowdEnvironment) string {
+func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.KeycloakVersion != "" {
 		return env.Spec.Providers.Web.KeycloakVersion
 	}

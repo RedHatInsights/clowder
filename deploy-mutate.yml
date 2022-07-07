@@ -6095,8 +6095,27 @@ objects:
                           description: The URL of BOP - only used in (*_none_*/*_operator_*)
                             mode.
                           type: string
+                        caddyImage:
+                          description: Caddy image -- used only in (*_local_*) mode.
+                          type: string
                         ingressClass:
                           description: Ingress Class Name used only in (*_local_*)
+                            mode.
+                          type: string
+                        keycloakImage:
+                          description: Keycloak image -- used only in (*_local_*)
+                            mode.
+                          type: string
+                        keycloakVersion:
+                          description: Keycloak version -- used only in (*_local_*)
+                            mode.
+                          type: string
+                        mockBopImage:
+                          description: Mock BOP image -- used only in (*_local_*)
+                            mode.
+                          type: string
+                        mocktitlementsImage:
+                          description: Mock entitlements image -- used only in (*_local_*)
                             mode.
                           type: string
                         mode:
