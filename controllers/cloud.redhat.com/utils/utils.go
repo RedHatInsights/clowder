@@ -26,8 +26,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var IMAGE_MUTATE_CADDY_SIDECAR = "quay.io/cloudservices/crc-caddy-plugin:3ba6be7"
-
 const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 const lCharSet = "abcdefghijklmnopqrstuvwxyz0123456789"
 

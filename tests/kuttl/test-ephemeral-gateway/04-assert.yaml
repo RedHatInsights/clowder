@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-gateway-keycloak
+  namespace: test-ephemeral-gateway
+spec:
+  template:
+    spec:
+      containers:
+      - image: test/keycloak:image
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-gateway-mbop
+  namespace: test-ephemeral-gateway
+spec:
+  template:
+    spec:
+      containers:
+      - image: test/mbop:image
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-gateway-mocktitlements
+  namespace: test-ephemeral-gateway
+spec:
+  template:
+    metadata:
+      annotations:
+        clowder/authsidecar-config: caddy-config-mocktitlements
+        clowder/authsidecar-enabled: "true"
+        clowder/authsidecar-image: test/caddy:image
+        clowder/authsidecar-port: "8090"
+    spec:
+      containers:
+      - image: test/mocktitlements:image

@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -19,10 +19,6 @@ import (
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
-
-var KEYCLOAK_VERSION = "15.0.2"
-var IMAGE_WEB_MBOP = "quay.io/cloudservices/mbop:0d3f99f"
-var IMAGE_WEB_MOCKTITLEMENTS = "quay.io/cloudservices/mocktitlements:130433d"
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
@@ -249,11 +245,8 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		FailureThreshold:    3,
 	}
 
-	image := fmt.Sprintf("quay.io/keycloak/keycloak:%s", KEYCLOAK_VERSION)
-
-	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
-		image = clowderconfig.LoadedConfig.Images.Keycloak
-	}
+	env := o.(*crd.ClowdEnvironment)
+	image := provutils.GetKeycloakImage(env)
 
 	c := core.Container{
 		Name:           nn.Name,
@@ -397,11 +390,8 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := IMAGE_WEB_MBOP
-
-	if clowderconfig.LoadedConfig.Images.MBOP != "" {
-		image = clowderconfig.LoadedConfig.Images.MBOP
-	}
+	env := o.(*crd.ClowdEnvironment)
+	image := provutils.GetMockBOPImage(env)
 
 	c := core.Container{
 		Name:           nn.Name,
@@ -462,8 +452,11 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
+	env := o.(*crd.ClowdEnvironment)
+	caddyImage := provutils.GetCaddyImage(env)
+
 	annotations := map[string]string{
-		"clowder/authsidecar-image":   utils.IMAGE_MUTATE_CADDY_SIDECAR,
+		"clowder/authsidecar-image":   caddyImage,
 		"clowder/authsidecar-enabled": "true",
 		"clowder/authsidecar-port":    "8090",
 		"clowder/authsidecar-config":  "caddy-config-mocktitlements",
@@ -540,15 +533,11 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := IMAGE_WEB_MOCKTITLEMENTS
-
-	if clowderconfig.LoadedConfig.Images.MBOP != "" {
-		image = clowderconfig.LoadedConfig.Images.MBOP
-	}
+	mocktitlementsImage := provutils.GetMocktitlementsImage(env)
 
 	c := core.Container{
 		Name:           nn.Name,
-		Image:          image,
+		Image:          mocktitlementsImage,
 		Env:            envVars,
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,

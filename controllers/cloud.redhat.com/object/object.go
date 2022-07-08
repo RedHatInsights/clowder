@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ClowdObject is used to be able to treat ClowdEnv and ClowdApp as the same type
+// ClowdObject defines functions shared by ClowdEnv, ClowdApp, and ClowdJobInvocation
 type ClowdObject interface {
 	MakeOwnerReference() metav1.OwnerReference
 	GetLabels() map[string]string
