@@ -346,13 +346,16 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Watches(
 			&source.Kind{Type: &core.ConfigMap{}},
-			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponConfigMapUpdate),
-			builder.WithPredicates(getConfigMapPredicate(r.Log, "app")),
+			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponConfigMapOrSecretUpdate),
+			builder.WithPredicates(getConfigMapOrSecretPredicate(r.Log, "app")),
+		).
+		Watches(
+			&source.Kind{Type: &core.Secret{}},
+			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponConfigMapOrSecretUpdate),
+			builder.WithPredicates(getConfigMapOrSecretPredicate(r.Log, "app")),
 		).
 		Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
-		Owns(&core.ConfigMap{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
-		Owns(&core.Secret{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app"))).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).
@@ -403,35 +406,21 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []recon
 	return reqs
 }
 
-func (r *ClowdAppReconciler) appsToEnqueueUponConfigMapUpdate(a client.Object) []reconcile.Request {
+func (r *ClowdAppReconciler) appsToEnqueueUponConfigMapOrSecretUpdate(a client.Object) []reconcile.Request {
 	reqs := []reconcile.Request{}
 	ctx := context.Background()
-	nn := types.NamespacedName{
-		Name:      a.GetName(),
-		Namespace: a.GetNamespace(),
-	}
-
-	// Get the ClowdEnvironment resource
-
-	cm := core.ConfigMap{}
-	err := r.Client.Get(ctx, nn, &cm)
-
-	if err != nil {
-		if !k8serr.IsNotFound(err) {
-			// Must have been deleted
-			r.Log.Error(err, "Failed to fetch ConfigMap")
-			return nil
-		}
-	}
 
 	// Get all the ClowdApp resources
+	if a.GetLabels()["watch"] != "me" {
+		return nil
+	}
 
 	appList := crd.ClowdAppList{}
 
 	opts := []client.ListOption{
 		client.InNamespace(a.GetNamespace()),
 	}
-	err = r.Client.List(ctx, &appList, opts...)
+	err := r.Client.List(ctx, &appList, opts...)
 	if err != nil {
 		r.Log.Error(err, "Failed to fetch ClowdApps")
 		return nil

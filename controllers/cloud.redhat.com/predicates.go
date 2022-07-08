@@ -15,6 +15,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -196,36 +197,70 @@ func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Pr
 	return predicates
 }
 
-func updateHashCache(obj interface{}) (bool, error) {
-	cm := &core.ConfigMap{}
-	err := Scheme.Convert(obj, cm, context.Background())
-
+func updateHashCache(obj client.Object) (bool, error) {
+	gvk, err := utils.GetKindFromObj(Scheme, obj)
 	if err != nil {
-		return true, fmt.Errorf("couldn't convert: %s", err)
+		return true, err
 	}
 
-	jsonData, err := json.Marshal(cm.Data)
-	if err != nil {
-		return true, nil
+	var jsonData []byte
+	var prefix string
+	switch gvk.Kind {
+	case "ConfigMap":
+		cm := &core.ConfigMap{}
+		prefix = "cm"
+		err = Scheme.Convert(obj, cm, context.Background())
+
+		if err != nil {
+			return true, fmt.Errorf("couldn't convert: %s", err)
+		}
+		jsonData, err = json.Marshal(cm.Data)
+		if err != nil {
+			return true, nil
+		}
+	case "Secret":
+		s := &core.Secret{}
+		prefix = "sc"
+		err = Scheme.Convert(obj, s, context.Background())
+
+		if err != nil {
+			return true, fmt.Errorf("couldn't convert: %s", err)
+		}
+		jsonData, err = json.Marshal(s.Data)
+		if err != nil {
+			return true, nil
+		}
 	}
 
 	h := sha256.New()
 	h.Write([]byte(jsonData))
 	hash := fmt.Sprintf("%x", h.Sum(nil))
 
-	currentHash := ReadHashCache(fmt.Sprintf("cm-%s-%s", cm.Name, cm.Namespace))
+	currentHash := ReadHashCache(fmt.Sprintf("%s-%s-%s", prefix, obj.GetName(), obj.GetNamespace()))
 
 	if currentHash == hash {
 		return false, nil
 	}
 
-	SetHashCache(fmt.Sprintf("cm-%s-%s", cm.Name, cm.Namespace), hash)
+	SetHashCache(fmt.Sprintf("%s-%s-%s", prefix, obj.GetName(), obj.GetNamespace()), hash)
 
 	return true, nil
 }
 
+func checkForReconcile(obj client.Object) bool {
+	if obj.GetLabels()["watch"] == "me" {
+		return true
+	}
+	for _, owner := range obj.GetOwnerReferences() {
+		if owner.Kind == "ClowdApp" && *owner.Controller {
+			return true
+		}
+	}
+	return false
+}
+
 func configMapCreateFunc(e event.CreateEvent) bool {
-	if e.Object.GetLabels()["watch"] == "me" {
+	if checkForReconcile(e.Object) {
 		doReconcile, _ := updateHashCache(e.Object)
 		return doReconcile
 	}
@@ -233,7 +268,7 @@ func configMapCreateFunc(e event.CreateEvent) bool {
 }
 
 func configMapGenericFunc(e event.GenericEvent) bool {
-	if e.Object.GetLabels()["watch"] == "me" {
+	if checkForReconcile(e.Object) {
 		doReconcile, _ := updateHashCache(e.Object)
 		return doReconcile
 	}
@@ -251,6 +286,11 @@ func configMapUpdateFunc(e event.UpdateEvent) bool {
 		DeleteHashCache(fmt.Sprintf("cm-%s-%s", name, namespace))
 		return true
 	}
+	for _, owner := range e.ObjectNew.GetOwnerReferences() {
+		if owner.Kind == "ClowdApp" && *owner.Controller {
+			return true
+		}
+	}
 	return false
 }
 
@@ -262,7 +302,7 @@ func configMapDeleteFunc(e event.DeleteEvent) bool {
 }
 
 // These functions are for configmaps return on an update
-func getConfigMapPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+func getConfigMapOrSecretPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		return configmapPredicateWithLog(logr, ctrlName)
 	}

@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (ch *confighashProvider) updateHashCache(nn types.NamespacedName, c *config.AppConfig) error {
+func (ch *confighashProvider) updateHashCacheConfigMap(nn types.NamespacedName, c *config.AppConfig) error {
 
 	cfgmap := &core.ConfigMap{}
 
@@ -37,6 +37,32 @@ func (ch *confighashProvider) updateHashCache(nn types.NamespacedName, c *config
 	h.Write([]byte(jsonData))
 	hash := fmt.Sprintf("%x", h.Sum(nil))
 	c.HashCache = append(c.HashCache, fmt.Sprintf("cm-%s-%s", nn.Name, hash))
+	return nil
+}
+
+func (ch *confighashProvider) updateHashCacheSecret(nn types.NamespacedName, c *config.AppConfig) error {
+
+	secret := &core.Secret{}
+
+	if err := ch.Client.Get(ch.Ctx, nn, secret); err != nil {
+		ch.Log.Info("secret not present, skipping inclusion")
+		return nil
+		//return "", errors.Wrap(fmt.Sprintf("%v - %v", nn, volume), err)
+	}
+
+	if secret.GetLabels()["watch"] != "me" {
+		return nil
+	}
+
+	jsonData, err := json.Marshal(secret.Data)
+	if err != nil {
+		return errors.Wrap("failed to marshal secret JSON", err)
+	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+	c.HashCache = append(c.HashCache, fmt.Sprintf("sc-%s-%s", nn.Name, hash))
 	return nil
 }
 
@@ -66,7 +92,14 @@ func (ch *confighashProvider) persistConfig(app *crd.ClowdApp, c *config.AppConf
 						Name:      env.ValueFrom.ConfigMapKeyRef.Name,
 						Namespace: app.Namespace,
 					}
-					ch.updateHashCache(nn, c)
+					ch.updateHashCacheConfigMap(nn, c)
+				}
+				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
+					nn := types.NamespacedName{
+						Name:      env.ValueFrom.SecretKeyRef.Name,
+						Namespace: app.Namespace,
+					}
+					ch.updateHashCacheSecret(nn, c)
 				}
 			}
 		}
@@ -76,7 +109,14 @@ func (ch *confighashProvider) persistConfig(app *crd.ClowdApp, c *config.AppConf
 					Name:      volume.ConfigMap.Name,
 					Namespace: app.Namespace,
 				}
-				ch.updateHashCache(nn, c)
+				ch.updateHashCacheConfigMap(nn, c)
+			}
+			if volume.Secret != nil {
+				nn := types.NamespacedName{
+					Name:      volume.Secret.SecretName,
+					Namespace: app.Namespace,
+				}
+				ch.updateHashCacheSecret(nn, c)
 			}
 		}
 	}
