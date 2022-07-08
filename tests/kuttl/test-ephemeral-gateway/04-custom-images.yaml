@@ -1,0 +1,41 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ephemeral-gateway
+spec:
+  targetNamespace: test-ephemeral-gateway
+  providers:
+    web:
+      port: 8000
+      mode: local
+      ingressClass: openshift
+      keycloakVersion: test-version
+      images:
+        caddy: test/caddy:image
+        mocktitlements: test/mocktitlements:image
+        mockBop: test/mbop:image
+        keycloak: test/keycloak:image
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: minio
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi

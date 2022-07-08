@@ -11,6 +11,7 @@ spec:
         clowder/authsidecar-config: caddy-config-puptoo-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:3ba6be7
     spec:
       serviceAccountName: puptoo-processor
 status:
@@ -99,22 +100,42 @@ spec:
     targetPort: 9000
     name: metrics
     appProtocol: http
-
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-ephemeral-gateway-keycloak
   namespace: test-ephemeral-gateway
+spec:
+  template:
+    spec:
+      containers:
+      - image: quay.io/keycloak/keycloak:15.0.2
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-ephemeral-gateway-mbop
   namespace: test-ephemeral-gateway
+spec:
+  template:
+    spec:
+      containers:
+      - image: quay.io/cloudservices/mbop:0d3f99f
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-ephemeral-gateway-mocktitlements
   namespace: test-ephemeral-gateway
+spec:
+  template:
+    metadata:
+      annotations:
+        clowder/authsidecar-config: caddy-config-mocktitlements
+        clowder/authsidecar-enabled: "true"
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:3ba6be7
+        clowder/authsidecar-port: "8090"
+    spec:
+      containers:
+      - image: quay.io/cloudservices/mocktitlements:130433d
