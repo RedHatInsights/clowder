@@ -38,10 +38,8 @@ func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.Ap
 }
 
 func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment crd.Deployment) error {
-	if err := makeAutoScalers(&deployment, app, c, asp); err != nil {
-		return err
-	}
-	return nil
+	err := makeAutoScalers(&deployment, app, c, asp)
+	return err
 }
 
 func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject, nn types.NamespacedName, deployment *crd.Deployment, c *config.AppConfig) {
