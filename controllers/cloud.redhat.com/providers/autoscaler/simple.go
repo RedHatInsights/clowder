@@ -1,13 +1,11 @@
 package autoscaler
 
 import (
-	"fmt"
-	"log"
-
 	res "k8s.io/apimachinery/pkg/api/resource"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
@@ -19,17 +17,19 @@ import (
 func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment crd.Deployment) error {
 	cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap("Could not get deployment from cache", err)
 	}
+
 	deploymentHPA := makeDeployemntSimpleHPA(&deployment, app, appConfig, cachedDeployment)
 	hpaResource := deploymentHPA.getResource()
 
 	err = sp.Client.Create(sp.Ctx, &hpaResource)
+
 	if err != nil {
-		fmt.Println("HPA Error: ", err)
+		return errors.Wrap("Could not create HPA resource", err)
 	}
-	return nil
+
+	return err
 }
 
 //Get the core apps.Deployment from the provider cache
