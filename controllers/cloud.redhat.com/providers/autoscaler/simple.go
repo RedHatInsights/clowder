@@ -22,8 +22,8 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 		log.Println(err)
 		return err
 	}
-	deploymentHPA := makeDeployemntSimpleHPA(&deployment, app, appConfig, cachedDeployment)
-	hpaResource := deploymentHPA.getResource()
+	hpaMAker := newSimpleHPAMaker(&deployment, app, appConfig, cachedDeployment)
+	hpaResource := hpaMAker.getResource()
 
 	err = sp.Client.Create(sp.Ctx, &hpaResource)
 	if err != nil {
@@ -43,8 +43,8 @@ func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, 
 	return d, nil
 }
 
-func makeDeployemntSimpleHPA(deployment *crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig, coreDeployment *apps.Deployment) deployemntSimpleHPA {
-	return deployemntSimpleHPA{
+func newSimpleHPAMaker(deployment *crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig, coreDeployment *apps.Deployment) simpleHPAMaker {
+	return simpleHPAMaker{
 		deployment:     deployment,
 		app:            app,
 		appConfig:      appConfig,
@@ -52,20 +52,20 @@ func makeDeployemntSimpleHPA(deployment *crd.Deployment, app *crd.ClowdApp, appC
 	}
 }
 
-type deployemntSimpleHPA struct {
+type simpleHPAMaker struct {
 	deployment     *crd.Deployment
 	app            *crd.ClowdApp
 	appConfig      *config.AppConfig
 	coreDeployment *apps.Deployment
 }
 
-func (d *deployemntSimpleHPA) getResource() v2.HorizontalPodAutoscaler {
+func (d *simpleHPAMaker) getResource() v2.HorizontalPodAutoscaler {
 	hpa := d.makeHPA()
 	hpa.Spec.Metrics = d.makeMetricsSpecs()
 	return hpa
 }
 
-func (d *deployemntSimpleHPA) makeHPA() v2.HorizontalPodAutoscaler {
+func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 	hpa := v2.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      d.app.Name + "-" + d.coreDeployment.Name + "-" + "hpa",
@@ -92,7 +92,7 @@ func (d *deployemntSimpleHPA) makeHPA() v2.HorizontalPodAutoscaler {
 	return hpa
 }
 
-func (d *deployemntSimpleHPA) makeMetricsSpecs() []v2.MetricSpec {
+func (d *simpleHPAMaker) makeMetricsSpecs() []v2.MetricSpec {
 	metricsSpecs := []v2.MetricSpec{}
 
 	if d.deployment.AutoScalerSimple.RAM.ScaleAtUtilization != 0 {
@@ -118,21 +118,21 @@ func (d *deployemntSimpleHPA) makeMetricsSpecs() []v2.MetricSpec {
 	return metricsSpecs
 }
 
-func (d *deployemntSimpleHPA) makeAverageValueMetricSpec(resource v1.ResourceName, threshhold res.Quantity) v2.MetricSpec {
+func (d *simpleHPAMaker) makeAverageValueMetricSpec(resource v1.ResourceName, threshhold res.Quantity) v2.MetricSpec {
 	ms := d.makeBasicMetricSpec(resource)
 	ms.Resource.Target.Type = v2.AverageValueMetricType
 	ms.Resource.Target.AverageValue = &threshhold
 	return ms
 }
 
-func (d *deployemntSimpleHPA) makeAverageUtilizationMetricSpec(resource v1.ResourceName, threshhold int32) v2.MetricSpec {
+func (d *simpleHPAMaker) makeAverageUtilizationMetricSpec(resource v1.ResourceName, threshhold int32) v2.MetricSpec {
 	ms := d.makeBasicMetricSpec(resource)
 	ms.Resource.Target.Type = v2.UtilizationMetricType
 	ms.Resource.Target.AverageUtilization = &threshhold
 	return ms
 }
 
-func (d *deployemntSimpleHPA) makeBasicMetricSpec(resource v1.ResourceName) v2.MetricSpec {
+func (d *simpleHPAMaker) makeBasicMetricSpec(resource v1.ResourceName) v2.MetricSpec {
 	ms := v2.MetricSpec{
 		Type: v2.MetricSourceType("Resource"),
 		Resource: &v2.ResourceMetricSource{
