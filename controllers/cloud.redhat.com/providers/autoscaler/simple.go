@@ -1,6 +1,8 @@
 package autoscaler
 
 import (
+	"fmt"
+
 	res "k8s.io/apimachinery/pkg/api/resource"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -68,7 +70,7 @@ func (d *simpleHPAMaker) makeResource() v2.HorizontalPodAutoscaler {
 func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 	hpa := v2.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      d.app.Name + "-" + d.coreDeployment.Name + "-" + "hpa",
+			Name:      fmt.Sprintf("%s-%s-hpa", d.app.Name, d.coreDeployment.Name),
 			Namespace: d.coreDeployment.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				{
