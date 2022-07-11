@@ -136,9 +136,9 @@ docker-push:
 docker-push-minikube:
 	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(CLOWDER_BUILD_TAG) --tls-verify=false
 
-deploy-minikube: bundle docker-build-no-test docker-push-minikube deploy
+deploy-minikube: docker-build-no-test docker-push-minikube deploy
 
-deploy-minikube-quick: bundle docker-build-no-test-quick docker-push-minikube deploy
+deploy-minikube-quick: docker-build-no-test-quick docker-push-minikube deploy
 
 # we can't git ignore these files, but we want to avoid overwriting them
 no-update:

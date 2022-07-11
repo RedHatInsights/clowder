@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -16,8 +15,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
-
-var IMAGE_MUTATE_CADDY_SIDECAR = "quay.io/cloudservices/crc-caddy-plugin:d3d0597"
 
 type mutantPod struct {
 	Client   client.Client
@@ -52,10 +49,9 @@ func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission
 			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar config"))
 		}
 
-		image := IMAGE_MUTATE_CADDY_SIDECAR
-
-		if clowderconfig.LoadedConfig.Images.Caddy != "" {
-			image = clowderconfig.LoadedConfig.Images.Caddy
+		image, ok := pod.GetAnnotations()["clowder/authsidecar-image"]
+		if !ok {
+			return admission.Errored(http.StatusBadRequest, fmt.Errorf("pod does not specify authsidecar image"))
 		}
 
 		probeHandler := core.ProbeHandler{

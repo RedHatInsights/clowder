@@ -54,9 +54,12 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	password := string(s.Data["password"])
 	username := string(s.Data["username"])
 
+	saslType := config.BrokerConfigAuthtypeSasl
+
 	broker := config.BrokerConfig{
 		Hostname: string(s.Data["hostname"]),
 		Port:     &port,
+		Authtype: &saslType,
 		Sasl: &config.KafkaSASLConfig{
 			Password:         &password,
 			Username:         &username,
@@ -66,13 +69,14 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) e
 	}
 
 	kafkaConfig.Brokers = []config.BrokerConfig{broker}
+	kafkaConfig.Topics = []config.TopicConfig{}
 
 	for _, topic := range app.Spec.KafkaTopics {
 
 		topicName := topic.TopicName
 
 		if k.Env.Spec.Providers.Kafka.ManagedPrefix != "" {
-			topicName = fmt.Sprintf("%s-%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
+			topicName = fmt.Sprintf("%s%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
 		}
 
 		kafkaConfig.Topics = append(

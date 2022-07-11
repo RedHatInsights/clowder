@@ -32,7 +32,7 @@ spec:
     name: puptoo-processor
   triggers:
     - metadata:
-        bootstrapServers: 'test-kafka-app-autoscale-kafka.test-kafka-app-autoscale.svc:29092'
+        bootstrapServers: 'test-kafka-app-autoscale-kafka-bootstrap.test-kafka-app-autoscale.svc:9092'
         consumerGroup: my-group
-        topic: topicOne
+        topic: topicone
       type: kafka

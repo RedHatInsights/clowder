@@ -6134,9 +6134,38 @@ objects:
                           description: The URL of BOP - only used in (*_none_*/*_operator_*)
                             mode.
                           type: string
+                        images:
+                          description: Optional images to use for web provider components
+                            -- only applies when running in (*_local_*) mode.
+                          properties:
+                            caddy:
+                              description: Caddy image -- if not defined, value from
+                                operator config is used if set, otherwise a hard-coded
+                                default is used.
+                              type: string
+                            keycloak:
+                              description: Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}'
+                                unless overridden here
+                              type: string
+                            mockBop:
+                              description: Mock BOP image -- if not defined, value
+                                from operator config is used if set, otherwise a hard-coded
+                                default is used.
+                              type: string
+                            mocktitlements:
+                              description: Mock entitlements image -- if not defined,
+                                value from operator config is used if set, otherwise
+                                a hard-coded default is used.
+                              type: string
+                          type: object
                         ingressClass:
                           description: Ingress Class Name used only in (*_local_*)
                             mode.
+                          type: string
+                        keycloakVersion:
+                          description: Optional keycloak version override -- used
+                            only in (*_local_*) mode -- if not set, a hard-coded default
+                            is used.
                           type: string
                         mode:
                           description: The mode of operation of the Web provider.
