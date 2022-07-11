@@ -9,7 +9,6 @@ import (
 //autoScaleProviderRouter is a wrapper for the different autoscaler providers.
 type autoScaleProviderRouter struct {
 	providers.Provider
-	Config config.DatabaseConfig
 }
 
 func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvider, error) {
