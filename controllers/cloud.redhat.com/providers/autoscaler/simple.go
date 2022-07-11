@@ -20,7 +20,7 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 		return errors.Wrap("Could not get deployment from cache", err)
 	}
 
-	deploymentHPA := makeDeployemntSimpleHPA(&deployment, app, appConfig, cachedDeployment)
+	deploymentHPA := makeDeploymentSimpleHPA(&deployment, app, appConfig, cachedDeployment)
 	hpaResource := deploymentHPA.getResource()
 
 	err = sp.Client.Create(sp.Ctx, &hpaResource)
@@ -43,7 +43,7 @@ func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, 
 	return d, nil
 }
 
-func makeDeployemntSimpleHPA(deployment *crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig, coreDeployment *apps.Deployment) deployemntSimpleHPA {
+func makeDeploymentSimpleHPA(deployment *crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig, coreDeployment *apps.Deployment) deployemntSimpleHPA {
 	return deployemntSimpleHPA{
 		deployment:     deployment,
 		app:            app,
