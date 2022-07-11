@@ -2,24 +2,28 @@ package metrics
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type metricsProvider struct {
 	providers.Provider
 }
+
+var PrometheusSubscription = rc.NewSingleResourceIdent(ProvName, "prometheus_subscription", &sub.Subscription{})
 
 var PrometheusInstance = rc.NewSingleResourceIdent(ProvName, "prometheus_instance", &prom.Prometheus{})
 
@@ -50,7 +54,7 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 
 	promObj.SetName(nn.Name)
 	promObj.SetNamespace(nn.Namespace)
-	promObj.Spec.ServiceMonitorSelector = &v1.LabelSelector{
+	promObj.Spec.ServiceMonitorSelector = &metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"prometheus": p.Env.Name,
 		},
@@ -71,6 +75,10 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 	labeler(promObj)
 
 	if err := p.Cache.Update(PrometheusInstance, promObj); err != nil {
+		return nil, err
+	}
+
+	if err := createSubscription(p.Cache, p.Env); err != nil {
 		return nil, err
 	}
 
@@ -148,6 +156,39 @@ func createPrometheusRoleBinding(cache *rc.ObjectCache, app *crd.ClowdApp, env *
 	labeler(crb)
 
 	if err := cache.Update(PrometheusRoleBinding, crb); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createSubscription(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+
+	subObj := &sub.Subscription{}
+
+	nn := types.NamespacedName{
+		Name:      "prometheus",
+		Namespace: env.Status.TargetNamespace,
+	}
+
+	if err := cache.Create(PrometheusSubscription, nn, subObj); err != nil {
+		return err
+	}
+
+	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
+	labeler(subObj)
+	subObj.SetOwnerReferences([]metav1.OwnerReference{env.MakeOwnerReference()})
+
+	subObj.Spec = &sub.SubscriptionSpec{
+		Channel:             common.StringPtr("beta"),
+		InstallPlanApproval: common.StringPtr("Automatic"),
+		Name:                "prometheus",
+		Source:              "community-operators",
+		SourceNamespace:     "openshift-marketplace",
+		StartingCSV:         common.StringPtr("prometheusoperator.0.47.0"),
+	}
+
+	if err := cache.Update(PrometheusSubscription, subObj); err != nil {
 		return err
 	}
 
