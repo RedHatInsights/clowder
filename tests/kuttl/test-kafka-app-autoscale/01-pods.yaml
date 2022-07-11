@@ -46,7 +46,7 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-    autoScalerKeda:
+    autoScaler:
       maxReplicaCount: 5
       triggers:
       - type: kafka
