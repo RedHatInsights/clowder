@@ -52,10 +52,10 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deploy
 	// Set up the watcher to watch the Deployment we created earlier.
 	scalerSpec := keda.ScaledObjectSpec{
 		ScaleTargetRef:  &keda.ScaleTarget{Name: d.Name, Kind: d.Kind, APIVersion: d.APIVersion},
-		PollingInterval: deployment.AutoScalerKeda.PollingInterval,
-		CooldownPeriod:  deployment.AutoScalerKeda.CooldownPeriod,
-		Advanced:        deployment.AutoScalerKeda.Advanced,
-		Fallback:        deployment.AutoScalerKeda.Fallback,
+		PollingInterval: deployment.AutoScaler.PollingInterval,
+		CooldownPeriod:  deployment.AutoScaler.CooldownPeriod,
+		Advanced:        deployment.AutoScaler.Advanced,
+		Fallback:        deployment.AutoScaler.Fallback,
 	}
 
 	// Setting the min/max replica counts with defaults
@@ -67,15 +67,15 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deploy
 	} else {
 		scalerSpec.MinReplicaCount = deployment.MinReplicas
 	}
-	if deployment.AutoScalerKeda.MaxReplicaCount == nil {
+	if deployment.AutoScaler.MaxReplicaCount == nil {
 		scalerSpec.MaxReplicaCount = new(int32)
 		*scalerSpec.MaxReplicaCount = 10
 	} else {
-		scalerSpec.MaxReplicaCount = deployment.AutoScalerKeda.MaxReplicaCount
+		scalerSpec.MaxReplicaCount = deployment.AutoScaler.MaxReplicaCount
 	}
 
 	triggers := []keda.ScaleTriggers{}
-	for _, trigger := range deployment.AutoScalerKeda.Triggers {
+	for _, trigger := range deployment.AutoScaler.Triggers {
 
 		triggerType := getTriggerRoute(trigger.Type, c, env)
 		for k, v := range triggerType {

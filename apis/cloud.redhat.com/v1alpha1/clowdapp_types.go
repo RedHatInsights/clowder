@@ -199,8 +199,8 @@ type Deployment struct {
 	// K8sAccessLevel defines the level of access for this deployment
 	K8sAccessLevel K8sAccessLevel `json:"k8sAccessLevel,omitempty"`
 
-	// AutoScaler defines the configuration for the auto scaler
-	AutoScalerKeda *AutoScalerKeda `json:"autoScalerKeda,omitempty"`
+	// AutoScaler defines the configuration for the Keda auto scaler
+	AutoScaler *AutoScaler `json:"autoScaler,omitempty"`
 
 	AutoScalerSimple *AutoScalerSimple `json:"autoScalerSimple,omitempty"`
 
@@ -294,7 +294,7 @@ type AutoScalerSimple struct {
 }
 
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
-type AutoScalerKeda struct {
+type AutoScaler struct {
 	// PollingInterval is the interval (in seconds) to check each trigger on.
 	// Default is 30 seconds.
 	// +optional

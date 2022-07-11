@@ -24,7 +24,7 @@ func (db *autoScaleProviderRouter) Provide(app *crd.ClowdApp, c *config.AppConfi
 			continue
 		}
 		//If we find a SimpleAutoScaler config create one
-		if deployment.AutoScalerKeda != nil {
+		if deployment.AutoScaler != nil {
 			ProvideKedaAutoScaler(app, c, &db.Provider, deployment)
 			continue
 		}

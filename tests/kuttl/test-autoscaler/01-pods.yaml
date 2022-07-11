@@ -48,7 +48,7 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-    autoScalerKeda:
+    autoScaler:
       maxReplicaCount: 5
       triggers:
       - type: cpu
@@ -73,7 +73,7 @@ spec:
     minReplicas: 1
     podSpec:
       image: quay.io/psav/clowder-hello
-    autoScalerKeda:
+    autoScaler:
       simpleAutoscale: true
 ---
 apiVersion: autoscaling/v1

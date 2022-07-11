@@ -122,9 +122,9 @@ spec:
                     and will output a deployment resource. Only one container per
                     pod is allowed and this is defined in the PodSpec attribute.
                   properties:
-                    autoScalerKeda:
-                      description: AutoScaler defines the configuration for the auto
-                        scaler
+                    autoScaler:
+                      description: AutoScaler defines the configuration for the Keda
+                        auto scaler
                       properties:
                         advanced:
                           description: AdvancedConfig specifies advance scaling options
