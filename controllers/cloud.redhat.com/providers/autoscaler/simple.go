@@ -67,10 +67,6 @@ func (d *simpleHPAMaker) makeResource() v2.HorizontalPodAutoscaler {
 
 func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 	hpa := v2.HorizontalPodAutoscaler{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "HorizontalPodAutoscaler",
-			APIVersion: "autoscaling/v2",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      d.app.Name + "-" + d.coreDeployment.Name + "-" + "hpa",
 			Namespace: d.coreDeployment.Namespace,
