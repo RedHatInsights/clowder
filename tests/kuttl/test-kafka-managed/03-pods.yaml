@@ -15,7 +15,7 @@ spec:
       path: "/metrics"
     kafka:
       mode: managed
-      managedPrefix: test-kafka
+      managedPrefix: test-kafka-
       managedSecretRef:
         name: managed-secret
         namespace: test-kafka-managed

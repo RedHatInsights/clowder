@@ -15,9 +15,10 @@ type ClowderConfig struct {
 		}
 	}
 	Images struct {
-		MBOP     string `json:"mbop"`
-		Caddy    string `json:"caddy"`
-		Keycloak string `json:"Keycloak"`
+		MBOP           string `json:"mbop"`
+		Caddy          string `json:"caddy"`
+		Keycloak       string `json:"Keycloak"`
+		Mocktitlements string `json:"mocktitlements"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {

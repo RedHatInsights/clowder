@@ -31,3 +31,9 @@ func StringPtr(str string) *string {
 	s := str
 	return &s
 }
+
+// add kubelinter annotations to ignore liveness/readiness probes on CronJobs
+var KubeLinterAnnotations = map[string]string{
+	"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
+	"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
+}

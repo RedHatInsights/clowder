@@ -333,8 +333,13 @@ func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 	}
 }
 
-func UpdatePodTemplateAnnotations(podTemplateSpec *core.PodTemplateSpec, desiredAnnotations map[string]string) {
-	annotations := podTemplateSpec.GetAnnotations()
+type Annotator interface {
+	GetAnnotations() map[string]string
+	SetAnnotations(map[string]string)
+}
+
+func UpdateAnnotations(obj Annotator, desiredAnnotations map[string]string) {
+	annotations := obj.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
@@ -343,5 +348,5 @@ func UpdatePodTemplateAnnotations(podTemplateSpec *core.PodTemplateSpec, desired
 		annotations[k] = v
 	}
 
-	podTemplateSpec.SetAnnotations(annotations)
+	obj.SetAnnotations(annotations)
 }

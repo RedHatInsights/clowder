@@ -13,6 +13,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -42,17 +43,17 @@ type localWebProvider struct {
 	config backendConfig
 }
 
-func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName) error {
+func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {
 	sec := &core.Secret{}
 	if err := cache.Get(WebKeycloakSecret, sec, nn); err != nil {
 		return errors.Wrap("couldn't get secret from cache", err)
 	}
 
-	if v, ok := sec.Data["version"]; !ok || string(v) != KEYCLOAK_VERSION {
+	if v, ok := sec.Data["version"]; !ok || string(v) != desiredVersion {
 		if sec.StringData == nil {
 			sec.StringData = map[string]string{}
 		}
-		sec.StringData["version"] = KEYCLOAK_VERSION
+		sec.StringData["version"] = desiredVersion
 	}
 
 	if err := cache.Update(WebKeycloakSecret, sec); err != nil {
@@ -93,7 +94,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 			"password":        password,
 			"defaultUsername": "jdoe",
 			"defaultPassword": defaultPassword,
-			"version":         KEYCLOAK_VERSION,
+			"version":         provutils.GetKeycloakVersion(p.Env),
 		}
 	}
 
@@ -102,7 +103,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, errors.Wrap("couldn't set/get secret", err)
 	}
 
-	if err := setSecretVersion(p.Cache, nn); err != nil {
+	if err := setSecretVersion(p.Cache, nn, provutils.GetKeycloakVersion(p.Env)); err != nil {
 		return nil, errors.Wrap("couldn't set secret version", err)
 	}
 
@@ -208,7 +209,7 @@ func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) erro
 		"clowder/authsidecar-confighash": hash,
 	}
 
-	utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
+	utils.UpdateAnnotations(&d.Spec.Template, annotations)
 
 	if err := web.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
 		return err
@@ -390,7 +391,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 			"clowder/authsidecar-confighash": hash,
 		}
 
-		utils.UpdatePodTemplateAnnotations(&d.Spec.Template, annotations)
+		utils.UpdateAnnotations(&d.Spec.Template, annotations)
 
 		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
 			return err

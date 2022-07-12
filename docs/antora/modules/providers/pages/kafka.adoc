@@ -36,17 +36,6 @@ by the ClowdEnvironment. Depending on the environment you are running you may
 or may not have access to change this mode. More information on provider
 configuration is at the bottom of this page.
 
-=== local
-
-In local mode, the *Kafka Provider* will provision a single node kafka instance
-in the namespace defined in the `ClowdEnv` for the environment. This will
-comprise of a Zookeeper and Kafka pod. Topics will be created with minimal
-replicas/partitions as it is only a single node instance.
-
-ClowdEnv Config options available:
-
-- `pvc`
-
 === operator
 
 In operator mode, the *Kafka Provider* will provision KafkaTopic CRs to be
@@ -191,6 +180,6 @@ more information can be found in the API reference.
       # Other Env Config
       providers:
         kafka:
-          mode: local
+          mode: operator
           pvc: false
 ----

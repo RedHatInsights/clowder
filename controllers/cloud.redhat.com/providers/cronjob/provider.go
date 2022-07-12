@@ -9,7 +9,7 @@ import (
 // ProvName sets the provider name identifier
 var ProvName = "cronjob"
 
-// CoreCronJob is the croncronjob for the apps cronjobs.
+// CoreCronJob is the cronjob for the apps cronjobs.
 var CoreCronJob = rc.NewMultiResourceIdent(ProvName, "core_cronjob", &batch.CronJob{})
 
 // GetCronJob returns the correct cronjob provider.
