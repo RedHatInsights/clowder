@@ -2,38 +2,57 @@ package autoscaler
 
 import (
 	"fmt"
-	"log"
 
 	res "k8s.io/apimachinery/pkg/api/resource"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	apps "k8s.io/api/apps/v1"
 	v2 "k8s.io/api/autoscaling/v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	SIMPLE_HPA             = "simple_hpa"
+	CLOWD_API_VERSION      = "clowd.redhat.com/v1alpha1"
+	CLOWD_KIND             = "ClowdApp"
+	DEPLOYMENT_API_VERSION = "apps/v1"
+	DEPLOYMENT_KIND        = "Deployment"
+)
+
+//Creates a simple HPA in the resource cache for the deployment and ClowdApp
 func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment crd.Deployment) error {
 	cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Wrap("Could not get deployment from resource cache", err)
 	}
-	hpaMAker := newSimpleHPAMaker(&deployment, app, appConfig, cachedDeployment)
-	hpaResource := hpaMAker.getResource()
+	hpaMaker := newSimpleHPAMaker(&deployment, app, appConfig, cachedDeployment)
+	hpaResource := hpaMaker.getResource()
 
-	err = sp.Client.Create(sp.Ctx, &hpaResource)
+	err = cacheAutoscaler(app, sp, deployment, hpaResource)
 	if err != nil {
-		fmt.Println("HPA Error: ", err)
+		return errors.Wrap("Could not add HPA to resource cache", err)
+	}
+
+	return nil
+}
+
+//Adds the HPA to the resource cache
+func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment crd.Deployment, hpaResource v2.HorizontalPodAutoscaler) error {
+	simpleAutoScaler := rc.NewMultiResourceIdent(ProvName, SIMPLE_HPA, &v2.HorizontalPodAutoscaler{})
+	nn := app.GetDeploymentNamespacedName(&deployment)
+	if err := sp.Cache.Create(simpleAutoScaler, nn, &hpaResource); err != nil {
+		return err
 	}
 	return nil
 }
 
 //Get the core apps.Deployment from the provider cache
-//This is in AutoScalerSimpleProvider because we need access to the provider cache
 func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, sp *providers.Provider) (*apps.Deployment, error) {
 	nn := app.GetDeploymentNamespacedName(clowdDeployment)
 	d := &apps.Deployment{}
@@ -43,6 +62,7 @@ func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, 
 	return d, nil
 }
 
+//Factory for the simpleHPAMaker
 func newSimpleHPAMaker(deployment *crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig, coreDeployment *apps.Deployment) simpleHPAMaker {
 	return simpleHPAMaker{
 		deployment:     deployment,
@@ -52,6 +72,8 @@ func newSimpleHPAMaker(deployment *crd.Deployment, app *crd.ClowdApp, appConfig 
 	}
 }
 
+//Creates a simple HPA and stores references
+//to the resources and dependencies it requires
 type simpleHPAMaker struct {
 	deployment     *crd.Deployment
 	app            *crd.ClowdApp
@@ -59,30 +81,33 @@ type simpleHPAMaker struct {
 	coreDeployment *apps.Deployment
 }
 
+//Constructs the HPA in 2 parts: the HPA itself and the metric spec
 func (d *simpleHPAMaker) getResource() v2.HorizontalPodAutoscaler {
 	hpa := d.makeHPA()
 	hpa.Spec.Metrics = d.makeMetricsSpecs()
 	return hpa
 }
 
+//Creates the HPA resource
 func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
+	name := fmt.Sprintf("%s-%s-hpa", d.app.Name, d.deployment.Name)
 	hpa := v2.HorizontalPodAutoscaler{
+		//Set to clowdapp
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      d.app.Name + "-" + d.coreDeployment.Name + "-" + "hpa",
-			Namespace: d.coreDeployment.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: d.coreDeployment.TypeMeta.APIVersion,
-					Kind:       d.coreDeployment.TypeMeta.Kind,
-					Name:       d.coreDeployment.ObjectMeta.Name,
-					UID:        d.coreDeployment.ObjectMeta.UID,
-				},
-			},
+					APIVersion: CLOWD_API_VERSION,
+					Kind:       CLOWD_KIND,
+					Name:       d.app.Name,
+					UID:        d.app.UID,
+				}},
+			Name:      name,
+			Namespace: d.coreDeployment.Namespace,
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				APIVersion: d.coreDeployment.APIVersion,
-				Kind:       d.coreDeployment.Kind,
+				APIVersion: DEPLOYMENT_API_VERSION,
+				Kind:       DEPLOYMENT_KIND,
 				Name:       d.coreDeployment.Name,
 			},
 			MinReplicas: &d.deployment.AutoScalerSimple.Replicas.Min,
@@ -92,6 +117,7 @@ func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 	return hpa
 }
 
+//Creates the metrics specs for the HPA
 func (d *simpleHPAMaker) makeMetricsSpecs() []v2.MetricSpec {
 	metricsSpecs := []v2.MetricSpec{}
 
