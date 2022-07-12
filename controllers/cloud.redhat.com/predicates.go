@@ -15,26 +15,32 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-func defaultPredicateLog(logr logr.Logger, ctrlName string) predicate.Funcs {
+func logMessage(logr logr.Logger, ctrlName string, msg string, keysAndValues ...interface{}) {
+	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
+		logr.Info(msg, keysAndValues...)
+	}
+}
+
+func defaultPredicate(logr logr.Logger, ctrlName string) predicate.Funcs {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
+			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
 			return true
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
+			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 			return true
 		},
 		GenericFunc: func(e event.GenericEvent) bool {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
+			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
 			return true
 		},
 	}
@@ -76,22 +82,13 @@ func environmentUpdateFunc(e event.UpdateEvent) bool {
 	return false
 }
 
-// These functions only return if the generation changes
-func getGenerationOnlyPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
-		return generationOnlyPredicateWithLog(logr, ctrlName)
-	}
-	return predicate.GenerationChangedPredicate{}
-}
-
-func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
-	genPredicate := predicate.GenerationChangedPredicate{}
-	predicates := defaultPredicateLog(logr, ctrlName)
+func genPredicateFunc(updateFn func(e event.UpdateEvent) bool, logr logr.Logger, ctrlName string) predicate.Funcs {
+	predicates := defaultPredicate(logr, ctrlName)
 	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
-		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		result := genPredicate.Update(e)
+		result := updateFn(e)
 		if result {
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
+			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
+			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 			displayUpdateDiff(e, logr, ctrlName, gvk)
 		}
 		return result
@@ -99,97 +96,26 @@ func generationOnlyPredicateWithLog(logr logr.Logger, ctrlName string) predicate
 	return predicates
 }
 
-// These functions are returned for deployments
-// These functions always return on an update
-func getDeploymentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
-		return deploymentPredicateWithLog(logr, ctrlName)
-	}
-	return predicate.Funcs{
-		UpdateFunc: deploymentUpdateFunc,
-	}
-}
-
-func deploymentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
-	predicates := defaultPredicateLog(logr, ctrlName)
-	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
-		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		result := deploymentUpdateFunc(e)
-		if result {
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
-			displayUpdateDiff(e, logr, ctrlName, gvk)
-			return true
-		}
-		return false
-	}
-	return predicates
-}
-
-// These functions always return on an update
-func getAlwaysPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
-		return alwaysPredicateWithLog(logr, ctrlName)
-	}
-	return predicate.Funcs{}
-}
-
-func alwaysPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
-	predicates := defaultPredicateLog(logr, ctrlName)
-	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
-		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
-		displayUpdateDiff(e, logr, ctrlName, gvk)
+func alwaysPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	return genPredicateFunc(func(e event.UpdateEvent) bool {
 		return true
-	}
-	return predicates
+	}, logr, ctrlName)
 }
 
-//These functions are specific to Kafka
-func getKafkaPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
-		return kafkaPredicateWithLog(logr, ctrlName)
-	}
-	return predicate.Funcs{
-		UpdateFunc: kafkaUpdateFunc,
-	}
+func generationOnlyPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	return genPredicateFunc(predicate.GenerationChangedPredicate{}.Update, logr, ctrlName)
 }
 
-func kafkaPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
-	predicates := defaultPredicateLog(logr, ctrlName)
-	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
-		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		result := kafkaUpdateFunc(e)
-		if result {
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
-			displayUpdateDiff(e, logr, ctrlName, gvk)
-		}
-		return result
-	}
-	return predicates
+func deploymentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	return genPredicateFunc(deploymentUpdateFunc, logr, ctrlName)
 }
 
-//These functions are specific to ClowdEnvironment
-func getEnvironmentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
-		return environmentPredicateWithLog(logr, ctrlName)
-	}
-	return predicate.Funcs{
-		UpdateFunc: environmentUpdateFunc,
-	}
+func kafkaPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	return genPredicateFunc(kafkaUpdateFunc, logr, ctrlName)
 }
 
-func environmentPredicateWithLog(logr logr.Logger, ctrlName string) predicate.Predicate {
-	predicates := defaultPredicateLog(logr, ctrlName)
-	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
-		gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-		result := environmentUpdateFunc(e)
-		if result {
-			displayUpdateDiff(e, logr, ctrlName, gvk)
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
-		}
-		return result
-	}
-	return predicates
+func environmentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+	return genPredicateFunc(environmentUpdateFunc, logr, ctrlName)
 }
 
 func displayUpdateDiff(e event.UpdateEvent, logr logr.Logger, ctrlName string, gvk schema.GroupVersionKind) {
