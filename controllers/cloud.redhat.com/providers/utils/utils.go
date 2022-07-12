@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var IMAGE_CADDY_SIDECAR_DEFAULT = "quay.io/cloudservices/crc-caddy-plugin:3ba6be7"
+var IMAGE_CADDY_SIDECAR_DEFAULT = "quay.io/cloudservices/crc-caddy-plugin:eaed6c2"
 var IMAGE_MBOP_DEFAULT = "quay.io/cloudservices/mbop:0d3f99f"
 var IMAGE_MOCKTITLEMENTS_DEFAULT = "quay.io/cloudservices/mocktitlements:130433d"
 var KEYCLOAK_VERSION_DEFAULT = "15.0.2"
