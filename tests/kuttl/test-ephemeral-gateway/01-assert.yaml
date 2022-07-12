@@ -11,7 +11,7 @@ spec:
         clowder/authsidecar-config: caddy-config-puptoo-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
-        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:3ba6be7
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:eaed6c2
     spec:
       serviceAccountName: puptoo-processor
 status:
@@ -134,7 +134,7 @@ spec:
       annotations:
         clowder/authsidecar-config: caddy-config-mocktitlements
         clowder/authsidecar-enabled: "true"
-        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:3ba6be7
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:eaed6c2
         clowder/authsidecar-port: "8090"
     spec:
       containers:
