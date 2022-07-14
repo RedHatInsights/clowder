@@ -99,3 +99,16 @@ kind: RoleBinding
 metadata:
   name: puptoo
   namespace: test-metrics-operator
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: prometheus
+  namespace: test-metrics-operator
+spec:
+  channel:             "beta"
+  installPlanApproval: "Automatic"
+  name:                "prometheus"
+  source:              "community-operators"
+  sourceNamespace:     "openshift-marketplace"
+  startingCSV:         "prometheusoperator.0.47.0"
