@@ -1,28 +1,23 @@
 package autoscaler
 
 import (
-	"errors"
-	"fmt"
-
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName sets the provider name identifier
 var ProvName = "autoscaler"
 
+const ENABLED = "enabled"
+const KEDA = "keda"
+
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
-
-	autoMode := c.Env.Spec.Providers.AutoScaler.Mode
-	switch autoMode {
-	case "keda":
-		return NewAutoScalerProvider(c)
-	case "none", "":
-		return NewNoneAutoScalerProvider(c)
-	default:
-		errStr := fmt.Sprintf("No matching autoscaler mode for %s", autoMode)
-		return nil, errors.New(errStr)
+	mode := c.Env.Spec.Providers.AutoScaler.Mode
+	//Keda is preserved as a synonym of enabled for backwards compatibility
+	if mode == ENABLED || mode == KEDA {
+		return NewAutoScaleProviderRouter(c)
 	}
+	return NewNoneAutoScalerProvider(c)
 }
 
 func init() {

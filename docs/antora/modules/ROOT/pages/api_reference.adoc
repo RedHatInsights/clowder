@@ -95,7 +95,26 @@ AutoScalerConfig configures the Clowder provider controlling the creation of Aut
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __AutoScalerMode__ | The mode of operation of the Clowder InMemory Provider. Valid options are: (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*) which will search the namespace of the ClowdApp for a secret called 'elasticache'
+| *`mode`* __AutoScalerMode__ | Enable the autoscaler feature
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple"]
+==== AutoScalerSimple 
+
+SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by value and utilization thresholds, along with replica count limits
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`replicas`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas[$$SimpleAutoScalerReplicas$$]__ | 
+| *`ram`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
+| *`cpu`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric[$$SimpleAutoScalerMetric$$]__ | 
 |===
 
 
@@ -368,7 +387,8 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`webServices`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
-| *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the auto scaler
+| *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the Keda auto scaler
+| *`autoScalerSimple`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]__ | 
 | *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
 |===
 
@@ -1041,6 +1061,42 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 |===
 | Field | Description
 | *`tokenRefresher`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tokenrefresherconfig[$$TokenRefresherConfig$$]__ | Sets up Token Refresher configuration
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric"]
+==== SimpleAutoScalerMetric 
+
+SimpleAutoScalerMetric defines a metric of either a value or utilization
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`scaleAtValue`* __string__ | 
+| *`scaleAtUtilization`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas"]
+==== SimpleAutoScalerReplicas 
+
+SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the auto scaler
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`min`* __integer__ | 
+| *`max`* __integer__ | 
 |===
 
 

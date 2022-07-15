@@ -347,17 +347,14 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
-// AutoScalerMode details the mode of operation of the Clowder AutoScaler
-// Provider
-// +kubebuilder:validation:Enum=keda;none
+//AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+// +kubebuilder:validation:Enum={"none", "enabled", "keda"}
 type AutoScalerMode string
 
 // AutoScalerConfig configures the Clowder provider controlling the creation of
 // AutoScaler configuration.
 type AutoScalerConfig struct {
-	// The mode of operation of the Clowder InMemory Provider. Valid options are:
-	// (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)
-	// which will search the namespace of the ClowdApp for a secret called 'elasticache'
+	//Enable the autoscaler feature
 	Mode AutoScalerMode `json:"mode,omitempty"`
 }
 

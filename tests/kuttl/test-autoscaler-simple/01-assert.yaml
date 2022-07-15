@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-highram
+  namespace: test-autoscaler-simple
+status:
+  readyReplicas: 4
+  replicas: 4
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-highcpu
+  namespace: test-autoscaler-simple
+status:
+  readyReplicas: 4
+  replicas: 4
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-nohpa
+  namespace: test-autoscaler-simple
+status:
+  readyReplicas: 1
+  replicas: 1

@@ -28,7 +28,7 @@ spec:
     featureFlags:
       mode: none
     autoScaler:
-      mode: keda
+      mode: enabled
   resourceDefaults:
     limits:
       cpu: 400m

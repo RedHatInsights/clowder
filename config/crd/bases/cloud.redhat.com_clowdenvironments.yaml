@@ -61,14 +61,11 @@ spec:
                     description: Defines the autoscaler configuration
                     properties:
                       mode:
-                        description: 'The mode of operation of the Clowder InMemory
-                          Provider. Valid options are: (*_redis_*) where a local Minio
-                          instance will be created, and (*_elasticache_*) which will
-                          search the namespace of the ClowdApp for a secret called
-                          ''elasticache'''
+                        description: Enable the autoscaler feature
                         enum:
-                        - keda
                         - none
+                        - enabled
+                        - keda
                         type: string
                     type: object
                   db:

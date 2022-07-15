@@ -123,8 +123,8 @@ spec:
                     pod is allowed and this is defined in the PodSpec attribute.
                   properties:
                     autoScaler:
-                      description: AutoScaler defines the configuration for the auto
-                        scaler
+                      description: AutoScaler defines the configuration for the Keda
+                        auto scaler
                       properties:
                         advanced:
                           description: AdvancedConfig specifies advance scaling options
@@ -342,6 +342,48 @@ spec:
                             - type
                             type: object
                           type: array
+                      type: object
+                    autoScalerSimple:
+                      description: SimpleAutoScaler defines a simple HPA with scaling
+                        for RAM and CPU by value and utilization thresholds, along
+                        with replica count limits
+                      properties:
+                        cpu:
+                          description: SimpleAutoScalerMetric defines a metric of
+                            either a value or utilization
+                          properties:
+                            scaleAtUtilization:
+                              format: int32
+                              type: integer
+                            scaleAtValue:
+                              type: string
+                          type: object
+                        ram:
+                          description: SimpleAutoScalerMetric defines a metric of
+                            either a value or utilization
+                          properties:
+                            scaleAtUtilization:
+                              format: int32
+                              type: integer
+                            scaleAtValue:
+                              type: string
+                          type: object
+                        replicas:
+                          description: SimpleAutoScalerReplicas defines the minimum
+                            and maximum replica counts for the auto scaler
+                          properties:
+                            max:
+                              format: int32
+                              type: integer
+                            min:
+                              format: int32
+                              type: integer
+                          required:
+                          - max
+                          - min
+                          type: object
+                      required:
+                      - replicas
                       type: object
                     deploymentStrategy:
                       description: DeploymentStrategy allows the deployment strategy

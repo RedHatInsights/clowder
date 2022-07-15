@@ -137,7 +137,7 @@ objects:
                     properties:
                       autoScaler:
                         description: AutoScaler defines the configuration for the
-                          auto scaler
+                          Keda auto scaler
                         properties:
                           advanced:
                             description: AdvancedConfig specifies advance scaling
@@ -362,6 +362,48 @@ objects:
                               - type
                               type: object
                             type: array
+                        type: object
+                      autoScalerSimple:
+                        description: SimpleAutoScaler defines a simple HPA with scaling
+                          for RAM and CPU by value and utilization thresholds, along
+                          with replica count limits
+                        properties:
+                          cpu:
+                            description: SimpleAutoScalerMetric defines a metric of
+                              either a value or utilization
+                            properties:
+                              scaleAtUtilization:
+                                format: int32
+                                type: integer
+                              scaleAtValue:
+                                type: string
+                            type: object
+                          ram:
+                            description: SimpleAutoScalerMetric defines a metric of
+                              either a value or utilization
+                            properties:
+                              scaleAtUtilization:
+                                format: int32
+                                type: integer
+                              scaleAtValue:
+                                type: string
+                            type: object
+                          replicas:
+                            description: SimpleAutoScalerReplicas defines the minimum
+                              and maximum replica counts for the auto scaler
+                            properties:
+                              max:
+                                format: int32
+                                type: integer
+                              min:
+                                format: int32
+                                type: integer
+                            required:
+                            - max
+                            - min
+                            type: object
+                        required:
+                        - replicas
                         type: object
                       deploymentStrategy:
                         description: DeploymentStrategy allows the deployment strategy
@@ -5522,14 +5564,11 @@ objects:
                       description: Defines the autoscaler configuration
                       properties:
                         mode:
-                          description: 'The mode of operation of the Clowder InMemory
-                            Provider. Valid options are: (*_redis_*) where a local
-                            Minio instance will be created, and (*_elasticache_*)
-                            which will search the namespace of the ClowdApp for a
-                            secret called ''elasticache'''
+                          description: Enable the autoscaler feature
                           enum:
-                          - keda
                           - none
+                          - enabled
+                          - keda
                           type: string
                       type: object
                     db:
