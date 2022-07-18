@@ -174,6 +174,11 @@ type WebServices struct {
 // +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
+type DeploymentMetadata struct {
+	Annotations DeploymentAnnotations `json:"annotations,omitempty"`
+}
+type DeploymentAnnotations map[string]string
+
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
 type Deployment struct {
@@ -207,6 +212,8 @@ type Deployment struct {
 	// DeploymentStrategy allows the deployment strategy to be set only if the
 	// deployment has no public service enabled
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
+
+	Metadata DeploymentMetadata `json:"metadata,omitempty"`
 }
 
 type DeploymentStrategy struct {
