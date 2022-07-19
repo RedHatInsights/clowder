@@ -406,6 +406,13 @@ spec:
                       - ""
                       - edit
                       type: string
+                    metadata:
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          type: object
+                      type: object
                     minReplicas:
                       description: Defines the minimum replica count for the pod.
                       format: int32

@@ -8,7 +8,6 @@ import "encoding/json"
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 import apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-
 func init() {
 	SchemeBuilder.Register(&Subscription{}, &SubscriptionList{})
 }

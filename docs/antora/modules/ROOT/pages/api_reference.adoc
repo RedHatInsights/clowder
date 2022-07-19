@@ -390,6 +390,8 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the Keda auto scaler
 | *`autoScalerSimple`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]__ | 
 | *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
+| *`metadata`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentmetadata[$$DeploymentMetadata$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
 |===
 
 
@@ -426,6 +428,23 @@ DeploymentInfo defailts information about a specific deployment.
 | *`name`* __string__ | 
 | *`hostname`* __string__ | 
 | *`port`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentmetadata"]
+==== DeploymentMetadata 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`annotations`* __object (keys:string, values:string)__ | 
 |===
 
 
