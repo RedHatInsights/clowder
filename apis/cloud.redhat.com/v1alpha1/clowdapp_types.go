@@ -175,9 +175,8 @@ type WebServices struct {
 type K8sAccessLevel string
 
 type DeploymentMetadata struct {
-	Annotations DeploymentAnnotations `json:"annotations,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
-type DeploymentAnnotations map[string]string
 
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
