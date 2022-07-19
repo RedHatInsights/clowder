@@ -131,6 +131,7 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 
 	utils.UpdateAnnotations(&j.Spec.Template, common.KubeLinterAnnotations)
 	utils.UpdateAnnotations(j, common.KubeLinterAnnotations)
+	utils.UpdateAnnotations(&j.ObjectMeta, app.ObjectMeta.Annotations)
 
 	return nil
 }
