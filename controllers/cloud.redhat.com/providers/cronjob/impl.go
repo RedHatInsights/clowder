@@ -170,6 +170,7 @@ func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJo
 
 	utils.UpdateAnnotations(pt, common.KubeLinterAnnotations)
 	utils.UpdateAnnotations(cj, common.KubeLinterAnnotations)
+	utils.UpdateAnnotations(&cj.ObjectMeta, app.ObjectMeta.Annotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
 
