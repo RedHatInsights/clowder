@@ -509,6 +509,8 @@ type DeploymentMetadata struct {
 
 	// Name of deployment
 	Name string `json:"name"`
+
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // Feature Flags Configuration
