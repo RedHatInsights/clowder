@@ -1,0 +1,128 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowder-jobs
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-clowder-jobs
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: puptoo-standard-cron
+  namespace: test-clowder-jobs
+  annotations:
+    CustomAnnotation: "Much Annotate. Very inform."
+spec:
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  suspend: false
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 6000
+      template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+        spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
+          containers:
+            - name: puptoo-standard-cron
+              image: quay.io/psav/clowder-hello
+          restartPolicy: Never
+          tolerations:
+          - key: "memory"
+            value: "true"
+            operator: "Equal"
+            effect: "NoSchedule"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: puptoo-suspend-cron
+  namespace: test-clowder-jobs
+  annotations:
+    CustomAnnotation: "Much Annotate. Very inform."
+spec:
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  suspend: true
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+        spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
+          containers:
+            - name: puptoo-suspend-cron
+              image: quay.io/psav/clowder-hello
+          restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: puptoo-restart-on-failure
+  namespace: test-clowder-jobs
+  annotations:
+    CustomAnnotation: "Much Annotate. Very inform."
+spec:
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+        spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
+          containers:
+            - name: puptoo-restart-on-failure
+              image: quay.io/psav/clowder-hello
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: test-clowder-jobs
+  labels:
+    job: puptoo-hello-cji
+  annotations:
+    CustomAnnotation: "Much Annotate. Very inform."
+spec:
+  activeDeadlineSeconds: 6000
+  template:
+    metadata:
+      annotations:
+        "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+        "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+    spec:
+      serviceAccount: puptoo-app
+      serviceAccountName: puptoo-app
+      containers:
+        - image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - echo "Hello!"

@@ -1,0 +1,102 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowder-jobs
+spec:
+  targetNamespace: test-clowder-jobs
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-clowder-jobs
+  annotations:
+    CustomAnnotation: "Much Annotate. Very inform."
+spec:
+  envName: test-clowder-jobs
+  deployments:
+    - name: processor
+      podSpec:
+        image: quay.io/psav/clowder-hello
+  jobs:
+    - name: standard-cron
+      schedule: "*/1 * * * *"
+      suspend: false 
+      successfulJobsHistoryLimit: 2
+      failedJobsHistoryLimit: 2
+      activeDeadlineSeconds: 6000
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo
+        machinePool: memory
+    - name: suspend-cron
+      schedule: "*/1 * * * *"
+      suspend: true
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo
+    - name: restart-on-failure 
+      schedule: "*/1 * * * *"
+      restartPolicy: OnFailure
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo
+    - name: hello-cji
+      # Testing incorrect specs, should be thrown away
+      # because it goes to a different controller
+      # without a schedule attribute
+      suspend: false
+      activeDeadlineSeconds: 6000
+      successfulJobsHistoryLimit: 1
+      podSpec:
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - echo "Hello!"
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: runner
+  namespace: test-clowder-jobs
+spec:
+  appName: puptoo
+  jobs:
+    - hello-cji
