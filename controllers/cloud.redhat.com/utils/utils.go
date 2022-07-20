@@ -338,15 +338,17 @@ type Annotator interface {
 	SetAnnotations(map[string]string)
 }
 
-func UpdateAnnotations(obj Annotator, desiredAnnotations map[string]string) {
+func UpdateAnnotations(obj Annotator, desiredAnnotations ...map[string]string) {
 	annotations := obj.GetAnnotations()
+
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
 
-	for k, v := range desiredAnnotations {
-		annotations[k] = v
+	for _, annotationsSource := range desiredAnnotations {
+		for k, v := range annotationsSource {
+			annotations[k] = v
+		}
 	}
-
 	obj.SetAnnotations(annotations)
 }
