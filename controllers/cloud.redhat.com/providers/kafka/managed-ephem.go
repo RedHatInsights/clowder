@@ -78,40 +78,18 @@ func (s *managedEphemProvider) createConnectSecret() error {
 
 func (s *managedEphemProvider) configureKafkaConnectCluster() error {
 
-	//TODO: create secret in namespace as a copy
-	var kcRequests, kcLimits apiextensions.JSON
-
-	// default values for config/requests/limits in Strimzi resource specs
-	kcRequests.UnmarshalJSON([]byte(`{
-        "cpu": "300m",
-        "memory": "500Mi"
-	}`))
-
-	kcLimits.UnmarshalJSON([]byte(`{
-        "cpu": "600m",
-        "memory": "800Mi"
-	}`))
-
-	// check if defaults have been overridden in ClowdEnvironment
-	if s.Env.Spec.Providers.Kafka.Connect.Resources.Requests != nil {
-		kcRequests = *s.Env.Spec.Providers.Kafka.Connect.Resources.Requests
-	}
-	if s.Env.Spec.Providers.Kafka.Connect.Resources.Limits != nil {
-		kcLimits = *s.Env.Spec.Providers.Kafka.Connect.Resources.Limits
-	}
-
 	clusterNN := types.NamespacedName{
 		Namespace: getConnectNamespace(s.Env),
 		Name:      getConnectClusterName(s.Env),
 	}
 
-	k := &strimzi.KafkaConnect{}
-	if err := s.Cache.Create(KafkaConnect, clusterNN, k); err != nil {
+	kafkaConnect := &strimzi.KafkaConnect{}
+	if err := s.Cache.Create(KafkaConnect, clusterNN, kafkaConnect); err != nil {
 		return err
 	}
 
 	// ensure that connect cluster of this same name but labelled for different env does not exist
-	if envLabel, ok := k.GetLabels()["env"]; ok {
+	if envLabel, ok := kafkaConnect.GetLabels()["env"]; ok {
 		if envLabel != s.Env.Name {
 			return fmt.Errorf(
 				"kafka connect cluster named '%s' found in ns '%s' but tied to env '%s'",
@@ -136,34 +114,15 @@ func (s *managedEphemProvider) configureKafkaConnectCluster() error {
 		image = IMAGE_KAFKA_XJOIN
 	}
 
-	username := getConnectClusterUserName(s.Env)
-
-	var config apiextensions.JSON
-
-	connectClusterConfigs := fmt.Sprintf("%s-connect-cluster-configs", s.Env.Name)
-	connectClusterOffsets := fmt.Sprintf("%s-connect-cluster-offsets", s.Env.Name)
-	connectClusterStatus := fmt.Sprintf("%s-connect-cluster-status", s.Env.Name)
-
-	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
-		"config.storage.replication.factor":       "1",
-		"config.storage.topic":                    "%s",
-		"connector.client.config.override.policy": "All",
-		"group.id":                                "connect-cluster",
-		"offset.storage.replication.factor":       "1",
-		"offset.storage.topic":                    "%s",
-		"status.storage.replication.factor":       "1",
-		"status.storage.topic":                    "%s"
-	}`, connectClusterConfigs, connectClusterOffsets, connectClusterStatus)))
-
-	k.Spec = &strimzi.KafkaConnectSpec{
+	kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: string(s.secretData["hostname"]),
 		Version:          &version,
-		Config:           &config,
+		Config:           s.getSpecConfig(),
 		Image:            &image,
 		Resources: &strimzi.KafkaConnectSpecResources{
-			Requests: &kcRequests,
-			Limits:   &kcLimits,
+			Requests: s.getRequests(),
+			Limits:   s.getLimits(),
 		},
 		Authentication: &strimzi.KafkaConnectSpecAuthentication{
 			ClientId: common.StringPtr(string(s.secretData["client.id"])),
@@ -180,7 +139,8 @@ func (s *managedEphemProvider) configureKafkaConnectCluster() error {
 	}
 
 	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
-		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
+		username := getConnectClusterUserName(s.Env)
+		kafkaConnect.Spec.Tls = &strimzi.KafkaConnectSpecTls{
 			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
 				Certificate: "ca.crt",
 				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
@@ -198,18 +158,18 @@ func (s *managedEphemProvider) configureKafkaConnectCluster() error {
 
 	// configures this KafkaConnect to use KafkaConnector resources to avoid needing to call the
 	// Connect REST API directly
-	annotations := k.GetAnnotations()
+	annotations := kafkaConnect.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
 	annotations["strimzi.io/use-connector-resources"] = "true"
-	k.SetAnnotations(annotations)
-	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
-	k.SetName(getConnectClusterName(s.Env))
-	k.SetNamespace(getConnectNamespace(s.Env))
-	k.SetLabels(providers.Labels{"env": s.Env.Name})
+	kafkaConnect.SetAnnotations(annotations)
+	kafkaConnect.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
+	kafkaConnect.SetName(getConnectClusterName(s.Env))
+	kafkaConnect.SetNamespace(getConnectNamespace(s.Env))
+	kafkaConnect.SetLabels(providers.Labels{"env": s.Env.Name})
 
-	if err := s.Cache.Update(KafkaConnect, k); err != nil {
+	if err := s.Cache.Update(KafkaConnect, kafkaConnect); err != nil {
 		return err
 	}
 
@@ -609,4 +569,57 @@ type Settings struct {
 type Config struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
+}
+
+type KafkaBuilder struct {
+	Env *crd.ClowdEnvironment
+}
+
+func (this *KafkaBuilder) getSpecConfig() *apiextensions.JSON {
+	var config apiextensions.JSON
+
+	connectClusterConfigs := fmt.Sprintf("%s-connect-cluster-configs", this.Env.Name)
+	connectClusterOffsets := fmt.Sprintf("%s-connect-cluster-offsets", this.Env.Name)
+	connectClusterStatus := fmt.Sprintf("%s-connect-cluster-status", this.Env.Name)
+
+	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
+		"config.storage.replication.factor":       "1",
+		"config.storage.topic":                    "%s",
+		"connector.client.config.override.policy": "All",
+		"group.id":                                "connect-cluster",
+		"offset.storage.replication.factor":       "1",
+		"offset.storage.topic":                    "%s",
+		"status.storage.replication.factor":       "1",
+		"status.storage.topic":                    "%s"
+	}`, connectClusterConfigs, connectClusterOffsets, connectClusterStatus)))
+
+	return &config
+}
+
+func (this *KafkaBuilder) getLimits() *apiextensions.JSON {
+	return this.getResourceSpec(this.Env.Spec.Providers.Kafka.Connect.Resources.Limits, `{
+        "cpu": "600m",
+        "memory": "800Mi"
+	}`)
+}
+
+func (this *KafkaBuilder) getRequests() *apiextensions.JSON {
+	return this.getResourceSpec(this.Env.Spec.Providers.Kafka.Connect.Resources.Requests, `{
+        "cpu": "300m",
+        "memory": "500Mi"
+	}`)
+}
+
+func (this *KafkaBuilder) getResourceSpec(field *apiextensions.JSON, defaultJSON string) *apiextensions.JSON {
+	if field != nil {
+		return field
+	}
+	var defaults apiextensions.JSON
+	defaults.UnmarshalJSON([]byte(defaultJSON))
+
+	return &defaults
+}
+
+func (this *KafkaBuilder) Create() (*kafka.KafkaConnect, error) {
+
 }
