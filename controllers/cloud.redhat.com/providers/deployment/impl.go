@@ -45,6 +45,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	d.Kind = "Deployment"
 
+	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations)
+
 	pod := deployment.PodSpec
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
