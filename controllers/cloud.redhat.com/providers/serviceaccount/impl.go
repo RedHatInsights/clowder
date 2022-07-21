@@ -5,13 +5,13 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func createServiceAccountForClowdObj(cache *rc.ObjectCache, ident rc.ResourceIdent, obj object.ClowdObject) error {

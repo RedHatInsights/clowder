@@ -7,7 +7,7 @@ import (
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type servicemeshProvider struct {

@@ -10,9 +10,8 @@ import (
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
-
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type confighashProvider struct {

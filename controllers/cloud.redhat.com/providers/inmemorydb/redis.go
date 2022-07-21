@@ -4,17 +4,17 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 // RedisDeployment identifies the main redis deployment
@@ -126,7 +126,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		Name: nn.Name,
 		VolumeSource: core.VolumeSource{
 			ConfigMap: &core.ConfigMapVolumeSource{
-				DefaultMode: common.Int32Ptr(420),
+				DefaultMode: utils.Int32Ptr(420),
 				LocalObjectReference: core.LocalObjectReference{
 					Name: nn.Name,
 				},

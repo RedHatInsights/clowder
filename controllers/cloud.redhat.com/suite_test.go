@@ -26,7 +26,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	apps "k8s.io/api/apps/v1"
@@ -42,6 +41,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	// +kubebuilder:scaffold:imports
@@ -175,8 +175,8 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 
 		cluster.Status = &strimzi.KafkaStatus{
 			Conditions: []strimzi.KafkaStatusConditionsElem{{
-				Status: common.StringPtr("True"),
-				Type:   common.StringPtr("Ready"),
+				Status: utils.StringPtr("True"),
+				Type:   utils.StringPtr("Ready"),
 			}},
 			Listeners: []strimzi.KafkaStatusListenersElem{{
 				Type: &listenerType,
@@ -209,8 +209,8 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 
 		connectCluster.Status = &strimzi.KafkaConnectStatus{
 			Conditions: []strimzi.KafkaConnectStatusConditionsElem{{
-				Status: common.StringPtr("True"),
-				Type:   common.StringPtr("Ready"),
+				Status: utils.StringPtr("True"),
+				Type:   utils.StringPtr("Ready"),
 			}},
 		}
 		t.Logf("Applying kafka connect status")

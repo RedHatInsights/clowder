@@ -16,7 +16,7 @@ import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func getBaseElements() (types.NamespacedName, crd.ClowdApp) {
