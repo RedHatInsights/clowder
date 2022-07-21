@@ -119,7 +119,7 @@ type MetricsConfig struct {
 }
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
-// +kubebuilder:validation:Enum=managed;operator;app-interface;local;none
+// +kubebuilder:validation:Enum=managed-ephem;managed;operator;app-interface;local;none
 type KafkaMode string
 
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
@@ -216,6 +216,12 @@ type KafkaConfig struct {
 
 	// Managed topic prefix for the managed cluster. Only used in (*_managed_*) mode.
 	ManagedPrefix string `json:"managedPrefix,omitempty"`
+
+	// Defines the secret reference for the Ephemeral Managed Kafka mode. Only used in (*_managed-ephem_*) mode.
+	EphemManagedSecretRef NamespacedName `json:"ephemManagedSecretRef,omitempty"`
+
+	// Defines a prefix whitelist value
+	EphemManagedDeletePrefix string `json:"ephemManagedDeletePrefix,omitempty"`
 
 	// (Deprecated) Defines the cluster name to be used by the Kafka Provider this will
 	// be used in some modes to locate the Kafka instance.

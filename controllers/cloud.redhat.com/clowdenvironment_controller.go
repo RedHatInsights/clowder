@@ -133,12 +133,26 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		managedEnvsMetric.Set(float64(len(managedEnvironments)))
 	}()
 
+	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
+
+	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
+
+	cache := rc.NewObjectCache(ctx, r.Client, cacheConfig)
+
+	provider := providers.Provider{
+		Ctx:    ctx,
+		Client: r.Client,
+		Env:    &env,
+		Cache:  &cache,
+		Log:    log,
+	}
+
 	isEnvMarkedForDeletion := env.GetDeletionTimestamp() != nil
 	if isEnvMarkedForDeletion {
 		if contains(env.GetFinalizers(), envFinalizer) {
-			if finalizeErr := r.finalizeEnvironment(log, &env); finalizeErr != nil {
+			if finalizeErr := r.finalizeEnvironment(log, &env, provider); finalizeErr != nil {
 				log.Info("Cloud not finalize", "err", finalizeErr)
-				return ctrl.Result{}, finalizeErr
+				return ctrl.Result{Requeue: true}, finalizeErr
 			}
 
 			controllerutil.RemoveFinalizer(&env, envFinalizer)
@@ -218,20 +232,6 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if ens.ObjectMeta.DeletionTimestamp != nil {
 		log.Info("Env target namespace is to be deleted - skipping reconcile")
 		return ctrl.Result{}, nil
-	}
-
-	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
-
-	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
-
-	cache := rc.NewObjectCache(ctx, r.Client, cacheConfig)
-
-	provider := providers.Provider{
-		Ctx:    ctx,
-		Client: r.Client,
-		Env:    &env,
-		Cache:  &cache,
-		Log:    log,
 	}
 
 	SetEnv(env.Name)
@@ -348,6 +348,20 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
 		utils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
+	}
+	return nil
+}
+
+func runProvidersForEnvFinalize(log logr.Logger, provider providers.Provider) error {
+	for _, provAcc := range providers.ProvidersRegistration.Registry {
+		if provAcc.FinalizeProvider != nil {
+			utils.DebugLog(log, "running provider finalize:", "name", provAcc.Name, "order", provAcc.Order)
+			err := provAcc.FinalizeProvider(&provider)
+			if err != nil {
+				return errors.Wrap(fmt.Sprintf("prov finalize: %s", provAcc.Name), err)
+			}
+			utils.DebugLog(log, "running provider finalize: complete", "name", provAcc.Name, "order", provAcc.Order)
+		}
 	}
 	return nil
 }
@@ -470,7 +484,12 @@ func (r *ClowdEnvironmentReconciler) setAppInfo(p providers.Provider) error {
 	return nil
 }
 
-func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, e *crd.ClowdEnvironment) error {
+func (r *ClowdEnvironmentReconciler) finalizeEnvironment(reqLogger logr.Logger, e *crd.ClowdEnvironment, provider providers.Provider) error {
+
+	err := runProvidersForEnvFinalize(reqLogger, provider)
+	if err != nil {
+		return err
+	}
 
 	if e.Spec.TargetNamespace == "" {
 		namespace := &core.Namespace{}
