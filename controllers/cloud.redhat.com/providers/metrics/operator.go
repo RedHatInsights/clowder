@@ -2,12 +2,10 @@ package metrics
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -16,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -180,12 +179,12 @@ func createSubscription(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error 
 	subObj.SetOwnerReferences([]metav1.OwnerReference{env.MakeOwnerReference()})
 
 	subObj.Spec = &sub.SubscriptionSpec{
-		Channel:             common.StringPtr("beta"),
-		InstallPlanApproval: common.StringPtr("Automatic"),
+		Channel:             utils.StringPtr("beta"),
+		InstallPlanApproval: utils.StringPtr("Automatic"),
 		Name:                "prometheus",
 		Source:              "community-operators",
 		SourceNamespace:     "openshift-marketplace",
-		StartingCSV:         common.StringPtr("prometheusoperator.0.47.0"),
+		StartingCSV:         utils.StringPtr("prometheusoperator.0.47.0"),
 	}
 
 	if err := cache.Update(PrometheusSubscription, subObj); err != nil {

@@ -7,15 +7,13 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
-	osdkutil "github.com/RedHatInsights/rhc-osdk-utils/utils"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -224,9 +222,9 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		Type: "jmxPrometheusExporter",
 		ValueFrom: strimzi.KafkaSpecKafkaMetricsConfigValueFrom{
 			ConfigMapKeyRef: &strimzi.KafkaSpecKafkaMetricsConfigValueFromConfigMapKeyRef{
-				Key:      common.StringPtr("metrics"),
-				Name:     common.StringPtr(cmnn.Name),
-				Optional: common.FalsePtr(),
+				Key:      utils.StringPtr("metrics"),
+				Name:     utils.StringPtr(cmnn.Name),
+				Optional: utils.FalsePtr(),
 			},
 		},
 	}
@@ -787,8 +785,8 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
 			}
 			password := string(kafkaSecret.Data["password"])
 			broker.Sasl.Password = &password
-			broker.Sasl.SecurityProtocol = osdkutil.StringPtr("SASL_SSL")
-			broker.Sasl.SaslMechanism = osdkutil.StringPtr("SCRAM-SHA-512")
+			broker.Sasl.SecurityProtocol = utils.StringPtr("SASL_SSL")
+			broker.Sasl.SaslMechanism = utils.StringPtr("SCRAM-SHA-512")
 		}
 	}
 	return nil
@@ -989,10 +987,10 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
-		k.Spec.Replicas = common.Int32Ptr(maxReplicasInt)
+		k.Spec.Replicas = utils.Int32Ptr(maxReplicasInt)
 		if *k.Spec.Replicas < int32(1) {
 			// if unset, default to 3
-			k.Spec.Replicas = common.Int32Ptr(3)
+			k.Spec.Replicas = utils.Int32Ptr(3)
 		}
 	}
 
@@ -1005,15 +1003,15 @@ func processTopicValues(
 		if err != nil {
 			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
-		k.Spec.Partitions = common.Int32Ptr(maxPartitionsInt)
+		k.Spec.Partitions = utils.Int32Ptr(maxPartitionsInt)
 		if *k.Spec.Partitions < int32(1) {
 			// if unset, default to 3
-			k.Spec.Partitions = common.Int32Ptr(3)
+			k.Spec.Partitions = utils.Int32Ptr(3)
 		}
 	}
 
 	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
-		k.Spec.Replicas = common.Int32Ptr(1)
+		k.Spec.Replicas = utils.Int32Ptr(1)
 	} else if env.Spec.Providers.Kafka.Cluster.Replicas < *k.Spec.Replicas {
 		k.Spec.Replicas = &env.Spec.Providers.Kafka.Cluster.Replicas
 	}

@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -113,7 +113,7 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 
 	// set service account for pod
 	pt.Spec.ServiceAccountName = app.GetClowdSAName()
-	pt.Spec.TerminationGracePeriodSeconds = common.Int64Ptr(30)
+	pt.Spec.TerminationGracePeriodSeconds = utils.Int64Ptr(30)
 	pt.Spec.SecurityContext = &core.PodSecurityContext{}
 	pt.Spec.SchedulerName = "default-scheduler"
 	pt.Spec.DNSPolicy = core.DNSClusterFirst
@@ -144,7 +144,7 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				DefaultMode: common.Int32Ptr(420),
+				DefaultMode: utils.Int32Ptr(420),
 				SecretName:  app.ObjectMeta.Name,
 			},
 		},
@@ -152,9 +152,9 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 
 	for _, vol := range pt.Spec.Volumes {
 		if vol.VolumeSource.ConfigMap != nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
-			vol.VolumeSource.ConfigMap.DefaultMode = common.Int32Ptr(420)
+			vol.VolumeSource.ConfigMap.DefaultMode = utils.Int32Ptr(420)
 		} else if vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
-			vol.VolumeSource.Secret.DefaultMode = common.Int32Ptr(420)
+			vol.VolumeSource.Secret.DefaultMode = utils.Int32Ptr(420)
 		}
 	}
 
@@ -168,8 +168,8 @@ func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJo
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
 
-	utils.UpdateAnnotations(pt, common.KubeLinterAnnotations)
-	utils.UpdateAnnotations(cj, common.KubeLinterAnnotations, app.ObjectMeta.Annotations)
+	utils.UpdateAnnotations(pt, provutils.KubeLinterAnnotations)
+	utils.UpdateAnnotations(cj, provutils.KubeLinterAnnotations, app.ObjectMeta.Annotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
 

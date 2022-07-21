@@ -37,11 +37,11 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
 	jobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/job"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
-
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 // ClowdJobInvocationReconciler reconciles a ClowdJobInvocation object

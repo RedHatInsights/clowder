@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -15,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
@@ -72,7 +71,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
 		},
 	}
-	d.Spec.ProgressDeadlineSeconds = common.Int32Ptr(600)
+	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
 
 	if !deployment.WebServices.Public.Enabled {
 		if deployment.DeploymentStrategy != nil && deployment.DeploymentStrategy.PrivateStrategy != "" {
@@ -223,7 +222,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				DefaultMode: common.Int32Ptr(420),
+				DefaultMode: utils.Int32Ptr(420),
 				SecretName:  app.ObjectMeta.Name,
 			},
 		},
@@ -236,9 +235,9 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			}
 			break
 		} else if vol.VolumeSource.ConfigMap != nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
-			vol.VolumeSource.ConfigMap.DefaultMode = common.Int32Ptr(420)
+			vol.VolumeSource.ConfigMap.DefaultMode = utils.Int32Ptr(420)
 		} else if vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
-			vol.VolumeSource.Secret.DefaultMode = common.Int32Ptr(420)
+			vol.VolumeSource.Secret.DefaultMode = utils.Int32Ptr(420)
 		}
 	}
 

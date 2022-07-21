@@ -4,15 +4,15 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 // applyJob build the k8s job resource and applies it from the Job config
@@ -129,8 +129,8 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		},
 	})
 
-	utils.UpdateAnnotations(&j.Spec.Template, common.KubeLinterAnnotations)
-	utils.UpdateAnnotations(j, common.KubeLinterAnnotations, app.ObjectMeta.Annotations)
+	utils.UpdateAnnotations(&j.Spec.Template, provutils.KubeLinterAnnotations)
+	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations, app.ObjectMeta.Annotations)
 
 	return nil
 }

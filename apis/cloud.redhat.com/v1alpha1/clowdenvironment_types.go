@@ -19,9 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
 
@@ -32,6 +30,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 // WebMode details the mode of operation of the Clowder Web Provider
@@ -601,7 +601,7 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: common.TruePtr(),
+		Controller: utils.TruePtr(),
 	}
 }
 
