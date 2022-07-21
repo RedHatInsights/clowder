@@ -153,7 +153,7 @@ function install_cert_manager {
 }
 
 function install_prometheus_operator {
-    PROM_VERSION=0.45.0
+    PROM_VERSION=0.47.0
     PROM_OPERATOR_NS=default
     PROM_TARFILE="prometheus-operator-${PROM_VERSION}.tar.gz"
 
@@ -294,6 +294,13 @@ function install_keda_operator {
     cd "$ROOT_DIR"
 }
 
+function install_subscription_crd {
+    echo "*** Applying subscription CRD ..."
+    ${KUBECTL_CMD} apply -f $ROOT_DIR/config/crd/static/subscriptions.operators.coreos.com.yaml
+
+    cd "$ROOT_DIR"
+}
+
 install_strimzi_operator
 install_cert_manager
 install_prometheus_operator
@@ -301,6 +308,7 @@ install_cyndi_operator
 install_xjoin_operator
 install_elasticsearch_operator
 install_keda_operator
+install_subscription_crd
 
 FAILURES=0
 if [ ${#BG_PIDS[@]} -gt 0 ]; then

@@ -174,6 +174,10 @@ type WebServices struct {
 // +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
+type DeploymentMetadata struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
 type Deployment struct {
@@ -199,12 +203,16 @@ type Deployment struct {
 	// K8sAccessLevel defines the level of access for this deployment
 	K8sAccessLevel K8sAccessLevel `json:"k8sAccessLevel,omitempty"`
 
-	// AutoScaler defines the configuration for the auto scaler
+	// AutoScaler defines the configuration for the Keda auto scaler
 	AutoScaler *AutoScaler `json:"autoScaler,omitempty"`
+
+	AutoScalerSimple *AutoScalerSimple `json:"autoScalerSimple,omitempty"`
 
 	// DeploymentStrategy allows the deployment strategy to be set only if the
 	// deployment has no public service enabled
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
+
+	Metadata DeploymentMetadata `json:"metadata,omitempty"`
 }
 
 type DeploymentStrategy struct {
@@ -269,6 +277,26 @@ type PodSpec struct {
 
 	// MachinePool allows the pod to be scheduled to a particular machine pool.
 	MachinePool string `json:"machinePool,omitempty"`
+}
+
+// SimpleAutoScalerMetric defines a metric of either a value or utilization
+type SimpleAutoScalerMetric struct {
+	ScaleAtValue       string `json:"scaleAtValue,omitempty"`
+	ScaleAtUtilization int32  `json:"scaleAtUtilization,omitempty"`
+}
+
+// SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the auto scaler
+type SimpleAutoScalerReplicas struct {
+	Min int32 `json:"min"`
+	Max int32 `json:"max"`
+}
+
+// SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+// value and utilization thresholds, along with replica count limits
+type AutoScalerSimple struct {
+	Replicas SimpleAutoScalerReplicas `json:"replicas"`
+	RAM      SimpleAutoScalerMetric   `json:"ram,omitempty"`
+	CPU      SimpleAutoScalerMetric   `json:"cpu,omitempty"`
 }
 
 // AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.

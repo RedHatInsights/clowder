@@ -5,13 +5,18 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (asp *autoscalerProvider) makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.AppConfig) error {
+// CoreAutoScaler is the config that is presented as the cdappconfig.json file.
+var CoreAutoScaler = rc.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
+
+func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider) error {
 	s := &keda.ScaledObject{}
 	nn := app.GetDeploymentNamespacedName(deployment)
 	if err := asp.Cache.Create(CoreAutoScaler, nn, s); err != nil {
@@ -30,6 +35,11 @@ func (asp *autoscalerProvider) makeAutoScalers(deployment *crd.Deployment, app *
 	}
 
 	return nil
+}
+
+func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment crd.Deployment) error {
+	err := makeAutoScalers(&deployment, app, c, asp)
+	return err
 }
 
 func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject, nn types.NamespacedName, deployment *crd.Deployment, c *config.AppConfig) {

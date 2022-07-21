@@ -1,0 +1,80 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-autoscaler-simple
+spec:
+  targetNamespace: test-autoscaler-simple
+  providers:
+    autoScaler:
+      mode: enabled
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    pullSecrets:
+    - name: test-autoscaler-simple-secret
+      namespace: test-autoscaler-simple
+  resourceDefaults:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 40m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-autoscaler-simple
+spec:
+  envName: test-autoscaler-simple
+  deployments:
+  - name: highram
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    autoScalerSimple:
+      replicas:
+        min: 1
+        max: 4
+      ram:
+        scaleAtValue: 1Mi
+  - name: highcpu
+    podSpec:
+      image: quay.io/rh_ee_addrew/highload:latest
+    autoScalerSimple:
+      replicas:
+        min: 1
+        max: 4
+      cpu:
+        scaleAtUtilization: 80
+  - name: nohpa
+    podSpec:
+      image: quay.io/rh_ee_addrew/highload:latest
+---
+apiVersion: v1
+data:
+  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
+  aws_region: dXMtZWFzdA==
+  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
+  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
+  endpoint: dGVzdC1lbmRwb2ludA==
+kind: Secret
+metadata:
+  name: test-autoscaler-simple-secret
+  namespace: test-autoscaler-simple
+type: Opaque

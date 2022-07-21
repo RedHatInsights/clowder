@@ -30,7 +30,7 @@ export PATH="/bins:$PATH"
 chmod 600 minikube-ssh-ident
 
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube delete"
-ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube start --cpus 6 --disk-size 10GB --memory 16000MB --kubernetes-version=1.23.5"
+ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube start --cpus 6 --disk-size 10GB --memory 16000MB --kubernetes-version=1.23.5 --addons=metrics-server --disable-optimizations"
 
 export MINIKUBE_IP=`ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip"`
 
@@ -75,7 +75,6 @@ source build/kube_setup.sh
 export IMAGE_TAG=`git rev-parse --short HEAD`
 
 $KUBECTL_CMD create namespace clowder-system
-$KUBECTL_CMD apply -f clowder-config.yaml -n clowder-system
 
 mkdir artifacts
 
@@ -84,6 +83,10 @@ cat manifest.yaml > artifacts/manifest.yaml
 sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
 
 $KUBECTL_CMD apply -f manifest.yaml --validate=false
+
+## The default generated config isn't quite right for our tests - so we'll create a new one and restart clowder
+$KUBECTL_CMD apply -f clowder-config.yaml -n clowder-system
+$KUBECTL_CMD delete pod -n clowder-system -l operator-name=clowder
 
 # Wait for operator deployment...
 $KUBECTL_CMD rollout status deployment clowder-controller-manager -n clowder-system

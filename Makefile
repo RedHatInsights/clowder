@@ -75,7 +75,7 @@ release: manifests kustomize controller-gen
 	echo "---" >> manifest.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd ../..
-	$(KUSTOMIZE) build config/default >> manifest.yaml
+	$(KUSTOMIZE) build config/release-manifest >> manifest.yaml
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
@@ -159,10 +159,10 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | minikube kubectl -- apply -f -
+	$(KUSTOMIZE) build config/release-manifest | minikube kubectl -- apply -f -
 
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/default | kubectl delete -f -
+	$(KUSTOMIZE) build config/release-manifest | kubectl delete -f -
 
 update-version: ## Updates the version in the image
 	$(shell echo -n $(CLOWDER_VERSION) > controllers/cloud.redhat.com/version.txt)
