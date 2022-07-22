@@ -59,6 +59,11 @@ var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect
 //Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
+const REPLICA_NUM_FLOOR = 3
+const REPLICA_NUM_CEILING = 0
+const PARTITION_NUM_FLOOR = 3
+const PARTITION_NUM_CEILING = 5
+
 func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvider, error) {
 	sec, err := getSecret(provider)
 	if err != nil {
@@ -338,14 +343,7 @@ func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp) error {
 	return nil
 }
 
-func (mep *managedEphemProvider) ephemProcessTopicValues(
-	env *crd.ClowdEnvironment,
-	app *crd.ClowdApp,
-	appList *crd.ClowdAppList,
-	topic crd.KafkaTopicSpec,
-	newTopicName string,
-) error {
-
+func (mep *managedEphemProvider) getAppTopicTopology(appList *crd.ClowdAppList, topic crd.KafkaTopicSpec) (map[string][]string, []string, []string) {
 	keys := map[string][]string{}
 	replicaValList := []string{}
 	partitionValList := []string{}
@@ -369,6 +367,10 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 		}
 	}
 
+	return keys, replicaValList, partitionValList
+}
+
+func (mep *managedEphemProvider) getTopicConfigs(keys map[string][]string) ([]Config, error) {
 	topicConfig := []Config{}
 
 	for key, valList := range keys {
@@ -381,121 +383,161 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 				Value: out,
 			})
 		} else {
-			return errors.New(fmt.Sprintf("no conversion type for %s", key))
+			return topicConfig, errors.New(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
 
-	var replicas int
-	var partitions int
+	return topicConfig, nil
+}
 
-	if len(replicaValList) > 0 {
-		maxReplicas, err := utils.IntMax(replicaValList)
+func (mep *managedEphemProvider) getMaxFromList(list []string, floor int, ceiling int) (int, error) {
+	max := 0
+
+	if len(list) > 0 {
+		maxValue, err := utils.IntMax(list)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
+			return max, errors.New(fmt.Sprintf("could not compute max for %v", list))
 		}
-		maxReplicasInt, err := strconv.Atoi(maxReplicas)
+		maxValInt, err := strconv.Atoi(maxValue)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
+			return max, errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxValInt))
 		}
-		replicas = maxReplicasInt
-		if replicas < 1 {
-			// if unset, default to 3
-			replicas = 3
+		max = maxValInt
+		if max < 1 {
+			max = floor
+		} else if ceiling > 0 && ceiling > floor && max > ceiling {
+			max = ceiling
 		}
 	}
 
-	if len(partitionValList) > 0 {
-		maxPartitions, err := utils.IntMax(partitionValList)
-		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
-		}
-		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
-		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
-		}
-		partitions = maxPartitionsInt
-		if partitions < 1 {
-			// if unset, default to 3
-			partitions = 3
-		} else if partitions > 5 {
-			partitions = 5
-		}
+	return max, nil
+}
+
+func (mep *managedEphemProvider) getTopicSettings(appList *crd.ClowdAppList, topic crd.KafkaTopicSpec, env *crd.ClowdEnvironment) (Settings, error) {
+	settings := Settings{}
+	keys, replicaValList, partitionValList := mep.getAppTopicTopology(appList, topic)
+
+	topicConfig, err := mep.getTopicConfigs(keys)
+	if err != nil {
+		return settings, err
 	}
 
+	replicas, err := mep.getMaxFromList(replicaValList, REPLICA_NUM_FLOOR, REPLICA_NUM_CEILING)
+	if err != nil {
+		return settings, err
+	}
+
+	//Stomp over calculated replica if kafka cluster config is less than 1
+	//or the calculated replicas are greater than the kafka cluster config
 	if env.Spec.Providers.Kafka.Cluster.Replicas < 1 {
 		replicas = 1
 	} else if int(env.Spec.Providers.Kafka.Cluster.Replicas) < replicas {
 		replicas = int(env.Spec.Providers.Kafka.Cluster.Replicas)
 	}
 
-	settings := Settings{
-		NumPartitions: int(partitions),
-		NumReplicas:   int(replicas),
-		Config:        topicConfig,
+	partitions, err := mep.getMaxFromList(partitionValList, PARTITION_NUM_FLOOR, PARTITION_NUM_CEILING)
+	if err != nil {
+		return settings, err
 	}
 
-	resp, err := mep.tokenClient.Get(fmt.Sprintf("%s/api/v1/topics/%s", mep.adminHostname, newTopicName))
+	settings.NumPartitions = partitions
+	settings.NumReplicas = replicas
+	settings.Config = topicConfig
 
+	return settings, nil
+}
+
+func (mep *managedEphemProvider) getTopicFromKafka(newTopicName string) (*http.Response, error) {
+	resp, err := mep.tokenClient.Get(fmt.Sprintf("%s/api/v1/topics/%s", mep.adminHostname, newTopicName))
+	if err != nil {
+		return nil, err
+	}
+	resp.Body.Close()
+	return resp, nil
+}
+
+func (mep *managedEphemProvider) createTopicOnKafka(newTopicName string, settings Settings) error {
+	jsonPayload := JSONPayload{
+		Name:     newTopicName,
+		Settings: settings,
+	}
+
+	buf, err := json.Marshal(jsonPayload)
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
 
-	if resp.StatusCode == 404 {
-		jsonPayload := JSONPayload{
-			Name:     newTopicName,
-			Settings: settings,
-		}
+	r := strings.NewReader(string(buf))
 
-		buf, err := json.Marshal(jsonPayload)
-		if err != nil {
-			return err
-		}
-
-		r := strings.NewReader(string(buf))
-
-		resp, err := mep.tokenClient.Post(fmt.Sprintf("%s/api/v1/topics", mep.adminHostname), "application/json", r)
-
-		if err != nil {
-			return err
-		}
-
-		resp.Body.Close()
-
-		if resp.StatusCode != 200 && resp.StatusCode != 201 {
-			bodyErr, _ := ioutil.ReadAll(resp.Body)
-			return fmt.Errorf(fmt.Sprintf("bad error status code creating %d - %s", resp.StatusCode, bodyErr))
-		}
-	} else {
-		jsonPayload := settings
-
-		buf, err := json.Marshal(jsonPayload)
-		if err != nil {
-			return err
-		}
-
-		r := strings.NewReader(string(buf))
-
-		req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/api/v1/topics/%s", mep.adminHostname, newTopicName), r)
-		if err != nil {
-			return err
-		}
-
-		resp, err := mep.tokenClient.Do(req)
-
-		if err != nil {
-			return err
-		}
-
-		resp.Body.Close()
-
-		if resp.StatusCode != 200 && resp.StatusCode != 201 {
-			bodyErr, _ := ioutil.ReadAll(resp.Body)
-			return fmt.Errorf(fmt.Sprintf("bad error status code updating %d - %s", resp.StatusCode, bodyErr))
-		}
+	resp, err := mep.tokenClient.Post(fmt.Sprintf("%s/api/v1/topics", mep.adminHostname), "application/json", r)
+	if err != nil {
+		return err
 	}
 
+	resp.Body.Close()
+
+	return mep.handleKafkaHTTPError(resp, "bad error status code creating")
+
+}
+
+func (mep *managedEphemProvider) updateTopicOnKafka(newTopicName string, settings Settings) error {
+	jsonPayload := settings
+
+	buf, err := json.Marshal(jsonPayload)
+	if err != nil {
+		return err
+	}
+
+	r := strings.NewReader(string(buf))
+
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/api/v1/topics/%s", mep.adminHostname, newTopicName), r)
+	if err != nil {
+		return err
+	}
+
+	resp, err := mep.tokenClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	resp.Body.Close()
+
+	return mep.handleKafkaHTTPError(resp, "bad error status code updating")
+}
+
+func (mep *managedEphemProvider) handleKafkaHTTPError(resp *http.Response, msg string) error {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		bodyErr, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf(fmt.Sprintf("%s %d - %s", msg, resp.StatusCode, bodyErr))
+	}
 	return nil
+}
+
+func (mep *managedEphemProvider) ephemProcessTopicValues(
+	env *crd.ClowdEnvironment,
+	app *crd.ClowdApp,
+	appList *crd.ClowdAppList,
+	topic crd.KafkaTopicSpec,
+	newTopicName string,
+) error {
+
+	settings, err := mep.getTopicSettings(appList, topic, env)
+	if err != nil {
+		return err
+	}
+
+	resp, err := mep.getTopicFromKafka(newTopicName)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == 404 {
+		err = mep.createTopicOnKafka(newTopicName, settings)
+	} else {
+		err = mep.updateTopicOnKafka(newTopicName, settings)
+	}
+
+	return err
 }
 
 //Client cache provides a mutex protected cache of http clients
