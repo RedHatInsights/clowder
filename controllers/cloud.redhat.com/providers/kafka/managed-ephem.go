@@ -417,6 +417,8 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 		if partitions < 1 {
 			// if unset, default to 3
 			partitions = 3
+		} else if partitions > 5 {
+			partitions = 5
 		}
 	}
 
