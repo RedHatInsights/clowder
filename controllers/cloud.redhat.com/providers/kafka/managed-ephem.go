@@ -54,117 +54,65 @@ type Topic struct {
 // KafkaConnect is the resource ident for a KafkaConnect object.
 var EphemKafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
 
-// KafkaConnect is the resource ident for a KafkaConnect object.
 var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
 
+//Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
 func ephemGetTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment) string {
 	return fmt.Sprintf("%s-%s", env.Name, topic.TopicName)
 }
 
-type managedEphemProvider struct {
-	providers.Provider
-	Config        config.KafkaConfig
-	tokenClient   *http.Client
-	adminHostname string
-	secretData    map[string][]byte
-}
-
-func (s *managedEphemProvider) createConnectSecret() error {
-	nn := types.NamespacedName{
-		Namespace: getConnectNamespace(s.Env),
-		Name:      fmt.Sprintf("%s-connect", getConnectClusterName(s.Env)),
-	}
-
-	k := &core.Secret{}
-	if err := s.Cache.Create(EphemKafkaConnectSecret, nn, k); err != nil {
-		return err
-	}
-
-	k.StringData = map[string]string{
-		"client.secret": string(s.secretData["client.secret"]),
-	}
-
-	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
-	k.SetName(nn.Name)
-	k.SetNamespace(nn.Namespace)
-	k.SetLabels(providers.Labels{"env": s.Env.Name})
-
-	if err := s.Cache.Update(EphemKafkaConnectSecret, k); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *managedEphemProvider) configureKafkaConnectCluster() error {
-
-	var err error
-
-	builder := newKafkaConnectBuilder(s.Provider, s.secretData)
-
-	err = builder.Create()
-	if err != nil {
-		return err
-	}
-
-	err = builder.VerifyEnvLabel()
-	if err != nil {
-		return err
-	}
-
-	builder.BuildSpec()
-
-	return builder.UpdateCache()
-}
-
-func (s *managedEphemProvider) configureBrokers() error {
-	// Look up Kafka cluster's listeners and configure s.Config.Brokers
-	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
-
-	if err := s.createConnectSecret(); err != nil {
-		return errors.Wrap("failed to create kafka connect cluster secret", err)
-	}
-
-	if err := s.configureKafkaConnectCluster(); err != nil {
-		return errors.Wrap("failed to provision kafka connect cluster", err)
-	}
-
-	return nil
-}
-
-// NewStrimzi returns a new strimzi provider object.
-func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, error) {
+func getSecret(p *providers.Provider) (*core.Secret, error) {
 	sec := &core.Secret{}
 	nn := types.NamespacedName{
 		Name:      p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Name,
 		Namespace: p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Namespace,
 	}
 
-	if err := p.Client.Get(p.Ctx, nn, sec); err != nil {
-		return nil, err
-	}
+	err := p.Client.Get(p.Ctx, nn, sec)
 
+	return sec, err
+}
+
+func destructureSecret(sec *core.Secret) (string, string, string, string, string) {
 	username := string(sec.Data["client.id"])
 	password := string(sec.Data["client.secret"])
 	hostname := string(sec.Data["hostname"])
 	adminHostname := string(sec.Data["admin.url"])
+	tokenURL := string(sec.Data["token.url"])
+	return username, password, hostname, adminHostname, tokenURL
+}
 
-	if _, ok := ClientCache.Get(adminHostname); !ok {
-		oauthClientConfig := clientcredentials.Config{
-			ClientID:     username,
-			ClientSecret: password,
-			TokenURL:     string(sec.Data["token.url"]),
-			Scopes:       []string{"openid api.iam.service_accounts"},
-		}
-		client := oauthClientConfig.Client(p.Ctx)
+func upsertClientCache(username string, password string, tokenURL string, adminHostname string, provider *providers.Provider) *http.Client {
+	httpClient, ok := ClientCache.Get(adminHostname)
+	if ok {
+		return httpClient
+	}
+	oauthClientConfig := clientcredentials.Config{
+		ClientID:     username,
+		ClientSecret: password,
+		TokenURL:     tokenURL,
+		Scopes:       []string{"openid api.iam.service_accounts"},
+	}
+	client := oauthClientConfig.Client(provider.Ctx)
 
-		ClientCache.Set(adminHostname, client)
+	ClientCache.Set(adminHostname, client)
+
+	return client
+}
+
+func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvider, error) {
+	sec, err := getSecret(provider)
+	if err != nil {
+		return nil, err
 	}
 
+	username, password, hostname, adminHostname, tokenURL := destructureSecret(sec)
+
+	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, provider)
+
 	saslType := config.BrokerConfigAuthtypeSasl
-	cachedAdminHostname, _ := ClientCache.Get(adminHostname)
 	kafkaProvider := &managedEphemProvider{
 		Provider: *p,
 		Config: config.KafkaConfig{
@@ -181,8 +129,8 @@ func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, err
 			}},
 			Topics: []config.TopicConfig{},
 		},
-		tokenClient:   cachedAdminHostname,
-		adminHostname: string(sec.Data["admin.url"]),
+		tokenClient:   httpClient,
+		adminHostname: adminHostname,
 		secretData:    sec.Data,
 	}
 
@@ -262,43 +210,120 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 	return nil
 }
 
-func (s *managedEphemProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	if app.Spec.Cyndi.Enabled {
-		err := createCyndiPipeline(
-			s.Ctx, s.Client, s.Cache, app, s.Env, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
-		)
-		if err != nil {
-			return err
-		}
+type managedEphemProvider struct {
+	providers.Provider
+	Config        config.KafkaConfig
+	tokenClient   *http.Client
+	adminHostname string
+	secretData    map[string][]byte
+}
+
+func (mep *managedEphemProvider) createConnectSecret() error {
+	nn := types.NamespacedName{
+		Namespace: getConnectNamespace(mep.Env),
+		Name:      fmt.Sprintf("%s-connect", getConnectClusterName(mep.Env)),
+	}
+
+	secret := &core.Secret{}
+	if err := mep.Cache.Create(EphemKafkaConnectSecret, nn, secret); err != nil {
+		return err
+	}
+
+	secret.StringData = map[string]string{
+		"client.secret": string(mep.secretData["client.secret"]),
+	}
+
+	secret.SetOwnerReferences([]metav1.OwnerReference{mep.Env.MakeOwnerReference()})
+	secret.SetName(nn.Name)
+	secret.SetNamespace(nn.Namespace)
+	secret.SetLabels(providers.Labels{"env": mep.Env.Name})
+
+	if err := mep.Cache.Update(EphemKafkaConnectSecret, secret); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (mep *managedEphemProvider) configureKafkaConnectCluster() error {
+
+	var err error
+
+	builder := newKafkaConnectBuilder(mep.Provider, mep.secretData)
+
+	err = builder.Create()
+	if err != nil {
+		return err
+	}
+
+	err = builder.VerifyEnvLabel()
+	if err != nil {
+		return err
+	}
+
+	builder.BuildSpec()
+
+	return builder.UpdateCache()
+}
+
+func (mep *managedEphemProvider) configureBrokers() error {
+	// Look up Kafka cluster's listeners and configuremep.Config.Brokers
+	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
+
+	if err := mep.createConnectSecret(); err != nil {
+		return errors.Wrap("failed to create kafka connect cluster secret", err)
+	}
+
+	if err := mep.configureKafkaConnectCluster(); err != nil {
+		return errors.Wrap("failed to provision kafka connect cluster", err)
+	}
+
+	return nil
+}
+
+func (mep *managedEphemProvider) createCyndiPipeline(app *crd.ClowdApp) error {
+	if !app.Spec.Cyndi.Enabled {
+		return nil
+	}
+	err := createCyndiPipeline(
+		mep.Ctx, mep.Client, mep.Cache, app, mep.Env, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env),
+	)
+	return err
+}
+
+func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
+
+	if err := mep.createCyndiPipeline(app); err != nil {
+		return err
 	}
 
 	if len(app.Spec.KafkaTopics) == 0 {
 		return nil
 	}
 
-	if err := s.processTopics(app); err != nil {
+	if err := mep.processTopics(app); err != nil {
 		return err
 	}
 
 	// set our provider's config on the AppConfig
-	c.Kafka = &s.Config
+	appConfig.Kafka = &mep.Config
 
 	return nil
 }
 
-func (s *managedEphemProvider) processTopics(app *crd.ClowdApp) error {
+func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp) error {
 	topicConfig := []config.TopicConfig{}
 
-	appList, err := s.Env.GetAppsInEnv(s.Ctx, s.Client)
+	appList, err := mep.Env.GetAppsInEnv(mep.Ctx, mep.Client)
 
 	if err != nil {
 		return errors.Wrap("Topic creation failed: Error listing apps", err)
 	}
 
 	for _, topic := range app.Spec.KafkaTopics {
-		topicName := ephemGetTopicName(topic, *s.Env)
+		topicName := ephemGetTopicName(topic, *mep.Env)
 
-		err := s.ephemProcessTopicValues(s.Env, app, appList, topic, topicName)
+		err := mep.ephemProcessTopicValues(mep.Env, app, appList, topic, topicName)
 
 		if err != nil {
 			return err
@@ -310,12 +335,12 @@ func (s *managedEphemProvider) processTopics(app *crd.ClowdApp) error {
 		)
 	}
 
-	s.Config.Topics = topicConfig
+	mep.Config.Topics = topicConfig
 
 	return nil
 }
 
-func (s *managedEphemProvider) ephemProcessTopicValues(
+func (mep *managedEphemProvider) ephemProcessTopicValues(
 	env *crd.ClowdEnvironment,
 	app *crd.ClowdApp,
 	appList *crd.ClowdAppList,
@@ -409,7 +434,7 @@ func (s *managedEphemProvider) ephemProcessTopicValues(
 		Config:        topicConfig,
 	}
 
-	resp, err := s.tokenClient.Get(fmt.Sprintf("%s/api/v1/topics/%s", s.adminHostname, newTopicName))
+	resp, err := mep.tokenClient.Get(fmt.Sprintf("%s/api/v1/topics/%s", mep.adminHostname, newTopicName))
 
 	if err != nil {
 		return err
@@ -429,7 +454,7 @@ func (s *managedEphemProvider) ephemProcessTopicValues(
 
 		r := strings.NewReader(string(buf))
 
-		resp, err := s.tokenClient.Post(fmt.Sprintf("%s/api/v1/topics", s.adminHostname), "application/json", r)
+		resp, err := mep.tokenClient.Post(fmt.Sprintf("%s/api/v1/topics", mep.adminHostname), "application/json", r)
 
 		if err != nil {
 			return err
@@ -451,12 +476,12 @@ func (s *managedEphemProvider) ephemProcessTopicValues(
 
 		r := strings.NewReader(string(buf))
 
-		req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/api/v1/topics/%s", s.adminHostname, newTopicName), r)
+		req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/api/v1/topics/%s", mep.adminHostname, newTopicName), r)
 		if err != nil {
 			return err
 		}
 
-		resp, err := s.tokenClient.Do(req)
+		resp, err := mep.tokenClient.Do(req)
 
 		if err != nil {
 			return err
