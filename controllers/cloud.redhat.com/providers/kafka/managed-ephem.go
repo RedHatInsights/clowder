@@ -59,49 +59,6 @@ var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect
 //Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
-func ephemGetTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment) string {
-	return fmt.Sprintf("%s-%s", env.Name, topic.TopicName)
-}
-
-func getSecret(p *providers.Provider) (*core.Secret, error) {
-	sec := &core.Secret{}
-	nn := types.NamespacedName{
-		Name:      p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Name,
-		Namespace: p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Namespace,
-	}
-
-	err := p.Client.Get(p.Ctx, nn, sec)
-
-	return sec, err
-}
-
-func destructureSecret(sec *core.Secret) (string, string, string, string, string) {
-	username := string(sec.Data["client.id"])
-	password := string(sec.Data["client.secret"])
-	hostname := string(sec.Data["hostname"])
-	adminHostname := string(sec.Data["admin.url"])
-	tokenURL := string(sec.Data["token.url"])
-	return username, password, hostname, adminHostname, tokenURL
-}
-
-func upsertClientCache(username string, password string, tokenURL string, adminHostname string, provider *providers.Provider) *http.Client {
-	httpClient, ok := ClientCache.Get(adminHostname)
-	if ok {
-		return httpClient
-	}
-	oauthClientConfig := clientcredentials.Config{
-		ClientID:     username,
-		ClientSecret: password,
-		TokenURL:     tokenURL,
-		Scopes:       []string{"openid api.iam.service_accounts"},
-	}
-	client := oauthClientConfig.Client(provider.Ctx)
-
-	ClientCache.Set(adminHostname, client)
-
-	return client
-}
-
 func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvider, error) {
 	sec, err := getSecret(provider)
 	if err != nil {
@@ -114,7 +71,7 @@ func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvid
 
 	saslType := config.BrokerConfigAuthtypeSasl
 	kafkaProvider := &managedEphemProvider{
-		Provider: *p,
+		Provider: *provider,
 		Config: config.KafkaConfig{
 			Brokers: []config.BrokerConfig{{
 				Hostname: hostname,
@@ -142,50 +99,26 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 		return nil
 	}
 
-	sec := &core.Secret{}
-	nn := types.NamespacedName{
-		Name:      p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Name,
-		Namespace: p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Namespace,
-	}
-
-	if err := p.Client.Get(p.Ctx, nn, sec); err != nil {
-		return err
-	}
-
-	username := string(sec.Data["client.id"])
-	password := string(sec.Data["client.secret"])
-	adminHostname := string(sec.Data["admin.url"])
-
-	if _, ok := ClientCache.Get(adminHostname); !ok {
-		oauthClientConfig := clientcredentials.Config{
-			ClientID:     username,
-			ClientSecret: password,
-			TokenURL:     string(sec.Data["token.url"]),
-			Scopes:       []string{"openid api.iam.service_accounts"},
-		}
-		client := oauthClientConfig.Client(p.Ctx)
-
-		ClientCache.Set(adminHostname, client)
-	}
-
-	rClient, _ := ClientCache.Get(adminHostname)
-	path := url.PathEscape(fmt.Sprintf("size=1000&filter=%s.*", p.Env.GetName()))
-	url := fmt.Sprintf("%s/api/v1/topics?%s", adminHostname, path)
-	resp, err := rClient.Get(url)
-
+	sec, err := getSecret(p)
 	if err != nil {
 		return err
 	}
 
-	jsonData, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	username, password, _, adminHostname, tokenURL := destructureSecret(sec)
+
+	rClient := upsertClientCache(username, password, tokenURL, adminHostname, p)
+
+	topicList, err := getTopicList(rClient, adminHostname, p)
 	if err != nil {
 		return err
 	}
 
-	topicList := &TopicsList{}
-	json.Unmarshal(jsonData, topicList)
+	err = deleteTopics(topicList, rClient, adminHostname, p)
 
+	return err
+}
+
+func deleteTopics(topicList *TopicsList, rClient *http.Client, adminHostname string, p *providers.Provider) error {
 	for _, topic := range topicList.Items {
 		if strings.HasPrefix(topic.Name, p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix) {
 			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/topics/%s", adminHostname, topic.Name), nil)
@@ -208,6 +141,71 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 		}
 	}
 	return nil
+}
+
+func destructureSecret(sec *core.Secret) (string, string, string, string, string) {
+	username := string(sec.Data["client.id"])
+	password := string(sec.Data["client.secret"])
+	hostname := string(sec.Data["hostname"])
+	adminHostname := string(sec.Data["admin.url"])
+	tokenURL := string(sec.Data["token.url"])
+	return username, password, hostname, adminHostname, tokenURL
+}
+
+func ephemGetTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment) string {
+	return fmt.Sprintf("%s-%s", env.Name, topic.TopicName)
+}
+
+func getSecret(p *providers.Provider) (*core.Secret, error) {
+	sec := &core.Secret{}
+	nn := types.NamespacedName{
+		Name:      p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Name,
+		Namespace: p.Env.Spec.Providers.Kafka.EphemManagedSecretRef.Namespace,
+	}
+
+	err := p.Client.Get(p.Ctx, nn, sec)
+
+	return sec, err
+}
+
+func getTopicList(rClient *http.Client, adminHostname string, p *providers.Provider) (*TopicsList, error) {
+	topicList := &TopicsList{}
+
+	path := url.PathEscape(fmt.Sprintf("size=1000&filter=%s.*", p.Env.GetName()))
+	url := fmt.Sprintf("%s/api/v1/topics?%s", adminHostname, path)
+	resp, err := rClient.Get(url)
+
+	if err != nil {
+		return topicList, err
+	}
+
+	jsonData, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return topicList, err
+	}
+
+	json.Unmarshal(jsonData, topicList)
+
+	return topicList, nil
+}
+
+func upsertClientCache(username string, password string, tokenURL string, adminHostname string, provider *providers.Provider) *http.Client {
+	httpClient, ok := ClientCache.Get(adminHostname)
+	if ok {
+		return httpClient
+	}
+	oauthClientConfig := clientcredentials.Config{
+		ClientID:     username,
+		ClientSecret: password,
+		TokenURL:     tokenURL,
+		Scopes:       []string{"openid api.iam.service_accounts"},
+	}
+	client := oauthClientConfig.Client(provider.Ctx)
+
+	ClientCache.Set(adminHostname, client)
+
+	return client
 }
 
 type managedEphemProvider struct {
