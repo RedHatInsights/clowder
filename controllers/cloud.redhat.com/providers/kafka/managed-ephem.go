@@ -27,18 +27,20 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-// KafkaConnect is the resource ident for a KafkaConnect object.
-var EphemKafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
+type JSONPayload struct {
+	Name     string   `json:"name"`
+	Settings Settings `json:"settings"`
+}
 
-// KafkaConnect is the resource ident for a KafkaConnect object.
-var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
+type Settings struct {
+	NumPartitions int      `json:"numPartitions"`
+	NumReplicas   int      `json:"numReplicas"`
+	Config        []Config `json:"config"`
+}
 
-type managedEphemProvider struct {
-	providers.Provider
-	Config        config.KafkaConfig
-	tokenClient   *http.Client
-	adminHostname string
-	secretData    map[string][]byte
+type Config struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type TopicsList struct {
@@ -47,6 +49,26 @@ type TopicsList struct {
 
 type Topic struct {
 	Name string `json:"name"`
+}
+
+// KafkaConnect is the resource ident for a KafkaConnect object.
+var EphemKafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
+
+// KafkaConnect is the resource ident for a KafkaConnect object.
+var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
+
+var ClientCache = newHTTPClientCahce()
+
+func ephemGetTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment) string {
+	return fmt.Sprintf("%s-%s", env.Name, topic.TopicName)
+}
+
+type managedEphemProvider struct {
+	providers.Provider
+	Config        config.KafkaConfig
+	tokenClient   *http.Client
+	adminHostname string
+	secretData    map[string][]byte
 }
 
 func (s *managedEphemProvider) createConnectSecret() error {
@@ -112,28 +134,6 @@ func (s *managedEphemProvider) configureBrokers() error {
 	return nil
 }
 
-var clientCache = map[string]*http.Client{}
-
-var ccmu sync.RWMutex
-
-func SetCache(hostname string, client *http.Client) {
-	ccmu.Lock()
-	defer ccmu.Unlock()
-	clientCache[hostname] = client
-}
-
-func ReleaseCache(hostname string) {
-	ccmu.Lock()
-	defer ccmu.Unlock()
-	delete(clientCache, hostname)
-}
-
-func ReadCache(hostname string) *http.Client {
-	ccmu.RLock()
-	defer ccmu.RUnlock()
-	return clientCache[hostname]
-}
-
 // NewStrimzi returns a new strimzi provider object.
 func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	sec := &core.Secret{}
@@ -151,7 +151,7 @@ func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, err
 	hostname := string(sec.Data["hostname"])
 	adminHostname := string(sec.Data["admin.url"])
 
-	if _, ok := clientCache[adminHostname]; !ok {
+	if _, ok := ClientCache.Get(adminHostname); !ok {
 		oauthClientConfig := clientcredentials.Config{
 			ClientID:     username,
 			ClientSecret: password,
@@ -160,10 +160,11 @@ func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, err
 		}
 		client := oauthClientConfig.Client(p.Ctx)
 
-		SetCache(adminHostname, client)
+		ClientCache.Set(adminHostname, client)
 	}
 
 	saslType := config.BrokerConfigAuthtypeSasl
+	cachedAdminHostname, _ := ClientCache.Get(adminHostname)
 	kafkaProvider := &managedEphemProvider{
 		Provider: *p,
 		Config: config.KafkaConfig{
@@ -180,7 +181,7 @@ func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, err
 			}},
 			Topics: []config.TopicConfig{},
 		},
-		tokenClient:   ReadCache(adminHostname),
+		tokenClient:   cachedAdminHostname,
 		adminHostname: string(sec.Data["admin.url"]),
 		secretData:    sec.Data,
 	}
@@ -207,7 +208,7 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 	password := string(sec.Data["client.secret"])
 	adminHostname := string(sec.Data["admin.url"])
 
-	if _, ok := clientCache[adminHostname]; !ok {
+	if _, ok := ClientCache.Get(adminHostname); !ok {
 		oauthClientConfig := clientcredentials.Config{
 			ClientID:     username,
 			ClientSecret: password,
@@ -216,10 +217,10 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 		}
 		client := oauthClientConfig.Client(p.Ctx)
 
-		SetCache(adminHostname, client)
+		ClientCache.Set(adminHostname, client)
 	}
 
-	rClient := ReadCache(adminHostname)
+	rClient, _ := ClientCache.Get(adminHostname)
 	path := url.PathEscape(fmt.Sprintf("size=1000&filter=%s.*", p.Env.GetName()))
 	url := fmt.Sprintf("%s/api/v1/topics?%s", adminHostname, path)
 	resp, err := rClient.Get(url)
@@ -312,10 +313,6 @@ func (s *managedEphemProvider) processTopics(app *crd.ClowdApp) error {
 	s.Config.Topics = topicConfig
 
 	return nil
-}
-
-func ephemGetTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment) string {
-	return fmt.Sprintf("%s-%s", env.Name, topic.TopicName)
 }
 
 func (s *managedEphemProvider) ephemProcessTopicValues(
@@ -476,20 +473,44 @@ func (s *managedEphemProvider) ephemProcessTopicValues(
 	return nil
 }
 
-type JSONPayload struct {
-	Name     string   `json:"name"`
-	Settings Settings `json:"settings"`
+//Client cache provides a mutex protected cache of http clients
+type HTTPClientCache struct {
+	cache map[string]*http.Client
+	mutex sync.RWMutex
 }
 
-type Settings struct {
-	NumPartitions int      `json:"numPartitions"`
-	NumReplicas   int      `json:"numReplicas"`
-	Config        []Config `json:"config"`
+func newHTTPClientCahce() HTTPClientCache {
+	return HTTPClientCache{
+		cache: map[string]*http.Client{},
+		mutex: sync.RWMutex{},
+	}
 }
 
-type Config struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+func (cc *HTTPClientCache) Get(hostname string) (*http.Client, bool) {
+	cc.mutex.RLock()
+	defer cc.mutex.RUnlock()
+	val, ok := cc.cache[hostname]
+	return val, ok
+}
+
+func (cc *HTTPClientCache) Remove(hostname string) {
+	cc.mutex.Lock()
+	defer cc.mutex.Unlock()
+	delete(cc.cache, hostname)
+}
+
+func (cc *HTTPClientCache) Set(hostname string, client *http.Client) {
+	cc.mutex.Lock()
+	defer cc.mutex.Unlock()
+	cc.cache[hostname] = client
+}
+
+//KafkaConnectBuilder manages the creation of KafkaConnect resources
+type KafkaConnectBuilder struct {
+	providers.Provider
+	kafkaConnect   *strimzi.KafkaConnect
+	namespacedName types.NamespacedName
+	secretData     map[string][]byte
 }
 
 func newKafkaConnectBuilder(provider providers.Provider, secretData map[string][]byte) KafkaConnectBuilder {
@@ -499,11 +520,59 @@ func newKafkaConnectBuilder(provider providers.Provider, secretData map[string][
 	}
 }
 
-type KafkaConnectBuilder struct {
-	providers.Provider
-	kafkaConnect   *strimzi.KafkaConnect
-	namespacedName types.NamespacedName
-	secretData     map[string][]byte
+func (kcb *KafkaConnectBuilder) BuildSpec() {
+	replicas := kcb.getReplicas()
+	version := kcb.getVersion()
+	image := kcb.getImage()
+	kcb.kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
+		Replicas:         &replicas,
+		BootstrapServers: kcb.getSecret("hostname"),
+		Version:          &version,
+		Config:           kcb.getSpecConfig(),
+		Image:            &image,
+		Resources: &strimzi.KafkaConnectSpecResources{
+			Requests: kcb.getRequests(),
+			Limits:   kcb.getLimits(),
+		},
+		Authentication: &strimzi.KafkaConnectSpecAuthentication{
+			ClientId: kcb.getSecretPtr("client.id"),
+			ClientSecret: &strimzi.KafkaConnectSpecAuthenticationClientSecret{
+				Key:        "client.secret",
+				SecretName: fmt.Sprintf("%s-connect", getConnectClusterName(kcb.Env)),
+			},
+			Type:             "oauth",
+			TokenEndpointUri: kcb.getSecretPtr("token.url"),
+		},
+		Tls: &strimzi.KafkaConnectSpecTls{
+			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{},
+		},
+	}
+	kcb.setTLSAndAuthentication()
+	kcb.setAnnotations()
+}
+
+func (kcb *KafkaConnectBuilder) Create() error {
+	kcb.kafkaConnect = &strimzi.KafkaConnect{}
+	err := kcb.Cache.Create(KafkaConnect, kcb.getNamespacedName(), kcb.kafkaConnect)
+	return err
+}
+
+func (kcb *KafkaConnectBuilder) UpdateCache() error {
+	return kcb.Cache.Update(KafkaConnect, kcb.kafkaConnect)
+}
+
+// ensure that connect cluster of kcb same name but labelled for different env does not exist
+func (kcb *KafkaConnectBuilder) VerifyEnvLabel() error {
+	if envLabel, ok := kcb.kafkaConnect.GetLabels()["env"]; ok {
+		if envLabel != kcb.Env.Name {
+			nn := kcb.getNamespacedName()
+			return fmt.Errorf(
+				"kafka connect cluster named '%s' found in ns '%s' but tied to env '%s'",
+				nn.Name, nn.Namespace, envLabel,
+			)
+		}
+	}
+	return nil
 }
 
 func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
@@ -551,13 +620,7 @@ func (kcb *KafkaConnectBuilder) getResourceSpec(field *apiextensions.JSON, defau
 	return &defaults
 }
 
-func (kcb *KafkaConnectBuilder) Create() error {
-	kcb.kafkaConnect = &strimzi.KafkaConnect{}
-	err := kcb.Cache.Create(KafkaConnect, kcb.GetNamespacedName(), kcb.kafkaConnect)
-	return err
-}
-
-func (kcb *KafkaConnectBuilder) GetNamespacedName() types.NamespacedName {
+func (kcb *KafkaConnectBuilder) getNamespacedName() types.NamespacedName {
 	if kcb.namespacedName.Name == "" || kcb.kafkaConnect.Namespace == "" {
 		kcb.namespacedName = types.NamespacedName{
 			Namespace: getConnectNamespace(kcb.Env),
@@ -565,20 +628,6 @@ func (kcb *KafkaConnectBuilder) GetNamespacedName() types.NamespacedName {
 		}
 	}
 	return kcb.namespacedName
-}
-
-// ensure that connect cluster of kcb same name but labelled for different env does not exist
-func (kcb *KafkaConnectBuilder) VerifyEnvLabel() error {
-	if envLabel, ok := kcb.kafkaConnect.GetLabels()["env"]; ok {
-		if envLabel != kcb.Env.Name {
-			nn := kcb.GetNamespacedName()
-			return fmt.Errorf(
-				"kafka connect cluster named '%s' found in ns '%s' but tied to env '%s'",
-				nn.Name, nn.Namespace, envLabel,
-			)
-		}
-	}
-	return nil
 }
 
 func (kcb *KafkaConnectBuilder) getReplicas() int32 {
@@ -611,37 +660,6 @@ func (kcb *KafkaConnectBuilder) getSecret(secret string) string {
 
 func (kcb *KafkaConnectBuilder) getSecretPtr(secret string) *string {
 	return common.StringPtr(kcb.getSecret(secret))
-}
-
-func (kcb *KafkaConnectBuilder) BuildSpec() {
-	replicas := kcb.getReplicas()
-	version := kcb.getVersion()
-	image := kcb.getImage()
-	kcb.kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
-		Replicas:         &replicas,
-		BootstrapServers: kcb.getSecret("hostname"),
-		Version:          &version,
-		Config:           kcb.getSpecConfig(),
-		Image:            &image,
-		Resources: &strimzi.KafkaConnectSpecResources{
-			Requests: kcb.getRequests(),
-			Limits:   kcb.getLimits(),
-		},
-		Authentication: &strimzi.KafkaConnectSpecAuthentication{
-			ClientId: kcb.getSecretPtr("client.id"),
-			ClientSecret: &strimzi.KafkaConnectSpecAuthenticationClientSecret{
-				Key:        "client.secret",
-				SecretName: fmt.Sprintf("%s-connect", getConnectClusterName(kcb.Env)),
-			},
-			Type:             "oauth",
-			TokenEndpointUri: kcb.getSecretPtr("token.url"),
-		},
-		Tls: &strimzi.KafkaConnectSpecTls{
-			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{},
-		},
-	}
-	kcb.setTLSAndAuthentication()
-	kcb.setAnnotations()
 }
 
 func (kcb *KafkaConnectBuilder) setTLSAndAuthentication() {
@@ -678,8 +696,4 @@ func (kcb *KafkaConnectBuilder) setAnnotations() {
 	kcb.kafkaConnect.SetName(getConnectClusterName(kcb.Env))
 	kcb.kafkaConnect.SetNamespace(getConnectNamespace(kcb.Env))
 	kcb.kafkaConnect.SetLabels(providers.Labels{"env": kcb.Env.Name})
-}
-
-func (kcb *KafkaConnectBuilder) UpdateCache() error {
-	return kcb.Cache.Update(KafkaConnect, kcb.kafkaConnect)
 }
