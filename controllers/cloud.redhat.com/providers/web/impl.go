@@ -10,7 +10,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -18,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {

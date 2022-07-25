@@ -10,7 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	apps "k8s.io/api/apps/v1"
@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 // MinioDeployment is the resource ident for the Minio deployment object.
@@ -209,7 +210,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func createNetworkPolicy(p *providers.Provider) error {
-	clowderNs, err := utils.GetClowderNamespace()
+	clowderNs, err := provutils.GetClowderNamespace()
 
 	if err != nil {
 		return nil

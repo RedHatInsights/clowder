@@ -20,6 +20,7 @@ type ClowdObject interface {
 	GetPrimaryLabel() string
 	GroupVersionKind() schema.GroupVersionKind
 	GetNamespacesInEnv(context.Context, client.Client) ([]string, error)
+	client.Object
 }
 
 // LabeledClowdObject is used to be able to treat ClowdEnv and ClowdApp as the same type

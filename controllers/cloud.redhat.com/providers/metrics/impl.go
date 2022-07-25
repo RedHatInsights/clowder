@@ -7,7 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	webProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, port int32) error {

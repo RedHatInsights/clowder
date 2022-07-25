@@ -17,8 +17,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
@@ -174,6 +174,10 @@ type WebServices struct {
 // +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
+type DeploymentMetadata struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
 // Deployment defines a service running inside a ClowdApp and will output a deployment resource.
 // Only one container per pod is allowed and this is defined in the PodSpec attribute.
 type Deployment struct {
@@ -207,6 +211,8 @@ type Deployment struct {
 	// DeploymentStrategy allows the deployment strategy to be set only if the
 	// deployment has no public service enabled
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
+
+	Metadata DeploymentMetadata `json:"metadata,omitempty"`
 }
 
 type DeploymentStrategy struct {
@@ -531,7 +537,7 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: common.TruePtr(),
+		Controller: utils.TruePtr(),
 	}
 }
 

@@ -12,11 +12,11 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/featureflags"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/inmemorydb"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/objectstore"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type serviceaccountProvider struct {
