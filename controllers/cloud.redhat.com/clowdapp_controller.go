@@ -65,11 +65,13 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
@@ -457,7 +459,7 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 	updateMetadata(a, &c)
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
-		utils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
+		provutils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
 		prov, err := provAcc.SetupProvider(provider)
 		elapsed := time.Since(start).Seconds()
@@ -474,7 +476,7 @@ func (r *ClowdAppReconciler) runProviders(log logr.Logger, provider *providers.P
 			reterr.Requeue = true
 			return reterr
 		}
-		utils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
+		provutils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}
 
 	return nil

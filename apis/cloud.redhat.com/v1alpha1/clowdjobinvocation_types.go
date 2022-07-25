@@ -23,12 +23,12 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type JobConditionState string
@@ -190,7 +190,7 @@ func (i *ClowdJobInvocation) MakeOwnerReference() metav1.OwnerReference {
 		Kind:       i.Kind,
 		Name:       i.ObjectMeta.Name,
 		UID:        i.ObjectMeta.UID,
-		Controller: common.TruePtr(),
+		Controller: utils.TruePtr(),
 	}
 }
 

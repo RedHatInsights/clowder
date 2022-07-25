@@ -5,8 +5,9 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 	core "k8s.io/api/core/v1"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type TestSecrets struct {

@@ -2,21 +2,23 @@ package providers
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	"github.com/go-logr/logr"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 var IMAGE_CADDY_SIDECAR_DEFAULT = "quay.io/cloudservices/crc-caddy-plugin:eaed6c2"
@@ -63,7 +65,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		}
 	}
 
-	dd.Spec.Replicas = common.Int32Ptr(1)
+	dd.Spec.Replicas = utils.Int32Ptr(1)
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
 		{
@@ -215,4 +217,26 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 		return env.Spec.Providers.Web.KeycloakVersion
 	}
 	return KEYCLOAK_VERSION_DEFAULT
+}
+
+func GetClowderNamespace() (string, error) {
+	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+
+	// CLOBBER the error here as this is our default
+	if err != nil {
+		return "clowder-system", nil
+	}
+
+	return string(clowderNsB), nil
+}
+
+func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
+	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
+		logger.Info(msg, keysAndValues...)
+	}
+}
+
+var KubeLinterAnnotations = map[string]string{
+	"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
+	"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
 }

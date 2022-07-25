@@ -57,9 +57,8 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
-
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -70,6 +69,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 var mu sync.RWMutex
@@ -339,7 +340,7 @@ func setPrometheusStatus(env *crd.ClowdEnvironment) {
 
 func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
-		utils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
+		provutils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
 		_, err := provAcc.SetupProvider(&provider)
 		elapsed := time.Since(start).Seconds()
@@ -347,7 +348,7 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
-		utils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
+		provutils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}
 	return nil
 }

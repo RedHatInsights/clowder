@@ -8,12 +8,12 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/serviceaccount"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type pullsecretProvider struct {

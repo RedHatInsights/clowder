@@ -296,7 +296,7 @@ function install_keda_operator {
 
 function install_subscription_crd {
     echo "*** Applying subscription CRD ..."
-    ${KUBECTL_CMD} apply -f $ROOT_DIR/config/crd/static/subscriptions.operators.coreos.com.yaml
+    ${KUBECTL_CMD} apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/config/crd/static/subscriptions.operators.coreos.com.yaml
 
     cd "$ROOT_DIR"
 }

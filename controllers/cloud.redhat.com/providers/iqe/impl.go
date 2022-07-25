@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -16,11 +15,12 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 var IMAGE_IQE_SELENIUM = "quay.io/redhatqe/selenium-standalone"
@@ -160,7 +160,7 @@ func attachConfigVolumes(c *core.Container, cache *rc.ObjectCache, cji *crd.Clow
 			Name: "cdenvconfig",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: common.Int32Ptr(420),
+					DefaultMode: utils.Int32Ptr(420),
 					SecretName:  secretName,
 				},
 			},
@@ -179,7 +179,7 @@ func attachConfigVolumes(c *core.Container, cache *rc.ObjectCache, cji *crd.Clow
 			Name: "config-secret",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: common.Int32Ptr(420),
+					DefaultMode: utils.Int32Ptr(420),
 					SecretName:  cji.Spec.AppName,
 				},
 			},
@@ -203,7 +203,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	j.Spec.Template.ObjectMeta.Labels = labels
 
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
-	j.Spec.BackoffLimit = common.Int32Ptr(0)
+	j.Spec.BackoffLimit = utils.Int32Ptr(0)
 
 	// set service account for pod
 	j.Spec.Template.Spec.ServiceAccountName = fmt.Sprintf("iqe-%s", app.Spec.EnvName)
@@ -239,8 +239,8 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 
 	j.Spec.Template.Spec.Containers = containers
 
-	utils.UpdateAnnotations(&j.Spec.Template, common.KubeLinterAnnotations)
-	utils.UpdateAnnotations(j, common.KubeLinterAnnotations)
+	utils.UpdateAnnotations(&j.Spec.Template, provutils.KubeLinterAnnotations)
+	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations)
 
 	return nil
 }
