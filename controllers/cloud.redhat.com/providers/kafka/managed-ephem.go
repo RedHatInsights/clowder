@@ -11,20 +11,21 @@ import (
 	"sync"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1/common"
+
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
+
 	core "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type JSONPayload struct {
@@ -85,8 +86,8 @@ func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvid
 				Sasl: &config.KafkaSASLConfig{
 					Password:         &password,
 					Username:         &username,
-					SecurityProtocol: common.StringPtr("SASL_SSL"),
-					SaslMechanism:    common.StringPtr("PLAIN"),
+					SecurityProtocol: utils.StringPtr("SASL_SSL"),
+					SaslMechanism:    utils.StringPtr("PLAIN"),
 				},
 			}},
 			Topics: []config.TopicConfig{},
@@ -727,7 +728,7 @@ func (kcb *KafkaConnectBuilder) getSecret(secret string) string {
 }
 
 func (kcb *KafkaConnectBuilder) getSecretPtr(secret string) *string {
-	return common.StringPtr(kcb.getSecret(secret))
+	return utils.StringPtr(kcb.getSecret(secret))
 }
 
 func (kcb *KafkaConnectBuilder) setTLSAndAuthentication() {
