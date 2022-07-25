@@ -10,7 +10,6 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/stretchr/testify/assert"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type MockProvider struct {
@@ -38,16 +37,14 @@ func makeMockProvider() providers.Provider {
         "memory": "500Mi"
 	}`)
 	kafkaConfig := crd.KafkaConfig{}
-	ctx := context.Background()
 	m.Env.Spec.Providers.Kafka = kafkaConfig
-	m.Ctx = ctx
+	m.Ctx = context.Background()
 	m.Env.Spec.Providers.Kafka.Connect.Resources.Requests = req
 	m.Env.Spec.Providers.Kafka.Connect.Replicas = 4
 	m.Env.Spec.Providers.Kafka.Connect.Version = "3.0.0"
 	m.Env.Spec.Providers.Kafka.Connect.Image = IMAGE_KAFKA_XJOIN
 	m.Env.Spec.Providers.Kafka.EnableLegacyStrimzi = false
-	client := client.Client{}
-	m.Cache = resource_cache.NewObjectCache()
+	m.Cache = &resource_cache.ObjectCache{}
 	return m
 }
 
