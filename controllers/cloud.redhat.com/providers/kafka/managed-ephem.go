@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -27,6 +28,25 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
+
+var (
+	HTTP HTTPClient
+)
+
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+	Get(url string) (resp *http.Response, err error)
+	Post(url, contentType string, body io.Reader) (resp *http.Response, err error)
+}
+
+var ClientCreator func(provider *providers.Provider, clientCred clientcredentials.Config) HTTPClient
+
+func init() {
+	ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) HTTPClient {
+		client := clientCred.Client(provider.Ctx)
+		return client
+	}
+}
 
 type JSONPayload struct {
 	Name     string   `json:"name"`
@@ -124,7 +144,7 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 	return err
 }
 
-func deleteTopics(topicList *TopicsList, rClient *http.Client, adminHostname string, p *providers.Provider) error {
+func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
 	for _, topic := range topicList.Items {
 		if strings.HasPrefix(topic.Name, p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix) {
 			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/topics/%s", adminHostname, topic.Name), nil)
@@ -174,7 +194,7 @@ func getSecret(p *providers.Provider) (*core.Secret, error) {
 	return sec, err
 }
 
-func getTopicList(rClient *http.Client, adminHostname string, p *providers.Provider) (*TopicsList, error) {
+func getTopicList(rClient HTTPClient, adminHostname string, p *providers.Provider) (*TopicsList, error) {
 	topicList := &TopicsList{}
 
 	path := url.PathEscape(fmt.Sprintf("size=1000&filter=%s.*", p.Env.GetName()))
@@ -196,7 +216,7 @@ func getTopicList(rClient *http.Client, adminHostname string, p *providers.Provi
 	return topicList, nil
 }
 
-func upsertClientCache(username string, password string, tokenURL string, adminHostname string, provider *providers.Provider) *http.Client {
+func upsertClientCache(username string, password string, tokenURL string, adminHostname string, provider *providers.Provider) HTTPClient {
 	httpClient, ok := ClientCache.Get(adminHostname)
 	if ok {
 		return httpClient
@@ -207,7 +227,7 @@ func upsertClientCache(username string, password string, tokenURL string, adminH
 		TokenURL:     tokenURL,
 		Scopes:       []string{"openid api.iam.service_accounts"},
 	}
-	client := oauthClientConfig.Client(provider.Ctx)
+	client := ClientCreator(provider, oauthClientConfig)
 
 	ClientCache.Set(adminHostname, client)
 
@@ -217,7 +237,7 @@ func upsertClientCache(username string, password string, tokenURL string, adminH
 type managedEphemProvider struct {
 	providers.Provider
 	Config        config.KafkaConfig
-	tokenClient   *http.Client
+	tokenClient   HTTPClient
 	adminHostname string
 	secretData    map[string][]byte
 }
@@ -542,18 +562,18 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 
 //Client cache provides a mutex protected cache of http clients
 type HTTPClientCache struct {
-	cache map[string]*http.Client
+	cache map[string]HTTPClient
 	mutex sync.RWMutex
 }
 
 func newHTTPClientCahce() HTTPClientCache {
 	return HTTPClientCache{
-		cache: map[string]*http.Client{},
+		cache: map[string]HTTPClient{},
 		mutex: sync.RWMutex{},
 	}
 }
 
-func (cc *HTTPClientCache) Get(hostname string) (*http.Client, bool) {
+func (cc *HTTPClientCache) Get(hostname string) (HTTPClient, bool) {
 	cc.mutex.RLock()
 	defer cc.mutex.RUnlock()
 	val, ok := cc.cache[hostname]
@@ -566,7 +586,7 @@ func (cc *HTTPClientCache) Remove(hostname string) {
 	delete(cc.cache, hostname)
 }
 
-func (cc *HTTPClientCache) Set(hostname string, client *http.Client) {
+func (cc *HTTPClientCache) Set(hostname string, client HTTPClient) {
 	cc.mutex.Lock()
 	defer cc.mutex.Unlock()
 	cc.cache[hostname] = client

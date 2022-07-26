@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"testing"
 
@@ -9,11 +10,27 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
-type MockProvider struct {
-	providers.Provider
+type MockHTTPClient struct {
+}
+
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	return nil, nil
+}
+func (m *MockHTTPClient) Get(url string) (resp *http.Response, err error) {
+	return nil, nil
+}
+func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
+	return nil, nil
+}
+
+func init() {
+	ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) HTTPClient {
+		return &MockHTTPClient{}
+	}
 }
 
 func makeJSON(jsonToParse string) *apiextensions.JSON {
