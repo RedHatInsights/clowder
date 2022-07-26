@@ -44,9 +44,10 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	d.Kind = "Deployment"
 
-	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations)
-
 	pod := deployment.PodSpec
+
+	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, pod.Metadata.Annotations)
+
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
 			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
