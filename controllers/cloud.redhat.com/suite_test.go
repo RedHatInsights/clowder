@@ -375,7 +375,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	return &env, &app, err
 }
 
-func createManagedKafkaClowderStack(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
+func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
 	objMeta := metav1.ObjectMeta{
 		Name:      "ephemera-managed-kafka-name",
 		Namespace: name.Namespace,
@@ -385,11 +385,11 @@ func createManagedKafkaClowderStack(name types.NamespacedName) (*crd.ClowdEnviro
 
 	env.Spec.Providers.Kafka = crd.KafkaConfig{
 		Mode: "managed-ephem",
-		Cluster: crd.KafkaClusterConfig{
-			Name:      "kafka",
-			Namespace: "kafka",
-			Replicas:  5,
+		EphemManagedSecretRef: crd.NamespacedName{
+			Name:      secretNme,
+			Namespace: name.Namespace,
 		},
+		EphemManagedDeletePrefix: "test-prefix",
 	}
 
 	app, err := createClowdApp(env, objMeta)
@@ -709,32 +709,47 @@ func mapEq(a, b map[string]string) bool {
 	return true
 }
 
+func createEphemeralManagedSecret(name string, namespace string, cwData map[string]string) error {
+	secret := core.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		StringData: cwData,
+	}
+
+	return k8sClient.Create(context.Background(), &secret)
+}
+
 func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
+	logger.Info("Starting ephemeral managed kafka e2e test")
+
+	nn := types.NamespacedName{
+		Name:      "managed-ephemeral-kafka",
+		Namespace: "default",
+	}
+
+	secretData := make(map[string]string)
+	secretData["client.id"] = "username"
+	secretData["client.secret"] = "password"
+	secretData["hostname"] = "hostname"
+	secretData["admin.url"] = "admin.url"
+	secretData["token.url"] = "token.url"
+	secretName := "managed-ephem-secret"
+	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
+	assert.Nil(t, err)
+
+	app, env, err := createManagedKafkaClowderStack(nn, secretName)
 
 	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
 		return &kafka.MockHTTPClient{}
 	}
 
-	secretData := make(map[string][]byte)
-	secretData["client.secret"] = []byte("Shh, tell no one.")
-
-	clowdAppNN := types.NamespacedName{
-		Name:      "test",
-		Namespace: "default",
-	}
-	app, env, err := createManagedKafkaClowderStack(clowdAppNN)
-
 	assert.Nil(t, err)
 
 	assert.NotNil(t, app)
 	assert.NotNil(t, env)
-	//provider := makeMockProvider()
-	//assert.NotNil(t, provider)
-	//secretData := makeMockSecretData()
-	//builder := newKafkaConnectBuilder(provider, secretData)
-	//err := builder.Create()
-	//assert.NotNil(t, err)
-	//builder.BuildSpec()
+
 	testEnv.Stop()
 
 }
