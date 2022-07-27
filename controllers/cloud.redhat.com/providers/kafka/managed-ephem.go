@@ -41,6 +41,19 @@ type HTTPClient interface {
 
 var ClientCreator func(provider *providers.Provider, clientCred clientcredentials.Config) HTTPClient
 
+type MockHTTPClient struct {
+}
+
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	return nil, nil
+}
+func (m *MockHTTPClient) Get(url string) (resp *http.Response, err error) {
+	return nil, nil
+}
+func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
+	return nil, nil
+}
+
 func init() {
 	ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) HTTPClient {
 		client := clientCred.Client(provider.Ctx)
