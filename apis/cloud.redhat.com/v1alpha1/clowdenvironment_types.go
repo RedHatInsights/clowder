@@ -17,7 +17,6 @@ package v1alpha1
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
@@ -637,7 +636,7 @@ func (i *ClowdEnvironment) GetDeploymentStatus() *EnvResourceStatus {
 
 // GenerateTargetNamespace gets a generated target namespace if one is not provided
 func (i *ClowdEnvironment) GenerateTargetNamespace() string {
-	return fmt.Sprintf("clowdenv-%s-%s", i.Name, strings.ToLower(utils.RandString(6)))
+	return fmt.Sprintf("clowdenv-%s-%s", i.Name, utils.RandStringLower(6))
 }
 
 // IsReady returns true when all deployments are ready and the reconciliation is successful
@@ -739,7 +738,7 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		return i.Name
 	}
 
-	randomIdent := strings.ToLower(utils.RandString(8))
+	randomIdent := utils.RandStringLower(8)
 
 	obj := ic.Object
 	if obj["spec"] != nil {

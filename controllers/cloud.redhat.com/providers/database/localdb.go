@@ -65,13 +65,22 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	}
 
 	dbCfg := config.DatabaseConfig{}
+
+	password, err := utils.RandPassword(16)
+	if err != nil {
+		return errors.Wrap("password generate failed", err)
+	}
+
+	pgPassword, err := utils.RandPassword(16)
+	if err != nil {
+		return errors.Wrap("pgPassword generate failed", err)
+	}
+
 	dataInit := func() map[string]string {
 
 		hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
 		port := "5432"
 		username := utils.RandString(16)
-		password := utils.RandString(16)
-		pgPass := utils.RandString(16)
 		name := app.Spec.Database.Name
 
 		return map[string]string{
@@ -83,7 +92,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			"db.user":     username,
 			"password":    password,
 			"db.password": password,
-			"pgPass":      pgPass,
+			"pgPass":      pgPassword,
 			"name":        name,
 			"db.name":     name,
 		}

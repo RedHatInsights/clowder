@@ -94,13 +94,24 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	}
 
 	dbCfg := config.DatabaseConfig{}
+
+	password, err := utils.RandPassword(16)
+	if err != nil {
+		return nil, errors.Wrap("password generate failed", err)
+	}
+
+	pgPassword, err := utils.RandPassword(16)
+	if err != nil {
+		return nil, errors.Wrap("pgPassword generate failed", err)
+	}
+
 	dataInit := func() map[string]string {
 		return map[string]string{
 			"hostname": fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
 			"port":     "5432",
 			"username": utils.RandString(16),
-			"password": utils.RandString(16),
-			"pgPass":   utils.RandString(16),
+			"password": password,
+			"pgPass":   pgPassword,
 			"name":     p.Env.Name,
 		}
 	}
