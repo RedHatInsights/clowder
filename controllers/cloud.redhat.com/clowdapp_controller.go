@@ -22,6 +22,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	apps "k8s.io/api/apps/v1"
+	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -347,6 +348,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 			builder.WithPredicates(environmentPredicate(r.Log, "app")),
 		).
+		Owns(&batch.CronJob{}, builder.WithPredicates(deploymentPredicate(r.Log, "app"))).
 		Owns(&apps.Deployment{}, builder.WithPredicates(deploymentPredicate(r.Log, "app"))).
 		Owns(&core.Service{}, builder.WithPredicates(generationOnlyPredicate(r.Log, "app"))).
 		Owns(&core.ConfigMap{}, builder.WithPredicates(generationOnlyPredicate(r.Log, "app"))).
