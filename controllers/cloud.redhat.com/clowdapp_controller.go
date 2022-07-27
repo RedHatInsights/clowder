@@ -345,12 +345,12 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &crd.ClowdEnvironment{}},
 			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
-			builder.WithPredicates(getEnvironmentPredicate(r.Log, "app")),
+			builder.WithPredicates(environmentPredicate(r.Log, "app")),
 		).
-		Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app"))).
-		Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
-		Owns(&core.ConfigMap{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app"))).
-		Owns(&core.Secret{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app"))).
+		Owns(&apps.Deployment{}, builder.WithPredicates(deploymentPredicate(r.Log, "app"))).
+		Owns(&core.Service{}, builder.WithPredicates(generationOnlyPredicate(r.Log, "app"))).
+		Owns(&core.ConfigMap{}, builder.WithPredicates(generationOnlyPredicate(r.Log, "app"))).
+		Owns(&core.Secret{}, builder.WithPredicates(alwaysPredicate(r.Log, "app"))).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 		}).
