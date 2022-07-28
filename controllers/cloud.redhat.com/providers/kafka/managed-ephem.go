@@ -44,6 +44,7 @@ type HTTPClient interface {
 var ClientCreator func(provider *providers.Provider, clientCred clientcredentials.Config) HTTPClient
 
 type MockHTTPClient struct {
+	getTopicCounter int
 }
 
 func (m *MockHTTPClient) makeResp(body string, code int) http.Response {
@@ -85,19 +86,31 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"topics":[]}`, 200),
 	}
 	resp := m.getFromRespMap(url, urlToRespMap)
+	if req.Method == "PATCH" {
+		r := m.makeResp(`{"msg":"topic patched"}`, 200)
+		resp = &r
+	}
 	return resp, nil
 }
 func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
+	getTopicURL := "admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory"
 	urlToRespMap := map[string]http.Response{
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"topics":[]}`, 200),
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"topics":[]}`, 200),
+		getTopicURL: m.makeResp(`{"msg":"topic not found"}`, 404),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"msg":"got values"}`, 200),
+	}
+	if url == getTopicURL {
+		m.getTopicCounter++
 	}
 	resp := m.getFromRespMap(url, urlToRespMap)
+	if m.getTopicCounter > 1 && url == getTopicURL {
+		r := m.makeResp(`{"msg":"topic found"}`, 200)
+		resp = &r
+	}
 	return resp, nil
 }
 func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	urlToRespMap := map[string]http.Response{
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory": m.makeResp(`{"topics":[]}`, 200),
+		"admin.url/api/v1/topics": m.makeResp(`{"msg":"topic created"}`, 200),
 	}
 	resp := m.getFromRespMap(url, urlToRespMap)
 	return resp, nil
