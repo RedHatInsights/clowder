@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-cyndi-local-db
+  name: test-local-db-redis
 spec:
-  targetNamespace: test-cyndi-local-db
+  targetNamespace: test-local-db-redis
   providers:
     web:
       port: 8000
@@ -14,15 +14,18 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      mode: none 
+      mode: none
     db:
-      mode: local
+      mode: none
     logging:
       mode: none
     objectStore:
-      mode: none 
+      mode: none
     inMemoryDb:
       mode: redis
+      pvc: false
+    featureFlags:
+      mode: none
   resourceDefaults:
     limits:
       cpu: 400m
@@ -35,18 +38,11 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: app-a
-  namespace: test-cyndi-local-db
+  namespace: test-local-db-redis
 spec:
-  envName: test-cyndi-local-db
-  cyndi:
-    enabled: true
-    appName: app-name-override
-    insights: true
+  envName: test-local-db-redis
   deployments:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-  database:
-    name: app-a-db
-    version: 12
   inMemoryDb: true

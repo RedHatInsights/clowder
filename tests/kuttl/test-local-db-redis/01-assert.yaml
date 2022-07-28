@@ -1,0 +1,15 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-redis
+  namespace: test-local-db-redis
+spec:
+  template:
+    metadata:
+      labels:
+        service: redis
+    spec:    
+      containers:
+        - image: quay.io/cloudservices/redis-ephemeral:6
+          resources: {}

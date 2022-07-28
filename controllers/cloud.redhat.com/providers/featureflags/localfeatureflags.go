@@ -216,7 +216,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
-
+	labels["service"] = "featureflags"
 	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)

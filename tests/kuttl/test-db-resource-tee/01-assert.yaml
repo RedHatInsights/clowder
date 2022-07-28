@@ -6,6 +6,9 @@ metadata:
   namespace: test-db-resource-tee
 spec:
   template:
+    metadata:
+      labels:
+        service: db
     spec:
       containers:
         - image: quay.io/cloudservices/postgresql-rds:12-9ee2984
