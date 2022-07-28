@@ -720,6 +720,18 @@ func createEphemeralManagedSecret(name string, namespace string, cwData map[stri
 	return k8sClient.Create(context.Background(), &secret)
 }
 
+func checkIfClowdWatchSecretsExist(t *testing.T, namespace string) bool {
+	// Check if the clowdwatch secrets exist
+	secret := core.Secret{}
+	secretName := types.NamespacedName{
+		Name:      "clowdwatch",
+		Namespace: namespace,
+	}
+
+	err := fetchWithDefaults(secretName, &secret)
+	return err != nil
+}
+
 func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	logger.Info("Starting ephemeral managed kafka e2e test")
 
@@ -745,11 +757,13 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 		"aws_region":            "us-east-1",
 	}
 
-	err = createCloudwatchSecret(&cwData)
+	if !checkIfClowdWatchSecretsExist(t, nn.Namespace) {
+		err = createCloudwatchSecret(&cwData)
 
-	if err != nil {
-		t.Error(err)
-		return
+		if err != nil {
+			t.Error(err)
+			return
+		}
 	}
 
 	app, env, err := createManagedKafkaClowderStack(nn, secretName)
