@@ -148,7 +148,6 @@ func TestMain(m *testing.M) {
 	}
 	os.Exit(retCode)
 }
-
 func applyKafkaStatus(t *testing.T, ch chan int) {
 	ctx := context.Background()
 	nn := types.NamespacedName{
@@ -753,23 +752,17 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 		return
 	}
 
-	ch := make(chan int)
-
-	go applyKafkaStatus(t, ch)
-
 	app, env, err := createManagedKafkaClowderStack(nn, secretName)
 
 	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
 		return &kafka.MockHTTPClient{}
 	}
 
-	<-ch
+	//This gives some time for the provider to get going
+	time.Sleep(5 * time.Second)
 
 	assert.Nil(t, err)
 
 	assert.NotNil(t, app)
 	assert.NotNil(t, env)
-
-	testEnv.Stop()
-
 }
