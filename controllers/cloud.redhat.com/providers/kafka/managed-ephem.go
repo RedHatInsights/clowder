@@ -1,6 +1,8 @@
 package kafka
 
 import (
+	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -44,14 +46,61 @@ var ClientCreator func(provider *providers.Provider, clientCred clientcredential
 type MockHTTPClient struct {
 }
 
+func (m *MockHTTPClient) makeResp(body string, code int) http.Response {
+	resp := http.Response{
+		Status:           "",
+		StatusCode:       code,
+		Proto:            "",
+		ProtoMajor:       0,
+		ProtoMinor:       0,
+		Header:           map[string][]string{},
+		Body:             ioutil.NopCloser(bytes.NewBufferString(body)),
+		ContentLength:    0,
+		TransferEncoding: []string{},
+		Close:            false,
+		Uncompressed:     false,
+		Trailer:          map[string][]string{},
+		Request:          &http.Request{},
+		TLS:              &tls.ConnectionState{},
+	}
+	buff := bytes.NewBuffer(nil)
+	resp.Write(buff)
+	return resp
+}
+
+func (m *MockHTTPClient) getFromRespMap(url string, urlToRespMap map[string]http.Response) *http.Response {
+	defaultResp := m.makeResp(`{"topics":[]}`, 200)
+	resp, ok := urlToRespMap[url]
+	if !ok {
+		return &defaultResp
+	}
+	return &resp
+}
+
 func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return nil, nil
+	url := req.URL.String()
+
+	urlToRespMap := map[string]http.Response{
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"topics":[]}`, 200),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"topics":[]}`, 200),
+	}
+	resp := m.getFromRespMap(url, urlToRespMap)
+	return resp, nil
 }
-func (m *MockHTTPClient) Get(url string) (resp *http.Response, err error) {
-	return nil, nil
+func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
+	urlToRespMap := map[string]http.Response{
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"topics":[]}`, 200),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"topics":[]}`, 200),
+	}
+	resp := m.getFromRespMap(url, urlToRespMap)
+	return resp, nil
 }
-func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
-	return nil, nil
+func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	urlToRespMap := map[string]http.Response{
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory": m.makeResp(`{"topics":[]}`, 200),
+	}
+	resp := m.getFromRespMap(url, urlToRespMap)
+	return resp, nil
 }
 
 func init() {

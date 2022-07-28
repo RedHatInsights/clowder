@@ -739,11 +739,31 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
 	assert.Nil(t, err)
 
+	cwData := map[string]string{
+		"aws_access_key_id":     "key_id",
+		"aws_secret_access_key": "secret",
+		"log_group_name":        "default",
+		"aws_region":            "us-east-1",
+	}
+
+	err = createCloudwatchSecret(&cwData)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ch := make(chan int)
+
+	go applyKafkaStatus(t, ch)
+
 	app, env, err := createManagedKafkaClowderStack(nn, secretName)
 
 	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
 		return &kafka.MockHTTPClient{}
 	}
+
+	<-ch
 
 	assert.Nil(t, err)
 
