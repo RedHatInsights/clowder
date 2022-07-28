@@ -899,6 +899,8 @@ PodSpec defines a container running inside a ClowdApp.
 | Field | Description
 | *`image`* __string__ | Image refers to the container image used to create the pod.
 | *`initContainers`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer[$$InitContainer$$] array__ | A list of init containers used to perform at-startup operations.
+| *`metadata`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecmetadata[$$PodspecMetadata$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
 | *`command`* __string array__ | The command that will be invoked inside the pod at startup.
 | *`args`* __string array__ | A list of args to be passed to the pod container.
 | *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core[$$EnvVar$$] array__ | A list of environment variables in k8s defined format.
@@ -909,6 +911,23 @@ PodSpec defines a container running inside a ClowdApp.
 | *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecar[$$Sidecar$$] array__ | Lists the expected side cars, will be validated in the validating webhook
 | *`machinePool`* __string__ | MachinePool allows the pod to be scheduled to a particular machine pool.
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecmetadata"]
+==== PodspecMetadata 
+
+Metadata for applying annotations etc to PodSpec
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`annotations`* __object (keys:string, values:string)__ | 
 |===
 
 
