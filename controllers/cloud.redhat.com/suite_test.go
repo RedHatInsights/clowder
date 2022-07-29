@@ -777,10 +777,10 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	respLog := ephemManagedKafkaHTTPLog
 	expectedRespLog := []map[string]string{{"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic created\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic created\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"Get topic\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"Get topic\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}}
-	for i, resp := range expectedRespLog {
-		assert.Equal(t, respLog[i]["status"], resp["status"])
-		assert.Equal(t, respLog[i]["code"], resp["code"])
-		assert.Equal(t, respLog[i]["body"], resp["body"])
+	for i, _ := range []int{0, 1, 2, 3, 4} {
+		assert.Equal(t, respLog[i]["status"], expectedRespLog[i]["status"])
+		assert.Equal(t, respLog[i]["code"], expectedRespLog[i]["code"])
+		assert.Equal(t, respLog[i]["body"], expectedRespLog[i]["body"])
 	}
 }
 
