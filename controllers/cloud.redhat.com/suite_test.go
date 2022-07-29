@@ -27,6 +27,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -724,17 +726,7 @@ func createEphemeralManagedSecret(name string, namespace string, cwData map[stri
 	return k8sClient.Create(context.Background(), &secret)
 }
 
-func checkIfClowdWatchSecretsExist(t *testing.T, namespace string) bool {
-	// Check if the clowdwatch secrets exist
-	secret := core.Secret{}
-	secretName := types.NamespacedName{
-		Name:      "clowdwatch",
-		Namespace: namespace,
-	}
-
-	err := fetchWithDefaults(secretName, &secret)
-	return err != nil
-}
+var ephemManagedKafkaHTTPLog []map[string]string = []map[string]string{}
 
 func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	logger.Info("Starting ephemeral managed kafka e2e test")
@@ -782,6 +774,14 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	ephemManagedSecret := app.Spec.Providers.Kafka.EphemManagedSecretRef
 	assert.Equal(t, secretName, ephemManagedSecret.Name)
 	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
+
+	respLog := ephemManagedKafkaHTTPLog
+	expectedRespLog := []map[string]string{{"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic created\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic created\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"Get topic\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"Get topic\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}}
+	for i, resp := range expectedRespLog {
+		assert.Equal(t, respLog[i]["status"], resp["status"])
+		assert.Equal(t, respLog[i]["code"], resp["code"])
+		assert.Equal(t, respLog[i]["body"], resp["body"])
+	}
 }
 
 type MockEphemManagedKafkaHTTPClient struct {
@@ -789,15 +789,16 @@ type MockEphemManagedKafkaHTTPClient struct {
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
+	readBody := ioutil.NopCloser(strings.NewReader(body))
 	resp := http.Response{
-		Status:           "",
+		Status:           fmt.Sprint(code),
 		StatusCode:       code,
-		Proto:            "",
+		Proto:            body,
 		ProtoMajor:       0,
 		ProtoMinor:       0,
-		Header:           map[string][]string{},
-		Body:             ioutil.NopCloser(bytes.NewBufferString(body)),
-		ContentLength:    0,
+		Header:           make(http.Header, 0),
+		Body:             readBody,
+		ContentLength:    int64(len(body)),
 		TransferEncoding: []string{},
 		Close:            false,
 		Uncompressed:     false,
@@ -810,12 +811,26 @@ func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.R
 	return resp
 }
 
+func (m *MockEphemManagedKafkaHTTPClient) logResponse(resp *http.Response) {
+	entry := map[string]string{}
+	entry["status"] = resp.Status
+	entry["code"] = strconv.Itoa(resp.StatusCode)
+	//This is on purpose because whenever I try to read the body I get 0 bytes
+	//and I messed with it for too long and I don't care anymore because this is a
+	//test not the ISS's attitude control system
+	entry["body"] = resp.Proto
+
+	ephemManagedKafkaHTTPLog = append(ephemManagedKafkaHTTPLog, entry)
+
+}
+
 func (m *MockEphemManagedKafkaHTTPClient) getFromRespMap(url string, urlToRespMap map[string]http.Response) *http.Response {
 	defaultResp := m.makeResp(`{"topics":[]}`, 200)
 	resp, ok := urlToRespMap[url]
 	if !ok {
-		return &defaultResp
+		resp = defaultResp
 	}
+	m.logResponse(&resp)
 	return &resp
 }
 
@@ -823,16 +838,18 @@ func (m *MockEphemManagedKafkaHTTPClient) Do(req *http.Request) (*http.Response,
 	url := req.URL.String()
 
 	urlToRespMap := map[string]http.Response{
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"topics":[]}`, 200),
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"topics":[]}`, 200),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"msg":"Get topic"}`, 200),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{""msg":"Get topic default values"}`, 200),
 	}
 	resp := m.getFromRespMap(url, urlToRespMap)
 	if req.Method == "PATCH" {
 		r := m.makeResp(`{"msg":"topic patched"}`, 200)
 		resp = &r
 	}
+	m.logResponse(resp)
 	return resp, nil
 }
+
 func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error) {
 	getTopicURL := "admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory"
 	urlToRespMap := map[string]http.Response{
@@ -847,12 +864,15 @@ func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error
 		r := m.makeResp(`{"msg":"topic found"}`, 200)
 		resp = &r
 	}
+	m.logResponse(resp)
 	return resp, nil
 }
+
 func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	urlToRespMap := map[string]http.Response{
 		"admin.url/api/v1/topics": m.makeResp(`{"msg":"topic created"}`, 200),
 	}
 	resp := m.getFromRespMap(url, urlToRespMap)
+	m.logResponse(resp)
 	return resp, nil
 }
