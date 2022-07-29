@@ -17,9 +17,13 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -769,7 +773,7 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	app, env, err := createManagedKafkaClowderStack(nn, secretName)
 
 	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
-		return &kafka.MockHTTPClient{}
+		return &MockEphemManagedKafkaHTTPClient{}
 	}
 
 	//This gives some time for the provider to get going
@@ -779,4 +783,77 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	assert.NotNil(t, app)
 	assert.NotNil(t, env)
+}
+
+type MockEphemManagedKafkaHTTPClient struct {
+	getTopicCounter int
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
+	resp := http.Response{
+		Status:           "",
+		StatusCode:       code,
+		Proto:            "",
+		ProtoMajor:       0,
+		ProtoMinor:       0,
+		Header:           map[string][]string{},
+		Body:             ioutil.NopCloser(bytes.NewBufferString(body)),
+		ContentLength:    0,
+		TransferEncoding: []string{},
+		Close:            false,
+		Uncompressed:     false,
+		Trailer:          map[string][]string{},
+		Request:          &http.Request{},
+		TLS:              &tls.ConnectionState{},
+	}
+	buff := bytes.NewBuffer(nil)
+	resp.Write(buff)
+	return resp
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) getFromRespMap(url string, urlToRespMap map[string]http.Response) *http.Response {
+	defaultResp := m.makeResp(`{"topics":[]}`, 200)
+	resp, ok := urlToRespMap[url]
+	if !ok {
+		return &defaultResp
+	}
+	return &resp
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	url := req.URL.String()
+
+	urlToRespMap := map[string]http.Response{
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"topics":[]}`, 200),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"topics":[]}`, 200),
+	}
+	resp := m.getFromRespMap(url, urlToRespMap)
+	if req.Method == "PATCH" {
+		r := m.makeResp(`{"msg":"topic patched"}`, 200)
+		resp = &r
+	}
+	return resp, nil
+}
+func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error) {
+	getTopicURL := "admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory"
+	urlToRespMap := map[string]http.Response{
+		getTopicURL: m.makeResp(`{"msg":"topic not found"}`, 404),
+		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"msg":"got values"}`, 200),
+	}
+	if url == getTopicURL {
+		m.getTopicCounter++
+	}
+	resp := m.getFromRespMap(url, urlToRespMap)
+	if m.getTopicCounter > 1 && url == getTopicURL {
+		r := m.makeResp(`{"msg":"topic found"}`, 200)
+		resp = &r
+	}
+	return resp, nil
+}
+func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	urlToRespMap := map[string]http.Response{
+		"admin.url/api/v1/topics": m.makeResp(`{"msg":"topic created"}`, 200),
+	}
+	resp := m.getFromRespMap(url, urlToRespMap)
+	return resp, nil
 }
