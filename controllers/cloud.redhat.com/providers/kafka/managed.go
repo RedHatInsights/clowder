@@ -38,14 +38,12 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, appConfig *config.AppC
 		return err
 	}
 
-	kafkaConfig := k.getKafkaConfig(broker, app)
-
-	appConfig.Kafka = &kafkaConfig
+	appConfig.Kafka = k.getKafkaConfig(broker, app)
 
 	return nil
 }
 
-func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig config.KafkaConfig) {
+func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig *config.KafkaConfig) {
 
 	topicName := topic.TopicName
 
@@ -96,8 +94,8 @@ func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.Brok
 	return broker, nil
 }
 
-func (k *managedKafkaProvider) getKafkaConfig(broker config.BrokerConfig, app *crd.ClowdApp) config.KafkaConfig {
-	kafkaConfig := config.KafkaConfig{}
+func (k *managedKafkaProvider) getKafkaConfig(broker config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
+	kafkaConfig := &config.KafkaConfig{}
 	kafkaConfig.Brokers = []config.BrokerConfig{broker}
 	kafkaConfig.Topics = []config.TopicConfig{}
 
