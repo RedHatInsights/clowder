@@ -24,6 +24,8 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=[]@"
+
 type KeycloakConfig struct {
 	URL             string
 	Username        string
@@ -75,19 +77,27 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	nn := providers.GetNamespacedName(p.Env, "keycloak")
 
+	username := clowderconfig.LoadedConfig.Credentials.Keycloak.Username
+	if username == "" {
+		username = utils.RandString(8)
+	}
+
+	password := clowderconfig.LoadedConfig.Credentials.Keycloak.Password
+	if password == "" {
+		var err error
+		password, err = utils.RandPassword(16, rCharSet)
+		if err != nil {
+			return nil, errors.Wrap("couldn't generate password", err)
+		}
+	}
+
+	var err error
+	defaultPassword, err := utils.RandPassword(16, rCharSet)
+	if err != nil {
+		return nil, errors.Wrap("couldn't generate defaultPassword", err)
+	}
+
 	dataInit := func() map[string]string {
-		username := clowderconfig.LoadedConfig.Credentials.Keycloak.Username
-		if username == "" {
-			username = utils.RandString(8)
-		}
-
-		password := clowderconfig.LoadedConfig.Credentials.Keycloak.Password
-		if password == "" {
-			password = utils.RandString(8)
-		}
-
-		defaultPassword := utils.RandString(8)
-
 		return map[string]string{
 			"username":        username,
 			"password":        password,

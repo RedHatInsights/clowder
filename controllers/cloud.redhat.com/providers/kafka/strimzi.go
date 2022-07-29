@@ -710,9 +710,7 @@ func createNetworkPolicies(p *providers.Provider) error {
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if app.Spec.Cyndi.Enabled {
-		err := createCyndiPipeline(
-			s.Ctx, s.Client, s.Cache, app, s.Env, getConnectNamespace(s.Env), getConnectClusterName(s.Env),
-		)
+		err := createCyndiPipeline(s, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env))
 		if err != nil {
 			return err
 		}

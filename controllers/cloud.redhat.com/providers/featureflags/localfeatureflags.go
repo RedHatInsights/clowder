@@ -2,6 +2,7 @@ package featureflags
 
 import (
 	"fmt"
+	"net/url"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -70,19 +71,30 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 	}
 
 	dbCfg := config.DatabaseConfig{}
+
+	password, err := utils.RandPassword(16)
+	if err != nil {
+		return nil, errors.Wrap("password generate failed", err)
+	}
+
+	pgPassword, err := utils.RandPassword(16)
+	if err != nil {
+		return nil, errors.Wrap("pgPassword generate failed", err)
+	}
+
+	username := utils.RandString(16)
+	hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
+	passwordEncode := url.QueryEscape(password)
+	connectionURL := fmt.Sprintf("postgres://%s:%s@%s/%s", username, passwordEncode, hostname, "unleash")
+
 	dataInit := func() map[string]string {
-		username := utils.RandString(16)
-		password := utils.RandString(16)
-		pgPass := utils.RandString(16)
-		hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
-		connectionURL := fmt.Sprintf("postgres://%s:%s@%s/%s", username, password, hostname, "unleash")
 
 		return map[string]string{
 			"hostname":      hostname,
 			"port":          "5432",
 			"username":      username,
 			"password":      password,
-			"pgPass":        pgPass,
+			"pgPass":        pgPassword,
 			"name":          "unleash",
 			"connectionURL": connectionURL,
 		}

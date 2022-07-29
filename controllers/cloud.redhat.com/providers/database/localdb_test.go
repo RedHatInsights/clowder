@@ -106,12 +106,22 @@ func TestLocalDBService(t *testing.T) {
 func TestLocalDBDeployment(t *testing.T) {
 	nn, app := getBaseElements()
 
+	password, err := utils.RandPassword(16)
+	if err != nil {
+		t.Fatal("password generate failed", err)
+	}
+
+	adminPassword, err := utils.RandPassword(16)
+	if err != nil {
+		t.Fatal("adminPassword generate failed", err)
+	}
+
 	cfg := config.DatabaseConfig{
 		Hostname:      fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
 		Port:          5432,
 		Username:      utils.RandString(16),
-		Password:      utils.RandString(16),
-		AdminPassword: utils.RandString(16),
+		Password:      password,
+		AdminPassword: adminPassword,
 		Name:          app.Spec.Database.Name,
 	}
 

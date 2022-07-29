@@ -373,20 +373,20 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
-	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(getDeploymentPredicate(r.Log, "app")))
-	ctrlr.Owns(&core.Service{}, builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "app")))
-	ctrlr.Owns(&core.Secret{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
+	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(deploymentPredicate(r.Log, "app")))
+	ctrlr.Owns(&core.Service{}, builder.WithPredicates(generationOnlyPredicate(r.Log, "app")))
+	ctrlr.Owns(&core.Secret{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
 	ctrlr.Watches(
 		&source.Kind{Type: &crd.ClowdApp{}},
 		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
-		builder.WithPredicates(getGenerationOnlyPredicate(r.Log, "env")),
+		builder.WithPredicates(generationOnlyPredicate(r.Log, "env")),
 	)
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		ctrlr.Owns(&strimzi.Kafka{}, builder.WithPredicates(getKafkaPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaConnect{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaUser{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaTopic{}, builder.WithPredicates(getAlwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.Kafka{}, builder.WithPredicates(kafkaPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaConnect{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaUser{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+		ctrlr.Owns(&strimzi.KafkaTopic{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
 	}
 
 	ctrlr.WithOptions(controller.Options{

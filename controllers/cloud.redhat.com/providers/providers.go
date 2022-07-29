@@ -80,6 +80,34 @@ type Provider struct {
 	Log    logr.Logger
 }
 
+func (prov *Provider) GetClient() client.Client {
+	return prov.Client
+}
+
+func (prov *Provider) GetCtx() context.Context {
+	return prov.Ctx
+}
+
+func (prov *Provider) GetEnv() *crd.ClowdEnvironment {
+	return prov.Env
+}
+
+func (prov *Provider) GetCache() *rc.ObjectCache {
+	return prov.Cache
+}
+
+func (prov *Provider) GetLog() logr.Logger {
+	return prov.Log
+}
+
+type RootProvider interface {
+	GetClient() client.Client
+	GetCtx() context.Context
+	GetEnv() *crd.ClowdEnvironment
+	GetCache() *rc.ObjectCache
+	GetLog() logr.Logger
+}
+
 // ClowderProvider is an interface providing a way for a provider to perform its duty.
 type ClowderProvider interface {
 	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as

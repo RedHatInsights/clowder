@@ -231,14 +231,21 @@ type Sidecar struct {
 	Enabled bool `json:"enabled"`
 }
 
+//Metadata for applying annotations etc to PodSpec
+type PodspecMetadata struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
 // PodSpec defines a container running inside a ClowdApp.
 type PodSpec struct {
-
 	// Image refers to the container image used to create the pod.
 	Image string `json:"image,omitempty"`
 
 	// A list of init containers used to perform at-startup operations.
 	InitContainers []InitContainer `json:"initContainers,omitempty"`
+
+	//Allows for defining custom PodSpec metadata, such as annotations
+	Metadata PodspecMetadata `json:"metadata,omitempty"`
 
 	// The command that will be invoked inside the pod at startup.
 	Command []string `json:"command,omitempty"`
