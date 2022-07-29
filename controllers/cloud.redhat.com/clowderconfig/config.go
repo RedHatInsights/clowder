@@ -8,12 +8,6 @@ import (
 )
 
 type ClowderConfig struct {
-	Credentials struct {
-		Keycloak struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-	}
 	Images struct {
 		MBOP           string `json:"mbop"`
 		Caddy          string `json:"caddy"`
