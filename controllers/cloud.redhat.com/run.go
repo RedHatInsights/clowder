@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	_ "embed"
-	"encoding/json"
 	"os"
 
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
@@ -72,27 +71,7 @@ func init() {
 var Version string
 
 func printConfig() error {
-	bytes, err := json.Marshal(clowderconfig.LoadedConfig)
-	if err != nil {
-		return err
-	}
-
-	configCopy := clowderconfig.ClowderConfig{}
-
-	err = json.Unmarshal(bytes, &configCopy)
-	if err != nil {
-		return err
-	}
-
-	if configCopy.Credentials.Keycloak.Username != "" {
-		configCopy.Credentials.Keycloak.Username = "********"
-	}
-
-	if configCopy.Credentials.Keycloak.Password != "" {
-		configCopy.Credentials.Keycloak.Password = "********"
-	}
-
-	setupLog.Info("Loaded config", "config", configCopy)
+	setupLog.Info("Loaded config", "config", clowderconfig.LoadedConfig)
 	return nil
 }
 
