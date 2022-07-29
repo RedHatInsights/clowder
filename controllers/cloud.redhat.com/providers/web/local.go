@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -77,21 +76,13 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	nn := providers.GetNamespacedName(p.Env, "keycloak")
 
-	username := clowderconfig.LoadedConfig.Credentials.Keycloak.Username
-	if username == "" {
-		username = utils.RandString(8)
+	username := utils.RandString(8)
+
+	password, err := utils.RandPassword(16, rCharSet)
+	if err != nil {
+		return nil, errors.Wrap("couldn't generate password", err)
 	}
 
-	password := clowderconfig.LoadedConfig.Credentials.Keycloak.Password
-	if password == "" {
-		var err error
-		password, err = utils.RandPassword(16, rCharSet)
-		if err != nil {
-			return nil, errors.Wrap("couldn't generate password", err)
-		}
-	}
-
-	var err error
 	defaultPassword, err := utils.RandPassword(16, rCharSet)
 	if err != nil {
 		return nil, errors.Wrap("couldn't generate defaultPassword", err)
