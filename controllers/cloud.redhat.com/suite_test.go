@@ -769,6 +769,8 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	app, env, err := createManagedKafkaClowderStack(nn, secretName)
 
+	//ephemera-managed-kafka-name-inventory
+
 	//This gives some time for the provider to get going
 	time.Sleep(5 * time.Second)
 
@@ -776,6 +778,10 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	assert.NotNil(t, app)
 	assert.NotNil(t, env)
+
+	ephemManagedSecret := app.Spec.Providers.Kafka.EphemManagedSecretRef
+	assert.Equal(t, secretName, ephemManagedSecret.Name)
+	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
 }
 
 type MockEphemManagedKafkaHTTPClient struct {
