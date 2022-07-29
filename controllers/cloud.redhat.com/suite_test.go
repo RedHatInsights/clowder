@@ -761,20 +761,13 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 		"aws_region":            "us-east-1",
 	}
 
-	if !checkIfClowdWatchSecretsExist(t, nn.Namespace) {
-		err = createCloudwatchSecret(&cwData)
-
-		if err != nil {
-			t.Error(err)
-			return
-		}
-	}
-
-	app, env, err := createManagedKafkaClowderStack(nn, secretName)
+	_ = createCloudwatchSecret(&cwData)
 
 	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
 		return &MockEphemManagedKafkaHTTPClient{}
 	}
+
+	app, env, err := createManagedKafkaClowderStack(nn, secretName)
 
 	//This gives some time for the provider to get going
 	time.Sleep(5 * time.Second)
