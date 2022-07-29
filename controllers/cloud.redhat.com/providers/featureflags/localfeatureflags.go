@@ -46,6 +46,8 @@ type localFeatureFlagsProvider struct {
 	Config config.FeatureFlagsConfig
 }
 
+const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
 func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
@@ -72,12 +74,12 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 
 	dbCfg := config.DatabaseConfig{}
 
-	password, err := utils.RandPassword(16)
+	password, err := utils.RandPassword(16, rCharSet)
 	if err != nil {
 		return nil, errors.Wrap("password generate failed", err)
 	}
 
-	pgPassword, err := utils.RandPassword(16)
+	pgPassword, err := utils.RandPassword(16, rCharSet)
 	if err != nil {
 		return nil, errors.Wrap("pgPassword generate failed", err)
 	}
