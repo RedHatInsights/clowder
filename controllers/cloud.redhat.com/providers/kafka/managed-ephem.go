@@ -309,10 +309,7 @@ func (mep *managedEphemProvider) createCyndiPipeline(app *crd.ClowdApp) error {
 	if !app.Spec.Cyndi.Enabled {
 		return nil
 	}
-	err := createCyndiPipeline(
-		mep.Ctx, mep.Client, mep.Cache, app, mep.Env, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env),
-	)
-	return err
+	return createCyndiPipeline(mep, app, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env))
 }
 
 func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
