@@ -23,8 +23,6 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-const rCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=[]@"
-
 type KeycloakConfig struct {
 	URL             string
 	Username        string
@@ -78,12 +76,12 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 	username := utils.RandString(8)
 
-	password, err := utils.RandPassword(16, rCharSet)
+	password, err := utils.RandPassword(16, provutils.RCharSet)
 	if err != nil {
 		return nil, errors.Wrap("couldn't generate password", err)
 	}
 
-	defaultPassword, err := utils.RandPassword(16, rCharSet)
+	defaultPassword, err := utils.RandPassword(16, provutils.RCharSet)
 	if err != nil {
 		return nil, errors.Wrap("couldn't generate defaultPassword", err)
 	}
