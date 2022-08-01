@@ -739,9 +739,9 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	secretData := make(map[string]string)
 	secretData["client.id"] = "username"
 	secretData["client.secret"] = "password"
-	secretData["hostname"] = "hostname"
-	secretData["admin.url"] = "admin.url"
-	secretData["token.url"] = "token.url"
+	secretData["hostname"] = "hostname:443"
+	secretData["admin.url"] = "https://admin.url"
+	secretData["token.url"] = "https://token.url"
 	secretName := "managed-ephem-secret"
 	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
 	assert.Nil(t, err)
@@ -755,37 +755,46 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	_ = createCloudwatchSecret(&cwData)
 
+	mockClient := MockEphemManagedKafkaHTTPClient{topicList: make(map[string]bool)}
+
 	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
-		return &MockEphemManagedKafkaHTTPClient{}
+		return &mockClient
 	}
 
-	app, env, err := createManagedKafkaClowderStack(nn, secretName)
-
-	//ephemera-managed-kafka-name-inventory
-
-	//This gives some time for the provider to get going
-	time.Sleep(5 * time.Second)
+	env, app, err := createManagedKafkaClowderStack(nn, secretName)
 
 	assert.Nil(t, err)
 
 	assert.NotNil(t, app)
 	assert.NotNil(t, env)
 
-	ephemManagedSecret := app.Spec.Providers.Kafka.EphemManagedSecretRef
+	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
 	assert.Equal(t, secretName, ephemManagedSecret.Name)
 	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
+	assert.Eventually(t, func() bool {
+		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
+	}, time.Second*10, time.Second*1)
+	assert.Eventually(t, func() bool {
+		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
+	}, time.Second*10, time.Second*1)
 
-	respLog := ephemManagedKafkaHTTPLog
-	expectedRespLog := []map[string]string{{"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic created\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic created\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"Get topic\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "404", "code": "404", "body": "{\"msg\":\"topic not found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic found\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"Get topic\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"got values\"}"}, {"status": "200", "code": "200", "body": "{\"\"msg\":\"Get topic default values\"}"}, {"status": "200", "code": "200", "body": "{\"msg\":\"topic patched\"}"}}
-	for i, _ := range []int{0, 1, 2, 3, 4} {
-		assert.Equal(t, respLog[i]["status"], expectedRespLog[i]["status"])
-		assert.Equal(t, respLog[i]["code"], expectedRespLog[i]["code"])
-		assert.Equal(t, respLog[i]["body"], expectedRespLog[i]["body"])
+	ctx := context.Background()
+	err = k8sClient.Delete(ctx, env)
+	if err != nil {
+		t.Error("couldn't delete resource:", err)
 	}
+
+	assert.Eventually(t, func() bool {
+		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
+	}, time.Second*10, time.Second*1)
+	assert.Eventually(t, func() bool {
+		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
+	}, time.Second*10, time.Second*1)
+
 }
 
 type MockEphemManagedKafkaHTTPClient struct {
-	getTopicCounter int
+	topicList map[string]bool
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
@@ -838,29 +847,16 @@ func (m *MockEphemManagedKafkaHTTPClient) Do(req *http.Request) (*http.Response,
 	url := req.URL.String()
 
 	urlToRespMap := map[string]http.Response{
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"msg":"Get topic"}`, 200),
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{""msg":"Get topic default values"}`, 200),
+		"/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"msg":"Get topic"}`, 200),
+		"/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{""msg":"Get topic default values"}`, 200),
 	}
 	resp := m.getFromRespMap(url, urlToRespMap)
 	if req.Method == "PATCH" {
 		r := m.makeResp(`{"msg":"topic patched"}`, 200)
 		resp = &r
-	}
-	m.logResponse(resp)
-	return resp, nil
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error) {
-	getTopicURL := "admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory"
-	urlToRespMap := map[string]http.Response{
-		getTopicURL: m.makeResp(`{"msg":"topic not found"}`, 404),
-		"admin.url/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{"msg":"got values"}`, 200),
-	}
-	if url == getTopicURL {
-		m.getTopicCounter++
-	}
-	resp := m.getFromRespMap(url, urlToRespMap)
-	if m.getTopicCounter > 1 && url == getTopicURL {
+	} else if req.Method == "DELETE" {
+		items := strings.Split(url, "/")
+		delete(m.topicList, items[len(items)-1])
 		r := m.makeResp(`{"msg":"topic found"}`, 200)
 		resp = &r
 	}
@@ -868,11 +864,43 @@ func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error
 	return resp, nil
 }
 
-func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	urlToRespMap := map[string]http.Response{
-		"admin.url/api/v1/topics": m.makeResp(`{"msg":"topic created"}`, 200),
+func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error) {
+	var resp http.Response
+	items := strings.Split(url, "/")
+	if len(items) == 6 {
+		tlist := kafka.TopicsList{}
+		for k := range m.topicList {
+			tlist.Items = append(tlist.Items, kafka.Topic{Name: k})
+		}
+		body, err := json.Marshal(tlist)
+		if err != nil {
+			return nil, fmt.Errorf("can not list topics: %s", err)
+		}
+		resp := m.makeResp(string(body), 200)
+		return &resp, nil
+	} else if len(items) == 7 {
+		for k := range m.topicList {
+			if items[len(items)-1] == k {
+				resp = m.makeResp(`{"msg":"topic found"}`, 200)
+			}
+		}
 	}
-	resp := m.getFromRespMap(url, urlToRespMap)
-	m.logResponse(resp)
-	return resp, nil
+
+	resp = m.makeResp(`{"msg":"topic not found"}`, 404)
+
+	m.logResponse(&resp)
+	return &resp, nil
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	bodyData, _ := ioutil.ReadAll(body)
+	kafkaObj := &kafka.JSONPayload{}
+	err := json.Unmarshal(bodyData, kafkaObj)
+	if err != nil {
+		return nil, err
+	}
+	m.topicList[kafkaObj.Name] = true
+	resp := m.makeResp(`{"msg":"topic created"}`, 200)
+	m.logResponse(&resp)
+	return &resp, nil
 }

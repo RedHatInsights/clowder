@@ -211,7 +211,10 @@ func getTopicList(rClient HTTPClient, adminHostname string, p *providers.Provide
 		return topicList, err
 	}
 
-	json.Unmarshal(jsonData, topicList)
+	err = json.Unmarshal(jsonData, topicList)
+	if err != nil {
+		return nil, err
+	}
 
 	return topicList, nil
 }
