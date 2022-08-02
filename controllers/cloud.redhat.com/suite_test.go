@@ -772,10 +772,10 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
 	assert.Eventually(t, func() bool {
 		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
-	}, time.Second*10, time.Second*1)
+	}, time.Second*15, time.Second*1)
 	assert.Eventually(t, func() bool {
 		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
-	}, time.Second*10, time.Second*1)
+	}, time.Second*15, time.Second*1)
 
 	ctx := context.Background()
 	err = k8sClient.Delete(ctx, env)
@@ -785,10 +785,10 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	assert.Eventually(t, func() bool {
 		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
-	}, time.Second*10, time.Second*1)
+	}, time.Second*15, time.Second*1)
 	assert.Eventually(t, func() bool {
 		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
-	}, time.Second*10, time.Second*1)
+	}, time.Second*15, time.Second*1)
 
 }
 
