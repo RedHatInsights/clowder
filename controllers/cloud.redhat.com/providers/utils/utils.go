@@ -240,3 +240,5 @@ var KubeLinterAnnotations = map[string]string{
 	"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
 	"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
 }
+
+const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

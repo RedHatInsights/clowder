@@ -66,12 +66,12 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 
 	dbCfg := config.DatabaseConfig{}
 
-	password, err := utils.RandPassword(16)
+	password, err := utils.RandPassword(16, provutils.RCharSet)
 	if err != nil {
 		return errors.Wrap("password generate failed", err)
 	}
 
-	pgPassword, err := utils.RandPassword(16)
+	pgPassword, err := utils.RandPassword(16, provutils.RCharSet)
 	if err != nil {
 		return errors.Wrap("pgPassword generate failed", err)
 	}
