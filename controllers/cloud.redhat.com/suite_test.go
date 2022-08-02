@@ -17,7 +17,6 @@ limitations under the License.
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -394,7 +393,7 @@ func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string)
 			Name:      secretNme,
 			Namespace: name.Namespace,
 		},
-		EphemManagedDeletePrefix: "test-prefix",
+		EphemManagedDeletePrefix: "ephemera-managed",
 	}
 
 	app, err := createClowdApp(env, objMeta)
@@ -802,7 +801,7 @@ func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.R
 	resp := http.Response{
 		Status:           fmt.Sprint(code),
 		StatusCode:       code,
-		Proto:            body,
+		Proto:            "HTTP/1.0",
 		ProtoMajor:       0,
 		ProtoMinor:       0,
 		Header:           make(http.Header, 0),
@@ -815,8 +814,8 @@ func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.R
 		Request:          &http.Request{},
 		TLS:              &tls.ConnectionState{},
 	}
-	buff := bytes.NewBuffer(nil)
-	resp.Write(buff)
+	// buff := bytes.NewBuffer(nil)
+	// resp.Write(buff)
 	return resp
 }
 
@@ -833,24 +832,9 @@ func (m *MockEphemManagedKafkaHTTPClient) logResponse(resp *http.Response) {
 
 }
 
-func (m *MockEphemManagedKafkaHTTPClient) getFromRespMap(url string, urlToRespMap map[string]http.Response) *http.Response {
-	defaultResp := m.makeResp(`{"topics":[]}`, 200)
-	resp, ok := urlToRespMap[url]
-	if !ok {
-		resp = defaultResp
-	}
-	m.logResponse(&resp)
-	return &resp
-}
-
 func (m *MockEphemManagedKafkaHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	url := req.URL.String()
-
-	urlToRespMap := map[string]http.Response{
-		"/api/v1/topics/ephemera-managed-kafka-name-inventory":                m.makeResp(`{"msg":"Get topic"}`, 200),
-		"/api/v1/topics/ephemera-managed-kafka-name-inventory-default-values": m.makeResp(`{""msg":"Get topic default values"}`, 200),
-	}
-	resp := m.getFromRespMap(url, urlToRespMap)
+	var resp *http.Response
 	if req.Method == "PATCH" {
 		r := m.makeResp(`{"msg":"topic patched"}`, 200)
 		resp = &r
@@ -876,17 +860,16 @@ func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error
 		if err != nil {
 			return nil, fmt.Errorf("can not list topics: %s", err)
 		}
-		resp := m.makeResp(string(body), 200)
-		return &resp, nil
+		resp = m.makeResp(string(body), 200)
 	} else if len(items) == 7 {
 		for k := range m.topicList {
 			if items[len(items)-1] == k {
 				resp = m.makeResp(`{"msg":"topic found"}`, 200)
+				break
 			}
 		}
+		resp = m.makeResp(`{"msg":"topic not found"}`, 404)
 	}
-
-	resp = m.makeResp(`{"msg":"topic not found"}`, 404)
 
 	m.logResponse(&resp)
 	return &resp, nil
