@@ -1,5 +1,5 @@
-# - clowder_config.yaml
 resources:
+# - clowder_config.yaml
 - manager.yaml
 - metrics_service.yaml
 
@@ -18,4 +18,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: 127.0.0.1:5000/clowder
-  newTag: tobcacat1
+  newTag: b7db066
