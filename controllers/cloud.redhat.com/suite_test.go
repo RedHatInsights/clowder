@@ -18,16 +18,22 @@ package controllers
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"golang.org/x/oauth2/clientcredentials"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -41,6 +47,8 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/kafka"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
@@ -145,7 +153,6 @@ func TestMain(m *testing.M) {
 	}
 	os.Exit(retCode)
 }
-
 func applyKafkaStatus(t *testing.T, ch chan int) {
 	ctx := context.Background()
 	nn := types.NamespacedName{
@@ -239,14 +246,7 @@ func createCloudwatchSecret(cwData *map[string]string) error {
 	return k8sClient.Create(context.Background(), &cloudwatch)
 }
 
-func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
-	ctx := context.Background()
-
-	objMeta := metav1.ObjectMeta{
-		Name:      name.Name,
-		Namespace: name.Namespace,
-	}
-
+func createClowdEnvironment(objMeta metav1.ObjectMeta) crd.ClowdEnvironment {
 	env := crd.ClowdEnvironment{
 		ObjectMeta: objMeta,
 		Spec: crd.ClowdEnvironmentSpec{
@@ -297,6 +297,12 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 			TargetNamespace: objMeta.Namespace,
 		},
 	}
+	return env
+}
+
+func createClowdApp(env crd.ClowdEnvironment, objMeta metav1.ObjectMeta) (crd.ClowdApp, error) {
+
+	ctx := context.Background()
 
 	replicas := int32(32)
 	maxReplicas := int32(64)
@@ -347,10 +353,50 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	err := k8sClient.Create(ctx, &env)
 
 	if err != nil {
-		return &env, &app, err
+		return app, err
 	}
 
 	err = k8sClient.Create(ctx, &app)
+
+	if err != nil {
+		return app, err
+	}
+
+	return app, err
+}
+
+func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
+
+	objMeta := metav1.ObjectMeta{
+		Name:      name.Name,
+		Namespace: name.Namespace,
+	}
+
+	env := createClowdEnvironment(objMeta)
+
+	app, err := createClowdApp(env, objMeta)
+
+	return &env, &app, err
+}
+
+func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
+	objMeta := metav1.ObjectMeta{
+		Name:      "ephemera-managed-kafka-name",
+		Namespace: name.Namespace,
+	}
+
+	env := createClowdEnvironment(objMeta)
+
+	env.Spec.Providers.Kafka = crd.KafkaConfig{
+		Mode: "managed-ephem",
+		EphemManagedSecretRef: crd.NamespacedName{
+			Name:      secretNme,
+			Namespace: name.Namespace,
+		},
+		EphemManagedDeletePrefix: "ephemera-managed",
+	}
+
+	app, err := createClowdApp(env, objMeta)
 
 	return &env, &app, err
 }
@@ -665,4 +711,179 @@ func mapEq(a, b map[string]string) bool {
 	}
 
 	return true
+}
+
+func createEphemeralManagedSecret(name string, namespace string, cwData map[string]string) error {
+	secret := core.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		StringData: cwData,
+	}
+
+	return k8sClient.Create(context.Background(), &secret)
+}
+
+var ephemManagedKafkaHTTPLog []map[string]string = []map[string]string{}
+
+func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
+	logger.Info("Starting ephemeral managed kafka e2e test")
+
+	nn := types.NamespacedName{
+		Name:      "managed-ephemeral-kafka",
+		Namespace: "default",
+	}
+
+	secretData := make(map[string]string)
+	secretData["client.id"] = "username"
+	secretData["client.secret"] = "password"
+	secretData["hostname"] = "hostname:443"
+	secretData["admin.url"] = "https://admin.url"
+	secretData["token.url"] = "https://token.url"
+	secretName := "managed-ephem-secret"
+	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
+	assert.Nil(t, err)
+
+	cwData := map[string]string{
+		"aws_access_key_id":     "key_id",
+		"aws_secret_access_key": "secret",
+		"log_group_name":        "default",
+		"aws_region":            "us-east-1",
+	}
+
+	_ = createCloudwatchSecret(&cwData)
+
+	mockClient := MockEphemManagedKafkaHTTPClient{topicList: make(map[string]bool)}
+
+	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
+		return &mockClient
+	}
+
+	env, app, err := createManagedKafkaClowderStack(nn, secretName)
+
+	assert.Nil(t, err)
+
+	assert.NotNil(t, app)
+	assert.NotNil(t, env)
+
+	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
+	assert.Equal(t, secretName, ephemManagedSecret.Name)
+	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
+	assert.Eventually(t, func() bool {
+		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
+	}, time.Second*15, time.Second*1)
+	assert.Eventually(t, func() bool {
+		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
+	}, time.Second*15, time.Second*1)
+
+	ctx := context.Background()
+	err = k8sClient.Delete(ctx, env)
+	if err != nil {
+		t.Error("couldn't delete resource:", err)
+	}
+
+	assert.Eventually(t, func() bool {
+		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
+	}, time.Second*15, time.Second*1)
+	assert.Eventually(t, func() bool {
+		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
+	}, time.Second*15, time.Second*1)
+
+}
+
+type MockEphemManagedKafkaHTTPClient struct {
+	topicList map[string]bool
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
+	readBody := ioutil.NopCloser(strings.NewReader(body))
+	resp := http.Response{
+		Status:           fmt.Sprint(code),
+		StatusCode:       code,
+		Proto:            "HTTP/1.0",
+		ProtoMajor:       0,
+		ProtoMinor:       0,
+		Header:           make(http.Header, 0),
+		Body:             readBody,
+		ContentLength:    int64(len(body)),
+		TransferEncoding: []string{},
+		Close:            false,
+		Uncompressed:     false,
+		Trailer:          map[string][]string{},
+		Request:          &http.Request{},
+		TLS:              &tls.ConnectionState{},
+	}
+	// buff := bytes.NewBuffer(nil)
+	// resp.Write(buff)
+	return resp
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) logResponse(resp *http.Response) {
+	entry := map[string]string{}
+	entry["status"] = resp.Status
+	entry["code"] = strconv.Itoa(resp.StatusCode)
+	//This is on purpose because whenever I try to read the body I get 0 bytes
+	//and I messed with it for too long and I don't care anymore because this is a
+	//test not the ISS's attitude control system
+	entry["body"] = resp.Proto
+
+	ephemManagedKafkaHTTPLog = append(ephemManagedKafkaHTTPLog, entry)
+
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	url := req.URL.String()
+	var resp *http.Response
+	if req.Method == "PATCH" {
+		r := m.makeResp(`{"msg":"topic patched"}`, 200)
+		resp = &r
+	} else if req.Method == "DELETE" {
+		items := strings.Split(url, "/")
+		delete(m.topicList, items[len(items)-1])
+		r := m.makeResp(`{"msg":"topic found"}`, 200)
+		resp = &r
+	}
+	m.logResponse(resp)
+	return resp, nil
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error) {
+	var resp http.Response
+	items := strings.Split(url, "/")
+	if len(items) == 6 {
+		tlist := kafka.TopicsList{}
+		for k := range m.topicList {
+			tlist.Items = append(tlist.Items, kafka.Topic{Name: k})
+		}
+		body, err := json.Marshal(tlist)
+		if err != nil {
+			return nil, fmt.Errorf("can not list topics: %s", err)
+		}
+		resp = m.makeResp(string(body), 200)
+	} else if len(items) == 7 {
+		for k := range m.topicList {
+			if items[len(items)-1] == k {
+				resp = m.makeResp(`{"msg":"topic found"}`, 200)
+				break
+			}
+		}
+		resp = m.makeResp(`{"msg":"topic not found"}`, 404)
+	}
+
+	m.logResponse(&resp)
+	return &resp, nil
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	bodyData, _ := ioutil.ReadAll(body)
+	kafkaObj := &kafka.JSONPayload{}
+	err := json.Unmarshal(bodyData, kafkaObj)
+	if err != nil {
+		return nil, err
+	}
+	m.topicList[kafkaObj.Name] = true
+	resp := m.makeResp(`{"msg":"topic created"}`, 200)
+	m.logResponse(&resp)
+	return &resp, nil
 }

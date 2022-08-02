@@ -5834,6 +5834,23 @@ objects:
                         enableLegacyStrimzi:
                           description: EnableLegacyStrimzi disables TLS + user auth
                           type: boolean
+                        ephemManagedDeletePrefix:
+                          description: Defines a prefix whitelist value
+                          type: string
+                        ephemManagedSecretRef:
+                          description: Defines the secret reference for the Ephemeral
+                            Managed Kafka mode. Only used in (*_managed-ephem_*) mode.
+                          properties:
+                            name:
+                              description: Name defines the Name of a resource.
+                              type: string
+                            namespace:
+                              description: Namespace defines the Namespace of a resource.
+                              type: string
+                          required:
+                          - name
+                          - namespace
+                          type: object
                         managedPrefix:
                           description: Managed topic prefix for the managed cluster.
                             Only used in (*_managed_*) mode.
@@ -5864,6 +5881,7 @@ objects:
                             is created in the desired cluster namespace and configured
                             to auto-create topics.'
                           enum:
+                          - managed-ephem
                           - managed
                           - operator
                           - app-interface

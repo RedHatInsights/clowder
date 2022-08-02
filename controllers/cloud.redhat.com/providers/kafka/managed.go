@@ -23,72 +23,113 @@ func NewManagedKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &managedKafkaProvider{Provider: *p}, nil
 }
 
-func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-
-	secretRef := types.NamespacedName{
-		Name:      k.Env.Spec.Providers.Kafka.ManagedSecretRef.Name,
-		Namespace: k.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
-	}
-
-	nullName := types.NamespacedName{}
-
-	if secretRef == nullName {
-		return errors.New("no secret ref defined for managed Kafka")
-	}
-
-	s := &core.Secret{}
-
-	if err := k.Client.Get(k.Ctx, secretRef, s); err != nil {
-		return err
-	}
-
-	var port int
+func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
 	var err error
+	var secret *core.Secret
+	var broker config.BrokerConfig
 
-	if port, err = strconv.Atoi(string(s.Data["port"])); err != nil {
+	secret, err = k.getSecret()
+	if err != nil {
 		return err
 	}
 
-	kafkaConfig := config.KafkaConfig{}
+	broker, err = k.getBrokerConfig(secret)
+	if err != nil {
+		return err
+	}
 
-	password := string(s.Data["password"])
-	username := string(s.Data["username"])
+	appConfig.Kafka = k.getKafkaConfig(broker, app)
+
+	return nil
+}
+
+func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig *config.KafkaConfig) {
+
+	topicName := topic.TopicName
+
+	if k.Env.Spec.Providers.Kafka.ManagedPrefix != "" {
+		topicName = fmt.Sprintf("%s%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
+	}
+
+	kafkaConfig.Topics = append(
+		kafkaConfig.Topics,
+		config.TopicConfig{
+			Name:          topicName,
+			RequestedName: topic.TopicName,
+		},
+	)
+}
+
+func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, error) {
+	port, err := strconv.Atoi(string(secret.Data["port"]))
+	if err != nil {
+		return 0, "", "", "", err
+	}
+	password := string(secret.Data["password"])
+	username := string(secret.Data["username"])
+	hostname := string(secret.Data["hostname"])
+	return port, password, username, hostname, nil
+}
+
+func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {
+	broker := config.BrokerConfig{}
+
+	port, password, username, hostname, err := k.destructureSecret(secret)
+	if err != nil {
+		return broker, err
+	}
 
 	saslType := config.BrokerConfigAuthtypeSasl
 
-	broker := config.BrokerConfig{
-		Hostname: string(s.Data["hostname"]),
-		Port:     &port,
-		Authtype: &saslType,
-		Sasl: &config.KafkaSASLConfig{
-			Password:         &password,
-			Username:         &username,
-			SecurityProtocol: utils.StringPtr("SASL_SSL"),
-			SaslMechanism:    utils.StringPtr("PLAIN"),
-		},
+	broker.Hostname = hostname
+	broker.Port = &port
+	broker.Authtype = &saslType
+	broker.Sasl = &config.KafkaSASLConfig{
+		Password:         &password,
+		Username:         &username,
+		SecurityProtocol: utils.StringPtr("SASL_SSL"),
+		SaslMechanism:    utils.StringPtr("PLAIN"),
 	}
 
+	return broker, nil
+}
+
+func (k *managedKafkaProvider) getKafkaConfig(broker config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
+	kafkaConfig := &config.KafkaConfig{}
 	kafkaConfig.Brokers = []config.BrokerConfig{broker}
 	kafkaConfig.Topics = []config.TopicConfig{}
 
 	for _, topic := range app.Spec.KafkaTopics {
-
-		topicName := topic.TopicName
-
-		if k.Env.Spec.Providers.Kafka.ManagedPrefix != "" {
-			topicName = fmt.Sprintf("%s%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
-		}
-
-		kafkaConfig.Topics = append(
-			kafkaConfig.Topics,
-			config.TopicConfig{
-				Name:          topicName,
-				RequestedName: topic.TopicName,
-			},
-		)
+		k.appendTopic(topic, kafkaConfig)
 	}
 
-	c.Kafka = &kafkaConfig
+	return kafkaConfig
 
-	return nil
+}
+
+func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
+	secretRef, err := k.getSecretRef()
+	if err != nil {
+		return nil, err
+	}
+
+	secret := &core.Secret{}
+
+	if err = k.Client.Get(k.Ctx, secretRef, secret); err != nil {
+		return nil, err
+	}
+
+	return secret, nil
+}
+
+func (k *managedKafkaProvider) getSecretRef() (types.NamespacedName, error) {
+	secretRef := types.NamespacedName{
+		Name:      k.Env.Spec.Providers.Kafka.ManagedSecretRef.Name,
+		Namespace: k.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
+	}
+	nullName := types.NamespacedName{}
+	if secretRef == nullName {
+		return nullName, errors.New("no secret ref defined for managed Kafka")
+	}
+	return secretRef, nil
 }

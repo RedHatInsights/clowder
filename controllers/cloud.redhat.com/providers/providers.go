@@ -24,9 +24,10 @@ import (
 )
 
 type providerAccessor struct {
-	SetupProvider func(c *Provider) (ClowderProvider, error)
-	Order         int
-	Name          string
+	FinalizeProvider func(c *Provider) error
+	SetupProvider    func(c *Provider) (ClowderProvider, error)
+	Order            int
+	Name             string
 }
 
 type providersRegistration struct {
@@ -49,12 +50,17 @@ func (p *providersRegistration) Register(
 	SetupProvider func(c *Provider) (ClowderProvider, error),
 	Order int,
 	Name string,
+	FinalizeProvider ...func(c *Provider) error,
 ) {
-	p.Registry = append(p.Registry, providerAccessor{
+	acc := providerAccessor{
 		SetupProvider: SetupProvider,
 		Order:         Order,
 		Name:          Name,
-	})
+	}
+	if len(FinalizeProvider) == 1 {
+		acc.FinalizeProvider = FinalizeProvider[0]
+	}
+	p.Registry = append(p.Registry, acc)
 	sort.Sort(p)
 }
 
