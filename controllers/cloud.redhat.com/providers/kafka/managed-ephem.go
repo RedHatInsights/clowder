@@ -674,10 +674,10 @@ func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
 		"config.storage.topic":                    "%s",
 		"connector.client.config.override.policy": "All",
 		"group.id":                                "connect-cluster",
-		"offset.storage.replication.factor":       "1",
+		"offset.storage.replication.factor":       "3",
 		"offset.storage.topic":                    "%s",
 		"offset.storage.partitions":               "5",
-		"status.storage.replication.factor":       "1",
+		"status.storage.replication.factor":       "3",
 		"status.storage.topic":                    "%s"
 	}`, connectClusterConfigs, connectClusterOffsets, connectClusterStatus)))
 
