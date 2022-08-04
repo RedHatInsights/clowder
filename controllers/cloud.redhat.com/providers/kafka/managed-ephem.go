@@ -621,7 +621,7 @@ func (kcb *KafkaConnectBuilder) BuildSpec() {
 	image := kcb.getImage()
 	kcb.kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
-		BootstrapServers: kcb.getSecret("hostname"),
+		BootstrapServers: fmt.Sprintf("%s:%s", kcb.getSecret("hostname"), kcb.getSecret("port")),
 		Version:          &version,
 		Config:           kcb.getSpecConfig(),
 		Image:            &image,
