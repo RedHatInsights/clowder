@@ -381,7 +381,7 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 
 func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
 	objMeta := metav1.ObjectMeta{
-		Name:      "ephemera-managed-kafka-name",
+		Name:      "ephemeral-managed-kafka-name",
 		Namespace: name.Namespace,
 	}
 
@@ -393,7 +393,7 @@ func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string)
 			Name:      secretNme,
 			Namespace: name.Namespace,
 		},
-		EphemManagedDeletePrefix: "ephemera-managed",
+		EphemManagedDeletePrefix: "(env-)?ephemeral-managed.*",
 	}
 
 	app, err := createClowdApp(env, objMeta)
@@ -771,10 +771,10 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	assert.Equal(t, secretName, ephemManagedSecret.Name)
 	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
 	assert.Eventually(t, func() bool {
-		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
+		return assert.Contains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
 	}, time.Second*15, time.Second*1)
 	assert.Eventually(t, func() bool {
-		return assert.Contains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
+		return assert.Contains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
 	}, time.Second*15, time.Second*1)
 
 	ctx := context.Background()
@@ -784,10 +784,10 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	}
 
 	assert.Eventually(t, func() bool {
-		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory")
+		return assert.NotContains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
 	}, time.Second*15, time.Second*1)
 	assert.Eventually(t, func() bool {
-		return assert.NotContains(t, mockClient.topicList, "ephemera-managed-kafka-name-inventory-default-values")
+		return assert.NotContains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
 	}, time.Second*15, time.Second*1)
 
 }
