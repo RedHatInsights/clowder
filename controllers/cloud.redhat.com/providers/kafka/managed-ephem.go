@@ -205,7 +205,7 @@ func getSecret(p *providers.Provider) (*core.Secret, error) {
 func getTopicList(rClient HTTPClient, adminHostname string, p *providers.Provider) (*TopicsList, error) {
 	topicList := &TopicsList{}
 
-	path := url.PathEscape(fmt.Sprintf("size=1000&filter=(env-)?%s.*", p.Env.GetName()))
+	path := url.PathEscape(fmt.Sprintf("size=1000&filter=(env-)?%s%%2E*", p.Env.GetName()))
 	url := fmt.Sprintf("%s/api/v1/topics?%s", adminHostname, path)
 	resp, err := rClient.Get(url)
 
