@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -145,8 +146,15 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 }
 
 func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
+	//"(env-)?ephemeral-.*"
+
+	reg, err := regexp.Compile(p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix)
+	if err != nil {
+		return err
+	}
+
 	for _, topic := range topicList.Items {
-		if strings.HasPrefix(topic.Name, p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix) {
+		if reg.Find([]byte(topic.Name)) != nil {
 			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/topics/%s", adminHostname, topic.Name), nil)
 			if err != nil {
 				return err
@@ -197,7 +205,7 @@ func getSecret(p *providers.Provider) (*core.Secret, error) {
 func getTopicList(rClient HTTPClient, adminHostname string, p *providers.Provider) (*TopicsList, error) {
 	topicList := &TopicsList{}
 
-	path := url.PathEscape(fmt.Sprintf("size=1000&filter=%s.*", p.Env.GetName()))
+	path := url.PathEscape(fmt.Sprintf("size=1000&filter=(env-)?%s.*", p.Env.GetName()))
 	url := fmt.Sprintf("%s/api/v1/topics?%s", adminHostname, path)
 	resp, err := rClient.Get(url)
 
