@@ -149,11 +149,12 @@ func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName,
 		matched = resolveDb(dbSpec, dbConfigs)
 
 		if matched == (config.DatabaseConfigContainer{}) {
-			return nil, &errors.MissingDependencies{
-				MissingDeps: map[string][]string{
-					"database": {appName},
-				},
-			}
+			missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
+				Source:  "database",
+				App:     appName,
+				Details: "No app interface database provider config found",
+			})
+			return nil, &missingDep
 		}
 	} else {
 		matched = matches[0]

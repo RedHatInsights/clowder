@@ -55,8 +55,15 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.A
 	)
 
 	if len(missingDeps) > 0 {
-		depVal := map[string][]string{"services": missingDeps}
-		return &errors.MissingDependencies{MissingDeps: depVal}
+		missingDepStructs := []errors.MissingDependency{}
+		for _, dep := range missingDeps {
+			missingDepStructs = append(missingDepStructs, errors.MissingDependency{
+				Source:  "service",
+				App:     app.Name,
+				Details: dep,
+			})
+		}
+		return &errors.MissingDependencies{MissingDeps: missingDepStructs}
 	}
 
 	c.Endpoints = depConfig

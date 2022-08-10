@@ -69,9 +69,12 @@ func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.Namespac
 	err := cl.Get(ctx, nn, &t)
 
 	if err != nil {
-		return &errors.MissingDependencies{
-			MissingDeps: map[string][]string{"topics": {nn.Name}},
-		}
+		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
+			Source:  "kafka",
+			App:     nn.Name,
+			Details: fmt.Sprintf("No topics found for app '%s' found in namespace '%s'", nn.Name, nn.Namespace),
+		})
+		return &missingDeps
 	}
 
 	return nil
@@ -92,11 +95,12 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 	err := cl.Get(ctx, nn, &svc)
 
 	if err != nil {
-		errors.LogError(ctx, "kafka", errors.New("Cannot find kafka bootstrap service"))
-		qualifiedName := fmt.Sprintf("%s:%s", nn.Namespace, nn.Name)
-		return &errors.MissingDependencies{
-			MissingDeps: map[string][]string{"kafka": {qualifiedName}},
-		}
+		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
+			Source:  "kafka",
+			App:     nn.Name,
+			Details: fmt.Sprintf("No kafka bootstrap service for app '%s' found in namespace '%s'", nn.Name, nn.Namespace),
+		})
+		return &missingDeps
 	}
 
 	return nil
