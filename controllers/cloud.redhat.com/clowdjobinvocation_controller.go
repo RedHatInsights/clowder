@@ -263,9 +263,16 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
 	// Update job name to avoid collisions
 	randomString := utils.RandStringLower(7)
+	jobName := fmt.Sprintf("%s-%s", job.Name, randomString)
+
 	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-%s", job.Name, randomString),
 		Namespace: cji.Namespace,
+	}
+
+	if len(jobName) > 63 {
+		r.Recorder.Eventf(cji, "Error", "ClowdJobLabelError", "Job [%s] contains a label with character length greater than 63", jobName)
+	} else {
+		nn.Name = jobName
 	}
 
 	j := batchv1.Job{}
