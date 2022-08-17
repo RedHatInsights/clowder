@@ -1,21 +1,8 @@
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: puptoo
-  namespace: test-replica-scaledown
-  labels:
-    app: puptoo
-  ownerReferences:
-  - apiVersion: cloud.redhat.com/v1alpha1
-    kind: ClowdApp
-    name: puptoo
-type: Opaque
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: puptoo-processor
   namespace: test-replica-scaledown
 spec:
-  replicas: 0
+  replicas: 4
