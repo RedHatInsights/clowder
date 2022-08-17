@@ -269,8 +269,10 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.
 		Namespace: cji.Namespace,
 	}
 
-	if len(jobName) > 63 {
-		r.Recorder.Eventf(cji, "Error", "ClowdJobLabelError", "Job [%s] contains a label with character length greater than 63", jobName)
+	labelMaxLength := 63
+
+	if len(jobName) > labelMaxLength {
+		return errors.New(fmt.Sprintf("[%s] contains a label with character length greater than 63", jobName))
 	} else {
 		nn.Name = jobName
 	}
