@@ -42,9 +42,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			default:
 				return fmt.Errorf("%s is not a valid sidecar name", sidecar.Name)
 			}
-
-			sc.Cache.Update(deployProvider.CoreDeployment, d)
 		}
+
+		sc.Cache.Update(deployProvider.CoreDeployment, d)
 	}
 
 	for _, cronJob := range app.Spec.Jobs {
@@ -65,9 +65,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			default:
 				return fmt.Errorf("%s is not a valid sidecar name", sidecar.Name)
 			}
-
-			sc.Cache.Update(cronjobProvider.CoreCronJob, cj)
 		}
+
+		sc.Cache.Update(cronjobProvider.CoreCronJob, cj)
 	}
 
 	return nil
