@@ -6,3 +6,4 @@ metadata:
   namespace: test-replica-scaledown
 spec:
   replicas: 1
+

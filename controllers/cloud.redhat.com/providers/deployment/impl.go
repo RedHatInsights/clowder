@@ -43,7 +43,7 @@ func setMinReplicas(deployment crd.Deployment, d *apps.Deployment) {
 		return
 	}
 	//No sense in running all these conditionals if desired state and observed state match
-	if d.Spec.Replicas != nil && (*d.Spec.Replicas == *deployment.MinReplicas) {
+	if d.Spec.Replicas != nil && (*d.Spec.Replicas >= *deployment.MinReplicas) {
 		return
 	}
 	//Handle the special case of minReplicas being set to 0 used for manual scale down
