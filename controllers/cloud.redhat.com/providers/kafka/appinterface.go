@@ -95,12 +95,10 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 	err := cl.Get(ctx, nn, &svc)
 
 	if err != nil {
-		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
-			Source:  "kafka",
-			App:     nn.Name,
-			Details: fmt.Sprintf("No service named '%s' found in namespace '%s'", nn.Name, nn.Namespace),
-		})
-		return &missingDeps
+		errorText := fmt.Sprintf("Cannot find kafka bootstrap service %s:%s", nn.Namespace, nn.Name)
+		newError := errors.New(errorText)
+		errors.LogError(ctx, "kafka", newError)
+		return newError
 	}
 
 	return nil
