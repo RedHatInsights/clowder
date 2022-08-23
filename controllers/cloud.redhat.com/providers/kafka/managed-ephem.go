@@ -676,18 +676,19 @@ func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
 	connectClusterConfigs := fmt.Sprintf("%s-connect-cluster-configs", kcb.Env.Name)
 	connectClusterOffsets := fmt.Sprintf("%s-connect-cluster-offsets", kcb.Env.Name)
 	connectClusterStatus := fmt.Sprintf("%s-connect-cluster-status", kcb.Env.Name)
+	connectClusterGroupId := fmt.Sprintf("%s-connect-cluster", kcb.Env.Name)
 
 	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"config.storage.replication.factor":       "3",
 		"config.storage.topic":                    "%s",
 		"connector.client.config.override.policy": "All",
-		"group.id":                                "connect-cluster",
+		"group.id":                                "%s",
 		"offset.storage.replication.factor":       "3",
 		"offset.storage.topic":                    "%s",
 		"offset.storage.partitions":               "5",
 		"status.storage.replication.factor":       "3",
 		"status.storage.topic":                    "%s"
-	}`, connectClusterConfigs, connectClusterOffsets, connectClusterStatus)))
+	}`, connectClusterConfigs, connectClusterGroupId, connectClusterOffsets, connectClusterStatus)))
 
 	return &config
 }
