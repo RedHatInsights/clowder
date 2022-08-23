@@ -152,7 +152,7 @@ func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName,
 			missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
 				Source:  "database",
 				App:     appName,
-				Details: "No app interface database provider config found",
+				Details: fmt.Sprintf("DB secret named '%s' not found in namespace '%s'", searchAppName, namespace),
 			})
 			return nil, &missingDep
 		}
