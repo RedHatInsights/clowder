@@ -40,7 +40,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			Name:      topic.TopicName,
 		}
 
-		err := validateKafkaTopic(a.Ctx, a.Client, topicName)
+		err := validateKafkaTopic(a.Ctx, a.Client, topicName, app)
 
 		if err != nil {
 			return err
@@ -59,7 +59,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }
 
-func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.NamespacedName) error {
+func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.NamespacedName, app *crd.ClowdApp) error {
 	if cl == nil {
 		// Don't validate topics from within test suite
 		return nil
@@ -71,8 +71,8 @@ func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.Namespac
 	if err != nil {
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "kafka",
-			App:     nn.Name,
-			Details: fmt.Sprintf("No topics found for app '%s' found in namespace '%s'", nn.Name, nn.Namespace),
+			App:     app.Name,
+			Details: fmt.Sprintf("No KafkaTopic named '%s' found in namespace '%s'", nn.Name, nn.Namespace),
 		})
 		return &missingDeps
 	}
@@ -98,7 +98,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "kafka",
 			App:     nn.Name,
-			Details: fmt.Sprintf("No kafka bootstrap service for app '%s' found in namespace '%s'", nn.Name, nn.Namespace),
+			Details: fmt.Sprintf("No service named '%s' found in namespace '%s'", nn.Name, nn.Namespace),
 		})
 		return &missingDeps
 	}
