@@ -69,8 +69,8 @@ func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, stri
 	username := string(secret.Data["username"])
 	hostname := string(secret.Data["hostname"])
 	cacert := ""
-	if _, ok := secret.Data["cacert"]; ok {
-		cacert = string(secret.Data["cacert"])
+	if val, ok := secret.Data["cacert"]; ok {
+		cacert = string(val)
 	}
 	return port, password, username, hostname, cacert, nil
 }
