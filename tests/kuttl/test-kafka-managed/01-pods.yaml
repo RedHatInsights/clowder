@@ -62,6 +62,7 @@ data:
   port: MjcwMTU= # 27015
   username: a2Fma2EtdXNlcm5hbWU= # kafka-username
   password: a2Fma2EtcGFzc3dvcmQ= # kafka-password
+  cacert: c29tZS1wZW0K
 kind: Secret
 metadata:
   name: managed-secret
