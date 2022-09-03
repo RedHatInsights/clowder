@@ -58,8 +58,9 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		utils.UpdateAnnotations(&d.Spec.Template, annotations)
 	}
 
-	if d.Spec.Replicas == nil || (deployment.MinReplicas != nil && *d.Spec.Replicas < *deployment.MinReplicas) {
-		// Reset replicas to minReplicas if it somehow falls below minReplicas
+	// 1. deployment is nil on first initialization
+	// 2. only manually set the replicas if the autoscaler isn't set up for this deployment and it isn't synced
+	if d.Spec.Replicas == nil || (deployment.AutoScaler == nil && *d.Spec.Replicas != *deployment.MinReplicas) {
 		d.Spec.Replicas = deployment.MinReplicas
 	}
 
