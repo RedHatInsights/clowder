@@ -84,7 +84,7 @@ var ClientCache = newHTTPClientCahce()
 const REPLICA_NUM_FLOOR = 3
 const REPLICA_NUM_CEILING = 0
 const PARTITION_NUM_FLOOR = 3
-const PARTITION_NUM_CEILING = 5
+const PARTITION_NUM_CEILING = 3
 
 func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvider, error) {
 	sec, err := getSecret(provider)
