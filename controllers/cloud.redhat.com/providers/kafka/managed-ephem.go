@@ -444,7 +444,7 @@ func (mep *managedEphemProvider) getMaxFromList(list []string, floor int, ceilin
 		max = maxValInt
 		if max < 1 {
 			max = floor
-		} else if ceiling > 0 && ceiling > floor && max > ceiling {
+		} else if ceiling > 0 && ceiling >= floor && max > ceiling {
 			max = ceiling
 		}
 	}
