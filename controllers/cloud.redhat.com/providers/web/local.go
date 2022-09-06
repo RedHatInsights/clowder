@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -63,7 +64,7 @@ func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVer
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
 	if p.Env.Status.Hostname == "" {
-		p.Env.Status.Hostname = p.Env.GenerateHostname(p.Ctx, p.Client, p.Log)
+		p.Env.Status.Hostname = p.Env.GenerateHostname(p.Ctx, p.Client, p.Log, !clowderconfig.LoadedConfig.Features.DisableRandomRoutes)
 		err := p.Client.Status().Update(p.Ctx, p.Env)
 		if err != nil {
 			return nil, err

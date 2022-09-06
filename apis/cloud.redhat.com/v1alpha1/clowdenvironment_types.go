@@ -724,7 +724,7 @@ func (i *ClowdEnvironment) IsNodePort() bool {
 }
 
 // GetClowdHostname gets the hostname for a particular environment
-func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.Client, log logr.Logger) string {
+func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.Client, log logr.Logger, random bool) string {
 	nn := types.NamespacedName{
 		Name: "cluster",
 	}
@@ -751,7 +751,11 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		spec := obj["spec"].(map[string]interface{})
 		domain := spec["domain"]
 		if domain != "" {
-			return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
+			if random {
+				return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
+			} else {
+				return fmt.Sprintf("%s.%s", i.Name, domain)
+			}
 		}
 	}
 
