@@ -59,7 +59,6 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.A
 		for _, dep := range missingDeps {
 			missingDepStructs = append(missingDepStructs, errors.MissingDependency{
 				Source:  "service",
-				App:     app.Name,
 				Details: dep,
 			})
 		}

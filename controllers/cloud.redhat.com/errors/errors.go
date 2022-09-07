@@ -76,13 +76,12 @@ func Wrap(msg string, err error) *ClowderError {
 //MissingDependency is a struct that holds information about a missing dependency
 type MissingDependency struct {
 	Source  string
-	App     string
 	Details string
 }
 
 //ToString returns a string representation of the missing dependency
 func (m *MissingDependency) ToString() string {
-	return fmt.Sprintf("source: %s, app: %s, details: %s", m.Source, m.App, m.Details)
+	return fmt.Sprintf("source: %s, details: %s", m.Source, m.Details)
 }
 
 func MakeMissingDependencies(missingDep MissingDependency) MissingDependencies {

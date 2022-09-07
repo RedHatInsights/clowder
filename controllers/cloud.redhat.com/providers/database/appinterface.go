@@ -151,7 +151,6 @@ func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName,
 		if matched == (config.DatabaseConfigContainer{}) {
 			missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
 				Source:  "database",
-				App:     appName,
 				Details: fmt.Sprintf("DB secret named '%s' not found in namespace '%s'", searchAppName, namespace),
 			})
 			return nil, &missingDep

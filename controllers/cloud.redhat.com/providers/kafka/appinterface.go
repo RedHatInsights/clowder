@@ -71,7 +71,6 @@ func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.Namespac
 	if err != nil {
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "kafka",
-			App:     app.Name,
 			Details: fmt.Sprintf("No KafkaTopic named '%s' found in namespace '%s'", nn.Name, nn.Namespace),
 		})
 		return &missingDeps

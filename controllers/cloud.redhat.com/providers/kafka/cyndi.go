@@ -44,7 +44,6 @@ func validateCyndiPipeline(
 	if err != nil {
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "cyndi",
-			App:     nn.Name,
 			Details: fmt.Sprintf("CyndiPipeline named '%s' not found in namespace '%s'", nn.Name, nn.Namespace),
 		})
 		return &missingDeps
@@ -53,7 +52,6 @@ func validateCyndiPipeline(
 	if pipeline.Status.ActiveTableName == "" {
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "cyndi",
-			App:     app.Name,
 			Details: fmt.Sprintf("CyndiPipeline '%s' in namespace '%s' has no 'active table' in status", nn.Name, nn.Namespace),
 		})
 		return &missingDeps

@@ -60,7 +60,6 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 	if !found {
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "inmemorydb",
-			App:     app.Name,
 			Details: fmt.Sprintf("No inmemorydb secret named '%s' found in namespace '%s'", secretName, app.Namespace),
 		})
 		return &missingDeps
