@@ -84,7 +84,7 @@ var ClientCache = newHTTPClientCahce()
 const REPLICA_NUM_FLOOR = 3
 const REPLICA_NUM_CEILING = 0
 const PARTITION_NUM_FLOOR = 3
-const PARTITION_NUM_CEILING = 5
+const PARTITION_NUM_CEILING = 3
 
 func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvider, error) {
 	sec, err := getSecret(provider)
@@ -92,7 +92,7 @@ func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvid
 		return nil, err
 	}
 
-	username, password, hostname, adminHostname, tokenURL := destructureSecret(sec)
+	username, password, hostname, adminHostname, tokenURL, cacert := destructureSecret(sec)
 
 	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, provider)
 
@@ -118,6 +118,10 @@ func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvid
 		secretData:    sec.Data,
 	}
 
+	if cacert != "" {
+		kafkaProvider.Config.Brokers[0].Cacert = &cacert
+	}
+
 	return kafkaProvider, kafkaProvider.configureBrokers()
 }
 
@@ -131,7 +135,7 @@ func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
 		return err
 	}
 
-	username, password, _, adminHostname, tokenURL := destructureSecret(sec)
+	username, password, _, adminHostname, tokenURL, _ := destructureSecret(sec)
 
 	rClient := upsertClientCache(username, password, tokenURL, adminHostname, p)
 
@@ -177,13 +181,19 @@ func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname strin
 	return nil
 }
 
-func destructureSecret(sec *core.Secret) (string, string, string, string, string) {
+func destructureSecret(sec *core.Secret) (string, string, string, string, string, string) {
 	username := string(sec.Data["client.id"])
 	password := string(sec.Data["client.secret"])
 	hostname := string(sec.Data["hostname"])
 	adminHostname := string(sec.Data["admin.url"])
 	tokenURL := string(sec.Data["token.url"])
-	return username, password, hostname, adminHostname, tokenURL
+
+	cacert := ""
+	if val, ok := sec.Data["cacert"]; ok {
+		cacert = string(val)
+	}
+
+	return username, password, hostname, adminHostname, tokenURL, cacert
 }
 
 func ephemGetTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment) string {
@@ -434,7 +444,7 @@ func (mep *managedEphemProvider) getMaxFromList(list []string, floor int, ceilin
 		max = maxValInt
 		if max < 1 {
 			max = floor
-		} else if ceiling > 0 && ceiling > floor && max > ceiling {
+		} else if ceiling > 0 && ceiling >= floor && max > ceiling {
 			max = ceiling
 		}
 	}
