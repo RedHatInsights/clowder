@@ -43,6 +43,6 @@ spec:
     version: 12
   deployments:
   - name: deployment
-    minReplicas: 1
+    replicas: 1
     podSpec:
       image: quay.io/psav/clowder-hello

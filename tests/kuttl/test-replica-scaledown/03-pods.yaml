@@ -8,6 +8,6 @@ spec:
   envName: test-replica-scaledown
   deployments:
   - name: processor
-    minReplicas: 0
+    replicas: 0
     podSpec:
       image: quay.io/psav/clowder-hello
