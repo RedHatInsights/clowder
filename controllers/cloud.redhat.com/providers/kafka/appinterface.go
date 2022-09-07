@@ -40,7 +40,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			Name:      topic.TopicName,
 		}
 
-		err := validateKafkaTopic(a.Ctx, a.Client, topicName, app)
+		err := validateKafkaTopic(a.Ctx, a.Client, topicName)
 
 		if err != nil {
 			return err
@@ -59,7 +59,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }
 
-func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.NamespacedName, app *crd.ClowdApp) error {
+func validateKafkaTopic(ctx context.Context, cl client.Client, nn types.NamespacedName) error {
 	if cl == nil {
 		// Don't validate topics from within test suite
 		return nil
