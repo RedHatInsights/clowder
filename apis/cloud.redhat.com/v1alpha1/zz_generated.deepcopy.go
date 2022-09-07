@@ -81,6 +81,11 @@ func (in *AutoScaler) DeepCopyInto(out *AutoScaler) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.MinReplicaCount != nil {
+		in, out := &in.MinReplicaCount, &out.MinReplicaCount
+		*out = new(int32)
+		**out = **in
+	}
 	if in.Advanced != nil {
 		in, out := &in.Advanced, &out.Advanced
 		*out = new(kedav1alpha1.AdvancedConfig)
@@ -556,6 +561,11 @@ func (in *Deployment) DeepCopyInto(out *Deployment) {
 	*out = *in
 	if in.MinReplicas != nil {
 		in, out := &in.MinReplicas, &out.MinReplicas
+		*out = new(int32)
+		**out = **in
+	}
+	if in.Replicas != nil {
+		in, out := &in.Replicas, &out.Replicas
 		*out = new(int32)
 		**out = **in
 	}

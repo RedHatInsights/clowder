@@ -38,27 +38,28 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 }
 
 func setMinReplicas(deployment crd.Deployment, d *apps.Deployment) {
+	replicaCount := deployment.GetReplicaCount()
 	//If deployment doesn't have minReplicas set, bail
-	if deployment.MinReplicas == nil {
+	if replicaCount == nil {
 		return
 	}
 
 	//Handle the special case of minReplicas being set to 0 used for manual scale down
-	if *deployment.MinReplicas == 0 {
+	if *replicaCount == 0 {
 		*d.Spec.Replicas = 0
 		return
 	}
 
 	//No sense in running all these conditionals if desired state and observed state match
-	if d.Spec.Replicas != nil && (*d.Spec.Replicas >= *deployment.MinReplicas) {
+	if d.Spec.Replicas != nil && (*d.Spec.Replicas >= *replicaCount) {
 		return
 	}
 
 	//If the spec has nil replicas or the spec replicas are less than the deployment replicas
 	//then set the spec replicas to the deployment replicas
-	if d.Spec.Replicas == nil || (*d.Spec.Replicas < *deployment.MinReplicas) {
+	if d.Spec.Replicas == nil || (*d.Spec.Replicas < *replicaCount) {
 		// Reset replicas to minReplicas if it somehow falls below minReplicas
-		d.Spec.Replicas = deployment.MinReplicas
+		d.Spec.Replicas = replicaCount
 	}
 
 }

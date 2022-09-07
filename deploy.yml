@@ -322,6 +322,11 @@ objects:
                               is 10.
                             format: int32
                             type: integer
+                          minReplicaCount:
+                            description: MinReplicaCount is the minimum number of
+                              replicas the scaler will scale the deployment to.
+                            format: int32
+                            type: integer
                           pollingInterval:
                             description: PollingInterval is the interval (in seconds)
                               to check each trigger on. Default is 30 seconds.
@@ -434,7 +439,9 @@ objects:
                             type: object
                         type: object
                       minReplicas:
-                        description: Defines the minimum replica count for the pod.
+                        description: 'Deprecated: Use Replicas instead If Replicas
+                          is not set and MinReplicas is set, then MinReplicas will
+                          be used'
                         format: int32
                         type: integer
                       name:
@@ -2844,6 +2851,10 @@ objects:
                               type: object
                             type: array
                         type: object
+                      replicas:
+                        description: Defines the desired replica count for the pod
+                        format: int32
+                        type: integer
                       web:
                         description: If set to true, creates a service on the webPort
                           defined in the ClowdEnvironment resource, along with the

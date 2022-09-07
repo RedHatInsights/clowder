@@ -56,14 +56,11 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deploy
 		Fallback:        deployment.AutoScaler.Fallback,
 	}
 
-	// Setting the min/max replica counts with defaults
-	// since the default is `0` for minReplicas - it would scale the deployment down to 0 until there is traffic
-	// and generally we don't want that.
-	if deployment.MinReplicas == nil {
+	if deployment.AutoScaler.MinReplicaCount == nil {
 		scalerSpec.MinReplicaCount = new(int32)
 		*scalerSpec.MinReplicaCount = 1
 	} else {
-		scalerSpec.MinReplicaCount = deployment.MinReplicas
+		scalerSpec.MinReplicaCount = deployment.AutoScaler.MinReplicaCount
 	}
 	if deployment.AutoScaler.MaxReplicaCount == nil {
 		scalerSpec.MaxReplicaCount = new(int32)

@@ -75,6 +75,7 @@ AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting t
 | *`pollingInterval`* __integer__ | PollingInterval is the interval (in seconds) to check each trigger on. Default is 30 seconds.
 | *`cooldownPeriod`* __integer__ | CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before scaling the deployment down. Default is 5 minutes (300 seconds).
 | *`maxReplicaCount`* __integer__ | MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to. Default is 10.
+| *`minReplicaCount`* __integer__ | MinReplicaCount is the minimum number of replicas the scaler will scale the deployment to.
 | *`advanced`* __AdvancedConfig__ | 
 | *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
 | *`fallback`* __Fallback__ | 
@@ -382,7 +383,8 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 |===
 | Field | Description
 | *`name`* __string__ | Name defines the identifier of a Pod inside the ClowdApp. This name will be used along side the name of the ClowdApp itself to form a <app>-<pod> pattern which will be used for all other created resources and also for some labels. It must be unique within a ClowdApp.
-| *`minReplicas`* __integer__ | Defines the minimum replica count for the pod.
+| *`minReplicas`* __integer__ | Deprecated: Use Replicas instead If Replicas is not set and MinReplicas is set, then MinReplicas will be used
+| *`replicas`* __integer__ | Defines the desired replica count for the pod
 | *`web`* __WebDeprecated__ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
 | *`webServices`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
