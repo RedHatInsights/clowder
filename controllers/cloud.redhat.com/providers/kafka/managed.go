@@ -60,21 +60,25 @@ func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig
 	)
 }
 
-func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, error) {
+func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, string, error) {
 	port, err := strconv.Atoi(string(secret.Data["port"]))
 	if err != nil {
-		return 0, "", "", "", err
+		return 0, "", "", "", "", err
 	}
 	password := string(secret.Data["password"])
 	username := string(secret.Data["username"])
 	hostname := string(secret.Data["hostname"])
-	return port, password, username, hostname, nil
+	cacert := ""
+	if val, ok := secret.Data["cacert"]; ok {
+		cacert = string(val)
+	}
+	return port, password, username, hostname, cacert, nil
 }
 
 func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {
 	broker := config.BrokerConfig{}
 
-	port, password, username, hostname, err := k.destructureSecret(secret)
+	port, password, username, hostname, cacert, err := k.destructureSecret(secret)
 	if err != nil {
 		return broker, err
 	}
@@ -84,6 +88,9 @@ func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.Brok
 	broker.Hostname = hostname
 	broker.Port = &port
 	broker.Authtype = &saslType
+	if cacert != "" {
+		broker.Cacert = &cacert
+	}
 	broker.Sasl = &config.KafkaSASLConfig{
 		Password:         &password,
 		Username:         &username,
