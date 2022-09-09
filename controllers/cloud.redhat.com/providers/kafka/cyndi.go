@@ -42,15 +42,19 @@ func validateCyndiPipeline(
 	err := cl.Get(ctx, nn, &pipeline)
 
 	if err != nil {
-		return &errors.MissingDependencies{
-			MissingDeps: map[string][]string{"cyndiPipeline": {nn.Name}},
-		}
+		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
+			Source:  "cyndi",
+			Details: fmt.Sprintf("CyndiPipeline named '%s' not found in namespace '%s'", nn.Name, nn.Namespace),
+		})
+		return &missingDeps
 	}
 
 	if pipeline.Status.ActiveTableName == "" {
-		return &errors.MissingDependencies{
-			MissingDeps: map[string][]string{"cyndiPipelineActiveTable": {nn.Name}},
-		}
+		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
+			Source:  "cyndi",
+			Details: fmt.Sprintf("CyndiPipeline '%s' in namespace '%s' has no 'active table' in status", nn.Name, nn.Namespace),
+		})
+		return &missingDeps
 	}
 
 	return nil

@@ -149,11 +149,11 @@ func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName,
 		matched = resolveDb(dbSpec, dbConfigs)
 
 		if matched == (config.DatabaseConfigContainer{}) {
-			return nil, &errors.MissingDependencies{
-				MissingDeps: map[string][]string{
-					"database": {appName},
-				},
-			}
+			missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
+				Source:  "database",
+				Details: fmt.Sprintf("DB secret named '%s' not found in namespace '%s'", searchAppName, namespace),
+			})
+			return nil, &missingDep
 		}
 	} else {
 		matched = matches[0]

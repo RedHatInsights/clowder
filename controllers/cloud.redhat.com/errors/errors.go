@@ -73,22 +73,37 @@ func Wrap(msg string, err error) *ClowderError {
 	return clowderErr
 }
 
-// MissingDependencies is a struct containing a map of string lists, it is intended to hold
-// information about missing dependencies. The key is a resource type, or a provider as a string,
-// and the list is a list of keys or items that are missing.
-type MissingDependencies struct {
-	MissingDeps map[string][]string
+//MissingDependency is a struct that holds information about a missing dependency
+type MissingDependency struct {
+	Source  string
+	Details string
 }
 
+//ToString returns a string representation of the missing dependency
+func (m *MissingDependency) ToString() string {
+	return fmt.Sprintf("source: %s, details: %s", m.Source, m.Details)
+}
+
+func MakeMissingDependencies(missingDep MissingDependency) MissingDependencies {
+	return MissingDependencies{
+		MissingDeps: []MissingDependency{missingDep},
+	}
+}
+
+//MissingDependencies is a struct that holds a list of MissingDependency structs
+type MissingDependencies struct {
+	MissingDeps []MissingDependency
+}
+
+//Error returns a string representation of the missing dependencies
 func (e *MissingDependencies) Error() string {
 	typeList := []string{}
 
-	for t, vals := range e.MissingDeps {
-		depList := strings.Join(vals, ",")
-		typeList = append(typeList, fmt.Sprintf("- %s: %s", t, depList))
+	for _, missingDep := range e.MissingDeps {
+		typeList = append(typeList, missingDep.ToString())
 	}
 
-	body := strings.Join(typeList, ", ")
+	body := strings.Join(typeList, "; ")
 
 	return fmt.Sprintf("Missing dependencies: [%s]", body)
 }
