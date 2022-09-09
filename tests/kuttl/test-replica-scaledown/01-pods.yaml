@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-disabled
+  name: test-replica-scaledown
 spec:
-  targetNamespace: test-disabled
+  targetNamespace: test-replica-scaledown
   providers:
     web:
       port: 8000
@@ -16,12 +16,14 @@ spec:
     kafka:
       mode: none
     db:
-      mode: local
+      mode: none
     logging:
       mode: none
     objectStore:
       mode: none
     inMemoryDb:
+      mode: none
+    featureFlags:
       mode: none
   resourceDefaults:
     limits:
@@ -34,15 +36,12 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: app
-  namespace: test-disabled
+  name: puptoo
+  namespace: test-replica-scaledown
 spec:
-  envName: test-disabled
-  database:
-    name: app-db
-    version: 12
+  envName: test-replica-scaledown
   deployments:
-  - name: deployment
-    replicas: 1
+  - name: processor
+    replicas: 4
     podSpec:
       image: quay.io/psav/clowder-hello

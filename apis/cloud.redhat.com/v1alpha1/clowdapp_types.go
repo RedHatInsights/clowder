@@ -187,8 +187,12 @@ type Deployment struct {
 	// some labels. It must be unique within a ClowdApp.
 	Name string `json:"name"`
 
-	// Defines the minimum replica count for the pod.
+	//Deprecated: Use Replicas instead
+	//If Replicas is not set and MinReplicas is set, then MinReplicas will be used
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
+
+	//Defines the desired replica count for the pod
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	// If set to true, creates a service on the webPort defined in
 	// the ClowdEnvironment resource, along with the relevant liveness and
@@ -213,6 +217,17 @@ type Deployment struct {
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
+}
+
+func (d *Deployment) GetReplicaCount() *int32 {
+	if d.Replicas != nil {
+		return d.Replicas
+	}
+	if d.MinReplicas != nil {
+		return d.MinReplicas
+	}
+	var retVal int32 = 1
+	return &retVal
 }
 
 type DeploymentStrategy struct {
@@ -320,6 +335,8 @@ type AutoScaler struct {
 	// Default is 10.
 	// +optional
 	MaxReplicaCount *int32 `json:"maxReplicaCount,omitempty"`
+	//MinReplicaCount is the minimum number of replicas the scaler will scale the deployment to.
+	MinReplicaCount *int32 `json:"minReplicaCount,omitempty"`
 	// +optional
 	Advanced *keda.AdvancedConfig `json:"advanced,omitempty"`
 	// +optional
