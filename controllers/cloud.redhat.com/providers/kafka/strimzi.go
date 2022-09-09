@@ -42,6 +42,9 @@ var KafkaConnectUser = rc.NewSingleResourceIdent(ProvName, "kafka_connect_user",
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
 var KafkaMetricsConfigMap = rc.NewSingleResourceIdent(ProvName, "kafka_metrics_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
+// CyndiConfigMap is the resource ident for a CyndiConfigMap object.
+var CyndiConfigMap = rc.NewSingleResourceIdent(ProvName, "cyndi_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
+
 // KafkaNetworkPolicy is the resource ident for the KafkaNetworkPolicy
 var KafkaNetworkPolicy = rc.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{}, rc.ResourceOptions{WriteNow: true})
 

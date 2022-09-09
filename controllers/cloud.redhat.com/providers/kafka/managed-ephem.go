@@ -326,16 +326,29 @@ func (mep *managedEphemProvider) configureBrokers() error {
 	return nil
 }
 
-func (mep *managedEphemProvider) createCyndiPipeline(app *crd.ClowdApp) error {
+func (mep *managedEphemProvider) configCyndi(app *crd.ClowdApp) error {
 	if !app.Spec.Cyndi.Enabled {
 		return nil
 	}
-	return createCyndiPipeline(mep, app, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env))
+
+	// TODO: as a followup, make these topic names configurable
+	eventsTopic := fmt.Sprintf("%s-platform.inventory.events", mep.Env.Name)
+	deadLetterQueueTopic := fmt.Sprintf("%s-platform.cyndi.dlq", mep.Env.Name)
+	replicationFactor := 3
+	if err := createCyndiConfigMap(mep, getConnectNamespace(mep.Env), eventsTopic, deadLetterQueueTopic, replicationFactor); err != nil {
+		return err
+	}
+
+	if err := createCyndiPipeline(mep, app, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
 
-	if err := mep.createCyndiPipeline(app); err != nil {
+	if err := mep.configCyndi(app); err != nil {
 		return err
 	}
 
