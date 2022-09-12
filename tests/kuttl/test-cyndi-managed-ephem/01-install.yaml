@@ -1,3 +1,16 @@
+apiVersion: v1
+data:
+  hostname: bmE= # na
+  port: ODg4OA== # 8888
+  username: bmE= # na
+  password: bmE= # na
+  cacert: bmE= # na
+kind: Secret
+metadata:
+  name: managed-secret
+  namespace: test-cyndi-managed-ephem
+type: Opaque
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
@@ -13,12 +26,10 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      cluster:
+      mode: managed-ephem-kuttl-test
+      ephemManagedSecretRef:
+        name: managed-secret
         namespace: test-cyndi-managed-ephem
-        name: test-cyndi-managed-ephem
-      connect:
-        name: test-cyndi-managed-ephem-cluster
-      mode: managed-ephem
     db:
       mode: local
     logging:
@@ -51,6 +62,13 @@ spec:
   database:
     name: myapp-db
     version: 12
+  kafkaTopics:
+    - replicas: 3
+      partitions: 64
+      topicName: topicOne
+    - replicas: 5
+      partitions: 32
+      topicName: topicTwo
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -66,3 +84,10 @@ spec:
   database:
     name: host-inventory-db
     version: 12
+  kafkaTopics:
+    - replicas: 3
+      partitions: 64
+      topicName: topicOne
+    - replicas: 5
+      partitions: 32
+      topicName: topicTwo

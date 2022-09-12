@@ -350,6 +350,7 @@ spec:
                           namespace and configured to auto-create topics.'
                         enum:
                         - managed-ephem
+                        - managed-ephem-kuttl-test
                         - managed
                         - operator
                         - app-interface

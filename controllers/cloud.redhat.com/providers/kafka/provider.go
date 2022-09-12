@@ -28,6 +28,9 @@ var CyndiAppSecret = rc.NewSingleResourceIdent(ProvName, "cyndi_app_secret", &co
 // CyndiHostInventoryAppSecret identifies the cyndi host-inventory app secret object.
 var CyndiHostInventoryAppSecret = rc.NewSingleResourceIdent(ProvName, "cyndi_host_inventory_secret", &core.Secret{})
 
+// CyndiConfigMap is the resource ident for a CyndiConfigMap object.
+var CyndiConfigMap = rc.NewSingleResourceIdent(ProvName, "cyndi_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
+
 // GetKafka returns the correct kafka provider based on the environment.
 func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 	c.Env.ConvertDeprecatedKafkaSpec()
@@ -39,7 +42,7 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewAppInterface(c)
 	case "managed":
 		return NewManagedKafka(c)
-	case "managed-ephem":
+	case "managed-ephem", "managed-ephem-kuttl-test":
 		return NewManagedEphemKafka(c)
 	case "none", "":
 		return NewNoneKafka(c)

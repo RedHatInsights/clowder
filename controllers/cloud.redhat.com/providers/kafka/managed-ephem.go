@@ -352,8 +352,11 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.Ap
 		return nil
 	}
 
-	if err := mep.processTopics(app); err != nil {
-		return err
+	// at this time, skip topic processing for the kuttl tests until we can mock managed kafka
+	if mep.Env.Spec.Providers.Kafka.Mode != "managed-ephem-kuttl-test" {
+		if err := mep.processTopics(app); err != nil {
+			return err
+		}
 	}
 
 	// set our provider's config on the AppConfig
