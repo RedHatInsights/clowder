@@ -42,7 +42,7 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewAppInterface(c)
 	case "managed":
 		return NewManagedKafka(c)
-	case "managed-ephem", "managed-ephem-kuttl-test":
+	case "managed-ephem":
 		return NewManagedEphemKafka(c)
 	case "none", "":
 		return NewNoneKafka(c)
