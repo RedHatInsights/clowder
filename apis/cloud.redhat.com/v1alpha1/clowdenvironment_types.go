@@ -118,7 +118,7 @@ type MetricsConfig struct {
 }
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
-// +kubebuilder:validation:Enum=managed-ephem;managed-ephem-kuttl-test;managed;operator;app-interface;local;none
+// +kubebuilder:validation:Enum=managed-ephem;managed;operator;app-interface;local;none
 type KafkaMode string
 
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
