@@ -288,14 +288,17 @@ func createCyndiInventoryDbSecret(
 	return secretName, nil
 }
 
-// create a configmap to tweak the connector config for all CyndiPipelines created in a specific namespace
+// create a configmap to tweak the connector config for CyndiPipelines created in a specific namespace
+// at the moment this function is only called when the kafka provider mode is 'managed-ephem'
 func createCyndiConfigMap(
 	s prov.RootProvider,
 	connectClusterNamespace string,
-	eventsTopic string,
-	deadLetterQueueTopic string,
-	replicationFactor int,
 ) error {
+	// TODO: as a followup, make these topic names configurable
+	eventsTopic := fmt.Sprintf("%s-platform.inventory.events", s.GetEnv().Name)
+	deadLetterQueueTopic := fmt.Sprintf("%s-platform.cyndi.dlq", s.GetEnv().Name)
+	replicationFactor := 3
+
 	nn := types.NamespacedName{
 		Namespace: connectClusterNamespace,
 		Name:      "cyndi",

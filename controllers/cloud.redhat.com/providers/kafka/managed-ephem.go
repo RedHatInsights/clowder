@@ -331,11 +331,7 @@ func (mep *managedEphemProvider) configCyndi(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	// TODO: as a followup, make these topic names configurable
-	eventsTopic := fmt.Sprintf("%s-platform.inventory.events", mep.Env.Name)
-	deadLetterQueueTopic := fmt.Sprintf("%s-platform.cyndi.dlq", mep.Env.Name)
-	replicationFactor := 3
-	if err := createCyndiConfigMap(mep, getConnectNamespace(mep.Env), eventsTopic, deadLetterQueueTopic, replicationFactor); err != nil {
+	if err := createCyndiConfigMap(mep, getConnectNamespace(mep.Env)); err != nil {
 		return err
 	}
 
