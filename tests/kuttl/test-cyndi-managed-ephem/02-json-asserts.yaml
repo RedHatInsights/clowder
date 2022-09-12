@@ -3,8 +3,8 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: sleep 5
-- script: kubectl get secret -n test-cyndi-managed-ephem-kafka test-cyndi-managed-ephem-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret
-- script: kubectl get secret -n test-cyndi-managed-ephem-kafka test-cyndi-managed-ephem-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret
+- script: kubectl get secret -n test-cyndi-managed-ephem test-cyndi-managed-ephem-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret
+- script: kubectl get secret -n test-cyndi-managed-ephem test-cyndi-managed-ephem-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret
 - script: kubectl get secret -n test-cyndi-managed-ephem host-inventory-db -o json > /tmp/host-inventory-db-secret
 - script: kubectl get secret -n test-cyndi-managed-ephem myapp-db -o json > /tmp/myapp-db-secret
 - script: jq '.data' /tmp/host-inventory-db-secret > /tmp/host-inventory-db-secret-data

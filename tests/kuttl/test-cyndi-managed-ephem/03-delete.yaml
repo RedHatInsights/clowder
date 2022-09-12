@@ -2,12 +2,9 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 delete:
-- apiVersion: v1
-  kind: Namespace
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
   name: test-cyndi-managed-ephem
 - apiVersion: v1
   kind: Namespace
-  name: test-cyndi-managed-ephem-kafka
-- apiVersion: cloud.redhat.com/v1alpha1
-  kind: ClowdEnvironment
   name: test-cyndi-managed-ephem

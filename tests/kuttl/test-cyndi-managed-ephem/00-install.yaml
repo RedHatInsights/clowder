@@ -5,11 +5,3 @@ metadata:
 spec:
   finalizers:
   - kubernetes
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: test-cyndi-managed-ephem-kafka
-spec:
-  finalizers:
-  - kubernetes

@@ -14,11 +14,11 @@ spec:
       path: "/metrics"
     kafka:
       cluster:
-        namespace: test-cyndi-managed-ephem-kafka
+        namespace: test-cyndi-managed-ephem
         name: test-cyndi-managed-ephem
       connect:
         name: test-cyndi-managed-ephem-cluster
-      mode: operator
+      mode: managed-ephem
     db:
       mode: local
     logging:
