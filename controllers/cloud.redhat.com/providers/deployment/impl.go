@@ -46,7 +46,7 @@ func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 
 	//Handle the special case of minReplicas being set to 0 used for manual scale down
 	if *replicaCount == 0 {
-		*d.Spec.Replicas = 0
+		d.Spec.Replicas = utils.Int32Ptr(0)
 		return
 	}
 
