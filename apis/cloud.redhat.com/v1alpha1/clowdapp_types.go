@@ -139,6 +139,8 @@ type PublicWebService struct {
 
 	// WhitelistPaths define the paths that do not require authentication
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
+
+	Headless bool `json:"headless,omitempty"`
 }
 
 // AppProtocol is used to define an appProtocol for Istio
@@ -154,12 +156,15 @@ type PrivateWebService struct {
 
 	// AppProtocol determines the protocol to be used for the private port, (defaults to http)
 	AppProtocol AppProtocol `json:"appProtocol,omitempty"`
+
+	Headless bool `json:"headless,omitempty"`
 }
 
 // MetricsWebService is the definition of the metrics web service. This is automatically
 // enabled and the configuration here at the moment is included for completeness, as there
 // are no configurable options.
 type MetricsWebService struct {
+	Headless bool `json:"headless,omitempty"`
 }
 
 // WebServices defines the structs for the three exposed web services: public,
