@@ -172,7 +172,7 @@ func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 	if ReadEnv() == r.app.Spec.EnvName {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", r.app.Spec.EnvName)
 		r.log.Info("Env currently being reconciled")
-		return ctrl.Result{Requeue: true}, errors.New(SKIPRECONCILE)
+		return ctrl.Result{Requeue: true}, errors.New("ClowdEnvLocked - request requeued")
 	}
 	return ctrl.Result{}, nil
 }
