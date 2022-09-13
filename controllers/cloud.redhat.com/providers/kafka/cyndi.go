@@ -316,6 +316,8 @@ func createCyndiConfigMap(
 		"connector.topic.replication.factor":   strconv.Itoa(replicationFactor),
 	}
 
+	cm.SetName(nn.Name)
+	cm.SetNamespace(nn.Namespace)
 	// it would be best for the ClowdApp to own this, but since cross-namespace OwnerReferences
 	// are not permitted, make this owned by the ClowdEnvironment
 	cm.SetOwnerReferences([]metav1.OwnerReference{s.GetEnv().MakeOwnerReference()})
