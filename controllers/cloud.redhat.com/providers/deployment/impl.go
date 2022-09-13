@@ -30,7 +30,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 		return err
 	}
 
-	if err := initDeployment(app, dp.Env, d, nn, deployment); err != nil {
+	if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
 		return err
 	}
 
@@ -41,7 +41,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 	return nil
 }
 
-func setLocalAnnotations(env *crd.ClowdEnvironment, deployment crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {
+func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
 			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
@@ -54,7 +54,7 @@ func setLocalAnnotations(env *crd.ClowdEnvironment, deployment crd.Deployment, d
 
 }
 
-func setMinReplicas(deployment crd.Deployment, d *apps.Deployment) {
+func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 	replicaCount := deployment.GetReplicaCount()
 	//If deployment doesn't have minReplicas set, bail
 	if replicaCount == nil {
@@ -63,7 +63,7 @@ func setMinReplicas(deployment crd.Deployment, d *apps.Deployment) {
 
 	//Handle the special case of minReplicas being set to 0 used for manual scale down
 	if *replicaCount == 0 {
-		*d.Spec.Replicas = 0
+		d.Spec.Replicas = utils.Int32Ptr(0)
 		return
 	}
 
@@ -81,7 +81,7 @@ func setMinReplicas(deployment crd.Deployment, d *apps.Deployment) {
 
 }
 
-func setDeploymentStrategy(deployment crd.Deployment, d *apps.Deployment) {
+func setDeploymentStrategy(deployment *crd.Deployment, d *apps.Deployment) {
 	if !deployment.WebServices.Public.Enabled {
 		if deployment.DeploymentStrategy != nil && deployment.DeploymentStrategy.PrivateStrategy != "" {
 			d.Spec.Strategy = apps.DeploymentStrategy{
@@ -115,7 +115,7 @@ func makeBaseProbe(env *crd.ClowdEnvironment) core.Probe {
 	}
 }
 
-func setLivenessProbe(pod *crd.PodSpec, deployment crd.Deployment, env *crd.ClowdEnvironment, c *core.Container) {
+func setLivenessProbe(pod *crd.PodSpec, deployment *crd.Deployment, env *crd.ClowdEnvironment, c *core.Container) {
 	livenessProbe := core.Probe{}
 
 	if pod.LivenessProbe != nil {
@@ -140,7 +140,7 @@ func setLivenessProbe(pod *crd.PodSpec, deployment crd.Deployment, env *crd.Clow
 	}
 }
 
-func setReadinessProbe(pod *crd.PodSpec, deployment crd.Deployment, env *crd.ClowdEnvironment, c *core.Container) {
+func setReadinessProbe(pod *crd.PodSpec, deployment *crd.Deployment, env *crd.ClowdEnvironment, c *core.Container) {
 	readinessProbe := core.Probe{}
 	if pod.ReadinessProbe != nil {
 		readinessProbe = *pod.ReadinessProbe
@@ -201,7 +201,7 @@ func loadEnvVars(pod crd.PodSpec) []core.EnvVar {
 	return envvars
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment) error {
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment *crd.Deployment) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
