@@ -37,7 +37,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 	return nil
 }
 
-func setMinReplicas(deployment crd.Deployment, d *apps.Deployment) {
+func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 	replicaCount := deployment.GetReplicaCount()
 	//If deployment doesn't have minReplicas set, bail
 	if replicaCount == nil {
