@@ -30,7 +30,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 		return err
 	}
 
-	if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
+	if err := initDeployment(app, dp.Env, d, nn, &&deployment); err != nil {
 		return err
 	}
 

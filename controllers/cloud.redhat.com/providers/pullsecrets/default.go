@@ -2,6 +2,7 @@ package pullsecrets
 
 import (
 	"fmt"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -144,12 +145,21 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 }
 
 func addAllSecrets(secList []string, sa *core.ServiceAccount) {
-	sa.ImagePullSecrets = []core.LocalObjectReference{}
+
+	newSecrets := []core.LocalObjectReference{}
+
+	for _, existingSec := range sa.ImagePullSecrets {
+		if strings.HasPrefix(existingSec.Name, fmt.Sprintf("%s-dockercfg", sa.Name)) {
+			newSecrets = append(newSecrets, existingSec)
+		}
+	}
 
 	for _, pullSecretName := range secList {
 
-		sa.ImagePullSecrets = append(sa.ImagePullSecrets, core.LocalObjectReference{
+		newSecrets = append(newSecrets, core.LocalObjectReference{
 			Name: pullSecretName,
 		})
 	}
+
+	sa.ImagePullSecrets = newSecrets
 }
