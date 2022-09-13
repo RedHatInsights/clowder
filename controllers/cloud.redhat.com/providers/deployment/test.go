@@ -142,7 +142,9 @@ func TestResourceDefaults(t *testing.T) {
 				Namespace: app.Namespace,
 			}
 
-			initDeployment(app, env, d, nn, app.Spec.Deployments[0])
+			deployment := app.Spec.Deployments[0]
+
+			initDeployment(app, env, d, nn, &deployment)
 
 			var expectedLimitCPU, expectedLimitMemory, expectedRequestsCPU, expectedRequestsMemory resource.Quantity
 

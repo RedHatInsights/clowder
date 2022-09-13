@@ -26,7 +26,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 		return err
 	}
 
-	if err := initDeployment(app, dp.Env, d, nn, deployment); err != nil {
+	if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment crd.Deployment) error {
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment *crd.Deployment) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
