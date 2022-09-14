@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-headless-service-app-processor-headless-service
+  namespace: test-headless-service
+spec:
+  clusterIP: None
+  ports:
+  - port: 3200
+    protocol: TCP
+    targetPort: 3220
+  selector:
+    app: test-headless-service-app

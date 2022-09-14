@@ -139,8 +139,6 @@ type PublicWebService struct {
 
 	// WhitelistPaths define the paths that do not require authentication
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
-
-	Headless bool `json:"headless,omitempty"`
 }
 
 // AppProtocol is used to define an appProtocol for Istio
@@ -156,15 +154,12 @@ type PrivateWebService struct {
 
 	// AppProtocol determines the protocol to be used for the private port, (defaults to http)
 	AppProtocol AppProtocol `json:"appProtocol,omitempty"`
-
-	Headless bool `json:"headless,omitempty"`
 }
 
 // MetricsWebService is the definition of the metrics web service. This is automatically
 // enabled and the configuration here at the moment is included for completeness, as there
 // are no configurable options.
 type MetricsWebService struct {
-	Headless bool `json:"headless,omitempty"`
 }
 
 // WebServices defines the structs for the three exposed web services: public,
@@ -217,11 +212,18 @@ type Deployment struct {
 
 	AutoScalerSimple *AutoScalerSimple `json:"autoScalerSimple,omitempty"`
 
+	HeadlessService *HeadlessService `json:"headlessService,omitempty"`
+
 	// DeploymentStrategy allows the deployment strategy to be set only if the
 	// deployment has no public service enabled
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
+}
+
+type HeadlessService struct {
+	Port       int32 `json:"port,omitempty"`
+	TargetPort int32 `json:"targetPort,omitempty"`
 }
 
 func (d *Deployment) GetReplicaCount() *int32 {

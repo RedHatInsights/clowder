@@ -52,6 +52,7 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/dependencies"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/featureflags"
+	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/headless"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/inmemorydb"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/iqe"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/kafka"

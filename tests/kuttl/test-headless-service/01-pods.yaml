@@ -1,0 +1,50 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-headless-service
+spec:
+  targetNamespace: test-headless-service
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: local
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-headless-service-app
+  namespace: test-headless-service
+spec:
+  envName: test-headless-service
+  deployments:
+  - name: processor
+    replicas: 5
+    headlessService:
+      port: 3200
+      targetPort: 3220
+    podSpec:
+      image: quay.io/psav/clowder-hello

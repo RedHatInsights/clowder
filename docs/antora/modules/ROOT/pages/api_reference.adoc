@@ -391,6 +391,7 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the Keda auto scaler
 | *`autoScalerSimple`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]__ | 
+| *`headlessService`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-headlessservice[$$HeadlessService$$]__ | 
 | *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
 | *`metadata`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentmetadata[$$DeploymentMetadata$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
@@ -505,6 +506,24 @@ FeatureFlagsConfig configures the Clowder provider controlling the creation of F
 | *`credentialRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret containing the client access token, only used for (*_app-interface_*) mode.
 | *`hostname`* __string__ | Defines the hostname for (*_app-interface_*) mode
 | *`port`* __integer__ | Defineds the port for (*_app-interface_*) mode
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-headlessservice"]
+==== HeadlessService 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`port`* __integer__ | 
+| *`targetPort`* __integer__ | 
 |===
 
 

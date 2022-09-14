@@ -422,6 +422,15 @@ objects:
                               services that do not have public facing endpoints.
                             type: string
                         type: object
+                      headlessService:
+                        properties:
+                          port:
+                            format: int32
+                            type: integer
+                          targetPort:
+                            format: int32
+                            type: integer
+                        type: object
                       k8sAccessLevel:
                         description: K8sAccessLevel defines the level of access for
                           this deployment
