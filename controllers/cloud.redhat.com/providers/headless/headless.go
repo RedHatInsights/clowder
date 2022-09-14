@@ -37,11 +37,9 @@ type headlessServiceProvider struct {
 	providers.Provider
 }
 
+//deploymentHasHeadlessService returns true if the deployment has a headless service
 func (h *headlessServiceProvider) deploymentHasHeadlessService(deployment *crd.Deployment) bool {
-	return *deployment.HeadlessService != crd.HeadlessService{
-		Port:       0,
-		TargetPort: 0,
-	}
+	return deployment.HeadlessService == nil
 }
 
 //Provide is the Provider API interface
