@@ -77,6 +77,9 @@ type AppConfig struct {
 	// Endpoints corresponds to the JSON schema field "endpoints".
 	Endpoints []DependencyEndpoint `json:"endpoints,omitempty"`
 
+	// Endpoints corresponds to the JSON schema field "endpoints".
+	HeadlessEndpoints []DependencyEndpoint `json:"headlessEndpoints,omitempty"`
+
 	// FeatureFlags corresponds to the JSON schema field "featureFlags".
 	FeatureFlags *FeatureFlagsConfig `json:"featureFlags,omitempty"`
 

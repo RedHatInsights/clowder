@@ -48,8 +48,8 @@ func (h *headlessServiceProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 		if !h.deploymentHasHeadlessService(&deployment) {
 			continue
 		}
-		headlessService := makeHeadlessService(&deployment, app, h)
-		if err := headlessService.MakeHeadlessService(); err != nil {
+		headlessService := makeHeadlessService(&deployment, app, h, c)
+		if err := headlessService.MakeHeadlessServiceResource(); err != nil {
 			return err
 		}
 	}
@@ -57,11 +57,12 @@ func (h *headlessServiceProvider) Provide(app *crd.ClowdApp, c *config.AppConfig
 }
 
 //makeHeadlessService is the constructor for headlessService struct
-func makeHeadlessService(deployment *crd.Deployment, app *crd.ClowdApp, provider *headlessServiceProvider) headlessService {
+func makeHeadlessService(deployment *crd.Deployment, app *crd.ClowdApp, provider *headlessServiceProvider, appConfig *config.AppConfig) headlessService {
 	return headlessService{
 		deployment: deployment,
 		app:        app,
 		provider:   provider,
+		appConfig:  appConfig,
 	}
 }
 
@@ -72,29 +73,45 @@ type headlessService struct {
 	provider       *headlessServiceProvider
 	service        *core.Service
 	coreDeployment *apps.Deployment
+	appConfig      *config.AppConfig
 }
 
 //MakeHeadlessService is the main function for creating the headless service
-func (h *headlessService) MakeHeadlessService() error {
-	h.makeService()
+func (h *headlessService) MakeHeadlessServiceResource() error {
+	h.makeServiceResource()
 
 	h.setServiceNN()
 
-	h.cacheService()
+	if err := h.createServiceCacheObject(); err != nil {
+		return err
+	}
 
 	h.getCoreDeployment()
 
 	h.setServiceLabels()
 
-	if err := h.updateServiceCache(); err != nil {
+	if err := h.updateServiceCacheObject(); err != nil {
 		return err
 	}
+
+	h.updateAppConfig()
 
 	return nil
 }
 
-//makeService makes the core service
-func (h *headlessService) makeService() {
+//updateAppConfig updates the app config JSON with the service info
+func (h *headlessService) updateAppConfig() {
+	endPoint := config.DependencyEndpoint{
+		App:      h.app.Name,
+		Name:     h.serviceName(),
+		Hostname: fmt.Sprintf("%s.%s.svc.cluster.local", h.serviceName(), h.app.Namespace),
+		Port:     int(h.deployment.HeadlessService.Port),
+	}
+	h.appConfig.HeadlessEndpoints = append(h.appConfig.HeadlessEndpoints, endPoint)
+}
+
+//makeServiceResource makes the core service
+func (h *headlessService) makeServiceResource() {
 	h.service = &core.Service{}
 	h.service.Spec.ClusterIP = "None"
 	h.service.Spec.Ports = []core.ServicePort{{
@@ -125,8 +142,8 @@ func (h *headlessService) setServiceNN() {
 	h.service.SetNamespace(service_nn.Namespace)
 }
 
-//cacheService creates the cache of the service
-func (h *headlessService) cacheService() error {
+//createServiceCacheObject creates the cache of the service
+func (h *headlessService) createServiceCacheObject() error {
 	return h.provider.Cache.Create(CoreService, h.getServiceNN(), h.service)
 }
 
@@ -143,7 +160,7 @@ func (h *headlessService) setServiceLabels() {
 	h.service.Spec.Selector = map[string]string{"app": deploymentLabels["app"]}
 }
 
-//updateServiceCache updates the service cache
-func (h *headlessService) updateServiceCache() error {
+//updateServiceCacheObject updates the service cache
+func (h *headlessService) updateServiceCacheObject() error {
 	return h.provider.Cache.Update(CoreService, h.service)
 }
