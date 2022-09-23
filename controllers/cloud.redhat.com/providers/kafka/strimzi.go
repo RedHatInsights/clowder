@@ -54,7 +54,6 @@ var conversionMap = map[string]func([]string) (string, error){
 
 type strimziProvider struct {
 	providers.Provider
-	Config config.KafkaConfig // This is needed here
 }
 
 func (s *strimziProvider) configureKafkaCluster() error {
@@ -345,9 +344,9 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	return nn, nil
 }
 
-func (s *strimziProvider) getBootstrapServersString() string {
+func (s *strimziProvider) getBootstrapServersString(configs *config.KafkaConfig) string {
 	strArray := []string{}
-	for _, bc := range s.Config.Brokers {
+	for _, bc := range configs.Brokers {
 		if bc.Port != nil {
 			strArray = append(strArray, fmt.Sprintf("%s:%d", bc.Hostname, *bc.Port))
 		} else {
@@ -421,7 +420,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 	return nil
 }
 
-func (s *strimziProvider) configureKafkaConnectCluster() error {
+func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConfig) error {
 	var kcRequests, kcLimits apiextensions.JSON
 
 	// default values for config/requests/limits in Strimzi resource specs
@@ -500,7 +499,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
-		BootstrapServers: s.getBootstrapServersString(),
+		BootstrapServers: s.getBootstrapServersString(configs),
 		Version:          &version,
 		Config:           &config,
 		Image:            &image,
@@ -547,7 +546,7 @@ func (s *strimziProvider) configureKafkaConnectCluster() error {
 	return nil
 }
 
-func (s *strimziProvider) configureListeners() error {
+func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error {
 	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
 		Name:      getKafkaName(s.Env),
@@ -575,16 +574,16 @@ func (s *strimziProvider) configureListeners() error {
 
 	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
 
-	s.Config.Brokers = []config.BrokerConfig{}
+	configs.Brokers = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			s.Config.Brokers = append(s.Config.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+			configs.Brokers = append(configs.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			s.Config.Brokers = append(s.Config.Brokers, buildTcpBrokerConfig(listener))
+			configs.Brokers = append(configs.Brokers, buildTcpBrokerConfig(listener))
 		}
 	}
 
-	if len(s.Config.Brokers) < 1 {
+	if len(configs.Brokers) < 1 {
 		return fmt.Errorf(
 			"kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
 		)
@@ -626,17 +625,21 @@ func (s *strimziProvider) configureBrokers() error {
 		return errors.Wrap("failed to provision kafka cluster", err)
 	}
 
+	configs := config.KafkaConfig{}
+
 	// Look up Kafka cluster's listeners and configure s.Config.Brokers
 	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
-	if err := s.configureListeners(); err != nil {
+	if err := s.configureListeners(&configs); err != nil {
 		clowdErr := errors.Wrap("unable to determine kafka broker addresses", err)
 		clowdErr.Requeue = true
 		return clowdErr
 	}
 
-	if err := s.configureKafkaConnectCluster(); err != nil {
+	if err := s.configureKafkaConnectCluster(&configs); err != nil {
 		return errors.Wrap("failed to provision kafka connect cluster", err)
 	}
+
+	s.UpdateRootSecretProv(configs, ProvName)
 
 	return nil
 }
@@ -645,9 +648,6 @@ func (s *strimziProvider) configureBrokers() error {
 func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
 	kafkaProvider := &strimziProvider{
 		Provider: *p,
-		Config: config.KafkaConfig{
-			Brokers: []config.BrokerConfig{},
-		},
 	}
 
 	if err := createNetworkPolicies(p); err != nil {
@@ -709,6 +709,13 @@ func createNetworkPolicies(p *providers.Provider) error {
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+
+	jsonData := s.RootSecret.Data[ProvName]
+	configs := config.KafkaConfig{}
+	if err := json.Unmarshal(jsonData, &configs); err != nil {
+		return err
+	}
+
 	if app.Spec.Cyndi.Enabled {
 		err := createCyndiPipeline(s, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env))
 		if err != nil {
@@ -729,19 +736,19 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 			return err
 		}
 
-		if err := s.setBrokerCredentials(app); err != nil {
+		if err := s.setBrokerCredentials(app, &configs); err != nil {
 			return err
 		}
 	}
 
 	// set our provider's config on the AppConfig
-	c.Kafka = &s.Config
+	c.Kafka = &configs
 
 	return nil
 }
 
-func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp) error {
-	for _, broker := range s.Config.Brokers {
+func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *config.KafkaConfig) error {
+	for _, broker := range configs.Brokers {
 		if broker.Authtype == nil {
 			continue
 		}
@@ -905,7 +912,13 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		)
 	}
 
-	s.Config.Topics = topicConfig
+	jsonData := s.RootSecret.Data[ProvName]
+	configs := config.KafkaConfig{}
+	if err := json.Unmarshal(jsonData, &configs); err != nil {
+		return err
+	}
+
+	configs.Topics = topicConfig
 
 	return nil
 }
