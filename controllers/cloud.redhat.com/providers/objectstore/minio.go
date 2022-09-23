@@ -106,6 +106,14 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		return err
 	}
 
+	c.ObjectStore = &config.ObjectStoreConfig{
+		Hostname:  configs.Hostname,
+		Port:      configs.Port,
+		AccessKey: configs.AccessKey,
+		SecretKey: configs.SecretKey,
+		Buckets:   []config.ObjectStoreBucket{},
+		Tls:       false,
+	}
 	for _, bucket := range app.Spec.ObjectStore {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
 
@@ -121,21 +129,14 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			}
 		}
 
-		configs.Buckets = append(configs.Buckets, config.ObjectStoreBucket{
+		c.ObjectStore.Buckets = append(c.ObjectStore.Buckets, config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
 			AccessKey:     configs.AccessKey,
 			SecretKey:     configs.SecretKey,
 		})
 	}
-	c.ObjectStore = &config.ObjectStoreConfig{
-		Hostname:  configs.Hostname,
-		Port:      configs.Port,
-		AccessKey: configs.AccessKey,
-		SecretKey: configs.SecretKey,
-		Buckets:   configs.Buckets,
-		Tls:       false,
-	}
+
 	return nil
 }
 

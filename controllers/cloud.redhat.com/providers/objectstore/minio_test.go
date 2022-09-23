@@ -2,8 +2,6 @@ package objectstore
 
 import (
 	"context"
-	"encoding/json"
-	"strconv"
 	"testing"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -11,6 +9,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
+	core "k8s.io/api/core/v1"
 )
 
 type mockBucket struct {
@@ -122,7 +121,11 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		c := config.AppConfig{}
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
+
+		c := config.AppConfig{ObjectStore: &config.ObjectStoreConfig{}}
 		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
@@ -142,6 +145,10 @@ func TestMinio(t *testing.T) {
 			CreateError: fakeError,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
+
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
 
 		c := config.AppConfig{}
 
@@ -163,7 +170,12 @@ func TestMinio(t *testing.T) {
 			Exists: true,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		c := config.AppConfig{}
+
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
+
+		c := config.AppConfig{ObjectStore: &config.ObjectStoreConfig{}}
 
 		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
@@ -184,6 +196,9 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 		c := config.AppConfig{}
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
 
 		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
@@ -208,6 +223,11 @@ func TestMinio(t *testing.T) {
 		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
+
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
+
 		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
@@ -232,6 +252,10 @@ func TestMinio(t *testing.T) {
 		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
+
 		gotErr := mp.Provide(app, &c)
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
@@ -256,6 +280,10 @@ func TestMinio(t *testing.T) {
 		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
+
 		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCheckErrorMsg, b2, fakeError)
 		assert.Error(gotErr)
@@ -280,6 +308,10 @@ func TestMinio(t *testing.T) {
 		c := config.AppConfig{}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
+		mp.RootSecret = &core.Secret{
+			Data: map[string][]byte{ProvName: []byte("{\"hostname\":\"\",\"port\":0,\"tls\":false}")},
+		}
+
 		gotErr := mp.Provide(app, &c)
 		wantErr := newBucketError(bucketCreateErrorMsg, b2, fakeError)
 		assert.Error(gotErr)
@@ -291,46 +323,5 @@ func TestMinio(t *testing.T) {
 		assert.Len(c.ObjectStore.Buckets, 1)
 		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
 		assert.Contains(c.ObjectStore.Buckets, wantBucketConfig)
-	})
-
-	t.Run("minioProviderCreate", func(t *testing.T) {
-		secMap := map[string]string{
-			"accessKey": "123456abcdef",
-			"secretKey": "abcdef123456",
-			"hostname":  "foo.bar.svc",
-			"port":      "9000",
-		}
-		tp := getTestProvider(t)
-
-		mp, err := createMinioProvider(
-			&tp, secMap, &mockBucketHandler{wantCreateClientError: false},
-		)
-
-		jsonData := mp.RootSecret.Data[ProvName]
-		configs := config.ObjectStoreConfig{}
-		err = json.Unmarshal(jsonData, &configs)
-
-		assert.NoError(err)
-		assert.Equal(configs.Hostname, secMap["hostname"])
-		port, _ := strconv.Atoi(secMap["port"])
-		assert.Equal(configs.Port, port)
-		assert.Equal(configs.AccessKey, providers.StrPtr(secMap["accessKey"]))
-		assert.Equal(configs.SecretKey, providers.StrPtr(secMap["secretKey"]))
-		assert.Equal(mp.Ctx, tp.Ctx)
-	})
-
-	t.Run("minioProviderCreateHitsError", func(t *testing.T) {
-		secMap := map[string]string{
-			"accessKey": "123456abcdef",
-			"secretKey": "abcdef123456",
-			"hostname":  "foo.bar.svc",
-			"port":      "9000",
-		}
-		tp := getTestProvider(t)
-
-		mp, err := createMinioProvider(&tp, secMap, &mockBucketHandler{wantCreateClientError: true})
-
-		assert.Error(err)
-		assert.Nil(mp)
 	})
 }
