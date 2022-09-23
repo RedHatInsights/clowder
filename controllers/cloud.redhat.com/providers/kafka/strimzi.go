@@ -625,7 +625,9 @@ func (s *strimziProvider) configureBrokers() error {
 		return errors.Wrap("failed to provision kafka cluster", err)
 	}
 
-	configs := config.KafkaConfig{}
+	configs := config.KafkaConfig{
+		Topics: []config.TopicConfig{},
+	}
 
 	// Look up Kafka cluster's listeners and configure s.Config.Brokers
 	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
@@ -727,7 +729,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return nil
 	}
 
-	if err := s.processTopics(app); err != nil {
+	if err := s.processTopics(app, &configs); err != nil {
 		return err
 	}
 
@@ -859,7 +861,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	return nil
 }
 
-func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
+func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig) error {
 	topicConfig := []config.TopicConfig{}
 
 	appList, err := s.Env.GetAppsInEnv(s.Ctx, s.Client)
@@ -912,13 +914,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp) error {
 		)
 	}
 
-	jsonData := s.RootSecret.Data[ProvName]
-	configs := config.KafkaConfig{}
-	if err := json.Unmarshal(jsonData, &configs); err != nil {
-		return err
-	}
-
-	configs.Topics = topicConfig
+	c.Topics = topicConfig
 
 	return nil
 }
