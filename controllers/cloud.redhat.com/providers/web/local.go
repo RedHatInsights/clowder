@@ -39,7 +39,7 @@ type backendConfig struct {
 
 type localWebProvider struct {
 	providers.Provider
-	config backendConfig //This is needed here
+	config backendConfig // This is needed here
 }
 
 func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {

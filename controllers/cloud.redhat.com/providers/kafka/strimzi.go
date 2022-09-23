@@ -54,7 +54,7 @@ var conversionMap = map[string]func([]string) (string, error){
 
 type strimziProvider struct {
 	providers.Provider
-	Config config.KafkaConfig
+	Config config.KafkaConfig // This is needed here
 }
 
 func (s *strimziProvider) configureKafkaCluster() error {

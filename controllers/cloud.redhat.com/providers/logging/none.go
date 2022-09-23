@@ -8,7 +8,6 @@ import (
 
 type noneLoggingProvider struct {
 	providers.Provider
-	Config config.LoggingConfig
 }
 
 // NewNoneLogging returns a new none logging provider object.

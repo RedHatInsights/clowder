@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -22,6 +23,9 @@ import (
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
+
+// MinioSecret is the resource ident for the Minio secret object.
+var RootSecret = rc.NewSingleResourceIdent("root", "root_env", &core.Secret{})
 
 type providerAccessor struct {
 	FinalizeProvider func(c *Provider) error
@@ -73,11 +77,12 @@ type Labels map[string]string
 
 // Provider is a struct that holds a client/context and ClowdEnvironment object.
 type Provider struct {
-	Client client.Client
-	Ctx    context.Context
-	Env    *crd.ClowdEnvironment
-	Cache  *rc.ObjectCache
-	Log    logr.Logger
+	Client     client.Client
+	Ctx        context.Context
+	Env        *crd.ClowdEnvironment
+	Cache      *rc.ObjectCache
+	Log        logr.Logger
+	RootSecret *core.Secret
 }
 
 func (prov *Provider) GetClient() client.Client {
@@ -98,6 +103,26 @@ func (prov *Provider) GetCache() *rc.ObjectCache {
 
 func (prov *Provider) GetLog() logr.Logger {
 	return prov.Log
+}
+
+func (prov *Provider) GetSecret() *core.Secret {
+	return prov.RootSecret
+}
+
+func (prov *Provider) UpdateCoreSecretProv(obj interface{}, provname string) error {
+	sec := &core.Secret{}
+	if err := prov.Cache.Get(RootSecret, sec); err != nil {
+		return err
+	}
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	sec.StringData[provname] = string(bytes)
+	if err := prov.Cache.Update(RootSecret, sec); err != nil {
+		return err
+	}
+	return nil
 }
 
 type RootProvider interface {

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -44,7 +45,6 @@ var SharedDBAppSecret = rc.NewSingleResourceIdent(ProvName, "shared_db_app_secre
 
 type sharedDbProvider struct {
 	providers.Provider
-	Config map[int32]*config.DatabaseConfig // Shared config is needed here
 }
 
 // NewSharedDBProvider returns a new local DB provider object.
@@ -77,7 +77,9 @@ func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		configs[v] = dbCfg
 	}
 
-	return &sharedDbProvider{Provider: *p, Config: configs}, nil
+	p.UpdateCoreSecretProv(configs, ProvName)
+
+	return &sharedDbProvider{Provider: *p}, nil
 }
 
 func createVersionedDatabase(p *providers.Provider, version int32) (*config.DatabaseConfig, error) {
@@ -214,7 +216,13 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 		version = *app.Spec.Database.Version
 	}
 
-	dbCfg := db.Config[version]
+	jsonData := db.RootSecret.Data[ProvName]
+	configs := make(map[int32]*config.DatabaseConfig)
+	if err := json.Unmarshal(jsonData, &configs); err != nil {
+		return err
+	}
+
+	dbCfg := configs[version]
 
 	host := dbCfg.Hostname
 	port := dbCfg.Port

@@ -259,12 +259,22 @@ func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
 
 func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-root-secret", r.env.Name),
+		Namespace: r.env.Spec.TargetNamespace,
+	}
+	sec := &core.Secret{}
+	if err := r.client.Get(*r.ctx, nn, sec); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+
 	provider := providers.Provider{
-		Client: r.client,
-		Ctx:    *r.ctx,
-		Env:    r.env,
-		Cache:  r.cache,
-		Log:    *r.log,
+		Client:     r.client,
+		Ctx:        *r.ctx,
+		Env:        r.env,
+		Cache:      r.cache,
+		Log:        *r.log,
+		RootSecret: sec,
 	}
 
 	if provErr := r.runProvidersImplementation(&provider); provErr != nil {

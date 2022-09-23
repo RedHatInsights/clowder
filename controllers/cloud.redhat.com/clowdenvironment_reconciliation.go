@@ -55,6 +55,7 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 		r.setToBeDisabled,
 		r.initTargetNamespace,
 		r.isTargetNamespaceMarkedForDeletion,
+		r.createRootSecret,
 		r.runProviders,
 		r.applyCache,
 		r.setAppInfo,
@@ -81,6 +82,18 @@ func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 		if err != nil {
 			return result, err
 		}
+	}
+	return ctrl.Result{}, nil
+}
+
+func (r *ClowdEnvironmentReconciliation) createRootSecret() (ctrl.Result, error) {
+	sec := &core.Secret{}
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-root-secret", r.env.Name),
+		Namespace: r.env.Spec.TargetNamespace,
+	}
+	if err := r.cache.Create(providers.RootSecret, nn, sec); err != nil {
+		return ctrl.Result{Requeue: true}, err
 	}
 	return ctrl.Result{}, nil
 }

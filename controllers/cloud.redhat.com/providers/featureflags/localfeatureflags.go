@@ -43,7 +43,7 @@ var LocalFFDBSecret = rc.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.
 
 type localFeatureFlagsProvider struct {
 	providers.Provider
-	Config config.FeatureFlagsConfig
+	Config config.FeatureFlagsConfig // This is needed here
 }
 
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
