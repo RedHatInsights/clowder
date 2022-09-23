@@ -39,7 +39,6 @@ type backendConfig struct {
 
 type localWebProvider struct {
 	providers.Provider
-	config backendConfig // This is needed here
 }
 
 func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {
@@ -106,13 +105,18 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, errors.Wrap("couldn't set secret version", err)
 	}
 
-	wp.config.KeycloakConfig.Username = (*dataMap)["username"]
-	wp.config.KeycloakConfig.Password = (*dataMap)["password"]
-	wp.config.KeycloakConfig.DefaultUsername = (*dataMap)["defaultUsername"]
-	wp.config.KeycloakConfig.DefaultPassword = (*dataMap)["defaultPassword"]
+	configs := backendConfig{
+		KeycloakConfig: KeycloakConfig{
+			Username:        (*dataMap)["username"],
+			Password:        (*dataMap)["password"],
+			DefaultUsername: (*dataMap)["defaultUsername"],
+			DefaultPassword: (*dataMap)["defaultPassword"],
+			URL:             fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "keycloak", wp.Env.GetClowdNamespace()),
+		},
+		BOPURL: fmt.Sprintf("http://%s-%s.%s.svc:8090", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace()),
+	}
 
-	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8090", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace())
-	wp.config.KeycloakConfig.URL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "keycloak", wp.Env.GetClowdNamespace())
+	p.UpdateRootSecretProv(configs, ProvName)
 
 	objList := []rc.ResourceIdent{
 		WebKeycloakDeployment,
@@ -123,7 +127,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
-	if err := makeKeycloakImportSecretRealm(p.Cache, p.Env, wp.config.KeycloakConfig.DefaultPassword); err != nil {
+	if err := makeKeycloakImportSecretRealm(p.Cache, p.Env, configs.KeycloakConfig.DefaultPassword); err != nil {
 		return nil, err
 	}
 
@@ -145,7 +149,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		return nil, err
 	}
 
-	if err := makeMocktitlementsSecret(p, wp); err != nil {
+	if err := makeMocktitlementsSecret(p, wp, &configs); err != nil {
 		return nil, err
 	}
 
@@ -167,7 +171,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 
 }
 
-func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) error {
+func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider, configs *backendConfig) error {
 	nn := types.NamespacedName{
 		Name:      "caddy-config-mocktitlements",
 		Namespace: p.Env.GetClowdNamespace(),
@@ -184,8 +188,8 @@ func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) erro
 	sec.Type = core.SecretTypeOpaque
 
 	sec.StringData = map[string]string{
-		"bopurl":      web.config.BOPURL,
-		"keycloakurl": web.config.KeycloakConfig.URL,
+		"bopurl":      configs.BOPURL,
+		"keycloakurl": configs.KeycloakConfig.URL,
 		"whitelist":   "",
 	}
 
@@ -348,7 +352,13 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 
 		web.createIngress(app, &deployment)
 
-		c.BOPURL = providers.StrPtr(web.config.BOPURL)
+		jsonData := web.RootSecret.Data[ProvName]
+		configs := backendConfig{}
+		if err := json.Unmarshal(jsonData, &configs); err != nil {
+			return err
+		}
+
+		c.BOPURL = providers.StrPtr(configs.BOPURL)
 
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
@@ -366,8 +376,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 		sec.Type = core.SecretTypeOpaque
 
 		sec.StringData = map[string]string{
-			"bopurl":      web.config.BOPURL,
-			"keycloakurl": web.config.KeycloakConfig.URL,
+			"bopurl":      configs.BOPURL,
+			"keycloakurl": configs.KeycloakConfig.URL,
 			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
 		}
 

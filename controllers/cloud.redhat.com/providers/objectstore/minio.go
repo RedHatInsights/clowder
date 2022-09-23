@@ -2,6 +2,7 @@ package objectstore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -90,7 +91,6 @@ func (h *minioHandler) CreateClient(
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	providers.Provider
-	Config        config.ObjectStoreConfig //This is needed here
 	BucketHandler bucketHandler
 }
 
@@ -98,6 +98,12 @@ type minioProvider struct {
 func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if len(app.Spec.ObjectStore) == 0 {
 		return nil
+	}
+
+	jsonData := m.RootSecret.Data[ProvName]
+	configs := config.ObjectStoreConfig{}
+	if err := json.Unmarshal(jsonData, &configs); err != nil {
+		return err
 	}
 
 	for _, bucket := range app.Spec.ObjectStore {
@@ -115,19 +121,19 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			}
 		}
 
-		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
+		configs.Buckets = append(configs.Buckets, config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
-			AccessKey:     m.Config.AccessKey,
-			SecretKey:     m.Config.SecretKey,
+			AccessKey:     configs.AccessKey,
+			SecretKey:     configs.SecretKey,
 		})
 	}
 	c.ObjectStore = &config.ObjectStoreConfig{
-		Hostname:  m.Config.Hostname,
-		Port:      m.Config.Port,
-		AccessKey: m.Config.AccessKey,
-		SecretKey: m.Config.SecretKey,
-		Buckets:   m.Config.Buckets,
+		Hostname:  configs.Hostname,
+		Port:      configs.Port,
+		AccessKey: configs.AccessKey,
+		SecretKey: configs.SecretKey,
+		Buckets:   configs.Buckets,
 		Tls:       false,
 	}
 	return nil
@@ -136,22 +142,27 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 func createMinioProvider(
 	p *providers.Provider, secMap map[string]string, handler bucketHandler,
 ) (*minioProvider, error) {
-	mp := &minioProvider{Provider: *p, Config: config.ObjectStoreConfig{}}
+	mp := &minioProvider{Provider: *p}
 
 	port, _ := strconv.Atoi(secMap["port"])
 	mp.Ctx = p.Ctx
-	mp.Config.AccessKey = providers.StrPtr(secMap["accessKey"])
-	mp.Config.SecretKey = providers.StrPtr(secMap["secretKey"])
-	mp.Config.Hostname = secMap["hostname"]
-	mp.Config.Port = port
+
+	configs := config.ObjectStoreConfig{}
+
+	configs.AccessKey = providers.StrPtr(secMap["accessKey"])
+	configs.SecretKey = providers.StrPtr(secMap["secretKey"])
+	configs.Hostname = secMap["hostname"]
+	configs.Port = port
 
 	mp.BucketHandler = handler
 	err := mp.BucketHandler.CreateClient(
-		mp.Config.Hostname,
-		mp.Config.Port,
-		mp.Config.AccessKey,
-		mp.Config.SecretKey,
+		configs.Hostname,
+		configs.Port,
+		configs.AccessKey,
+		configs.SecretKey,
 	)
+
+	p.UpdateRootSecretProv(configs, ProvName)
 
 	if err != nil {
 		return nil, errors.Wrap("error creating minio client", err)
