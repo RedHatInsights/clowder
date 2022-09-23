@@ -17,6 +17,10 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+const (
+	TERMINATION_LOG_PATH = "/dev/termination-log"
+)
+
 func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
 
 	d := &apps.Deployment{}
@@ -35,6 +39,19 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 	}
 
 	return nil
+}
+
+func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {
+	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
+		annotations := map[string]string{
+			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
+			"clowder/authsidecar-enabled": "true",
+			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
+			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
+		}
+		utils.UpdateAnnotations(&d.Spec.Template, annotations)
+	}
+
 }
 
 func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
@@ -64,40 +81,7 @@ func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment *crd.Deployment) error {
-	labels := app.GetLabels()
-	labels["pod"] = nn.Name
-	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
-
-	d.Kind = "Deployment"
-
-	pod := deployment.PodSpec
-
-	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, pod.Metadata.Annotations)
-
-	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
-		annotations := map[string]string{
-			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
-			"clowder/authsidecar-enabled": "true",
-			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
-			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
-		}
-		utils.UpdateAnnotations(&d.Spec.Template, annotations)
-	}
-
-	setMinReplicas(deployment, d)
-
-	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	d.Spec.Template.ObjectMeta.Labels = labels
-	d.Spec.Strategy = apps.DeploymentStrategy{
-		Type: apps.RollingUpdateDeploymentStrategyType,
-		RollingUpdate: &apps.RollingUpdateDeployment{
-			MaxSurge:       &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
-			MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
-		},
-	}
-	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
-
+func setDeploymentStrategy(deployment *crd.Deployment, d *apps.Deployment) {
 	if !deployment.WebServices.Public.Enabled {
 		if deployment.DeploymentStrategy != nil && deployment.DeploymentStrategy.PrivateStrategy != "" {
 			d.Spec.Strategy = apps.DeploymentStrategy{
@@ -109,24 +93,10 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 			}
 		}
 	}
+}
 
-	envvar := pod.Env
-	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
-
-	for _, env := range envvar {
-		if env.ValueFrom != nil {
-			if env.ValueFrom.FieldRef != nil {
-				if env.ValueFrom.FieldRef.APIVersion == "" {
-					env.ValueFrom.FieldRef.APIVersion = "v1"
-				}
-			}
-		}
-	}
-
-	var livenessProbe core.Probe
-	var readinessProbe core.Probe
-
-	baseProbe := core.Probe{
+func makeBaseProbe(env *crd.ClowdEnvironment) core.Probe {
+	return core.Probe{
 		ProbeHandler: core.ProbeHandler{
 			HTTPGet: &core.HTTPGetAction{
 				Path:   "/healthz",
@@ -143,6 +113,11 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		SuccessThreshold:    1,
 		TimeoutSeconds:      1,
 	}
+}
+
+func setLivenessProbe(pod *crd.PodSpec, deployment *crd.Deployment, env *crd.ClowdEnvironment, c *core.Container) {
+	livenessProbe := core.Probe{}
+
 	if pod.LivenessProbe != nil {
 		livenessProbe = *pod.LivenessProbe
 
@@ -158,9 +133,15 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		if livenessProbe.FailureThreshold == 0 {
 			livenessProbe.FailureThreshold = 3
 		}
+		c.LivenessProbe = &livenessProbe
 	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
-		livenessProbe = baseProbe
+		livenessProbe = makeBaseProbe(env)
+		c.LivenessProbe = &livenessProbe
 	}
+}
+
+func setReadinessProbe(pod *crd.PodSpec, deployment *crd.Deployment, env *crd.ClowdEnvironment, c *core.Container) {
+	readinessProbe := core.Probe{}
 	if pod.ReadinessProbe != nil {
 		readinessProbe = *pod.ReadinessProbe
 
@@ -176,45 +157,94 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		if readinessProbe.FailureThreshold == 0 {
 			readinessProbe.FailureThreshold = 3
 		}
+
+		c.ReadinessProbe = &readinessProbe
 	} else if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
-		readinessProbe = baseProbe
+		readinessProbe := makeBaseProbe(env)
 		readinessProbe.InitialDelaySeconds = 45
+		c.ReadinessProbe = &readinessProbe
 	}
+}
+
+func setImagePullPolicy(env *crd.ClowdEnvironment, c *core.Container) {
+	if !env.Spec.Providers.Deployment.OmitPullPolicy {
+		c.ImagePullPolicy = core.PullIfNotPresent
+		return
+	}
+	imageComponents := strings.Split(c.Image, ":")
+	if len(imageComponents) > 1 {
+		if imageComponents[1] == "latest" {
+			c.ImagePullPolicy = core.PullAlways
+		} else {
+			c.ImagePullPolicy = core.PullIfNotPresent
+		}
+		return
+	}
+	c.ImagePullPolicy = core.PullIfNotPresent
+
+}
+
+func loadEnvVars(pod crd.PodSpec) []core.EnvVar {
+	envvars := pod.Env
+	envvars = append(envvars, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
+
+	for _, envvar := range envvars {
+		if envvar.ValueFrom != nil {
+			if envvar.ValueFrom.FieldRef != nil {
+				if envvar.ValueFrom.FieldRef.APIVersion == "" {
+					envvar.ValueFrom.FieldRef.APIVersion = "v1"
+				}
+			}
+		}
+	}
+
+	return envvars
+}
+
+func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment *crd.Deployment) error {
+	labels := app.GetLabels()
+	labels["pod"] = nn.Name
+	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
+
+	d.Kind = "Deployment"
+
+	pod := deployment.PodSpec
+
+	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, pod.Metadata.Annotations)
+
+	setLocalAnnotations(env, deployment, d, app)
+
+	setMinReplicas(deployment, d)
+
+	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	d.Spec.Template.ObjectMeta.Labels = labels
+	d.Spec.Strategy = apps.DeploymentStrategy{
+		Type: apps.RollingUpdateDeploymentStrategyType,
+		RollingUpdate: &apps.RollingUpdateDeployment{
+			MaxSurge:       &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
+			MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
+		},
+	}
+	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
+
+	setDeploymentStrategy(deployment, d)
 
 	c := core.Container{
 		Name:                     nn.Name,
 		Image:                    pod.Image,
 		Command:                  pod.Command,
 		Args:                     pod.Args,
-		Env:                      envvar,
+		Env:                      loadEnvVars(pod),
 		Resources:                ProcessResources(&pod, env),
 		VolumeMounts:             pod.VolumeMounts,
-		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePath:   TERMINATION_LOG_PATH,
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
 	}
 
-	if !env.Spec.Providers.Deployment.OmitPullPolicy {
-		c.ImagePullPolicy = core.PullIfNotPresent
-	} else {
-		imageComponents := strings.Split(c.Image, ":")
-		if len(imageComponents) > 1 {
-			if imageComponents[1] == "latest" {
-				c.ImagePullPolicy = core.PullAlways
-			} else {
-				c.ImagePullPolicy = core.PullIfNotPresent
-			}
-		} else {
-			c.ImagePullPolicy = core.PullIfNotPresent
-		}
-	}
-
-	if (core.Probe{}) != livenessProbe {
-		c.LivenessProbe = &livenessProbe
-	}
-	if (core.Probe{}) != readinessProbe {
-		c.ReadinessProbe = &readinessProbe
-	}
+	setLivenessProbe(&pod, deployment, env, &c)
+	setReadinessProbe(&pod, deployment, env, &c)
+	setImagePullPolicy(env, &c)
 
 	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 		Name:      "config-secret",
@@ -254,21 +284,41 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	})
 
 	for _, vol := range d.Spec.Template.Spec.Volumes {
-		if vol.VolumeSource.PersistentVolumeClaim != nil {
-			d.Spec.Strategy = apps.DeploymentStrategy{
-				Type: apps.RecreateDeploymentStrategyType,
-			}
-			break
-		} else if vol.VolumeSource.ConfigMap != nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
-			vol.VolumeSource.ConfigMap.DefaultMode = utils.Int32Ptr(420)
-		} else if vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
-			vol.VolumeSource.Secret.DefaultMode = utils.Int32Ptr(420)
-		}
+		setRecreateDeploymentStrategyForPVCs(vol, d)
+		setVolumeSourceConfigMapDefaultMode(&vol)
+		setVolumeSourceSecretDefaultMode(&vol)
 	}
 
 	ApplyPodAntiAffinity(&d.Spec.Template)
 
 	return nil
+}
+
+func setRecreateDeploymentStrategyForPVCs(vol core.Volume, d *apps.Deployment) {
+	if vol.VolumeSource.PersistentVolumeClaim == nil {
+		return
+	}
+	d.Spec.Strategy = apps.DeploymentStrategy{
+		Type: apps.RecreateDeploymentStrategyType,
+	}
+}
+
+func setVolumeSourceConfigMapDefaultMode(vol *core.Volume) {
+	if vol.VolumeSource.PersistentVolumeClaim != nil {
+		return
+	}
+	if vol.VolumeSource.ConfigMap != nil && vol.VolumeSource.Secret == nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
+		vol.VolumeSource.ConfigMap.DefaultMode = utils.Int32Ptr(420)
+	}
+}
+
+func setVolumeSourceSecretDefaultMode(vol *core.Volume) {
+	if vol.VolumeSource.PersistentVolumeClaim != nil {
+		return
+	}
+	if vol.VolumeSource.ConfigMap == nil && vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
+		vol.VolumeSource.Secret.DefaultMode = utils.Int32Ptr(420)
+	}
 }
 
 // ProcessInitContainers returns a container object which has been processed from the container spec.
@@ -302,7 +352,7 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 			Resources:                c.Resources,
 			VolumeMounts:             c.VolumeMounts,
 			ImagePullPolicy:          c.ImagePullPolicy,
-			TerminationMessagePath:   "/dev/termination-log",
+			TerminationMessagePath:   TERMINATION_LOG_PATH,
 			TerminationMessagePolicy: core.TerminationMessageReadFile,
 		}
 
