@@ -16,6 +16,10 @@ func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &webProvider{Provider: *p}, nil
 }
 
+func (web *webProvider) EnvProvide() error {
+	return nil
+}
+
 func (web *webProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	c.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))

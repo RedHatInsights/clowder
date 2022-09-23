@@ -15,6 +15,10 @@ func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvide
 	return &autoScaleProviderRouter{Provider: *p}, nil
 }
 
+func (db *autoScaleProviderRouter) EnvProvide() error {
+	return nil
+}
+
 func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	var err error
 	for _, deployment := range app.Spec.Deployments {

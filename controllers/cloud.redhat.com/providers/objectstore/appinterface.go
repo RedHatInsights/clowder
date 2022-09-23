@@ -18,9 +18,11 @@ type appInterfaceObjectstoreProvider struct {
 
 // NewAppInterfaceObjectstore returns a new app-interface object store provider object.
 func NewAppInterfaceObjectstore(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := appInterfaceObjectstoreProvider{Provider: *p}
+	return &appInterfaceObjectstoreProvider{Provider: *p}, nil
+}
 
-	return &provider, nil
+func (a *appInterfaceObjectstoreProvider) EnvProvide() error {
+	return nil
 }
 
 func (a *appInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

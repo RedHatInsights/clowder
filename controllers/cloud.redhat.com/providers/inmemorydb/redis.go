@@ -30,6 +30,10 @@ type localRedis struct {
 	providers.Provider
 }
 
+func (r *localRedis) EnvProvide() error {
+	return nil
+}
+
 func (r *localRedis) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
 	if !app.Spec.InMemoryDB {
 		return nil
@@ -72,10 +76,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) err
 
 // NewLocalRedis returns a new local redis provider object.
 func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
-
-	redisProvider := localRedis{Provider: *p}
-
-	return &redisProvider, nil
+	return &localRedis{Provider: *p}, nil
 }
 
 func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {

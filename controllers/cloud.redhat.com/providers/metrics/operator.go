@@ -33,29 +33,33 @@ var PrometheusRoleBinding = rc.NewSingleResourceIdent(ProvName, "prometheus_role
 var PrometheusServiceAccount = rc.NewSingleResourceIdent(ProvName, "prometheus_service_account", &core.ServiceAccount{})
 
 func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	if !p.Env.Spec.Providers.Metrics.Prometheus.Deploy {
-		return &metricsProvider{Provider: *p}, nil
+	return &metricsProvider{Provider: *p}, nil
+}
+
+func (m *metricsProvider) EnvProvide() error {
+	if !m.Env.Spec.Providers.Metrics.Prometheus.Deploy {
+		return nil
 	}
 
 	promObj := &prom.Prometheus{}
 	nn := types.NamespacedName{
-		Name:      p.Env.Name,
-		Namespace: p.Env.Status.TargetNamespace,
+		Name:      m.Env.Name,
+		Namespace: m.Env.Status.TargetNamespace,
 	}
 
-	if err := createPrometheusServiceAccount(p.Cache, p.Env); err != nil {
-		return nil, err
+	if err := createPrometheusServiceAccount(m.Cache, m.Env); err != nil {
+		return err
 	}
 
-	if err := p.Cache.Create(PrometheusInstance, nn, promObj); err != nil {
-		return nil, err
+	if err := m.Cache.Create(PrometheusInstance, nn, promObj); err != nil {
+		return err
 	}
 
 	promObj.SetName(nn.Name)
 	promObj.SetNamespace(nn.Namespace)
 	promObj.Spec.ServiceMonitorSelector = &metav1.LabelSelector{
 		MatchLabels: map[string]string{
-			"prometheus": p.Env.Name,
+			"prometheus": m.Env.Name,
 		},
 	}
 	promObj.Spec.ServiceAccountName = "prometheus"
@@ -70,18 +74,18 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 		},
 	}
 
-	labeler := utils.GetCustomLabeler(map[string]string{"env": p.Env.Name}, nn, p.Env)
+	labeler := utils.GetCustomLabeler(map[string]string{"env": m.Env.Name}, nn, m.Env)
 	labeler(promObj)
 
-	if err := p.Cache.Update(PrometheusInstance, promObj); err != nil {
-		return nil, err
+	if err := m.Cache.Update(PrometheusInstance, promObj); err != nil {
+		return err
 	}
 
-	if err := createSubscription(p.Cache, p.Env); err != nil {
-		return nil, err
+	if err := createSubscription(m.Cache, m.Env); err != nil {
+		return err
 	}
 
-	return &metricsProvider{Provider: *p}, nil
+	return nil
 }
 
 func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

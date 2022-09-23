@@ -18,6 +18,10 @@ func NewAppInterfaceFeatureFlagsProvider(p *providers.Provider) (providers.Clowd
 	return &appInterfaceFeatureFlagProvider{Provider: *p}, nil
 }
 
+func (ff *appInterfaceFeatureFlagProvider) EnvProvide() error {
+	return nil
+}
+
 func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	emptyNN := crd.NamespacedName{}
 	if ff.Env.Spec.Providers.FeatureFlags.CredentialRef == emptyNN {

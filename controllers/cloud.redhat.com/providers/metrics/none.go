@@ -14,6 +14,10 @@ func NewNoneMetricsProvider(p *providers.Provider) (providers.ClowderProvider, e
 	return &noneMetricsProvider{Provider: *p}, nil
 }
 
+func (m *noneMetricsProvider) EnvProvide() error {
+	return nil
+}
+
 func (m *noneMetricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	if err := createMetricsOnDeployments(m.Cache, m.Env, app, c); err != nil {

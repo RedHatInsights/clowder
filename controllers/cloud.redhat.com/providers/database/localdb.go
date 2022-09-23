@@ -40,6 +40,10 @@ func NewLocalDBProvider(p *providers.Provider) (providers.ClowderProvider, error
 	return &localDbProvider{Provider: *p}, nil
 }
 
+func (db *localDbProvider) EnvProvide() error {
+	return nil
+}
+
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

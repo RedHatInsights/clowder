@@ -2,24 +2,47 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	core "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 type appInterface struct {
 	providers.Provider
-	Config config.KafkaConfig //This config is used
+}
+
+func (a *appInterface) EnvProvide() error {
+	nn := types.NamespacedName{
+		Name:      a.Env.Spec.Providers.Kafka.Cluster.Name,
+		Namespace: getKafkaNamespace(a.Env),
+	}
+
+	err := validateBrokerService(a.Ctx, a.Client, nn)
+
+	if err != nil {
+		return err
+	}
+
+	configs := config.KafkaConfig{
+		Topics: []config.TopicConfig{},
+		Brokers: []config.BrokerConfig{{
+			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
+			Port:     utils.IntPtr(9092),
+		}},
+	}
+
+	a.UpdateRootSecretProv(configs, ProvName)
+	return nil
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
@@ -34,6 +57,12 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		return nil
 	}
 
+	jsonData := a.RootSecret.Data[ProvName]
+	configs := config.KafkaConfig{}
+	if err := json.Unmarshal(jsonData, &configs); err != nil {
+		return err
+	}
+
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := types.NamespacedName{
 			Namespace: getKafkaNamespace(a.Env),
@@ -46,8 +75,8 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			return err
 		}
 
-		a.Config.Topics = append(
-			a.Config.Topics,
+		configs.Topics = append(
+			configs.Topics,
 			config.TopicConfig{
 				Name:          topic.TopicName,
 				RequestedName: topic.TopicName,
@@ -55,7 +84,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		)
 	}
 
-	c.Kafka = &a.Config
+	c.Kafka = &configs
 	return nil
 }
 
@@ -105,29 +134,5 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 
 // NewAppInterface returns a new app-interface kafka provider object.
 func NewAppInterface(p *providers.Provider) (providers.ClowderProvider, error) {
-	nn := types.NamespacedName{
-		Name:      p.Env.Spec.Providers.Kafka.Cluster.Name,
-		Namespace: getKafkaNamespace(p.Env),
-	}
-
-	err := validateBrokerService(p.Ctx, p.Client, nn)
-
-	if err != nil {
-		return nil, err
-	}
-
-	config := config.KafkaConfig{
-		Topics: []config.TopicConfig{},
-		Brokers: []config.BrokerConfig{{
-			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
-			Port:     utils.IntPtr(9092),
-		}},
-	}
-
-	kafkaProvider := appInterface{
-		Provider: *p,
-		Config:   config,
-	}
-
-	return &kafkaProvider, nil
+	return &appInterface{Provider: *p}, nil
 }

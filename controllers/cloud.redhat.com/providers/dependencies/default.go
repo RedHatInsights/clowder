@@ -15,6 +15,10 @@ func NewDependenciesProvider(p *providers.Provider) (providers.ClowderProvider, 
 	return &dependenciesProvider{Provider: *p}, nil
 }
 
+func (dep *dependenciesProvider) EnvProvide() error {
+	return nil
+}
+
 func (dep *dependenciesProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	if err := dep.makeDependencies(app, c); err != nil {

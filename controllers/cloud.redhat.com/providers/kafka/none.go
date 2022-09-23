@@ -15,6 +15,10 @@ func NewNoneKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &noneKafkaProvider{Provider: *p}, nil
 }
 
+func (k *noneKafkaProvider) EnvProvide() error {
+	return nil
+}
+
 func (k *noneKafkaProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }

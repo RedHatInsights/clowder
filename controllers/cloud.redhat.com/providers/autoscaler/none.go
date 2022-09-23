@@ -15,6 +15,10 @@ func NewNoneAutoScalerProvider(p *providers.Provider) (providers.ClowderProvider
 	return &noneAutoScalerProvider{Provider: *p}, nil
 }
 
+func (db *noneAutoScalerProvider) EnvProvide() error {
+	return nil
+}
+
 func (db *noneAutoScalerProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }

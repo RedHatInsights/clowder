@@ -49,36 +49,6 @@ type sharedDbProvider struct {
 
 // NewSharedDBProvider returns a new local DB provider object.
 func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-
-	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
-	if err != nil {
-		return nil, err
-	}
-
-	versionsRequired := map[int32]bool{}
-
-	for _, app := range appList.Items {
-		if app.Spec.Database.Name != "" {
-			if app.Spec.Database.Version == nil {
-				versionsRequired[12] = true
-			} else {
-				versionsRequired[*app.Spec.Database.Version] = true
-			}
-		}
-	}
-
-	configs := map[int32]*config.DatabaseConfig{}
-
-	for v := range versionsRequired {
-		dbCfg, err := createVersionedDatabase(p, v)
-		if err != nil {
-			return nil, err
-		}
-		configs[v] = dbCfg
-	}
-
-	p.UpdateRootSecretProv(configs, ProvName)
-
 	return &sharedDbProvider{Provider: *p}, nil
 }
 
@@ -198,6 +168,38 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	}
 
 	return &dbCfg, nil
+}
+
+func (db *sharedDbProvider) EnvProvide() error {
+	appList, err := db.Provider.Env.GetAppsInEnv(db.Provider.Ctx, db.Provider.Client)
+	if err != nil {
+		return err
+	}
+
+	versionsRequired := map[int32]bool{}
+
+	for _, app := range appList.Items {
+		if app.Spec.Database.Name != "" {
+			if app.Spec.Database.Version == nil {
+				versionsRequired[12] = true
+			} else {
+				versionsRequired[*app.Spec.Database.Version] = true
+			}
+		}
+	}
+
+	configs := map[int32]*config.DatabaseConfig{}
+
+	for v := range versionsRequired {
+		dbCfg, err := createVersionedDatabase(&db.Provider, v)
+		if err != nil {
+			return err
+		}
+		configs[v] = dbCfg
+	}
+
+	db.Provider.UpdateRootSecretProv(configs, ProvName)
+	return nil
 }
 
 // CreateDatabase ensures a database is created for the given app.  The

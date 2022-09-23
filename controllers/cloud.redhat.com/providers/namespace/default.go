@@ -16,14 +16,18 @@ type namespaceProvider struct {
 
 // NewNamespaceProvider returns a new Namespace provider.
 func NewNamespaceProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	return &namespaceProvider{Provider: *p}, nil
+}
+
+func (nsp *namespaceProvider) EnvProvide() error {
 	clowderNs, nSerr := utils.GetClowderNamespace()
 
 	if nSerr == nil {
 		// CLOBBER: Purposefully ignoring the error here
-		setLabelOnNamespace(p, clowderNs)
+		setLabelOnNamespace(&nsp.Provider, clowderNs)
 	}
 
-	return &namespaceProvider{Provider: *p}, setLabelOnNamespace(p, p.Env.Status.TargetNamespace)
+	return setLabelOnNamespace(&nsp.Provider, nsp.Env.Status.TargetNamespace)
 }
 
 func (nsp *namespaceProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

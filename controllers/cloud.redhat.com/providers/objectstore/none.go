@@ -15,6 +15,10 @@ func NewNoneObjectStore(p *providers.Provider) (providers.ClowderProvider, error
 	return &noneObjectStoreProvider{Provider: *p}, nil
 }
 
+func (k *noneObjectStoreProvider) EnvProvide() error {
+	return nil
+}
+
 func (k *noneObjectStoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }

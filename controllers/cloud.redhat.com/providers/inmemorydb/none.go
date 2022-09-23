@@ -15,6 +15,10 @@ func NewNoneInMemoryDb(p *providers.Provider) (providers.ClowderProvider, error)
 	return &noneInMemoryDbProvider{Provider: *p}, nil
 }
 
+func (r *noneInMemoryDbProvider) EnvProvide() error {
+	return nil
+}
+
 func (r *noneInMemoryDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }

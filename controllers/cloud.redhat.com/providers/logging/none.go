@@ -11,10 +11,12 @@ type noneLoggingProvider struct {
 }
 
 // NewNoneLogging returns a new none logging provider object.
-func NewNoneLogging(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := noneLoggingProvider{Provider: *p}
+func NewNoneLogging(p *providers.Provider) providers.ClowderProvider {
+	return &noneLoggingProvider{Provider: *p}
+}
 
-	return &provider, nil
+func (a *noneLoggingProvider) EnvProvide() error {
+	return nil
 }
 
 func (a *noneLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

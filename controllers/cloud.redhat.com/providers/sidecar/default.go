@@ -23,6 +23,10 @@ func NewSidecarProvider(p *providers.Provider) (providers.ClowderProvider, error
 	return &sidecarProvider{Provider: *p}, nil
 }
 
+func (sc *sidecarProvider) EnvProvide() error {
+	return nil
+}
+
 func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	for _, deployment := range app.Spec.Deployments {
 

@@ -94,6 +94,10 @@ type minioProvider struct {
 	BucketHandler bucketHandler
 }
 
+func (m *minioProvider) EnvProvide(app *crd.ClowdApp, c *config.AppConfig) error {
+
+}
+
 // Provide creates new buckets
 func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if len(app.Spec.ObjectStore) == 0 {

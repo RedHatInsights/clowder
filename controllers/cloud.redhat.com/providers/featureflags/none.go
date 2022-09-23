@@ -15,6 +15,10 @@ func NewNoneFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvid
 	return &noneFeatureFlagProvider{Provider: *p}, nil
 }
 
+func (db *noneFeatureFlagProvider) EnvProvide() error {
+	return nil
+}
+
 func (db *noneFeatureFlagProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }

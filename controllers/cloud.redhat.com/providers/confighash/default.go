@@ -26,6 +26,10 @@ func NewConfigHashProvider(p *p.Provider) (p.ClowderProvider, error) {
 	return &confighashProvider{Provider: *p}, nil
 }
 
+func (ch *confighashProvider) EnvProvide() error {
+	return nil
+}
+
 func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	hash, err := ch.persistConfig(app, c)

@@ -19,6 +19,10 @@ func NewServiceMeshProvider(p *providers.Provider) (providers.ClowderProvider, e
 	return &servicemeshProvider{Provider: *p}, nil
 }
 
+func (ch *servicemeshProvider) EnvProvide() error {
+	return nil
+}
+
 func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	if ch.Env.Spec.Providers.ServiceMesh.Mode != "enabled" {
 		return nil

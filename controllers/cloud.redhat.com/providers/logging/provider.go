@@ -12,9 +12,9 @@ func GetLogging(c *providers.Provider) (providers.ClowderProvider, error) {
 	logMode := c.Env.Spec.Providers.Logging.Mode
 	switch logMode {
 	case "app-interface":
-		return NewAppInterfaceLogging(c)
+		return NewAppInterfaceLogging(c), nil
 	case "none", "null", "":
-		return NewNoneLogging(c)
+		return NewNoneLogging(c), nil
 	default:
 		errStr := fmt.Sprintf("No matching logging mode for %s", logMode)
 		return nil, errors.New(errStr)

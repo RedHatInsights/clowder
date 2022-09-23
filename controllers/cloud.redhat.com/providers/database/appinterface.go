@@ -55,18 +55,20 @@ func fetchCa() (string, error) {
 
 // NewAppInterfaceDBProvider creates a new app-interface DB provider obejct.
 func NewAppInterfaceDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := appInterface{Provider: *p}
+	return &appInterface{Provider: *p}, nil
+}
 
+func (a *appInterface) EnvProvide() error {
 	if rdsCa == "" {
 		_rdsCa, err := fetchCa()
 
 		if err != nil {
-			return nil, errors.Wrap("Failed to fetch RDS CA bundle", err)
+			return errors.Wrap("Failed to fetch RDS CA bundle", err)
 		}
 
 		rdsCa = _rdsCa
 	}
-	return &provider, nil
+	return nil
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

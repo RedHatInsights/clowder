@@ -15,6 +15,10 @@ func NewNoneDBProvider(p *providers.Provider) (providers.ClowderProvider, error)
 	return &noneDbProvider{Provider: *p}, nil
 }
 
+func (db *noneDbProvider) EnvProvide() error {
+	return nil
+}
+
 func (db *noneDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 	return nil
 }

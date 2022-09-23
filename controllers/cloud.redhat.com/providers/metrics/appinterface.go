@@ -15,6 +15,10 @@ func NewAppInterfaceMetrics(p *p.Provider) (p.ClowderProvider, error) {
 	return &appinterfaceMetricsProvider{Provider: *p}, nil
 }
 
+func (m *appinterfaceMetricsProvider) EnvProvide() error {
+	return nil
+}
+
 func (m *appinterfaceMetricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	if err := createMetricsOnDeployments(m.Cache, m.Env, app, c); err != nil {

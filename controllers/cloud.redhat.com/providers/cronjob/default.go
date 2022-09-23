@@ -14,6 +14,10 @@ func NewCronJobProvider(p *p.Provider) (p.ClowderProvider, error) {
 	return &cronjobProvider{Provider: *p}, nil
 }
 
+func (j *cronjobProvider) EnvProvide() error {
+	return nil
+}
+
 func (j *cronjobProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	for _, cronjob := range app.Spec.Jobs {

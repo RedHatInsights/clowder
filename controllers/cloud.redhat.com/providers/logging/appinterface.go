@@ -15,10 +15,12 @@ type appInterfaceLoggingProvider struct {
 }
 
 // NewAppInterfaceLogging returns a new app-interface logging provider object.
-func NewAppInterfaceLogging(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := appInterfaceLoggingProvider{Provider: *p}
+func NewAppInterfaceLogging(p *providers.Provider) providers.ClowderProvider {
+	return &appInterfaceLoggingProvider{Provider: *p}
+}
 
-	return &provider, nil
+func (a *appInterfaceLoggingProvider) EnvProvide() error {
+	return nil
 }
 
 func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

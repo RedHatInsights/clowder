@@ -48,38 +48,39 @@ type localFeatureFlagsProvider struct {
 
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
 func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	return &localFeatureFlagsProvider{Provider: *p}, nil
+}
 
-	ffp := &localFeatureFlagsProvider{Provider: *p}
-
+func (ff *localFeatureFlagsProvider) EnvProvide() error {
 	objList := []rc.ResourceIdent{
 		LocalFFDeployment,
 		LocalFFService,
 	}
 
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "featureflags", makeLocalFeatureFlags, false, p.Env.IsNodePort()); err != nil {
-		return nil, err
+	if err := providers.CachedMakeComponent(ff.Cache, objList, ff.Env, "featureflags", makeLocalFeatureFlags, false, ff.Env.IsNodePort()); err != nil {
+		return err
 	}
 
 	nn := types.NamespacedName{
 		Name:      "featureflags-db",
-		Namespace: p.Env.Status.TargetNamespace,
+		Namespace: ff.Env.Status.TargetNamespace,
 	}
 
 	dd := &apps.Deployment{}
-	if err := p.Cache.Create(LocalFFDBDeployment, nn, dd); err != nil {
-		return nil, err
+	if err := ff.Cache.Create(LocalFFDBDeployment, nn, dd); err != nil {
+		return err
 	}
 
 	dbCfg := config.DatabaseConfig{}
 
 	password, err := utils.RandPassword(16, provutils.RCharSet)
 	if err != nil {
-		return nil, errors.Wrap("password generate failed", err)
+		return errors.Wrap("password generate failed", err)
 	}
 
 	pgPassword, err := utils.RandPassword(16, provutils.RCharSet)
 	if err != nil {
-		return nil, errors.Wrap("pgPassword generate failed", err)
+		return errors.Wrap("pgPassword generate failed", err)
 	}
 
 	username := utils.RandString(16)
@@ -100,21 +101,21 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		}
 	}
 
-	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, LocalFFDBSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(ff.Ctx, ff.Env, ff.Cache, LocalFFDBSecret, nn, dataInit)
 	if err != nil {
-		return nil, errors.Wrap("Couldn't set/get secret", err)
+		return errors.Wrap("Couldn't set/get secret", err)
 	}
 
 	dbCfg.Populate(secMap)
 	dbCfg.AdminUsername = "postgres"
 
 	ffpConfig := config.FeatureFlagsConfig{
-		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", p.Env.Name, p.Env.Status.TargetNamespace),
+		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
 		Port:     4242,
 		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 
-	p.UpdateRootSecretProv(ffpConfig, ProvName)
+	ff.UpdateRootSecretProv(ffpConfig, ProvName)
 
 	labels := &map[string]string{"sub": "feature_flags"}
 
@@ -129,37 +130,37 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		},
 	}
 
-	provutils.MakeLocalDB(dd, nn, p.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", p.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
+	provutils.MakeLocalDB(dd, nn, ff.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
 
-	if err = p.Cache.Update(LocalFFDBDeployment, dd); err != nil {
-		return nil, err
+	if err = ff.Cache.Update(LocalFFDBDeployment, dd); err != nil {
+		return err
 	}
 
 	s := &core.Service{}
-	if err := p.Cache.Create(LocalFFDBService, nn, s); err != nil {
-		return nil, err
+	if err := ff.Cache.Create(LocalFFDBService, nn, s); err != nil {
+		return err
 	}
 
-	provutils.MakeLocalDBService(s, nn, p.Env, labels)
+	provutils.MakeLocalDBService(s, nn, ff.Env, labels)
 
-	if err = p.Cache.Update(LocalFFDBService, s); err != nil {
-		return nil, err
+	if err = ff.Cache.Update(LocalFFDBService, s); err != nil {
+		return err
 	}
 
-	if p.Env.Spec.Providers.FeatureFlags.PVC {
+	if ff.Env.Spec.Providers.FeatureFlags.PVC {
 		pvc := &core.PersistentVolumeClaim{}
-		if err = p.Cache.Create(LocalFFDBPVC, nn, pvc); err != nil {
-			return nil, err
+		if err = ff.Cache.Create(LocalFFDBPVC, nn, pvc); err != nil {
+			return err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env, sizing.GetDefaultVolCapacity())
+		provutils.MakeLocalDBPVC(pvc, nn, ff.Env, sizing.GetDefaultVolCapacity())
 
-		if err = p.Cache.Update(LocalFFDBPVC, pvc); err != nil {
-			return nil, err
+		if err = ff.Cache.Update(LocalFFDBPVC, pvc); err != nil {
+			return err
 		}
 	}
 
-	return ffp, nil
+	return nil
 }
 
 // CreateDatabase ensures a database is created for the given app.  The

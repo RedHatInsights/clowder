@@ -648,15 +648,15 @@ func (s *strimziProvider) configureBrokers() error {
 
 // NewStrimzi returns a new strimzi provider object.
 func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
-	kafkaProvider := &strimziProvider{
-		Provider: *p,
+	return &strimziProvider{Provider: *p}, nil
+}
+
+func (p *strimziProvider) EnvProvide() error {
+	if err := createNetworkPolicies(&p.Provider); err != nil {
+		return err
 	}
 
-	if err := createNetworkPolicies(p); err != nil {
-		return nil, err
-	}
-
-	return kafkaProvider, kafkaProvider.configureBrokers()
+	return p.configureBrokers()
 }
 
 func createNetworkPolicies(p *providers.Provider) error {

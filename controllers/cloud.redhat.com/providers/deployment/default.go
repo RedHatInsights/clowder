@@ -14,6 +14,10 @@ func NewDeploymentProvider(p *providers.Provider) (providers.ClowderProvider, er
 	return &deploymentProvider{Provider: *p}, nil
 }
 
+func (dp *deploymentProvider) EnvProvide() error {
+	return nil
+}
+
 func (dp *deploymentProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	for _, deployment := range app.Spec.Deployments {

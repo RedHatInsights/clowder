@@ -26,24 +26,6 @@ var CoreConfigSecret = rc.NewSingleResourceIdent(ProvName, "core_config_secret",
 
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-
-	secList, err := copyPullSecrets(p, p.Env.Status.TargetNamespace, p.Env)
-
-	if err != nil {
-		return nil, err
-	}
-
-	sa := &core.ServiceAccount{}
-	if err := p.Cache.Get(serviceaccount.CoreEnvServiceAccount, sa); err != nil {
-		return nil, err
-	}
-
-	addAllSecrets(secList, sa)
-
-	if err := p.Cache.Update(serviceaccount.CoreEnvServiceAccount, sa); err != nil {
-		return nil, err
-	}
-
 	return &pullsecretProvider{Provider: *p}, nil
 }
 
@@ -93,6 +75,26 @@ func copyPullSecrets(prov *providers.Provider, namespace string, obj object.Clow
 		}
 	}
 	return secList, nil
+}
+
+func (ps *pullsecretProvider) EnvProvide() error {
+	secList, err := copyPullSecrets(&ps.Provider, ps.Env.Status.TargetNamespace, ps.Env)
+
+	if err != nil {
+		return err
+	}
+
+	sa := &core.ServiceAccount{}
+	if err := ps.Cache.Get(serviceaccount.CoreEnvServiceAccount, sa); err != nil {
+		return err
+	}
+
+	addAllSecrets(secList, sa)
+
+	if err := ps.Cache.Update(serviceaccount.CoreEnvServiceAccount, sa); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

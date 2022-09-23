@@ -14,7 +14,10 @@ import (
 
 type elasticache struct {
 	providers.Provider
-	Config config.InMemoryDBConfig
+}
+
+func (e *elasticache) EnvProvide() error {
+	return nil
 }
 
 func (e *elasticache) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
@@ -74,9 +77,5 @@ func (e *elasticache) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) er
 
 // NewElasticache returns a new elasticache provider object.
 func NewElasticache(p *providers.Provider) (providers.ClowderProvider, error) {
-	config := config.InMemoryDBConfig{}
-
-	redisProvider := elasticache{Provider: *p, Config: config}
-
-	return &redisProvider, nil
+	return &elasticache{Provider: *p}, nil
 }

@@ -179,7 +179,8 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		provutils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
-		_, err := provAcc.SetupProvider(&provider)
+		prov, err := provAcc.SetupProvider(&provider)
+		prov.EnvProvide()
 		elapsed := time.Since(start).Seconds()
 		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(elapsed)
 		if err != nil {

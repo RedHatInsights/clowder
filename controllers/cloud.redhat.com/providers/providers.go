@@ -138,6 +138,7 @@ type ClowderProvider interface {
 	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as
 	// opposed to a ClowdEnvironment object.
 	Provide(app *crd.ClowdApp, c *config.AppConfig) error
+	EnvProvide() error
 }
 
 // StrPtr returns a pointer to a string.

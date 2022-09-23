@@ -23,6 +23,10 @@ func NewManagedKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &managedKafkaProvider{Provider: *p}, nil
 }
 
+func (k *managedKafkaProvider) EnvProvide() error {
+	return nil
+}
+
 func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
 	var err error
 	var secret *core.Secret
