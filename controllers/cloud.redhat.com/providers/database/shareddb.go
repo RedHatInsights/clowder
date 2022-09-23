@@ -77,7 +77,7 @@ func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		configs[v] = dbCfg
 	}
 
-	p.UpdateCoreSecretProv(configs, ProvName)
+	p.UpdateRootSecretProv(configs, ProvName)
 
 	return &sharedDbProvider{Provider: *p}, nil
 }

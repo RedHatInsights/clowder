@@ -10,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	core "k8s.io/api/core/v1"
@@ -92,9 +93,22 @@ func (r *ClowdEnvironmentReconciliation) createRootSecret() (ctrl.Result, error)
 		Name:      fmt.Sprintf("%s-root-secret", r.env.Name),
 		Namespace: r.env.Spec.TargetNamespace,
 	}
+
 	if err := r.cache.Create(providers.RootSecret, nn, sec); err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
+
+	labels := r.env.GetLabels()
+	labels["env-app"] = nn.Name
+	labeler := utils.MakeLabeler(nn, labels, r.env)
+	labeler(sec)
+
+	sec.StringData = make(map[string]string)
+
+	if err := r.cache.Update(providers.RootSecret, sec); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 

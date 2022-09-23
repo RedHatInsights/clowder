@@ -109,7 +109,7 @@ func (prov *Provider) GetSecret() *core.Secret {
 	return prov.RootSecret
 }
 
-func (prov *Provider) UpdateCoreSecretProv(obj interface{}, provname string) error {
+func (prov *Provider) UpdateRootSecretProv(obj interface{}, provname string) error {
 	sec := &core.Secret{}
 	if err := prov.Cache.Get(RootSecret, sec); err != nil {
 		return err

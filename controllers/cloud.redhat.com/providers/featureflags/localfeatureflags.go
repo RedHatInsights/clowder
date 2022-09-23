@@ -1,6 +1,7 @@
 package featureflags
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -43,13 +44,12 @@ var LocalFFDBSecret = rc.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.
 
 type localFeatureFlagsProvider struct {
 	providers.Provider
-	Config config.FeatureFlagsConfig // This is needed here
 }
 
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
 func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 
-	ffp := &localFeatureFlagsProvider{Provider: *p, Config: config.FeatureFlagsConfig{}}
+	ffp := &localFeatureFlagsProvider{Provider: *p}
 
 	objList := []rc.ResourceIdent{
 		LocalFFDeployment,
@@ -108,11 +108,14 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 	dbCfg.Populate(secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	ffp.Config = config.FeatureFlagsConfig{
+	ffpConfig := config.FeatureFlagsConfig{
 		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", p.Env.Name, p.Env.Status.TargetNamespace),
 		Port:     4242,
 		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
+
+	p.UpdateRootSecretProv(ffpConfig, ProvName)
+
 	labels := &map[string]string{"sub": "feature_flags"}
 
 	res := core.ResourceRequirements{
@@ -162,7 +165,12 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	c.FeatureFlags = &ff.Config
+	jsonData := ff.RootSecret.Data[ProvName]
+	configs := config.FeatureFlagsConfig{}
+	if err := json.Unmarshal(jsonData, &configs); err != nil {
+		return err
+	}
+	c.FeatureFlags = &configs
 	return nil
 }
 
