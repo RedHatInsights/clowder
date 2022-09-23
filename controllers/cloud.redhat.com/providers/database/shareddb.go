@@ -44,7 +44,7 @@ var SharedDBAppSecret = rc.NewSingleResourceIdent(ProvName, "shared_db_app_secre
 
 type sharedDbProvider struct {
 	providers.Provider
-	Config map[int32]*config.DatabaseConfig
+	Config map[int32]*config.DatabaseConfig // Shared config is needed here
 }
 
 // NewSharedDBProvider returns a new local DB provider object.

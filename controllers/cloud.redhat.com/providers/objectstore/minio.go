@@ -90,7 +90,7 @@ func (h *minioHandler) CreateClient(
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	providers.Provider
-	Config        config.ObjectStoreConfig
+	Config        config.ObjectStoreConfig //This is needed here
 	BucketHandler bucketHandler
 }
 

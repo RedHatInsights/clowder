@@ -257,7 +257,7 @@ func upsertClientCache(username string, password string, tokenURL string, adminH
 
 type managedEphemProvider struct {
 	providers.Provider
-	Config        config.KafkaConfig
+	Config        config.KafkaConfig //This config is used
 	tokenClient   HTTPClient
 	adminHostname string
 	secretData    map[string][]byte

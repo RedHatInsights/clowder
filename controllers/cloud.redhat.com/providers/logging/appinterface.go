@@ -12,7 +12,6 @@ import (
 
 type appInterfaceLoggingProvider struct {
 	providers.Provider
-	Config config.LoggingConfig
 }
 
 // NewAppInterfaceLogging returns a new app-interface logging provider object.

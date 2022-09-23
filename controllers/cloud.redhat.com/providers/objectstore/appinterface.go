@@ -14,7 +14,6 @@ import (
 
 type appInterfaceObjectstoreProvider struct {
 	providers.Provider
-	Config config.ObjectStoreConfig
 }
 
 // NewAppInterfaceObjectstore returns a new app-interface object store provider object.

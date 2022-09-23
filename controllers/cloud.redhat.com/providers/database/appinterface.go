@@ -24,7 +24,6 @@ const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bun
 
 type appInterface struct {
 	providers.Provider
-	Config config.DatabaseConfigContainer
 }
 
 func fetchCa() (string, error) {
@@ -110,9 +109,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		return err
 	}
 
-	a.Config = *matched
-
-	c.Database = &a.Config.Config
+	c.Database = &matched.Config
 
 	return nil
 }

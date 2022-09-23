@@ -17,7 +17,7 @@ type elasticache struct {
 	Config config.InMemoryDBConfig
 }
 
-func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error {
+func (e *elasticache) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
 	secretName := "in-memory-db"
 
 	if !app.Spec.InMemoryDB {
@@ -34,6 +34,8 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 
 	found := false
 
+	creds := config.InMemoryDBConfig{}
+
 	for _, secret := range secrets.Items {
 		if secret.Name == secretName {
 			port, err := strconv.Atoi(string(secret.Data["db.port"]))
@@ -47,11 +49,11 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 
 			passwd := string(secret.Data["db.auth_token"])
 			if passwd != "" {
-				e.Config.Password = &passwd
+				creds.Password = &passwd
 			}
 
-			e.Config.Hostname = string(secret.Data["db.endpoint"])
-			e.Config.Port = port
+			creds.Hostname = string(secret.Data["db.endpoint"])
+			creds.Port = port
 			found = true
 			break
 		}
@@ -65,7 +67,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 		return &missingDeps
 	}
 
-	config.InMemoryDb = &e.Config
+	appConfig.InMemoryDb = &creds
 
 	return nil
 }

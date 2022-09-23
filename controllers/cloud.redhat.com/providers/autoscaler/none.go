@@ -8,7 +8,6 @@ import (
 
 type noneAutoScalerProvider struct {
 	providers.Provider
-	Config config.DatabaseConfig
 }
 
 // NewNoneDBProvider returns a new none db provider object.

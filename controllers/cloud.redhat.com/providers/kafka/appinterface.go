@@ -19,7 +19,7 @@ import (
 
 type appInterface struct {
 	providers.Provider
-	Config config.KafkaConfig
+	Config config.KafkaConfig //This config is used
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {

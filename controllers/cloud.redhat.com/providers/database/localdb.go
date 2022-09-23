@@ -33,7 +33,6 @@ var LocalDBSecret = rc.NewSingleResourceIdent(ProvName, "local_db_secret", &core
 
 type localDbProvider struct {
 	providers.Provider
-	Config config.DatabaseConfig
 }
 
 // NewLocalDBProvider returns a new local DB provider object.
@@ -107,8 +106,6 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 	dbCfg.AdminUsername = "postgres"
 	dbCfg.SslMode = "disable"
 
-	db.Config = dbCfg
-
 	var image string
 
 	var dbVersion int32 = 12
@@ -162,7 +159,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 	}
-	c.Database = &db.Config
+	c.Database = &dbCfg
 	return nil
 }
 
@@ -204,8 +201,7 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfi
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	db.Config = dbCfg
-	c.Database = &db.Config
+	c.Database = &dbCfg
 
 	return nil
 }
