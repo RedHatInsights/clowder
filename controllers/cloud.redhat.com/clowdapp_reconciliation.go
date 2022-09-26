@@ -40,7 +40,6 @@ type ClowdAppReconciliation struct {
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 	return []func() (ctrl.Result, error){
-		r.getApp,
 		r.setPresentAndManagedApps,
 		r.startMetrics,
 		r.isAppMarkedForDeletion,
@@ -63,6 +62,7 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
+	r.getApp()
 	defer func() {
 		if r.app == nil {
 			return
