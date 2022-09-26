@@ -298,16 +298,13 @@ func (r *ClowdAppReconciliation) runProvidersImplementation(provider *providers.
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		provutils.DebugLog(*r.log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
-		start := time.Now()
 		prov, err := provAcc.SetupProvider(provider)
-		elapsed := time.Since(start).Seconds()
-		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(elapsed)
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
-		start = time.Now()
+		start := time.Now()
 		err = prov.Provide(r.app, &c)
-		elapsed = time.Since(start).Seconds()
+		elapsed := time.Since(start).Seconds()
 		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdapp"}).Observe(elapsed)
 		if err != nil {
 			reterr := errors.Wrap(fmt.Sprintf("runapp: %s", provAcc.Name), err)
