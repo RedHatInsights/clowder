@@ -261,7 +261,7 @@ func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-root-secret", r.env.Name),
-		Namespace: r.env.Spec.TargetNamespace,
+		Namespace: r.env.Status.TargetNamespace,
 	}
 	sec := &core.Secret{}
 	if err := r.client.Get(*r.ctx, nn, sec); err != nil {

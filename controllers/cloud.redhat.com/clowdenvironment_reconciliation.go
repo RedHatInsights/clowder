@@ -91,7 +91,7 @@ func (r *ClowdEnvironmentReconciliation) createRootSecret() (ctrl.Result, error)
 	sec := &core.Secret{}
 	nn := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-root-secret", r.env.Name),
-		Namespace: r.env.Spec.TargetNamespace,
+		Namespace: r.env.Status.TargetNamespace,
 	}
 
 	if err := r.cache.Create(providers.RootSecret, nn, sec); err != nil {
