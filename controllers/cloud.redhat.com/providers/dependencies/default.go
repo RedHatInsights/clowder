@@ -2,7 +2,6 @@ package dependencies
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -19,9 +18,9 @@ func (dep *dependenciesProvider) EnvProvide() error {
 	return nil
 }
 
-func (dep *dependenciesProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (dep *dependenciesProvider) Provide(app *crd.ClowdApp) error {
 
-	if err := dep.makeDependencies(app, c); err != nil {
+	if err := dep.makeDependencies(app); err != nil {
 		return err
 	}
 	return nil

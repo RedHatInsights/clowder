@@ -40,6 +40,7 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 
 	// These imports are to register the providers with the provider registration system
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/autoscaler"
@@ -123,6 +124,7 @@ type ClowdAppReconciler struct {
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
+	IPCCache *obj.IPCCache
 }
 
 // Reconcile fn
@@ -144,7 +146,9 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		recorder: r.Recorder,
 		app:      &app,
 		log:      &log,
-		req:      &req}
+		req:      &req,
+		ipccache: r.IPCCache,
+	}
 	res, err := reconciliation.Reconcile()
 	if err != nil {
 		if shouldSkipReconciliation(err) {

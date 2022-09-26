@@ -71,7 +71,7 @@ func (a *appInterface) EnvProvide() error {
 	return nil
 }
 
-func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
 		return nil
 	}
@@ -111,7 +111,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		return err
 	}
 
-	c.Database = &matched.Config
+	a.Config.Database = &matched.Config
 
 	return nil
 }

@@ -34,7 +34,7 @@ func (r *localRedis) EnvProvide() error {
 	return nil
 }
 
-func (r *localRedis) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
+func (r *localRedis) Provide(app *crd.ClowdApp) error {
 	if !app.Spec.InMemoryDB {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) err
 		return err
 	}
 
-	appConfig.InMemoryDb = &creds
+	r.Config.InMemoryDb = &creds
 
 	objList := []rc.ResourceIdent{
 		RedisDeployment,

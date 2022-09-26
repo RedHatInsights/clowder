@@ -49,6 +49,9 @@
                 "featureFlags": {
                     "$ref": "#/definitions/FeatureFlagsConfig"
                 },
+                "internal": {
+                    "$ref": "#/definitions/Internal"
+                },
                 "endpoints": {
                     "id": "endpoints",
                     "type": "array",
@@ -251,6 +254,73 @@
                 "name",
                 "requestedName"
             ]
+        },
+        "Internal": {
+            "id": "internal",
+            "title": "Internal",
+            "type": "object",
+            "descrption": "Internal Objects",
+            "properties": {
+                "keycloak": {
+                    "$ref": "#/definitions/KeycloakConfig"
+                },
+                "database": {
+                    "$ref": "#/definitions/SharedDatabase"
+                }
+            }
+        },
+        "SharedDatabase": {
+            "id": "sharedDatabase",
+            "title": "SharedDatabase",
+            "type": "array",
+            "description": "Shared Database Config",
+            "items": {
+                "$ref": "#/definitions/SharedDatabaseConfig"
+            }
+        },
+        "SharedDatabaseConfig": {
+            "id": "sharedDatabaseConfig",
+            "title": "SharedDatabaseConfig",
+            "type": "object",
+            "description": "Keycloak Config",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/DatabaseConfig"
+                },
+                "version":{
+                    "type": "integer",
+                    "description": "Version number"
+                }
+            },
+            "required": ["config", "version"]
+        },
+        "KeycloakConfig": {
+            "id": "keycloakConfig",
+            "title": "KeycloakConfig",
+            "type": "object",
+            "description": "Keycloak Config",
+            "properties": {
+                "url": {
+                    "description": "URL of Keycloak server",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "URL of Keycloak server",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "URL of Keycloak server",
+                    "type": "string"
+                },
+                "defaultUsername": {
+                    "description": "URL of Keycloak server",
+                    "type": "string"
+                },
+                "defaultPassword": {
+                    "description": "URL of Keycloak server",
+                    "type": "string"
+                }
+            }
         },
         "DatabaseConfig": {
             "id": "database",

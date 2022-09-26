@@ -46,13 +46,13 @@ func (db *localDbProvider) EnvProvide() error {
 
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
-func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
 		return nil
 	}
 
 	if app.Spec.Database.SharedDBAppName != "" {
-		return db.processSharedDB(app, c)
+		return db.processSharedDB(app)
 	}
 
 	nn := types.NamespacedName{
@@ -163,11 +163,11 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 	}
-	c.Database = &dbCfg
+	db.Config.Database = &dbCfg
 	return nil
 }
 
-func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *localDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	err := checkDependency(app)
 
 	if err != nil {
@@ -205,7 +205,7 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfi
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	c.Database = &dbCfg
+	db.Config.Database = &dbCfg
 
 	return nil
 }

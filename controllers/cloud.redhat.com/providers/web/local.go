@@ -24,19 +24,6 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-type KeycloakConfig struct {
-	URL             string
-	Username        string
-	Password        string
-	DefaultUsername string
-	DefaultPassword string
-}
-
-type backendConfig struct {
-	BOPURL         string
-	KeycloakConfig KeycloakConfig
-}
-
 type localWebProvider struct {
 	providers.Provider
 }
@@ -64,7 +51,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	return &localWebProvider{Provider: *p}, nil
 }
 
-func makeMocktitlementsSecret(p *providers.Provider, configs *backendConfig) error {
+func makeMocktitlementsSecret(p *providers.Provider, config *config.AppConfig) error {
 	nn := types.NamespacedName{
 		Name:      "caddy-config-mocktitlements",
 		Namespace: p.Env.GetClowdNamespace(),
@@ -81,8 +68,8 @@ func makeMocktitlementsSecret(p *providers.Provider, configs *backendConfig) err
 	sec.Type = core.SecretTypeOpaque
 
 	sec.StringData = map[string]string{
-		"bopurl":      configs.BOPURL,
-		"keycloakurl": configs.KeycloakConfig.URL,
+		"bopurl":      *config.BOPURL,
+		"keycloakurl": *config.Internal.Keycloak.Url,
 		"whitelist":   "",
 	}
 
@@ -269,18 +256,14 @@ func (web *localWebProvider) EnvProvide() error {
 		return errors.Wrap("couldn't set secret version", err)
 	}
 
-	configs := backendConfig{
-		KeycloakConfig: KeycloakConfig{
-			Username:        (*dataMap)["username"],
-			Password:        (*dataMap)["password"],
-			DefaultUsername: (*dataMap)["defaultUsername"],
-			DefaultPassword: (*dataMap)["defaultPassword"],
-			URL:             fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "keycloak", web.Env.GetClowdNamespace()),
-		},
-		BOPURL: fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()),
+	web.Config.BOPURL = utils.StringPtr(fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()))
+	web.Config.Internal.Keycloak = &config.KeycloakConfig{
+		Username:        utils.StringPtr((*dataMap)["username"]),
+		Password:        utils.StringPtr((*dataMap)["password"]),
+		DefaultUsername: utils.StringPtr((*dataMap)["defaultUsername"]),
+		DefaultPassword: utils.StringPtr((*dataMap)["defaultPassword"]),
+		Url:             utils.StringPtr(fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "keycloak", web.Env.GetClowdNamespace())),
 	}
-
-	web.UpdateRootSecretProv(configs, ProvName)
 
 	objList := []rc.ResourceIdent{
 		WebKeycloakDeployment,
@@ -291,7 +274,7 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, configs.KeycloakConfig.DefaultPassword); err != nil {
+	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, *web.Config.Internal.Keycloak.DefaultPassword); err != nil {
 		return err
 	}
 
@@ -313,7 +296,7 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := makeMocktitlementsSecret(&web.Provider, &configs); err != nil {
+	if err := makeMocktitlementsSecret(&web.Provider, web.Config); err != nil {
 		return err
 	}
 
@@ -334,15 +317,15 @@ func (web *localWebProvider) EnvProvide() error {
 	return nil
 }
 
-func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
-	c.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
-	c.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.GetConfig().WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.GetConfig().PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
 	if privatePort == 0 {
 		privatePort = 10000
 	}
-	c.PrivatePort = utils.IntPtr(int(privatePort))
+	web.GetConfig().PrivatePort = utils.IntPtr(int(privatePort))
 
 	for _, deployment := range app.Spec.Deployments {
 
@@ -351,14 +334,6 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 		}
 
 		web.createIngress(app, &deployment)
-
-		jsonData := web.RootSecret.Data[ProvName]
-		configs := backendConfig{}
-		if err := json.Unmarshal(jsonData, &configs); err != nil {
-			return err
-		}
-
-		c.BOPURL = providers.StrPtr(configs.BOPURL)
 
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
@@ -376,8 +351,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 		sec.Type = core.SecretTypeOpaque
 
 		sec.StringData = map[string]string{
-			"bopurl":      configs.BOPURL,
-			"keycloakurl": configs.KeycloakConfig.URL,
+			"bopurl":      *web.GetConfig().BOPURL,
+			"keycloakurl": *web.GetConfig().Internal.Keycloak.Url,
 			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
 		}
 

@@ -22,7 +22,7 @@ func (ff *appInterfaceFeatureFlagProvider) EnvProvide() error {
 	return nil
 }
 
-func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp) error {
 	emptyNN := crd.NamespacedName{}
 	if ff.Env.Spec.Providers.FeatureFlags.CredentialRef == emptyNN {
 		return errors.New("no feature flag secret defined")
@@ -52,7 +52,7 @@ func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp, c *config.
 
 	stringAccessToken := string(accessToken)
 
-	c.FeatureFlags = &config.FeatureFlagsConfig{
+	ff.Config.FeatureFlags = &config.FeatureFlagsConfig{
 		ClientAccessToken: &stringAccessToken,
 		Hostname:          ff.Env.Spec.Providers.FeatureFlags.Hostname,
 		Port:              int(ff.Env.Spec.Providers.FeatureFlags.Port),

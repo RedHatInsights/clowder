@@ -19,7 +19,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
@@ -38,6 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	// Import the providers to initialize them
+
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
@@ -70,9 +71,6 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var mu sync.RWMutex
-var cEnv = ""
-
 const (
 	envFinalizer = "finalizer.env.cloud.redhat.com"
 	SILENTFAIL   = "SILENTFAIL"
@@ -84,28 +82,11 @@ type ClowdEnvironmentReconciler struct {
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
+	IPCCache *obj.IPCCache
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
-
-func SetEnv(name string) {
-	mu.Lock()
-	defer mu.Unlock()
-	cEnv = name
-}
-
-func ReleaseEnv() {
-	mu.Lock()
-	defer mu.Unlock()
-	cEnv = ""
-}
-
-func ReadEnv() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return cEnv
-}
 
 //Acts as a guard for a reconciliation cycle, as well as initatizes a bunch of required objects
 func (r *ClowdEnvironmentReconciler) getEnv(ctx context.Context, req ctrl.Request) (crd.ClowdEnvironment, ctrl.Result, error) {
@@ -153,6 +134,8 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		managedEnvsMetric.Set(float64(len(managedEnvironments)))
 	}()
 
+	configObj := r.IPCCache.GetWriteableConfig(env.Name)
+	defer r.IPCCache.UnlockConfig(env.Name)
 	reconciliation := ClowdEnvironmentReconciliation{
 		cache:    &cache,
 		recorder: r.Recorder,
@@ -160,6 +143,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		client:   r.Client,
 		env:      &env,
 		log:      &log,
+		config:   configObj,
 	}
 
 	result, resErr := reconciliation.Reconcile()
@@ -169,7 +153,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 		return result, resErr
 	}
-
+	r.IPCCache.PersistConfig(env.Name)
 	managedEnvironments[env.Name] = true
 
 	return ctrl.Result{}, nil

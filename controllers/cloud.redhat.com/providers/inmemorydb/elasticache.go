@@ -20,7 +20,7 @@ func (e *elasticache) EnvProvide() error {
 	return nil
 }
 
-func (e *elasticache) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
+func (e *elasticache) Provide(app *crd.ClowdApp) error {
 	secretName := "in-memory-db"
 
 	if !app.Spec.InMemoryDB {
@@ -70,7 +70,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) er
 		return &missingDeps
 	}
 
-	appConfig.InMemoryDb = &creds
+	e.Config.InMemoryDb = &creds
 
 	return nil
 }

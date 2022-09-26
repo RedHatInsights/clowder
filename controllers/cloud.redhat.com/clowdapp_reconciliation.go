@@ -9,6 +9,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
@@ -33,6 +34,8 @@ type ClowdAppReconciliation struct {
 	req                   *ctrl.Request
 	env                   *crd.ClowdEnvironment
 	reconciliationMetrics ReconciliationMetrics
+	ipccache              *obj.IPCCache
+	config                *config.AppConfig
 }
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
@@ -60,6 +63,12 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
+	defer func() {
+		if r.app == nil {
+			return
+		}
+		r.ipccache.UnlockConfig(r.app.Spec.EnvName)
+	}()
 	for _, step := range r.steps() {
 		result, err := step()
 		if err != nil {
@@ -169,11 +178,14 @@ func (r *ClowdAppReconciliation) addFinalizerImplementation() error {
 }
 
 func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
-	if ReadEnv() == r.app.Spec.EnvName {
+	var config *config.AppConfig
+	var err error
+	if config, err = r.ipccache.GetReadableConfig(r.app.Spec.EnvName); err != nil {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", r.app.Spec.EnvName)
 		r.log.Info("Env currently being reconciled")
 		return ctrl.Result{Requeue: true}, errors.New(SKIPRECONCILE)
 	}
+	r.config = config
 	return ctrl.Result{}, nil
 }
 
@@ -258,23 +270,13 @@ func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
-
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-root-secret", r.env.Name),
-		Namespace: r.env.Status.TargetNamespace,
-	}
-	sec := &core.Secret{}
-	if err := r.client.Get(*r.ctx, nn, sec); err != nil {
-		return ctrl.Result{Requeue: true}, err
-	}
-
 	provider := providers.Provider{
-		Client:     r.client,
-		Ctx:        *r.ctx,
-		Env:        r.env,
-		Cache:      r.cache,
-		Log:        *r.log,
-		RootSecret: sec,
+		Client: r.client,
+		Ctx:    *r.ctx,
+		Env:    r.env,
+		Cache:  r.cache,
+		Log:    *r.log,
+		Config: r.config,
 	}
 
 	if provErr := r.runProvidersImplementation(&provider); provErr != nil {
@@ -290,11 +292,8 @@ func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) runProvidersImplementation(provider *providers.Provider) error {
-
-	c := config.AppConfig{}
-
 	// Update app metadata
-	updateMetadata(r.app, &c)
+	updateMetadata(r.app, r.config)
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		provutils.DebugLog(*r.log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
@@ -303,7 +302,7 @@ func (r *ClowdAppReconciliation) runProvidersImplementation(provider *providers.
 			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
 		}
 		start := time.Now()
-		err = prov.Provide(r.app, &c)
+		err = prov.Provide(r.app)
 		elapsed := time.Since(start).Seconds()
 		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdapp"}).Observe(elapsed)
 		if err != nil {

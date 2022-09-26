@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -27,7 +26,7 @@ func (sc *sidecarProvider) EnvProvide() error {
 	return nil
 }
 
-func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
 
 		d := &apps.Deployment{}

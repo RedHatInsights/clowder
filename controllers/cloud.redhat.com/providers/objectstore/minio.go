@@ -2,7 +2,6 @@ package objectstore
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -99,25 +98,14 @@ func (m *minioProvider) EnvProvide() error {
 }
 
 // Provide creates new buckets
-func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 	if len(app.Spec.ObjectStore) == 0 {
 		return nil
 	}
 
-	jsonData := m.RootSecret.Data[ProvName]
-	configs := config.ObjectStoreConfig{}
-	if err := json.Unmarshal(jsonData, &configs); err != nil {
-		return err
-	}
+	m.GetConfig().ObjectStore.Tls = false
+	m.GetConfig().ObjectStore.Buckets = []config.ObjectStoreBucket{}
 
-	c.ObjectStore = &config.ObjectStoreConfig{
-		Hostname:  configs.Hostname,
-		Port:      configs.Port,
-		AccessKey: configs.AccessKey,
-		SecretKey: configs.SecretKey,
-		Buckets:   []config.ObjectStoreBucket{},
-		Tls:       false,
-	}
 	for _, bucket := range app.Spec.ObjectStore {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
 
@@ -133,11 +121,11 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			}
 		}
 
-		c.ObjectStore.Buckets = append(c.ObjectStore.Buckets, config.ObjectStoreBucket{
+		m.GetConfig().ObjectStore.Buckets = append(m.GetConfig().ObjectStore.Buckets, config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
-			AccessKey:     configs.AccessKey,
-			SecretKey:     configs.SecretKey,
+			AccessKey:     m.GetConfig().ObjectStore.AccessKey,
+			SecretKey:     m.GetConfig().ObjectStore.SecretKey,
 		})
 	}
 
@@ -152,22 +140,20 @@ func createMinioProvider(
 	port, _ := strconv.Atoi(secMap["port"])
 	mp.Ctx = p.Ctx
 
-	configs := config.ObjectStoreConfig{}
+	mp.Config.ObjectStore = &config.ObjectStoreConfig{}
 
-	configs.AccessKey = providers.StrPtr(secMap["accessKey"])
-	configs.SecretKey = providers.StrPtr(secMap["secretKey"])
-	configs.Hostname = secMap["hostname"]
-	configs.Port = port
+	mp.Config.ObjectStore.AccessKey = providers.StrPtr(secMap["accessKey"])
+	mp.Config.ObjectStore.SecretKey = providers.StrPtr(secMap["secretKey"])
+	mp.Config.ObjectStore.Hostname = secMap["hostname"]
+	mp.Config.ObjectStore.Port = port
 
 	mp.BucketHandler = handler
 	err := mp.BucketHandler.CreateClient(
-		configs.Hostname,
-		configs.Port,
-		configs.AccessKey,
-		configs.SecretKey,
+		mp.Config.ObjectStore.Hostname,
+		mp.Config.ObjectStore.Port,
+		mp.Config.ObjectStore.AccessKey,
+		mp.Config.ObjectStore.SecretKey,
 	)
-
-	p.UpdateRootSecretProv(configs, ProvName)
 
 	if err != nil {
 		return nil, errors.Wrap("error creating minio client", err)

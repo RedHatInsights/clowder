@@ -100,7 +100,7 @@ func (mep *managedEphemProvider) EnvProvide() error {
 
 	saslType := config.BrokerConfigAuthtypeSasl
 
-	configs := config.KafkaConfig{
+	kconfig := config.KafkaConfig{
 		Brokers: []config.BrokerConfig{{
 			Hostname: hostname,
 			Port:     utils.IntPtr(443),
@@ -116,10 +116,10 @@ func (mep *managedEphemProvider) EnvProvide() error {
 	}
 
 	if cacert != "" {
-		configs.Brokers[0].Cacert = &cacert
+		kconfig.Brokers[0].Cacert = &cacert
 	}
 
-	mep.UpdateRootSecretProv(configs, ProvName)
+	mep.Config.Kafka = &kconfig
 
 	return mep.configureBrokers()
 }
@@ -338,7 +338,7 @@ func (mep *managedEphemProvider) configCyndi(app *crd.ClowdApp) error {
 	return nil
 }
 
-func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
+func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 	sec, err := getSecret(&mep.Provider)
 	if err != nil {
 		return err
@@ -348,14 +348,6 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.Ap
 
 	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, &mep.Provider)
 
-	jsonData := mep.RootSecret.Data[ProvName]
-	configs := config.KafkaConfig{}
-	if err := json.Unmarshal(jsonData, &configs); err != nil {
-		return err
-	}
-
-	appConfig.Kafka = &configs
-
 	if err := mep.configCyndi(app); err != nil {
 		return err
 	}
@@ -364,7 +356,7 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp, appConfig *config.Ap
 		return nil
 	}
 
-	if err := mep.processTopics(app, appConfig, httpClient, adminHostname); err != nil {
+	if err := mep.processTopics(app, mep.Config, httpClient, adminHostname); err != nil {
 		return err
 	}
 

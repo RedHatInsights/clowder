@@ -1,7 +1,6 @@
 package featureflags
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -115,7 +114,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 
-	ff.UpdateRootSecretProv(ffpConfig, ProvName)
+	ff.Config.FeatureFlags = &ffpConfig
 
 	labels := &map[string]string{"sub": "feature_flags"}
 
@@ -165,13 +164,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
-func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	jsonData := ff.RootSecret.Data[ProvName]
-	configs := config.FeatureFlagsConfig{}
-	if err := json.Unmarshal(jsonData, &configs); err != nil {
-		return err
-	}
-	c.FeatureFlags = &configs
+func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 

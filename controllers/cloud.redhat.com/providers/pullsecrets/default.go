@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/serviceaccount"
@@ -97,7 +96,7 @@ func (ps *pullsecretProvider) EnvProvide() error {
 	return nil
 }
 
-func (ps *pullsecretProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 
 	secList, err := copyPullSecrets(&ps.Provider, app.Namespace, app)
 

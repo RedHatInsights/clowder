@@ -3,7 +3,6 @@ package metrics
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 
@@ -88,14 +87,14 @@ func (m *metricsProvider) EnvProvide() error {
 	return nil
 }
 
-func (m *metricsProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (m *metricsProvider) Provide(app *crd.ClowdApp) error {
 
-	if err := createMetricsOnDeployments(m.Cache, m.Env, app, c); err != nil {
+	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config); err != nil {
 		return err
 	}
 
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
-		if err := createServiceMonitorObjects(m.Cache, m.Env, app, c, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
+		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
 			return err
 		}
 

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -55,7 +54,7 @@ func (sa *serviceaccountProvider) EnvProvide() error {
 	return nil
 }
 
-func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 
 	if err := createIQEServiceAccounts(&sa.Provider, app); err != nil {
 		return err

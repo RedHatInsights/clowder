@@ -2,7 +2,6 @@ package confighash
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -30,9 +29,9 @@ func (ch *confighashProvider) EnvProvide() error {
 	return nil
 }
 
-func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 
-	hash, err := ch.persistConfig(app, c)
+	hash, err := ch.persistConfig(app)
 
 	if err != nil {
 		return err

@@ -31,6 +31,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [objectStore](#objectstore)           | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstoreconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore")                          |
 | [inMemoryDb](#inmemorydb)             | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/inMemoryDb")                            |
 | [featureFlags](#featureflags)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")                        |
+| [internal](#internal)                 | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-internal.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/internal")                                      |
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
 | [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
@@ -226,6 +227,22 @@ Feature Flags Configuration
 ### featureFlags Type
 
 `object` ([Details](schema-definitions-featureflagsconfig.md))
+
+## internal
+
+
+
+
+`internal`
+
+-   is optional
+-   Type: `object` ([Internal](schema-definitions-internal.md))
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-internal.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/internal")
+
+### internal Type
+
+`object` ([Internal](schema-definitions-internal.md))
 
 ## endpoints
 

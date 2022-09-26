@@ -625,23 +625,21 @@ func (s *strimziProvider) configureBrokers() error {
 		return errors.Wrap("failed to provision kafka cluster", err)
 	}
 
-	configs := config.KafkaConfig{
+	s.Config.Kafka = &config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 	}
 
 	// Look up Kafka cluster's listeners and configure s.Config.Brokers
 	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
-	if err := s.configureListeners(&configs); err != nil {
+	if err := s.configureListeners(s.Config.Kafka); err != nil {
 		clowdErr := errors.Wrap("unable to determine kafka broker addresses", err)
 		clowdErr.Requeue = true
 		return clowdErr
 	}
 
-	if err := s.configureKafkaConnectCluster(&configs); err != nil {
+	if err := s.configureKafkaConnectCluster(s.Config.Kafka); err != nil {
 		return errors.Wrap("failed to provision kafka connect cluster", err)
 	}
-
-	s.UpdateRootSecretProv(configs, ProvName)
 
 	return nil
 }
@@ -710,13 +708,7 @@ func createNetworkPolicies(p *providers.Provider) error {
 	return nil
 }
 
-func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-
-	jsonData := s.RootSecret.Data[ProvName]
-	configs := config.KafkaConfig{}
-	if err := json.Unmarshal(jsonData, &configs); err != nil {
-		return err
-	}
+func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 
 	if app.Spec.Cyndi.Enabled {
 		err := createCyndiPipeline(s, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env))
@@ -729,7 +721,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 		return nil
 	}
 
-	if err := s.processTopics(app, &configs); err != nil {
+	if err := s.processTopics(app, s.Config.Kafka); err != nil {
 		return err
 	}
 
@@ -738,13 +730,10 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error 
 			return err
 		}
 
-		if err := s.setBrokerCredentials(app, &configs); err != nil {
+		if err := s.setBrokerCredentials(app, s.Config.Kafka); err != nil {
 			return err
 		}
 	}
-
-	// set our provider's config on the AppConfig
-	c.Kafka = &configs
 
 	return nil
 }

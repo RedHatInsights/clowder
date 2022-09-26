@@ -2,7 +2,6 @@ package servicemesh
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
@@ -23,7 +22,7 @@ func (ch *servicemeshProvider) EnvProvide() error {
 	return nil
 }
 
-func (ch *servicemeshProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (ch *servicemeshProvider) Provide(app *crd.ClowdApp) error {
 	if ch.Env.Spec.Providers.ServiceMesh.Mode != "enabled" {
 		return nil
 	}

@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -33,7 +32,7 @@ func (a *appInterface) EnvProvide() error {
 		return err
 	}
 
-	configs := config.KafkaConfig{
+	a.Config.Kafka = &config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 		Brokers: []config.BrokerConfig{{
 			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
@@ -41,11 +40,10 @@ func (a *appInterface) EnvProvide() error {
 		}},
 	}
 
-	a.UpdateRootSecretProv(configs, ProvName)
 	return nil
 }
 
-func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	if app.Spec.Cyndi.Enabled {
 		err := validateCyndiPipeline(a.Ctx, a.Client, app, getConnectNamespace(a.Env))
 		if err != nil {
@@ -55,12 +53,6 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 
 	if len(app.Spec.KafkaTopics) == 0 {
 		return nil
-	}
-
-	jsonData := a.RootSecret.Data[ProvName]
-	configs := config.KafkaConfig{}
-	if err := json.Unmarshal(jsonData, &configs); err != nil {
-		return err
 	}
 
 	for _, topic := range app.Spec.KafkaTopics {
@@ -75,16 +67,14 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			return err
 		}
 
-		configs.Topics = append(
-			configs.Topics,
+		a.Config.Kafka.Topics = append(
+			a.Config.Kafka.Topics,
 			config.TopicConfig{
 				Name:          topic.TopicName,
 				RequestedName: topic.TopicName,
 			},
 		)
 	}
-
-	c.Kafka = &configs
 	return nil
 }
 

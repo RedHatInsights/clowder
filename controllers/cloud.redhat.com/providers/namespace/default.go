@@ -2,7 +2,6 @@ package namespace
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	utils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
@@ -30,7 +29,7 @@ func (nsp *namespaceProvider) EnvProvide() error {
 	return setLabelOnNamespace(&nsp.Provider, nsp.Env.Status.TargetNamespace)
 }
 
-func (nsp *namespaceProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (nsp *namespaceProvider) Provide(app *crd.ClowdApp) error {
 	return setLabelOnNamespace(&nsp.Provider, app.GetNamespace())
 }
 

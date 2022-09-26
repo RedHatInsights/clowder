@@ -2,7 +2,6 @@ package objectstore
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -19,6 +18,6 @@ func (k *noneObjectStoreProvider) EnvProvide() error {
 	return nil
 }
 
-func (k *noneObjectStoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (k *noneObjectStoreProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }

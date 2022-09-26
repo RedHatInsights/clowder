@@ -4,7 +4,10 @@ import (
 	"context"
 	_ "embed"
 	"os"
+	"sync"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
@@ -98,18 +101,22 @@ func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config
 		os.Exit(1)
 	}
 
+	ipccache := obj.NewIPCCache()
+
 	if err = (&ClowdAppReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdApp"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("ClowdApp"),
+		Scheme:   mgr.GetScheme(),
+		IPCCache: ipccache,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdApp")
 		os.Exit(1)
 	}
 	if err = (&ClowdEnvironmentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
+		Scheme:   mgr.GetScheme(),
+		IPCCache: ipccache,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
 		os.Exit(1)
@@ -156,4 +163,37 @@ func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config
 		os.Exit(1)
 	}
 	setupLog.Info("Exiting manager")
+}
+
+type IPCCache struct {
+	config    map[string]*config.AppConfig
+	newConfig map[string]*config.AppConfig
+	mutex     sync.RWMutex
+}
+
+func NewIPCCache() *IPCCache {
+	return &IPCCache{
+		config: make(map[string]*config.AppConfig),
+		mutex:  sync.RWMutex{},
+	}
+}
+
+func (ipccache *IPCCache) LockConfig(key string) *config.AppConfig {
+	ipccache.mutex.Lock()
+	var val *config.AppConfig
+	var ok bool
+	if val, ok = ipccache.newConfig[key]; !ok {
+		ipccache.newConfig[key] = &config.AppConfig{}
+	}
+	return val
+}
+
+func (ipccache *IPCCache) UnlockConfig(key string) {
+	ipccache.mutex.Unlock()
+}
+
+func (ipccache *IPCCache) PersistConfig(key string) {
+	ipccache.mutex.Lock()
+	ipccache.config[key] = ipccache.newConfig[key]
+	ipccache.mutex.Unlock()
 }

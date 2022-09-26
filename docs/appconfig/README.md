@@ -14,12 +14,25 @@
 -   [CloudWatchConfig](./schema-definitions-loggingconfig-properties-cloudwatchconfig.md "Cloud Watch configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig/properties/cloudwatch`
 -   [CloudWatchConfig](./schema-definitions-cloudwatchconfig.md "Cloud Watch configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/CloudWatchConfig`
 -   [DatabaseConfig](./schema-definitions-appconfig-properties-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/database`
+-   [DatabaseConfig](./schema-definitions-shareddatabaseconfig-properties-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/config`
+-   [DatabaseConfig](./schema-definitions-shareddatabaseconfig-properties-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/config`
+-   [DatabaseConfig](./schema-definitions-shareddatabaseconfig-properties-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/config`
+-   [DatabaseConfig](./schema-definitions-shareddatabaseconfig-properties-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/config`
 -   [DatabaseConfig](./schema-definitions-databaseconfig.md "Database Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig`
 -   [DeploymentMetadata](./schema-definitions-appmetadata-properties-deployments-deploymentmetadata.md "Deployment Metadata") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments/items`
 -   [DeploymentMetadata](./schema-definitions-appmetadata-properties-deployments-deploymentmetadata.md "Deployment Metadata") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments/items`
 -   [DeploymentMetadata](./schema-definitions-deploymentmetadata.md "Deployment Metadata") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DeploymentMetadata`
+-   [Internal](./schema-definitions-appconfig-properties-internal.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/internal`
+-   [Internal](./schema-definitions-internal.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal`
+-   [KeycloakConfig](./schema-definitions-internal-properties-keycloakconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/keycloak`
+-   [KeycloakConfig](./schema-definitions-internal-properties-keycloakconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/keycloak`
+-   [KeycloakConfig](./schema-definitions-keycloakconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig`
 -   [LoggingConfig](./schema-definitions-appconfig-properties-loggingconfig.md "Logging Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging`
 -   [LoggingConfig](./schema-definitions-loggingconfig.md "Logging Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/LoggingConfig`
+-   [SharedDatabaseConfig](./schema-definitions-internal-properties-shareddatabase-shareddatabaseconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/database/items`
+-   [SharedDatabaseConfig](./schema-definitions-internal-properties-shareddatabase-shareddatabaseconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/database/items`
+-   [SharedDatabaseConfig](./schema-definitions-internal-properties-shareddatabase-shareddatabaseconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabase/items`
+-   [SharedDatabaseConfig](./schema-definitions-shareddatabaseconfig.md "Keycloak Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig.md "ClowdApp deployment configuration for Clowder enabled apps") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig`
 -   [Untitled object in AppConfig](./schema-definitions-appconfig-properties-kafka.md "Kafka Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/kafka`
 -   [Untitled object in AppConfig](./schema-definitions-kafkaconfig-properties-brokers-items.md "Broker Configuration") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers/items`
@@ -49,6 +62,9 @@
 
 ### Arrays
 
+-   [SharedDatabase](./schema-definitions-internal-properties-shareddatabase.md "Shared Database Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/database`
+-   [SharedDatabase](./schema-definitions-internal-properties-shareddatabase.md "Shared Database Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/database`
+-   [SharedDatabase](./schema-definitions-shareddatabase.md "Shared Database Config") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabase`
 -   [Untitled array in AppConfig](./schema-definitions-appmetadata-properties-deployments.md "Metadata pertaining to an application's deployments") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokers.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`

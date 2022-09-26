@@ -2,7 +2,6 @@ package cronjob
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -18,7 +17,7 @@ func (j *cronjobProvider) EnvProvide() error {
 	return nil
 }
 
-func (j *cronjobProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (j *cronjobProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, cronjob := range app.Spec.Jobs {
 		if cronjob.Schedule != "" {

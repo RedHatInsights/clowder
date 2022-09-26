@@ -2,7 +2,6 @@ package providers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -77,12 +76,12 @@ type Labels map[string]string
 
 // Provider is a struct that holds a client/context and ClowdEnvironment object.
 type Provider struct {
-	Client     client.Client
-	Ctx        context.Context
-	Env        *crd.ClowdEnvironment
-	Cache      *rc.ObjectCache
-	Log        logr.Logger
-	RootSecret *core.Secret
+	Client client.Client
+	Ctx    context.Context
+	Env    *crd.ClowdEnvironment
+	Cache  *rc.ObjectCache
+	Log    logr.Logger
+	Config *config.AppConfig
 }
 
 func (prov *Provider) GetClient() client.Client {
@@ -105,24 +104,8 @@ func (prov *Provider) GetLog() logr.Logger {
 	return prov.Log
 }
 
-func (prov *Provider) GetSecret() *core.Secret {
-	return prov.RootSecret
-}
-
-func (prov *Provider) UpdateRootSecretProv(obj interface{}, provname string) error {
-	sec := &core.Secret{}
-	if err := prov.Cache.Get(RootSecret, sec); err != nil {
-		return err
-	}
-	bytes, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-	sec.StringData[provname] = string(bytes)
-	if err := prov.Cache.Update(RootSecret, sec); err != nil {
-		return err
-	}
-	return nil
+func (prov *Provider) GetConfig() *config.AppConfig {
+	return prov.Config
 }
 
 type RootProvider interface {
@@ -137,8 +120,9 @@ type RootProvider interface {
 type ClowderProvider interface {
 	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as
 	// opposed to a ClowdEnvironment object.
-	Provide(app *crd.ClowdApp, c *config.AppConfig) error
+	Provide(app *crd.ClowdApp) error
 	EnvProvide() error
+	GetConfig() *config.AppConfig
 }
 
 // StrPtr returns a pointer to a string.

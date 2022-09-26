@@ -23,9 +23,9 @@ func (a *appInterfaceLoggingProvider) EnvProvide() error {
 	return nil
 }
 
-func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	c.Logging = config.LoggingConfig{}
-	return setCloudwatchSecret(app.Namespace, &a.Provider, &c.Logging)
+func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp) error {
+	a.Config.Logging = config.LoggingConfig{}
+	return setCloudwatchSecret(app.Namespace, &a.Provider, &a.Config.Logging)
 }
 
 func setCloudwatchSecret(ns string, p *providers.Provider, c *config.LoggingConfig) error {

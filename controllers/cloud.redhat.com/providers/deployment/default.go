@@ -2,7 +2,6 @@ package deployment
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -18,7 +17,7 @@ func (dp *deploymentProvider) EnvProvide() error {
 	return nil
 }
 
-func (dp *deploymentProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (dp *deploymentProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, deployment := range app.Spec.Deployments {
 
