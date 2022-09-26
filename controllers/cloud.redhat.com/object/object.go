@@ -37,7 +37,6 @@ type IPCCache struct {
 }
 
 type configCache struct {
-	config    *config.AppConfig
 	newConfig *config.AppConfig
 	mutex     sync.RWMutex
 }
@@ -65,7 +64,7 @@ func (ipccache *IPCCache) GetReadableConfig(key string) (*config.AppConfig, erro
 		return nil, fmt.Errorf("cache does not hold env [%s]", key)
 	}
 	ipccache.configs[key].mutex.Lock()
-	return ipccache.configs[key].config, nil
+	return ipccache.configs[key].newConfig, nil
 }
 
 func (ipccache *IPCCache) UnlockConfig(key string) {
@@ -75,5 +74,5 @@ func (ipccache *IPCCache) UnlockConfig(key string) {
 }
 
 func (ipccache *IPCCache) PersistConfig(key string) {
-	ipccache.configs[key].config = ipccache.configs[key].newConfig
+	// ipccache.configs[key].newConfig = ipccache.configs[key].newConfig
 }

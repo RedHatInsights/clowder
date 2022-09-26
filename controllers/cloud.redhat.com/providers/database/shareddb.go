@@ -189,6 +189,8 @@ func (db *sharedDbProvider) EnvProvide() error {
 
 	configs := map[int32]*config.DatabaseConfig{}
 
+	db.Config.Internal.Database = config.SharedDatabase{}
+
 	for v := range versionsRequired {
 		dbCfg, err := createVersionedDatabase(&db.Provider, v)
 		if err != nil {
