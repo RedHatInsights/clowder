@@ -6,6 +6,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	core "k8s.io/api/core/v1"
 )
 
 func TestAppInterface(t *testing.T) {
@@ -22,6 +23,11 @@ func TestAppInterface(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+		RootSecret: &core.Secret{
+			Data: map[string][]byte{
+				ProvName: []byte("{\"brokers\":[{\"hostname\":\"platform-mq-kafka-bootstrap.platform-mq-prod.svc\",\"port\":9092}],\"topics\":[]}"),
 			},
 		},
 	}
@@ -42,7 +48,10 @@ func TestAppInterface(t *testing.T) {
 
 	c := config.AppConfig{}
 
-	ai.Provide(app, &c)
+	err = ai.Provide(app, &c)
+	if err != nil {
+		t.Error(err)
+	}
 
 	if len(c.Kafka.Brokers) != 1 {
 		t.Errorf("Wrong number of brokers %v; expected 1", len(c.Kafka.Brokers))

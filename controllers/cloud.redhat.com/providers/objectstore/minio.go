@@ -94,8 +94,8 @@ type minioProvider struct {
 	BucketHandler bucketHandler
 }
 
-func (m *minioProvider) EnvProvide(app *crd.ClowdApp, c *config.AppConfig) error {
-
+func (m *minioProvider) EnvProvide() error {
+	return createNetworkPolicy(&m.Provider)
 }
 
 // Provide creates new buckets
@@ -222,7 +222,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		return nil, raisedErr
 	}
 
-	return mp, createNetworkPolicy(p)
+	return mp, nil
 }
 
 func createNetworkPolicy(p *providers.Provider) error {
