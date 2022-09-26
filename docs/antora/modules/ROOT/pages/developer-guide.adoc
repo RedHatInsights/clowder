@@ -57,6 +57,81 @@ newgrp libvirt
 - ``make genconfig`` (optionally) needs to be run if the specification for the config
   has been altered.
 
+== Using a Debugger
+Developing Clowder is easier if you run the code in a debugger. We'll cover two ways to do this: with Delve and with VS Code. Both provide the same features (VS Code actually uses Delve under the hood.) The difference is VS Code provides you with a GUI and integration with the IDE whereas Delve is a command line tool and required using the Delve CLI and command system.
+
+=== Pre-requisites
+Wether you choose to use Delve or VS Code, you'll need to set up a few things first. You'll need to start minikube and build and install the CRDs. You'll also need a Clowder config file handy.
+
+- Ensure you have clowder code cloned and you've installed the CRDs into minikube 
+[source,shell]
+minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 --addons registry --addons ingress --addons metrics-server ; make build ; make install ; ./build/kube_setup.sh
+- Ensure you have a clowder config file saved. Here's an example config file:
+[source,json]
+{
+    "debugOptions": {
+        "trigger": {
+            "diff": false
+        },
+        "cache": {
+            "create": false,
+            "update": false,
+            "apply": false
+        },
+        "pprof": {
+            "enable": true,
+            "cpuFile": "testcpu"
+        }
+    },
+    "features": {
+        "createServiceMonitor": true,
+        "watchStrimziResources": true,
+        "enableKedaResources": true,
+        "reconciliationMetrics": true,
+        "enableExternalStrimzi": true,
+        "disableWebhooks": true
+    }
+}
+
+=== Delve
+Delve is a Go debugger. It allows you to run you app, set breakpoints, etc from the command line. Further reading will be required to learn to use Delve effectively if you haven't used Delve before.
+
+- Run the through the Pre-requisites section above and make sure you have minikube running and the CRDs installed.
+- Ensure you have https://github.com/go-delve/delve[Delve], the Go debugger installed
+- Now you can start the debugger, while setting the CLOWDER_CONFIG_PATH environment variable to the path of your config file. After launching the debugger you can set any breakpoints you want and then continue execution.
+[source,shell]
+$ CLOWDER_CONFIG_PATH=/path/to/config/sample_config.json  /go/path/dlv debug ./main.go
+Type 'help' for list of commands.
+(dlv) continue
+Loading config from: /home/adamdrew/clowderConfig/sample_config.json
+{"level":"info","ts":1664213244.8772495,"logger":"setup","msg":"Loaded config","config":{"images":{"mbop":"","caddy":"","Keycloak":"","mocktitlements":""},"debugOptions":{"Logging":{"debugLogging":false},"trigger":{"diff":false},"cache":
+
+=== VS Code
+VS Code an open source IDE that is popular with many of the Clowder developers. Setting up a debugger with VS Code is easy and provides a GUI for setting breakpoints, stepping through code, etc.
+
+- Run the through the Pre-requisites section above and make sure you have minikube running and the CRDs installed.
+- Install https://code.visualstudio.com/[VS Code]
+- Install the https://marketplace.visualstudio.com/items?itemName=golang.Go[Go extension] for VS Code
+- Open the Clowder code in VS Code
+- Create a launch.json file in the .vscode directory. Here's an example launch.json file:
+[source,json]
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Clowder Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/",
+            "env": {
+                "CLOWDER_CONFIG_PATH": "/home/adamdrew/clowderConfig/sample_config.json"
+              }
+        },
+    ]
+}
+- You can now debug Clowder in VS Code
+
 == Testing
 
 === Unit Testing
@@ -73,6 +148,22 @@ If kubebuilder is installed somewhere other than ``/usr/local/kubebuilder/bin``,
 
 If you're just getting started with writing tests in Go, or getting started with Go in general, take
 a look at https://quii.gitbook.io/learn-go-with-tests/
+
+=== Debugging Unit Tests in VS Code
+We include a special make target that will launch a special debug instance of VS Code that can run and debug the unit tests. This is useful if you want to set breakpoints in the unit tests and step through them.
+
+- Make sure you have all of the pre-requisites for running clowder installed and operational.
+- Make sure you have VS Code installed including the Go extension.
+- Close any instance of VS Code that has Clowder open in it.
+- Run the following command:
+[source,shell]
+make vscode-debug
+- VS Code will launch
+- Open any file that contains unit tests
+- You will see the green play button next to each test as well as the `run test` and `debug test` buttons above each test
+- You can use the run or debug test buttons to run and debug the tests from within VS Code
+
+Note: Some features of VS Code may not work correctly when launched this way. We reccomend only launching code this way when you want to write and debug unit tests.
 
 === E2E Testing
 
