@@ -344,6 +344,138 @@ has been altered.</p>
 </div>
 </div>
 <div class="sect1">
+<h2 id="_using_a_debugger"><a class="anchor" href="#_using_a_debugger"></a>Using a Debugger</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Developing Clowder is easier if you run the code in a debugger. We&#8217;ll cover two ways to do this: with Delve and with VS Code. Both provide the same features (VS Code actually uses Delve under the hood.) The difference is VS Code provides you with a GUI and integration with the IDE whereas Delve is a command line tool and required using the Delve CLI and command system.</p>
+</div>
+<div class="sect2">
+<h3 id="_pre_requisites"><a class="anchor" href="#_pre_requisites"></a>Pre-requisites</h3>
+<div class="paragraph">
+<p>Wether you choose to use Delve or VS Code, you&#8217;ll need to set up a few things first. You&#8217;ll need to start minikube and build and install the CRDs. You&#8217;ll also need a Clowder config file handy.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Ensure you have clowder code cloned and you&#8217;ve installed the CRDs into minikube</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 --addons registry --addons ingress --addons metrics-server ; make build ; make install ; ./build/kube_setup.sh</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Ensure you have a clowder config file saved. Here&#8217;s an example config file:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+    "debugOptions": {
+        "trigger": {
+            "diff": false
+        },
+        "cache": {
+            "create": false,
+            "update": false,
+            "apply": false
+        },
+        "pprof": {
+            "enable": true,
+            "cpuFile": "testcpu"
+        }
+    },
+    "features": {
+        "createServiceMonitor": true,
+        "watchStrimziResources": true,
+        "enableKedaResources": true,
+        "reconciliationMetrics": true,
+        "enableExternalStrimzi": true,
+        "disableWebhooks": true
+    }
+}</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_delve"><a class="anchor" href="#_delve"></a>Delve</h3>
+<div class="paragraph">
+<p>Delve is a Go debugger. It allows you to run your app, set breakpoints, etc from the command line. Further reading will be required to learn to use Delve effectively if you haven&#8217;t used Delve before.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Run the through the Pre-requisites section above and make sure you have minikube running and the CRDs installed.</p>
+</li>
+<li>
+<p>Ensure you have <a href="https://github.com/go-delve/delve">Delve</a>, the Go debugger installed</p>
+</li>
+<li>
+<p>Now you can start the debugger, while setting the CLOWDER_CONFIG_PATH environment variable to the path of your config file. After launching the debugger you can set any breakpoints you want and then continue execution.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">$ CLOWDER_CONFIG_PATH=/path/to/config/sample_config.json  /go/path/dlv debug ./main.go
+Type 'help' for list of commands.
+(dlv) continue
+Loading config from: /home/adamdrew/clowderConfig/sample_config.json
+{"level":"info","ts":1664213244.8772495,"logger":"setup","msg":"Loaded config","config":{"images":{"mbop":"","caddy":"","Keycloak":"","mocktitlements":""},"debugOptions":{"Logging":{"debugLogging":false},"trigger":{"diff":false},"cache":</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vs_code"><a class="anchor" href="#_vs_code"></a>VS Code</h3>
+<div class="paragraph">
+<p>VS Code an open source IDE that is popular with many of the Clowder developers. Setting up a debugger with VS Code is easy and provides a GUI for setting breakpoints, stepping through code, etc.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Run the through the Pre-requisites section above and make sure you have minikube running and the CRDs installed.</p>
+</li>
+<li>
+<p>Install <a href="https://code.visualstudio.com/">VS Code</a></p>
+</li>
+<li>
+<p>Install the <a href="https://marketplace.visualstudio.com/items?itemName=golang.Go">Go extension</a> for VS Code</p>
+</li>
+<li>
+<p>Open the Clowder code in VS Code</p>
+</li>
+<li>
+<p>Create a launch.json file in the .vscode directory. Here&#8217;s an example launch.json file:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Clowder Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/",
+            "env": {
+                "CLOWDER_CONFIG_PATH": "/home/adamdrew/clowderConfig/sample_config.json"
+              }
+        },
+    ]
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You can now debug Clowder in VS Code</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_testing"><a class="anchor" href="#_testing"></a>Testing</h2>
 <div class="sectionbody">
 <div class="sect2">
@@ -365,6 +497,48 @@ get initialized against a control plane just like it would against a real OpenSh
 <div class="paragraph">
 <p>If you&#8217;re just getting started with writing tests in Go, or getting started with Go in general, take
 a look at <a href="https://quii.gitbook.io/learn-go-with-tests/" class="bare">https://quii.gitbook.io/learn-go-with-tests/</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_debugging_unit_tests_in_vs_code"><a class="anchor" href="#_debugging_unit_tests_in_vs_code"></a>Debugging Unit Tests in VS Code</h3>
+<div class="paragraph">
+<p>We include a special make target that will launch a special debug instance of VS Code that can run and debug the unit tests. This is useful if you want to set breakpoints in the unit tests and step through them.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Make sure you have all of the pre-requisites for running clowder installed and operational.</p>
+</li>
+<li>
+<p>Make sure you have VS Code installed including the Go extension.</p>
+</li>
+<li>
+<p>Close any instance of VS Code that has Clowder open in it.</p>
+</li>
+<li>
+<p>Run the following command:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">make vscode-debug</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>VS Code will launch</p>
+</li>
+<li>
+<p>Open any file that contains unit tests</p>
+</li>
+<li>
+<p>You will see the green play button next to each test as well as the <code>run test</code> and <code>debug test</code> buttons above each test</p>
+</li>
+<li>
+<p>You can use the run or debug test buttons to run and debug the tests from within VS Code</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Note: Some features of VS Code may not work correctly when launched this way. We reccomend only launching code this way when you want to write and debug unit tests.</p>
 </div>
 </div>
 <div class="sect2">
