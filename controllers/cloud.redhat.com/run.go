@@ -177,23 +177,3 @@ func NewIPCCache() *IPCCache {
 		mutex:  sync.RWMutex{},
 	}
 }
-
-func (ipccache *IPCCache) LockConfig(key string) *config.AppConfig {
-	ipccache.mutex.Lock()
-	var val *config.AppConfig
-	var ok bool
-	if val, ok = ipccache.newConfig[key]; !ok {
-		ipccache.newConfig[key] = &config.AppConfig{}
-	}
-	return val
-}
-
-func (ipccache *IPCCache) UnlockConfig(key string) {
-	ipccache.mutex.Unlock()
-}
-
-func (ipccache *IPCCache) PersistConfig(key string) {
-	ipccache.mutex.Lock()
-	ipccache.config[key] = ipccache.newConfig[key]
-	ipccache.mutex.Unlock()
-}

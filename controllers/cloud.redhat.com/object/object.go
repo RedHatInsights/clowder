@@ -51,7 +51,7 @@ func (ipccache *IPCCache) GetWriteableConfig(key string) *config.AppConfig {
 	var ok bool
 	if _, ok = ipccache.configs[key]; !ok {
 		ipccache.configs[key] = &configCache{}
-		ipccache.configs[key].newConfig = &config.AppConfig{}
+		ipccache.configs[key].newConfig = &config.AppConfig{Internal: &config.Internal{}}
 		ipccache.configs[key].mutex = sync.RWMutex{}
 	}
 	return ipccache.configs[key].newConfig

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -28,7 +29,7 @@ const (
 
 //During reconciliation we handle errors in 2 ways: sometimes we want to error out of reconciliation and sometimes we want to skip reconciliation.
 func shouldSkipReconciliation(err error) bool {
-	if err != nil && err.Error() == SKIPRECONCILE {
+	if err != nil && strings.Contains(err.Error(), "skipped because") {
 		return true
 	}
 	return false
@@ -148,7 +149,7 @@ func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() err
 //Adds a finalizer to the environment if one is not already present
 func (r *ClowdEnvironmentReconciliation) addFinalizerIfRequired() (ctrl.Result, error) {
 	// Add finalizer for this CR
-	if !contains(r.env.GetFinalizers(), envFinalizer) {
+	if !contains(r.env.GetFinalizers(), envFinalizer) && r.env.ObjectMeta.DeletionTimestamp != nil {
 		if addFinalizeErr := r.addFinalizerImplementation(); addFinalizeErr != nil {
 			r.log.Info("Cloud not add finalizer", "err", addFinalizeErr)
 			return ctrl.Result{}, addFinalizeErr
@@ -262,7 +263,7 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 
 	if ens.ObjectMeta.DeletionTimestamp != nil {
 		r.log.Info("Env target namespace is to be deleted - skipping reconcile")
-		return ctrl.Result{}, errors.New(SKIPRECONCILE)
+		return ctrl.Result{}, errors.New("skipped because: target namespace is to be deleted")
 	}
 
 	return ctrl.Result{}, nil
@@ -472,7 +473,7 @@ func (r *ClowdEnvironmentReconciliation) logSuccess() (ctrl.Result, error) {
 func (r *ClowdEnvironmentReconciliation) setToBeDisabled() (ctrl.Result, error) {
 	if r.env.Spec.Disabled {
 		r.log.Info("Reconciliation aborted - set to be disabled")
-		return ctrl.Result{}, errors.New(SKIPRECONCILE)
+		return ctrl.Result{}, errors.New("skipped because env is disabled")
 	}
 	return ctrl.Result{}, nil
 }
