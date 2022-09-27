@@ -94,7 +94,7 @@ minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 --addons
 }
 
 === Delve
-Delve is a Go debugger. It allows you to run you app, set breakpoints, etc from the command line. Further reading will be required to learn to use Delve effectively if you haven't used Delve before.
+Delve is a Go debugger. It allows you to run your app, set breakpoints, etc from the command line. Further reading will be required to learn to use Delve effectively if you haven't used Delve before.
 
 - Run the through the Pre-requisites section above and make sure you have minikube running and the CRDs installed.
 - Ensure you have https://github.com/go-delve/delve[Delve], the Go debugger installed
