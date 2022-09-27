@@ -36,6 +36,7 @@ type ClowdAppReconciliation struct {
 	reconciliationMetrics ReconciliationMetrics
 	ipccache              *obj.IPCCache
 	config                *config.AppConfig
+	doUnlock              bool
 }
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
@@ -65,6 +66,9 @@ func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
 	r.getApp()
 	defer func() {
 		if r.app == nil {
+			return
+		}
+		if !r.doUnlock {
 			return
 		}
 		r.ipccache.UnlockConfig(r.app.Spec.EnvName)
@@ -186,6 +190,7 @@ func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 		return ctrl.Result{Requeue: true}, errors.New(SKIPRECONCILE)
 	}
 	r.config = config
+	r.doUnlock = true
 	return ctrl.Result{}, nil
 }
 

@@ -54,7 +54,6 @@ func (ipccache *IPCCache) GetWriteableConfig(key string) *config.AppConfig {
 		ipccache.configs[key].newConfig = &config.AppConfig{}
 		ipccache.configs[key].mutex = sync.RWMutex{}
 	}
-	ipccache.configs[key].mutex.Lock()
 	return ipccache.configs[key].newConfig
 }
 
@@ -63,7 +62,6 @@ func (ipccache *IPCCache) GetReadableConfig(key string) (*config.AppConfig, erro
 	if _, ok = ipccache.configs[key]; !ok {
 		return nil, fmt.Errorf("cache does not hold env [%s]", key)
 	}
-	ipccache.configs[key].mutex.Lock()
 	return ipccache.configs[key].newConfig, nil
 }
 
