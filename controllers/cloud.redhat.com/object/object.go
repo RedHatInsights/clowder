@@ -71,6 +71,12 @@ func (ipccache *IPCCache) UnlockConfig(key string) {
 	}
 }
 
+func (ipccache *IPCCache) LockConfig(key string) {
+	if _, ok := ipccache.configs[key]; ok {
+		ipccache.configs[key].mutex.Lock()
+	}
+}
+
 func (ipccache *IPCCache) PersistConfig(key string) {
 	// ipccache.configs[key].newConfig = ipccache.configs[key].newConfig
 }

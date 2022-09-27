@@ -63,15 +63,16 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
-	r.getApp()
+	if res, err := r.getApp(); err != nil {
+		return res, err
+	}
 	defer func() {
 		if r.app == nil {
 			return
 		}
-		if !r.doUnlock {
-			return
+		if r.doUnlock {
+			r.ipccache.UnlockConfig(r.app.Spec.EnvName)
 		}
-		r.ipccache.UnlockConfig(r.app.Spec.EnvName)
 	}()
 	for _, step := range r.steps() {
 		result, err := step()
@@ -191,6 +192,7 @@ func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 	}
 	r.config = config
 	r.doUnlock = true
+	r.ipccache.LockConfig(r.app.Spec.EnvName)
 	return ctrl.Result{}, nil
 }
 
