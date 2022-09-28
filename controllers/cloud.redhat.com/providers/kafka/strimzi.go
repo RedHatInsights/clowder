@@ -625,19 +625,19 @@ func (s *strimziProvider) configureBrokers() error {
 		return errors.Wrap("failed to provision kafka cluster", err)
 	}
 
-	s.Config.Kafka = &config.KafkaConfig{
+	s.Config.Config.Kafka = &config.KafkaConfig{
 		Topics: []config.TopicConfig{},
 	}
 
 	// Look up Kafka cluster's listeners and configure s.Config.Brokers
 	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
-	if err := s.configureListeners(s.Config.Kafka); err != nil {
+	if err := s.configureListeners(s.Config.Config.Kafka); err != nil {
 		clowdErr := errors.Wrap("unable to determine kafka broker addresses", err)
 		clowdErr.Requeue = true
 		return clowdErr
 	}
 
-	if err := s.configureKafkaConnectCluster(s.Config.Kafka); err != nil {
+	if err := s.configureKafkaConnectCluster(s.Config.Config.Kafka); err != nil {
 		return errors.Wrap("failed to provision kafka connect cluster", err)
 	}
 
@@ -721,7 +721,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	if err := s.processTopics(app, s.Config.Kafka); err != nil {
+	if err := s.processTopics(app, s.Config.Config.Kafka); err != nil {
 		return err
 	}
 
@@ -730,7 +730,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if err := s.setBrokerCredentials(app, s.Config.Kafka); err != nil {
+		if err := s.setBrokerCredentials(app, s.Config.Config.Kafka); err != nil {
 			return err
 		}
 	}

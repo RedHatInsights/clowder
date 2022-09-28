@@ -10,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
@@ -51,7 +52,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 	return &localWebProvider{Provider: *p}, nil
 }
 
-func makeMocktitlementsSecret(p *providers.Provider, config *config.AppConfig) error {
+func makeMocktitlementsSecret(p *providers.Provider, cfg *object.ConfigCache) error {
 	nn := types.NamespacedName{
 		Name:      "caddy-config-mocktitlements",
 		Namespace: p.Env.GetClowdNamespace(),
@@ -67,9 +68,14 @@ func makeMocktitlementsSecret(p *providers.Provider, config *config.AppConfig) e
 	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
 	sec.Type = core.SecretTypeOpaque
 
+	kc, ok := cfg.InternalConfig[ProvName].(config.KeycloakConfig)
+	if !ok {
+		return fmt.Errorf("can't type assert config")
+	}
+
 	sec.StringData = map[string]string{
-		"bopurl":      *config.BOPURL,
-		"keycloakurl": *config.Internal.Keycloak.Url,
+		"bopurl":      *cfg.Config.BOPURL,
+		"keycloakurl": *kc.Url,
 		"whitelist":   "",
 	}
 
@@ -256,8 +262,8 @@ func (web *localWebProvider) EnvProvide() error {
 		return errors.Wrap("couldn't set secret version", err)
 	}
 
-	web.Config.BOPURL = utils.StringPtr(fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()))
-	web.Config.Internal.Keycloak = &config.KeycloakConfig{
+	web.Config.Config.BOPURL = utils.StringPtr(fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()))
+	kc := config.KeycloakConfig{
 		Username:        utils.StringPtr((*dataMap)["username"]),
 		Password:        utils.StringPtr((*dataMap)["password"]),
 		DefaultUsername: utils.StringPtr((*dataMap)["defaultUsername"]),
@@ -274,7 +280,7 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, *web.Config.Internal.Keycloak.DefaultPassword); err != nil {
+	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, *kc.DefaultPassword); err != nil {
 		return err
 	}
 
@@ -313,6 +319,8 @@ func (web *localWebProvider) EnvProvide() error {
 		newErr.Requeue = true
 		return newErr
 	}
+
+	web.Config.InternalConfig[ProvName] = kc
 
 	return nil
 }

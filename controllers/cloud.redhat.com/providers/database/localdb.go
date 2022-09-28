@@ -163,7 +163,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 	}
-	db.Config.Database = &dbCfg
+	db.Config.Config.Database = &dbCfg
 	return nil
 }
 
@@ -205,7 +205,7 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	db.Config.Database = &dbCfg
+	db.Config.Config.Database = &dbCfg
 
 	return nil
 }

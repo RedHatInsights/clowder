@@ -114,7 +114,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 
-	ff.Config.FeatureFlags = &ffpConfig
+	ff.Config.Config.FeatureFlags = &ffpConfig
 
 	labels := &map[string]string{"sub": "feature_flags"}
 

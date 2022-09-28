@@ -140,19 +140,19 @@ func createMinioProvider(
 	port, _ := strconv.Atoi(secMap["port"])
 	mp.Ctx = p.Ctx
 
-	mp.Config.ObjectStore = &config.ObjectStoreConfig{}
+	mp.Config.Config.ObjectStore = &config.ObjectStoreConfig{}
 
-	mp.Config.ObjectStore.AccessKey = providers.StrPtr(secMap["accessKey"])
-	mp.Config.ObjectStore.SecretKey = providers.StrPtr(secMap["secretKey"])
-	mp.Config.ObjectStore.Hostname = secMap["hostname"]
-	mp.Config.ObjectStore.Port = port
+	mp.Config.Config.ObjectStore.AccessKey = providers.StrPtr(secMap["accessKey"])
+	mp.Config.Config.ObjectStore.SecretKey = providers.StrPtr(secMap["secretKey"])
+	mp.Config.Config.ObjectStore.Hostname = secMap["hostname"]
+	mp.Config.Config.ObjectStore.Port = port
 
 	mp.BucketHandler = handler
 	err := mp.BucketHandler.CreateClient(
-		mp.Config.ObjectStore.Hostname,
-		mp.Config.ObjectStore.Port,
-		mp.Config.ObjectStore.AccessKey,
-		mp.Config.ObjectStore.SecretKey,
+		mp.Config.Config.ObjectStore.Hostname,
+		mp.Config.Config.ObjectStore.Port,
+		mp.Config.Config.ObjectStore.AccessKey,
+		mp.Config.Config.ObjectStore.SecretKey,
 	)
 
 	if err != nil {

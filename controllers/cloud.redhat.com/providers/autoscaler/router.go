@@ -23,12 +23,12 @@ func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
 		//If we find a SimpleAutoScaler config create one
 		if deployment.AutoScalerSimple != nil {
-			err = ProvideSimpleAutoScaler(app, asp.Config, &asp.Provider, deployment)
+			err = ProvideSimpleAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
 			continue
 		}
 		//If we find a Keda autoscaler config create one
 		if deployment.AutoScaler != nil {
-			err = ProvideKedaAutoScaler(app, asp.Config, &asp.Provider, deployment)
+			err = ProvideKedaAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
 			continue
 		}
 	}

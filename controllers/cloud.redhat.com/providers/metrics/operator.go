@@ -89,12 +89,12 @@ func (m *metricsProvider) EnvProvide() error {
 
 func (m *metricsProvider) Provide(app *crd.ClowdApp) error {
 
-	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config); err != nil {
+	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config.Config); err != nil {
 		return err
 	}
 
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
-		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
+		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config.Config, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
 			return err
 		}
 

@@ -20,12 +20,12 @@ func (m *appinterfaceMetricsProvider) EnvProvide() error {
 
 func (m *appinterfaceMetricsProvider) Provide(app *crd.ClowdApp) error {
 
-	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config); err != nil {
+	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config.Config); err != nil {
 		return err
 	}
 
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
-		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config, "app-sre", "openshift-customer-monitoring"); err != nil {
+		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config.Config, "app-sre", "openshift-customer-monitoring"); err != nil {
 			return err
 		}
 	}

@@ -42,7 +42,7 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	k.Config.Kafka = k.getKafkaConfig(broker, app)
+	k.Config.Config.Kafka = k.getKafkaConfig(broker, app)
 
 	return nil
 }

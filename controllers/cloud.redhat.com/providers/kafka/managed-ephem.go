@@ -119,7 +119,7 @@ func (mep *managedEphemProvider) EnvProvide() error {
 		kconfig.Brokers[0].Cacert = &cacert
 	}
 
-	mep.Config.Kafka = &kconfig
+	mep.Config.Config.Kafka = &kconfig
 
 	return mep.configureBrokers()
 }
@@ -356,7 +356,7 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	if err := mep.processTopics(app, mep.Config, httpClient, adminHostname); err != nil {
+	if err := mep.processTopics(app, mep.Config.Config, httpClient, adminHostname); err != nil {
 		return err
 	}
 

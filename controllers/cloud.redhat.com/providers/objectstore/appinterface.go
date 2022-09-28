@@ -50,7 +50,7 @@ func (a *appInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	a.Config.ObjectStore = objStoreConfig
+	a.Config.Config.ObjectStore = objStoreConfig
 	return nil
 }
 

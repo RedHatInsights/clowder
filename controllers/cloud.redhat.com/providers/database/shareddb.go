@@ -189,19 +189,15 @@ func (db *sharedDbProvider) EnvProvide() error {
 
 	configs := map[int32]*config.DatabaseConfig{}
 
-	db.Config.Internal.Database = config.SharedDatabase{}
-
 	for v := range versionsRequired {
 		dbCfg, err := createVersionedDatabase(&db.Provider, v)
 		if err != nil {
 			return err
 		}
-		db.Config.Internal.Database = append(db.Config.Internal.Database, config.SharedDatabaseConfig{
-			Version: int(v),
-			Config:  *dbCfg,
-		})
 		configs[v] = dbCfg
 	}
+
+	db.Config.InternalConfig[ProvName] = configs
 
 	return nil
 }
@@ -224,15 +220,12 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 
 	var dbCfg config.DatabaseConfig
 
-	for i, obj := range db.Config.Internal.Database {
-		if obj.Version == int(version) {
-			dbCfg = obj.Config
-		} else {
-			if i == len(db.Config.Internal.Database)-1 {
-				return fmt.Errorf("version not found in configs")
-			}
-		}
+	dbs, ok := db.Config.InternalConfig[ProvName].(map[int32]config.DatabaseConfig)
+	if !ok {
+		return fmt.Errorf("couldn't get database config for version [%d]", version)
 	}
+
+	dbCfg = dbs[version]
 
 	host := dbCfg.Hostname
 	port := dbCfg.Port
@@ -308,7 +301,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	dbCfg.Name = app.Spec.Database.Name
-	db.Config.Database = &dbCfg
+	db.Config.Config.Database = &dbCfg
 
 	return nil
 }
@@ -351,7 +344,7 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	db.Config.Database = &dbCfg
+	db.Config.Config.Database = &dbCfg
 
 	return nil
 }

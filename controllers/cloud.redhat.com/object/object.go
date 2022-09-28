@@ -33,36 +33,38 @@ type LabeledClowdObject interface {
 }
 
 type IPCCache struct {
-	configs map[string]*configCache
+	configs map[string]*ConfigCache
 }
 
-type configCache struct {
-	newConfig *config.AppConfig
-	mutex     sync.RWMutex
+type ConfigCache struct {
+	Config         *config.AppConfig
+	InternalConfig map[string]interface{}
+	mutex          sync.RWMutex
 }
 
 func NewIPCCache() *IPCCache {
 	return &IPCCache{
-		configs: make(map[string]*configCache),
+		configs: make(map[string]*ConfigCache),
 	}
 }
 
-func (ipccache *IPCCache) GetWriteableConfig(key string) *config.AppConfig {
+func (ipccache *IPCCache) GetWriteableIPC(key string) *ConfigCache {
 	var ok bool
 	if _, ok = ipccache.configs[key]; !ok {
-		ipccache.configs[key] = &configCache{}
-		ipccache.configs[key].newConfig = &config.AppConfig{Internal: &config.Internal{}}
+		ipccache.configs[key] = &ConfigCache{}
+		ipccache.configs[key].Config = &config.AppConfig{}
 		ipccache.configs[key].mutex = sync.RWMutex{}
+		ipccache.configs[key].InternalConfig = make(map[string]interface{})
 	}
-	return ipccache.configs[key].newConfig
+	return ipccache.configs[key]
 }
 
-func (ipccache *IPCCache) GetReadableConfig(key string) (*config.AppConfig, error) {
+func (ipccache *IPCCache) GetReadableIPC(key string) (*ConfigCache, error) {
 	var ok bool
 	if _, ok = ipccache.configs[key]; !ok {
 		return nil, fmt.Errorf("cache does not hold env [%s]", key)
 	}
-	return ipccache.configs[key].newConfig, nil
+	return ipccache.configs[key], nil
 }
 
 func (ipccache *IPCCache) UnlockConfig(key string) {

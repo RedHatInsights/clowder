@@ -8,8 +8,8 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/go-logr/logr"
@@ -46,7 +46,7 @@ type ClowdEnvironmentReconciliation struct {
 	client   client.Client
 	env      *crd.ClowdEnvironment
 	log      *logr.Logger
-	config   *config.AppConfig
+	config   *object.ConfigCache
 }
 
 //Returns a list of step methods that should be run during reconciliation

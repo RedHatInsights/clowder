@@ -5,6 +5,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
@@ -25,13 +26,15 @@ func TestAppInterface(t *testing.T) {
 				},
 			},
 		},
-		Config: &config.AppConfig{
-			Kafka: &config.KafkaConfig{
-				Brokers: []config.BrokerConfig{{
-					Hostname: "platform-mq-kafka-bootstrap.platform-mq-prod.svc",
-					Port:     utils.IntPtr(9092),
-				}},
-				Topics: []config.TopicConfig{},
+		Config: &object.ConfigCache{
+			Config: &config.AppConfig{
+				Kafka: &config.KafkaConfig{
+					Brokers: []config.BrokerConfig{{
+						Hostname: "platform-mq-kafka-bootstrap.platform-mq-prod.svc",
+						Port:     utils.IntPtr(9092),
+					}},
+					Topics: []config.TopicConfig{},
+				},
 			},
 		},
 	}

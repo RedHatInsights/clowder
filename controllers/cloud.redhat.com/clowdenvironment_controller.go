@@ -134,7 +134,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		managedEnvsMetric.Set(float64(len(managedEnvironments)))
 	}()
 
-	configObj := r.IPCCache.GetWriteableConfig(env.Name)
+	configObj := r.IPCCache.GetWriteableIPC(env.Name)
 
 	r.IPCCache.LockConfig(env.Name)
 	defer r.IPCCache.UnlockConfig(env.Name)

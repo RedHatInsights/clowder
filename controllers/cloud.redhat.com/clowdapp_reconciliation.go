@@ -7,8 +7,8 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
@@ -35,7 +35,7 @@ type ClowdAppReconciliation struct {
 	env                   *crd.ClowdEnvironment
 	reconciliationMetrics ReconciliationMetrics
 	ipccache              *obj.IPCCache
-	config                *config.AppConfig
+	config                *obj.ConfigCache
 	doUnlock              bool
 }
 
@@ -183,9 +183,9 @@ func (r *ClowdAppReconciliation) addFinalizerImplementation() error {
 }
 
 func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
-	var config *config.AppConfig
+	var config *object.ConfigCache
 	var err error
-	if config, err = r.ipccache.GetReadableConfig(r.app.Spec.EnvName); err != nil {
+	if config, err = r.ipccache.GetReadableIPC(r.app.Spec.EnvName); err != nil {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", r.app.Spec.EnvName)
 		r.log.Info("Env currently being reconciled")
 		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("skipped because: %s", err))
@@ -300,7 +300,7 @@ func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 
 func (r *ClowdAppReconciliation) runProvidersImplementation(provider *providers.Provider) error {
 	// Update app metadata
-	updateMetadata(r.app, r.config)
+	updateMetadata(r.app, r.config.Config)
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		provutils.DebugLog(*r.log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
