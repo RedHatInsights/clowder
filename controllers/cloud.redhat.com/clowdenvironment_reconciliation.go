@@ -55,8 +55,6 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 		r.setToBeDisabled,
 		r.initTargetNamespace,
 		r.isTargetNamespaceMarkedForDeletion,
-		r.runProviders,
-		r.applyCache,
 		r.setAppInfo,
 		r.setEnvResourceStatus,
 		r.setPrometheusStatus,
