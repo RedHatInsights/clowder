@@ -4,9 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"os"
-	"sync"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
@@ -158,17 +156,4 @@ func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config
 		os.Exit(1)
 	}
 	setupLog.Info("Exiting manager")
-}
-
-type IPCCache struct {
-	config    map[string]*config.AppConfig
-	newConfig map[string]*config.AppConfig
-	mutex     sync.RWMutex
-}
-
-func NewIPCCache() *IPCCache {
-	return &IPCCache{
-		config: make(map[string]*config.AppConfig),
-		mutex:  sync.RWMutex{},
-	}
 }
