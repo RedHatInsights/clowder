@@ -9,6 +9,11 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type mockBucket struct {
@@ -76,7 +81,16 @@ func (c *mockBucketHandler) CreateClient(
 
 func getTestProvider(t *testing.T) providers.Provider {
 	t.Helper()
-	return providers.Provider{Ctx: context.TODO()}
+	return providers.Provider{
+		Ctx: context.TODO(),
+		Env: &crd.ClowdEnvironment{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test",
+			},
+		},
+		Client: &FakeClient{},
+		Config: &config.AppConfig{},
+	}
 }
 
 func getTestMinioProvider(t *testing.T) *minioProvider {
@@ -106,6 +120,63 @@ func setupBucketTest(t *testing.T, mockBuckets []mockBucket) (
 	return testBucketHandler, testApp, testMinioProvider
 }
 
+type FakeClient struct {
+}
+
+type FakeStatus struct {
+}
+
+func (fc *FakeClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+	return nil
+}
+
+func (fc *FakeClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+	return nil
+}
+
+func (fc *FakeClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+	return nil
+}
+
+func (fc *FakeClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+	return nil
+}
+
+func (fc *FakeClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+	return nil
+}
+
+func (fc *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+	p, _ := obj.(*core.Secret)
+	p.Data = make(map[string][]byte)
+	p.Data["port"] = []byte("2345")
+	return nil
+}
+
+func (fc *FakeClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+	return nil
+}
+
+func (fc *FakeClient) Scheme() *runtime.Scheme {
+	return nil
+}
+
+func (fc *FakeClient) RESTMapper() meta.RESTMapper {
+	return nil
+}
+
+func (fc *FakeClient) Status() client.StatusWriter {
+	return &FakeStatus{}
+}
+
+func (fc *FakeStatus) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+	return nil
+}
+
+func (fc *FakeStatus) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+	return nil
+}
+
 func TestMinio(t *testing.T) {
 	assert := assert.New(t)
 
@@ -119,13 +190,6 @@ func TestMinio(t *testing.T) {
 			ExistsError: fakeError,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		mp.Config = &config.AppConfig{
-			ObjectStore: &config.ObjectStoreConfig{
-				Hostname: "",
-				Port:     0,
-				Tls:      false,
-			},
-		}
 
 		gotErr := mp.Provide(app)
 		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)

@@ -103,8 +103,27 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	m.Config.ObjectStore.Tls = false
-	m.Config.ObjectStore.Buckets = []config.ObjectStoreBucket{}
+	secret := &core.Secret{}
+	nn := providers.GetNamespacedName(m.Env, "minio")
+
+	if err := m.Client.Get(m.Ctx, nn, secret); err != nil {
+		return err
+	}
+
+	var port int
+	var err error
+	if port, err = strconv.Atoi(string(secret.Data["port"])); err != nil {
+		return err
+	}
+
+	m.Config.ObjectStore = &config.ObjectStoreConfig{
+		Hostname:  string(secret.Data["hostname"]),
+		Port:      port,
+		AccessKey: utils.StringPtr(string(secret.Data["accessKey"])),
+		SecretKey: utils.StringPtr(string(secret.Data["secretKey"])),
+		Tls:       false,
+		Buckets:   []config.ObjectStoreBucket{},
+	}
 
 	for _, bucket := range app.Spec.ObjectStore {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
@@ -121,12 +140,19 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 			}
 		}
 
-		m.Config.ObjectStore.Buckets = append(m.Config.ObjectStore.Buckets, config.ObjectStoreBucket{
+		newBucket := config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
-			AccessKey:     m.Config.ObjectStore.AccessKey,
-			SecretKey:     m.Config.ObjectStore.SecretKey,
-		})
+		}
+
+		if string(secret.Data["accessKey"]) != "" {
+			newBucket.AccessKey = m.Config.ObjectStore.AccessKey
+		}
+		if string(secret.Data["secretKey"]) != "" {
+			newBucket.SecretKey = m.Config.ObjectStore.SecretKey
+		}
+
+		m.Config.ObjectStore.Buckets = append(m.Config.ObjectStore.Buckets, newBucket)
 	}
 
 	return nil
@@ -140,19 +166,12 @@ func createMinioProvider(
 	port, _ := strconv.Atoi(secMap["port"])
 	mp.Ctx = p.Ctx
 
-	mp.Config.ObjectStore = &config.ObjectStoreConfig{}
-
-	mp.Config.ObjectStore.AccessKey = providers.StrPtr(secMap["accessKey"])
-	mp.Config.ObjectStore.SecretKey = providers.StrPtr(secMap["secretKey"])
-	mp.Config.ObjectStore.Hostname = secMap["hostname"]
-	mp.Config.ObjectStore.Port = port
-
 	mp.BucketHandler = handler
 	err := mp.BucketHandler.CreateClient(
-		mp.Config.ObjectStore.Hostname,
-		mp.Config.ObjectStore.Port,
-		mp.Config.ObjectStore.AccessKey,
-		mp.Config.ObjectStore.SecretKey,
+		secMap["hostname"],
+		port,
+		providers.StrPtr(secMap["accessKey"]),
+		providers.StrPtr(secMap["secretKey"]),
 	)
 
 	if err != nil {

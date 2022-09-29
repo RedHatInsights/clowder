@@ -108,14 +108,6 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 	dbCfg.Populate(secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	ffpConfig := config.FeatureFlagsConfig{
-		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
-		Port:     4242,
-		Scheme:   config.FeatureFlagsConfigSchemeHttp,
-	}
-
-	ff.Config.FeatureFlags = &ffpConfig
-
 	labels := &map[string]string{"sub": "feature_flags"}
 
 	res := core.ResourceRequirements{
@@ -165,6 +157,12 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp) error {
+	ff.Config.FeatureFlags = &config.FeatureFlagsConfig{
+		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
+		Port:     4242,
+		Scheme:   config.FeatureFlagsConfigSchemeHttp,
+	}
+
 	return nil
 }
 
