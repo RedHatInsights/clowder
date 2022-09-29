@@ -317,13 +317,13 @@ func (web *localWebProvider) EnvProvide() error {
 
 func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
-	web.GetConfig().WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
-	web.GetConfig().PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
 	if privatePort == 0 {
 		privatePort = 10000
 	}
-	web.GetConfig().PrivatePort = utils.IntPtr(int(privatePort))
+	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
 	for _, deployment := range app.Spec.Deployments {
 
@@ -349,8 +349,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		sec.Type = core.SecretTypeOpaque
 
 		sec.StringData = map[string]string{
-			"bopurl":      *web.GetConfig().BOPURL,
-			"keycloakurl": *web.GetConfig().Internal.Keycloak.Url,
+			"bopurl":      fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()),
+			"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "keycloak", web.Env.GetClowdNamespace()),
 			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
 		}
 

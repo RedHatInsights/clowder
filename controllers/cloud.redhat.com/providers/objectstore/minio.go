@@ -103,8 +103,8 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	m.GetConfig().ObjectStore.Tls = false
-	m.GetConfig().ObjectStore.Buckets = []config.ObjectStoreBucket{}
+	m.Config.ObjectStore.Tls = false
+	m.Config.ObjectStore.Buckets = []config.ObjectStoreBucket{}
 
 	for _, bucket := range app.Spec.ObjectStore {
 		found, err := m.BucketHandler.Exists(m.Ctx, bucket)
@@ -121,11 +121,11 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 			}
 		}
 
-		m.GetConfig().ObjectStore.Buckets = append(m.GetConfig().ObjectStore.Buckets, config.ObjectStoreBucket{
+		m.Config.ObjectStore.Buckets = append(m.Config.ObjectStore.Buckets, config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
-			AccessKey:     m.GetConfig().ObjectStore.AccessKey,
-			SecretKey:     m.GetConfig().ObjectStore.SecretKey,
+			AccessKey:     m.Config.ObjectStore.AccessKey,
+			SecretKey:     m.Config.ObjectStore.SecretKey,
 		})
 	}
 
@@ -140,19 +140,19 @@ func createMinioProvider(
 	port, _ := strconv.Atoi(secMap["port"])
 	mp.Ctx = p.Ctx
 
-	mp.Config.Config.ObjectStore = &config.ObjectStoreConfig{}
+	mp.Config.ObjectStore = &config.ObjectStoreConfig{}
 
-	mp.Config.Config.ObjectStore.AccessKey = providers.StrPtr(secMap["accessKey"])
-	mp.Config.Config.ObjectStore.SecretKey = providers.StrPtr(secMap["secretKey"])
-	mp.Config.Config.ObjectStore.Hostname = secMap["hostname"]
-	mp.Config.Config.ObjectStore.Port = port
+	mp.Config.ObjectStore.AccessKey = providers.StrPtr(secMap["accessKey"])
+	mp.Config.ObjectStore.SecretKey = providers.StrPtr(secMap["secretKey"])
+	mp.Config.ObjectStore.Hostname = secMap["hostname"]
+	mp.Config.ObjectStore.Port = port
 
 	mp.BucketHandler = handler
 	err := mp.BucketHandler.CreateClient(
-		mp.Config.Config.ObjectStore.Hostname,
-		mp.Config.Config.ObjectStore.Port,
-		mp.Config.Config.ObjectStore.AccessKey,
-		mp.Config.Config.ObjectStore.SecretKey,
+		mp.Config.ObjectStore.Hostname,
+		mp.Config.ObjectStore.Port,
+		mp.Config.ObjectStore.AccessKey,
+		mp.Config.ObjectStore.SecretKey,
 	)
 
 	if err != nil {

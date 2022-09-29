@@ -39,7 +39,6 @@ Reference this group by using
 | [objectStore](#objectstore)           | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstoreconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/objectStore")                          |
 | [inMemoryDb](#inmemorydb)             | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/inMemoryDb")                            |
 | [featureFlags](#featureflags)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-featureflagsconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/featureFlags")                        |
-| [internal](#internal)                 | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-internal.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/internal")                                      |
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
 | [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
@@ -235,22 +234,6 @@ Feature Flags Configuration
 #### featureFlags Type
 
 `object` ([Details](schema-definitions-featureflagsconfig.md))
-
-### internal
-
-
-
-
-`internal`
-
--   is optional
--   Type: `object` ([Internal](schema-definitions-internal.md))
--   cannot be null
--   defined in: [AppConfig](schema-definitions-internal.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/internal")
-
-#### internal Type
-
-`object` ([Internal](schema-definitions-internal.md))
 
 ### endpoints
 
@@ -805,203 +788,6 @@ The name of the actual topic on the Kafka server.
 
 `string`
 
-## Definitions group Internal
-
-Reference this group by using
-
-```json
-{"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal"}
-```
-
-| Property                | Type     | Required | Nullable       | Defined by                                                                                                                                            |
-| :---------------------- | -------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [keycloak](#keycloak)   | `object` | Optional | cannot be null | [AppConfig](schema-definitions-keycloakconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/keycloak") |
-| [database](#database-1) | `array`  | Optional | cannot be null | [AppConfig](schema-definitions-shareddatabase.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/database") |
-
-### keycloak
-
-Keycloak Config
-
-
-`keycloak`
-
--   is optional
--   Type: `object` ([KeycloakConfig](schema-definitions-keycloakconfig.md))
--   cannot be null
--   defined in: [AppConfig](schema-definitions-keycloakconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/keycloak")
-
-#### keycloak Type
-
-`object` ([KeycloakConfig](schema-definitions-keycloakconfig.md))
-
-### database
-
-Shared Database Config
-
-
-`database`
-
--   is optional
--   Type: `object[]` ([SharedDatabaseConfig](schema-definitions-shareddatabaseconfig.md))
--   cannot be null
--   defined in: [AppConfig](schema-definitions-shareddatabase.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/Internal/properties/database")
-
-#### database Type
-
-`object[]` ([SharedDatabaseConfig](schema-definitions-shareddatabaseconfig.md))
-
-## Definitions group SharedDatabase
-
-Reference this group by using
-
-```json
-{"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabase"}
-```
-
-| Property | Type | Required | Nullable | Defined by |
-| :------- | ---- | -------- | -------- | :--------- |
-
-## Definitions group SharedDatabaseConfig
-
-Reference this group by using
-
-```json
-{"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig"}
-```
-
-| Property            | Type      | Required | Nullable       | Defined by                                                                                                                                                                                |
-| :------------------ | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [config](#config)   | `object`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/config")                           |
-| [version](#version) | `integer` | Required | cannot be null | [AppConfig](schema-definitions-shareddatabaseconfig-properties-version.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/version") |
-
-### config
-
-Database Configuration
-
-
-`config`
-
--   is required
--   Type: `object` ([DatabaseConfig](schema-definitions-databaseconfig.md))
--   cannot be null
--   defined in: [AppConfig](schema-definitions-databaseconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/config")
-
-#### config Type
-
-`object` ([DatabaseConfig](schema-definitions-databaseconfig.md))
-
-### version
-
-Version number
-
-
-`version`
-
--   is required
--   Type: `integer`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-shareddatabaseconfig-properties-version.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/SharedDatabaseConfig/properties/version")
-
-#### version Type
-
-`integer`
-
-## Definitions group KeycloakConfig
-
-Reference this group by using
-
-```json
-{"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig"}
-```
-
-| Property                            | Type     | Required | Nullable       | Defined by                                                                                                                                                                                    |
-| :---------------------------------- | -------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [url](#url)                         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-keycloakconfig-properties-url.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/url")                         |
-| [username](#username-1)             | `string` | Optional | cannot be null | [AppConfig](schema-definitions-keycloakconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/username")               |
-| [password](#password-1)             | `string` | Optional | cannot be null | [AppConfig](schema-definitions-keycloakconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/password")               |
-| [defaultUsername](#defaultusername) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-keycloakconfig-properties-defaultusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/defaultUsername") |
-| [defaultPassword](#defaultpassword) | `string` | Optional | cannot be null | [AppConfig](schema-definitions-keycloakconfig-properties-defaultpassword.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/defaultPassword") |
-
-### url
-
-URL of Keycloak server
-
-
-`url`
-
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-keycloakconfig-properties-url.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/url")
-
-#### url Type
-
-`string`
-
-### username
-
-URL of Keycloak server
-
-
-`username`
-
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-keycloakconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/username")
-
-#### username Type
-
-`string`
-
-### password
-
-URL of Keycloak server
-
-
-`password`
-
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-keycloakconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/password")
-
-#### password Type
-
-`string`
-
-### defaultUsername
-
-URL of Keycloak server
-
-
-`defaultUsername`
-
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-keycloakconfig-properties-defaultusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/defaultUsername")
-
-#### defaultUsername Type
-
-`string`
-
-### defaultPassword
-
-URL of Keycloak server
-
-
-`defaultPassword`
-
--   is optional
--   Type: `string`
--   cannot be null
--   defined in: [AppConfig](schema-definitions-keycloakconfig-properties-defaultpassword.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/KeycloakConfig/properties/defaultPassword")
-
-#### defaultPassword Type
-
-`string`
-
 ## Definitions group DatabaseConfig
 
 Reference this group by using
@@ -1013,8 +799,8 @@ Reference this group by using
 | Property                        | Type      | Required | Nullable       | Defined by                                                                                                                                                                                |
 | :------------------------------ | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [name](#name-3)                 | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/name")                   |
-| [username](#username-2)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
-| [password](#password-2)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
+| [username](#username-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/username")           |
+| [password](#password-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/password")           |
 | [hostname](#hostname-1)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/hostname")           |
 | [port](#port-1)                 | `integer` | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/port")                   |
 | [adminUsername](#adminusername) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-databaseconfig-properties-adminusername.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DatabaseConfig/properties/adminUsername") |
@@ -1475,8 +1261,8 @@ Reference this group by using
 | :---------------------- | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [hostname](#hostname-4) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/hostname") |
 | [port](#port-4)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/port")         |
-| [username](#username-3) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/username") |
-| [password](#password-3) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/password") |
+| [username](#username-2) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/username") |
+| [password](#password-2) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/password") |
 
 ### hostname
 
