@@ -7,7 +7,6 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
 )
@@ -120,13 +119,11 @@ func TestMinio(t *testing.T) {
 			ExistsError: fakeError,
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -134,7 +131,7 @@ func TestMinio(t *testing.T) {
 		wantErr := newBucketError(bucketCheckErrorMsg, bucketName, fakeError)
 		assert.Error(gotErr)
 
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 0)
+		assert.Len(mp.Config.ObjectStore.Buckets, 0)
 		assert.Len(handler.ExistsCalls, 1)
 		assert.Len(handler.MakeCalls, 0)
 		assert.Contains(handler.ExistsCalls, bucketName)
@@ -150,13 +147,11 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -179,13 +174,11 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -196,8 +189,8 @@ func TestMinio(t *testing.T) {
 		assert.Contains(handler.ExistsCalls, bucketName)
 
 		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName}
-		assert.Contains(mp.Config.Config.ObjectStore.Buckets, wantBucketConfig)
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 1)
+		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
+		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 	})
 
 	t.Run("createBucketsSuccess", func(t *testing.T) {
@@ -208,13 +201,11 @@ func TestMinio(t *testing.T) {
 		}}
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -226,8 +217,8 @@ func TestMinio(t *testing.T) {
 		assert.Contains(handler.MakeCalls, bucketName)
 
 		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName}
-		assert.Contains(mp.Config.Config.ObjectStore.Buckets, wantBucketConfig)
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 1)
+		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
+		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 	})
 
 	t.Run("createMultipleBuckets", func(t *testing.T) {
@@ -241,13 +232,11 @@ func TestMinio(t *testing.T) {
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
 
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -255,10 +244,10 @@ func TestMinio(t *testing.T) {
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
 		assert.Len(handler.MakeCalls, 3)
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 3)
+		assert.Len(mp.Config.ObjectStore.Buckets, 3)
 		for _, b := range []string{b1, b2, b3} {
 			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b}
-			assert.Contains(mp.Config.Config.ObjectStore.Buckets, wantBucketConfig)
+			assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 			assert.Contains(handler.ExistsCalls, b)
 			assert.Contains(handler.MakeCalls, b)
 		}
@@ -274,13 +263,11 @@ func TestMinio(t *testing.T) {
 		}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -288,11 +275,11 @@ func TestMinio(t *testing.T) {
 		assert.NoError(gotErr)
 		assert.Len(handler.ExistsCalls, 3)
 		assert.Len(handler.MakeCalls, 1)
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 3)
+		assert.Len(mp.Config.ObjectStore.Buckets, 3)
 		for _, b := range []string{b1, b2, b3} {
 			assert.Contains(handler.ExistsCalls, b)
 			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b}
-			assert.Contains(mp.Config.Config.ObjectStore.Buckets, wantBucketConfig)
+			assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 		}
 		assert.Contains(handler.MakeCalls, b3)
 	})
@@ -307,13 +294,11 @@ func TestMinio(t *testing.T) {
 		}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -325,9 +310,9 @@ func TestMinio(t *testing.T) {
 		// Provide should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 1)
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 1)
+		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
-		assert.Contains(mp.Config.Config.ObjectStore.Buckets, wantBucketConfig)
+		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 	})
 
 	t.Run("createMultipleBucketsWithCreateFailure", func(t *testing.T) {
@@ -340,13 +325,11 @@ func TestMinio(t *testing.T) {
 		}
 
 		handler, app, mp := setupBucketTest(t, mockBuckets)
-		mp.Config = &object.ConfigCache{
-			Config: &config.AppConfig{
-				ObjectStore: &config.ObjectStoreConfig{
-					Hostname: "",
-					Port:     0,
-					Tls:      false,
-				},
+		mp.Config = &config.AppConfig{
+			ObjectStore: &config.ObjectStoreConfig{
+				Hostname: "",
+				Port:     0,
+				Tls:      false,
 			},
 		}
 
@@ -358,8 +341,8 @@ func TestMinio(t *testing.T) {
 		// Provide should have bailed early
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 2)
-		assert.Len(mp.Config.Config.ObjectStore.Buckets, 1)
+		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
-		assert.Contains(mp.Config.Config.ObjectStore.Buckets, wantBucketConfig)
+		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 	})
 }

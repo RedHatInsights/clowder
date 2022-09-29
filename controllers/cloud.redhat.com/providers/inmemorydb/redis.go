@@ -64,7 +64,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	r.Config.Config.InMemoryDb = &creds
+	r.Config.InMemoryDb = &creds
 
 	objList := []rc.ResourceIdent{
 		RedisDeployment,

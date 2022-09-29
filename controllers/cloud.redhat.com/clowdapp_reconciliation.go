@@ -7,9 +7,8 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
@@ -34,13 +33,12 @@ type ClowdAppReconciliation struct {
 	req                   *ctrl.Request
 	env                   *crd.ClowdEnvironment
 	reconciliationMetrics ReconciliationMetrics
-	ipccache              *obj.IPCCache
-	config                *obj.ConfigCache
-	doUnlock              bool
+	config                *config.AppConfig
 }
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 	return []func() (ctrl.Result, error){
+		r.getApp,
 		r.setPresentAndManagedApps,
 		r.startMetrics,
 		r.isAppMarkedForDeletion,
@@ -63,17 +61,6 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
-	if res, err := r.getApp(); err != nil {
-		return res, err
-	}
-	defer func() {
-		if r.app == nil {
-			return
-		}
-		if r.doUnlock {
-			r.ipccache.UnlockConfig(r.app.Spec.EnvName)
-		}
-	}()
 	for _, step := range r.steps() {
 		result, err := step()
 		if err != nil {
@@ -160,7 +147,7 @@ func (r *ClowdAppReconciliation) finalizeApp() error {
 }
 
 func (r *ClowdAppReconciliation) addFinalizer() (ctrl.Result, error) {
-	if !contains(r.app.GetFinalizers(), appFinalizer) && r.app.ObjectMeta.DeletionTimestamp != nil {
+	if !contains(r.app.GetFinalizers(), appFinalizer) {
 		if addFinalizeErr := r.addFinalizerImplementation(); addFinalizeErr != nil {
 			r.log.Info("Cloud not add finalizer", "err", addFinalizeErr)
 			return ctrl.Result{}, addFinalizeErr
@@ -183,16 +170,11 @@ func (r *ClowdAppReconciliation) addFinalizerImplementation() error {
 }
 
 func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
-	var config *object.ConfigCache
-	var err error
-	if config, err = r.ipccache.GetReadableIPC(r.app.Spec.EnvName); err != nil {
+	if ReadEnv() == r.app.Spec.EnvName {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", r.app.Spec.EnvName)
 		r.log.Info("Env currently being reconciled")
-		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("skipped because: %s", err))
+		return ctrl.Result{Requeue: true}, fmt.Errorf("skipped because env is locked")
 	}
-	r.config = config
-	r.doUnlock = true
-	r.ipccache.LockConfig(r.app.Spec.EnvName)
 	return ctrl.Result{}, nil
 }
 
@@ -300,7 +282,7 @@ func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 
 func (r *ClowdAppReconciliation) runProvidersImplementation(provider *providers.Provider) error {
 	// Update app metadata
-	updateMetadata(r.app, r.config.Config)
+	updateMetadata(r.app, r.config)
 
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		provutils.DebugLog(*r.log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)

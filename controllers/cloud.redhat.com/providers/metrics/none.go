@@ -19,7 +19,7 @@ func (m *noneMetricsProvider) EnvProvide() error {
 
 func (m *noneMetricsProvider) Provide(app *crd.ClowdApp) error {
 
-	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config.Config); err != nil {
+	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config); err != nil {
 		return err
 	}
 

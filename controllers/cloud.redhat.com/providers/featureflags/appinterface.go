@@ -52,7 +52,7 @@ func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp) error {
 
 	stringAccessToken := string(accessToken)
 
-	ff.Config.Config.FeatureFlags = &config.FeatureFlagsConfig{
+	ff.Config.FeatureFlags = &config.FeatureFlagsConfig{
 		ClientAccessToken: &stringAccessToken,
 		Hostname:          ff.Env.Spec.Providers.FeatureFlags.Hostname,
 		Port:              int(ff.Env.Spec.Providers.FeatureFlags.Port),

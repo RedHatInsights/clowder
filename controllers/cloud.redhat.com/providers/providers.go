@@ -9,7 +9,6 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 
 	"github.com/go-logr/logr"
@@ -82,7 +81,7 @@ type Provider struct {
 	Env    *crd.ClowdEnvironment
 	Cache  *rc.ObjectCache
 	Log    logr.Logger
-	Config *object.ConfigCache
+	Config *config.AppConfig
 }
 
 func (prov *Provider) GetClient() client.Client {
@@ -106,7 +105,7 @@ func (prov *Provider) GetLog() logr.Logger {
 }
 
 func (prov *Provider) GetConfig() *config.AppConfig {
-	return prov.Config.Config
+	return prov.Config
 }
 
 type RootProvider interface {

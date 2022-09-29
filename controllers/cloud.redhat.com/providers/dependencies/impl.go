@@ -31,8 +31,8 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	deps := app.Spec.Dependencies
 	odeps := app.Spec.OptionalDependencies
 	if len(deps) == 0 && len(odeps) == 0 {
-		dep.Config.Config.Endpoints = depConfig
-		dep.Config.Config.PrivateEndpoints = privDepConfig
+		dep.Config.Endpoints = depConfig
+		dep.Config.PrivateEndpoints = privDepConfig
 		return nil
 	}
 
@@ -65,8 +65,8 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		return &errors.MissingDependencies{MissingDeps: missingDepStructs}
 	}
 
-	dep.Config.Config.Endpoints = depConfig
-	dep.Config.Config.PrivateEndpoints = privDepConfig
+	dep.Config.Endpoints = depConfig
+	dep.Config.PrivateEndpoints = privDepConfig
 	return nil
 }
 

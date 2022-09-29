@@ -32,14 +32,6 @@ func (a *appInterface) EnvProvide() error {
 		return err
 	}
 
-	a.Config.Config.Kafka = &config.KafkaConfig{
-		Topics: []config.TopicConfig{},
-		Brokers: []config.BrokerConfig{{
-			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
-			Port:     utils.IntPtr(9092),
-		}},
-	}
-
 	return nil
 }
 
@@ -55,6 +47,19 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
+	nn := types.NamespacedName{
+		Name:      a.Env.Spec.Providers.Kafka.Cluster.Name,
+		Namespace: getKafkaNamespace(a.Env),
+	}
+
+	a.Config.Kafka = &config.KafkaConfig{
+		Topics: []config.TopicConfig{},
+		Brokers: []config.BrokerConfig{{
+			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
+			Port:     utils.IntPtr(9092),
+		}},
+	}
+
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := types.NamespacedName{
 			Namespace: getKafkaNamespace(a.Env),
@@ -67,8 +72,8 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		a.Config.Config.Kafka.Topics = append(
-			a.Config.Config.Kafka.Topics,
+		a.Config.Kafka.Topics = append(
+			a.Config.Kafka.Topics,
 			config.TopicConfig{
 				Name:          topic.TopicName,
 				RequestedName: topic.TopicName,

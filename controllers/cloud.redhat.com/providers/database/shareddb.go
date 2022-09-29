@@ -197,8 +197,6 @@ func (db *sharedDbProvider) EnvProvide() error {
 		configs[v] = dbCfg
 	}
 
-	db.Config.InternalConfig[ProvName] = configs
-
 	return nil
 }
 
@@ -220,15 +218,31 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 
 	var dbCfg config.DatabaseConfig
 
-	dbs, ok := db.Config.InternalConfig[ProvName].(map[int32]config.DatabaseConfig)
-	if !ok {
-		return fmt.Errorf("couldn't get database config for version [%d]", version)
+	vSec := &core.Secret{}
+	vSecnn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-db-v%s", db.Env.Name, strconv.Itoa(int(version))),
+		Namespace: db.Env.Status.TargetNamespace,
 	}
 
-	dbCfg = dbs[version]
+	if err := db.Client.Get(db.Ctx, vSecnn, vSec); err != nil {
+		return err
+	}
+
+	var port int
+	var err error
+	if port, err = strconv.Atoi(string(vSec.Data["port"])); err != nil {
+		return err
+	}
+
+	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminPassword = string(vSec.Data["pgPass"])
+	dbCfg.Hostname = string(vSec.Data["hostname"])
+	dbCfg.Name = app.Spec.Database.Name
+	dbCfg.Password = string(vSec.Data["password"])
+	dbCfg.Username = string(vSec.Data["username"])
+	dbCfg.Port = port
 
 	host := dbCfg.Hostname
-	port := dbCfg.Port
 	user := dbCfg.AdminUsername
 	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
@@ -301,7 +315,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	dbCfg.Name = app.Spec.Database.Name
-	db.Config.Config.Database = &dbCfg
+	db.Config.Database = &dbCfg
 
 	return nil
 }
@@ -344,7 +358,7 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	db.Config.Config.Database = &dbCfg
+	db.Config.Database = &dbCfg
 
 	return nil
 }

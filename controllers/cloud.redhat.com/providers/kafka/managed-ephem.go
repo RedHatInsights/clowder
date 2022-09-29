@@ -91,36 +91,6 @@ func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvid
 }
 
 func (mep *managedEphemProvider) EnvProvide() error {
-	sec, err := getSecret(&mep.Provider)
-	if err != nil {
-		return err
-	}
-
-	username, password, hostname, _, _, cacert := destructureSecret(sec)
-
-	saslType := config.BrokerConfigAuthtypeSasl
-
-	kconfig := config.KafkaConfig{
-		Brokers: []config.BrokerConfig{{
-			Hostname: hostname,
-			Port:     utils.IntPtr(443),
-			Authtype: &saslType,
-			Sasl: &config.KafkaSASLConfig{
-				Password:         &password,
-				Username:         &username,
-				SecurityProtocol: utils.StringPtr("SASL_SSL"),
-				SaslMechanism:    utils.StringPtr("PLAIN"),
-			},
-		}},
-		Topics: []config.TopicConfig{},
-	}
-
-	if cacert != "" {
-		kconfig.Brokers[0].Cacert = &cacert
-	}
-
-	mep.Config.Config.Kafka = &kconfig
-
 	return mep.configureBrokers()
 }
 
@@ -344,9 +314,32 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	username, password, _, tokenURL, adminHostname, _ := destructureSecret(sec)
+	username, password, hostname, tokenURL, adminHostname, cacert := destructureSecret(sec)
 
 	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, &mep.Provider)
+
+	saslType := config.BrokerConfigAuthtypeSasl
+
+	kconfig := config.KafkaConfig{
+		Brokers: []config.BrokerConfig{{
+			Hostname: hostname,
+			Port:     utils.IntPtr(443),
+			Authtype: &saslType,
+			Sasl: &config.KafkaSASLConfig{
+				Password:         &password,
+				Username:         &username,
+				SecurityProtocol: utils.StringPtr("SASL_SSL"),
+				SaslMechanism:    utils.StringPtr("PLAIN"),
+			},
+		}},
+		Topics: []config.TopicConfig{},
+	}
+
+	if cacert != "" {
+		kconfig.Brokers[0].Cacert = &cacert
+	}
+
+	mep.Config.Kafka = &kconfig
 
 	if err := mep.configCyndi(app); err != nil {
 		return err
@@ -356,14 +349,14 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	if err := mep.processTopics(app, mep.Config.Config, httpClient, adminHostname); err != nil {
+	if err := mep.processTopics(app, httpClient, adminHostname); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp, appConfig *config.AppConfig, httpClient HTTPClient, adminHostname string) error {
+func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp, httpClient HTTPClient, adminHostname string) error {
 	topicConfig := []config.TopicConfig{}
 
 	appList, err := mep.Env.GetAppsInEnv(mep.Ctx, mep.Client)
@@ -387,7 +380,7 @@ func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp, appConfig *con
 		)
 	}
 
-	appConfig.Kafka.Topics = topicConfig
+	mep.Config.Kafka.Topics = topicConfig
 
 	return nil
 }

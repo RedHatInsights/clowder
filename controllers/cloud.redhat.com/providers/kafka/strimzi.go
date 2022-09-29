@@ -563,6 +563,7 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 		)
 	}
 
+	//INTERNAL
 	kafkaCASecName := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
 		Namespace: getKafkaNamespace(s.Env),
@@ -625,19 +626,17 @@ func (s *strimziProvider) configureBrokers() error {
 		return errors.Wrap("failed to provision kafka cluster", err)
 	}
 
-	s.Config.Config.Kafka = &config.KafkaConfig{
-		Topics: []config.TopicConfig{},
-	}
+	config := &config.KafkaConfig{}
 
 	// Look up Kafka cluster's listeners and configure s.Config.Brokers
 	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
-	if err := s.configureListeners(s.Config.Config.Kafka); err != nil {
+	if err := s.configureListeners(config); err != nil {
 		clowdErr := errors.Wrap("unable to determine kafka broker addresses", err)
 		clowdErr.Requeue = true
 		return clowdErr
 	}
 
-	if err := s.configureKafkaConnectCluster(s.Config.Config.Kafka); err != nil {
+	if err := s.configureKafkaConnectCluster(config); err != nil {
 		return errors.Wrap("failed to provision kafka connect cluster", err)
 	}
 
@@ -710,6 +709,37 @@ func createNetworkPolicies(p *providers.Provider) error {
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 
+	clusterNN := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      getKafkaName(s.Env),
+	}
+	kafkaResource := strimzi.Kafka{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, clusterNN, &kafkaResource)); err != nil {
+		return err
+	}
+
+	kafkaCASecName := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+	kafkaCASecret := core.Secret{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+		return err
+	}
+
+	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
+
+	s.Config.Kafka = &config.KafkaConfig{}
+	s.Config.Kafka.Brokers = []config.BrokerConfig{}
+
+	for _, listener := range kafkaResource.Status.Listeners {
+		if listener.Type != nil && *listener.Type == "tls" {
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTcpBrokerConfig(listener))
+		}
+	}
+
 	if app.Spec.Cyndi.Enabled {
 		err := createCyndiPipeline(s, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env))
 		if err != nil {
@@ -721,7 +751,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	if err := s.processTopics(app, s.Config.Config.Kafka); err != nil {
+	if err := s.processTopics(app, s.Config.Kafka); err != nil {
 		return err
 	}
 
@@ -730,7 +760,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if err := s.setBrokerCredentials(app, s.Config.Config.Kafka); err != nil {
+		if err := s.setBrokerCredentials(app, s.Config.Kafka); err != nil {
 			return err
 		}
 	}

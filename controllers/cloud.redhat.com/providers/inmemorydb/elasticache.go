@@ -70,7 +70,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 		return &missingDeps
 	}
 
-	e.Config.Config.InMemoryDb = &creds
+	e.Config.InMemoryDb = &creds
 
 	return nil
 }

@@ -9,7 +9,6 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/go-logr/logr"
@@ -46,7 +45,6 @@ type ClowdEnvironmentReconciliation struct {
 	client   client.Client
 	env      *crd.ClowdEnvironment
 	log      *logr.Logger
-	config   *object.ConfigCache
 }
 
 //Returns a list of step methods that should be run during reconciliation
@@ -77,7 +75,8 @@ func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 	//The env stays locked for the entire reconciliation
 	//This is a slight change from the previous implementation
 	//where the lock wasn't initated until the target namespace had been initialized
-
+	SetEnv(r.env.Name)
+	defer ReleaseEnv()
 	for _, step := range r.steps() {
 		result, err := step()
 		if err != nil {
@@ -121,7 +120,6 @@ func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() err
 		Env:    r.env,
 		Cache:  r.cache,
 		Log:    *r.log,
-		Config: r.config,
 	}
 
 	err := runProvidersForEnvFinalize(*r.log, provider)
@@ -149,7 +147,7 @@ func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() err
 //Adds a finalizer to the environment if one is not already present
 func (r *ClowdEnvironmentReconciliation) addFinalizerIfRequired() (ctrl.Result, error) {
 	// Add finalizer for this CR
-	if !contains(r.env.GetFinalizers(), envFinalizer) && r.env.ObjectMeta.DeletionTimestamp != nil {
+	if !contains(r.env.GetFinalizers(), envFinalizer) {
 		if addFinalizeErr := r.addFinalizerImplementation(); addFinalizeErr != nil {
 			r.log.Info("Cloud not add finalizer", "err", addFinalizeErr)
 			return ctrl.Result{}, addFinalizeErr
@@ -276,7 +274,6 @@ func (r *ClowdEnvironmentReconciliation) runProviders() (ctrl.Result, error) {
 		Env:    r.env,
 		Cache:  r.cache,
 		Log:    *r.log,
-		Config: r.config,
 	}
 	provErr := runProvidersForEnv(*r.log, provider)
 

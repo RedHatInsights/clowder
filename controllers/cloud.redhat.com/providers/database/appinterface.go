@@ -111,7 +111,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	a.Config.Config.Database = &matched.Config
+	a.Config.Database = &matched.Config
 
 	return nil
 }
