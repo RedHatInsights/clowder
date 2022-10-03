@@ -157,7 +157,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	reconciliation := ClowdEnvironmentReconciliation{
 		cache:    &cache,
 		recorder: r.Recorder,
-		ctx:      &ctx,
+		ctx:      ctx,
 		client:   r.Client,
 		env:      &env,
 		log:      &log,

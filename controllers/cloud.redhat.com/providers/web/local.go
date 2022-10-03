@@ -254,7 +254,7 @@ func (web *localWebProvider) EnvProvide() error {
 		}
 	}
 
-	_, err = providers.MakeOrGetSecret(web.Ctx, web.Env, web.Cache, WebKeycloakSecret, nn, dataInit)
+	dataMap, err := providers.MakeOrGetSecret(web.Ctx, web.Env, web.Cache, WebKeycloakSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("couldn't set/get secret", err)
 	}
@@ -272,7 +272,7 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, defaultPassword); err != nil {
+	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, (*dataMap)["defaultPassword"]); err != nil {
 		return err
 	}
 

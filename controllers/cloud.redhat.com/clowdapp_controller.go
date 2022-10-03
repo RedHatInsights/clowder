@@ -139,7 +139,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	log.Info("Reconciliation started")
 
 	reconciliation := ClowdAppReconciliation{
-		ctx:      &ctx,
+		ctx:      ctx,
 		client:   r.Client,
 		recorder: r.Recorder,
 		app:      &app,
