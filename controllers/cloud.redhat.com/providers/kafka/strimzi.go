@@ -723,7 +723,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 		Namespace: getKafkaNamespace(s.Env),
 	}
 	kafkaCASecret := core.Secret{}
-	if err := s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret); err != nil {
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
 		return err
 	}
 
