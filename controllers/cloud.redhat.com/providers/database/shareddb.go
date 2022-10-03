@@ -241,6 +241,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	dbCfg.Password = string(vSec.Data["password"])
 	dbCfg.Username = string(vSec.Data["username"])
 	dbCfg.Port = port
+	dbCfg.SslMode = "disable"
 
 	host := dbCfg.Hostname
 	user := dbCfg.AdminUsername
