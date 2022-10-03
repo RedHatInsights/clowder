@@ -715,6 +715,10 @@ func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient clien
 		namespaceList = append(namespaceList, namespace)
 	}
 
+	if i.Spec.Providers.Kafka.Cluster.Namespace != "" {
+		namespaceList = append(namespaceList, i.Spec.Providers.Kafka.Cluster.Namespace)
+	}
+
 	return namespaceList, nil
 }
 
