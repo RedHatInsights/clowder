@@ -24,7 +24,7 @@ spec:
     inMemoryDb:
       mode: none
     pullSecrets:
-    - name: test-annotations
+    - name: test-annotations-deployment
       namespace: test-annotations-secret-deployment
     - name: test-annotations-same-ns
       namespace: test-annotations-deployment
@@ -114,7 +114,7 @@ data:
   endpoint: dGVzdC1lbmRwb2ludA==
 kind: Secret
 metadata:
-  name: test-annotations
+  name: test-annotations-deployment
   namespace: test-annotations-secret-deployment
 type: Opaque
 ---
