@@ -100,7 +100,7 @@ func (r *ClowdAppReconciliation) getApp() (ctrl.Result, error) {
 	if getAppErr := r.client.Get(r.ctx, r.req.NamespacedName, r.app); getAppErr != nil {
 		if k8serr.IsNotFound(getAppErr) {
 			// Must have been deleted
-			return ctrl.Result{}, errors.New("skipped because: app is deleted")
+			return ctrl.Result{}, NewSkippedError("app is deleted")
 		}
 		r.log.Info("App not found", "env", r.app.Spec.EnvName, "app", r.app.GetIdent(), "err", getAppErr)
 		return ctrl.Result{}, getAppErr
@@ -128,9 +128,9 @@ func (r *ClowdAppReconciliation) isAppMarkedForDeletion() (ctrl.Result, error) {
 				r.log.Info("Cloud not remove finalizer", "err", removeFinalizeErr)
 				return ctrl.Result{}, removeFinalizeErr
 			}
-			return ctrl.Result{}, fmt.Errorf("skipped because: app is marked for delete and finalizers removed")
+			return ctrl.Result{}, NewSkippedError("app is marked for delete and finalizers removed")
 		} else {
-			return ctrl.Result{}, fmt.Errorf("skipped because: app is marked for delete and has no finalizer")
+			return ctrl.Result{}, NewSkippedError("app is marked for delete and has no finalizer")
 		}
 	}
 	return ctrl.Result{}, nil
@@ -175,7 +175,7 @@ func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 	if ReadEnv() == r.app.Spec.EnvName {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", r.app.Spec.EnvName)
 		r.log.Info("Env currently being reconciled")
-		return ctrl.Result{Requeue: true}, fmt.Errorf("skipped because env is locked")
+		return ctrl.Result{Requeue: true}, NewSkippedError("env is locked")
 	}
 	return ctrl.Result{}, nil
 }
@@ -183,7 +183,7 @@ func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 func (r *ClowdAppReconciliation) isAppDisabled() (ctrl.Result, error) {
 	if r.app.Spec.Disabled {
 		r.log.Info("Reconciliation aborted - set to be disabled")
-		return ctrl.Result{}, errors.New("skipped because app disabled")
+		return ctrl.Result{}, NewSkippedError("app disabled")
 	}
 	return ctrl.Result{}, nil
 }
@@ -213,7 +213,7 @@ func (r *ClowdAppReconciliation) isNamespaceDeleted(namespace string, message st
 
 	if ns.ObjectMeta.DeletionTimestamp != nil {
 		r.log.Info(message)
-		return ctrl.Result{}, errors.New("skipped because namespace is deleted")
+		return ctrl.Result{}, NewSkippedError("namespace is deleted")
 	}
 	return ctrl.Result{}, nil
 }
@@ -234,7 +234,7 @@ func (r *ClowdAppReconciliation) isClowdEnvReconciled() (ctrl.Result, error) {
 			r.log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
-		return ctrl.Result{}, errors.New("skipped because: env not yet reconciled")
+		return ctrl.Result{}, NewSkippedError("env not yet reconciled")
 	}
 	return ctrl.Result{}, nil
 }
@@ -248,7 +248,7 @@ func (r *ClowdAppReconciliation) isEnvReady() (ctrl.Result, error) {
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 
-		return ctrl.Result{Requeue: true}, errors.New("skipped because: env isn't ready")
+		return ctrl.Result{Requeue: true}, NewSkippedError("env isn't ready")
 	}
 	return ctrl.Result{}, nil
 }
@@ -342,7 +342,7 @@ func (r *ClowdAppReconciliation) deletedUnusedResources() (ctrl.Result, error) {
 	rErr := r.cache.Reconcile(r.app.GetUID(), opts...)
 	if rErr != nil {
 		r.log.Info("Reconcile error", "err", rErr)
-		return ctrl.Result{Requeue: true}, errors.New(fmt.Sprintf("skipped because: %s", rErr))
+		return ctrl.Result{Requeue: true}, NewSkippedError(rErr.Error())
 	}
 
 	return ctrl.Result{}, nil

@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/go-logr/logr"
@@ -22,13 +20,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+type SkippedError struct {
+	err error
+}
+
+func (se SkippedError) Error() string {
+	return fmt.Sprintf("skipped because: %s", se.err.Error())
+}
+
+func NewSkippedError(errString string) error {
+	return SkippedError{err: fmt.Errorf(errString)}
+}
+
 const (
 	SKIPRECONCILE = "SKIPRECONCILE"
 )
 
 //During reconciliation we handle errors in 2 ways: sometimes we want to error out of reconciliation and sometimes we want to skip reconciliation.
 func shouldSkipReconciliation(err error) bool {
-	if err != nil && strings.Contains(err.Error(), "skipped because") {
+	_, isSkippedError := err.(SkippedError)
+	if err != nil && isSkippedError {
 		return true
 	}
 	return false
@@ -103,9 +114,9 @@ func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error
 				r.log.Info("Cloud not remove finalizer", "err", removeFinalizeErr)
 				return ctrl.Result{}, removeFinalizeErr
 			}
-			return ctrl.Result{}, fmt.Errorf("skipped because: env is marked for delete and finalizers removed")
+			return ctrl.Result{}, NewSkippedError("env is marked for delete and finalizers removed")
 		} else {
-			return ctrl.Result{}, fmt.Errorf("skipped because: env is marked for delete and has no finalizer")
+			return ctrl.Result{}, NewSkippedError("env is marked for delete and has no finalizer")
 		}
 	}
 	return ctrl.Result{}, nil
@@ -263,7 +274,7 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 
 	if ens.ObjectMeta.DeletionTimestamp != nil {
 		r.log.Info("Env target namespace is to be deleted - skipping reconcile")
-		return ctrl.Result{}, errors.New("skipped because: target namespace is to be deleted")
+		return ctrl.Result{}, NewSkippedError("target namespace is to be deleted")
 	}
 
 	return ctrl.Result{}, nil
@@ -472,7 +483,7 @@ func (r *ClowdEnvironmentReconciliation) logSuccess() (ctrl.Result, error) {
 func (r *ClowdEnvironmentReconciliation) setToBeDisabled() (ctrl.Result, error) {
 	if r.env.Spec.Disabled {
 		r.log.Info("Reconciliation aborted - set to be disabled")
-		return ctrl.Result{}, errors.New("skipped because env is disabled")
+		return ctrl.Result{}, NewSkippedError("env is disabled")
 	}
 	return ctrl.Result{}, nil
 }

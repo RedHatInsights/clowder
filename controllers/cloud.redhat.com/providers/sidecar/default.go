@@ -55,7 +55,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, cronJob := range app.Spec.Jobs {
-
+		if cronJob.Schedule == "" {
+			continue
+		}
 		cj := &batch.CronJob{}
 
 		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob)); err != nil {
