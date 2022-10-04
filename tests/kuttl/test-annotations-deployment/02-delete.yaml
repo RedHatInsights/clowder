@@ -8,6 +8,3 @@ delete:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
   name: test-annotations-deployment
-- apiVersion: v1
-  kind: Namespace
-  name: test-annotations-secret
