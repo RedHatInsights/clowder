@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-annotations
+  name: test-annotations-deployment
 spec:
-  targetNamespace: test-annotations
+  targetNamespace: test-annotations-deployment
   providers:
     web:
       port: 8000
@@ -25,9 +25,9 @@ spec:
       mode: none
     pullSecrets:
     - name: test-annotations
-      namespace: test-annotations-secret
+      namespace: test-annotations-secret-deployment
     - name: test-annotations-same-ns
-      namespace: test-annotations
+      namespace: test-annotations-deployment
   resourceDefaults:
     limits:
       cpu: 400m
@@ -40,11 +40,11 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-annotations
+  namespace: test-annotations-deployment
   annotations:
     TestAnnotation: "Pretty Cool"
 spec:
-  envName: test-annotations
+  envName: test-annotations-deployment
   deployments:
   - name: processor
     podSpec:
@@ -115,7 +115,7 @@ data:
 kind: Secret
 metadata:
   name: test-annotations
-  namespace: test-annotations-secret
+  namespace: test-annotations-secret-deployment
 type: Opaque
 ---
 apiVersion: v1
@@ -128,5 +128,5 @@ data:
 kind: Secret
 metadata:
   name: test-annotations-same-ns
-  namespace: test-annotations
+  namespace: test-annotations-deployment
 type: Opaque
