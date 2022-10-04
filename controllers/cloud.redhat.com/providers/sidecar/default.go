@@ -31,7 +31,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 
 		d := &apps.Deployment{}
 
-		sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&deployment))
+		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&deployment)); err != nil {
+			return err
+		}
 
 		for _, sidecar := range deployment.PodSpec.Sidecars {
 			switch sidecar.Name {
@@ -47,14 +49,18 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			}
 		}
 
-		sc.Cache.Update(deployProvider.CoreDeployment, d)
+		if err := sc.Cache.Update(deployProvider.CoreDeployment, d); err != nil {
+			return err
+		}
 	}
 
 	for _, cronJob := range app.Spec.Jobs {
 
 		cj := &batch.CronJob{}
 
-		sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob))
+		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob)); err != nil {
+			return err
+		}
 
 		for _, sidecar := range cronJob.PodSpec.Sidecars {
 			switch sidecar.Name {
@@ -70,7 +76,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			}
 		}
 
-		sc.Cache.Update(cronjobProvider.CoreCronJob, cj)
+		if err := sc.Cache.Update(cronjobProvider.CoreCronJob, cj); err != nil {
+			return err
+		}
 	}
 
 	return nil

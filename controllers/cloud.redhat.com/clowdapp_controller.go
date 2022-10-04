@@ -166,10 +166,12 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	cache := mgr.GetCache()
 
-	cache.IndexField(
+	if err := cache.IndexField(
 		context.TODO(), &crd.ClowdApp{}, "spec.envName", func(o client.Object) []string {
 			return []string{o.(*crd.ClowdApp).Spec.EnvName}
-		})
+		}); err != nil {
+		return err
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdApp{}).

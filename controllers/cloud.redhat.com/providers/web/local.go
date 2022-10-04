@@ -331,7 +331,9 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		web.createIngress(app, &deployment)
+		if err := web.createIngress(app, &deployment); err != nil {
+			return err
+		}
 
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),

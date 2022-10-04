@@ -46,7 +46,9 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 		annotations := map[string]string{"configHash": hash}
 		utils.UpdateAnnotations(&deployment.Spec.Template, annotations)
 
-		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
+		if err := ch.Cache.Update(deployProvider.CoreDeployment, &deployment); err != nil {
+			return err
+		}
 	}
 
 	jList := batch.CronJobList{}
@@ -58,7 +60,9 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 		annotations := map[string]string{"configHash": hash}
 		utils.UpdateAnnotations(&job.Spec.JobTemplate.Spec.Template, annotations)
 
-		ch.Cache.Update(cronjobProvider.CoreCronJob, &job)
+		if err := ch.Cache.Update(cronjobProvider.CoreCronJob, &job); err != nil {
+			return err
+		}
 	}
 
 	return nil

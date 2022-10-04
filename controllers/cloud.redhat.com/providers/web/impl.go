@@ -31,7 +31,9 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	d := &apps.Deployment{}
 
-	cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment))
+	if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
+		return err
+	}
 
 	servicePorts := []core.ServicePort{}
 	containerPorts := []core.ContainerPort{}

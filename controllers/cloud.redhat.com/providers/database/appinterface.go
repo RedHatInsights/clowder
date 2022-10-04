@@ -41,7 +41,7 @@ func fetchCa() (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		errors.Wrap("Error reading response body", err)
+		return "", errors.Wrap("Error reading response body", err)
 	}
 
 	caBundle := string(body)
