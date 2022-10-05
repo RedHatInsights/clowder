@@ -150,7 +150,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	res, err := reconciliation.Reconcile()
 	if err != nil {
 		if shouldSkipReconciliation(err) {
-			log.Info("error", err.Error(), "skipping", "true", "requeue", res.Requeue)
+			log.Info("skipping", "error", err.Error(), "skipping", "true", "requeue", res.Requeue)
 			return res, nil
 		}
 		log.Error(err, "error in reconciliation", "skipping", "false", "requeue", res.Requeue)
