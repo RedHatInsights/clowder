@@ -273,7 +273,6 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 	}
 
 	if ens.ObjectMeta.DeletionTimestamp != nil {
-		r.log.Info("Env target namespace is to be deleted - skipping reconcile")
 		return ctrl.Result{}, NewSkippedError("target namespace is to be deleted")
 	}
 
@@ -482,7 +481,6 @@ func (r *ClowdEnvironmentReconciliation) logSuccess() (ctrl.Result, error) {
 
 func (r *ClowdEnvironmentReconciliation) setToBeDisabled() (ctrl.Result, error) {
 	if r.env.Spec.Disabled {
-		r.log.Info("Reconciliation aborted - set to be disabled")
 		return ctrl.Result{}, NewSkippedError("env is disabled")
 	}
 	return ctrl.Result{}, nil

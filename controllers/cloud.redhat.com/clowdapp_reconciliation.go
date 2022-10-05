@@ -174,7 +174,6 @@ func (r *ClowdAppReconciliation) addFinalizerImplementation() error {
 func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 	if ReadEnv() == r.app.Spec.EnvName {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", r.app.Spec.EnvName)
-		r.log.Info("Env currently being reconciled")
 		return ctrl.Result{Requeue: true}, NewSkippedError("env is locked")
 	}
 	return ctrl.Result{}, nil
@@ -182,7 +181,6 @@ func (r *ClowdAppReconciliation) isEnvLocked() (ctrl.Result, error) {
 
 func (r *ClowdAppReconciliation) isAppDisabled() (ctrl.Result, error) {
 	if r.app.Spec.Disabled {
-		r.log.Info("Reconciliation aborted - set to be disabled")
 		return ctrl.Result{}, NewSkippedError("app disabled")
 	}
 	return ctrl.Result{}, nil
@@ -212,8 +210,7 @@ func (r *ClowdAppReconciliation) isNamespaceDeleted(namespace string, message st
 	}
 
 	if ns.ObjectMeta.DeletionTimestamp != nil {
-		r.log.Info(message)
-		return ctrl.Result{}, NewSkippedError("namespace is deleted")
+		return ctrl.Result{}, NewSkippedError(message)
 	}
 	return ctrl.Result{}, nil
 }
@@ -229,9 +226,7 @@ func (r *ClowdAppReconciliation) isAppNamespaceDeleted() (ctrl.Result, error) {
 func (r *ClowdAppReconciliation) isClowdEnvReconciled() (ctrl.Result, error) {
 	if r.env.Generation != r.env.Status.Generation {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvNotReconciled", "Clowder Environment [%s] is not reconciled", r.app.Spec.EnvName)
-		r.log.Info("Env not yet reconciled")
 		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, fmt.Errorf("clowd env not reconciled")); setClowdStatusErr != nil {
-			r.log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 		return ctrl.Result{}, NewSkippedError("env not yet reconciled")
@@ -242,12 +237,9 @@ func (r *ClowdAppReconciliation) isClowdEnvReconciled() (ctrl.Result, error) {
 func (r *ClowdAppReconciliation) isEnvReady() (ctrl.Result, error) {
 	if !r.env.IsReady() {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", r.app.Spec.EnvName)
-		r.log.Info("Env not yet ready")
 		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, fmt.Errorf("clowd env not ready")); setClowdStatusErr != nil {
-			r.log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
-
 		return ctrl.Result{Requeue: true}, NewSkippedError("env isn't ready")
 	}
 	return ctrl.Result{}, nil
@@ -341,8 +333,7 @@ func (r *ClowdAppReconciliation) deletedUnusedResources() (ctrl.Result, error) {
 	// Delete all resources that are not used anymore
 	rErr := r.cache.Reconcile(r.app.GetUID(), opts...)
 	if rErr != nil {
-		r.log.Info("Reconcile error", "err", rErr)
-		return ctrl.Result{Requeue: true}, NewSkippedError(rErr.Error())
+		return ctrl.Result{Requeue: true}, NewSkippedError(fmt.Sprintf("error running object cache reconcile: %s", rErr.Error()))
 	}
 
 	return ctrl.Result{}, nil
