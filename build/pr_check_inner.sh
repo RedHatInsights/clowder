@@ -110,6 +110,7 @@ done
 
 # Grab the metrics
 $KUBECTL_CMD port-forward svc/clowder-controller-manager-metrics-service-non-auth -n clowder-system 8080 &
+sleep 5
 curl 127.0.0.1:8080/metrics > artifacts/clowder-metrics
 
 STRIMZI_PODS=$($KUBECTL_CMD get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
