@@ -708,6 +708,9 @@ func createNetworkPolicies(p *providers.Provider) error {
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
 
 	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
@@ -745,10 +748,6 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
 	}
 
 	if err := s.processTopics(app, s.Config.Kafka); err != nil {
