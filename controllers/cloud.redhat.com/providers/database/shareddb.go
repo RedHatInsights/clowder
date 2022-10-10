@@ -48,6 +48,13 @@ type sharedDbProvider struct {
 
 // NewSharedDBProvider returns a new local DB provider object.
 func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		SharedDBDeployment,
+		SharedDBService,
+		SharedDBPVC,
+		SharedDBSecret,
+		SharedDBAppSecret,
+	)
 	return &sharedDbProvider{Provider: *p}, nil
 }
 

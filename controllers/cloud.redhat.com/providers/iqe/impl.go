@@ -27,6 +27,8 @@ var IMAGE_IQE_SELENIUM = "quay.io/redhatqe/selenium-standalone"
 
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
 var VaultSecret = rc.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
+var IqeClowdJob = rc.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
+var ClowdJob = rc.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
 
 func joinNullableSlice(s *[]string) string {
 	if s != nil {

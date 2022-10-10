@@ -39,58 +39,59 @@ var MinioSecret = rc.NewSingleResourceIdent(ProvName, "minio_db_secret", &core.S
 // MinioNetworkPolicy is the resource ident for the KafkaNetworkPolicy
 var MinioNetworkPolicy = rc.NewSingleResourceIdent(ProvName, "minio_network_policy", &networking.NetworkPolicy{})
 
-const bucketCheckErrorMsg = "failed to check if bucket exists"
-const bucketCreateErrorMsg = "failed to create bucket"
-
-func newBucketError(msg string, bucketName string, rootCause error) error {
-	newErr := errors.Wrap(fmt.Sprintf("bucket %q -- %s", bucketName, msg), rootCause)
-	newErr.Requeue = true
-	return newErr
-}
-
-// Create a bucketHandler interface to allow for mocking of minio client actions in tests
-type bucketHandler interface {
-	Exists(ctx context.Context, bucketName string) (bool, error)
-	Make(ctx context.Context, bucketName string) error
-	CreateClient(hostname string, port int, accessKey *string, secretKey *string) error
-}
-
-// minioHandler will implement the above interface using minio-go
-type minioHandler struct {
-	Client *minio.Client
-}
-
-func (h *minioHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
-	return h.Client.BucketExists(ctx, bucketName)
-}
-
-func (h *minioHandler) Make(ctx context.Context, bucketName string) error {
-	return h.Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
-}
-
-func (h *minioHandler) CreateClient(
-	hostname string, port int, accessKey *string, secretKey *string,
-) error {
-	endpoint := fmt.Sprintf("%v:%v", hostname, port)
-
-	cl, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(*accessKey, *secretKey, ""),
-		Secure: false,
-	})
-
-	if err != nil {
-		return errors.Wrap("Failed to create minio client", err)
-	}
-
-	h.Client = cl
-
-	return nil
-}
-
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	providers.Provider
 	BucketHandler bucketHandler
+}
+
+// NewMinIO constructs a new minio for the given config
+func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		MinioDeployment,
+		MinioService,
+		MinioPVC,
+		MinioSecret,
+		MinioNetworkPolicy,
+	)
+
+	nn := providers.GetNamespacedName(p.Env, "minio")
+
+	dataInit := func() map[string]string {
+		return createDefaultMinioSecMap(nn.Name, nn.Namespace)
+	}
+	// MakeOrGetSecret will set data if it already exists
+	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, MinioSecret, nn, dataInit)
+	if err != nil {
+		raisedErr := errors.Wrap("Couldn't set/get secret", err)
+		raisedErr.Requeue = true
+		return nil, raisedErr
+	}
+
+	mp, err := createMinioProvider(p, *secMap, &minioHandler{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	minioCacheMap := []rc.ResourceIdent{
+		MinioDeployment,
+		MinioService,
+	}
+
+	if p.Env.Spec.Providers.ObjectStore.PVC {
+		minioCacheMap = append(minioCacheMap, MinioPVC)
+	}
+
+	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.IsNodePort())
+
+	if err != nil {
+		raisedErr := errors.Wrap("Couldn't make component", err)
+		raisedErr.Requeue = true
+		return nil, raisedErr
+	}
+
+	return mp, nil
 }
 
 func (m *minioProvider) EnvProvide() error {
@@ -158,6 +159,54 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+const bucketCheckErrorMsg = "failed to check if bucket exists"
+const bucketCreateErrorMsg = "failed to create bucket"
+
+func newBucketError(msg string, bucketName string, rootCause error) error {
+	newErr := errors.Wrap(fmt.Sprintf("bucket %q -- %s", bucketName, msg), rootCause)
+	newErr.Requeue = true
+	return newErr
+}
+
+// Create a bucketHandler interface to allow for mocking of minio client actions in tests
+type bucketHandler interface {
+	Exists(ctx context.Context, bucketName string) (bool, error)
+	Make(ctx context.Context, bucketName string) error
+	CreateClient(hostname string, port int, accessKey *string, secretKey *string) error
+}
+
+// minioHandler will implement the above interface using minio-go
+type minioHandler struct {
+	Client *minio.Client
+}
+
+func (h *minioHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
+	return h.Client.BucketExists(ctx, bucketName)
+}
+
+func (h *minioHandler) Make(ctx context.Context, bucketName string) error {
+	return h.Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+}
+
+func (h *minioHandler) CreateClient(
+	hostname string, port int, accessKey *string, secretKey *string,
+) error {
+	endpoint := fmt.Sprintf("%v:%v", hostname, port)
+
+	cl, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(*accessKey, *secretKey, ""),
+		Secure: false,
+	})
+
+	if err != nil {
+		return errors.Wrap("Failed to create minio client", err)
+	}
+
+	h.Client = cl
+
+	return nil
+}
+
 func createMinioProvider(
 	p *providers.Provider, secMap map[string]string, handler bucketHandler,
 ) (*minioProvider, error) {
@@ -187,47 +236,6 @@ func createDefaultMinioSecMap(name string, namespace string) map[string]string {
 		"hostname":  fmt.Sprintf("%v.%v.svc", name, namespace),
 		"port":      strconv.Itoa(int(9000)),
 	}
-}
-
-// NewMinIO constructs a new minio for the given config
-func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
-	nn := providers.GetNamespacedName(p.Env, "minio")
-
-	dataInit := func() map[string]string {
-		return createDefaultMinioSecMap(nn.Name, nn.Namespace)
-	}
-	// MakeOrGetSecret will set data if it already exists
-	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, MinioSecret, nn, dataInit)
-	if err != nil {
-		raisedErr := errors.Wrap("Couldn't set/get secret", err)
-		raisedErr.Requeue = true
-		return nil, raisedErr
-	}
-
-	mp, err := createMinioProvider(p, *secMap, &minioHandler{})
-
-	if err != nil {
-		return nil, err
-	}
-
-	minioCacheMap := []rc.ResourceIdent{
-		MinioDeployment,
-		MinioService,
-	}
-
-	if p.Env.Spec.Providers.ObjectStore.PVC {
-		minioCacheMap = append(minioCacheMap, MinioPVC)
-	}
-
-	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.IsNodePort())
-
-	if err != nil {
-		raisedErr := errors.Wrap("Couldn't make component", err)
-		raisedErr.Requeue = true
-		return nil, raisedErr
-	}
-
-	return mp, nil
 }
 
 func createNetworkPolicy(p *providers.Provider) error {

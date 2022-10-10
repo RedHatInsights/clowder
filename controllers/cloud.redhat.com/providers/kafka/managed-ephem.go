@@ -30,6 +30,104 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// KafkaConnect is the resource ident for a KafkaConnect object.
+var EphemKafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
+
+var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
+
+type managedEphemProvider struct {
+	providers.Provider
+	secretData map[string][]byte
+}
+
+func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		EphemKafkaConnect,
+		EphemKafkaConnectSecret,
+		CyndiPipeline,
+		CyndiAppSecret,
+		CyndiHostInventoryAppSecret,
+		CyndiConfigMap,
+	)
+	return &managedEphemProvider{Provider: *p}, nil
+}
+
+func (mep *managedEphemProvider) EnvProvide() error {
+	return mep.configureBrokers()
+}
+
+func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
+	sec, err := getSecret(&mep.Provider)
+	if err != nil {
+		return err
+	}
+
+	username, password, hostname, tokenURL, adminHostname, cacert := destructureSecret(sec)
+
+	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, &mep.Provider)
+
+	saslType := config.BrokerConfigAuthtypeSasl
+
+	kconfig := config.KafkaConfig{
+		Brokers: []config.BrokerConfig{{
+			Hostname: hostname,
+			Port:     utils.IntPtr(443),
+			Authtype: &saslType,
+			Sasl: &config.KafkaSASLConfig{
+				Password:         &password,
+				Username:         &username,
+				SecurityProtocol: utils.StringPtr("SASL_SSL"),
+				SaslMechanism:    utils.StringPtr("PLAIN"),
+			},
+		}},
+		Topics: []config.TopicConfig{},
+	}
+
+	if cacert != "" {
+		kconfig.Brokers[0].Cacert = &cacert
+	}
+
+	mep.Config.Kafka = &kconfig
+
+	if err := mep.configCyndi(app); err != nil {
+		return err
+	}
+
+	if err := mep.processTopics(app, httpClient, adminHostname); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
+	if p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix == "" {
+		return nil
+	}
+
+	sec, err := getSecret(p)
+	if err != nil {
+		return err
+	}
+
+	username, password, _, adminHostname, tokenURL, _ := destructureSecret(sec)
+
+	rClient := upsertClientCache(username, password, tokenURL, adminHostname, p)
+
+	topicList, err := getTopicList(rClient, adminHostname, p)
+	if err != nil {
+		return err
+	}
+
+	err = deleteTopics(topicList, rClient, adminHostname, p)
+
+	return err
+}
+
 var (
 	HTTP HTTPClient
 )
@@ -73,11 +171,6 @@ type Topic struct {
 	Name string `json:"name"`
 }
 
-// KafkaConnect is the resource ident for a KafkaConnect object.
-var EphemKafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
-
-var EphemKafkaConnectSecret = rc.NewSingleResourceIdent(ProvName, "kafka_connect_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
-
 //Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
@@ -85,38 +178,6 @@ const REPLICA_NUM_FLOOR = 3
 const REPLICA_NUM_CEILING = 0
 const PARTITION_NUM_FLOOR = 3
 const PARTITION_NUM_CEILING = 3
-
-func NewManagedEphemKafka(provider *providers.Provider) (providers.ClowderProvider, error) {
-	return &managedEphemProvider{Provider: *provider}, nil
-}
-
-func (mep *managedEphemProvider) EnvProvide() error {
-	return mep.configureBrokers()
-}
-
-func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
-	if p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix == "" {
-		return nil
-	}
-
-	sec, err := getSecret(p)
-	if err != nil {
-		return err
-	}
-
-	username, password, _, adminHostname, tokenURL, _ := destructureSecret(sec)
-
-	rClient := upsertClientCache(username, password, tokenURL, adminHostname, p)
-
-	topicList, err := getTopicList(rClient, adminHostname, p)
-	if err != nil {
-		return err
-	}
-
-	err = deleteTopics(topicList, rClient, adminHostname, p)
-
-	return err
-}
 
 func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
 	//"(env-)?ephemeral-.*"
@@ -224,11 +285,6 @@ func upsertClientCache(username string, password string, tokenURL string, adminH
 	return client
 }
 
-type managedEphemProvider struct {
-	providers.Provider
-	secretData map[string][]byte
-}
-
 func (mep *managedEphemProvider) createConnectSecret() error {
 	nn := types.NamespacedName{
 		Namespace: getConnectNamespace(mep.Env),
@@ -302,54 +358,6 @@ func (mep *managedEphemProvider) configCyndi(app *crd.ClowdApp) error {
 	}
 
 	if err := createCyndiPipeline(mep, app, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
-	}
-
-	sec, err := getSecret(&mep.Provider)
-	if err != nil {
-		return err
-	}
-
-	username, password, hostname, tokenURL, adminHostname, cacert := destructureSecret(sec)
-
-	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, &mep.Provider)
-
-	saslType := config.BrokerConfigAuthtypeSasl
-
-	kconfig := config.KafkaConfig{
-		Brokers: []config.BrokerConfig{{
-			Hostname: hostname,
-			Port:     utils.IntPtr(443),
-			Authtype: &saslType,
-			Sasl: &config.KafkaSASLConfig{
-				Password:         &password,
-				Username:         &username,
-				SecurityProtocol: utils.StringPtr("SASL_SSL"),
-				SaslMechanism:    utils.StringPtr("PLAIN"),
-			},
-		}},
-		Topics: []config.TopicConfig{},
-	}
-
-	if cacert != "" {
-		kconfig.Brokers[0].Cacert = &cacert
-	}
-
-	mep.Config.Kafka = &kconfig
-
-	if err := mep.configCyndi(app); err != nil {
-		return err
-	}
-
-	if err := mep.processTopics(app, httpClient, adminHostname); err != nil {
 		return err
 	}
 

@@ -32,6 +32,13 @@ var PrometheusRoleBinding = rc.NewSingleResourceIdent(ProvName, "prometheus_role
 var PrometheusServiceAccount = rc.NewSingleResourceIdent(ProvName, "prometheus_service_account", &core.ServiceAccount{})
 
 func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		PrometheusSubscription,
+		PrometheusInstance,
+		PrometheusRole,
+		PrometheusRoleBinding,
+		PrometheusServiceAccount,
+	)
 	return &metricsProvider{Provider: *p}, nil
 }
 

@@ -24,200 +24,62 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// WebKeycloakDeployment is the mocked keycloak deployment
+var WebKeycloakDeployment = rc.NewSingleResourceIdent(ProvName, "web_keycloak_deployment", &apps.Deployment{}, rc.ResourceOptions{WriteNow: true})
+
+// WebKeycloakService is the mocked keycloak deployment
+var WebKeycloakService = rc.NewSingleResourceIdent(ProvName, "web_keycloak_service", &core.Service{}, rc.ResourceOptions{WriteNow: true})
+
+// WebKeycloakIngress is the keycloak ingress
+var WebKeycloakIngress = rc.NewSingleResourceIdent(ProvName, "web_keycloak_ingress", &networking.Ingress{})
+
+// WebKeycloakImportSecret is the keycloak import secret
+var WebKeycloakImportSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_import_secret", &core.Secret{})
+
+// WebBOPDeployment is the mocked bop deployment
+var WebBOPDeployment = rc.NewSingleResourceIdent(ProvName, "web_bop_deployment", &apps.Deployment{})
+
+// WebKeycloakService is the mocked keycloak deployment
+var WebBOPService = rc.NewSingleResourceIdent(ProvName, "web_bop_service", &core.Service{})
+
+// WebBOPDeployment is the mocked bop deployment
+var WebMocktitlementsDeployment = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_deployment", &apps.Deployment{})
+
+// WebKeycloakService is the mocked keycloak deployment
+var WebMocktitlementsService = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_service", &core.Service{})
+
+// WebKeycloakIngress is the mocked bop ingress
+var WebMocktitlementsIngress = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_ingress", &networking.Ingress{})
+
+// WebSecret is the mocked secret config
+var WebSecret = rc.NewMultiResourceIdent(ProvName, "web_secret", &core.Secret{})
+
+// WebKeycloakSecret is the mocked secret config
+var WebKeycloakSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
+
+// WebIngress is the mocked secret config
+var WebIngress = rc.NewMultiResourceIdent(ProvName, "web_ingress", &networking.Ingress{})
+
 type localWebProvider struct {
 	providers.Provider
 }
 
-func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {
-	sec := &core.Secret{}
-	if err := cache.Get(WebKeycloakSecret, sec, nn); err != nil {
-		return errors.Wrap("couldn't get secret from cache", err)
-	}
-
-	if v, ok := sec.Data["version"]; !ok || string(v) != desiredVersion {
-		if sec.StringData == nil {
-			sec.StringData = map[string]string{}
-		}
-		sec.StringData["version"] = desiredVersion
-	}
-
-	if err := cache.Update(WebKeycloakSecret, sec); err != nil {
-		return errors.Wrap("couldn't update secret in cache", err)
-	}
-	return nil
-}
-
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		WebKeycloakDeployment,
+		WebKeycloakService,
+		WebKeycloakIngress,
+		WebKeycloakImportSecret,
+		WebBOPDeployment,
+		WebBOPService,
+		WebMocktitlementsDeployment,
+		WebMocktitlementsService,
+		WebMocktitlementsIngress,
+		WebSecret,
+		WebKeycloakSecret,
+		WebIngress,
+	)
 	return &localWebProvider{Provider: *p}, nil
-}
-
-func makeMocktitlementsSecret(p *providers.Provider, cfg *config.AppConfig) error {
-	nn := types.NamespacedName{
-		Name:      "caddy-config-mocktitlements",
-		Namespace: p.Env.GetClowdNamespace(),
-	}
-
-	sec := &core.Secret{}
-	if err := p.Cache.Create(WebSecret, nn, sec); err != nil {
-		return err
-	}
-
-	sec.Name = nn.Name
-	sec.Namespace = nn.Namespace
-	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
-	sec.Type = core.SecretTypeOpaque
-
-	envSec := &core.Secret{}
-	envSecnn := providers.GetNamespacedName(p.Env, "keycloak")
-	if err := p.Client.Get(p.Ctx, envSecnn, envSec); err != nil {
-		return err
-	}
-
-	sec.StringData = map[string]string{
-		"bopurl":      string(envSec.Data["bopurl"]),
-		"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "keycloak", p.Env.GetClowdNamespace()),
-		"whitelist":   "",
-	}
-
-	jsonData, err := json.Marshal(sec.StringData)
-	if err != nil {
-		return errors.Wrap("Failed to marshal config JSON", err)
-	}
-
-	h := sha256.New()
-	h.Write([]byte(jsonData))
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-
-	d := &apps.Deployment{}
-	dnn := providers.GetNamespacedName(p.Env, "mbop")
-	if err := p.Cache.Get(WebMocktitlementsDeployment, d, dnn); err != nil {
-		return err
-	}
-
-	annotations := map[string]string{
-		"clowder/authsidecar-confighash": hash,
-	}
-
-	utils.UpdateAnnotations(&d.Spec.Template, annotations)
-
-	if err := p.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
-		return err
-	}
-
-	if err := p.Cache.Update(WebSecret, sec); err != nil {
-		return err
-	}
-	return nil
-}
-
-func makeMocktitlementsIngress(p *providers.Provider) error {
-	netobj := &networking.Ingress{}
-
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-mocktitlements", p.Env.Name),
-		Namespace: p.Env.Status.TargetNamespace,
-	}
-
-	if err := p.Cache.Create(WebMocktitlementsIngress, nn, netobj); err != nil {
-		return err
-	}
-
-	labels := p.Env.GetLabels()
-	labler := utils.MakeLabeler(nn, labels, p.Env)
-	labler(netobj)
-
-	ingressClass := p.Env.Spec.Providers.Web.IngressClass
-	if ingressClass == "" {
-		ingressClass = "nginx"
-	}
-
-	netobj.Spec = networking.IngressSpec{
-		TLS: []networking.IngressTLS{{
-			Hosts: []string{},
-		}},
-		IngressClassName: &ingressClass,
-		Rules: []networking.IngressRule{
-			{
-				Host: p.Env.Status.Hostname,
-				IngressRuleValue: networking.IngressRuleValue{
-					HTTP: &networking.HTTPIngressRuleValue{
-						Paths: []networking.HTTPIngressPath{{
-							Path:     "/api/entitlements/",
-							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
-							Backend: networking.IngressBackend{
-								Service: &networking.IngressServiceBackend{
-									Name: fmt.Sprintf("%s-mocktitlements", p.Env.Name),
-									Port: networking.ServiceBackendPort{
-										Name: "auth",
-									},
-								},
-							},
-						}},
-					},
-				},
-			},
-		},
-	}
-
-	if err := p.Cache.Update(WebMocktitlementsIngress, netobj); err != nil {
-		return err
-	}
-	return nil
-}
-
-func makeAuthIngress(p *providers.Provider) error {
-	netobj := &networking.Ingress{}
-
-	nn := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-auth", p.Env.Name),
-		Namespace: p.Env.Status.TargetNamespace,
-	}
-
-	if err := p.Cache.Create(WebKeycloakIngress, nn, netobj); err != nil {
-		return err
-	}
-
-	labels := p.Env.GetLabels()
-	labler := utils.MakeLabeler(nn, labels, p.Env)
-	labler(netobj)
-
-	ingressClass := p.Env.Spec.Providers.Web.IngressClass
-	if ingressClass == "" {
-		ingressClass = "nginx"
-	}
-
-	netobj.Spec = networking.IngressSpec{
-		TLS: []networking.IngressTLS{{
-			Hosts: []string{},
-		}},
-		IngressClassName: &ingressClass,
-		Rules: []networking.IngressRule{
-			{
-				Host: getAuthHostname(p.Env.Status.Hostname),
-				IngressRuleValue: networking.IngressRuleValue{
-					HTTP: &networking.HTTPIngressRuleValue{
-						Paths: []networking.HTTPIngressPath{{
-							Path:     "/",
-							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
-							Backend: networking.IngressBackend{
-								Service: &networking.IngressServiceBackend{
-									Name: fmt.Sprintf("%s-keycloak", p.Env.Name),
-									Port: networking.ServiceBackendPort{
-										Name: "keycloak",
-									},
-								},
-							},
-						}},
-					},
-				},
-			},
-		},
-	}
-
-	if err := p.Cache.Update(WebKeycloakIngress, netobj); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (web *localWebProvider) EnvProvide() error {
@@ -387,6 +249,194 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 	}
 
+	return nil
+}
+
+func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {
+	sec := &core.Secret{}
+	if err := cache.Get(WebKeycloakSecret, sec, nn); err != nil {
+		return errors.Wrap("couldn't get secret from cache", err)
+	}
+
+	if v, ok := sec.Data["version"]; !ok || string(v) != desiredVersion {
+		if sec.StringData == nil {
+			sec.StringData = map[string]string{}
+		}
+		sec.StringData["version"] = desiredVersion
+	}
+
+	if err := cache.Update(WebKeycloakSecret, sec); err != nil {
+		return errors.Wrap("couldn't update secret in cache", err)
+	}
+	return nil
+}
+
+func makeMocktitlementsSecret(p *providers.Provider, cfg *config.AppConfig) error {
+	nn := types.NamespacedName{
+		Name:      "caddy-config-mocktitlements",
+		Namespace: p.Env.GetClowdNamespace(),
+	}
+
+	sec := &core.Secret{}
+	if err := p.Cache.Create(WebSecret, nn, sec); err != nil {
+		return err
+	}
+
+	sec.Name = nn.Name
+	sec.Namespace = nn.Namespace
+	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
+	sec.Type = core.SecretTypeOpaque
+
+	envSec := &core.Secret{}
+	envSecnn := providers.GetNamespacedName(p.Env, "keycloak")
+	if err := p.Client.Get(p.Ctx, envSecnn, envSec); err != nil {
+		return err
+	}
+
+	sec.StringData = map[string]string{
+		"bopurl":      string(envSec.Data["bopurl"]),
+		"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "keycloak", p.Env.GetClowdNamespace()),
+		"whitelist":   "",
+	}
+
+	jsonData, err := json.Marshal(sec.StringData)
+	if err != nil {
+		return errors.Wrap("Failed to marshal config JSON", err)
+	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	d := &apps.Deployment{}
+	dnn := providers.GetNamespacedName(p.Env, "mbop")
+	if err := p.Cache.Get(WebMocktitlementsDeployment, d, dnn); err != nil {
+		return err
+	}
+
+	annotations := map[string]string{
+		"clowder/authsidecar-confighash": hash,
+	}
+
+	utils.UpdateAnnotations(&d.Spec.Template, annotations)
+
+	if err := p.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
+		return err
+	}
+
+	if err := p.Cache.Update(WebSecret, sec); err != nil {
+		return err
+	}
+	return nil
+}
+
+func makeMocktitlementsIngress(p *providers.Provider) error {
+	netobj := &networking.Ingress{}
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-mocktitlements", p.Env.Name),
+		Namespace: p.Env.Status.TargetNamespace,
+	}
+
+	if err := p.Cache.Create(WebMocktitlementsIngress, nn, netobj); err != nil {
+		return err
+	}
+
+	labels := p.Env.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, p.Env)
+	labler(netobj)
+
+	ingressClass := p.Env.Spec.Providers.Web.IngressClass
+	if ingressClass == "" {
+		ingressClass = "nginx"
+	}
+
+	netobj.Spec = networking.IngressSpec{
+		TLS: []networking.IngressTLS{{
+			Hosts: []string{},
+		}},
+		IngressClassName: &ingressClass,
+		Rules: []networking.IngressRule{
+			{
+				Host: p.Env.Status.Hostname,
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     "/api/entitlements/",
+							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: fmt.Sprintf("%s-mocktitlements", p.Env.Name),
+									Port: networking.ServiceBackendPort{
+										Name: "auth",
+									},
+								},
+							},
+						}},
+					},
+				},
+			},
+		},
+	}
+
+	if err := p.Cache.Update(WebMocktitlementsIngress, netobj); err != nil {
+		return err
+	}
+	return nil
+}
+
+func makeAuthIngress(p *providers.Provider) error {
+	netobj := &networking.Ingress{}
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-auth", p.Env.Name),
+		Namespace: p.Env.Status.TargetNamespace,
+	}
+
+	if err := p.Cache.Create(WebKeycloakIngress, nn, netobj); err != nil {
+		return err
+	}
+
+	labels := p.Env.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, p.Env)
+	labler(netobj)
+
+	ingressClass := p.Env.Spec.Providers.Web.IngressClass
+	if ingressClass == "" {
+		ingressClass = "nginx"
+	}
+
+	netobj.Spec = networking.IngressSpec{
+		TLS: []networking.IngressTLS{{
+			Hosts: []string{},
+		}},
+		IngressClassName: &ingressClass,
+		Rules: []networking.IngressRule{
+			{
+				Host: getAuthHostname(p.Env.Status.Hostname),
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     "/",
+							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: fmt.Sprintf("%s-keycloak", p.Env.Name),
+									Port: networking.ServiceBackendPort{
+										Name: "keycloak",
+									},
+								},
+							},
+						}},
+					},
+				},
+			},
+		},
+	}
+
+	if err := p.Cache.Update(WebKeycloakIngress, netobj); err != nil {
+		return err
+	}
 	return nil
 }
 

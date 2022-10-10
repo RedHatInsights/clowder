@@ -11,6 +11,10 @@ type autoScaleProviderRouter struct {
 }
 
 func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		SimpleAutoScaler,
+		CoreAutoScaler,
+	)
 	return &autoScaleProviderRouter{Provider: *p}, nil
 }
 

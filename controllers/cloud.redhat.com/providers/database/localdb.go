@@ -37,6 +37,12 @@ type localDbProvider struct {
 
 // NewLocalDBProvider returns a new local DB provider object.
 func NewLocalDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		LocalDBDeployment,
+		LocalDBService,
+		LocalDBPVC,
+		LocalDBSecret,
+	)
 	return &localDbProvider{Provider: *p}, nil
 }
 

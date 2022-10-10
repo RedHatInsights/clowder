@@ -20,6 +20,11 @@ type appInterface struct {
 	providers.Provider
 }
 
+// NewAppInterface returns a new app-interface kafka provider object.
+func NewAppInterface(p *providers.Provider) (providers.ClowderProvider, error) {
+	return &appInterface{Provider: *p}, nil
+}
+
 func (a *appInterface) EnvProvide() error {
 	nn := types.NamespacedName{
 		Name:      a.Env.Spec.Providers.Kafka.Cluster.Name,
@@ -125,9 +130,4 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 	}
 
 	return nil
-}
-
-// NewAppInterface returns a new app-interface kafka provider object.
-func NewAppInterface(p *providers.Provider) (providers.ClowderProvider, error) {
-	return &appInterface{Provider: *p}, nil
 }

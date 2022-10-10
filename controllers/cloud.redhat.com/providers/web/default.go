@@ -12,6 +12,9 @@ type webProvider struct {
 }
 
 func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		CoreService,
+	)
 	return &webProvider{Provider: *p}, nil
 }
 

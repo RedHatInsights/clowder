@@ -246,8 +246,8 @@ func (r *ClowdAppReconciliation) isEnvReady() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
-	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
-	cache := rc.NewObjectCache(r.ctx, r.client, cacheConfig)
+	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions})
+	cache := rc.NewObjectCache(r.ctx, r.client, r.log, cacheConfig)
 	r.cache = &cache
 	return ctrl.Result{}, nil
 }

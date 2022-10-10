@@ -25,7 +25,6 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
-	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -52,10 +51,6 @@ type ClowdJobInvocationReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var IqeClowdJob = rc.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
-var ClowdJob = rc.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
-var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
-
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch
@@ -81,9 +76,14 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	cacheConfig := rc.NewCacheConfig(Scheme, errors.ClowdKey("log"), ProtectedGVKs, DebugOptions)
-
-	cache := rc.NewObjectCache(ctx, r.Client, cacheConfig)
+	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions})
+	cache := rc.NewObjectCache(ctx, r.Client, &log, cacheConfig)
+	cache.AddPossibleGVKFromIdent(
+		iqe.IqeSecret,
+		iqe.VaultSecret,
+		iqe.ClowdJob,
+		iqe.IqeClowdJob,
+	)
 
 	// Deprecated, used to handle any lagging CJIs that would otherwise throw errors
 	if cji.Status.Jobs != nil {
@@ -207,7 +207,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 
 		j := batchv1.Job{}
-		if err := cache.Create(IqeClowdJob, nn, &j); err != nil {
+		if err := cache.Create(iqe.IqeClowdJob, nn, &j); err != nil {
 			r.Log.Error(err, "Iqe Job could not be created via cache", "jobinvocation", nn.Name)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
 				return ctrl.Result{}, condErr
@@ -224,7 +224,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 
-		if err := cache.Update(IqeClowdJob, &j); err != nil {
+		if err := cache.Update(iqe.IqeClowdJob, &j); err != nil {
 			r.Log.Error(err, "Iqe Job could not update via cache", "jobinvocation", nn.Name)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
 				return ctrl.Result{}, condErr
@@ -278,7 +278,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.
 	}
 
 	j := batchv1.Job{}
-	if err := cache.Create(ClowdJob, nn, &j); err != nil {
+	if err := cache.Create(iqe.ClowdJob, nn, &j); err != nil {
 		return err
 	}
 
@@ -286,7 +286,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.
 		return err
 	}
 
-	if err := cache.Update(ClowdJob, &j); err != nil {
+	if err := cache.Update(iqe.ClowdJob, &j); err != nil {
 		return err
 	}
 
