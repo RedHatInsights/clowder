@@ -2,7 +2,6 @@ package confighash
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -26,9 +25,13 @@ func NewConfigHashProvider(p *p.Provider) (p.ClowderProvider, error) {
 	return &confighashProvider{Provider: *p}, nil
 }
 
-func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (ch *confighashProvider) EnvProvide() error {
+	return nil
+}
 
-	hash, err := ch.persistConfig(app, c)
+func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
+
+	hash, err := ch.persistConfig(app)
 
 	if err != nil {
 		return err
@@ -43,7 +46,9 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 		annotations := map[string]string{"configHash": hash}
 		utils.UpdateAnnotations(&deployment.Spec.Template, annotations)
 
-		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
+		if err := ch.Cache.Update(deployProvider.CoreDeployment, &deployment); err != nil {
+			return err
+		}
 	}
 
 	jList := batch.CronJobList{}
@@ -55,7 +60,9 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) er
 		annotations := map[string]string{"configHash": hash}
 		utils.UpdateAnnotations(&job.Spec.JobTemplate.Spec.Template, annotations)
 
-		ch.Cache.Update(cronjobProvider.CoreCronJob, &job)
+		if err := ch.Cache.Update(cronjobProvider.CoreCronJob, &job); err != nil {
+			return err
+		}
 	}
 
 	return nil

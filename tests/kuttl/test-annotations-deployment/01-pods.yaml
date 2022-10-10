@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-annotations
+  name: test-annotations-deployment
 spec:
-  targetNamespace: test-annotations
+  targetNamespace: test-annotations-deployment
   providers:
     web:
       port: 8000
@@ -23,11 +23,6 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
-    pullSecrets:
-    - name: test-annotations
-      namespace: test-annotations-secret
-    - name: test-annotations-same-ns
-      namespace: test-annotations
   resourceDefaults:
     limits:
       cpu: 400m
@@ -40,93 +35,17 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-annotations
+  namespace: test-annotations-deployment
   annotations:
     TestAnnotation: "Pretty Cool"
 spec:
-  envName: test-annotations
+  envName: test-annotations-deployment
   deployments:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
     webServices:
       public:
         enabled: true
       private:
         enabled: true
-  - name: processor2
-    podSpec:
-      image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
-    webServices:
-      public:
-        enabled: true
-      private:
-        enabled: true
-        appProtocol: redis
-  - name: processor3
-    podSpec:
-      image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          value: env_var_2
-      initContainers:
-        - env:
-          - name: ENV_VAR_1
-            value: override_1
-          - name: ENV_VAR_3
-            value: env_var_3
-      machinePool: "memory"
-    webServices:
-      private:
-        enabled: true
-        appProtocol: redis
----
-apiVersion: v1
-data:
-  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
-  aws_region: dXMtZWFzdA==
-  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
-  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
-  endpoint: dGVzdC1lbmRwb2ludA==
-kind: Secret
-metadata:
-  name: test-annotations
-  namespace: test-annotations-secret
-type: Opaque
----
-apiVersion: v1
-data:
-  aws_access_key_id: YXdzX2FjY2Vzc19rZXk=
-  aws_region: dXMtZWFzdA==
-  aws_secret_access_key: YXdzX3NlY3JldF9rZXk=
-  bucket: dGVzdC1hcHAtaW50ZXJmYWNlLXMz
-  endpoint: dGVzdC1lbmRwb2ludA==
-kind: Secret
-metadata:
-  name: test-annotations-same-ns
-  namespace: test-annotations
-type: Opaque

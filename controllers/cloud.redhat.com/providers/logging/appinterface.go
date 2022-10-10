@@ -12,19 +12,20 @@ import (
 
 type appInterfaceLoggingProvider struct {
 	providers.Provider
-	Config config.LoggingConfig
 }
 
 // NewAppInterfaceLogging returns a new app-interface logging provider object.
-func NewAppInterfaceLogging(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := appInterfaceLoggingProvider{Provider: *p}
-
-	return &provider, nil
+func NewAppInterfaceLogging(p *providers.Provider) providers.ClowderProvider {
+	return &appInterfaceLoggingProvider{Provider: *p}
 }
 
-func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	c.Logging = config.LoggingConfig{}
-	return setCloudwatchSecret(app.Namespace, &a.Provider, &c.Logging)
+func (a *appInterfaceLoggingProvider) EnvProvide() error {
+	return nil
+}
+
+func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp) error {
+	a.Config.Logging = config.LoggingConfig{}
+	return setCloudwatchSecret(app.Namespace, &a.Provider, &a.Config.Logging)
 }
 
 func setCloudwatchSecret(ns string, p *providers.Provider, c *config.LoggingConfig) error {

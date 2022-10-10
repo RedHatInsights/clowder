@@ -139,17 +139,21 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	log.Info("Reconciliation started")
 
 	reconciliation := ClowdAppReconciliation{
-		ctx:      &ctx,
+		ctx:      ctx,
 		client:   r.Client,
 		recorder: r.Recorder,
 		app:      &app,
 		log:      &log,
-		req:      &req}
+		req:      &req,
+		config:   &config.AppConfig{},
+	}
 	res, err := reconciliation.Reconcile()
 	if err != nil {
 		if shouldSkipReconciliation(err) {
+			log.Info("skipping", "error", err.Error(), "skipping", "true", "requeue", res.Requeue)
 			return res, nil
 		}
+		log.Error(err, "error in reconciliation", "skipping", "false", "requeue", res.Requeue)
 		return res, err
 	}
 
@@ -164,10 +168,12 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	cache := mgr.GetCache()
 
-	cache.IndexField(
+	if err := cache.IndexField(
 		context.TODO(), &crd.ClowdApp{}, "spec.envName", func(o client.Object) []string {
 			return []string{o.(*crd.ClowdApp).Spec.EnvName}
-		})
+		}); err != nil {
+		return err
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&crd.ClowdApp{}).

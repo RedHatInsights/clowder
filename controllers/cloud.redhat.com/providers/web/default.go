@@ -2,7 +2,6 @@ package web
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -16,15 +15,19 @@ func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &webProvider{Provider: *p}, nil
 }
 
-func (web *webProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (web *webProvider) EnvProvide() error {
+	return nil
+}
 
-	c.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
-	c.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+func (web *webProvider) Provide(app *crd.ClowdApp) error {
+
+	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
 	if privatePort == 0 {
 		privatePort = 10000
 	}
-	c.PrivatePort = utils.IntPtr(int(privatePort))
+	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
 	for _, deployment := range app.Spec.Deployments {
 

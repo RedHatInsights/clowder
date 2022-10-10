@@ -23,7 +23,11 @@ func NewManagedKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &managedKafkaProvider{Provider: *p}, nil
 }
 
-func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, appConfig *config.AppConfig) error {
+func (k *managedKafkaProvider) EnvProvide() error {
+	return nil
+}
+
+func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 	var err error
 	var secret *core.Secret
 	var broker config.BrokerConfig
@@ -38,7 +42,7 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp, appConfig *config.AppC
 		return err
 	}
 
-	appConfig.Kafka = k.getKafkaConfig(broker, app)
+	k.Config.Kafka = k.getKafkaConfig(broker, app)
 
 	return nil
 }

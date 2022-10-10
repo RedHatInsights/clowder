@@ -2,15 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: test-annotations
-spec:
-  finalizers:
-  - kubernetes
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: test-annotations-secret
+  name: test-annotations-podspec
 spec:
   finalizers:
   - kubernetes

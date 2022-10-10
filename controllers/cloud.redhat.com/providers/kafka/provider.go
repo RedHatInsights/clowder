@@ -59,6 +59,8 @@ func GetKafkaFinalize(c *providers.Provider) error {
 	switch kafkaMode {
 	case "managed-ephem":
 		return NewManagedEphemKafkaFinalizer(c)
+	case "none", "":
+		return nil
 	default:
 		c.Log.Info(fmt.Sprintf("No matching kafka mode for %s", kafkaMode))
 		return nil

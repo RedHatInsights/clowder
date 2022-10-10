@@ -28,16 +28,20 @@ var RedisConfigMap = rc.NewSingleResourceIdent(ProvName, "redis_config_map", &co
 
 type localRedis struct {
 	providers.Provider
-	Config config.InMemoryDBConfig
 }
 
-func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error {
+func (r *localRedis) EnvProvide() error {
+	return nil
+}
+
+func (r *localRedis) Provide(app *crd.ClowdApp) error {
 	if !app.Spec.InMemoryDB {
 		return nil
 	}
+	creds := config.InMemoryDBConfig{}
 
-	r.Config.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
-	r.Config.Port = 6379
+	creds.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
+	creds.Port = 6379
 
 	nn := providers.GetNamespacedName(app, "redis")
 
@@ -60,7 +64,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 		return err
 	}
 
-	config.InMemoryDb = &r.Config
+	r.Config.InMemoryDb = &creds
 
 	objList := []rc.ResourceIdent{
 		RedisDeployment,
@@ -72,11 +76,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp, config *config.AppConfig) error 
 
 // NewLocalRedis returns a new local redis provider object.
 func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
-	config := config.InMemoryDBConfig{}
-
-	redisProvider := localRedis{Provider: *p, Config: config}
-
-	return &redisProvider, nil
+	return &localRedis{Provider: *p}, nil
 }
 
 func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {

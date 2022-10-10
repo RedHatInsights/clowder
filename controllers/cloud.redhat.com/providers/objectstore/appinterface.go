@@ -14,17 +14,18 @@ import (
 
 type appInterfaceObjectstoreProvider struct {
 	providers.Provider
-	Config config.ObjectStoreConfig
 }
 
 // NewAppInterfaceObjectstore returns a new app-interface object store provider object.
 func NewAppInterfaceObjectstore(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := appInterfaceObjectstoreProvider{Provider: *p}
-
-	return &provider, nil
+	return &appInterfaceObjectstoreProvider{Provider: *p}, nil
 }
 
-func (a *appInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *appInterfaceObjectstoreProvider) EnvProvide() error {
+	return nil
+}
+
+func (a *appInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp) error {
 	if len(app.Spec.ObjectStore) == 0 {
 		return nil
 	}
@@ -49,7 +50,7 @@ func (a *appInterfaceObjectstoreProvider) Provide(app *crd.ClowdApp, c *config.A
 		return err
 	}
 
-	c.ObjectStore = objStoreConfig
+	a.Config.ObjectStore = objStoreConfig
 	return nil
 }
 

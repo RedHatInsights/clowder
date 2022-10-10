@@ -24,22 +24,8 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-type KeycloakConfig struct {
-	URL             string
-	Username        string
-	Password        string
-	DefaultUsername string
-	DefaultPassword string
-}
-
-type backendConfig struct {
-	BOPURL         string
-	KeycloakConfig KeycloakConfig
-}
-
 type localWebProvider struct {
 	providers.Provider
-	config backendConfig
 }
 
 func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {
@@ -62,130 +48,34 @@ func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVer
 }
 
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-
-	if p.Env.Status.Hostname == "" {
-		p.Env.Status.Hostname = p.Env.GenerateHostname(p.Ctx, p.Client, p.Log, !clowderconfig.LoadedConfig.Features.DisableRandomRoutes)
-		err := p.Client.Status().Update(p.Ctx, p.Env)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	wp := &localWebProvider{Provider: *p}
-
-	nn := providers.GetNamespacedName(p.Env, "keycloak")
-
-	username := utils.RandString(8)
-
-	password, err := utils.RandPassword(16, provutils.RCharSet)
-	if err != nil {
-		return nil, errors.Wrap("couldn't generate password", err)
-	}
-
-	defaultPassword, err := utils.RandPassword(16, provutils.RCharSet)
-	if err != nil {
-		return nil, errors.Wrap("couldn't generate defaultPassword", err)
-	}
-
-	dataInit := func() map[string]string {
-		return map[string]string{
-			"username":        username,
-			"password":        password,
-			"defaultUsername": "jdoe",
-			"defaultPassword": defaultPassword,
-			"version":         provutils.GetKeycloakVersion(p.Env),
-		}
-	}
-
-	dataMap, err := providers.MakeOrGetSecret(wp.Ctx, p.Env, wp.Cache, WebKeycloakSecret, nn, dataInit)
-	if err != nil {
-		return nil, errors.Wrap("couldn't set/get secret", err)
-	}
-
-	if err := setSecretVersion(p.Cache, nn, provutils.GetKeycloakVersion(p.Env)); err != nil {
-		return nil, errors.Wrap("couldn't set secret version", err)
-	}
-
-	wp.config.KeycloakConfig.Username = (*dataMap)["username"]
-	wp.config.KeycloakConfig.Password = (*dataMap)["password"]
-	wp.config.KeycloakConfig.DefaultUsername = (*dataMap)["defaultUsername"]
-	wp.config.KeycloakConfig.DefaultPassword = (*dataMap)["defaultPassword"]
-
-	wp.config.BOPURL = fmt.Sprintf("http://%s-%s.%s.svc:8090", wp.Env.GetClowdName(), "mbop", wp.Env.GetClowdNamespace())
-	wp.config.KeycloakConfig.URL = fmt.Sprintf("http://%s-%s.%s.svc:8080", wp.Env.GetClowdName(), "keycloak", wp.Env.GetClowdNamespace())
-
-	objList := []rc.ResourceIdent{
-		WebKeycloakDeployment,
-		WebKeycloakService,
-	}
-
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "keycloak", makeKeycloak, false, p.Env.IsNodePort()); err != nil {
-		return nil, err
-	}
-
-	if err := makeKeycloakImportSecretRealm(p.Cache, p.Env, wp.config.KeycloakConfig.DefaultPassword); err != nil {
-		return nil, err
-	}
-
-	objList = []rc.ResourceIdent{
-		WebBOPDeployment,
-		WebBOPService,
-	}
-
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mbop", makeBOP, false, p.Env.IsNodePort()); err != nil {
-		return nil, err
-	}
-
-	objList = []rc.ResourceIdent{
-		WebMocktitlementsDeployment,
-		WebMocktitlementsService,
-	}
-
-	if err := providers.CachedMakeComponent(p.Cache, objList, p.Env, "mocktitlements", makeMocktitlements, false, p.Env.IsNodePort()); err != nil {
-		return nil, err
-	}
-
-	if err := makeMocktitlementsSecret(p, wp); err != nil {
-		return nil, err
-	}
-
-	if err := makeMocktitlementsIngress(p); err != nil {
-		return nil, err
-	}
-
-	if err := makeAuthIngress(p); err != nil {
-		return nil, err
-	}
-
-	if err != nil {
-		newErr := errors.Wrap("couldn't config", err)
-		newErr.Requeue = true
-		return nil, newErr
-	}
-
-	return wp, nil
-
+	return &localWebProvider{Provider: *p}, nil
 }
 
-func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) error {
+func makeMocktitlementsSecret(p *providers.Provider, cfg *config.AppConfig) error {
 	nn := types.NamespacedName{
 		Name:      "caddy-config-mocktitlements",
 		Namespace: p.Env.GetClowdNamespace(),
 	}
 
 	sec := &core.Secret{}
-	if err := web.Cache.Create(WebSecret, nn, sec); err != nil {
+	if err := p.Cache.Create(WebSecret, nn, sec); err != nil {
 		return err
 	}
 
 	sec.Name = nn.Name
 	sec.Namespace = nn.Namespace
-	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
+	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
 	sec.Type = core.SecretTypeOpaque
 
+	envSec := &core.Secret{}
+	envSecnn := providers.GetNamespacedName(p.Env, "keycloak")
+	if err := p.Client.Get(p.Ctx, envSecnn, envSec); err != nil {
+		return err
+	}
+
 	sec.StringData = map[string]string{
-		"bopurl":      web.config.BOPURL,
-		"keycloakurl": web.config.KeycloakConfig.URL,
+		"bopurl":      string(envSec.Data["bopurl"]),
+		"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "keycloak", p.Env.GetClowdNamespace()),
 		"whitelist":   "",
 	}
 
@@ -200,7 +90,7 @@ func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) erro
 
 	d := &apps.Deployment{}
 	dnn := providers.GetNamespacedName(p.Env, "mbop")
-	if err := web.Cache.Get(WebMocktitlementsDeployment, d, dnn); err != nil {
+	if err := p.Cache.Get(WebMocktitlementsDeployment, d, dnn); err != nil {
 		return err
 	}
 
@@ -210,11 +100,11 @@ func makeMocktitlementsSecret(p *providers.Provider, web *localWebProvider) erro
 
 	utils.UpdateAnnotations(&d.Spec.Template, annotations)
 
-	if err := web.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
+	if err := p.Cache.Update(WebMocktitlementsDeployment, d); err != nil {
 		return err
 	}
 
-	if err := web.Cache.Update(WebSecret, sec); err != nil {
+	if err := p.Cache.Update(WebSecret, sec); err != nil {
 		return err
 	}
 	return nil
@@ -330,15 +220,110 @@ func makeAuthIngress(p *providers.Provider) error {
 	return nil
 }
 
-func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (web *localWebProvider) EnvProvide() error {
+	if web.Env.Status.Hostname == "" {
+		web.Env.Status.Hostname = web.Env.GenerateHostname(web.Ctx, web.Client, web.Log, !clowderconfig.LoadedConfig.Features.DisableRandomRoutes)
+		err := web.Client.Status().Update(web.Ctx, web.Env)
+		if err != nil {
+			return err
+		}
+	}
 
-	c.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
-	c.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	nn := providers.GetNamespacedName(web.Env, "keycloak")
+
+	username := utils.RandString(8)
+
+	password, err := utils.RandPassword(16, provutils.RCharSet)
+	if err != nil {
+		return errors.Wrap("couldn't generate password", err)
+	}
+
+	defaultPassword, err := utils.RandPassword(16, provutils.RCharSet)
+	if err != nil {
+		return errors.Wrap("couldn't generate defaultPassword", err)
+	}
+
+	dataInit := func() map[string]string {
+		return map[string]string{
+			"username":        username,
+			"password":        password,
+			"defaultUsername": "jdoe",
+			"defaultPassword": defaultPassword,
+			"version":         provutils.GetKeycloakVersion(web.Env),
+			"bopurl":          fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()),
+		}
+	}
+
+	dataMap, err := providers.MakeOrGetSecret(web.Ctx, web.Env, web.Cache, WebKeycloakSecret, nn, dataInit)
+	if err != nil {
+		return errors.Wrap("couldn't set/get secret", err)
+	}
+
+	if err := setSecretVersion(web.Cache, nn, provutils.GetKeycloakVersion(web.Env)); err != nil {
+		return errors.Wrap("couldn't set secret version", err)
+	}
+
+	objList := []rc.ResourceIdent{
+		WebKeycloakDeployment,
+		WebKeycloakService,
+	}
+
+	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "keycloak", makeKeycloak, false, web.Env.IsNodePort()); err != nil {
+		return err
+	}
+
+	if err := makeKeycloakImportSecretRealm(web.Cache, web.Env, (*dataMap)["defaultPassword"]); err != nil {
+		return err
+	}
+
+	objList = []rc.ResourceIdent{
+		WebBOPDeployment,
+		WebBOPService,
+	}
+
+	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "mbop", makeBOP, false, web.Env.IsNodePort()); err != nil {
+		return err
+	}
+
+	objList = []rc.ResourceIdent{
+		WebMocktitlementsDeployment,
+		WebMocktitlementsService,
+	}
+
+	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "mocktitlements", makeMocktitlements, false, web.Env.IsNodePort()); err != nil {
+		return err
+	}
+
+	if err := makeMocktitlementsSecret(&web.Provider, web.Config); err != nil {
+		return err
+	}
+
+	if err := makeMocktitlementsIngress(&web.Provider); err != nil {
+		return err
+	}
+
+	if err := makeAuthIngress(&web.Provider); err != nil {
+		return err
+	}
+
+	if err != nil {
+		newErr := errors.Wrap("couldn't config", err)
+		newErr.Requeue = true
+		return newErr
+	}
+
+	return nil
+}
+
+func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
+
+	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
 	if privatePort == 0 {
 		privatePort = 10000
 	}
-	c.PrivatePort = utils.IntPtr(int(privatePort))
+	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
 	for _, deployment := range app.Spec.Deployments {
 
@@ -346,9 +331,9 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 			return err
 		}
 
-		web.createIngress(app, &deployment)
-
-		c.BOPURL = providers.StrPtr(web.config.BOPURL)
+		if err := web.createIngress(app, &deployment); err != nil {
+			return err
+		}
 
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
@@ -366,8 +351,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) err
 		sec.Type = core.SecretTypeOpaque
 
 		sec.StringData = map[string]string{
-			"bopurl":      web.config.BOPURL,
-			"keycloakurl": web.config.KeycloakConfig.URL,
+			"bopurl":      fmt.Sprintf("http://%s-%s.%s.svc:8090", web.Env.GetClowdName(), "mbop", web.Env.GetClowdNamespace()),
+			"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", web.Env.GetClowdName(), "keycloak", web.Env.GetClowdNamespace()),
 			"whitelist":   strings.Join(deployment.WebServices.Public.WhitelistPaths, ","),
 		}
 

@@ -6,6 +6,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func TestAppInterface(t *testing.T) {
@@ -24,6 +25,15 @@ func TestAppInterface(t *testing.T) {
 				},
 			},
 		},
+		Config: &config.AppConfig{
+			Kafka: &config.KafkaConfig{
+				Brokers: []config.BrokerConfig{{
+					Hostname: "platform-mq-kafka-bootstrap.platform-mq-prod.svc",
+					Port:     utils.IntPtr(9092),
+				}},
+				Topics: []config.TopicConfig{},
+			},
+		},
 	}
 
 	app := &crd.ClowdApp{
@@ -40,15 +50,21 @@ func TestAppInterface(t *testing.T) {
 		t.Error(err)
 	}
 
-	c := config.AppConfig{}
-
-	ai.Provide(app, &c)
-
-	if len(c.Kafka.Brokers) != 1 {
-		t.Errorf("Wrong number of brokers %v; expected 1", len(c.Kafka.Brokers))
+	err = ai.EnvProvide()
+	if err != nil {
+		t.Error(err)
 	}
 
-	broker := c.Kafka.Brokers[0]
+	err = ai.Provide(app)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(ai.GetConfig().Kafka.Brokers) != 1 {
+		t.Errorf("Wrong number of brokers %v; expected 1", len(ai.GetConfig().Kafka.Brokers))
+	}
+
+	broker := ai.GetConfig().Kafka.Brokers[0]
 
 	hostname := "platform-mq-kafka-bootstrap.platform-mq-prod.svc"
 	if broker.Hostname != hostname {
@@ -59,11 +75,11 @@ func TestAppInterface(t *testing.T) {
 		t.Errorf("Wrong broker port %v; expected %v", broker.Port, 9092)
 	}
 
-	if len(c.Kafka.Topics) != 1 {
-		t.Errorf("Wrong number of topic %v; expected 1", len(c.Kafka.Topics))
+	if len(ai.GetConfig().Kafka.Topics) != 1 {
+		t.Errorf("Wrong number of topic %v; expected 1", len(ai.GetConfig().Kafka.Topics))
 	}
 
-	topic := c.Kafka.Topics[0]
+	topic := ai.GetConfig().Kafka.Topics[0]
 
 	if topic.Name != topicName {
 		t.Errorf("Wrong topic name %v; expected %v", topic.Name, topicName)

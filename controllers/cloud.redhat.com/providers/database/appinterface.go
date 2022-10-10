@@ -24,7 +24,6 @@ const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bun
 
 type appInterface struct {
 	providers.Provider
-	Config config.DatabaseConfigContainer
 }
 
 func fetchCa() (string, error) {
@@ -42,7 +41,7 @@ func fetchCa() (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		errors.Wrap("Error reading response body", err)
+		return "", errors.Wrap("Error reading response body", err)
 	}
 
 	caBundle := string(body)
@@ -56,21 +55,23 @@ func fetchCa() (string, error) {
 
 // NewAppInterfaceDBProvider creates a new app-interface DB provider obejct.
 func NewAppInterfaceDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := appInterface{Provider: *p}
+	return &appInterface{Provider: *p}, nil
+}
 
+func (a *appInterface) EnvProvide() error {
 	if rdsCa == "" {
 		_rdsCa, err := fetchCa()
 
 		if err != nil {
-			return nil, errors.Wrap("Failed to fetch RDS CA bundle", err)
+			return errors.Wrap("Failed to fetch RDS CA bundle", err)
 		}
 
 		rdsCa = _rdsCa
 	}
-	return &provider, nil
+	return nil
 }
 
-func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
 		return nil
 	}
@@ -110,9 +111,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 		return err
 	}
 
-	a.Config = *matched
-
-	c.Database = &a.Config.Config
+	a.Config.Database = &matched.Config
 
 	return nil
 }

@@ -108,6 +108,11 @@ for pod in $CLOWDER_PODS; do
     $KUBECTL_CMD logs $pod -n clowder-system | ./parse-controller-logs > artifacts/$pod-parsed-controller-logs.log
 done
 
+# Grab the metrics
+$KUBECTL_CMD port-forward svc/clowder-controller-manager-metrics-service-non-auth -n clowder-system 8080 &
+sleep 5
+curl 127.0.0.1:8080/metrics > artifacts/clowder-metrics
+
 STRIMZI_PODS=$($KUBECTL_CMD get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
 for pod in $STRIMZI_PODS; do
     $KUBECTL_CMD logs $pod -n strimzi > artifacts/$pod.log

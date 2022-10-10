@@ -44,40 +44,11 @@ var SharedDBAppSecret = rc.NewSingleResourceIdent(ProvName, "shared_db_app_secre
 
 type sharedDbProvider struct {
 	providers.Provider
-	Config map[int32]*config.DatabaseConfig
 }
 
 // NewSharedDBProvider returns a new local DB provider object.
 func NewSharedDBProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-
-	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
-	if err != nil {
-		return nil, err
-	}
-
-	versionsRequired := map[int32]bool{}
-
-	for _, app := range appList.Items {
-		if app.Spec.Database.Name != "" {
-			if app.Spec.Database.Version == nil {
-				versionsRequired[12] = true
-			} else {
-				versionsRequired[*app.Spec.Database.Version] = true
-			}
-		}
-	}
-
-	configs := map[int32]*config.DatabaseConfig{}
-
-	for v := range versionsRequired {
-		dbCfg, err := createVersionedDatabase(p, v)
-		if err != nil {
-			return nil, err
-		}
-		configs[v] = dbCfg
-	}
-
-	return &sharedDbProvider{Provider: *p, Config: configs}, nil
+	return &sharedDbProvider{Provider: *p}, nil
 }
 
 func createVersionedDatabase(p *providers.Provider, version int32) (*config.DatabaseConfig, error) {
@@ -198,15 +169,46 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	return &dbCfg, nil
 }
 
+func (db *sharedDbProvider) EnvProvide() error {
+	appList, err := db.Provider.Env.GetAppsInEnv(db.Provider.Ctx, db.Provider.Client)
+	if err != nil {
+		return err
+	}
+
+	versionsRequired := map[int32]bool{}
+
+	for _, app := range appList.Items {
+		if app.Spec.Database.Name != "" {
+			if app.Spec.Database.Version == nil {
+				versionsRequired[12] = true
+			} else {
+				versionsRequired[*app.Spec.Database.Version] = true
+			}
+		}
+	}
+
+	configs := map[int32]*config.DatabaseConfig{}
+
+	for v := range versionsRequired {
+		dbCfg, err := createVersionedDatabase(&db.Provider, v)
+		if err != nil {
+			return err
+		}
+		configs[v] = dbCfg
+	}
+
+	return nil
+}
+
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
-func (db *sharedDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	if app.Spec.Database.Name == "" && app.Spec.Database.SharedDBAppName == "" {
 		return nil
 	}
 
 	if app.Spec.Database.SharedDBAppName != "" {
-		return db.processSharedDB(app, c)
+		return db.processSharedDB(app)
 	}
 
 	version := int32(12)
@@ -214,10 +216,34 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 		version = *app.Spec.Database.Version
 	}
 
-	dbCfg := db.Config[version]
+	var dbCfg config.DatabaseConfig
+
+	vSec := &core.Secret{}
+	vSecnn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-db-v%s", db.Env.Name, strconv.Itoa(int(version))),
+		Namespace: db.Env.Status.TargetNamespace,
+	}
+
+	if err := db.Client.Get(db.Ctx, vSecnn, vSec); err != nil {
+		return err
+	}
+
+	var port int
+	var err error
+	if port, err = strconv.Atoi(string(vSec.Data["port"])); err != nil {
+		return err
+	}
+
+	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminPassword = string(vSec.Data["pgPass"])
+	dbCfg.Hostname = string(vSec.Data["hostname"])
+	dbCfg.Name = app.Spec.Database.Name
+	dbCfg.Password = string(vSec.Data["password"])
+	dbCfg.Username = string(vSec.Data["username"])
+	dbCfg.Port = port
+	dbCfg.SslMode = "disable"
 
 	host := dbCfg.Hostname
-	port := dbCfg.Port
 	user := dbCfg.AdminUsername
 	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
@@ -290,12 +316,12 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) erro
 	}
 
 	dbCfg.Name = app.Spec.Database.Name
-	c.Database = dbCfg
+	db.Config.Database = &dbCfg
 
 	return nil
 }
 
-func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	err := checkDependency(app)
 
 	if err != nil {
@@ -333,7 +359,7 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp, c *config.AppConf
 	dbCfg.Populate(&secMap)
 	dbCfg.AdminUsername = "postgres"
 
-	c.Database = &dbCfg
+	db.Config.Database = &dbCfg
 
 	return nil
 }

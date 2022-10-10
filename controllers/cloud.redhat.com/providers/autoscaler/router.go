@@ -2,7 +2,6 @@ package autoscaler
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
@@ -15,17 +14,21 @@ func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvide
 	return &autoScaleProviderRouter{Provider: *p}, nil
 }
 
-func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (db *autoScaleProviderRouter) EnvProvide() error {
+	return nil
+}
+
+func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp) error {
 	var err error
 	for _, deployment := range app.Spec.Deployments {
 		//If we find a SimpleAutoScaler config create one
 		if deployment.AutoScalerSimple != nil {
-			err = ProvideSimpleAutoScaler(app, c, &asp.Provider, deployment)
+			err = ProvideSimpleAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
 			continue
 		}
 		//If we find a Keda autoscaler config create one
 		if deployment.AutoScaler != nil {
-			err = ProvideKedaAutoScaler(app, c, &asp.Provider, deployment)
+			err = ProvideKedaAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
 			continue
 		}
 	}

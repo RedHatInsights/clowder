@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -24,9 +23,12 @@ type serviceaccountProvider struct {
 }
 
 func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	return &serviceaccountProvider{Provider: *p}, nil
+}
 
-	if err := createServiceAccountForClowdObj(p.Cache, CoreEnvServiceAccount, p.Env); err != nil {
-		return nil, err
+func (sa *serviceaccountProvider) EnvProvide() error {
+	if err := createServiceAccountForClowdObj(sa.Cache, CoreEnvServiceAccount, sa.Env); err != nil {
+		return err
 	}
 
 	resourceIdentsToUpdate := []rc.ResourceIdent{
@@ -38,22 +40,21 @@ func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider
 	for _, resourceIdent := range resourceIdentsToUpdate {
 		if obj, ok := resourceIdent.(rc.ResourceIdentSingle); ok {
 			dd := &apps.Deployment{}
-			if err := p.Cache.Get(obj, dd); err != nil {
+			if err := sa.Cache.Get(obj, dd); err != nil {
 				if strings.Contains(err.Error(), "not found") {
 					continue
 				}
 			}
-			dd.Spec.Template.Spec.ServiceAccountName = p.Env.GetClowdSAName()
-			if err := p.Cache.Update(obj, dd); err != nil {
-				return nil, err
+			dd.Spec.Template.Spec.ServiceAccountName = sa.Env.GetClowdSAName()
+			if err := sa.Cache.Update(obj, dd); err != nil {
+				return err
 			}
 		}
 	}
-
-	return &serviceaccountProvider{Provider: *p}, nil
+	return nil
 }
 
-func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 
 	if err := createIQEServiceAccounts(&sa.Provider, app); err != nil {
 		return err

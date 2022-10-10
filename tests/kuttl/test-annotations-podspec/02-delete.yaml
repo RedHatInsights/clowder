@@ -4,10 +4,10 @@ kind: TestStep
 delete:
 - apiVersion: v1
   kind: Namespace
-  name: test-annotations
+  name: test-annotations-podspec
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: test-annotations
+  name: test-annotations-podspec
 - apiVersion: v1
   kind: Namespace
   name: test-annotations-secret

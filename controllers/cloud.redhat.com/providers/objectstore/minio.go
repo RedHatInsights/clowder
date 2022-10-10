@@ -90,14 +90,39 @@ func (h *minioHandler) CreateClient(
 // minio is an object store provider that deploys and configures MinIO
 type minioProvider struct {
 	providers.Provider
-	Config        config.ObjectStoreConfig
 	BucketHandler bucketHandler
 }
 
+func (m *minioProvider) EnvProvide() error {
+	return createNetworkPolicy(&m.Provider)
+}
+
 // Provide creates new buckets
-func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 	if len(app.Spec.ObjectStore) == 0 {
 		return nil
+	}
+
+	secret := &core.Secret{}
+	nn := providers.GetNamespacedName(m.Env, "minio")
+
+	if err := m.Client.Get(m.Ctx, nn, secret); err != nil {
+		return err
+	}
+
+	var port int
+	var err error
+	if port, err = strconv.Atoi(string(secret.Data["port"])); err != nil {
+		return err
+	}
+
+	m.Config.ObjectStore = &config.ObjectStoreConfig{
+		Hostname:  string(secret.Data["hostname"]),
+		Port:      port,
+		AccessKey: utils.StringPtr(string(secret.Data["accessKey"])),
+		SecretKey: utils.StringPtr(string(secret.Data["secretKey"])),
+		Tls:       false,
+		Buckets:   []config.ObjectStoreBucket{},
 	}
 
 	for _, bucket := range app.Spec.ObjectStore {
@@ -115,42 +140,38 @@ func (m *minioProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
 			}
 		}
 
-		m.Config.Buckets = append(m.Config.Buckets, config.ObjectStoreBucket{
+		newBucket := config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
-			AccessKey:     m.Config.AccessKey,
-			SecretKey:     m.Config.SecretKey,
-		})
+		}
+
+		if string(secret.Data["accessKey"]) != "" {
+			newBucket.AccessKey = m.Config.ObjectStore.AccessKey
+		}
+		if string(secret.Data["secretKey"]) != "" {
+			newBucket.SecretKey = m.Config.ObjectStore.SecretKey
+		}
+
+		m.Config.ObjectStore.Buckets = append(m.Config.ObjectStore.Buckets, newBucket)
 	}
-	c.ObjectStore = &config.ObjectStoreConfig{
-		Hostname:  m.Config.Hostname,
-		Port:      m.Config.Port,
-		AccessKey: m.Config.AccessKey,
-		SecretKey: m.Config.SecretKey,
-		Buckets:   m.Config.Buckets,
-		Tls:       false,
-	}
+
 	return nil
 }
 
 func createMinioProvider(
 	p *providers.Provider, secMap map[string]string, handler bucketHandler,
 ) (*minioProvider, error) {
-	mp := &minioProvider{Provider: *p, Config: config.ObjectStoreConfig{}}
+	mp := &minioProvider{Provider: *p}
 
 	port, _ := strconv.Atoi(secMap["port"])
 	mp.Ctx = p.Ctx
-	mp.Config.AccessKey = providers.StrPtr(secMap["accessKey"])
-	mp.Config.SecretKey = providers.StrPtr(secMap["secretKey"])
-	mp.Config.Hostname = secMap["hostname"]
-	mp.Config.Port = port
 
 	mp.BucketHandler = handler
 	err := mp.BucketHandler.CreateClient(
-		mp.Config.Hostname,
-		mp.Config.Port,
-		mp.Config.AccessKey,
-		mp.Config.SecretKey,
+		secMap["hostname"],
+		port,
+		providers.StrPtr(secMap["accessKey"]),
+		providers.StrPtr(secMap["secretKey"]),
 	)
 
 	if err != nil {
@@ -206,7 +227,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		return nil, raisedErr
 	}
 
-	return mp, createNetworkPolicy(p)
+	return mp, nil
 }
 
 func createNetworkPolicy(p *providers.Provider) error {

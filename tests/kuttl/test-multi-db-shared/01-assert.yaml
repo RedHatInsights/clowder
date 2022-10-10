@@ -28,6 +28,48 @@ metadata:
 status:
   ready: true
 ---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-a
+  namespace: test-multi-db-shared
+status:
+  conditions:
+    - type: DeploymentsReady
+    - status: 'False'
+      type: ReconciliationFailed
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-b
+  namespace: test-multi-db-shared
+status:
+  conditions:
+    - type: DeploymentsReady
+    - status: 'False'
+      type: ReconciliationFailed
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-c
+  namespace: test-multi-db-shared
+status:
+  conditions:
+    - type: DeploymentsReady
+    - status: 'False'
+      type: ReconciliationFailed
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
+---
 apiVersion: v1
 kind: Secret
 metadata:

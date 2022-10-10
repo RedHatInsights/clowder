@@ -23,6 +23,9 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+// MinioSecret is the resource ident for the Minio secret object.
+var RootSecret = rc.NewSingleResourceIdent("root", "root_env", &core.Secret{})
+
 type providerAccessor struct {
 	FinalizeProvider func(c *Provider) error
 	SetupProvider    func(c *Provider) (ClowderProvider, error)
@@ -78,6 +81,7 @@ type Provider struct {
 	Env    *crd.ClowdEnvironment
 	Cache  *rc.ObjectCache
 	Log    logr.Logger
+	Config *config.AppConfig
 }
 
 func (prov *Provider) GetClient() client.Client {
@@ -100,6 +104,10 @@ func (prov *Provider) GetLog() logr.Logger {
 	return prov.Log
 }
 
+func (prov *Provider) GetConfig() *config.AppConfig {
+	return prov.Config
+}
+
 type RootProvider interface {
 	GetClient() client.Client
 	GetCtx() context.Context
@@ -112,7 +120,9 @@ type RootProvider interface {
 type ClowderProvider interface {
 	// Provide is the main function that performs the duty of the provider on a ClowdApp object, as
 	// opposed to a ClowdEnvironment object.
-	Provide(app *crd.ClowdApp, c *config.AppConfig) error
+	Provide(app *crd.ClowdApp) error
+	EnvProvide() error
+	GetConfig() *config.AppConfig
 }
 
 // StrPtr returns a pointer to a string.

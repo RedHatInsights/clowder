@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	// Import the providers to initialize them
+
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
@@ -156,7 +157,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	reconciliation := ClowdEnvironmentReconciliation{
 		cache:    &cache,
 		recorder: r.Recorder,
-		ctx:      &ctx,
+		ctx:      ctx,
 		client:   r.Client,
 		env:      &env,
 		log:      &log,
@@ -165,11 +166,12 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	result, resErr := reconciliation.Reconcile()
 	if resErr != nil {
 		if shouldSkipReconciliation(resErr) {
+			log.Info("skipping", "error", resErr.Error(), "skipping", "true", "requeue", result.Requeue)
 			return result, nil
 		}
+		log.Error(err, "error in reconciliation", "skipping", "false", "requeue", result.Requeue)
 		return result, resErr
 	}
-
 	managedEnvironments[env.Name] = true
 
 	return ctrl.Result{}, nil
@@ -179,11 +181,15 @@ func runProvidersForEnv(log logr.Logger, provider providers.Provider) error {
 	for _, provAcc := range providers.ProvidersRegistration.Registry {
 		provutils.DebugLog(log, "running provider:", "name", provAcc.Name, "order", provAcc.Order)
 		start := time.Now()
-		_, err := provAcc.SetupProvider(&provider)
+		prov, err := provAcc.SetupProvider(&provider)
+		if err != nil {
+			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
+		}
+		err = prov.EnvProvide()
 		elapsed := time.Since(start).Seconds()
 		providerMetrics.With(prometheus.Labels{"provider": provAcc.Name, "source": "clowdenv"}).Observe(elapsed)
 		if err != nil {
-			return errors.Wrap(fmt.Sprintf("getprov: %s", provAcc.Name), err)
+			return errors.Wrap(fmt.Sprintf("runprov: %s", provAcc.Name), err)
 		}
 		provutils.DebugLog(log, "running provider: complete", "name", provAcc.Name, "order", provAcc.Order, "elapsed", fmt.Sprintf("%f", elapsed))
 	}

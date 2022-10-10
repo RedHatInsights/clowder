@@ -14,10 +14,13 @@ import (
 
 type elasticache struct {
 	providers.Provider
-	Config config.InMemoryDBConfig
 }
 
-func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error {
+func (e *elasticache) EnvProvide() error {
+	return nil
+}
+
+func (e *elasticache) Provide(app *crd.ClowdApp) error {
 	secretName := "in-memory-db"
 
 	if !app.Spec.InMemoryDB {
@@ -34,6 +37,8 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 
 	found := false
 
+	creds := config.InMemoryDBConfig{}
+
 	for _, secret := range secrets.Items {
 		if secret.Name == secretName {
 			port, err := strconv.Atoi(string(secret.Data["db.port"]))
@@ -47,11 +52,11 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 
 			passwd := string(secret.Data["db.auth_token"])
 			if passwd != "" {
-				e.Config.Password = &passwd
+				creds.Password = &passwd
 			}
 
-			e.Config.Hostname = string(secret.Data["db.endpoint"])
-			e.Config.Port = port
+			creds.Hostname = string(secret.Data["db.endpoint"])
+			creds.Port = port
 			found = true
 			break
 		}
@@ -65,16 +70,12 @@ func (e *elasticache) Provide(app *crd.ClowdApp, config *config.AppConfig) error
 		return &missingDeps
 	}
 
-	config.InMemoryDb = &e.Config
+	e.Config.InMemoryDb = &creds
 
 	return nil
 }
 
 // NewElasticache returns a new elasticache provider object.
 func NewElasticache(p *providers.Provider) (providers.ClowderProvider, error) {
-	config := config.InMemoryDBConfig{}
-
-	redisProvider := elasticache{Provider: *p, Config: config}
-
-	return &redisProvider, nil
+	return &elasticache{Provider: *p}, nil
 }

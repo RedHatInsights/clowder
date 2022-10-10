@@ -8,18 +8,19 @@ import (
 
 type noneLoggingProvider struct {
 	providers.Provider
-	Config config.LoggingConfig
 }
 
 // NewNoneLogging returns a new none logging provider object.
-func NewNoneLogging(p *providers.Provider) (providers.ClowderProvider, error) {
-	provider := noneLoggingProvider{Provider: *p}
-
-	return &provider, nil
+func NewNoneLogging(p *providers.Provider) providers.ClowderProvider {
+	return &noneLoggingProvider{Provider: *p}
 }
 
-func (a *noneLoggingProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
-	c.Logging = config.LoggingConfig{
+func (a *noneLoggingProvider) EnvProvide() error {
+	return nil
+}
+
+func (a *noneLoggingProvider) Provide(app *crd.ClowdApp) error {
+	a.Config.Logging = config.LoggingConfig{
 		Cloudwatch: &config.CloudWatchConfig{
 			AccessKeyId:     "",
 			SecretAccessKey: "",

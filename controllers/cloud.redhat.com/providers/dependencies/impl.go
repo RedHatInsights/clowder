@@ -8,7 +8,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 )
 
-func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.AppConfig) error {
+func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 
 	if dep.Provider.Env.Spec.Providers.Web.PrivatePort == 0 {
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort = 10000
@@ -31,8 +31,8 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.A
 	deps := app.Spec.Dependencies
 	odeps := app.Spec.OptionalDependencies
 	if len(deps) == 0 && len(odeps) == 0 {
-		c.Endpoints = depConfig
-		c.PrivateEndpoints = privDepConfig
+		dep.Config.Endpoints = depConfig
+		dep.Config.PrivateEndpoints = privDepConfig
 		return nil
 	}
 
@@ -65,8 +65,8 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp, c *config.A
 		return &errors.MissingDependencies{MissingDeps: missingDepStructs}
 	}
 
-	c.Endpoints = depConfig
-	c.PrivateEndpoints = privDepConfig
+	dep.Config.Endpoints = depConfig
+	dep.Config.PrivateEndpoints = privDepConfig
 	return nil
 }
 

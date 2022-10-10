@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -23,12 +22,18 @@ func NewSidecarProvider(p *providers.Provider) (providers.ClowderProvider, error
 	return &sidecarProvider{Provider: *p}, nil
 }
 
-func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
+func (sc *sidecarProvider) EnvProvide() error {
+	return nil
+}
+
+func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
 
 		d := &apps.Deployment{}
 
-		sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&deployment))
+		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&deployment)); err != nil {
+			return err
+		}
 
 		for _, sidecar := range deployment.PodSpec.Sidecars {
 			switch sidecar.Name {
@@ -44,14 +49,20 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			}
 		}
 
-		sc.Cache.Update(deployProvider.CoreDeployment, d)
+		if err := sc.Cache.Update(deployProvider.CoreDeployment, d); err != nil {
+			return err
+		}
 	}
 
 	for _, cronJob := range app.Spec.Jobs {
-
+		if cronJob.Schedule == "" {
+			continue
+		}
 		cj := &batch.CronJob{}
 
-		sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob))
+		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob)); err != nil {
+			return err
+		}
 
 		for _, sidecar := range cronJob.PodSpec.Sidecars {
 			switch sidecar.Name {
@@ -67,7 +78,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			}
 		}
 
-		sc.Cache.Update(cronjobProvider.CoreCronJob, cj)
+		if err := sc.Cache.Update(cronjobProvider.CoreCronJob, cj); err != nil {
+			return err
+		}
 	}
 
 	return nil
