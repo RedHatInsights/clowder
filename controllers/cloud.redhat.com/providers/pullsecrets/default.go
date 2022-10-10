@@ -25,7 +25,9 @@ type pullsecretProvider struct {
 
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {
-	p.Cache.AddPossibleGVKFromIdent()
+	p.Cache.AddPossibleGVKFromIdent(
+		CoreEnvPullSecrets,
+	)
 	return &pullsecretProvider{Provider: *p}, nil
 }
 
