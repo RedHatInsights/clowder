@@ -57,10 +57,6 @@ func (mep *managedEphemProvider) EnvProvide() error {
 }
 
 func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
-	}
-
 	sec, err := getSecret(&mep.Provider)
 	if err != nil {
 		return err
@@ -95,6 +91,10 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 
 	if err := mep.configCyndi(app); err != nil {
 		return err
+	}
+
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
 	}
 
 	if err := mep.processTopics(app, httpClient, adminHostname); err != nil {

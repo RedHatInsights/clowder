@@ -41,15 +41,15 @@ func (a *appInterface) EnvProvide() error {
 }
 
 func (a *appInterface) Provide(app *crd.ClowdApp) error {
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
-	}
-
 	if app.Spec.Cyndi.Enabled {
 		err := validateCyndiPipeline(a.Ctx, a.Client, app, getConnectNamespace(a.Env))
 		if err != nil {
 			return err
 		}
+	}
+
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
 	}
 
 	nn := types.NamespacedName{

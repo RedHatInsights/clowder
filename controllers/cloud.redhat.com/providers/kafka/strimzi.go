@@ -76,10 +76,6 @@ func (p *strimziProvider) EnvProvide() error {
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
-	}
-
 	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
 		Name:      getKafkaName(s.Env),
@@ -102,6 +98,7 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 
 	s.Config.Kafka = &config.KafkaConfig{}
 	s.Config.Kafka.Brokers = []config.BrokerConfig{}
+	s.Config.Kafka.Topics = []config.TopicConfig{}
 
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
@@ -116,6 +113,10 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
 	}
 
 	if err := s.processTopics(app, s.Config.Kafka); err != nil {
