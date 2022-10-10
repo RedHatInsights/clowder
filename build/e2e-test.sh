@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-export IMAGE_TAG=`git rev-parse --short HEAD`
+export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 
 bash build/kube_setup.sh
 

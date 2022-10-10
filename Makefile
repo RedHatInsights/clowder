@@ -4,7 +4,7 @@
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # cloud.redhat.com/clowder-bundle:$VERSION and cloud.redhat.com/clowder-catalog:$VERSION.
 IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
-CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=7 HEAD)
+CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=8 HEAD)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.23
