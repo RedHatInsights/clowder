@@ -28,6 +28,10 @@ func (k *managedKafkaProvider) EnvProvide() error {
 }
 
 func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
 	var err error
 	var secret *core.Secret
 	var broker config.BrokerConfig
