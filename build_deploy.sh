@@ -3,7 +3,7 @@
 set -exv
 
 IMAGE="quay.io/cloudservices/clowder"
-IMAGE_TAG=$(git rev-parse --short=7 HEAD)
+IMAGE_TAG=$(git rev-parse --short=8 HEAD)
 
 if [[ -z "$QUAY_USER" || -z "$QUAY_TOKEN" ]]; then
     echo "QUAY_USER and QUAY_TOKEN must be set"
@@ -15,7 +15,7 @@ if [[ -z "$RH_REGISTRY_USER" || -z "$RH_REGISTRY_TOKEN" ]]; then
     exit 1
 fi
 
-BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 7`
+BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 8`
 BASE_IMG=quay.io/cloudservices/clowder-base:$BASE_TAG
 
 DOCKER_CONF="$PWD/.docker"

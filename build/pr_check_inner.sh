@@ -72,7 +72,7 @@ $KUBECTL_CMD get pods --all-namespaces=true
 
 source build/kube_setup.sh
 
-export IMAGE_TAG=`git rev-parse --short HEAD`
+export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 
 $KUBECTL_CMD create namespace clowder-system
 

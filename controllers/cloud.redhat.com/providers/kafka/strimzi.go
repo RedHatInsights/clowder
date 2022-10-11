@@ -45,15 +45,102 @@ var KafkaMetricsConfigMap = rc.NewSingleResourceIdent(ProvName, "kafka_metrics_c
 // KafkaNetworkPolicy is the resource ident for the KafkaNetworkPolicy
 var KafkaNetworkPolicy = rc.NewSingleResourceIdent(ProvName, "kafka_network_policy", &networking.NetworkPolicy{}, rc.ResourceOptions{WriteNow: true})
 
+type strimziProvider struct {
+	providers.Provider
+}
+
+// NewStrimzi returns a new strimzi provider object.
+func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		CyndiPipeline,
+		CyndiAppSecret,
+		CyndiHostInventoryAppSecret,
+		CyndiConfigMap,
+		KafkaTopic,
+		KafkaInstance,
+		KafkaConnect,
+		KafkaUser,
+		KafkaConnectUser,
+		KafkaMetricsConfigMap,
+		KafkaNetworkPolicy,
+	)
+	return &strimziProvider{Provider: *p}, nil
+}
+
+func (p *strimziProvider) EnvProvide() error {
+	if err := createNetworkPolicies(&p.Provider); err != nil {
+		return err
+	}
+
+	return p.configureBrokers()
+}
+
+func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
+	clusterNN := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      getKafkaName(s.Env),
+	}
+	kafkaResource := strimzi.Kafka{}
+	if err := s.Client.Get(s.Ctx, clusterNN, &kafkaResource); err != nil {
+		return err
+	}
+
+	kafkaCASecName := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+	kafkaCASecret := core.Secret{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+		return err
+	}
+
+	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
+
+	s.Config.Kafka = &config.KafkaConfig{}
+	s.Config.Kafka.Brokers = []config.BrokerConfig{}
+	s.Config.Kafka.Topics = []config.TopicConfig{}
+
+	for _, listener := range kafkaResource.Status.Listeners {
+		if listener.Type != nil && *listener.Type == "tls" {
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTcpBrokerConfig(listener))
+		}
+	}
+
+	if app.Spec.Cyndi.Enabled {
+		err := createCyndiPipeline(s, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env))
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(app.Spec.KafkaTopics) == 0 {
+		return nil
+	}
+
+	if err := s.processTopics(app, s.Config.Kafka); err != nil {
+		return err
+	}
+
+	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
+		if err := s.createKafkaUser(app); err != nil {
+			return err
+		}
+
+		if err := s.setBrokerCredentials(app, s.Config.Kafka); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
 	"retention.bytes":       utils.IntMax,
 	"min.compaction.lag.ms": utils.IntMax,
 	"cleanup.policy":        utils.ListMerge,
-}
-
-type strimziProvider struct {
-	providers.Provider
 }
 
 func (s *strimziProvider) configureKafkaCluster() error {
@@ -643,19 +730,6 @@ func (s *strimziProvider) configureBrokers() error {
 	return nil
 }
 
-// NewStrimzi returns a new strimzi provider object.
-func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
-	return &strimziProvider{Provider: *p}, nil
-}
-
-func (p *strimziProvider) EnvProvide() error {
-	if err := createNetworkPolicies(&p.Provider); err != nil {
-		return err
-	}
-
-	return p.configureBrokers()
-}
-
 func createNetworkPolicies(p *providers.Provider) error {
 	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 	if err != nil {
@@ -702,66 +776,6 @@ func createNetworkPolicies(p *providers.Provider) error {
 
 	if err := p.Cache.Update(KafkaNetworkPolicy, np); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
-	if len(app.Spec.KafkaTopics) == 0 {
-		return nil
-	}
-
-	clusterNN := types.NamespacedName{
-		Namespace: getKafkaNamespace(s.Env),
-		Name:      getKafkaName(s.Env),
-	}
-	kafkaResource := strimzi.Kafka{}
-	if err := s.Client.Get(s.Ctx, clusterNN, &kafkaResource); err != nil {
-		return err
-	}
-
-	kafkaCASecName := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
-		Namespace: getKafkaNamespace(s.Env),
-	}
-	kafkaCASecret := core.Secret{}
-	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
-		return err
-	}
-
-	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
-
-	s.Config.Kafka = &config.KafkaConfig{}
-	s.Config.Kafka.Brokers = []config.BrokerConfig{}
-
-	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type != nil && *listener.Type == "tls" {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
-		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTcpBrokerConfig(listener))
-		}
-	}
-
-	if app.Spec.Cyndi.Enabled {
-		err := createCyndiPipeline(s, app, getConnectNamespace(s.Env), getConnectClusterName(s.Env))
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := s.processTopics(app, s.Config.Kafka); err != nil {
-		return err
-	}
-
-	if !s.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
-		if err := s.createKafkaUser(app); err != nil {
-			return err
-		}
-
-		if err := s.setBrokerCredentials(app, s.Config.Kafka); err != nil {
-			return err
-		}
 	}
 
 	return nil

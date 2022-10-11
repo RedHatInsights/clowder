@@ -20,6 +20,9 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// CoreService is the service for the apps deployments.
+var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
+
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}

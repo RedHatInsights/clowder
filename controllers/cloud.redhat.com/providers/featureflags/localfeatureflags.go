@@ -47,6 +47,14 @@ type localFeatureFlagsProvider struct {
 
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
 func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		LocalFFDBDeployment,
+		LocalFFService,
+		LocalFFDBDeployment,
+		LocalFFDBService,
+		LocalFFDBPVC,
+		LocalFFDBSecret,
+	)
 	return &localFeatureFlagsProvider{Provider: *p}, nil
 }
 

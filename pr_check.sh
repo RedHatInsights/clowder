@@ -15,7 +15,7 @@ done <<< "$(git log --pretty=format:%s $(git merge-base master HEAD)..HEAD)"
 
 set -exv
 
-BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 7`
+BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 8`
 BASE_IMG=quay.io/cloudservices/clowder-base:$BASE_TAG
 
 DOCKER_CONF="$PWD/.docker"
@@ -36,7 +36,7 @@ if [[ "$VALID_TAGS_LENGTH" -eq 0 ]]; then
     BASE_IMG=$BASE_IMG make docker-build-and-push-base
 fi
 
-export IMAGE_TAG=`git rev-parse --short HEAD`
+export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
 export GOROOT="/opt/go/1.17.7"

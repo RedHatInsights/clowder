@@ -10,7 +10,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 	apps "k8s.io/api/apps/v1"
 	v2 "k8s.io/api/autoscaling/v2"
 	v1 "k8s.io/api/core/v1"
@@ -18,7 +17,6 @@ import (
 )
 
 const (
-	SIMPLE_HPA             = "simple_hpa"
 	CLOWD_API_VERSION      = "clowd.redhat.com/v1alpha1"
 	CLOWD_KIND             = "ClowdApp"
 	DEPLOYMENT_API_VERSION = "apps/v1"
@@ -44,9 +42,8 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 
 //Adds the HPA to the resource cache
 func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment crd.Deployment, hpaResource v2.HorizontalPodAutoscaler) error {
-	simpleAutoScaler := rc.NewMultiResourceIdent(ProvName, SIMPLE_HPA, &v2.HorizontalPodAutoscaler{})
 	nn := app.GetDeploymentNamespacedName(&deployment)
-	if err := sp.Cache.Create(simpleAutoScaler, nn, &hpaResource); err != nil {
+	if err := sp.Cache.Create(SimpleAutoScaler, nn, &hpaResource); err != nil {
 		return err
 	}
 	return nil

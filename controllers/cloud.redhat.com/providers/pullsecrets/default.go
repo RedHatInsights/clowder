@@ -16,64 +16,19 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// CoreEnvPullSecrets is the pull_secrets for the app.
+var CoreEnvPullSecrets = rc.NewMultiResourceIdent(ProvName, "core_env_pull_secrets", &core.Secret{})
+
 type pullsecretProvider struct {
 	providers.Provider
 }
 
-// CoreConfigSecret is the config that is presented as the cdappconfig.json file.
-var CoreConfigSecret = rc.NewSingleResourceIdent(ProvName, "core_config_secret", &core.Secret{})
-
 // NewPullSecretProvider returns a new End provider run at the end of the provider set.
 func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		CoreEnvPullSecrets,
+	)
 	return &pullsecretProvider{Provider: *p}, nil
-}
-
-func copyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
-
-	var secList []string
-
-	for _, pullSecretName := range prov.Env.Spec.Providers.PullSecrets {
-
-		sourcePullSecObj := &core.Secret{}
-		if err := prov.Client.Get(prov.Ctx, types.NamespacedName{
-			Name:      pullSecretName.Name,
-			Namespace: pullSecretName.Namespace,
-		}, sourcePullSecObj); err != nil {
-			return nil, err
-		}
-
-		secName := fmt.Sprintf("%s-%s-clowder-copy", prov.Env.Name, pullSecretName.Name)
-		secList = append(secList, secName)
-
-		newPullSecObj := &core.Secret{}
-
-		newSecNN := types.NamespacedName{
-			Name:      secName,
-			Namespace: namespace,
-		}
-
-		if obj.GroupVersionKind().Kind == "ClowdApp" && obj.GetClowdNamespace() == prov.Env.Spec.TargetNamespace {
-			continue
-		}
-
-		if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
-			return nil, err
-		}
-
-		newPullSecObj.Data = sourcePullSecObj.Data
-		newPullSecObj.Type = sourcePullSecObj.Type
-
-		labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
-		labeler(newPullSecObj)
-
-		newPullSecObj.Name = newSecNN.Name
-		newPullSecObj.Namespace = newSecNN.Namespace
-
-		if err := prov.Cache.Update(CoreEnvPullSecrets, newPullSecObj); err != nil {
-			return nil, err
-		}
-	}
-	return secList, nil
 }
 
 func (ps *pullsecretProvider) EnvProvide() error {
@@ -143,6 +98,54 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	return nil
+}
+
+func copyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
+
+	var secList []string
+
+	for _, pullSecretName := range prov.Env.Spec.Providers.PullSecrets {
+
+		sourcePullSecObj := &core.Secret{}
+		if err := prov.Client.Get(prov.Ctx, types.NamespacedName{
+			Name:      pullSecretName.Name,
+			Namespace: pullSecretName.Namespace,
+		}, sourcePullSecObj); err != nil {
+			return nil, err
+		}
+
+		secName := fmt.Sprintf("%s-%s-clowder-copy", prov.Env.Name, pullSecretName.Name)
+		secList = append(secList, secName)
+
+		newPullSecObj := &core.Secret{}
+
+		newSecNN := types.NamespacedName{
+			Name:      secName,
+			Namespace: namespace,
+		}
+
+		if obj.GroupVersionKind().Kind == "ClowdApp" && obj.GetClowdNamespace() == prov.Env.Spec.TargetNamespace {
+			continue
+		}
+
+		if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
+			return nil, err
+		}
+
+		newPullSecObj.Data = sourcePullSecObj.Data
+		newPullSecObj.Type = sourcePullSecObj.Type
+
+		labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, prov.Env)
+		labeler(newPullSecObj)
+
+		newPullSecObj.Name = newSecNN.Name
+		newPullSecObj.Namespace = newSecNN.Namespace
+
+		if err := prov.Cache.Update(CoreEnvPullSecrets, newPullSecObj); err != nil {
+			return nil, err
+		}
+	}
+	return secList, nil
 }
 
 func addAllSecrets(secList []string, sa *core.ServiceAccount) {

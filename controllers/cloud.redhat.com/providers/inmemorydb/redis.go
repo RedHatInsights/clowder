@@ -30,6 +30,16 @@ type localRedis struct {
 	providers.Provider
 }
 
+// NewLocalRedis returns a new local redis provider object.
+func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(
+		RedisDeployment,
+		RedisService,
+		RedisConfigMap,
+	)
+	return &localRedis{Provider: *p}, nil
+}
+
 func (r *localRedis) EnvProvide() error {
 	return nil
 }
@@ -72,11 +82,6 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 	}
 
 	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false, r.Env.IsNodePort())
-}
-
-// NewLocalRedis returns a new local redis provider object.
-func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
-	return &localRedis{Provider: *p}, nil
 }
 
 func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {

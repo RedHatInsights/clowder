@@ -17,6 +17,9 @@ var ProvName = "metrics"
 
 // GetEnd returns the correct end provider.
 func GetMetrics(c *providers.Provider) (providers.ClowderProvider, error) {
+	c.Cache.AddPossibleGVKFromIdent(
+		MetricsServiceMonitor,
+	)
 	metricsMode := c.Env.Spec.Providers.Metrics.Mode
 	switch metricsMode {
 	case "none", "":

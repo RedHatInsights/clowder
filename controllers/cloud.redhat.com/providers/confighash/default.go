@@ -22,6 +22,7 @@ var CoreConfigSecret = rc.NewSingleResourceIdent(ProvName, "core_config_secret",
 
 // NewConfigHashProvider returns a new End provider run at the end of the provider set.
 func NewConfigHashProvider(p *p.Provider) (p.ClowderProvider, error) {
+	p.Cache.AddPossibleGVKFromIdent(CoreConfigSecret)
 	return &confighashProvider{Provider: *p}, nil
 }
 
