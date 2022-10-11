@@ -205,6 +205,15 @@ func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJo
 		cj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = cronjob.RestartPolicy
 	}
 
+  if cronjob.Parallelism != nil {
+    cj.Spec.JobTemplate.Spec.Parallelism = cronjob.Parallelism
+  } // implicit else => default is 1
+
+  if cronjob.Completions != nil {
+    cj.Spec.JobTemplate.Spec.Completions = cronjob.Completions
+  } // implicit else => default is 1
+
+
 	deployProvider.ApplyPodAntiAffinity(&cj.Spec.JobTemplate.Spec.Template)
 
 }

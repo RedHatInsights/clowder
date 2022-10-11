@@ -90,6 +90,12 @@ type Job struct {
 	// Defines the schedule for the job to run
 	Schedule string `json:"schedule,omitempty"`
 
+  // Defines the parallelism of the job
+  Parallelism *int32 `json:"parallelism,omitempty"`
+
+  // Defines the completions of the job
+  Completions *int32 `json:"completions,omitempty"`
+
 	// PodSpec defines a container running inside the CronJob.
 	PodSpec PodSpec `json:"podSpec"`
 
