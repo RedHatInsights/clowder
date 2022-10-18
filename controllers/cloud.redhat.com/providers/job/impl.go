@@ -34,13 +34,13 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		j.Spec.Template.Spec.RestartPolicy = job.RestartPolicy
 	}
 
-  if job.Parallelism != nil {
-    j.Spec.Parallelism = job.Parallelism
-  }
+	if job.Parallelism != nil {
+		j.Spec.Parallelism = job.Parallelism
+	}
 
-  if job.Completions != nil {
-    j.Spec.Completions = job.Completions
-  }
+	if job.Completions != nil {
+		j.Spec.Completions = job.Completions
+	}
 
 	envvar := pod.Env
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
