@@ -77,6 +77,39 @@ spec:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
+  name: puptoo-parallel-cron
+  namespace: test-clowder-jobs
+spec:
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  suspend: false
+  jobTemplate:
+    spec:
+      parallelism: 3
+      completions: 2
+      activeDeadlineSeconds: 6000
+      template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+        spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
+          containers:
+            - name: puptoo-parallel-cron
+              image: quay.io/psav/clowder-hello
+          restartPolicy: Never
+          tolerations:
+          - key: "memory"
+            value: "true"
+            operator: "Equal"
+            effect: "NoSchedule"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
   name: puptoo-restart-on-failure
   namespace: test-clowder-jobs
 spec:
