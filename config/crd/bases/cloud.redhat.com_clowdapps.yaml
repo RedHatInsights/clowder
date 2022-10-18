@@ -2876,6 +2876,10 @@ spec:
                         More info: https://kubernetes.io/docs/concepts/workloads/controllers/job/'
                       format: int64
                       type: integer
+                    completions:
+                      description: Defines the completions of the job
+                      format: int32
+                      type: integer
                     concurrencyPolicy:
                       description: Defines the concurrency policy for the CronJob,
                         defaults to Allow Only applies to Cronjobs
@@ -2891,6 +2895,10 @@ spec:
                         be used to name the CronJob resource, the container will be
                         name identically.
                       type: string
+                    parallelism:
+                      description: Defines the parallelism of the job
+                      format: int32
+                      type: integer
                     podSpec:
                       description: PodSpec defines a container running inside the
                         CronJob.
