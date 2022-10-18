@@ -275,6 +275,8 @@ objects:
     jobs:
       - name: hello-twenty
         schedule: "*/20 * * * *"
+        parallelism: 2
+        completions: 2
         podSpec:
           name: hello
           image: busybox
