@@ -61,6 +61,7 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 	if err != nil {
 		return err
 	}
+	mep.secretData = sec.Data
 
 	username, password, hostname, tokenURL, adminHostname, cacert := destructureSecret(sec)
 
