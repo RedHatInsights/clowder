@@ -53,6 +53,12 @@ func NewManagedEphemKafka(p *providers.Provider) (providers.ClowderProvider, err
 }
 
 func (mep *managedEphemProvider) EnvProvide() error {
+	sec, err := getSecret(&mep.Provider)
+	if err != nil {
+		return err
+	}
+	mep.secretData = sec.Data
+
 	return mep.configureBrokers()
 }
 
@@ -61,7 +67,6 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 	if err != nil {
 		return err
 	}
-	mep.secretData = sec.Data
 
 	username, password, hostname, tokenURL, adminHostname, cacert := destructureSecret(sec)
 
