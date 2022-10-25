@@ -49,6 +49,7 @@ fi
 
 python3 -m venv "build/.build_venv"
 source build/.build_venv/bin/activate
+pip install --upgrade pip setuptools wheel
 pip install ruamel.yaml
 
 GO_BIN_PATH="$(go env GOPATH)/bin"
