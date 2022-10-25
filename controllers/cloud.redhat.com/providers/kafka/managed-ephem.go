@@ -68,7 +68,7 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	username, password, hostname, tokenURL, adminHostname, cacert := destructureSecret(sec)
+	username, password, hostname, adminHostname, tokenURL, cacert := destructureSecret(sec)
 
 	httpClient := upsertClientCache(username, password, tokenURL, adminHostname, &mep.Provider)
 
