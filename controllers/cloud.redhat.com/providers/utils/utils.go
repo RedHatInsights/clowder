@@ -22,8 +22,8 @@ import (
 )
 
 var IMAGE_CADDY_SIDECAR_DEFAULT = "quay.io/cloudservices/crc-caddy-plugin:eaed6c2"
-var IMAGE_MBOP_DEFAULT = "quay.io/cloudservices/mbop:b902774"
-var IMAGE_MOCKTITLEMENTS_DEFAULT = "quay.io/cloudservices/mocktitlements:51ddcbc"
+var IMAGE_MBOP_DEFAULT = "quay.io/cloudservices/mbop:bb071db"
+var IMAGE_MOCKTITLEMENTS_DEFAULT = "quay.io/cloudservices/mocktitlements:8b9db81"
 var KEYCLOAK_VERSION_DEFAULT = "15.0.2"
 var IMAGE_KEYCLOAK_DEFAULT = fmt.Sprintf("quay.io/keycloak/keycloak:%s", KEYCLOAK_VERSION_DEFAULT)
 

@@ -121,7 +121,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/cloudservices/mbop:b902774
+      - image: quay.io/cloudservices/mbop:bb071db
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -138,4 +138,4 @@ spec:
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/cloudservices/mocktitlements:51ddcbc
+      - image: quay.io/cloudservices/mocktitlements:8b9db81
