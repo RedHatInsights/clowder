@@ -39,7 +39,7 @@ fi
 export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-export GOROOT="/opt/go/1.17.7"
+export GOROOT="/opt/go/1.18.4"
 export PATH="${GOROOT}/bin:${PATH}"
 
 make envtest

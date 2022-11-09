@@ -1,17 +1,20 @@
 # Build the manager binary
-FROM registry.access.redhat.com/ubi8/go-toolset:1.17.12-11 as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.18.4-8 as builder
 USER 0
 RUN dnf install -y openssh-clients git make which jq python3
 
-RUN GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0 \
-    && GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v4@v4.5.2
 COPY build/pr_check_inner.sh .
 RUN chmod 775 pr_check_inner.sh
 
 WORKDIR /workspace
+
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
+
+RUN GO111MODULE=on go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0 \
+    && GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v4@v4.5.2
+
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 
