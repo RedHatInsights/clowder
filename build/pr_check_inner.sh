@@ -100,7 +100,7 @@ $KUBECTL_CMD get env
 
 source build/run_kuttl.sh --report xml
 KUTTL_RESULT=$?
-mv kuttl-test.xml artifacts/junit-kuttl.xml
+mv kuttl-report.xml artifacts/junit-kuttl.xml
 
 CLOWDER_PODS=$($KUBECTL_CMD get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}')
 for pod in $CLOWDER_PODS; do

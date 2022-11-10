@@ -39,12 +39,31 @@ fi
 export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 export IMAGE_NAME=quay.io/cloudservices/clowder
 
-export GOROOT="/opt/go/1.18.4"
-export PATH="${GOROOT}/bin:${PATH}"
+echo $BASE_IMG
 
 make envtest
 make update-version
-make test
+
+TEST_CONT="clowder-unit-"$IMAGE_TAG
+docker build -t $TEST_CONT -f Dockerfile.test --build-arg BASE_IMAGE=$BASE_IMG . 
+
+docker run -i \
+    -v `$PWD/bin/setup-envtest use -p path`:/bins:ro \
+    -e IMAGE_NAME=$IMAGE_NAME \
+    -e IMAGE_TAG=$IMAGE_TAG \
+    -e QUAY_USER=$QUAY_USER \
+    -e QUAY_TOKEN=$QUAY_TOKEN \
+    -e MINIKUBE_HOST=$MINIKUBE_HOST \
+    -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR \
+    -e MINIKUBE_USER=$MINIKUBE_USER \
+    -e CLOWDER_VERSION=$CLOWDER_VERSION \
+    $TEST_CONT \
+    make test
+UNIT_TEST_RESULT=$?
+
+if [[ $UNIT_TEST_RESULT -ne 0 ]]; then
+    exit $UNIT_TEST_RESULT
+fi
 
 CLOWDER_VERSION=`git describe --tags`
 
