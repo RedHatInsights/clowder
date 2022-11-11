@@ -102,7 +102,7 @@ func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.C
 	}
 	tag := env.Spec.Providers.Testing.Iqe.UI.Selenium.DefaultImageTag
 	if tag == "" {
-		tag = "ff_91.5.1esr_gecko_v0.30.0_chrome_98.0.4758.80"
+		tag = "ff_91.9.1esr_chrome_103.0.5060.114"
 	}
 
 	// check if this CJI has specified an image tag override
