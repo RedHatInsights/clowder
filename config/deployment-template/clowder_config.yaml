@@ -20,5 +20,8 @@ data:
             "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES},
             "perProviderMetrics": ${PER_PROVIDER_METRICS},
             "reconciliationMetrics": ${RECONCILIATION_METRICS}
+        },
+        "settings": {
+            "managedKafkaEphemDeleteRegex": ${MANAGED_EPHEM_DELETE_REGEX}
         }
     }

@@ -17,6 +17,7 @@ import (
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"golang.org/x/oauth2/clientcredentials"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -111,7 +112,8 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 }
 
 func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
-	if p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix == "" {
+
+	if clowderconfig.LoadedConfig.Settings.ManagedKafkaEphemDeleteRegex == "" {
 		return nil
 	}
 
@@ -188,30 +190,46 @@ const PARTITION_NUM_CEILING = 3
 func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
 	//"(env-)?ephemeral-.*"
 
-	reg, err := regexp.Compile(p.Env.Spec.Providers.Kafka.EphemManagedDeletePrefix)
+	reg, err := regexp.Compile(fmt.Sprintf(".*%s.*", strings.Replace(p.Env.Name, "-", "[-\\.]", -1)))
+	if err != nil {
+		return err
+	}
+
+	var reg_protect *regexp.Regexp
+
+	reg_protect, err = regexp.Compile(clowderconfig.LoadedConfig.Settings.ManagedKafkaEphemDeleteRegex)
 	if err != nil {
 		return err
 	}
 
 	for _, topic := range topicList.Items {
-		if reg.Find([]byte(topic.Name)) != nil {
-			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/topics/%s", adminHostname, topic.Name), nil)
-			if err != nil {
-				return err
-			}
-			resp, err := rClient.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
+		// The name of the envrionment must be in the topic names
+		fmt.Print(reg.String())
+		if reg.Find([]byte(topic.Name)) == nil {
+			continue
+		}
 
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-			if resp.StatusCode != 204 && resp.StatusCode != 200 {
-				return fmt.Errorf("error in delete %s", body)
-			}
+		// The name must also match the global topic protector
+		if reg_protect == nil || (reg_protect != nil && reg_protect.Find([]byte(topic.Name)) == nil) {
+			continue
+		}
+
+		req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/topics/%s", adminHostname, topic.Name), nil)
+		if err != nil {
+			return err
+		}
+		resp, err := rClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != 204 && resp.StatusCode != 200 {
+			return fmt.Errorf("error in delete %s", body)
 		}
 	}
 	return nil

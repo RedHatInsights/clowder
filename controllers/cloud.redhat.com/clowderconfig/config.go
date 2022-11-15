@@ -44,6 +44,9 @@ type ClowderConfig struct {
 		EnableExternalStrimzi       bool `json:"enableExternalStrimzi"`
 		DisableRandomRoutes         bool `json:"disableRandomRoutes"`
 	} `json:"features"`
+	Settings struct {
+		ManagedKafkaEphemDeleteRegex string `json:"managedKafkaEphemDeleteRegex"`
+	}
 }
 
 func getConfig() ClowderConfig {
