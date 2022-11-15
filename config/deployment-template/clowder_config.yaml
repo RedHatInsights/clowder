@@ -22,6 +22,6 @@ data:
             "reconciliationMetrics": ${RECONCILIATION_METRICS}
         },
         "settings": {
-            "managedKafkaEphemDeleteRegex": ${MANAGED_EPHEM_DELETE_REGEX}
+            "managedKafkaEphemDeleteRegex": "${MANAGED_EPHEM_DELETE_REGEX}"
         }
     }
