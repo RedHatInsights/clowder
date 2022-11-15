@@ -5900,7 +5900,10 @@ objects:
                           description: EnableLegacyStrimzi disables TLS + user auth
                           type: boolean
                         ephemManagedDeletePrefix:
-                          description: Defines a prefix whitelist value
+                          description: 'Deprecated: topics being deleted will be done
+                            so using the env name and a regex that combines - with
+                            . There is also a clowder top level setting to ensure
+                            that only certain topics can be deleted.'
                           type: string
                         ephemManagedSecretRef:
                           description: Defines the secret reference for the Ephemeral
@@ -7461,6 +7464,7 @@ objects:
       : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
       \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
       : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
+      \    },\n    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": ${MANAGED_EPHEM_DELETE_REGEX}\n\
       \    }\n}\n"
   kind: ConfigMap
   metadata:
@@ -7486,4 +7490,6 @@ parameters:
   value: 'false'
 - name: RECONCILIATION_METRICS
   value: 'false'
+- name: MANAGED_EPHEM_DELETE_REGEX
+  value: .*ephemeral.*
 

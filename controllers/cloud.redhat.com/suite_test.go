@@ -393,7 +393,6 @@ func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string)
 			Name:      secretNme,
 			Namespace: name.Namespace,
 		},
-		EphemManagedDeletePrefix: "(env-)?ephemeral-managed.*",
 	}
 
 	app, err := createClowdApp(env, objMeta)
@@ -767,6 +766,9 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	assert.NotNil(t, app)
 	assert.NotNil(t, env)
 
+	mockClient.createStaticTopic("ephemeral-dont-delete")
+	mockClient.createStaticTopic("ephemeral.managed.kafka.name.inventory")
+
 	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
 	assert.Equal(t, secretName, ephemManagedSecret.Name)
 	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
@@ -789,11 +791,20 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	assert.Eventually(t, func() bool {
 		return assert.NotContains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
 	}, time.Second*15, time.Second*1)
-
+	assert.Eventually(t, func() bool {
+		return assert.NotContains(t, mockClient.topicList, "ephemeral.managed.kafka.name.inventory")
+	}, time.Second*15, time.Second*1)
+	assert.Eventually(t, func() bool {
+		return assert.Contains(t, mockClient.topicList, "ephemeral-dont-delete")
+	}, time.Second*15, time.Second*1)
 }
 
 type MockEphemManagedKafkaHTTPClient struct {
 	topicList map[string]bool
+}
+
+func (m *MockEphemManagedKafkaHTTPClient) createStaticTopic(topicName string) {
+	m.topicList[topicName] = true
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
