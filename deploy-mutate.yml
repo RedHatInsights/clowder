@@ -7319,6 +7319,8 @@ objects:
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
+    annotations:
+      ignore-check.kube-linter.io/minimum-three-replicas: Not applicable
     labels:
       control-plane: controller-manager
       operator-name: clowder
@@ -7491,8 +7493,8 @@ objects:
       : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
       \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
       : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
-      \    },\n    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": ${MANAGED_EPHEM_DELETE_REGEX}\n\
-      \    }\n}\n"
+      \    },\n    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
+      \n    }\n}\n"
   kind: ConfigMap
   metadata:
     name: clowder-config

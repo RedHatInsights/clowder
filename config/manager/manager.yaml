@@ -12,6 +12,8 @@ metadata:
   namespace: system
   labels:
     control-plane: controller-manager
+  annotations:
+    ignore-check.kube-linter.io/minimum-three-replicas: "Not applicable"
 spec:
   selector:
     matchLabels:
