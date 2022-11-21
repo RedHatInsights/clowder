@@ -46,7 +46,7 @@ type ClowderConfig struct {
 	} `json:"features"`
 	Settings struct {
 		ManagedKafkaEphemDeleteRegex string `json:"managedKafkaEphemDeleteRegex"`
-	}
+	} `json:"settings"`
 }
 
 func getConfig() ClowderConfig {
