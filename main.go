@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 
@@ -72,5 +73,10 @@ func main() {
 	if clowderconfig.LoadedConfig.DebugOptions.Pprof.Enable {
 		go http.ListenAndServe("localhost:8000", nil)
 	}
+
+	go func() {
+		fmt.Println(controllers.CreateAPIServer().ListenAndServe())
+	}()
+
 	controllers.Run(metricsAddr, probeAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler(), !clowderconfig.LoadedConfig.Features.DisableWebhooks)
 }
