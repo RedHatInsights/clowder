@@ -7,6 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAppInterface(t *testing.T) {
@@ -46,50 +47,24 @@ func TestAppInterface(t *testing.T) {
 
 	ai, err := NewAppInterface(&pr)
 
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 
 	err = ai.EnvProvide()
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 
 	err = ai.Provide(app)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 
-	if len(ai.GetConfig().Kafka.Brokers) != 1 {
-		t.Errorf("Wrong number of brokers %v; expected 1", len(ai.GetConfig().Kafka.Brokers))
-	}
+	assert.Len(t, ai.GetConfig().Kafka.Brokers, 1, "wrong number of brokers")
 
 	broker := ai.GetConfig().Kafka.Brokers[0]
 
 	hostname := "platform-mq-kafka-bootstrap.platform-mq-prod.svc"
-	if broker.Hostname != hostname {
-		t.Errorf("Wrong broker %v; expected %v", broker.Hostname, hostname)
-	}
-
-	if *broker.Port != 9092 {
-		t.Errorf("Wrong broker port %v; expected %v", broker.Port, 9092)
-	}
-
-	if len(ai.GetConfig().Kafka.Topics) != 1 {
-		t.Errorf("Wrong number of topic %v; expected 1", len(ai.GetConfig().Kafka.Topics))
-	}
+	assert.Equal(t, hostname, broker.Hostname, "wrong broker")
+	assert.Equal(t, 9092, *broker.Port, "wrong broker port")
+	assert.Len(t, ai.GetConfig().Kafka.Topics, 1, "wrong number of topic")
 
 	topic := ai.GetConfig().Kafka.Topics[0]
-
-	if topic.Name != topicName {
-		t.Errorf("Wrong topic name %v; expected %v", topic.Name, topicName)
-	}
-
-	if topic.RequestedName != topicName {
-		t.Errorf(
-			"Wrong requested topic name %v; expected %v",
-			topic.RequestedName,
-			topicName,
-		)
-	}
+	assert.Equal(t, topicName, topic.Name, "wrong topic name")
+	assert.Equal(t, topicName, topic.RequestedName, "wrong requested topic name")
 }

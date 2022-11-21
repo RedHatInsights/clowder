@@ -5,6 +5,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/stretchr/testify/assert"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,15 +39,7 @@ func TestLocalRedis(t *testing.T) {
 	}
 	makeLocalRedis(&env, objMap, true, false)
 
-	if dd.GetName() != "env-redis" {
-		t.Errorf("Name was not set correctly, got: %v, want: %v", dd.GetName(), "env-redis")
-	}
-	if len(svc.Spec.Ports) < 1 {
-		t.Errorf("Number of ports specified is wrong")
-	}
-
-	p := svc.Spec.Ports[0]
-	if p.Port != 6379 {
-		t.Errorf("Port number is incorrect, got: %v, want: %v", p.Port, 6379)
-	}
+	assert.Equal(t, "env-redis", dd.GetName(), "name was not set correctly")
+	assert.Len(t, svc.Spec.Ports, 1, "number of ports specified is wrong")
+	assert.Equal(t, int32(6379), svc.Spec.Ports[0].Port, "port number is incorrect")
 }
