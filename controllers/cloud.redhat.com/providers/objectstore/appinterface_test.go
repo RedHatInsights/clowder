@@ -5,6 +5,7 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -64,23 +65,19 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 
 	c, err := genObjStoreConfig(testSecretSpecs.ToSecrets())
 
-	if err != nil {
-		t.Errorf("Error calling genObjStoreConfig: %e", err)
-	}
+	assert.NoError(t, err, "error calling genObjStoreConfig")
 
 	expected := config.ObjectStoreConfig{
 		Port:     443,
 		Hostname: testSecretSpecs.ExactKeys["endpoint"],
 		Buckets: []config.ObjectStoreBucket{{
+			Region:    utils.StringPtr("us-east-1"),
 			AccessKey: providers.StrPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
 			SecretKey: providers.StrPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
 			Name:      testSecretSpecs.ExactKeys["bucket"],
 		}},
+		Tls: true,
 	}
 
-	equalsErr := objectStoreEquals(c, &expected)
-
-	if equalsErr != "" {
-		t.Error(equalsErr)
-	}
+	assert.Equal(t, &expected, c)
 }

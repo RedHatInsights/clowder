@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 )
 
@@ -22,20 +23,12 @@ func TestAppInterfaceDb(t *testing.T) {
 
 	configs, err := genDbConfigs(secrets)
 
-	if err != nil {
-		t.Error("Failed to gen db config", err)
-	}
-
-	if len(configs) != 1 {
-		t.Errorf("Wrong number of configs %d; expected 1", len(configs))
-		t.FailNow()
-	}
+	assert.NoError(t, err, "failed to gen db config")
+	assert.Equal(t, len(configs), 1, "wrong number of configs")
 
 	spec := crd.DatabaseSpec{Name: dbName}
 
 	resolved := resolveDb(spec, configs)
 
-	if resolved != configs[0] {
-		t.Error("resolveDb did not match given config")
-	}
+	assert.Equal(t, configs[0], resolved, "resolveDb did not match given config")
 }

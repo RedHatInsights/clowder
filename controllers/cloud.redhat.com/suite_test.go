@@ -24,7 +24,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -32,6 +31,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2/clientcredentials"
 	apps "k8s.io/api/apps/v1"
@@ -59,7 +59,12 @@ var k8sClient client.Client
 var testEnv *envtest.Environment
 var logger *zap.Logger
 
-func TestMain(m *testing.M) {
+type TestSuite struct {
+	suite.Suite
+	stopController context.CancelFunc
+}
+
+func (suite *TestSuite) SetupSuite() {
 	// call flag.Parse() here if TestMain uses flags
 	ctrl.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(true)))
 	logger, _ = zap.NewProduction()
@@ -79,43 +84,27 @@ func TestMain(m *testing.M) {
 		logger.Fatal("Error starting test env", zap.Error(err))
 	}
 
-	if cfg == nil {
-		logger.Fatal("env config was returned nil")
-	}
+	assert.NotNil(suite.T(), cfg, "env config was returned nil")
 
 	err = crd.AddToScheme(clientgoscheme.Scheme)
-
-	if err != nil {
-		logger.Fatal("Failed to add scheme", zap.Error(err))
-	}
+	assert.NoError(suite.T(), err, "failed to add scheme")
 
 	err = strimzi.AddToScheme(clientgoscheme.Scheme)
-
-	if err != nil {
-		logger.Fatal("Failed to add scheme", zap.Error(err))
-	}
+	assert.NoError(suite.T(), err, "failed to add scheme")
 
 	err = keda.AddToScheme(clientgoscheme.Scheme)
-
-	if err != nil {
-		logger.Fatal("Failed to add scheme", zap.Error(err))
-	}
+	assert.NoError(suite.T(), err, "failed to add scheme")
 
 	// +kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: clientgoscheme.Scheme})
-
-	if err != nil {
-		logger.Fatal("Failed to create k8s client", zap.Error(err))
-	}
-
-	if k8sClient == nil {
-		logger.Fatal("k8sClient was returned nil", zap.Error(err))
-	}
+	assert.NoError(suite.T(), err, "failed to create k8s client")
+	assert.NotNil(suite.T(), k8sClient, "k8sClient was returned nil")
 
 	//ctx := context.Background()
 
 	ctx, stopController := context.WithCancel(context.Background())
+	suite.stopController = stopController
 
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
 	k8sClient.Create(ctx, nsSpec)
@@ -140,19 +129,20 @@ func TestMain(m *testing.M) {
 
 		time.Sleep(100 * time.Millisecond)
 	}
+}
 
-	retCode := m.Run()
+func (suite *TestSuite) TearDownSuite() {
 	logger.Info("Stopping test env...")
 
-	stopController()
+	suite.stopController()
 
-	err = testEnv.Stop()
+	err := testEnv.Stop()
 
 	if err != nil {
 		logger.Fatal("Failed to tear down env", zap.Error(err))
 	}
-	os.Exit(retCode)
 }
+
 func applyKafkaStatus(t *testing.T, ch chan int) {
 	ctx := context.Background()
 	nn := types.NamespacedName{
@@ -416,7 +406,7 @@ func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 	return &jsonContent, err
 }
 
-func TestCreateClowdApp(t *testing.T) {
+func (suite *TestSuite) TestCreateClowdApp() {
 	logger.Info("Creating ClowdApp")
 
 	clowdAppNN := types.NamespacedName{
@@ -432,22 +422,15 @@ func TestCreateClowdApp(t *testing.T) {
 	}
 
 	err := createCloudwatchSecret(&cwData)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(suite.T(), err)
 
 	ch := make(chan int)
 
-	go applyKafkaStatus(t, ch)
+	go applyKafkaStatus(suite.T(), ch)
 
 	env, app, err := createCRs(clowdAppNN)
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(suite.T(), err)
 
 	<-ch // wait for kafka status to be applied
 
@@ -466,27 +449,18 @@ func TestCreateClowdApp(t *testing.T) {
 	}
 	err = fetchWithDefaults(appnn, &d)
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(suite.T(), err)
 
-	if !mapEq(d.Labels, labels) {
-		t.Errorf("Deployment label mismatch %v; expected %v", d.Labels, labels)
-	}
+	assert.Equal(suite.T(), d.Labels, labels, "deployment label mismatch")
 
 	antiAffinity := d.Spec.Template.Spec.Affinity.PodAntiAffinity
 	terms := antiAffinity.PreferredDuringSchedulingIgnoredDuringExecution
 
-	if len(terms) != 2 {
-		t.Errorf("Incorrect number of anti-affinity terms: %d; expected 2", len(terms))
-	}
+	assert.Equal(suite.T(), 2, len(terms), "incorrect number of anti-affinity terms")
 
 	c := d.Spec.Template.Spec.Containers[0]
 
-	if c.Image != app.Spec.Deployments[0].PodSpec.Image {
-		t.Errorf("Bad image spec %s; expected %s", c.Image, app.Spec.Deployments[0].PodSpec.Image)
-	}
+	assert.Equal(suite.T(), app.Spec.Deployments[0].PodSpec.Image, c.Image, "bad image spec")
 
 	// See if Secret is mounted
 
@@ -498,56 +472,33 @@ func TestCreateClowdApp(t *testing.T) {
 		}
 	}
 
-	if !found {
-		t.Errorf("Deployment %s does not have the config volume mounted", d.Name)
-		return
-	}
+	assert.True(suite.T(), found, "deployment %s does not have the config volume mounted", d.Name)
 
 	s := core.Service{}
 
 	err = fetchWithDefaults(appnn, &s)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	if !mapEq(s.Labels, labels) {
-		t.Errorf("Service label mismatch %v; expected %v", s.Labels, labels)
-	}
-
-	// Simple test for service right expects there only to be the metrics port
-	if len(s.Spec.Ports) > 1 {
-		t.Errorf("Bad port count %d; expected 1", len(s.Spec.Ports))
-	}
-
-	if s.Spec.Ports[0].Port != env.Spec.Providers.Metrics.Port {
-		t.Errorf("Bad port created %d; expected %d", s.Spec.Ports[0].Port, env.Spec.Providers.Metrics.Port)
-	}
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), s.Labels, labels, "service label mismatch")
+	assert.Equal(suite.T(), len(s.Spec.Ports), 1, "bad port count")
+	assert.Equal(suite.T(), env.Spec.Providers.Metrics.Port, s.Spec.Ports[0].Port, "bad port created")
 
 	jsonContent, err := fetchConfig(clowdAppNN)
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(suite.T(), err)
 
-	metadataValidation(t, app, jsonContent)
+	metadataValidation(suite.T(), app, jsonContent)
 
-	kafkaValidation(t, env, app, jsonContent, clowdAppNN)
+	kafkaValidation(suite.T(), env, app, jsonContent, clowdAppNN)
 
-	clowdWatchValidation(t, jsonContent, cwData)
+	clowdWatchValidation(suite.T(), jsonContent, cwData)
 
 	scaler := keda.ScaledObject{}
 
 	err = fetchWithDefaults(appnn, &scaler)
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(suite.T(), err)
 
-	scaledObjectValidation(t, app, &scaler, &d)
+	scaledObjectValidation(suite.T(), app, &scaler, &d)
 }
 
 func metadataValidation(t *testing.T, app *crd.ClowdApp, jsonContent *config.AppConfig) {
@@ -580,33 +531,19 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 	}
 
 	for i, kafkaTopic := range app.Spec.KafkaTopics {
-		actual, expected := jsonContent.Kafka.Topics[i].RequestedName, kafkaTopic.TopicName
-		if actual != expected {
-			t.Errorf("Wrong topic name set on app's config; got %s, want %s", actual, expected)
-		}
-
-		actual = jsonContent.Kafka.Topics[i].Name
-		expected = kafkaTopic.TopicName
-		if actual != expected {
-			t.Errorf("Wrong generated topic name set on app's config; got %s, want %s", actual, expected)
-		}
+		assert.Equal(t, kafkaTopic.TopicName, jsonContent.Kafka.Topics[i].RequestedName, "wrong topic name set on app's config")
+		assert.Equal(t, kafkaTopic.TopicName, jsonContent.Kafka.Topics[i].Name, "wrong generated topic name set on app's config")
 	}
 
-	if len(jsonContent.Kafka.Brokers[0].Hostname) == 0 {
-		t.Error("Kafka broker hostname is not set")
-		return
-	}
+	assert.NotEqual(t, len(jsonContent.Kafka.Brokers[0].Hostname), 0, "kafka broker hostname is not set")
 
 	for _, topic := range []types.NamespacedName{topicWithPartitionsReplicasNamespacedName, topicNoPartitionsReplicasNamespacedName} {
 		fetchedTopic := strimzi.KafkaTopic{}
 
 		// fetch topic, make sure it was provisioned
-		if err := fetchWithDefaults(topic, &fetchedTopic); err != nil {
-			t.Fatalf("error fetching topic '%s': %v", topic.Name, err)
-		}
-		if fetchedTopic.Spec == nil {
-			t.Fatalf("KafkaTopic '%s' not provisioned in namespace", topic.Name)
-		}
+		err := fetchWithDefaults(topic, &fetchedTopic)
+		assert.NoError(t, err, "error fetching topic")
+		assert.NotNil(t, fetchedTopic.Spec, "kafkaTopic '%s' not provisioned in namespace", topic.Name)
 
 		// check that configured partitions/replicas matches
 		expectedReplicas := int32(0)
@@ -619,12 +556,9 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 			expectedReplicas = int32(3)
 			expectedPartitions = int32(3)
 		}
-		if *fetchedTopic.Spec.Replicas != expectedReplicas {
-			t.Errorf("Bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Replicas, expectedReplicas)
-		}
-		if *fetchedTopic.Spec.Partitions != expectedPartitions {
-			t.Errorf("Bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Partitions, expectedPartitions)
-		}
+
+		assert.Equal(t, *fetchedTopic.Spec.Replicas, expectedReplicas, "bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Replicas, expectedReplicas)
+		assert.Equal(t, *fetchedTopic.Spec.Partitions, expectedPartitions, "bad topic replica count for '%s': %d; expected %d", topic.Name, fetchedTopic.Spec.Partitions, expectedPartitions)
 	}
 }
 
@@ -638,10 +572,7 @@ func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData ma
 	}
 
 	for key, val := range cwData {
-		if val != cwConfigVals[key] {
-			t.Errorf("Wrong cloudwatch config value %s; expected %s", cwConfigVals[key], val)
-			return
-		}
+		assert.Equal(t, val, cwConfigVals[key], "wrong cloudwatch config value")
 	}
 }
 
@@ -726,7 +657,7 @@ func createEphemeralManagedSecret(name string, namespace string, cwData map[stri
 
 var ephemManagedKafkaHTTPLog []map[string]string = []map[string]string{}
 
-func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
+func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	logger.Info("Starting ephemeral managed kafka e2e test")
 
 	nn := types.NamespacedName{
@@ -742,7 +673,7 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 	secretData["token.url"] = "https://token.url"
 	secretName := "managed-ephem-secret"
 	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
-	assert.Nil(t, err)
+	assert.Nil(suite.T(), err)
 
 	cwData := map[string]string{
 		"aws_access_key_id":     "key_id",
@@ -761,41 +692,39 @@ func TestManagedKafkaConnectBuilderCreate(t *testing.T) {
 
 	env, app, err := createManagedKafkaClowderStack(nn, secretName)
 
-	assert.Nil(t, err)
+	assert.Nil(suite.T(), err)
 
-	assert.NotNil(t, app)
-	assert.NotNil(t, env)
+	assert.NotNil(suite.T(), app)
+	assert.NotNil(suite.T(), env)
 
 	mockClient.createStaticTopic("ephemeral-dont-delete")
 	mockClient.createStaticTopic("ephemeral.managed.kafka.name.inventory")
 
 	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
-	assert.Equal(t, secretName, ephemManagedSecret.Name)
-	assert.Equal(t, nn.Namespace, ephemManagedSecret.Namespace)
-	assert.Eventually(t, func() bool {
-		return assert.Contains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
+	assert.Equal(suite.T(), secretName, ephemManagedSecret.Name)
+	assert.Equal(suite.T(), nn.Namespace, ephemManagedSecret.Namespace)
+	assert.Eventually(suite.T(), func() bool {
+		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
 	}, time.Second*15, time.Second*1)
-	assert.Eventually(t, func() bool {
-		return assert.Contains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
+	assert.Eventually(suite.T(), func() bool {
+		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
 	}, time.Second*15, time.Second*1)
 
 	ctx := context.Background()
 	err = k8sClient.Delete(ctx, env)
-	if err != nil {
-		t.Error("couldn't delete resource:", err)
-	}
+	assert.NoError(suite.T(), err, "couldn't delete resource")
 
-	assert.Eventually(t, func() bool {
-		return assert.NotContains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
+	assert.Eventually(suite.T(), func() bool {
+		return assert.NotContains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
 	}, time.Second*15, time.Second*1)
-	assert.Eventually(t, func() bool {
-		return assert.NotContains(t, mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
+	assert.Eventually(suite.T(), func() bool {
+		return assert.NotContains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
 	}, time.Second*15, time.Second*1)
-	assert.Eventually(t, func() bool {
-		return assert.NotContains(t, mockClient.topicList, "ephemeral.managed.kafka.name.inventory")
+	assert.Eventually(suite.T(), func() bool {
+		return assert.NotContains(suite.T(), mockClient.topicList, "ephemeral.managed.kafka.name.inventory")
 	}, time.Second*15, time.Second*1)
-	assert.Eventually(t, func() bool {
-		return assert.Contains(t, mockClient.topicList, "ephemeral-dont-delete")
+	assert.Eventually(suite.T(), func() bool {
+		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-dont-delete")
 	}, time.Second*15, time.Second*1)
 }
 
@@ -897,4 +826,8 @@ func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.
 	resp := m.makeResp(`{"msg":"topic created"}`, 200)
 	m.logResponse(&resp)
 	return &resp, nil
+}
+
+func TestSuiteRun(t *testing.T) {
+	suite.Run(t, new(TestSuite))
 }
