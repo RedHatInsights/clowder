@@ -46,6 +46,7 @@ import (
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/kafka"
@@ -110,6 +111,7 @@ func (suite *TestSuite) SetupSuite() {
 	k8sClient.Create(ctx, nsSpec)
 
 	go Run(":8080", ":8081", false, testEnv.Config, ctx, false)
+	go CreateAPIServer().ListenAndServe()
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
@@ -499,6 +501,21 @@ func (suite *TestSuite) TestCreateClowdApp() {
 	assert.NoError(suite.T(), err)
 
 	scaledObjectValidation(suite.T(), app, &scaler, &d)
+
+	resp, _ := http.Get("http://127.0.0.1:2019/config/")
+	config := clowderconfig.ClowderConfig{}
+	sData, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(sData, &config)
+
+	assert.NoError(suite.T(), err, "failed test because API not available")
+
+	resp, _ = http.Get("http://127.0.0.1:2019/clowdapps/present/")
+	capps := []string{}
+	sData, _ = ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(sData, &capps)
+
+	assert.NoError(suite.T(), err, "failed to unmarshal")
+	assert.Contains(suite.T(), capps, "test.test", "app not present in API call")
 }
 
 func metadataValidation(t *testing.T, app *crd.ClowdApp, jsonContent *config.AppConfig) {

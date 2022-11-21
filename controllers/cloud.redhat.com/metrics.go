@@ -10,6 +10,38 @@ var managedEnvironments = map[string]bool{}
 var presentApps = map[string]bool{}
 var presentEnvironments = map[string]bool{}
 
+func GetManagedApps() []string {
+	var apps []string
+	for app := range managedApps {
+		apps = append(apps, app)
+	}
+	return apps
+}
+
+func GetPresentApps() []string {
+	var apps []string
+	for app := range presentApps {
+		apps = append(apps, app)
+	}
+	return apps
+}
+
+func GetManagedEnvs() []string {
+	var apps []string
+	for app := range managedEnvironments {
+		apps = append(apps, app)
+	}
+	return apps
+}
+
+func GetPresentEnvs() []string {
+	var apps []string
+	for app := range presentEnvironments {
+		apps = append(apps, app)
+	}
+	return apps
+}
+
 var (
 	managedAppsMetric = prometheus.NewGauge(
 		prometheus.GaugeOpts{
