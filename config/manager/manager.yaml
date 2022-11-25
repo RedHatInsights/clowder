@@ -25,7 +25,12 @@ spec:
         control-plane: controller-manager
     spec:
       securityContext:
+        allowPrivilegeEscalation: false
         runAsNonRoot: true
+        capabilities:
+          drop: 
+          - ALL
+        readOnlyRootFilesystem: true
       containers:
       - command:
         - /manager
