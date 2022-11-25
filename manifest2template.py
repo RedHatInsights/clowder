@@ -2,7 +2,7 @@
 
 import yaml
 import sys
-import subprocess
+import os
 import argparse
 
 yamls = yaml.safe_load_all(sys.stdin)
@@ -30,7 +30,7 @@ if not args.mutate:
         del template["objects"][item]
 
 if args.config:
-    with open(args.config) as f:
+    with open(os.path.realpath(args.config)) as f:
         data = f.read()
     config = yaml.safe_load(data)
     template["objects"].append(config)
