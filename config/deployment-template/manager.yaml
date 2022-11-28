@@ -9,3 +9,10 @@ spec:
       containers:
       - image: ${IMAGE}:${IMAGE_TAG}
         name: manager
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: 
+            - ALL
+          readOnlyRootFilesystem: true

@@ -7397,7 +7397,11 @@ objects:
               memory: 500Mi
           securityContext:
             allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
           volumeMounts:
           - mountPath: /tmp/k8s-webhook-server/serving-certs
             name: cert
@@ -7405,6 +7409,11 @@ objects:
           - mountPath: /config/
             name: config
         securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
           runAsNonRoot: true
         serviceAccountName: clowder-controller-manager
         terminationGracePeriodSeconds: 10
