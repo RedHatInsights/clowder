@@ -97,7 +97,7 @@ To persist these changes for every minikube invocation, run the following:
 minikube config set cpus 4
 minikube config set memory 16000
 minikube config set disk-size 36GB
-minikube config set vm-driver kvm2
+minikube config set driver kvm2
 
 If you encounter any kvm issues, please take a look
 xref:docs/antora/modules/ROOT/pages/developer-guide.adoc[at the troubleshooting guide]
