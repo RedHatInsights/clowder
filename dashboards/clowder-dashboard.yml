@@ -34,7 +34,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1662480277722,
+      "iteration": 1669994266328,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1734,6 +1734,312 @@ data:
           "title": "App Reconciliation Requests",
           "transparent": true,
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 35,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "max": 1.05,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.95
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 49
+          },
+          "id": 41,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "(sum by (controller) (avg_over_time(controller_runtime_reconcile_total{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", result=~\"success\"}[28d]))) / (sum by (controller) (avg_over_time(controller_runtime_reconcile_total{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", result=~\"error|success\"}[28d])))",
+              "instant": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "SLO: Reconciliation Error Rate [30d]",
+          "transparent": true,
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 35,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 49
+          },
+          "id": 43,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.0.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdapp\", le=\"4\"}[30d])) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp\", le=\"+Inf\"}[30d]))",
+              "hide": false,
+              "legendFormat": "clowdapp",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdjobinvocation\", le=\"4\"}[28d])) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdjobinvocation\", le=\"+Inf\"}[28d]))",
+              "hide": false,
+              "legendFormat": "clowdenvironment",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdenvironment\", le=\"4\"}[28d])) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdenvironment\", le=\"+Inf\"}[28d]))",
+              "hide": false,
+              "legendFormat": "clowdjobinvocation",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Reconciliation Time SLI",
+          "transparent": true,
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "line"
+                }
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 16,
+            "y": 49
+          },
+          "id": 41,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.0.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "expr": "100 * (1 - avg_over_time((sum(workqueue_depth{service=\"clowder-controller-manager-metrics-service-non-auth\"}) > bool 50)[28d:5m]))",
+              "legendFormat": "SLI",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "WorkQueue SLI",
+          "type": "timeseries"
         }
       ],
       "refresh": false,
@@ -1744,9 +2050,9 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
-              "text": "c-rh-c-eph-prometheus",
-              "value": "c-rh-c-eph-prometheus"
+              "selected": false,
+              "text": "crcs02ue1-prometheus",
+              "value": "crcs02ue1-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -1763,13 +2069,13 @@ data:
         ]
       },
       "time": {
-        "from": "now-3h",
+        "from": "now-1h",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 5,
+      "version": 3,
       "weekStart": ""
     }
