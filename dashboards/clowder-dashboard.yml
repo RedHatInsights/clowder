@@ -2012,7 +2012,7 @@ data:
             "x": 16,
             "y": 49
           },
-          "id": 41,
+          "id": 42,
           "options": {
             "legend": {
               "calcs": [],
@@ -2050,9 +2050,9 @@ data:
         "list": [
           {
             "current": {
-              "selected": false,
-              "text": "crcs02ue1-prometheus",
-              "value": "crcs02ue1-prometheus"
+              "selected": true,
+              "text": "c-rh-c-eph-prometheus",
+              "value": "c-rh-c-eph-prometheus"
             },
             "hide": 0,
             "includeAll": false,
