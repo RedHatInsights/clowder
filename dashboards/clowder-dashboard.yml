@@ -34,7 +34,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1669994266328,
+      "iteration": 1670257371445,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1770,11 +1770,11 @@ data:
                   "mode": "none"
                 },
                 "thresholdsStyle": {
-                  "mode": "off"
+                  "mode": "line"
                 }
               },
               "mappings": [],
-              "max": 1.05,
+              "max": 100,
               "min": 0,
               "thresholds": {
                 "mode": "absolute",
@@ -1784,11 +1784,12 @@ data:
                     "value": null
                   },
                   {
-                    "color": "red",
-                    "value": 0.95
+                    "color": "yellow",
+                    "value": 99
                   }
                 ]
-              }
+              },
+              "unit": "percent"
             },
             "overrides": []
           },
@@ -1818,14 +1819,14 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "(sum by (controller) (avg_over_time(controller_runtime_reconcile_total{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", result=~\"success\"}[28d]))) / (sum by (controller) (avg_over_time(controller_runtime_reconcile_total{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", result=~\"error|success\"}[28d])))",
+              "expr": "100 * (sum by (controller) (avg_over_time(controller_runtime_reconcile_total{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", result=~\"success\"}[28d]))) / (sum by (controller) (avg_over_time(controller_runtime_reconcile_total{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", result=~\"error|success\"}[28d])))",
               "instant": false,
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "SLO: Reconciliation Error Rate [30d]",
+          "title": "Reconciliation Error Rate SLI",
           "transparent": true,
           "type": "timeseries"
         },
@@ -1864,7 +1865,7 @@ data:
                   "mode": "none"
                 },
                 "thresholdsStyle": {
-                  "mode": "off"
+                  "mode": "line"
                 }
               },
               "mappings": [],
@@ -1878,8 +1879,8 @@ data:
                     "value": null
                   },
                   {
-                    "color": "red",
-                    "value": 80
+                    "color": "yellow",
+                    "value": 95
                   }
                 ]
               },
@@ -1893,7 +1894,7 @@ data:
             "x": 8,
             "y": 49
           },
-          "id": 43,
+          "id": 42,
           "options": {
             "legend": {
               "calcs": [],
@@ -1913,35 +1914,11 @@ data:
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdapp\", le=\"4\"}[30d])) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp\", le=\"+Inf\"}[30d]))",
+              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"4\"}[28d])) by (controller) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"+Inf\"}[28d])) by (controller)",
               "hide": false,
-              "legendFormat": "clowdapp",
+              "legendFormat": "{{controller}}",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "code",
-              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdjobinvocation\", le=\"4\"}[28d])) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdjobinvocation\", le=\"+Inf\"}[28d]))",
-              "hide": false,
-              "legendFormat": "clowdenvironment",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "code",
-              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdenvironment\", le=\"4\"}[28d])) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=\"clowdenvironment\", le=\"+Inf\"}[28d]))",
-              "hide": false,
-              "legendFormat": "clowdjobinvocation",
-              "range": true,
-              "refId": "C"
             }
           ],
           "title": "Reconciliation Time SLI",
@@ -1998,7 +1975,7 @@ data:
                   },
                   {
                     "color": "#EAB839",
-                    "value": 90
+                    "value": 99
                   }
                 ]
               },
@@ -2012,7 +1989,7 @@ data:
             "x": 16,
             "y": 49
           },
-          "id": 42,
+          "id": 43,
           "options": {
             "legend": {
               "calcs": [],
@@ -2051,8 +2028,8 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "c-rh-c-eph-prometheus",
-              "value": "c-rh-c-eph-prometheus"
+              "text": "crcp01ue1-prometheus",
+              "value": "crcp01ue1-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -2079,4 +2056,3 @@ data:
       "version": 3,
       "weekStart": ""
     }
-  
