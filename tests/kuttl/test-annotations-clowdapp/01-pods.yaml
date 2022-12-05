@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-annotations-deployment
+  name: test-annotations-clowdapp
 spec:
-  targetNamespace: test-annotations-deployment
+  targetNamespace: test-annotations-clowdapp
   providers:
     web:
       port: 8000
@@ -35,18 +35,15 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-annotations-deployment
+  namespace: test-annotations-clowdapp
   annotations:
     TestAnnotationTopLevel: "Pretty Cool"
 spec:
-  envName: test-annotations-deployment
+  envName: test-annotations-clowdapp
   deployments:
   - name: processor
-    metadata:
-      annotations:
-        TestAnnotationDeploymentLevel: "Pretty Cool again"
     podSpec:
       image: quay.io/psav/clowder-hello
-  - name: processor-no-annotation
+  - name: processor-2
     podSpec:
       image: quay.io/psav/clowder-hello
