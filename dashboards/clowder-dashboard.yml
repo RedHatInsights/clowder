@@ -2028,8 +2028,8 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "crcp01ue1-prometheus",
-              "value": "crcp01ue1-prometheus"
+              "text": "c-rh-c-eph-prometheus",
+              "value": "c-rh-c-eph-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -2046,7 +2046,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-3h",
         "to": "now"
       },
       "timepicker": {},
