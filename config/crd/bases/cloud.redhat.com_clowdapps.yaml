@@ -2821,6 +2821,14 @@ spec:
                       description: 'WebServices defines the structs for the three
                         exposed web services: public, private and metrics.'
                       properties:
+                        metadata:
+                          description: Metadata for applying annotations etc to WebServices
+                          properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                          type: object
                         metrics:
                           description: MetricsWebService is the definition of the
                             metrics web service. This is automatically enabled and

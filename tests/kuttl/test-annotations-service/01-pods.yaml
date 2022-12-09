@@ -1,0 +1,54 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-annotations-service
+spec:
+  targetNamespace: test-annotations-service
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-annotations-service
+  annotations:
+    TestAnnotation: "Pretty Cool"
+spec:
+  envName: test-annotations-service
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    webServices:
+      metadata:
+        annotations:
+          TestAnnotation: "Boop"
+      public:
+        enabled: true
+      private:
+        enabled: true

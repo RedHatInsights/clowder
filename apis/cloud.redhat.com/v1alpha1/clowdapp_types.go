@@ -168,12 +168,18 @@ type PrivateWebService struct {
 type MetricsWebService struct {
 }
 
+// Metadata for applying annotations etc to WebServices
+type WebServicesMetadata struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
 // WebServices defines the structs for the three exposed web services: public,
 // private and metrics.
 type WebServices struct {
-	Public  PublicWebService  `json:"public,omitempty"`
-	Private PrivateWebService `json:"private,omitempty"`
-	Metrics MetricsWebService `json:"metrics,omitempty"`
+	Public              PublicWebService    `json:"public,omitempty"`
+	Private             PrivateWebService   `json:"private,omitempty"`
+	Metrics             MetricsWebService   `json:"metrics,omitempty"`
+	WebServicesMetadata WebServicesMetadata `json:"metadata,omitempty"`
 }
 
 // K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'

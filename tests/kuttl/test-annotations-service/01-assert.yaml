@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-annotations-service
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-annotations-service
+  annotations:
+    TestAnnotation: "Pretty Cool"
+spec:
+  strategy:
+    type: RollingUpdate
+  template:
+    spec:
+      serviceAccountName: puptoo-processor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-processor
+  namespace: test-annotations-service
+  annotations:
+    TestAnnotation: "Boop"
+spec:
+  selector:
+    pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    protocol: TCP
+    appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    protocol: TCP
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    protocol: TCP
