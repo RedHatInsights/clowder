@@ -36,8 +36,6 @@ kind: ClowdApp
 metadata:
   name: puptoo
   namespace: test-annotations-service
-  annotations:
-    TestAnnotation: "Pretty Cool"
 spec:
   envName: test-annotations-service
   deployments:
