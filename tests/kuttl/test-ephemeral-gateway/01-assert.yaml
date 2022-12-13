@@ -138,4 +138,4 @@ spec:
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/cloudservices/mocktitlements:8b9db81
+      - image: quay.io/cloudservices/mocktitlements:e24820c
