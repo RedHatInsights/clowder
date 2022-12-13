@@ -2890,8 +2890,8 @@ objects:
                           exposed web services: public, private and metrics.'
                         properties:
                           metadata:
-                            description: Allows for defining custom webServices metadata,
-                              such as annotations
+                            description: Metadata for applying annotations etc to
+                              WebServices
                             properties:
                               annotations:
                                 additionalProperties:
