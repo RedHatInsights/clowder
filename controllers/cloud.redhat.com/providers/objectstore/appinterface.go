@@ -76,7 +76,7 @@ func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) e
 
 	if len(missing) > 0 {
 		bucketStr := strings.Join(missing, ", ")
-		return errors.New("Missing buckets from app-interface: " + bucketStr)
+		return errors.NewClowderError("Missing buckets from app-interface: " + bucketStr)
 	}
 
 	c.Buckets = buckets
@@ -113,7 +113,7 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	providers.ExtractSecretData(secrets, extractFnNoAnno, keys...)
 
 	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
-		err := errors.New("Could not find object store hostname from secrets")
+		err := errors.NewClowderError("Could not find object store hostname from secrets")
 		return nil, err
 	}
 

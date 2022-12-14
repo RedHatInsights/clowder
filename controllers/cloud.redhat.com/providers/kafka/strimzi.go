@@ -192,59 +192,92 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
 	var entityTlsLimits, entityTlsRequests apiextensions.JSON
 
-	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
+	err = kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kConfig: %w", err)
+	}
 
-	kRequests.UnmarshalJSON([]byte(`{
+	err = kRequests.UnmarshalJSON([]byte(`{
         "cpu": "250m",
         "memory": "600Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kRequests: %w", err)
+	}
 
-	kLimits.UnmarshalJSON([]byte(`{
+	err = kLimits.UnmarshalJSON([]byte(`{
         "cpu": "500m",
         "memory": "1Gi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kLimits: %w", err)
+	}
 
-	zRequests.UnmarshalJSON([]byte(`{
+	err = zRequests.UnmarshalJSON([]byte(`{
         "cpu": "200m",
         "memory": "400Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal zRequests: %w", err)
+	}
 
-	zLimits.UnmarshalJSON([]byte(`{
+	err = zLimits.UnmarshalJSON([]byte(`{
         "cpu": "350m",
         "memory": "800Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal zLimits: %w", err)
+	}
 
-	entityUserRequests.UnmarshalJSON([]byte(`{
+	err = entityUserRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "250Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityUserRequests: %w", err)
+	}
 
-	entityUserLimits.UnmarshalJSON([]byte(`{
+	err = entityUserLimits.UnmarshalJSON([]byte(`{
         "cpu": "400m",
         "memory": "500Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityUserLimits: %w", err)
+	}
 
-	entityTopicRequests.UnmarshalJSON([]byte(`{
+	err = entityTopicRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "250Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTopicRequests: %w", err)
+	}
 
-	entityTopicLimits.UnmarshalJSON([]byte(`{
+	err = entityTopicLimits.UnmarshalJSON([]byte(`{
         "cpu": "200m",
         "memory": "500Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTopicLimits: %w", err)
+	}
 
-	entityTlsRequests.UnmarshalJSON([]byte(`{
+	err = entityTlsRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "50Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTlsRequests: %w", err)
+	}
 
-	entityTlsLimits.UnmarshalJSON([]byte(`{
+	err = entityTlsLimits.UnmarshalJSON([]byte(`{
         "cpu": "100m",
         "memory": "100Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTlsLimits: %w", err)
+	}
 
 	// check if defaults have been overridden in ClowdEnvironment
 	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests != nil {
@@ -799,12 +832,12 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 			}
 
 			if ku.Status == nil || ku.Status.Username == nil {
-				return errors.New("no username in kafkauser status")
+				return errors.NewClowderError("no username in kafkauser status")
 			}
 			broker.Sasl.Username = ku.Status.Username
 
 			if ku.Status.Secret == nil {
-				return errors.New("no secret in kafkauser status")
+				return errors.NewClowderError("no secret in kafkauser status")
 			}
 
 			secnn := types.NamespacedName{
@@ -820,7 +853,7 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 			}
 
 			if kafkaSecret.Data["password"] == nil {
-				return errors.New("no password in kafkauser secret")
+				return errors.NewClowderError("no password in kafkauser secret")
 			}
 			password := string(kafkaSecret.Data["password"])
 			broker.Sasl.Password = &password
@@ -997,7 +1030,7 @@ func processTopicValues(
 			out, _ := f(valList)
 			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
 		} else {
-			return errors.New(fmt.Sprintf("no conversion type for %s", key))
+			return errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
 
@@ -1020,11 +1053,11 @@ func processTopicValues(
 	if len(replicaValList) > 0 {
 		maxReplicas, err := utils.IntMax(replicaValList)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
+			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
 		maxReplicasInt, err := strconv.Atoi(maxReplicas)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
+			return errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
 		k.Spec.Replicas = utils.Int32Ptr(maxReplicasInt)
 		if *k.Spec.Replicas < int32(1) {
@@ -1036,11 +1069,11 @@ func processTopicValues(
 	if len(partitionValList) > 0 {
 		maxPartitions, err := utils.IntMax(partitionValList)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
+			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
 		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
+			return errors.NewClowderError(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
 		k.Spec.Partitions = utils.Int32Ptr(maxPartitionsInt)
 		if *k.Spec.Partitions < int32(1) {

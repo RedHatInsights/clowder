@@ -17,7 +17,7 @@ func GetLogging(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneLogging(c), nil
 	default:
 		errStr := fmt.Sprintf("No matching logging mode for %s", logMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

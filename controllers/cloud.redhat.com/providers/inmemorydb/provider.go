@@ -24,7 +24,7 @@ func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneInMemoryDb(c)
 	default:
 		errStr := fmt.Sprintf("No matching in-memory db mode for %s", dbMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

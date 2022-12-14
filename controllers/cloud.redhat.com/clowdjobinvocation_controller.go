@@ -144,7 +144,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if !app.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 		r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-		readyErr := errors.New(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
+		readyErr := errors.NewClowderError(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
 		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, readyErr); condErr != nil {
 			return ctrl.Result{}, condErr
 		}
@@ -272,7 +272,7 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.
 	labelMaxLength := 63
 
 	if len(jobName) > labelMaxLength {
-		return errors.New(fmt.Sprintf("[%s] contains a label with character length greater than 63", jobName))
+		return errors.NewClowderError(fmt.Sprintf("[%s] contains a label with character length greater than 63", jobName))
 	} else {
 		nn.Name = jobName
 	}
@@ -308,7 +308,7 @@ func getJobFromName(jobName string, app *crd.ClowdApp) (job crd.Job, err error) 
 			return j, nil
 		}
 	}
-	return crd.Job{}, errors.New(fmt.Sprintf("No such job %s", jobName))
+	return crd.Job{}, errors.NewClowderError(fmt.Sprintf("No such job %s", jobName))
 }
 
 // SetupWithManager registers the CJI with the main manager process

@@ -108,7 +108,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	image, ok := imageList[version]
 
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
+		return nil, errors.NewClowderError(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
 	}
 
 	imgComponents := strings.Split(image, ":")

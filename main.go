@@ -24,6 +24,7 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"go.uber.org/zap"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/go-logr/zapr"
@@ -50,6 +51,16 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
+func loggerSync(log *zap.Logger) {
+	// Ignore the error from sync
+	_ = log.Sync()
+}
+
+func runApiServer() {
+	// Ignore error from starting pprof
+	_ = http.ListenAndServe("localhost:8000", nil)
+}
+
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
@@ -68,10 +79,10 @@ func main() {
 
 	ctrl.SetLogger(zapr.NewLogger(logger))
 
-	defer logger.Sync()
+	defer loggerSync(logger)
 
 	if clowderconfig.LoadedConfig.DebugOptions.Pprof.Enable {
-		go http.ListenAndServe("localhost:8000", nil)
+		go runApiServer()
 	}
 
 	go func() {

@@ -352,7 +352,11 @@ func (mep *managedEphemProvider) configureKafkaConnectCluster() error {
 		return err
 	}
 
-	builder.BuildSpec()
+	err = builder.BuildSpec()
+
+	if err != nil {
+		return fmt.Errorf("could not build spec: %w", err)
+	}
 
 	return builder.UpdateCache()
 }
@@ -457,7 +461,7 @@ func (mep *managedEphemProvider) getTopicConfigs(keys map[string][]string) ([]Co
 				Value: out,
 			})
 		} else {
-			return topicConfig, errors.New(fmt.Sprintf("no conversion type for %s", key))
+			return topicConfig, errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
 
@@ -470,11 +474,11 @@ func (mep *managedEphemProvider) getMaxFromList(list []string, floor int, ceilin
 	if len(list) > 0 {
 		maxValue, err := utils.IntMax(list)
 		if err != nil {
-			return max, errors.New(fmt.Sprintf("could not compute max for %v", list))
+			return max, errors.NewClowderError(fmt.Sprintf("could not compute max for %v", list))
 		}
 		maxValInt, err := strconv.Atoi(maxValue)
 		if err != nil {
-			return max, errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxValInt))
+			return max, errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxValInt))
 		}
 		max = maxValInt
 		if max < 1 {
@@ -662,15 +666,21 @@ func newKafkaConnectBuilder(provider providers.Provider, secretData map[string][
 	}
 }
 
-func (kcb *KafkaConnectBuilder) BuildSpec() {
+func (kcb *KafkaConnectBuilder) BuildSpec() error {
 	replicas := kcb.getReplicas()
 	version := kcb.getVersion()
 	image := kcb.getImage()
+
+	config, err := kcb.getSpecConfig()
+	if err != nil {
+		return fmt.Errorf("could not get config: %w", err)
+	}
+
 	kcb.kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: fmt.Sprintf("%s:%s", kcb.getSecret("hostname"), kcb.getSecret("port")),
 		Version:          &version,
-		Config:           kcb.getSpecConfig(),
+		Config:           config,
 		Image:            &image,
 		Resources: &strimzi.KafkaConnectSpecResources{
 			Requests: kcb.getRequests(),
@@ -691,6 +701,7 @@ func (kcb *KafkaConnectBuilder) BuildSpec() {
 	}
 	kcb.setTLSAndAuthentication()
 	kcb.setAnnotations()
+	return nil
 }
 
 func (kcb *KafkaConnectBuilder) Create() error {
@@ -717,7 +728,7 @@ func (kcb *KafkaConnectBuilder) VerifyEnvLabel() error {
 	return nil
 }
 
-func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
+func (kcb *KafkaConnectBuilder) getSpecConfig() (*apiextensions.JSON, error) {
 	var config apiextensions.JSON
 
 	connectClusterConfigs := fmt.Sprintf("%s-connect-cluster-configs", kcb.Env.Name)
@@ -725,7 +736,7 @@ func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
 	connectClusterStatus := fmt.Sprintf("%s-connect-cluster-status", kcb.Env.Name)
 	connectClusterGroupId := fmt.Sprintf("%s-connect-cluster", kcb.Env.Name)
 
-	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
+	err := config.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"config.storage.replication.factor":       "3",
 		"config.storage.topic":                    "%s",
 		"connector.client.config.override.policy": "All",
@@ -736,8 +747,11 @@ func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
 		"status.storage.replication.factor":       "3",
 		"status.storage.topic":                    "%s"
 	}`, connectClusterConfigs, connectClusterGroupId, connectClusterOffsets, connectClusterStatus)))
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal config: %w", err)
+	}
 
-	return &config
+	return &config, nil
 }
 
 func (kcb *KafkaConnectBuilder) getLimits() *apiextensions.JSON {

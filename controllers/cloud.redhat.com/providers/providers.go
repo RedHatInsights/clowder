@@ -50,18 +50,18 @@ func (p *providersRegistration) Less(i, j int) bool {
 }
 
 func (p *providersRegistration) Register(
-	SetupProvider func(c *Provider) (ClowderProvider, error),
-	Order int,
-	Name string,
-	FinalizeProvider ...func(c *Provider) error,
+	setupProvider func(c *Provider) (ClowderProvider, error),
+	order int,
+	name string,
+	finalizeProvider ...func(c *Provider) error,
 ) {
 	acc := providerAccessor{
-		SetupProvider: SetupProvider,
-		Order:         Order,
-		Name:          Name,
+		SetupProvider: setupProvider,
+		Order:         order,
+		Name:          name,
 	}
-	if len(FinalizeProvider) == 1 {
-		acc.FinalizeProvider = FinalizeProvider[0]
+	if len(finalizeProvider) == 1 {
+		acc.FinalizeProvider = finalizeProvider[0]
 	}
 	p.Registry = append(p.Registry, acc)
 	sort.Sort(p)

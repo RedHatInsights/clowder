@@ -65,11 +65,20 @@ type TestSuite struct {
 	stopController context.CancelFunc
 }
 
+func runApiTestServer() {
+	_ = CreateAPIServer().ListenAndServe()
+}
+
+func loggerSync(log *zap.Logger) {
+	// Ignore the error from sync
+	_ = log.Sync()
+}
+
 func (suite *TestSuite) SetupSuite() {
 	// call flag.Parse() here if TestMain uses flags
 	ctrl.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(true)))
 	logger, _ = zap.NewProduction()
-	defer logger.Sync()
+	defer loggerSync(logger)
 	logger.Info("bootstrapping test environment")
 
 	testEnv = &envtest.Environment{
@@ -108,10 +117,11 @@ func (suite *TestSuite) SetupSuite() {
 	suite.stopController = stopController
 
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
-	k8sClient.Create(ctx, nsSpec)
+	err = k8sClient.Create(ctx, nsSpec)
+	assert.NoError(suite.T(), err, "error creating namespace")
 
 	go Run(":8080", ":8081", false, testEnv.Config, ctx, false)
-	go CreateAPIServer().ListenAndServe()
+	go runApiTestServer()
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")

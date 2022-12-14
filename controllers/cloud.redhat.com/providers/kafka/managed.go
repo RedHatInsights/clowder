@@ -144,7 +144,7 @@ func (k *managedKafkaProvider) getSecretRef() (types.NamespacedName, error) {
 	}
 	nullName := types.NamespacedName{}
 	if secretRef == nullName {
-		return nullName, errors.New("no secret ref defined for managed Kafka")
+		return nullName, errors.NewClowderError("no secret ref defined for managed Kafka")
 	}
 	return secretRef, nil
 }

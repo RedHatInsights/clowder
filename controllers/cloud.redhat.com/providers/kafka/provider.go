@@ -48,7 +48,7 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneKafka(c)
 	default:
 		errStr := fmt.Sprintf("No matching kafka mode for %s", kafkaMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

@@ -135,12 +135,12 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 	}
 
 	if len(foundMatchingApps) == 0 {
-		return nil, errors.New(fmt.Sprintf("unable to locate '%s' ClowdApp in environment", name))
+		return nil, errors.NewClowderError(fmt.Sprintf("unable to locate '%s' ClowdApp in environment", name))
 	}
 
 	if len(foundMatchingApps) > 1 {
 		// this shouldn't happen, but check just in case...
-		return nil, errors.New(fmt.Sprintf("found more than one '%s' ClowdApp in environment", name))
+		return nil, errors.NewClowderError(fmt.Sprintf("found more than one '%s' ClowdApp in environment", name))
 	}
 
 	refApp := foundMatchingApps[0]
@@ -160,7 +160,7 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 		}
 	} else {
 		if app.Spec.Database.SharedDBAppName != "" {
-			return nil, errors.New("Shared DB app cannot use Cyndi")
+			return nil, errors.NewClowderError("Shared DB app cannot use Cyndi")
 		}
 
 		if s.GetEnv().Spec.Providers.Database.Mode == "local" {

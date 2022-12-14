@@ -145,7 +145,7 @@ func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() err
 		namespace.SetName(r.env.Status.TargetNamespace)
 		r.log.Info(fmt.Sprintf("Removing auto-generated namespace for %s", r.env.Name))
 		r.recorder.Eventf(r.env, "Warning", "NamespaceDeletion", "Clowder Environment [%s] had no targetNamespace, deleting generated namespace", r.env.Name)
-		r.client.Delete(context.TODO(), namespace)
+		_ = r.client.Delete(context.TODO(), namespace)
 	}
 	delete(managedEnvironments, r.env.Name)
 	managedEnvsMetric.Set(float64(len(managedEnvironments)))

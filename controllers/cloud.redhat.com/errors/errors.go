@@ -48,8 +48,8 @@ func (a *ClowderError) Is(target error) bool {
 	return (a.Msg == b.Msg && a.Cause == b.Cause)
 }
 
-// New constructs a new ClowderError object.
-func New(msg string) *ClowderError {
+// NewClowderError constructs a new ClowderError object.
+func NewClowderError(msg string) *ClowderError {
 	stackField := zap.String("stack", "")
 
 	if stacksEnabled {
@@ -64,7 +64,7 @@ func New(msg string) *ClowderError {
 
 // Wrap takes an existing error an wraps it, returning a ClowderError
 func Wrap(msg string, err error) *ClowderError {
-	clowderErr := New(msg)
+	clowderErr := NewClowderError(msg)
 	clowderErr.Cause = err
 	var cerr *ClowderError
 	if errlib.As(err, &cerr) {

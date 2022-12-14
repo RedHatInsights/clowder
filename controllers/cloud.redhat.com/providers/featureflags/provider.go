@@ -24,7 +24,7 @@ func GetFeatureFlags(c *p.Provider) (p.ClowderProvider, error) {
 		return NewNoneFeatureFlagsProvider(c)
 	default:
 		errStr := fmt.Sprintf("No matching featureflags mode for %s", ffMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

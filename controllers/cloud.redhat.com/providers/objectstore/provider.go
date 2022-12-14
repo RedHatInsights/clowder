@@ -24,7 +24,7 @@ func GetObjectStore(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneObjectStore(c)
 	default:
 		errStr := fmt.Sprintf("No matching object store mode for %s", objectStoreMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

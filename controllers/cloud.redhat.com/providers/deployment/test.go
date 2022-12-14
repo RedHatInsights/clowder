@@ -144,7 +144,10 @@ func TestResourceDefaults(t *testing.T) {
 
 			deployment := app.Spec.Deployments[0]
 
-			initDeployment(app, env, d, nn, &deployment)
+			err := initDeployment(app, env, d, nn, &deployment)
+			if err != nil {
+				t.Errorf("error was not nil")
+			}
 
 			var expectedLimitCPU, expectedLimitMemory, expectedRequestsCPU, expectedRequestsMemory resource.Quantity
 

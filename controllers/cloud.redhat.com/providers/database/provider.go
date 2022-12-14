@@ -31,7 +31,7 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 		return NewNoneDBProvider(c)
 	default:
 		errStr := fmt.Sprintf("No matching db mode for %s", dbMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 
@@ -51,5 +51,5 @@ func checkDependency(app *crd.ClowdApp) error {
 		}
 	}
 
-	return errors.New("The requested app's db was not found in the dependencies")
+	return errors.NewClowderError("The requested app's db was not found in the dependencies")
 }

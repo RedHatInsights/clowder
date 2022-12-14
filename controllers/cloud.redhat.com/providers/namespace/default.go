@@ -23,7 +23,7 @@ func (nsp *namespaceProvider) EnvProvide() error {
 
 	if nSerr == nil {
 		// CLOBBER: Purposefully ignoring the error here
-		setLabelOnNamespace(&nsp.Provider, clowderNs)
+		_ = setLabelOnNamespace(&nsp.Provider, clowderNs)
 	}
 
 	return setLabelOnNamespace(&nsp.Provider, nsp.Env.Status.TargetNamespace)

@@ -17,7 +17,7 @@ import (
 func createServiceAccountForClowdObj(cache *rc.ObjectCache, ident rc.ResourceIdent, obj object.ClowdObject) error {
 
 	if obj.GetClowdNamespace() == "" {
-		err := errors.New("targetNamespace not yet populated")
+		err := errors.NewClowderError("targetNamespace not yet populated")
 		err.Requeue = true
 		return err
 	}
