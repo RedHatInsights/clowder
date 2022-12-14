@@ -255,12 +255,12 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
 
-	appSqlConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	appSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 	ctx, cancel := context.WithTimeout(db.Ctx, 5*time.Second)
 	defer cancel()
 
-	dbClient, err := sql.Open("postgres", appSqlConnectionString)
+	dbClient, err := sql.Open("postgres", appSQLConnectionString)
 	if err != nil {
 		return err
 	}
