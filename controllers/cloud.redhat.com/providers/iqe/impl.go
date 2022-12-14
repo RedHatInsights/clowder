@@ -144,7 +144,7 @@ func attachConfigVolumes(ctx context.Context, c *core.Container, cache *rc.Objec
 	switch configAccess {
 	// Build cdenvconfig.json and mount it
 	case "environment":
-		if secretErr := addIqeSecretToCache(cache, ctx, cji, app, env.Name, logger, client); secretErr != nil {
+		if secretErr := addIqeSecretToCache(ctx, cache, cji, app, env.Name, logger, client); secretErr != nil {
 			logger.Error(secretErr, "cannot add IQE secret to cache")
 			return secretErr
 		}
@@ -333,7 +333,7 @@ func addVaultSecretToCache(ctx context.Context, cache *rc.ObjectCache, cji *crd.
 	return vaultSecret, err
 }
 
-func addIqeSecretToCache(cache *rc.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string, logger logr.Logger, client client.Client) error {
+func addIqeSecretToCache(ctx context.Context, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string, logger logr.Logger, client client.Client) error {
 	iqeSecret := &core.Secret{}
 	secretName := fmt.Sprintf("%s-iqe", cji.Name)
 
@@ -362,10 +362,10 @@ func addIqeSecretToCache(cache *rc.ObjectCache, ctx context.Context, cji *crd.Cl
 	// because we want a list of appConfigs, we need to nest this under the envConfig
 	appConfigs := make(map[string]config.AppConfig)
 	for _, app := range appList.Items {
-		appConfig, err := fetchConfig(types.NamespacedName{
+		appConfig, err := fetchConfig(ctx, types.NamespacedName{
 			Name:      app.Name,
 			Namespace: app.Namespace,
-		}, ctx, logger, client)
+		}, logger, client)
 		if err != nil {
 			// r.Recorder.Eventf(&app, "Warning", "AppConfigMissing", "app config [%s] missing", app.Name)
 			logger.Error(err, "Failed to fetch app config for app")
@@ -395,7 +395,7 @@ func addIqeSecretToCache(cache *rc.ObjectCache, ctx context.Context, cji *crd.Cl
 	return nil
 }
 
-func fetchConfig(name types.NamespacedName, ctx context.Context, logger logr.Logger, client client.Client) (config.AppConfig, error) {
+func fetchConfig(ctx context.Context, name types.NamespacedName, logger logr.Logger, client client.Client) (config.AppConfig, error) {
 	secretConfig := core.Secret{}
 	cfg := config.AppConfig{}
 

@@ -119,7 +119,7 @@ func (suite *TestSuite) SetupSuite() {
 	err = k8sClient.Create(ctx, nsSpec)
 	assert.NoError(suite.T(), err, "error creating namespace")
 
-	go Run(":8080", ":8081", false, testEnv.Config, ctx, false)
+	go Run(ctx, ":8080", ":8081", false, testEnv.Config, false)
 	go runAPITestServer()
 
 	for i := 1; i <= 50; i++ {

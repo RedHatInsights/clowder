@@ -8,9 +8,9 @@ import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var IMAGE_DATABASE_PG10 = "quay.io/cloudservices/postgresql-rds:10-9ee2984"
-var IMAGE_DATABASE_PG12 = "quay.io/cloudservices/postgresql-rds:12-9ee2984"
-var IMAGE_DATABASE_PG13 = "quay.io/cloudservices/postgresql-rds:13-9ee2984"
+var DefaultImageDatabasePG10 = "quay.io/cloudservices/postgresql-rds:10-9ee2984"
+var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-9ee2984"
+var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-9ee2984"
 
 // ProvName is the providers name ident.
 var ProvName = "database"
@@ -38,9 +38,9 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 func init() {
 	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
 	imageList = map[int32]string{
-		13: IMAGE_DATABASE_PG13,
-		12: IMAGE_DATABASE_PG12,
-		10: IMAGE_DATABASE_PG10,
+		13: DefaultImageDatabasePG13,
+		12: DefaultImageDatabasePG12,
+		10: DefaultImageDatabasePG10,
 	}
 }
 

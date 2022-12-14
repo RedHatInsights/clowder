@@ -187,7 +187,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
 	// default values for config/requests/limits in Strimzi resource specs
-	var kafConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
+	var kafConfig, kafRequests, kafLimits, zLimits, zRequests apiextensions.JSON
 	var entityUserLimits, entityUserRequests apiextensions.JSON
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
 	var entityTLSLimits, entityTLSRequests apiextensions.JSON
@@ -199,7 +199,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		return fmt.Errorf("could not unmarshal kConfig: %w", err)
 	}
 
-	err = kRequests.UnmarshalJSON([]byte(`{
+	err = kafRequests.UnmarshalJSON([]byte(`{
         "cpu": "250m",
         "memory": "600Mi"
 	}`))
@@ -207,7 +207,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		return fmt.Errorf("could not unmarshal kRequests: %w", err)
 	}
 
-	err = kLimits.UnmarshalJSON([]byte(`{
+	err = kafLimits.UnmarshalJSON([]byte(`{
         "cpu": "500m",
         "memory": "1Gi"
 	}`))
@@ -281,10 +281,10 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	// check if defaults have been overridden in ClowdEnvironment
 	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests != nil {
-		kRequests = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests
+		kafRequests = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests
 	}
 	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits != nil {
-		kLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
+		kafLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
 	}
 
 	k.Spec = &strimzi.KafkaSpec{
@@ -293,8 +293,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Version:  &version,
 			Replicas: replicas,
 			Resources: &strimzi.KafkaSpecKafkaResources{
-				Requests: &kRequests,
-				Limits:   &kLimits,
+				Requests: &kafRequests,
+				Limits:   &kafLimits,
 			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{

@@ -608,6 +608,7 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == 404 {
 		err = mep.createTopicOnKafka(newTopicName, settings, httpClient, adminHostname)

@@ -32,6 +32,7 @@ func fetchCa() (string, error) {
 	if err != nil {
 		return "", errors.Wrap("Error fetching CA bundle", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		msg := fmt.Sprintf("Bad status code: %d", resp.StatusCode)
