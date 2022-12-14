@@ -29,9 +29,9 @@ type IDAndParams struct {
 	ID     string
 }
 
-func NewIDAndParam(ID, limitCPU, limitMemory, requestsCPU, requestsMemory string) IDAndParams {
+func NewIDAndParam(id, limitCPU, limitMemory, requestsCPU, requestsMemory string) IDAndParams {
 	return IDAndParams{
-		ID: ID,
+		ID: id,
 		Params: Params{
 			"limits": {
 				"cpu":    limitCPU,
