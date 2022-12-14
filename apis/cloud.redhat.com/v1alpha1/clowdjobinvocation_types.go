@@ -220,7 +220,7 @@ func (i *ClowdJobInvocation) GetUID() types.UID {
 }
 
 // SetObjectMeta sets the metadata on a ClowdApp object.
-func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...omfunc) {
+func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...Omfunc) {
 	o.SetName(i.Name)
 	o.SetNamespace(i.Namespace)
 	o.SetLabels(i.GetLabels())
