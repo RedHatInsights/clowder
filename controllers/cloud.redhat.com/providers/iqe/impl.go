@@ -136,7 +136,7 @@ func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.C
 	return &c
 }
 
-func attachConfigVolumes(c *core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
+func attachConfigVolumes(ctx context.Context, c *core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
 
 	configAccess := env.Spec.Providers.Testing.ConfigAccess
@@ -195,7 +195,7 @@ func attachConfigVolumes(c *core.Container, cache *rc.ObjectCache, cji *crd.Clow
 }
 
 // CreateIqeJobResource will create a Job that contains a pod spec for running IQE
-func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, ctx context.Context, j *batchv1.Job, logger logr.Logger, client client.Client) error {
+func CreateIqeJobResource(ctx context.Context, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
@@ -218,7 +218,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	vaultSecretRef := env.Spec.Providers.Testing.Iqe.VaultSecretRef
 	if env.Spec.Providers.Testing.Iqe.VaultSecretRef != nullSecretRef {
 		// copy vault secret into destination namespace
-		vaultSecret, err := addVaultSecretToCache(cache, ctx, cji, vaultSecretRef, logger, client)
+		vaultSecret, err := addVaultSecretToCache(ctx, cache, cji, vaultSecretRef, logger, client)
 		if err != nil {
 			logger.Error(err, "unable to add vault secret to cache")
 			return err
@@ -228,7 +228,7 @@ func CreateIqeJobResource(cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, en
 	}
 
 	// Mount volumes to the IQE container
-	if err := attachConfigVolumes(iqeContainer, cache, cji, env, app, nn, ctx, j, logger, client); err != nil {
+	if err := attachConfigVolumes(ctx, iqeContainer, cache, cji, env, app, nn, j, logger, client); err != nil {
 		return err
 	}
 
@@ -307,7 +307,7 @@ func buildVaultEnvVars(vaultSecret *core.Secret) []core.EnvVar {
 	return vaultEnvVars
 }
 
-func addVaultSecretToCache(cache *rc.ObjectCache, ctx context.Context, cji *crd.ClowdJobInvocation, srcRef crd.NamespacedName, logger logr.Logger, client client.Client) (*core.Secret, error) {
+func addVaultSecretToCache(ctx context.Context, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, srcRef crd.NamespacedName, logger logr.Logger, client client.Client) (*core.Secret, error) {
 	dstSecretRef := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-vault", cji.Name),
 		Namespace: cji.Namespace,

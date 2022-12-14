@@ -243,7 +243,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC
 
 	c := core.Container{
 		Name:                     nn.Name,
-		Image:                    IMAGE_FEATUREFLAGS_UNLEASH,
+		Image:                    DefaultImageFeatureFlagsUnleash,
 		Env:                      envVars,
 		Ports:                    ports,
 		LivenessProbe:            &livenessProbe,

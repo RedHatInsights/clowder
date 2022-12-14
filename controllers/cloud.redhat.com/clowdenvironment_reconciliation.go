@@ -193,7 +193,7 @@ func (r *ClowdEnvironmentReconciliation) perProviderMetrics() (ctrl.Result, erro
 // Get or create and then update the cache for the target namespace
 func (r *ClowdEnvironmentReconciliation) initTargetNamespace() (ctrl.Result, error) {
 	result := ctrl.Result{}
-	var err error = nil
+	var err error
 
 	if r.env.Status.TargetNamespace != "" {
 		return result, err

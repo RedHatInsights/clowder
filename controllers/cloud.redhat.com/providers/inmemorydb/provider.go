@@ -7,7 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var IMAGE_INMEMORYDB_REDIS = "quay.io/cloudservices/redis-ephemeral:6"
+var DefaultImageInMemoryDBRedis = "quay.io/cloudservices/redis-ephemeral:6"
 
 // ProvName is the name/ident of the provider
 var ProvName = "inmemorydb"

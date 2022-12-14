@@ -271,9 +271,9 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	if pErr != nil {
 		if strings.Contains(pErr.Error(), fmt.Sprintf("database \"%s\" does not exist", app.Spec.Database.Name)) {
 
-			envSqlConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, db.Env.Name)
+			envSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, db.Env.Name)
 
-			envDbClient, envErr := sql.Open("postgres", envSqlConnectionString)
+			envDbClient, envErr := sql.Open("postgres", envSQLConnectionString)
 			if envErr != nil {
 				return envErr
 			}

@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	TERMINATION_LOG_PATH = "/dev/termination-log"
+	TerminationLogPath = "/dev/termination-log"
 )
 
 func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
@@ -237,7 +237,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Env:                      loadEnvVars(pod),
 		Resources:                ProcessResources(&pod, env),
 		VolumeMounts:             pod.VolumeMounts,
-		TerminationMessagePath:   TERMINATION_LOG_PATH,
+		TerminationMessagePath:   TerminationLogPath,
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
 	}
@@ -353,7 +353,7 @@ func ProcessInitContainers(nn types.NamespacedName, c *core.Container, ics []crd
 			Resources:                c.Resources,
 			VolumeMounts:             c.VolumeMounts,
 			ImagePullPolicy:          c.ImagePullPolicy,
-			TerminationMessagePath:   TERMINATION_LOG_PATH,
+			TerminationMessagePath:   TerminationLogPath,
 			TerminationMessagePolicy: core.TerminationMessageReadFile,
 		}
 

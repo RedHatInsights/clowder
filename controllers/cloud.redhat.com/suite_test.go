@@ -64,7 +64,7 @@ type TestSuite struct {
 	stopController context.CancelFunc
 }
 
-func runApiTestServer() {
+func runAPITestServer() {
 	_ = CreateAPIServer().ListenAndServe()
 }
 
@@ -120,7 +120,7 @@ func (suite *TestSuite) SetupSuite() {
 	assert.NoError(suite.T(), err, "error creating namespace")
 
 	go Run(":8080", ":8081", false, testEnv.Config, ctx, false)
-	go runApiTestServer()
+	go runAPITestServer()
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
@@ -129,6 +129,7 @@ func (suite *TestSuite) SetupSuite() {
 			logger.Info("Manager ready", zap.Int("duration", 100*i))
 			break
 		}
+		defer resp.Body.Close()
 
 		if i == 50 {
 			if err != nil {
@@ -511,14 +512,19 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	scaledObjectValidation(suite.T(), app, &scaler, &d)
 
-	resp, _ := http.Get("http://127.0.0.1:2019/config/")
+	resp, err := http.Get("http://127.0.0.1:2019/config/")
+	assert.NoError(suite.T(), err, "failed test because get failed")
+	defer resp.Body.Close()
+
 	config := clowderconfig.ClowderConfig{}
 	sData, _ := io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &config)
 
 	assert.NoError(suite.T(), err, "failed test because API not available")
 
-	resp, _ = http.Get("http://127.0.0.1:2019/clowdapps/present/")
+	resp, err = http.Get("http://127.0.0.1:2019/clowdapps/present/")
+	assert.NoError(suite.T(), err, "failed test because get failed")
+	defer resp.Body.Close()
 	capps := []string{}
 	sData, _ = io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &capps)
@@ -649,26 +655,6 @@ func fetch(ctx context.Context, name types.NamespacedName, resource client.Objec
 	return err
 }
 
-func mapEq(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for k, va := range a {
-		vb, ok := b[k]
-
-		if !ok {
-			return false
-		}
-
-		if va != vb {
-			return false
-		}
-	}
-
-	return true
-}
-
 func createEphemeralManagedSecret(name string, namespace string, cwData map[string]string) error {
 	secret := core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -681,7 +667,7 @@ func createEphemeralManagedSecret(name string, namespace string, cwData map[stri
 	return k8sClient.Create(context.Background(), &secret)
 }
 
-var ephemManagedKafkaHTTPLog []map[string]string = []map[string]string{}
+var ephemManagedKafkaHTTPLog = []map[string]string{}
 
 func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	logger.Info("Starting ephemeral managed kafka e2e test")

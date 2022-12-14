@@ -215,7 +215,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 
-		if err := iqe.CreateIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j, r.Log, r.Client); err != nil {
+		if err := iqe.CreateIqeJobResource(ctx, &cache, &cji, &env, &app, nn, &j, r.Log, r.Client); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {

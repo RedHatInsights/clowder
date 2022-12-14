@@ -129,9 +129,8 @@ func (r *ClowdAppReconciliation) isAppMarkedForDeletion() (ctrl.Result, error) {
 				return ctrl.Result{}, removeFinalizeErr
 			}
 			return ctrl.Result{}, NewSkippedError("app is marked for delete and finalizers removed")
-		} else {
-			return ctrl.Result{}, NewSkippedError("app is marked for delete and has no finalizer")
 		}
+		return ctrl.Result{}, NewSkippedError("app is marked for delete and has no finalizer")
 	}
 	return ctrl.Result{}, nil
 }

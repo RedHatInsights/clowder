@@ -56,7 +56,7 @@ func loggerSync(log *zap.Logger) {
 	_ = log.Sync()
 }
 
-func runApiServer() {
+func runAPIServer() {
 	// Ignore error from starting pprof
 	_ = http.ListenAndServe("localhost:8000", nil)
 }
@@ -82,7 +82,7 @@ func main() {
 	defer loggerSync(logger)
 
 	if clowderconfig.LoadedConfig.DebugOptions.Pprof.Enable {
-		go runApiServer()
+		go runAPIServer()
 	}
 
 	go func() {

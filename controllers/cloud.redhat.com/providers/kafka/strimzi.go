@@ -102,9 +102,9 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTcpBrokerConfig(listener))
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
 
@@ -187,12 +187,12 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
 	// default values for config/requests/limits in Strimzi resource specs
-	var kConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
+	var kafConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
 	var entityUserLimits, entityUserRequests apiextensions.JSON
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
-	var entityTlsLimits, entityTlsRequests apiextensions.JSON
+	var entityTLSLimits, entityTLSRequests apiextensions.JSON
 
-	err = kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
+	err = kafConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
 	if err != nil {
@@ -263,7 +263,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		return fmt.Errorf("could not unmarshal entityTopicLimits: %w", err)
 	}
 
-	err = entityTlsRequests.UnmarshalJSON([]byte(`{
+	err = entityTLSRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "50Mi"
 	}`))
@@ -271,7 +271,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		return fmt.Errorf("could not unmarshal entityTlsRequests: %w", err)
 	}
 
-	err = entityTlsLimits.UnmarshalJSON([]byte(`{
+	err = entityTLSLimits.UnmarshalJSON([]byte(`{
         "cpu": "100m",
         "memory": "100Mi"
 	}`))
@@ -289,7 +289,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config:   &kConfig,
+			Config:   &kafConfig,
 			Version:  &version,
 			Replicas: replicas,
 			Resources: &strimzi.KafkaSpecKafkaResources{
@@ -319,8 +319,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			},
 			TlsSidecar: &strimzi.KafkaSpecEntityOperatorTlsSidecar{
 				Resources: &strimzi.KafkaSpecEntityOperatorTlsSidecarResources{
-					Requests: &entityTlsRequests,
-					Limits:   &entityTlsLimits,
+					Requests: &entityTLSRequests,
+					Limits:   &entityTLSLimits,
 				},
 			},
 		},
@@ -331,11 +331,11 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		if err != nil {
 			return err
 		}
-		err = kConfig.UnmarshalJSON(jsonData)
+		err = kafConfig.UnmarshalJSON(jsonData)
 		if err != nil {
 			return fmt.Errorf("could not unmarshall json data: %w", err)
 		}
-		k.Spec.Kafka.Config = &kConfig
+		k.Spec.Kafka.Config = &kafConfig
 	}
 
 	k.Spec.Kafka.JvmOptions = &s.Env.Spec.Providers.Kafka.Cluster.JVMOptions
@@ -710,9 +710,9 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 	configs.Brokers = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			configs.Brokers = append(configs.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+			configs.Brokers = append(configs.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			configs.Brokers = append(configs.Brokers, buildTcpBrokerConfig(listener))
+			configs.Brokers = append(configs.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
 
@@ -725,7 +725,7 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 	return nil
 }
 
-func buildTcpBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.BrokerConfig {
+func buildTCPBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.BrokerConfig {
 	bc := config.BrokerConfig{
 		Hostname: *listener.Addresses[0].Host,
 	}
@@ -737,7 +737,7 @@ func buildTcpBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.Brok
 	return bc
 }
 
-func buildTlsBrokerConfig(listener strimzi.KafkaStatusListenersElem, caCert string) config.BrokerConfig {
+func buildTLSBrokerConfig(listener strimzi.KafkaStatusListenersElem, caCert string) config.BrokerConfig {
 	authType := config.BrokerConfigAuthtypeSasl
 	bc := config.BrokerConfig{
 		Sasl:     &config.KafkaSASLConfig{},

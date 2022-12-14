@@ -28,14 +28,14 @@ func (sc *sidecarProvider) EnvProvide() error {
 
 func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
-
+		innerDep := deployment
 		d := &apps.Deployment{}
 
-		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&deployment)); err != nil {
+		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&innerDep)); err != nil {
 			return err
 		}
 
-		for _, sidecar := range deployment.PodSpec.Sidecars {
+		for _, sidecar := range innerDep.PodSpec.Sidecars {
 			switch sidecar.Name {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
@@ -55,16 +55,17 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, cronJob := range app.Spec.Jobs {
-		if cronJob.Schedule == "" {
+		innercj := cronJob
+		if innercj.Schedule == "" {
 			continue
 		}
 		cj := &batch.CronJob{}
 
-		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&cronJob)); err != nil {
+		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&innercj)); err != nil {
 			return err
 		}
 
-		for _, sidecar := range cronJob.PodSpec.Sidecars {
+		for _, sidecar := range innercj.PodSpec.Sidecars {
 			switch sidecar.Name {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
@@ -90,7 +91,7 @@ func getTokenRefresher(appName string) *core.Container {
 	cont := core.Container{}
 
 	cont.Name = "token-refresher"
-	cont.Image = IMAGE_SIDECAR_TOKEN_REFRESHER
+	cont.Image = DefaultImageSideCarTokenRefresher
 	cont.Args = []string{
 		"--oidc.audience=observatorium-telemeter",
 		"--oidc.client-id=$(CLIENT_ID)",
