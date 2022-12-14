@@ -182,10 +182,10 @@ type Topic struct {
 // Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
-const REPLICA_NUM_FLOOR = 3
-const REPLICA_NUM_CEILING = 0
-const PARTITION_NUM_FLOOR = 3
-const PARTITION_NUM_CEILING = 3
+const ReplicaNumFloor = 3
+const ReplicaNumCeiling = 0
+const PartitionNumFloor = 3
+const PartitionNumCeiling = 3
 
 func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
 	// "(env-)?ephemeral-.*"
@@ -499,7 +499,7 @@ func (mep *managedEphemProvider) getTopicSettings(appList *crd.ClowdAppList, top
 		return settings, err
 	}
 
-	replicas, err := mep.getMaxFromList(replicaValList, REPLICA_NUM_FLOOR, REPLICA_NUM_CEILING)
+	replicas, err := mep.getMaxFromList(replicaValList, ReplicaNumFloor, ReplicaNumCeiling)
 	if err != nil {
 		return settings, err
 	}
@@ -512,7 +512,7 @@ func (mep *managedEphemProvider) getTopicSettings(appList *crd.ClowdAppList, top
 		replicas = int(env.Spec.Providers.Kafka.Cluster.Replicas)
 	}
 
-	partitions, err := mep.getMaxFromList(partitionValList, PARTITION_NUM_FLOOR, PARTITION_NUM_CEILING)
+	partitions, err := mep.getMaxFromList(partitionValList, PartitionNumFloor, PartitionNumCeiling)
 	if err != nil {
 		return settings, err
 	}

@@ -18,7 +18,7 @@ func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvide
 	return &autoScaleProviderRouter{Provider: *p}, nil
 }
 
-func (db *autoScaleProviderRouter) EnvProvide() error {
+func (asp *autoScaleProviderRouter) EnvProvide() error {
 	return nil
 }
 

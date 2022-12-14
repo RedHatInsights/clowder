@@ -405,12 +405,12 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 		zkStorageSize := "50Gi"
 
-		kQuantity, err := resource.ParseQuantity(storageSize)
+		kafQuantity, err := resource.ParseQuantity(storageSize)
 
 		if err == nil {
 			zkQuantity, err := resource.ParseQuantity("50Gi")
 
-			if err == nil && kQuantity.Cmp(zkQuantity) < 0 {
+			if err == nil && kafQuantity.Cmp(zkQuantity) < 0 {
 				// Kafka storage size is less than zkStorageSize
 				zkStorageSize = storageSize
 			}

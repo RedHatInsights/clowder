@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	CLOWD_API_VERSION      = "clowd.redhat.com/v1alpha1"
-	CLOWD_KIND             = "ClowdApp"
-	DEPLOYMENT_API_VERSION = "apps/v1"
-	DEPLOYMENT_KIND        = "Deployment"
+	ClowdAPIVersion      = "clowd.redhat.com/v1alpha1"
+	ClowdKind            = "ClowdApp"
+	DeploymentAPIVersion = "apps/v1"
+	DeploymentKind       = "Deployment"
 )
 
 // Creates a simple HPA in the resource cache for the deployment and ClowdApp
@@ -93,8 +93,8 @@ func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 		ObjectMeta: metav1.ObjectMeta{
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: CLOWD_API_VERSION,
-					Kind:       CLOWD_KIND,
+					APIVersion: ClowdAPIVersion,
+					Kind:       ClowdKind,
 					Name:       d.app.Name,
 					UID:        d.app.UID,
 				}},
@@ -103,8 +103,8 @@ func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				APIVersion: DEPLOYMENT_API_VERSION,
-				Kind:       DEPLOYMENT_KIND,
+				APIVersion: DeploymentAPIVersion,
+				Kind:       DeploymentKind,
 				Name:       d.coreDeployment.Name,
 			},
 			MinReplicas: &d.deployment.AutoScalerSimple.Replicas.Min,
