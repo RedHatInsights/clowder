@@ -376,7 +376,7 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 
 	c := core.Container{
 		Name:  nn.Name,
-		Image: IMAGE_OBJECTSTORE_MINIO,
+		Image: DefaultImageObjectStoreMinio,
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{{

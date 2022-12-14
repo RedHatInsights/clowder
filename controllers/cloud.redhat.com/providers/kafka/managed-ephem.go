@@ -820,7 +820,7 @@ func (kcb *ConnectBuilder) getVersion() string {
 func (kcb *ConnectBuilder) getImage() string {
 	image := kcb.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = IMAGE_KAFKA_XJOIN
+		image = DefaultImageKafkaXjoin
 	}
 	return image
 }

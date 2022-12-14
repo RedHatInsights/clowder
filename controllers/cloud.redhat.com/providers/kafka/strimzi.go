@@ -608,7 +608,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = IMAGE_KAFKA_XJOIN
+		image = DefaultImageKafkaXjoin
 	}
 
 	username := getConnectClusterUserName(s.Env)
