@@ -28,14 +28,14 @@ func (sc *sidecarProvider) EnvProvide() error {
 
 func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
-		innerDep := deployment
+		innerDeployment := deployment
 		d := &apps.Deployment{}
 
-		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&innerDep)); err != nil {
+		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&innerDeployment)); err != nil {
 			return err
 		}
 
-		for _, sidecar := range innerDep.PodSpec.Sidecars {
+		for _, sidecar := range innerDeployment.PodSpec.Sidecars {
 			switch sidecar.Name {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
@@ -55,17 +55,17 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, cronJob := range app.Spec.Jobs {
-		innercj := cronJob
-		if innercj.Schedule == "" {
+		innerCronJob := cronJob
+		if innerCronJob.Schedule == "" {
 			continue
 		}
 		cj := &batch.CronJob{}
 
-		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&innercj)); err != nil {
+		if err := sc.Cache.Get(cronjobProvider.CoreCronJob, cj, app.GetCronJobNamespacedName(&innerCronJob)); err != nil {
 			return err
 		}
 
-		for _, sidecar := range innercj.PodSpec.Sidecars {
+		for _, sidecar := range innerCronJob.PodSpec.Sidecars {
 			switch sidecar.Name {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {

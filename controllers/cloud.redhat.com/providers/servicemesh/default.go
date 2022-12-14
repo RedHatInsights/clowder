@@ -35,14 +35,14 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, deployment := range dList.Items {
-		depInnder := deployment
+		innerDeployment := deployment
 		annotations := map[string]string{
 			"sidecar.istio.io/inject":                       "true",
 			"traffic.sidecar.istio.io/excludeOutboundPorts": "443,9093,5432,10000",
 		}
-		utils.UpdateAnnotations(&deployment.Spec.Template, annotations)
+		utils.UpdateAnnotations(&innerDeployment.Spec.Template, annotations)
 
-		err := ch.Cache.Update(deployProvider.CoreDeployment, &depInnder)
+		err := ch.Cache.Update(deployProvider.CoreDeployment, &innerDeployment)
 		if err != nil {
 			return fmt.Errorf("could not update annotations: %w", err)
 		}

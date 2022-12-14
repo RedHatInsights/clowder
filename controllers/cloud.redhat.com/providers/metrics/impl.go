@@ -68,8 +68,8 @@ func createMetricsOnDeployments(cache *rc.ObjectCache, env *crd.ClowdEnvironment
 	c.MetricsPath = env.Spec.Providers.Metrics.Path
 
 	for _, deployment := range app.Spec.Deployments {
-		innerDep := deployment
-		if err := makeMetrics(cache, &innerDep, app, env.Spec.Providers.Metrics.Port); err != nil {
+		innerDeployment := deployment
+		if err := makeMetrics(cache, &innerDeployment, app, env.Spec.Providers.Metrics.Port); err != nil {
 			return err
 		}
 	}
