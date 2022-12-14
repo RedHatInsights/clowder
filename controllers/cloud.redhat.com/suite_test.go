@@ -127,9 +127,11 @@ func (suite *TestSuite) SetupSuite() {
 
 		if err == nil && resp.StatusCode == 200 {
 			logger.Info("Manager ready", zap.Int("duration", 100*i))
-			break
+			defer resp.Body.Close()
+			return
+		} else if err == nil {
+			defer resp.Body.Close()
 		}
-		defer resp.Body.Close()
 
 		if i == 50 {
 			if err != nil {

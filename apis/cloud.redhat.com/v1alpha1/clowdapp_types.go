@@ -629,11 +629,11 @@ func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
 }
 
-// Omfunc is a utility function that performs an operation on a metav1.Object.
-type Omfunc func(o metav1.Object)
+// omfunc is a utility function that performs an operation on a metav1.Object.
+type omfunc func(o metav1.Object)
 
 // SetObjectMeta sets the metadata on a ClowdApp object.
-func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...Omfunc) {
+func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	o.SetName(i.Name)
 	o.SetNamespace(i.Namespace)
 	o.SetLabels(i.GetLabels())
@@ -646,7 +646,7 @@ func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...Omfunc) {
 
 // Name returns a function that sets the name of an object to that of the
 // passed in string.
-func Name(name string) Omfunc {
+func Name(name string) omfunc { // nolint:revive
 	return func(o metav1.Object) {
 		o.SetName(name)
 	}
@@ -654,14 +654,14 @@ func Name(name string) Omfunc {
 
 // Namespace returns a function that sets the namespace of an object to that of the
 // passed in string.
-func Namespace(namespace string) Omfunc {
+func Namespace(namespace string) omfunc { // nolint:revive
 	return func(o metav1.Object) {
 		o.SetNamespace(namespace)
 	}
 }
 
 // Labels returns a function that sets the labels of an object to that of the passed in labels.
-func Labels(labels map[string]string) Omfunc {
+func Labels(labels map[string]string) omfunc { // nolint:revive
 	return func(o metav1.Object) {
 		o.SetLabels(labels)
 	}
