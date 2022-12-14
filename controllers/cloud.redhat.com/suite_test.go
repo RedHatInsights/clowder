@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -514,14 +513,14 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	resp, _ := http.Get("http://127.0.0.1:2019/config/")
 	config := clowderconfig.ClowderConfig{}
-	sData, _ := ioutil.ReadAll(resp.Body)
+	sData, _ := io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &config)
 
 	assert.NoError(suite.T(), err, "failed test because API not available")
 
 	resp, _ = http.Get("http://127.0.0.1:2019/clowdapps/present/")
 	capps := []string{}
-	sData, _ = ioutil.ReadAll(resp.Body)
+	sData, _ = io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &capps)
 
 	assert.NoError(suite.T(), err, "failed to unmarshal")
@@ -764,7 +763,7 @@ func (m *MockEphemManagedKafkaHTTPClient) createStaticTopic(topicName string) {
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
-	readBody := ioutil.NopCloser(strings.NewReader(body))
+	readBody := io.NopCloser(strings.NewReader(body))
 	resp := http.Response{
 		Status:           fmt.Sprint(code),
 		StatusCode:       code,
@@ -843,7 +842,7 @@ func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	bodyData, _ := ioutil.ReadAll(body)
+	bodyData, _ := io.ReadAll(body)
 	kafkaObj := &kafka.JSONPayload{}
 	err := json.Unmarshal(bodyData, kafkaObj)
 	if err != nil {

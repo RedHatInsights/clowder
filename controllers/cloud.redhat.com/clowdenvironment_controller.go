@@ -38,7 +38,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	// Import the providers to initialize them
-
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
@@ -56,13 +55,13 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"
-	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"

@@ -2,7 +2,7 @@ package providers
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -220,7 +220,7 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 }
 
 func GetClowderNamespace() (string, error) {
-	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	clowderNsB, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 
 	// CLOBBER the error here as this is our default
 	if err != nil {

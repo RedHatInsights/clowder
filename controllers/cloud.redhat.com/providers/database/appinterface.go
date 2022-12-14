@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strconv"
@@ -38,7 +38,7 @@ func fetchCa() (string, error) {
 		return "", errors.NewClowderError(msg)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		return "", errors.Wrap("Error reading response body", err)

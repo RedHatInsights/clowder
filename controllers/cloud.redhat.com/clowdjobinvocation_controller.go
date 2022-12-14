@@ -273,9 +273,8 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.
 
 	if len(jobName) > labelMaxLength {
 		return errors.NewClowderError(fmt.Sprintf("[%s] contains a label with character length greater than 63", jobName))
-	} else {
-		nn.Name = jobName
 	}
+	nn.Name = jobName
 
 	j := batchv1.Job{}
 	if err := cache.Create(iqe.ClowdJob, nn, &j); err != nil {
@@ -352,7 +351,7 @@ func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 	jobsRequired := len(cji.Spec.Jobs)
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
-		jobsRequired += 1
+		jobsRequired++
 	}
 	jobsCompleted := countCompletedJobs(jobs, cji)
 	return jobsCompleted == jobsRequired

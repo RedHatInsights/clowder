@@ -115,9 +115,8 @@ func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error
 				return ctrl.Result{}, removeFinalizeErr
 			}
 			return ctrl.Result{}, NewSkippedError("env is marked for delete and finalizers removed")
-		} else {
-			return ctrl.Result{}, NewSkippedError("env is marked for delete and has no finalizer")
 		}
+		return ctrl.Result{}, NewSkippedError("env is marked for delete and has no finalizer")
 	}
 	return ctrl.Result{}, nil
 }

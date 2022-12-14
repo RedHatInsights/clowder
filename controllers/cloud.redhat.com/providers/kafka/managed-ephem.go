@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -224,7 +223,7 @@ func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname strin
 		}
 		defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -277,7 +276,7 @@ func getTopicList(rClient HTTPClient, adminHostname string, p *providers.Provide
 		return topicList, err
 	}
 
-	jsonData, err := ioutil.ReadAll(resp.Body)
+	jsonData, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		return topicList, err
@@ -584,7 +583,7 @@ func (mep *managedEphemProvider) updateTopicOnKafka(newTopicName string, setting
 
 func (mep *managedEphemProvider) handleKafkaHTTPError(resp *http.Response, msg string) error {
 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		bodyErr, _ := ioutil.ReadAll(resp.Body)
+		bodyErr, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf(fmt.Sprintf("%s %d - %s", msg, resp.StatusCode, bodyErr))
 	}
 	return nil
