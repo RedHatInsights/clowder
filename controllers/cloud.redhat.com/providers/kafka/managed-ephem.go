@@ -785,7 +785,7 @@ func (kcb *KafkaConnectBuilder) getResourceSpec(field *apiextensions.JSON, defau
 	var defaults apiextensions.JSON
 	err := defaults.UnmarshalJSON([]byte(defaultJSON))
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal defaults: %w")
+		return nil, fmt.Errorf("could not unmarshal defaults: %w", err)
 	}
 
 	return &defaults, nil

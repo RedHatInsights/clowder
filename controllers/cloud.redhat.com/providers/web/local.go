@@ -463,7 +463,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 		ingressClass = "nginx"
 	}
 
-	apiPath := deployment.WebServices.Public.ApiPath
+	apiPath := deployment.WebServices.Public.APIPath
 
 	if apiPath == "" {
 		apiPath = nn.Name

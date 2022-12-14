@@ -66,7 +66,7 @@ type WebConfig struct {
 
 	// An api prefix path that pods will be instructed to use when setting up
 	// their web server.
-	ApiPrefix string `json:"apiPrefix,omitempty"`
+	APIPrefix string `json:"apiPrefix,omitempty"`
 
 	// The mode of operation of the Web provider. The allowed modes are
 	// (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.

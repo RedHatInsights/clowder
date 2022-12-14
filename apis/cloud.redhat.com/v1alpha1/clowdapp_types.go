@@ -139,8 +139,8 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// ApiPath describes the api path that will be configured to serve this backend from.
-	ApiPath string `json:"apiPath,omitempty"`
+	// APIPath describes the api path that will be configured to serve this backend from.
+	APIPath string `json:"apiPath,omitempty"`
 
 	// WhitelistPaths define the paths that do not require authentication
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
