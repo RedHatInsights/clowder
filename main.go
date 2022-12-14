@@ -20,7 +20,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	_ "net/http/pprof"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -89,5 +88,5 @@ func main() {
 		fmt.Println(controllers.CreateAPIServer().ListenAndServe())
 	}()
 
-	controllers.Run(metricsAddr, probeAddr, enableLeaderElection, ctrl.GetConfigOrDie(), ctrl.SetupSignalHandler(), !clowderconfig.LoadedConfig.Features.DisableWebhooks)
+	controllers.Run(ctrl.SetupSignalHandler(), metricsAddr, probeAddr, enableLeaderElection, ctrl.GetConfigOrDie(), !clowderconfig.LoadedConfig.Features.DisableWebhooks)
 }

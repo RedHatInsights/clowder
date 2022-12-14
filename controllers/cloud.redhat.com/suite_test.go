@@ -683,8 +683,8 @@ func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	secretData["hostname"] = "hostname:443"
 	secretData["admin.url"] = "https://admin.url"
 	secretData["token.url"] = "https://token.url"
-	secretName := "managed-ephem-secret"
-	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
+	secName := "managed-ephem-secret"
+	err := createEphemeralManagedSecret(secName, nn.Namespace, secretData)
 	assert.Nil(suite.T(), err)
 
 	cwData := map[string]string{
@@ -702,7 +702,7 @@ func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 		return &mockClient
 	}
 
-	env, app, err := createManagedKafkaClowderStack(nn, secretName)
+	env, app, err := createManagedKafkaClowderStack(nn, secName)
 
 	assert.Nil(suite.T(), err)
 
@@ -713,7 +713,7 @@ func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	mockClient.createStaticTopic("ephemeral.managed.kafka.name.inventory")
 
 	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
-	assert.Equal(suite.T(), secretName, ephemManagedSecret.Name)
+	assert.Equal(suite.T(), secName, ephemManagedSecret.Name)
 	assert.Equal(suite.T(), nn.Namespace, ephemManagedSecret.Namespace)
 	assert.Eventually(suite.T(), func() bool {
 		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
