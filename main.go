@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -57,7 +58,8 @@ func loggerSync(log *zap.Logger) {
 
 func runAPIServer() {
 	server := http.Server{
-		Addr: "localhost:8000",
+		Addr:              "localhost:8000",
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 	// Ignore error from starting pprof
 	_ = server.ListenAndServe()

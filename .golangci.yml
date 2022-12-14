@@ -1,0 +1,9 @@
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "web.Config.WebPort is deprecated"
+    - path: apis/cloud.redhat.com/v1alpha1/groupversion_info.go
+      linters:
+        - gofmt
+        - goimports
