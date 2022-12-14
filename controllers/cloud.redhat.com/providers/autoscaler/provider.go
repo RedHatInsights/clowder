@@ -20,7 +20,7 @@ var SimpleAutoScaler = rc.NewMultiResourceIdent(ProvName, "simple_hpa", &v2.Hori
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 	mode := c.Env.Spec.Providers.AutoScaler.Mode
-	//Keda is preserved as a synonym of enabled for backwards compatibility
+	// Keda is preserved as a synonym of enabled for backwards compatibility
 	if mode == ENABLED || mode == KEDA {
 		return NewAutoScaleProviderRouter(c)
 	}

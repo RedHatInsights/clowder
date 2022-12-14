@@ -105,8 +105,8 @@ func (r *ClowdAppReconciliation) getApp() (ctrl.Result, error) {
 		r.log.Info("App not found", "env", r.app.Spec.EnvName, "app", r.app.GetIdent(), "err", getAppErr)
 		return ctrl.Result{}, getAppErr
 	}
-	//This is kinda side-effecty but I couldn't think of a better place
-	//to put it.
+	// This is kinda side-effecty but I couldn't think of a better place
+	// to put it.
 	logWithEnv := r.log.WithValues("env", r.app.Spec.EnvName)
 	r.log = &logWithEnv
 
@@ -137,7 +137,7 @@ func (r *ClowdAppReconciliation) isAppMarkedForDeletion() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) finalizeApp() error {
-	//We remove it from the managed list because it may have been managed before, but it may not be after this reconcile.
+	// We remove it from the managed list because it may have been managed before, but it may not be after this reconcile.
 	delete(managedApps, r.app.GetIdent())
 	managedAppsMetric.Set(float64(len(managedApps)))
 

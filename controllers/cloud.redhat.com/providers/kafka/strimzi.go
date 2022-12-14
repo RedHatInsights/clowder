@@ -650,7 +650,7 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 		)
 	}
 
-	//INTERNAL
+	// INTERNAL
 	kafkaCASecName := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
 		Namespace: getKafkaNamespace(s.Env),

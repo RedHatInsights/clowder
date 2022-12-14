@@ -102,7 +102,7 @@ func (suite *TestSuite) SetupSuite() {
 	assert.NoError(suite.T(), err, "failed to create k8s client")
 	assert.NotNil(suite.T(), k8sClient, "k8sClient was returned nil")
 
-	//ctx := context.Background()
+	// ctx := context.Background()
 
 	ctx, stopController := context.WithCancel(context.Background())
 	suite.stopController = stopController
@@ -780,9 +780,9 @@ func (m *MockEphemManagedKafkaHTTPClient) logResponse(resp *http.Response) {
 	entry := map[string]string{}
 	entry["status"] = resp.Status
 	entry["code"] = strconv.Itoa(resp.StatusCode)
-	//This is on purpose because whenever I try to read the body I get 0 bytes
-	//and I messed with it for too long and I don't care anymore because this is a
-	//test not the ISS's attitude control system
+	// This is on purpose because whenever I try to read the body I get 0 bytes
+	// and I messed with it for too long and I don't care anymore because this is a
+	// test not the ISS's attitude control system
 	entry["body"] = resp.Proto
 
 	ephemManagedKafkaHTTPLog = append(ephemManagedKafkaHTTPLog, entry)

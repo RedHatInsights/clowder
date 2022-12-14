@@ -36,7 +36,7 @@ const (
 	SKIPRECONCILE = "SKIPRECONCILE"
 )
 
-//During reconciliation we handle errors in 2 ways: sometimes we want to error out of reconciliation and sometimes we want to skip reconciliation.
+// During reconciliation we handle errors in 2 ways: sometimes we want to error out of reconciliation and sometimes we want to skip reconciliation.
 func shouldSkipReconciliation(err error) bool {
 	_, isSkippedError := err.(SkippedError)
 	if err != nil && isSkippedError {
@@ -45,10 +45,10 @@ func shouldSkipReconciliation(err error) bool {
 	return false
 }
 
-//ClowdEnvironmentReconciliation represents a single reconciliation event
-//This type is created by ClowdEnvironmentReconciler which handles the reconciliation cycle as a whole
-//ClowdEnvironmentReconciliation encapsulates all of the state and logic requires for a single
-//reconciliation event
+// ClowdEnvironmentReconciliation represents a single reconciliation event
+// This type is created by ClowdEnvironmentReconciler which handles the reconciliation cycle as a whole
+// ClowdEnvironmentReconciliation encapsulates all of the state and logic requires for a single
+// reconciliation event
 type ClowdEnvironmentReconciliation struct {
 	cache    *rc.ObjectCache
 	recorder record.EventRecorder
@@ -58,7 +58,7 @@ type ClowdEnvironmentReconciliation struct {
 	log      *logr.Logger
 }
 
-//Returns a list of step methods that should be run during reconciliation
+// Returns a list of step methods that should be run during reconciliation
 func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 	return []func() (ctrl.Result, error){
 		r.markedForDeletion,
@@ -80,12 +80,12 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 	}
 }
 
-//Public method to iterate through the steps of the reconciliation process
+// Public method to iterate through the steps of the reconciliation process
 func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 	r.log.Info("Reconciliation started")
-	//The env stays locked for the entire reconciliation
-	//This is a slight change from the previous implementation
-	//where the lock wasn't initated until the target namespace had been initialized
+	// The env stays locked for the entire reconciliation
+	// This is a slight change from the previous implementation
+	// where the lock wasn't initated until the target namespace had been initialized
 	SetEnv(r.env.Name)
 	defer ReleaseEnv()
 	for _, step := range r.steps() {
@@ -98,7 +98,7 @@ func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-//Determine if app is marked for deletion, and if so finalize and end resonciliation
+// Determine if app is marked for deletion, and if so finalize and end resonciliation
 func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error) {
 	isEnvMarkedForDeletion := r.env.GetDeletionTimestamp() != nil
 	if isEnvMarkedForDeletion {
@@ -122,9 +122,9 @@ func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error
 	return ctrl.Result{}, nil
 }
 
-//Perform finalization of the environment. Called by markedForDeleteion
-//Note: _ at beginning of method name indicates that a method is called
-//by a step method, not directly by the reconcilation loop
+// Perform finalization of the environment. Called by markedForDeleteion
+// Note: _ at beginning of method name indicates that a method is called
+// by a step method, not directly by the reconcilation loop
 func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() error {
 
 	provider := providers.Provider{
@@ -157,7 +157,7 @@ func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() err
 	return nil
 }
 
-//Adds a finalizer to the environment if one is not already present
+// Adds a finalizer to the environment if one is not already present
 func (r *ClowdEnvironmentReconciliation) addFinalizerIfRequired() (ctrl.Result, error) {
 	// Add finalizer for this CR
 	if !contains(r.env.GetFinalizers(), envFinalizer) {
@@ -169,7 +169,7 @@ func (r *ClowdEnvironmentReconciliation) addFinalizerIfRequired() (ctrl.Result, 
 	return ctrl.Result{}, nil
 }
 
-//Implementation method for addining a finalizer
+// Implementation method for addining a finalizer
 func (r *ClowdEnvironmentReconciliation) addFinalizerImplementation() error {
 	r.log.Info("Adding Finalizer for the ClowdEnvironment")
 	controllerutil.AddFinalizer(r.env, envFinalizer)
@@ -183,7 +183,7 @@ func (r *ClowdEnvironmentReconciliation) addFinalizerImplementation() error {
 	return nil
 }
 
-//Request per provider methods if the config calls for it
+// Request per provider methods if the config calls for it
 func (r *ClowdEnvironmentReconciliation) perProviderMetrics() (ctrl.Result, error) {
 	if clowderconfig.LoadedConfig.Features.PerProviderMetrics {
 		requestMetrics.With(prometheus.Labels{"type": "env", "name": r.env.Name}).Inc()
@@ -191,7 +191,7 @@ func (r *ClowdEnvironmentReconciliation) perProviderMetrics() (ctrl.Result, erro
 	return ctrl.Result{}, nil
 }
 
-//Get or create and then update the cache for the target namespace
+// Get or create and then update the cache for the target namespace
 func (r *ClowdEnvironmentReconciliation) initTargetNamespace() (ctrl.Result, error) {
 	result := ctrl.Result{}
 	var err error = nil
@@ -214,7 +214,7 @@ func (r *ClowdEnvironmentReconciliation) initTargetNamespace() (ctrl.Result, err
 	return result, err
 }
 
-//Get the env target namespace
+// Get the env target namespace
 func (r *ClowdEnvironmentReconciliation) getTargetNamespace() (ctrl.Result, error) {
 	namespace := core.Namespace{}
 	namespaceName := types.NamespacedName{
@@ -233,7 +233,7 @@ func (r *ClowdEnvironmentReconciliation) getTargetNamespace() (ctrl.Result, erro
 	return ctrl.Result{}, nil
 }
 
-//Make a new target namespace
+// Make a new target namespace
 func (r *ClowdEnvironmentReconciliation) makeTargetNamespace() (ctrl.Result, error) {
 	r.env.Status.TargetNamespace = r.env.GenerateTargetNamespace()
 	namespace := &core.Namespace{}
@@ -249,7 +249,7 @@ func (r *ClowdEnvironmentReconciliation) makeTargetNamespace() (ctrl.Result, err
 	return ctrl.Result{}, nil
 }
 
-//Update the target namespace
+// Update the target namespace
 func (r *ClowdEnvironmentReconciliation) updateTargetNamespace() (ctrl.Result, error) {
 	if statErr := r.client.Status().Update(r.ctx, r.env); statErr != nil {
 		r.log.Info("Namespace create error", "err", statErr)
@@ -262,10 +262,10 @@ func (r *ClowdEnvironmentReconciliation) updateTargetNamespace() (ctrl.Result, e
 	return ctrl.Result{}, nil
 }
 
-//Determine if the target namespace is marked for deletion
-//If it is then we enter into the SKIPRECONCILE corner case
-//which is a special case where the reconciliation controller bails early
-//from reconcile WIHTOUT returning an error
+// Determine if the target namespace is marked for deletion
+// If it is then we enter into the SKIPRECONCILE corner case
+// which is a special case where the reconciliation controller bails early
+// from reconcile WIHTOUT returning an error
 func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (ctrl.Result, error) {
 	ens := &core.Namespace{}
 	if getNSErr := r.client.Get(r.ctx, types.NamespacedName{Name: r.env.Status.TargetNamespace}, ens); getNSErr != nil {
@@ -314,9 +314,9 @@ func (r *ClowdEnvironmentReconciliation) applyCache() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-//Sets info for the apps in the environment
-//This method is the step and contains most of the error handling, logging etc
-//The full implementaiton is pushed out into another method
+// Sets info for the apps in the environment
+// This method is the step and contains most of the error handling, logging etc
+// The full implementaiton is pushed out into another method
 func (r *ClowdEnvironmentReconciliation) setAppInfo() (ctrl.Result, error) {
 	if setAppErr := r.setAppInfoImplementation(); setAppErr != nil {
 		r.log.Info("setAppInfo error", "err", setAppErr)
@@ -329,8 +329,8 @@ func (r *ClowdEnvironmentReconciliation) setAppInfo() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-//Performs the actual business logic for the setAppInfo step
-//TODO this is a bear of a method. Factor this out into pieces.
+// Performs the actual business logic for the setAppInfo step
+// TODO this is a bear of a method. Factor this out into pieces.
 func (r *ClowdEnvironmentReconciliation) setAppInfoImplementation() error {
 
 	// Get all the ClowdApp resources

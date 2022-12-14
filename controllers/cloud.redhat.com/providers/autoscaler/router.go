@@ -5,7 +5,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-//autoScaleProviderRouter is a wrapper for the different autoscaler providers.
+// autoScaleProviderRouter is a wrapper for the different autoscaler providers.
 type autoScaleProviderRouter struct {
 	providers.Provider
 }
@@ -25,12 +25,12 @@ func (db *autoScaleProviderRouter) EnvProvide() error {
 func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp) error {
 	var err error
 	for _, deployment := range app.Spec.Deployments {
-		//If we find a SimpleAutoScaler config create one
+		// If we find a SimpleAutoScaler config create one
 		if deployment.AutoScalerSimple != nil {
 			err = ProvideSimpleAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
 			continue
 		}
-		//If we find a Keda autoscaler config create one
+		// If we find a Keda autoscaler config create one
 		if deployment.AutoScaler != nil {
 			err = ProvideKedaAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
 			continue

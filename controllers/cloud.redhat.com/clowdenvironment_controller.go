@@ -108,7 +108,7 @@ func ReadEnv() string {
 	return cEnv
 }
 
-//Acts as a guard for a reconciliation cycle, as well as initatizes a bunch of required objects
+// Acts as a guard for a reconciliation cycle, as well as initatizes a bunch of required objects
 func (r *ClowdEnvironmentReconciler) getEnv(ctx context.Context, req ctrl.Request) (crd.ClowdEnvironment, ctrl.Result, error) {
 	env := crd.ClowdEnvironment{}
 
@@ -128,7 +128,7 @@ func (r *ClowdEnvironmentReconciler) initMetrics(env crd.ClowdEnvironment) {
 	delete(managedEnvironments, env.Name)
 }
 
-//Reconcile fn
+// Reconcile fn
 func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("env", req.Name).WithValues("rid", utils.RandString(5))
 	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)

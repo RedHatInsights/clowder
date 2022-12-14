@@ -254,13 +254,13 @@ type SubscriptionSpecConfigEnvFromElem struct {
 // Selector which must match a node's labels for the pod to be scheduled on that
 // node. More info:
 // https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
-//type SubscriptionSpecConfigNodeSelector map[string]interface{}
+// type SubscriptionSpecConfigNodeSelector map[string]interface{}
 
 // Limits describes the maximum amount of compute resources allowed. More info:
 // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-//type SubscriptionSpecConfigResourcesLimits map[string]interface{}
+// type SubscriptionSpecConfigResourcesLimits map[string]interface{}
 
-//type SubscriptionMetadata map[string]interface{}
+// type SubscriptionMetadata map[string]interface{}
 
 // Resources represents compute resources required by this container. Immutable.
 // More info:
@@ -318,7 +318,7 @@ func (j *SubscriptionSpecConfigSelectorMatchExpressionsElem) UnmarshalJSON(b []b
 // matchLabels map is equivalent to an element of matchExpressions, whose key field
 // is "key", the operator is "In", and the values array contains only "value". The
 // requirements are ANDed.
-//type SubscriptionSpecConfigSelectorMatchLabels map[string]interface{}
+// type SubscriptionSpecConfigSelectorMatchLabels map[string]interface{}
 
 // Selector is the label selector for pods to be configured. Existing ReplicaSets
 // whose pods are selected by this will be the ones affected by this deployment. It
@@ -732,7 +732,7 @@ type SubscriptionSpecConfigVolumesElemCsiNodePublishSecretRef struct {
 
 // VolumeAttributes stores driver-specific properties that are passed to the CSI
 // driver. Consult your driver's documentation for supported values.
-//type SubscriptionSpecConfigVolumesElemCsiVolumeAttributes map[string]interface{}
+// type SubscriptionSpecConfigVolumesElemCsiVolumeAttributes map[string]interface{}
 
 // CSI (Container Storage Interface) represents ephemeral storage that is handled
 // by certain external CSI drivers (Beta feature).
@@ -919,7 +919,7 @@ type SubscriptionSpecConfigVolumesElemEmptyDir struct {
 
 // May contain labels and annotations that will be copied into the PVC when
 // creating it. No other fields are allowed and will be rejected during validation.
-//type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateMetadata map[string]interface{}
+// type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateMetadata map[string]interface{}
 
 // This field can be used to specify either: * An existing VolumeSnapshot object
 // (snapshot.storage.k8s.io/VolumeSnapshot) * An existing PVC
@@ -1012,13 +1012,13 @@ func (j *SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecDataSo
 
 // Limits describes the maximum amount of compute resources allowed. More info:
 // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-//type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecResourcesLimits map[string]interface{}
+// type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecResourcesLimits map[string]interface{}
 
 // Requests describes the minimum amount of compute resources required. If Requests
 // is omitted for a container, it defaults to Limits if that is explicitly
 // specified, otherwise to an implementation-defined value. More info:
 // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-//type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecResourcesRequests map[string]interface{}
+// type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecResourcesRequests map[string]interface{}
 
 // Resources represents the minimum resources the volume should have. More info:
 // https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -1075,7 +1075,7 @@ func (j *SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecSelect
 // matchLabels map is equivalent to an element of matchExpressions, whose key field
 // is "key", the operator is "In", and the values array contains only "value". The
 // requirements are ANDed.
-//type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecSelectorMatchLabels map[string]interface{}
+// type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecSelectorMatchLabels map[string]interface{}
 
 // A label query over volumes to consider for binding.
 type SubscriptionSpecConfigVolumesElemEphemeralVolumeClaimTemplateSpecSelector struct {
@@ -1250,13 +1250,13 @@ type SubscriptionSpecConfigVolumesElemFc struct {
 }
 
 // Optional: Extra command options if any.
-//type SubscriptionSpecConfigVolumesElemFlexVolumeOptions map[string]interface{}
+// type SubscriptionSpecConfigVolumesElemFlexVolumeOptions map[string]interface{}
 
 // Requests describes the minimum amount of compute resources required. If Requests
 // is omitted for a container, it defaults to Limits if that is explicitly
 // specified, otherwise to an implementation-defined value. More info:
 // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-//type SubscriptionSpecConfigResourcesRequests map[string]interface{}
+// type SubscriptionSpecConfigResourcesRequests map[string]interface{}
 
 // FlexVolume represents a generic volume resource that is provisioned/attached
 // using an exec based plugin.

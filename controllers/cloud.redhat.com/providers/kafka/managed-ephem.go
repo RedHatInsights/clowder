@@ -179,7 +179,7 @@ type Topic struct {
 	Name string `json:"name"`
 }
 
-//Mutex protected cache of HTTP clients
+// Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
 const REPLICA_NUM_FLOOR = 3
@@ -500,8 +500,8 @@ func (mep *managedEphemProvider) getTopicSettings(appList *crd.ClowdAppList, top
 		return settings, err
 	}
 
-	//Stomp over calculated replica if kafka cluster config is less than 1
-	//or the calculated replicas are greater than the kafka cluster config
+	// Stomp over calculated replica if kafka cluster config is less than 1
+	// or the calculated replicas are greater than the kafka cluster config
 	if env.Spec.Providers.Kafka.Cluster.Replicas < 1 {
 		replicas = 1
 	} else if int(env.Spec.Providers.Kafka.Cluster.Replicas) < replicas {
@@ -615,7 +615,7 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 	return err
 }
 
-//Client cache provides a mutex protected cache of http clients
+// Client cache provides a mutex protected cache of http clients
 type HTTPClientCache struct {
 	cache map[string]HTTPClient
 	mutex sync.RWMutex
@@ -647,7 +647,7 @@ func (cc *HTTPClientCache) Set(hostname string, client HTTPClient) {
 	cc.cache[hostname] = client
 }
 
-//KafkaConnectBuilder manages the creation of KafkaConnect resources
+// KafkaConnectBuilder manages the creation of KafkaConnect resources
 type KafkaConnectBuilder struct {
 	providers.Provider
 	kafkaConnect   *strimzi.KafkaConnect
