@@ -28,7 +28,7 @@ type ClowderConfig struct {
 		} `json:"cache"`
 		Pprof struct {
 			Enable  bool   `json:"enable"`
-			CpuFile string `json:"cpuFile"`
+			CPUFile string `json:"cpuFile"`
 		} `json:"pprof"`
 	} `json:"debugOptions"`
 	Features struct {

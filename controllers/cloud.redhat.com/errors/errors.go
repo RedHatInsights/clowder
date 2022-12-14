@@ -16,7 +16,7 @@ import (
 // ClowdKey is a string determining the type of error.
 type ClowdKey string
 
-var stacksEnabled bool = true
+var stacksEnabled = true
 
 // ClowderError is a Clowder specific error, it has a number of functions attached to it to allow
 // for creation and checking.

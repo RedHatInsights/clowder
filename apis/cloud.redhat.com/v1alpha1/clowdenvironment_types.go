@@ -758,9 +758,8 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		if domain != "" {
 			if random {
 				return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
-			} else {
-				return fmt.Sprintf("%s.%s", i.Name, domain)
 			}
+			return fmt.Sprintf("%s.%s", i.Name, domain)
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 )
@@ -52,8 +53,9 @@ func CreateAPIServer() *http.Server {
 	})
 
 	srv := http.Server{
-		Addr:    "127.0.0.1:2019",
-		Handler: mux,
+		Addr:              "127.0.0.1:2019",
+		Handler:           mux,
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 	return &srv
 }

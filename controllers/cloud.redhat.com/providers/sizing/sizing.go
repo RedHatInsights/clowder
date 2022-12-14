@@ -30,12 +30,12 @@ func GetDefaultResourceRequirements() core.ResourceRequirements {
 
 // Gets the default size for CPU and RAM
 func GetDefaultSizeCPURAM() string {
-	return conf.DEFAULT_SIZE_CPU_RAM
+	return conf.DefaultSizeCPURAM
 }
 
 // Gets the default vol size
 func GetDefaultSizeVol() string {
-	return conf.DEFAULT_SIZE_VOL
+	return conf.DefaultSizeVol
 }
 
 // Get the default volume capacity
