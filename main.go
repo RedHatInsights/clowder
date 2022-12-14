@@ -56,8 +56,11 @@ func loggerSync(log *zap.Logger) {
 }
 
 func runAPIServer() {
+	server := http.Server{
+		Addr: "localhost:8000",
+	}
 	// Ignore error from starting pprof
-	_ = http.ListenAndServe("localhost:8000", nil)
+	_ = server.ListenAndServe()
 }
 
 func main() {
