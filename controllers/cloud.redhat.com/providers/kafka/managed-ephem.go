@@ -188,9 +188,9 @@ const PARTITION_NUM_FLOOR = 3
 const PARTITION_NUM_CEILING = 3
 
 func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
-	//"(env-)?ephemeral-.*"
+	// "(env-)?ephemeral-.*"
 
-	reg, err := regexp.Compile(fmt.Sprintf(".*%s.*", strings.Replace(p.Env.Name, "-", "[-\\.]", -1)))
+	reg, err := regexp.Compile(fmt.Sprintf(".*%s.*", strings.ReplaceAll(p.Env.Name, "-", "[-\\.]")))
 	if err != nil {
 		return err
 	}
@@ -676,6 +676,16 @@ func (kcb *KafkaConnectBuilder) BuildSpec() error {
 		return fmt.Errorf("could not get config: %w", err)
 	}
 
+	requests, err := kcb.getRequests()
+	if err != nil {
+		return err
+	}
+
+	limits, err := kcb.getLimits()
+	if err != nil {
+		return err
+	}
+
 	kcb.kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: fmt.Sprintf("%s:%s", kcb.getSecret("hostname"), kcb.getSecret("port")),
@@ -683,8 +693,8 @@ func (kcb *KafkaConnectBuilder) BuildSpec() error {
 		Config:           config,
 		Image:            &image,
 		Resources: &strimzi.KafkaConnectSpecResources{
-			Requests: kcb.getRequests(),
-			Limits:   kcb.getLimits(),
+			Requests: requests,
+			Limits:   limits,
 		},
 		Authentication: &strimzi.KafkaConnectSpecAuthentication{
 			ClientId: kcb.getSecretPtr("client.id"),
@@ -754,28 +764,31 @@ func (kcb *KafkaConnectBuilder) getSpecConfig() (*apiextensions.JSON, error) {
 	return &config, nil
 }
 
-func (kcb *KafkaConnectBuilder) getLimits() *apiextensions.JSON {
+func (kcb *KafkaConnectBuilder) getLimits() (*apiextensions.JSON, error) {
 	return kcb.getResourceSpec(kcb.Env.Spec.Providers.Kafka.Connect.Resources.Limits, `{
         "cpu": "600m",
         "memory": "800Mi"
 	}`)
 }
 
-func (kcb *KafkaConnectBuilder) getRequests() *apiextensions.JSON {
+func (kcb *KafkaConnectBuilder) getRequests() (*apiextensions.JSON, error) {
 	return kcb.getResourceSpec(kcb.Env.Spec.Providers.Kafka.Connect.Resources.Requests, `{
         "cpu": "300m",
         "memory": "500Mi"
 	}`)
 }
 
-func (kcb *KafkaConnectBuilder) getResourceSpec(field *apiextensions.JSON, defaultJSON string) *apiextensions.JSON {
+func (kcb *KafkaConnectBuilder) getResourceSpec(field *apiextensions.JSON, defaultJSON string) (*apiextensions.JSON, error) {
 	if field != nil {
-		return field
+		return field, nil
 	}
 	var defaults apiextensions.JSON
-	defaults.UnmarshalJSON([]byte(defaultJSON))
+	err := defaults.UnmarshalJSON([]byte(defaultJSON))
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal defaults: %w")
+	}
 
-	return &defaults
+	return &defaults, nil
 }
 
 func (kcb *KafkaConnectBuilder) getNamespacedName() types.NamespacedName {

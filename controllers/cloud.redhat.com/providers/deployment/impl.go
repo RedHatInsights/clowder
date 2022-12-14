@@ -284,9 +284,10 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	})
 
 	for _, vol := range d.Spec.Template.Spec.Volumes {
+		v := vol
 		setRecreateDeploymentStrategyForPVCs(vol, d)
-		setVolumeSourceConfigMapDefaultMode(&vol)
-		setVolumeSourceSecretDefaultMode(&vol)
+		setVolumeSourceConfigMapDefaultMode(&v)
+		setVolumeSourceSecretDefaultMode(&v)
 	}
 
 	ApplyPodAntiAffinity(&d.Spec.Template)

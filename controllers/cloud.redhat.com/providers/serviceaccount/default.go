@@ -114,7 +114,8 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, dep := range app.Spec.Deployments {
 		d := &apps.Deployment{}
-		nn := app.GetDeploymentNamespacedName(&dep)
+		innerDeployment := dep
+		nn := app.GetDeploymentNamespacedName(&innerDeployment)
 
 		if err := sa.Cache.Get(deployment.CoreDeployment, d, nn); err != nil {
 			return err
@@ -131,7 +132,7 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if err := CreateRoleBinding(sa.Cache, CoreDeploymentRoleBinding, nn, labeler, dep.K8sAccessLevel); err != nil {
+		if err := CreateRoleBinding(sa.Cache, CoreDeploymentRoleBinding, nn, labeler, innerDeployment.K8sAccessLevel); err != nil {
 			return err
 		}
 

@@ -33,8 +33,8 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
 	for _, deployment := range app.Spec.Deployments {
-
-		if err := makeService(web.Cache, &deployment, app, web.Env); err != nil {
+		d := deployment
+		if err := makeService(web.Cache, &d, app, web.Env); err != nil {
 			return err
 		}
 	}

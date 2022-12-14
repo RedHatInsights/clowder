@@ -67,12 +67,12 @@ func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &strimziProvider{Provider: *p}, nil
 }
 
-func (p *strimziProvider) EnvProvide() error {
-	if err := createNetworkPolicies(&p.Provider); err != nil {
+func (s *strimziProvider) EnvProvide() error {
+	if err := createNetworkPolicies(&s.Provider); err != nil {
 		return err
 	}
 
-	return p.configureBrokers()
+	return s.configureBrokers()
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
@@ -331,7 +331,10 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		if err != nil {
 			return err
 		}
-		kConfig.UnmarshalJSON(jsonData)
+		err = kConfig.UnmarshalJSON(jsonData)
+		if err != nil {
+			return fmt.Errorf("could not unmarshall json data: %w", err)
+		}
 		k.Spec.Kafka.Config = &kConfig
 	}
 
@@ -544,15 +547,21 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 	var kcRequests, kcLimits apiextensions.JSON
 
 	// default values for config/requests/limits in Strimzi resource specs
-	kcRequests.UnmarshalJSON([]byte(`{
+	err := kcRequests.UnmarshalJSON([]byte(`{
         "cpu": "300m",
         "memory": "500Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kcRequests: %w", err)
+	}
 
-	kcLimits.UnmarshalJSON([]byte(`{
+	err = kcLimits.UnmarshalJSON([]byte(`{
         "cpu": "600m",
         "memory": "800Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kcLimits: %w", err)
+	}
 
 	// check if defaults have been overridden in ClowdEnvironment
 	if s.Env.Spec.Providers.Kafka.Connect.Resources.Requests != nil {
@@ -606,7 +615,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	var config apiextensions.JSON
 
-	config.UnmarshalJSON([]byte(`{
+	err = config.UnmarshalJSON([]byte(`{
 		"config.storage.replication.factor":       "1",
 		"config.storage.topic":                    "connect-cluster-configs",
 		"connector.client.config.override.policy": "All",
@@ -616,6 +625,9 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 		"status.storage.replication.factor":       "1",
 		"status.storage.topic":                    "connect-cluster-status"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal config: %w", err)
+	}
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,

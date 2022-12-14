@@ -231,7 +231,8 @@ func ExtractSecretData(secrets []core.Secret, fn ExtractFn, keys ...string) {
 		}
 
 		if allOk {
-			fn(&secret)
+			sec := secret
+			fn(&sec)
 		}
 	}
 }
@@ -256,7 +257,8 @@ func ExtractSecretDataAnno(secrets []core.Secret, fn ExtractFnAnno, annoKey stri
 
 		if allOk {
 			for _, value := range strings.Split(secret.Annotations[annoKey], ",") {
-				fn(&secret, value)
+				sec := secret
+				fn(&sec, value)
 			}
 		}
 	}

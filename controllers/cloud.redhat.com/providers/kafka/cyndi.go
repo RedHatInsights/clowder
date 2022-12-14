@@ -162,16 +162,16 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 		if app.Spec.Database.SharedDBAppName != "" {
 			return nil, errors.NewClowderError("Shared DB app cannot use Cyndi")
 		}
-
-		if s.GetEnv().Spec.Providers.Database.Mode == "local" {
+		switch s.GetEnv().Spec.Providers.Database.Mode {
+		case "local":
 			if err = s.GetCache().Get(db.LocalDBSecret, dbSecret); err != nil {
 				return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
 			}
-		} else if s.GetEnv().Spec.Providers.Database.Mode == "shared" {
+		case "shared":
 			if err = s.GetCache().Get(db.SharedDBAppSecret, dbSecret); err != nil {
 				return nil, errors.Wrap(fmt.Sprintf("couldn't get '%s' secret", nn.Name), err)
 			}
-		} else if s.GetEnv().Spec.Providers.Database.Mode == "app-interface" {
+		case "app-interface":
 			if app.Spec.Database.Name != "" {
 				dbConfig, err := db.GetDbConfig(s.GetCtx(), s.GetClient(), app.Namespace, app.Name, app.Name, app.Spec.Database)
 
