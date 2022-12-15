@@ -5,4 +5,10 @@ metadata:
   name: puptoo-processor
   namespace: test-annotations-podspec
   annotations:
-    TestAnnotation: "Very Cool"
+    TestAnnotationTopLevel: "Very Cool"
+    TestAnnotationDeploymentLevel: "Pretty Cool again"
+spec:
+  template:
+    metadata:
+      annotations:
+        TestAnnotation: "Very Cool pod annotation"

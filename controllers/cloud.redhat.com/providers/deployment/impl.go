@@ -210,7 +210,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	pod := deployment.PodSpec
 
-	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, pod.Metadata.Annotations)
+	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
 
 	setLocalAnnotations(env, deployment, d, app)
 
@@ -226,6 +226,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		},
 	}
 	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
+
+	utils.UpdateAnnotations(&d.Spec.Template, pod.Metadata.Annotations)
 
 	setDeploymentStrategy(deployment, d)
 
