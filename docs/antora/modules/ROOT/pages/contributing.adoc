@@ -23,7 +23,7 @@ The `+provider.go+` defines several key pieces. Shown below is the `+deployment+
 package deployment
 
 import (
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
     p "cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/providers"
     apps "k8s.io/api/apps/v1"
 )

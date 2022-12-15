@@ -17,7 +17,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
 // ensures that a CyndiPipeline resource exists
