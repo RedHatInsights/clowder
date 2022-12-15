@@ -25,15 +25,15 @@ func (ff *appInterfaceFeatureFlagProvider) EnvProvide() error {
 func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp) error {
 	emptyNN := crd.NamespacedName{}
 	if ff.Env.Spec.Providers.FeatureFlags.CredentialRef == emptyNN {
-		return errors.New("no feature flag secret defined")
+		return errors.NewClowderError("no feature flag secret defined")
 	}
 
 	if ff.Env.Spec.Providers.FeatureFlags.Hostname == "" {
-		return errors.New("hostname is not defined")
+		return errors.NewClowderError("hostname is not defined")
 	}
 
 	if ff.Env.Spec.Providers.FeatureFlags.Port == 0 {
-		return errors.New("port is not defined")
+		return errors.NewClowderError("port is not defined")
 	}
 
 	sec := &core.Secret{}
@@ -47,7 +47,7 @@ func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp) error {
 
 	accessToken, ok := sec.Data["CLIENT_ACCESS_TOKEN"]
 	if !ok {
-		return errors.New("Missing data")
+		return errors.NewClowderError("Missing data")
 	}
 
 	stringAccessToken := string(accessToken)

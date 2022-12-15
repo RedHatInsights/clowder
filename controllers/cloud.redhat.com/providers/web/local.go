@@ -188,17 +188,17 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
 	for _, deployment := range app.Spec.Deployments {
-
-		if err := makeService(web.Cache, &deployment, app, web.Env); err != nil {
+		innerDeployment := deployment
+		if err := makeService(web.Cache, &innerDeployment, app, web.Env); err != nil {
 			return err
 		}
 
-		if err := web.createIngress(app, &deployment); err != nil {
+		if err := web.createIngress(app, &innerDeployment); err != nil {
 			return err
 		}
 
 		nn := types.NamespacedName{
-			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
+			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, innerDeployment.Name),
 			Namespace: app.Namespace,
 		}
 
@@ -228,7 +228,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		hash := fmt.Sprintf("%x", h.Sum(nil))
 
 		d := &apps.Deployment{}
-		dnn := app.GetDeploymentNamespacedName(&deployment)
+		dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 		if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
 			return err
 		}
@@ -463,7 +463,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 		ingressClass = "nginx"
 	}
 
-	apiPath := deployment.WebServices.Public.ApiPath
+	apiPath := deployment.WebServices.Public.APIPath
 
 	if apiPath == "" {
 		apiPath = nn.Name
@@ -506,6 +506,6 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 
 func getAuthHostname(hostname string) string {
 	hostComponents := strings.Split(hostname, ".")
-	hostComponents[0] = hostComponents[0] + "-auth"
+	hostComponents[0] += "-auth"
 	return strings.Join(hostComponents, ".")
 }

@@ -2859,7 +2859,7 @@ spec:
                             by Clowder.
                           properties:
                             apiPath:
-                              description: ApiPath describes the api path that will
+                              description: APIPath describes the api path that will
                                 be configured to serve this backend from.
                               type: string
                             enabled:

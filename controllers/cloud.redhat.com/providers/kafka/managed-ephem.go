@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -179,25 +178,25 @@ type Topic struct {
 	Name string `json:"name"`
 }
 
-//Mutex protected cache of HTTP clients
+// Mutex protected cache of HTTP clients
 var ClientCache = newHTTPClientCahce()
 
-const REPLICA_NUM_FLOOR = 3
-const REPLICA_NUM_CEILING = 0
-const PARTITION_NUM_FLOOR = 3
-const PARTITION_NUM_CEILING = 3
+const ReplicaNumFloor = 3
+const ReplicaNumCeiling = 0
+const PartitionNumFloor = 3
+const PartitionNumCeiling = 3
 
 func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname string, p *providers.Provider) error {
-	//"(env-)?ephemeral-.*"
+	// "(env-)?ephemeral-.*"
 
-	reg, err := regexp.Compile(fmt.Sprintf(".*%s.*", strings.Replace(p.Env.Name, "-", "[-\\.]", -1)))
+	reg, err := regexp.Compile(fmt.Sprintf(".*%s.*", strings.ReplaceAll(p.Env.Name, "-", "[-\\.]")))
 	if err != nil {
 		return err
 	}
 
-	var reg_protect *regexp.Regexp
+	var regProtect *regexp.Regexp
 
-	reg_protect, err = regexp.Compile(clowderconfig.LoadedConfig.Settings.ManagedKafkaEphemDeleteRegex)
+	regProtect, err = regexp.Compile(clowderconfig.LoadedConfig.Settings.ManagedKafkaEphemDeleteRegex)
 	if err != nil {
 		return err
 	}
@@ -210,7 +209,7 @@ func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname strin
 		}
 
 		// The name must also match the global topic protector
-		if reg_protect == nil || (reg_protect != nil && reg_protect.Find([]byte(topic.Name)) == nil) {
+		if regProtect == nil || (regProtect != nil && regProtect.Find([]byte(topic.Name)) == nil) {
 			continue
 		}
 
@@ -224,7 +223,7 @@ func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname strin
 		}
 		defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -277,7 +276,7 @@ func getTopicList(rClient HTTPClient, adminHostname string, p *providers.Provide
 		return topicList, err
 	}
 
-	jsonData, err := ioutil.ReadAll(resp.Body)
+	jsonData, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		return topicList, err
@@ -352,7 +351,11 @@ func (mep *managedEphemProvider) configureKafkaConnectCluster() error {
 		return err
 	}
 
-	builder.BuildSpec()
+	err = builder.BuildSpec()
+
+	if err != nil {
+		return fmt.Errorf("could not build spec: %w", err)
+	}
 
 	return builder.UpdateCache()
 }
@@ -457,7 +460,7 @@ func (mep *managedEphemProvider) getTopicConfigs(keys map[string][]string) ([]Co
 				Value: out,
 			})
 		} else {
-			return topicConfig, errors.New(fmt.Sprintf("no conversion type for %s", key))
+			return topicConfig, errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
 
@@ -470,11 +473,11 @@ func (mep *managedEphemProvider) getMaxFromList(list []string, floor int, ceilin
 	if len(list) > 0 {
 		maxValue, err := utils.IntMax(list)
 		if err != nil {
-			return max, errors.New(fmt.Sprintf("could not compute max for %v", list))
+			return max, errors.NewClowderError(fmt.Sprintf("could not compute max for %v", list))
 		}
 		maxValInt, err := strconv.Atoi(maxValue)
 		if err != nil {
-			return max, errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxValInt))
+			return max, errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxValInt))
 		}
 		max = maxValInt
 		if max < 1 {
@@ -495,20 +498,20 @@ func (mep *managedEphemProvider) getTopicSettings(appList *crd.ClowdAppList, top
 		return settings, err
 	}
 
-	replicas, err := mep.getMaxFromList(replicaValList, REPLICA_NUM_FLOOR, REPLICA_NUM_CEILING)
+	replicas, err := mep.getMaxFromList(replicaValList, ReplicaNumFloor, ReplicaNumCeiling)
 	if err != nil {
 		return settings, err
 	}
 
-	//Stomp over calculated replica if kafka cluster config is less than 1
-	//or the calculated replicas are greater than the kafka cluster config
+	// Stomp over calculated replica if kafka cluster config is less than 1
+	// or the calculated replicas are greater than the kafka cluster config
 	if env.Spec.Providers.Kafka.Cluster.Replicas < 1 {
 		replicas = 1
 	} else if int(env.Spec.Providers.Kafka.Cluster.Replicas) < replicas {
 		replicas = int(env.Spec.Providers.Kafka.Cluster.Replicas)
 	}
 
-	partitions, err := mep.getMaxFromList(partitionValList, PARTITION_NUM_FLOOR, PARTITION_NUM_CEILING)
+	partitions, err := mep.getMaxFromList(partitionValList, PartitionNumFloor, PartitionNumCeiling)
 	if err != nil {
 		return settings, err
 	}
@@ -580,7 +583,7 @@ func (mep *managedEphemProvider) updateTopicOnKafka(newTopicName string, setting
 
 func (mep *managedEphemProvider) handleKafkaHTTPError(resp *http.Response, msg string) error {
 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		bodyErr, _ := ioutil.ReadAll(resp.Body)
+		bodyErr, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf(fmt.Sprintf("%s %d - %s", msg, resp.StatusCode, bodyErr))
 	}
 	return nil
@@ -605,6 +608,7 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == 404 {
 		err = mep.createTopicOnKafka(newTopicName, settings, httpClient, adminHostname)
@@ -615,7 +619,7 @@ func (mep *managedEphemProvider) ephemProcessTopicValues(
 	return err
 }
 
-//Client cache provides a mutex protected cache of http clients
+// Client cache provides a mutex protected cache of http clients
 type HTTPClientCache struct {
 	cache map[string]HTTPClient
 	mutex sync.RWMutex
@@ -647,34 +651,50 @@ func (cc *HTTPClientCache) Set(hostname string, client HTTPClient) {
 	cc.cache[hostname] = client
 }
 
-//KafkaConnectBuilder manages the creation of KafkaConnect resources
-type KafkaConnectBuilder struct {
+// ConnectBuilder manages the creation of KafkaConnect resources
+type ConnectBuilder struct {
 	providers.Provider
 	kafkaConnect   *strimzi.KafkaConnect
 	namespacedName types.NamespacedName
 	secretData     map[string][]byte
 }
 
-func newKafkaConnectBuilder(provider providers.Provider, secretData map[string][]byte) KafkaConnectBuilder {
-	return KafkaConnectBuilder{
+func newKafkaConnectBuilder(provider providers.Provider, secretData map[string][]byte) ConnectBuilder {
+	return ConnectBuilder{
 		Provider:   provider,
 		secretData: secretData,
 	}
 }
 
-func (kcb *KafkaConnectBuilder) BuildSpec() {
+func (kcb *ConnectBuilder) BuildSpec() error {
 	replicas := kcb.getReplicas()
 	version := kcb.getVersion()
 	image := kcb.getImage()
+
+	config, err := kcb.getSpecConfig()
+	if err != nil {
+		return fmt.Errorf("could not get config: %w", err)
+	}
+
+	requests, err := kcb.getRequests()
+	if err != nil {
+		return err
+	}
+
+	limits, err := kcb.getLimits()
+	if err != nil {
+		return err
+	}
+
 	kcb.kafkaConnect.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
 		BootstrapServers: fmt.Sprintf("%s:%s", kcb.getSecret("hostname"), kcb.getSecret("port")),
 		Version:          &version,
-		Config:           kcb.getSpecConfig(),
+		Config:           config,
 		Image:            &image,
 		Resources: &strimzi.KafkaConnectSpecResources{
-			Requests: kcb.getRequests(),
-			Limits:   kcb.getLimits(),
+			Requests: requests,
+			Limits:   limits,
 		},
 		Authentication: &strimzi.KafkaConnectSpecAuthentication{
 			ClientId: kcb.getSecretPtr("client.id"),
@@ -691,20 +711,21 @@ func (kcb *KafkaConnectBuilder) BuildSpec() {
 	}
 	kcb.setTLSAndAuthentication()
 	kcb.setAnnotations()
+	return nil
 }
 
-func (kcb *KafkaConnectBuilder) Create() error {
+func (kcb *ConnectBuilder) Create() error {
 	kcb.kafkaConnect = &strimzi.KafkaConnect{}
 	err := kcb.Cache.Create(KafkaConnect, kcb.getNamespacedName(), kcb.kafkaConnect)
 	return err
 }
 
-func (kcb *KafkaConnectBuilder) UpdateCache() error {
+func (kcb *ConnectBuilder) UpdateCache() error {
 	return kcb.Cache.Update(KafkaConnect, kcb.kafkaConnect)
 }
 
 // ensure that connect cluster of kcb same name but labelled for different env does not exist
-func (kcb *KafkaConnectBuilder) VerifyEnvLabel() error {
+func (kcb *ConnectBuilder) VerifyEnvLabel() error {
 	if envLabel, ok := kcb.kafkaConnect.GetLabels()["env"]; ok {
 		if envLabel != kcb.Env.Name {
 			nn := kcb.getNamespacedName()
@@ -717,15 +738,15 @@ func (kcb *KafkaConnectBuilder) VerifyEnvLabel() error {
 	return nil
 }
 
-func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
+func (kcb *ConnectBuilder) getSpecConfig() (*apiextensions.JSON, error) {
 	var config apiextensions.JSON
 
 	connectClusterConfigs := fmt.Sprintf("%s-connect-cluster-configs", kcb.Env.Name)
 	connectClusterOffsets := fmt.Sprintf("%s-connect-cluster-offsets", kcb.Env.Name)
 	connectClusterStatus := fmt.Sprintf("%s-connect-cluster-status", kcb.Env.Name)
-	connectClusterGroupId := fmt.Sprintf("%s-connect-cluster", kcb.Env.Name)
+	connectClusterGroupID := fmt.Sprintf("%s-connect-cluster", kcb.Env.Name)
 
-	config.UnmarshalJSON([]byte(fmt.Sprintf(`{
+	err := config.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"config.storage.replication.factor":       "3",
 		"config.storage.topic":                    "%s",
 		"connector.client.config.override.policy": "All",
@@ -735,36 +756,42 @@ func (kcb *KafkaConnectBuilder) getSpecConfig() *apiextensions.JSON {
 		"offset.storage.partitions":               "5",
 		"status.storage.replication.factor":       "3",
 		"status.storage.topic":                    "%s"
-	}`, connectClusterConfigs, connectClusterGroupId, connectClusterOffsets, connectClusterStatus)))
+	}`, connectClusterConfigs, connectClusterGroupID, connectClusterOffsets, connectClusterStatus)))
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal config: %w", err)
+	}
 
-	return &config
+	return &config, nil
 }
 
-func (kcb *KafkaConnectBuilder) getLimits() *apiextensions.JSON {
+func (kcb *ConnectBuilder) getLimits() (*apiextensions.JSON, error) {
 	return kcb.getResourceSpec(kcb.Env.Spec.Providers.Kafka.Connect.Resources.Limits, `{
         "cpu": "600m",
         "memory": "800Mi"
 	}`)
 }
 
-func (kcb *KafkaConnectBuilder) getRequests() *apiextensions.JSON {
+func (kcb *ConnectBuilder) getRequests() (*apiextensions.JSON, error) {
 	return kcb.getResourceSpec(kcb.Env.Spec.Providers.Kafka.Connect.Resources.Requests, `{
         "cpu": "300m",
         "memory": "500Mi"
 	}`)
 }
 
-func (kcb *KafkaConnectBuilder) getResourceSpec(field *apiextensions.JSON, defaultJSON string) *apiextensions.JSON {
+func (kcb *ConnectBuilder) getResourceSpec(field *apiextensions.JSON, defaultJSON string) (*apiextensions.JSON, error) {
 	if field != nil {
-		return field
+		return field, nil
 	}
 	var defaults apiextensions.JSON
-	defaults.UnmarshalJSON([]byte(defaultJSON))
+	err := defaults.UnmarshalJSON([]byte(defaultJSON))
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal defaults: %w", err)
+	}
 
-	return &defaults
+	return &defaults, nil
 }
 
-func (kcb *KafkaConnectBuilder) getNamespacedName() types.NamespacedName {
+func (kcb *ConnectBuilder) getNamespacedName() types.NamespacedName {
 	if kcb.namespacedName.Name == "" || kcb.kafkaConnect.Namespace == "" {
 		kcb.namespacedName = types.NamespacedName{
 			Namespace: getConnectNamespace(kcb.Env),
@@ -774,7 +801,7 @@ func (kcb *KafkaConnectBuilder) getNamespacedName() types.NamespacedName {
 	return kcb.namespacedName
 }
 
-func (kcb *KafkaConnectBuilder) getReplicas() int32 {
+func (kcb *ConnectBuilder) getReplicas() int32 {
 	replicas := kcb.Env.Spec.Providers.Kafka.Connect.Replicas
 	if replicas < int32(1) {
 		replicas = int32(1)
@@ -782,7 +809,7 @@ func (kcb *KafkaConnectBuilder) getReplicas() int32 {
 	return replicas
 }
 
-func (kcb *KafkaConnectBuilder) getVersion() string {
+func (kcb *ConnectBuilder) getVersion() string {
 	version := kcb.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
 		version = "3.0.0"
@@ -790,23 +817,23 @@ func (kcb *KafkaConnectBuilder) getVersion() string {
 	return version
 }
 
-func (kcb *KafkaConnectBuilder) getImage() string {
+func (kcb *ConnectBuilder) getImage() string {
 	image := kcb.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = IMAGE_KAFKA_XJOIN
+		image = DefaultImageKafkaXjoin
 	}
 	return image
 }
 
-func (kcb *KafkaConnectBuilder) getSecret(secret string) string {
+func (kcb *ConnectBuilder) getSecret(secret string) string {
 	return string(kcb.secretData[secret])
 }
 
-func (kcb *KafkaConnectBuilder) getSecretPtr(secret string) *string {
+func (kcb *ConnectBuilder) getSecretPtr(secret string) *string {
 	return utils.StringPtr(kcb.getSecret(secret))
 }
 
-func (kcb *KafkaConnectBuilder) setTLSAndAuthentication() {
+func (kcb *ConnectBuilder) setTLSAndAuthentication() {
 	if kcb.Env.Spec.Providers.Kafka.EnableLegacyStrimzi {
 		return
 	}
@@ -827,7 +854,7 @@ func (kcb *KafkaConnectBuilder) setTLSAndAuthentication() {
 	}
 }
 
-func (kcb *KafkaConnectBuilder) setAnnotations() {
+func (kcb *ConnectBuilder) setAnnotations() {
 	// configures kcb KafkaConnect to use KafkaConnector resources to avoid needing to call the
 	// Connect REST API directly
 	annotations := kcb.kafkaConnect.GetAnnotations()

@@ -112,21 +112,22 @@ func processAppEndpoints(
 		// If app has public endpoint, add it to app config
 
 		for _, deployment := range depApp.Spec.Deployments {
-			if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
-				name := depApp.GetDeploymentNamespacedName(&deployment).Name
+			innerDeployment := deployment
+			if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
+				name := depApp.GetDeploymentNamespacedName(&innerDeployment).Name
 				*depConfig = append(*depConfig, config.DependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(webPort),
-					Name:     deployment.Name,
+					Name:     innerDeployment.Name,
 					App:      depApp.Name,
 				})
 			}
-			if deployment.WebServices.Private.Enabled {
-				name := depApp.GetDeploymentNamespacedName(&deployment).Name
+			if innerDeployment.WebServices.Private.Enabled {
+				name := depApp.GetDeploymentNamespacedName(&innerDeployment).Name
 				*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
 					Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 					Port:     int(privatePort),
-					Name:     deployment.Name,
+					Name:     innerDeployment.Name,
 					App:      depApp.Name,
 				})
 			}

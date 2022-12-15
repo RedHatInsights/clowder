@@ -7,7 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var IMAGE_OBJECTSTORE_MINIO = "quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
+var DefaultImageObjectStoreMinio = "quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
 
 // ProvName is the providers ident.
 var ProvName = "objectstore"
@@ -24,7 +24,7 @@ func GetObjectStore(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneObjectStore(c)
 	default:
 		errStr := fmt.Sprintf("No matching object store mode for %s", objectStoreMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

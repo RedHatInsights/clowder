@@ -65,9 +65,10 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, iqeSA := range iqeServiceAccounts.Items {
-		addAllSecrets(secList, &iqeSA)
+		innerIQESA := iqeSA
+		addAllSecrets(secList, &innerIQESA)
 
-		if err := ps.Cache.Update(serviceaccount.IQEServiceAccount, &iqeSA); err != nil {
+		if err := ps.Cache.Update(serviceaccount.IQEServiceAccount, &innerIQESA); err != nil {
 			return err
 		}
 	}
@@ -78,10 +79,10 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, sa := range saList.Items {
+		innerSA := sa
+		addAllSecrets(secList, &innerSA)
 
-		addAllSecrets(secList, &sa)
-
-		if err := ps.Cache.Update(serviceaccount.CoreDeploymentServiceAccount, &sa); err != nil {
+		if err := ps.Cache.Update(serviceaccount.CoreDeploymentServiceAccount, &innerSA); err != nil {
 			return err
 		}
 	}

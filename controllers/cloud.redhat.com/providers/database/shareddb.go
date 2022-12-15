@@ -108,7 +108,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	image, ok := imageList[version]
 
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
+		return nil, errors.NewClowderError(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
 	}
 
 	imgComponents := strings.Split(image, ":")
@@ -255,12 +255,12 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
 
-	appSqlConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	appSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 	ctx, cancel := context.WithTimeout(db.Ctx, 5*time.Second)
 	defer cancel()
 
-	dbClient, err := sql.Open("postgres", appSqlConnectionString)
+	dbClient, err := sql.Open("postgres", appSQLConnectionString)
 	if err != nil {
 		return err
 	}
@@ -271,9 +271,9 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	if pErr != nil {
 		if strings.Contains(pErr.Error(), fmt.Sprintf("database \"%s\" does not exist", app.Spec.Database.Name)) {
 
-			envSqlConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, db.Env.Name)
+			envSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, db.Env.Name)
 
-			envDbClient, envErr := sql.Open("postgres", envSqlConnectionString)
+			envDbClient, envErr := sql.Open("postgres", envSQLConnectionString)
 			if envErr != nil {
 				return envErr
 			}

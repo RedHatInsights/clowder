@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -65,11 +64,20 @@ type TestSuite struct {
 	stopController context.CancelFunc
 }
 
+func runAPITestServer() {
+	_ = CreateAPIServer().ListenAndServe()
+}
+
+func loggerSync(log *zap.Logger) {
+	// Ignore the error from sync
+	_ = log.Sync()
+}
+
 func (suite *TestSuite) SetupSuite() {
 	// call flag.Parse() here if TestMain uses flags
 	ctrl.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(true)))
 	logger, _ = zap.NewProduction()
-	defer logger.Sync()
+	defer loggerSync(logger)
 	logger.Info("bootstrapping test environment")
 
 	testEnv = &envtest.Environment{
@@ -102,23 +110,27 @@ func (suite *TestSuite) SetupSuite() {
 	assert.NoError(suite.T(), err, "failed to create k8s client")
 	assert.NotNil(suite.T(), k8sClient, "k8sClient was returned nil")
 
-	//ctx := context.Background()
+	// ctx := context.Background()
 
 	ctx, stopController := context.WithCancel(context.Background())
 	suite.stopController = stopController
 
 	nsSpec := &core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kafka"}}
-	k8sClient.Create(ctx, nsSpec)
+	err = k8sClient.Create(ctx, nsSpec)
+	assert.NoError(suite.T(), err, "error creating namespace")
 
-	go Run(":8080", ":8081", false, testEnv.Config, ctx, false)
-	go CreateAPIServer().ListenAndServe()
+	go Run(ctx, ":8080", ":8081", false, testEnv.Config, false)
+	go runAPITestServer()
 
 	for i := 1; i <= 50; i++ {
 		resp, err := http.Get("http://localhost:8080/metrics")
 
 		if err == nil && resp.StatusCode == 200 {
 			logger.Info("Manager ready", zap.Int("duration", 100*i))
-			break
+			defer resp.Body.Close()
+			return
+		} else if err == nil {
+			defer resp.Body.Close()
 		}
 
 		if i == 50 {
@@ -502,16 +514,21 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	scaledObjectValidation(suite.T(), app, &scaler, &d)
 
-	resp, _ := http.Get("http://127.0.0.1:2019/config/")
+	resp, err := http.Get("http://127.0.0.1:2019/config/")
+	assert.NoError(suite.T(), err, "failed test because get failed")
+	defer resp.Body.Close()
+
 	config := clowderconfig.ClowderConfig{}
-	sData, _ := ioutil.ReadAll(resp.Body)
+	sData, _ := io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &config)
 
 	assert.NoError(suite.T(), err, "failed test because API not available")
 
-	resp, _ = http.Get("http://127.0.0.1:2019/clowdapps/present/")
+	resp, err = http.Get("http://127.0.0.1:2019/clowdapps/present/")
+	assert.NoError(suite.T(), err, "failed test because get failed")
+	defer resp.Body.Close()
 	capps := []string{}
-	sData, _ = ioutil.ReadAll(resp.Body)
+	sData, _ = io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &capps)
 
 	assert.NoError(suite.T(), err, "failed to unmarshal")
@@ -640,26 +657,6 @@ func fetch(ctx context.Context, name types.NamespacedName, resource client.Objec
 	return err
 }
 
-func mapEq(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for k, va := range a {
-		vb, ok := b[k]
-
-		if !ok {
-			return false
-		}
-
-		if va != vb {
-			return false
-		}
-	}
-
-	return true
-}
-
 func createEphemeralManagedSecret(name string, namespace string, cwData map[string]string) error {
 	secret := core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -672,7 +669,7 @@ func createEphemeralManagedSecret(name string, namespace string, cwData map[stri
 	return k8sClient.Create(context.Background(), &secret)
 }
 
-var ephemManagedKafkaHTTPLog []map[string]string = []map[string]string{}
+var ephemManagedKafkaHTTPLog = []map[string]string{}
 
 func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	logger.Info("Starting ephemeral managed kafka e2e test")
@@ -688,8 +685,8 @@ func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	secretData["hostname"] = "hostname:443"
 	secretData["admin.url"] = "https://admin.url"
 	secretData["token.url"] = "https://token.url"
-	secretName := "managed-ephem-secret"
-	err := createEphemeralManagedSecret(secretName, nn.Namespace, secretData)
+	secName := "managed-ephem-secret"
+	err := createEphemeralManagedSecret(secName, nn.Namespace, secretData)
 	assert.Nil(suite.T(), err)
 
 	cwData := map[string]string{
@@ -707,7 +704,7 @@ func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 		return &mockClient
 	}
 
-	env, app, err := createManagedKafkaClowderStack(nn, secretName)
+	env, app, err := createManagedKafkaClowderStack(nn, secName)
 
 	assert.Nil(suite.T(), err)
 
@@ -718,7 +715,7 @@ func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
 	mockClient.createStaticTopic("ephemeral.managed.kafka.name.inventory")
 
 	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
-	assert.Equal(suite.T(), secretName, ephemManagedSecret.Name)
+	assert.Equal(suite.T(), secName, ephemManagedSecret.Name)
 	assert.Equal(suite.T(), nn.Namespace, ephemManagedSecret.Namespace)
 	assert.Eventually(suite.T(), func() bool {
 		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
@@ -754,7 +751,7 @@ func (m *MockEphemManagedKafkaHTTPClient) createStaticTopic(topicName string) {
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
-	readBody := ioutil.NopCloser(strings.NewReader(body))
+	readBody := io.NopCloser(strings.NewReader(body))
 	resp := http.Response{
 		Status:           fmt.Sprint(code),
 		StatusCode:       code,
@@ -780,9 +777,9 @@ func (m *MockEphemManagedKafkaHTTPClient) logResponse(resp *http.Response) {
 	entry := map[string]string{}
 	entry["status"] = resp.Status
 	entry["code"] = strconv.Itoa(resp.StatusCode)
-	//This is on purpose because whenever I try to read the body I get 0 bytes
-	//and I messed with it for too long and I don't care anymore because this is a
-	//test not the ISS's attitude control system
+	// This is on purpose because whenever I try to read the body I get 0 bytes
+	// and I messed with it for too long and I don't care anymore because this is a
+	// test not the ISS's attitude control system
 	entry["body"] = resp.Proto
 
 	ephemManagedKafkaHTTPLog = append(ephemManagedKafkaHTTPLog, entry)
@@ -833,7 +830,7 @@ func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error
 }
 
 func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	bodyData, _ := ioutil.ReadAll(body)
+	bodyData, _ := io.ReadAll(body)
 	kafkaObj := &kafka.JSONPayload{}
 	err := json.Unmarshal(bodyData, kafkaObj)
 	if err != nil {

@@ -26,11 +26,11 @@ func TestReconcileMetricsStartEnabled(t *testing.T) {
 }
 
 func TestReconcileMetricsEndEnabled(t *testing.T) {
-	//After hours of messing with the prometheus lib I'm convinced there's no way
-	//to read metrics from it. Metrics go into it, but you don't get metrics out of it
-	//I originally wanted to assert on some valid equivilent of reconciliationMetrics is empty
-	//before reconcileMetricsEnd and then not empty after but I don't see a way to do that
-	//This test will catch errors in the underlying code, but it asserts nothing :(
+	// After hours of messing with the prometheus lib I'm convinced there's no way
+	// to read metrics from it. Metrics go into it, but you don't get metrics out of it
+	// I originally wanted to assert on some valid equivilent of reconciliationMetrics is empty
+	// before reconcileMetricsEnd and then not empty after but I don't see a way to do that
+	// This test will catch errors in the underlying code, but it asserts nothing :(
 	clowderconfig.LoadedConfig.Features.ReconciliationMetrics = true
 	reconciler := ReconciliationMetrics{}
 	reconciler.init("TestApp", "TestEnv")

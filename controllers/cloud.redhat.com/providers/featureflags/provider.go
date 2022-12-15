@@ -7,7 +7,7 @@ import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var IMAGE_FEATUREFLAGS_UNLEASH = "quay.io/cloudservices/unleash-docker:3.9"
+var DefaultImageFeatureFlagsUnleash = "quay.io/cloudservices/unleash-docker:3.9"
 
 // ProvName identifies the featureflags provider.
 var ProvName = "featureflags"
@@ -24,7 +24,7 @@ func GetFeatureFlags(c *p.Provider) (p.ClowderProvider, error) {
 		return NewNoneFeatureFlagsProvider(c)
 	default:
 		errStr := fmt.Sprintf("No matching featureflags mode for %s", ffMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

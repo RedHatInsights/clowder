@@ -76,7 +76,7 @@ func printConfig() error {
 }
 
 // Run inits the manager and controllers and then starts the manager
-func Run(metricsAddr string, probeAddr string, enableLeaderElection bool, config *rest.Config, signalHandler context.Context, enableWebHooks bool) {
+func Run(signalHandler context.Context, metricsAddr string, probeAddr string, enableLeaderElection bool, config *rest.Config, enableWebHooks bool) {
 	err := printConfig()
 	if err != nil {
 		setupLog.Error(err, "unable to print config")

@@ -44,10 +44,11 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, deployment := range dList.Items {
+		depInner := deployment
 		annotations := map[string]string{"configHash": hash}
-		utils.UpdateAnnotations(&deployment.Spec.Template, annotations)
+		utils.UpdateAnnotations(&depInner.Spec.Template, annotations)
 
-		if err := ch.Cache.Update(deployProvider.CoreDeployment, &deployment); err != nil {
+		if err := ch.Cache.Update(deployProvider.CoreDeployment, &depInner); err != nil {
 			return err
 		}
 	}
@@ -58,10 +59,11 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, job := range jList.Items {
+		jobInner := job
 		annotations := map[string]string{"configHash": hash}
-		utils.UpdateAnnotations(&job.Spec.JobTemplate.Spec.Template, annotations)
+		utils.UpdateAnnotations(&jobInner.Spec.JobTemplate.Spec.Template, annotations)
 
-		if err := ch.Cache.Update(cronjobProvider.CoreCronJob, &job); err != nil {
+		if err := ch.Cache.Update(cronjobProvider.CoreCronJob, &jobInner); err != nil {
 			return err
 		}
 	}

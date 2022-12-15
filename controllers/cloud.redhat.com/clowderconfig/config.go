@@ -3,7 +3,6 @@ package clowderconfig
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 )
 
@@ -28,7 +27,7 @@ type ClowderConfig struct {
 		} `json:"cache"`
 		Pprof struct {
 			Enable  bool   `json:"enable"`
-			CpuFile string `json:"cpuFile"`
+			CPUFile string `json:"cpuFile"`
 		} `json:"pprof"`
 	} `json:"debugOptions"`
 	Features struct {
@@ -58,7 +57,7 @@ func getConfig() ClowderConfig {
 
 	fmt.Printf("Loading config from: %s\n", configPath)
 
-	jsonData, err := ioutil.ReadFile(configPath)
+	jsonData, err := os.ReadFile(configPath)
 
 	if err != nil {
 		fmt.Printf("Config file not found\n")

@@ -70,7 +70,7 @@ func (c *mockBucketHandler) CreateClient(
 	hostname string, port int, accessKey *string, secretKey *string,
 ) error {
 	if c.wantCreateClientError == true {
-		return errors.New("create client error")
+		return errors.NewClowderError("create client error")
 	}
 	c.hostname = hostname
 	c.port = port
@@ -180,7 +180,7 @@ func (fc *FakeStatus) Patch(ctx context.Context, obj client.Object, patch client
 func TestMinio(t *testing.T) {
 	assert := assert.New(t)
 
-	fakeError := errors.New("something very bad happened")
+	fakeError := errors.NewClowderError("something very bad happened")
 
 	t.Run("createBucketsHitsCheckError", func(t *testing.T) {
 		bucketName := "testBucket"

@@ -2,7 +2,7 @@ package providers
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -21,11 +21,11 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var IMAGE_CADDY_SIDECAR_DEFAULT = "quay.io/cloudservices/crc-caddy-plugin:1c4882e"
-var IMAGE_MBOP_DEFAULT = "quay.io/cloudservices/mbop:bb071db"
-var IMAGE_MOCKTITLEMENTS_DEFAULT = "quay.io/cloudservices/mocktitlements:e24820c"
-var KEYCLOAK_VERSION_DEFAULT = "15.0.2"
-var IMAGE_KEYCLOAK_DEFAULT = fmt.Sprintf("quay.io/keycloak/keycloak:%s", KEYCLOAK_VERSION_DEFAULT)
+var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:1c4882e"
+var DefaultImageMBOP = "quay.io/cloudservices/mbop:bb071db"
+var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:e24820c"
+var DefaultKeyCloakVersion = "15.0.2"
+var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -175,7 +175,7 @@ func GetCaddyImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
 		return clowderconfig.LoadedConfig.Images.Caddy
 	}
-	return IMAGE_CADDY_SIDECAR_DEFAULT
+	return DefaultImageCaddySideCar
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
@@ -186,7 +186,7 @@ func GetKeycloakImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
 		return clowderconfig.LoadedConfig.Images.Keycloak
 	}
-	return IMAGE_KEYCLOAK_DEFAULT
+	return DefaultImageKeyCloak
 }
 
 // GetMocktitlementsImage returns the mocktitlements image to use in a given environment
@@ -197,7 +197,7 @@ func GetMocktitlementsImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Mocktitlements != "" {
 		return clowderconfig.LoadedConfig.Images.Mocktitlements
 	}
-	return IMAGE_MOCKTITLEMENTS_DEFAULT
+	return DefaultImageMocktitlements
 }
 
 // GetMockBOPImage returns the mock BOP image to use in a given environment
@@ -208,7 +208,7 @@ func GetMockBOPImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		return clowderconfig.LoadedConfig.Images.MBOP
 	}
-	return IMAGE_MBOP_DEFAULT
+	return DefaultImageMBOP
 }
 
 // GetKeycloakVersion returns the keycloak version to use in a given environment
@@ -216,11 +216,11 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.KeycloakVersion != "" {
 		return env.Spec.Providers.Web.KeycloakVersion
 	}
-	return KEYCLOAK_VERSION_DEFAULT
+	return DefaultKeyCloakVersion
 }
 
 func GetClowderNamespace() (string, error) {
-	clowderNsB, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	clowderNsB, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 
 	// CLOBBER the error here as this is our default
 	if err != nil {

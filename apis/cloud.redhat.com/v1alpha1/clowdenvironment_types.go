@@ -66,7 +66,7 @@ type WebConfig struct {
 
 	// An api prefix path that pods will be instructed to use when setting up
 	// their web server.
-	ApiPrefix string `json:"apiPrefix,omitempty"`
+	APIPrefix string `json:"apiPrefix,omitempty"`
 
 	// The mode of operation of the Web provider. The allowed modes are
 	// (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
@@ -353,14 +353,14 @@ type InMemoryDBConfig struct {
 	PVC bool `json:"pvc,omitempty"`
 }
 
-//AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+// AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
 // +kubebuilder:validation:Enum={"none", "enabled", "keda"}
 type AutoScalerMode string
 
 // AutoScalerConfig configures the Clowder provider controlling the creation of
 // AutoScaler configuration.
 type AutoScalerConfig struct {
-	//Enable the autoscaler feature
+	// Enable the autoscaler feature
 	Mode AutoScalerMode `json:"mode,omitempty"`
 }
 
@@ -758,9 +758,8 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		if domain != "" {
 			if random {
 				return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
-			} else {
-				return fmt.Sprintf("%s.%s", i.Name, domain)
 			}
+			return fmt.Sprintf("%s.%s", i.Name, domain)
 		}
 	}
 

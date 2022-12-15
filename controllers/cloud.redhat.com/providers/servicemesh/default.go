@@ -1,6 +1,8 @@
 package servicemesh
 
 import (
+	"fmt"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -33,13 +35,17 @@ func (ch *servicemeshProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, deployment := range dList.Items {
+		innerDeployment := deployment
 		annotations := map[string]string{
 			"sidecar.istio.io/inject":                       "true",
 			"traffic.sidecar.istio.io/excludeOutboundPorts": "443,9093,5432,10000",
 		}
-		utils.UpdateAnnotations(&deployment.Spec.Template, annotations)
+		utils.UpdateAnnotations(&innerDeployment.Spec.Template, annotations)
 
-		ch.Cache.Update(deployProvider.CoreDeployment, &deployment)
+		err := ch.Cache.Update(deployProvider.CoreDeployment, &innerDeployment)
+		if err != nil {
+			return fmt.Errorf("could not update annotations: %w", err)
+		}
 	}
 
 	return nil

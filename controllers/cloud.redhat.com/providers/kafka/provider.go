@@ -14,7 +14,7 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-var IMAGE_KAFKA_XJOIN = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+var DefaultImageKafkaXjoin = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
 
 // ProvName is the name/ident of the provider
 var ProvName = "kafka"
@@ -48,7 +48,7 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneKafka(c)
 	default:
 		errStr := fmt.Sprintf("No matching kafka mode for %s", kafkaMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

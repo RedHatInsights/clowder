@@ -26,8 +26,9 @@ func (j *cronjobProvider) EnvProvide() error {
 func (j *cronjobProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, cronjob := range app.Spec.Jobs {
-		if cronjob.Schedule != "" {
-			if err := j.makeCronJob(&cronjob, app); err != nil {
+		innerCronjob := cronjob
+		if innerCronjob.Schedule != "" {
+			if err := j.makeCronJob(&innerCronjob, app); err != nil {
 				return err
 			}
 		}

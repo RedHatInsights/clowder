@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strconv"
@@ -32,13 +32,14 @@ func fetchCa() (string, error) {
 	if err != nil {
 		return "", errors.Wrap("Error fetching CA bundle", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		msg := fmt.Sprintf("Bad status code: %d", resp.StatusCode)
-		return "", errors.New(msg)
+		return "", errors.NewClowderError(msg)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		return "", errors.Wrap("Error reading response body", err)
@@ -47,7 +48,7 @@ func fetchCa() (string, error) {
 	caBundle := string(body)
 
 	if !strings.HasPrefix(caBundle, "-----BEGIN CERTIFICATE") {
-		return "", errors.New("Invalid RDS CA bundle")
+		return "", errors.NewClowderError("Invalid RDS CA bundle")
 	}
 
 	return caBundle, nil
@@ -77,7 +78,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	}
 
 	if app.Spec.Database.Name != "" && app.Spec.Database.SharedDBAppName != "" {
-		return errors.New("Cannot set dbName & shared db app name")
+		return errors.NewClowderError("Cannot set dbName & shared db app name")
 	}
 
 	var dbSpec crd.DatabaseSpec

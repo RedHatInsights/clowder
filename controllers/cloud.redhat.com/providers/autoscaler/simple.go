@@ -17,13 +17,13 @@ import (
 )
 
 const (
-	CLOWD_API_VERSION      = "clowd.redhat.com/v1alpha1"
-	CLOWD_KIND             = "ClowdApp"
-	DEPLOYMENT_API_VERSION = "apps/v1"
-	DEPLOYMENT_KIND        = "Deployment"
+	ClowdAPIVersion      = "clowd.redhat.com/v1alpha1"
+	ClowdKind            = "ClowdApp"
+	DeploymentAPIVersion = "apps/v1"
+	DeploymentKind       = "Deployment"
 )
 
-//Creates a simple HPA in the resource cache for the deployment and ClowdApp
+// Creates a simple HPA in the resource cache for the deployment and ClowdApp
 func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment crd.Deployment) error {
 	cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
 	if err != nil {
@@ -40,7 +40,7 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 	return nil
 }
 
-//Adds the HPA to the resource cache
+// Adds the HPA to the resource cache
 func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment crd.Deployment, hpaResource v2.HorizontalPodAutoscaler) error {
 	nn := app.GetDeploymentNamespacedName(&deployment)
 	if err := sp.Cache.Create(SimpleAutoScaler, nn, &hpaResource); err != nil {
@@ -49,7 +49,7 @@ func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment crd.D
 	return nil
 }
 
-//Get the core apps.Deployment from the provider cache
+// Get the core apps.Deployment from the provider cache
 func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, sp *providers.Provider) (*apps.Deployment, error) {
 	nn := app.GetDeploymentNamespacedName(clowdDeployment)
 	d := &apps.Deployment{}
@@ -59,7 +59,7 @@ func getDeploymentFromCache(clowdDeployment *crd.Deployment, app *crd.ClowdApp, 
 	return d, nil
 }
 
-//Factory for the simpleHPAMaker
+// Factory for the simpleHPAMaker
 func newSimpleHPAMaker(deployment *crd.Deployment, app *crd.ClowdApp, appConfig *config.AppConfig, coreDeployment *apps.Deployment) simpleHPAMaker {
 	return simpleHPAMaker{
 		deployment:     deployment,
@@ -69,8 +69,8 @@ func newSimpleHPAMaker(deployment *crd.Deployment, app *crd.ClowdApp, appConfig 
 	}
 }
 
-//Creates a simple HPA and stores references
-//to the resources and dependencies it requires
+// Creates a simple HPA and stores references
+// to the resources and dependencies it requires
 type simpleHPAMaker struct {
 	deployment     *crd.Deployment
 	app            *crd.ClowdApp
@@ -78,23 +78,23 @@ type simpleHPAMaker struct {
 	coreDeployment *apps.Deployment
 }
 
-//Constructs the HPA in 2 parts: the HPA itself and the metric spec
+// Constructs the HPA in 2 parts: the HPA itself and the metric spec
 func (d *simpleHPAMaker) getResource() v2.HorizontalPodAutoscaler {
 	hpa := d.makeHPA()
 	hpa.Spec.Metrics = d.makeMetricsSpecs()
 	return hpa
 }
 
-//Creates the HPA resource
+// Creates the HPA resource
 func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 	name := fmt.Sprintf("%s-%s-hpa", d.app.Name, d.deployment.Name)
 	hpa := v2.HorizontalPodAutoscaler{
-		//Set to clowdapp
+		// Set to clowdapp
 		ObjectMeta: metav1.ObjectMeta{
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: CLOWD_API_VERSION,
-					Kind:       CLOWD_KIND,
+					APIVersion: ClowdAPIVersion,
+					Kind:       ClowdKind,
 					Name:       d.app.Name,
 					UID:        d.app.UID,
 				}},
@@ -103,8 +103,8 @@ func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 		},
 		Spec: v2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: v2.CrossVersionObjectReference{
-				APIVersion: DEPLOYMENT_API_VERSION,
-				Kind:       DEPLOYMENT_KIND,
+				APIVersion: DeploymentAPIVersion,
+				Kind:       DeploymentKind,
 				Name:       d.coreDeployment.Name,
 			},
 			MinReplicas: &d.deployment.AutoScalerSimple.Replicas.Min,
@@ -114,7 +114,7 @@ func (d *simpleHPAMaker) makeHPA() v2.HorizontalPodAutoscaler {
 	return hpa
 }
 
-//Creates the metrics specs for the HPA
+// Creates the metrics specs for the HPA
 func (d *simpleHPAMaker) makeMetricsSpecs() []v2.MetricSpec {
 	metricsSpecs := []v2.MetricSpec{}
 

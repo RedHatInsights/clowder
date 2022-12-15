@@ -124,7 +124,7 @@ func validateBrokerService(ctx context.Context, cl client.Client, nn types.Names
 
 	if err != nil {
 		errorText := fmt.Sprintf("Cannot find kafka bootstrap service %s:%s", nn.Namespace, nn.Name)
-		newError := errors.New(errorText)
+		newError := errors.NewClowderError(errorText)
 		errors.LogError(ctx, "kafka", newError)
 		return newError
 	}

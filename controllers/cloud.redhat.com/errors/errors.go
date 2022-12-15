@@ -16,7 +16,7 @@ import (
 // ClowdKey is a string determining the type of error.
 type ClowdKey string
 
-var stacksEnabled bool = true
+var stacksEnabled = true
 
 // ClowderError is a Clowder specific error, it has a number of functions attached to it to allow
 // for creation and checking.
@@ -48,8 +48,8 @@ func (a *ClowderError) Is(target error) bool {
 	return (a.Msg == b.Msg && a.Cause == b.Cause)
 }
 
-// New constructs a new ClowderError object.
-func New(msg string) *ClowderError {
+// NewClowderError constructs a new ClowderError object.
+func NewClowderError(msg string) *ClowderError {
 	stackField := zap.String("stack", "")
 
 	if stacksEnabled {
@@ -64,7 +64,7 @@ func New(msg string) *ClowderError {
 
 // Wrap takes an existing error an wraps it, returning a ClowderError
 func Wrap(msg string, err error) *ClowderError {
-	clowderErr := New(msg)
+	clowderErr := NewClowderError(msg)
 	clowderErr.Cause = err
 	var cerr *ClowderError
 	if errlib.As(err, &cerr) {
@@ -73,13 +73,13 @@ func Wrap(msg string, err error) *ClowderError {
 	return clowderErr
 }
 
-//MissingDependency is a struct that holds information about a missing dependency
+// MissingDependency is a struct that holds information about a missing dependency
 type MissingDependency struct {
 	Source  string
 	Details string
 }
 
-//ToString returns a string representation of the missing dependency
+// ToString returns a string representation of the missing dependency
 func (m *MissingDependency) ToString() string {
 	return fmt.Sprintf("source: %s, details: %s", m.Source, m.Details)
 }
@@ -90,12 +90,12 @@ func MakeMissingDependencies(missingDep MissingDependency) MissingDependencies {
 	}
 }
 
-//MissingDependencies is a struct that holds a list of MissingDependency structs
+// MissingDependencies is a struct that holds a list of MissingDependency structs
 type MissingDependencies struct {
 	MissingDeps []MissingDependency
 }
 
-//Error returns a string representation of the missing dependencies
+// Error returns a string representation of the missing dependencies
 func (e *MissingDependencies) Error() string {
 	typeList := []string{}
 

@@ -144,7 +144,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	if !app.IsReady() {
 		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
 		r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-		readyErr := errors.New(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
+		readyErr := errors.NewClowderError(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
 		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, readyErr); condErr != nil {
 			return ctrl.Result{}, condErr
 		}
@@ -215,7 +215,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 
-		if err := iqe.CreateIqeJobResource(&cache, &cji, &env, &app, nn, ctx, &j, r.Log, r.Client); err != nil {
+		if err := iqe.CreateIqeJobResource(ctx, &cache, &cji, &env, &app, nn, &j, r.Log, r.Client); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
 			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
@@ -272,10 +272,9 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.
 	labelMaxLength := 63
 
 	if len(jobName) > labelMaxLength {
-		return errors.New(fmt.Sprintf("[%s] contains a label with character length greater than 63", jobName))
-	} else {
-		nn.Name = jobName
+		return errors.NewClowderError(fmt.Sprintf("[%s] contains a label with character length greater than 63", jobName))
 	}
+	nn.Name = jobName
 
 	j := batchv1.Job{}
 	if err := cache.Create(iqe.ClowdJob, nn, &j); err != nil {
@@ -308,7 +307,7 @@ func getJobFromName(jobName string, app *crd.ClowdApp) (job crd.Job, err error) 
 			return j, nil
 		}
 	}
-	return crd.Job{}, errors.New(fmt.Sprintf("No such job %s", jobName))
+	return crd.Job{}, errors.NewClowderError(fmt.Sprintf("No such job %s", jobName))
 }
 
 // SetupWithManager registers the CJI with the main manager process
@@ -352,7 +351,7 @@ func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 	jobsRequired := len(cji.Spec.Jobs)
 	var emptyTesting crd.IqeJobSpec
 	if cji.Spec.Testing.Iqe != emptyTesting {
-		jobsRequired += 1
+		jobsRequired++
 	}
 	jobsCompleted := countCompletedJobs(jobs, cji)
 	return jobsCompleted == jobsRequired

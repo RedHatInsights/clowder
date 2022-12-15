@@ -14,7 +14,6 @@ package v1alpha1
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -140,8 +139,8 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// ApiPath describes the api path that will be configured to serve this backend from.
-	ApiPath string `json:"apiPath,omitempty"`
+	// APIPath describes the api path that will be configured to serve this backend from.
+	APIPath string `json:"apiPath,omitempty"`
 
 	// WhitelistPaths define the paths that do not require authentication
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
@@ -193,11 +192,11 @@ type Deployment struct {
 	// some labels. It must be unique within a ClowdApp.
 	Name string `json:"name"`
 
-	//Deprecated: Use Replicas instead
-	//If Replicas is not set and MinReplicas is set, then MinReplicas will be used
+	// Deprecated: Use Replicas instead
+	// If Replicas is not set and MinReplicas is set, then MinReplicas will be used
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 
-	//Defines the desired replica count for the pod
+	// Defines the desired replica count for the pod
 	Replicas *int32 `json:"replicas,omitempty"`
 
 	// If set to true, creates a service on the webPort defined in
@@ -252,7 +251,7 @@ type Sidecar struct {
 	Enabled bool `json:"enabled"`
 }
 
-//Metadata for applying annotations etc to PodSpec
+// Metadata for applying annotations etc to PodSpec
 type PodspecMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
@@ -265,7 +264,7 @@ type PodSpec struct {
 	// A list of init containers used to perform at-startup operations.
 	InitContainers []InitContainer `json:"initContainers,omitempty"`
 
-	//Allows for defining custom PodSpec metadata, such as annotations
+	// Allows for defining custom PodSpec metadata, such as annotations
 	Metadata PodspecMetadata `json:"metadata,omitempty"`
 
 	// The command that will be invoked inside the pod at startup.
@@ -341,7 +340,7 @@ type AutoScaler struct {
 	// Default is 10.
 	// +optional
 	MaxReplicaCount *int32 `json:"maxReplicaCount,omitempty"`
-	//MinReplicaCount is the minimum number of replicas the scaler will scale the deployment to.
+	// MinReplicaCount is the minimum number of replicas the scaler will scale the deployment to.
 	MinReplicaCount *int32 `json:"minReplicaCount,omitempty"`
 	// +optional
 	Advanced *keda.AdvancedConfig `json:"advanced,omitempty"`
@@ -630,7 +629,7 @@ func (i *ClowdApp) GetClowdSAName() string {
 	return fmt.Sprintf("%s-app", i.GetClowdName())
 }
 
-// Omfunc is a utility function that performs an operation on a metav1.Object.
+// omfunc is a utility function that performs an operation on a metav1.Object.
 type omfunc func(o metav1.Object)
 
 // SetObjectMeta sets the metadata on a ClowdApp object.
@@ -647,7 +646,7 @@ func (i *ClowdApp) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 
 // Name returns a function that sets the name of an object to that of the
 // passed in string.
-func Name(name string) omfunc {
+func Name(name string) omfunc { // nolint:revive
 	return func(o metav1.Object) {
 		o.SetName(name)
 	}
@@ -655,14 +654,14 @@ func Name(name string) omfunc {
 
 // Namespace returns a function that sets the namespace of an object to that of the
 // passed in string.
-func Namespace(namespace string) omfunc {
+func Namespace(namespace string) omfunc { // nolint:revive
 	return func(o metav1.Object) {
 		o.SetNamespace(namespace)
 	}
 }
 
 // Labels returns a function that sets the labels of an object to that of the passed in labels.
-func Labels(labels map[string]string) omfunc {
+func Labels(labels map[string]string) omfunc { // nolint:revive
 	return func(o metav1.Object) {
 		o.SetLabels(labels)
 	}
@@ -675,7 +674,6 @@ func GetAppInSameEnv(ctx context.Context, pClient client.Client, app *ClowdApp, 
 
 	if err != nil {
 		return err
-		// return errors.New("Could not get app list")
 	}
 
 	return nil
@@ -699,7 +697,7 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 			return &refApp, nil
 		}
 	}
-	return nil, errors.New("could not get app for db in env")
+	return nil, fmt.Errorf("could not get app for db in env")
 }
 
 func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *ClowdEnvironment) error {

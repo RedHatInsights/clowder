@@ -67,12 +67,12 @@ func NewStrimzi(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &strimziProvider{Provider: *p}, nil
 }
 
-func (p *strimziProvider) EnvProvide() error {
-	if err := createNetworkPolicies(&p.Provider); err != nil {
+func (s *strimziProvider) EnvProvide() error {
+	if err := createNetworkPolicies(&s.Provider); err != nil {
 		return err
 	}
 
-	return p.configureBrokers()
+	return s.configureBrokers()
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
@@ -102,9 +102,9 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTcpBrokerConfig(listener))
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
 
@@ -187,81 +187,114 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
 	// default values for config/requests/limits in Strimzi resource specs
-	var kConfig, kRequests, kLimits, zLimits, zRequests apiextensions.JSON
+	var kafConfig, kafRequests, kafLimits, zLimits, zRequests apiextensions.JSON
 	var entityUserLimits, entityUserRequests apiextensions.JSON
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
-	var entityTlsLimits, entityTlsRequests apiextensions.JSON
+	var entityTLSLimits, entityTLSRequests apiextensions.JSON
 
-	kConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
+	err = kafConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kConfig: %w", err)
+	}
 
-	kRequests.UnmarshalJSON([]byte(`{
+	err = kafRequests.UnmarshalJSON([]byte(`{
         "cpu": "250m",
         "memory": "600Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kRequests: %w", err)
+	}
 
-	kLimits.UnmarshalJSON([]byte(`{
+	err = kafLimits.UnmarshalJSON([]byte(`{
         "cpu": "500m",
         "memory": "1Gi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kLimits: %w", err)
+	}
 
-	zRequests.UnmarshalJSON([]byte(`{
+	err = zRequests.UnmarshalJSON([]byte(`{
         "cpu": "200m",
         "memory": "400Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal zRequests: %w", err)
+	}
 
-	zLimits.UnmarshalJSON([]byte(`{
+	err = zLimits.UnmarshalJSON([]byte(`{
         "cpu": "350m",
         "memory": "800Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal zLimits: %w", err)
+	}
 
-	entityUserRequests.UnmarshalJSON([]byte(`{
+	err = entityUserRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "250Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityUserRequests: %w", err)
+	}
 
-	entityUserLimits.UnmarshalJSON([]byte(`{
+	err = entityUserLimits.UnmarshalJSON([]byte(`{
         "cpu": "400m",
         "memory": "500Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityUserLimits: %w", err)
+	}
 
-	entityTopicRequests.UnmarshalJSON([]byte(`{
+	err = entityTopicRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "250Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTopicRequests: %w", err)
+	}
 
-	entityTopicLimits.UnmarshalJSON([]byte(`{
+	err = entityTopicLimits.UnmarshalJSON([]byte(`{
         "cpu": "200m",
         "memory": "500Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTopicLimits: %w", err)
+	}
 
-	entityTlsRequests.UnmarshalJSON([]byte(`{
+	err = entityTLSRequests.UnmarshalJSON([]byte(`{
         "cpu": "50m",
         "memory": "50Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTlsRequests: %w", err)
+	}
 
-	entityTlsLimits.UnmarshalJSON([]byte(`{
+	err = entityTLSLimits.UnmarshalJSON([]byte(`{
         "cpu": "100m",
         "memory": "100Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal entityTlsLimits: %w", err)
+	}
 
 	// check if defaults have been overridden in ClowdEnvironment
 	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests != nil {
-		kRequests = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests
+		kafRequests = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Requests
 	}
 	if s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits != nil {
-		kLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
+		kafLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
 	}
 
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
-			Config:   &kConfig,
+			Config:   &kafConfig,
 			Version:  &version,
 			Replicas: replicas,
 			Resources: &strimzi.KafkaSpecKafkaResources{
-				Requests: &kRequests,
-				Limits:   &kLimits,
+				Requests: &kafRequests,
+				Limits:   &kafLimits,
 			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
@@ -286,8 +319,8 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			},
 			TlsSidecar: &strimzi.KafkaSpecEntityOperatorTlsSidecar{
 				Resources: &strimzi.KafkaSpecEntityOperatorTlsSidecarResources{
-					Requests: &entityTlsRequests,
-					Limits:   &entityTlsLimits,
+					Requests: &entityTLSRequests,
+					Limits:   &entityTLSLimits,
 				},
 			},
 		},
@@ -298,8 +331,11 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		if err != nil {
 			return err
 		}
-		kConfig.UnmarshalJSON(jsonData)
-		k.Spec.Kafka.Config = &kConfig
+		err = kafConfig.UnmarshalJSON(jsonData)
+		if err != nil {
+			return fmt.Errorf("could not unmarshall json data: %w", err)
+		}
+		k.Spec.Kafka.Config = &kafConfig
 	}
 
 	k.Spec.Kafka.JvmOptions = &s.Env.Spec.Providers.Kafka.Cluster.JVMOptions
@@ -369,12 +405,12 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 		zkStorageSize := "50Gi"
 
-		kQuantity, err := resource.ParseQuantity(storageSize)
+		kafQuantity, err := resource.ParseQuantity(storageSize)
 
 		if err == nil {
 			zkQuantity, err := resource.ParseQuantity("50Gi")
 
-			if err == nil && kQuantity.Cmp(zkQuantity) < 0 {
+			if err == nil && kafQuantity.Cmp(zkQuantity) < 0 {
 				// Kafka storage size is less than zkStorageSize
 				zkStorageSize = storageSize
 			}
@@ -511,15 +547,21 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 	var kcRequests, kcLimits apiextensions.JSON
 
 	// default values for config/requests/limits in Strimzi resource specs
-	kcRequests.UnmarshalJSON([]byte(`{
+	err := kcRequests.UnmarshalJSON([]byte(`{
         "cpu": "300m",
         "memory": "500Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kcRequests: %w", err)
+	}
 
-	kcLimits.UnmarshalJSON([]byte(`{
+	err = kcLimits.UnmarshalJSON([]byte(`{
         "cpu": "600m",
         "memory": "800Mi"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal kcLimits: %w", err)
+	}
 
 	// check if defaults have been overridden in ClowdEnvironment
 	if s.Env.Spec.Providers.Kafka.Connect.Resources.Requests != nil {
@@ -566,14 +608,14 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = IMAGE_KAFKA_XJOIN
+		image = DefaultImageKafkaXjoin
 	}
 
 	username := getConnectClusterUserName(s.Env)
 
 	var config apiextensions.JSON
 
-	config.UnmarshalJSON([]byte(`{
+	err = config.UnmarshalJSON([]byte(`{
 		"config.storage.replication.factor":       "1",
 		"config.storage.topic":                    "connect-cluster-configs",
 		"connector.client.config.override.policy": "All",
@@ -583,6 +625,9 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 		"status.storage.replication.factor":       "1",
 		"status.storage.topic":                    "connect-cluster-status"
 	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal config: %w", err)
+	}
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
@@ -650,7 +695,7 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 		)
 	}
 
-	//INTERNAL
+	// INTERNAL
 	kafkaCASecName := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
 		Namespace: getKafkaNamespace(s.Env),
@@ -665,9 +710,9 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 	configs.Brokers = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			configs.Brokers = append(configs.Brokers, buildTlsBrokerConfig(listener, kafkaCACert))
+			configs.Brokers = append(configs.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			configs.Brokers = append(configs.Brokers, buildTcpBrokerConfig(listener))
+			configs.Brokers = append(configs.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
 
@@ -680,7 +725,7 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 	return nil
 }
 
-func buildTcpBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.BrokerConfig {
+func buildTCPBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.BrokerConfig {
 	bc := config.BrokerConfig{
 		Hostname: *listener.Addresses[0].Host,
 	}
@@ -692,7 +737,7 @@ func buildTcpBrokerConfig(listener strimzi.KafkaStatusListenersElem) config.Brok
 	return bc
 }
 
-func buildTlsBrokerConfig(listener strimzi.KafkaStatusListenersElem, caCert string) config.BrokerConfig {
+func buildTLSBrokerConfig(listener strimzi.KafkaStatusListenersElem, caCert string) config.BrokerConfig {
 	authType := config.BrokerConfigAuthtypeSasl
 	bc := config.BrokerConfig{
 		Sasl:     &config.KafkaSASLConfig{},
@@ -799,12 +844,12 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 			}
 
 			if ku.Status == nil || ku.Status.Username == nil {
-				return errors.New("no username in kafkauser status")
+				return errors.NewClowderError("no username in kafkauser status")
 			}
 			broker.Sasl.Username = ku.Status.Username
 
 			if ku.Status.Secret == nil {
-				return errors.New("no secret in kafkauser status")
+				return errors.NewClowderError("no secret in kafkauser status")
 			}
 
 			secnn := types.NamespacedName{
@@ -820,7 +865,7 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 			}
 
 			if kafkaSecret.Data["password"] == nil {
-				return errors.New("no password in kafkauser secret")
+				return errors.NewClowderError("no password in kafkauser secret")
 			}
 			password := string(kafkaSecret.Data["password"])
 			broker.Sasl.Password = &password
@@ -997,7 +1042,7 @@ func processTopicValues(
 			out, _ := f(valList)
 			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
 		} else {
-			return errors.New(fmt.Sprintf("no conversion type for %s", key))
+			return errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
 		}
 	}
 
@@ -1020,11 +1065,11 @@ func processTopicValues(
 	if len(replicaValList) > 0 {
 		maxReplicas, err := utils.IntMax(replicaValList)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", replicaValList))
+			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
 		maxReplicasInt, err := strconv.Atoi(maxReplicas)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
+			return errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
 		k.Spec.Replicas = utils.Int32Ptr(maxReplicasInt)
 		if *k.Spec.Replicas < int32(1) {
@@ -1036,11 +1081,11 @@ func processTopicValues(
 	if len(partitionValList) > 0 {
 		maxPartitions, err := utils.IntMax(partitionValList)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not compute max for %v", partitionValList))
+			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
 		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
 		if err != nil {
-			return errors.New(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
+			return errors.NewClowderError(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
 		k.Spec.Partitions = utils.Int32Ptr(maxPartitionsInt)
 		if *k.Spec.Partitions < int32(1) {

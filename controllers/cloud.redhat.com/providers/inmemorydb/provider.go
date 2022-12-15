@@ -7,7 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var IMAGE_INMEMORYDB_REDIS = "quay.io/cloudservices/redis-ephemeral:6"
+var DefaultImageInMemoryDBRedis = "quay.io/cloudservices/redis-ephemeral:6"
 
 // ProvName is the name/ident of the provider
 var ProvName = "inmemorydb"
@@ -24,7 +24,7 @@ func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewNoneInMemoryDb(c)
 	default:
 		errStr := fmt.Sprintf("No matching in-memory db mode for %s", dbMode)
-		return nil, errors.New(errStr)
+		return nil, errors.NewClowderError(errStr)
 	}
 }
 

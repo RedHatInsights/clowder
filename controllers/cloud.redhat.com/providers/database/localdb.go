@@ -126,7 +126,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 	image, ok := imageList[dbVersion]
 
 	if !ok {
-		return errors.New(fmt.Sprintf("Requested image version (%v), doesn't exist", dbVersion))
+		return errors.NewClowderError(fmt.Sprintf("Requested image version (%v), doesn't exist", dbVersion))
 	}
 
 	if app.Spec.Cyndi.Enabled {
