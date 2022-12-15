@@ -1034,7 +1034,7 @@ PublicWebService is the definition of the public web service. There can be only 
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
-| *`apiPath`* __string__ | ApiPath describes the api path that will be configured to serve this backend from.
+| *`apiPath`* __string__ | APIPath describes the api path that will be configured to serve this backend from.
 | *`whitelistPaths`* __string array__ | WhitelistPaths define the paths that do not require authentication
 |===
 
