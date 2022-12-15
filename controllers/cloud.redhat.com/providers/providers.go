@@ -20,7 +20,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
 // MinioSecret is the resource ident for the Minio secret object.

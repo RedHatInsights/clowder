@@ -8,7 +8,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	core "k8s.io/api/core/v1"

@@ -11,7 +11,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
 var DefaultImageKafkaXjoin = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"

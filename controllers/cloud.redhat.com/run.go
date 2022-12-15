@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

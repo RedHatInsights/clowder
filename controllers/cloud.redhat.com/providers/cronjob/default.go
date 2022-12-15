@@ -3,7 +3,7 @@ package cronjob
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	batch "k8s.io/api/batch/v1"
 )
 
