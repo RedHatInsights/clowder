@@ -812,7 +812,7 @@ func (kcb *ConnectBuilder) getReplicas() int32 {
 func (kcb *ConnectBuilder) getVersion() string {
 	version := kcb.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "3.0.0"
+		version = "3.1.0"
 	}
 	return version
 }
