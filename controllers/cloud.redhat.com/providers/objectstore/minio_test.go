@@ -126,6 +126,10 @@ type FakeClient struct {
 type FakeStatus struct {
 }
 
+func (fc *FakeClient) SubResource(subResource string) client.SubResourceClient {
+	return nil
+}
+
 func (fc *FakeClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
 	return nil
 }
@@ -146,7 +150,7 @@ func (fc *FakeClient) DeleteAllOf(ctx context.Context, obj client.Object, opts .
 	return nil
 }
 
-func (fc *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (fc *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	p, _ := obj.(*core.Secret)
 	p.Data = make(map[string][]byte)
 	p.Data["port"] = []byte("2345")
@@ -169,11 +173,15 @@ func (fc *FakeClient) Status() client.StatusWriter {
 	return &FakeStatus{}
 }
 
-func (fc *FakeStatus) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (fc *FakeStatus) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
 	return nil
 }
 
-func (fc *FakeStatus) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (fc *FakeStatus) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+	return nil
+}
+
+func (fc *FakeStatus) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	return nil
 }
 
