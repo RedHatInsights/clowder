@@ -15,6 +15,7 @@ import (
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -411,6 +412,7 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 }
 
 func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, err error) error {
+	oldStatus := o.Status.DeepCopy()
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
@@ -459,13 +461,16 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	o.Status.Ready = deploymentStatus
 
-	if err := client.Status().Update(ctx, o); err != nil {
-		return err
+	if !equality.Semantic.DeepEqual(*oldStatus, o.Status) {
+		if err := client.Status().Update(ctx, o); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state clusterv1.ConditionType, err error) error {
+	oldStatus := o.Status.DeepCopy()
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
@@ -514,13 +519,16 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	o.Status.Ready = deploymentStatus
 
-	if err := client.Status().Update(ctx, o); err != nil {
-		return err
+	if !equality.Semantic.DeepEqual(*oldStatus, o.Status) {
+		if err := client.Status().Update(ctx, o); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state clusterv1.ConditionType, err error) error {
+	oldStatus := o.Status.DeepCopy()
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
@@ -571,8 +579,10 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	// Purposefully clobber this err
 	_ = UpdateInvokedJobStatus(ctx, jobs, o)
 
-	if err := client.Status().Update(ctx, o); err != nil {
-		return err
+	if !equality.Semantic.DeepEqual(*oldStatus, o.Status) {
+		if err := client.Status().Update(ctx, o); err != nil {
+			return err
+		}
 	}
 	// https://github.com/kubernetes-sigs/controller-runtime/issues/1464#issuecomment-811930090
 	// Handle the lag between the client and the k8s cache
