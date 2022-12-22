@@ -22,6 +22,7 @@ import (
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
@@ -94,51 +95,18 @@ func Run(signalHandler context.Context, metricsAddr string, probeAddr string, en
 		LeaderElectionID:       "068b0003.cloud.redhat.com",
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.Error(err, "unable to create manager")
 		os.Exit(1)
 	}
 
-	if err = (&ClowdAppReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdApp"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ClowdApp")
+	if err := addControllersToManager(mgr); err != nil {
 		os.Exit(1)
 	}
-	if err = (&ClowdEnvironmentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
-		os.Exit(1)
-	}
-	if err = (&ClowdJobInvocationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdJobInvocation"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ClowdJobInvocation")
-		os.Exit(1)
-	}
+
 	// +kubebuilder:scaffold:builder
 
-	if enableWebHooks {
-		if err = (&crd.ClowdApp{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "Captain")
-			os.Exit(1)
-		}
-		mgr.GetWebhookServer().Register(
-			"/mutate-pod",
-			&webhook.Admission{
-				Handler: &mutantPod{
-					Client:   mgr.GetClient(),
-					Recorder: mgr.GetEventRecorderFor("app"),
-				},
-			},
-		)
-
+	if err := setupWebhooks(mgr, enableWebHooks); err != nil {
+		os.Exit(1)
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
@@ -156,4 +124,51 @@ func Run(signalHandler context.Context, metricsAddr string, probeAddr string, en
 		os.Exit(1)
 	}
 	setupLog.Info("Exiting manager")
+}
+
+func addControllersToManager(mgr manager.Manager) error {
+	if err := (&ClowdAppReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdApp"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdApp")
+		return err
+	}
+	if err := (&ClowdEnvironmentReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
+		return err
+	}
+	if err := (&ClowdJobInvocationReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdJobInvocation"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdJobInvocation")
+		return err
+	}
+	return nil
+}
+
+func setupWebhooks(mgr manager.Manager, enableWebHooks bool) error {
+	if enableWebHooks {
+		if err := (&crd.ClowdApp{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Captain")
+			return err
+		}
+		mgr.GetWebhookServer().Register(
+			"/mutate-pod",
+			&webhook.Admission{
+				Handler: &mutantPod{
+					Client:   mgr.GetClient(),
+					Recorder: mgr.GetEventRecorderFor("app"),
+				},
+			},
+		)
+	}
+	return nil
 }
