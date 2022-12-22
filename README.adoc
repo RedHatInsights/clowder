@@ -1,7 +1,7 @@
 :note-caption: :information_source:
 image::docs/antora/modules/ROOT/images/clowder.svg[Clowder - Clowd Platform Operator]
 
-image:https://img.shields.io/github/workflow/status/RedHatInsights/clowder/Run%20Unit%20Tests[Build Passing]
+image:https://img.shields.io/github/actions/workflow/status/RedHatInsights/clowder/package.yml?branch=master[Build Passing]
 image:https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg[Downloads]
 image:https://img.shields.io/github/v/release/RedHatInsights/clowder[Release]
 image:https://goreportcard.com/badge/github.com/RedHatInsights/clowder[Go Report Card]
