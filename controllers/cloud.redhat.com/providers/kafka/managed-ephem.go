@@ -202,7 +202,7 @@ func deleteTopics(topicList *TopicsList, rClient HTTPClient, adminHostname strin
 	}
 
 	for _, topic := range topicList.Items {
-		// The name of the envrionment must be in the topic names
+		// The name of the environment must be in the topic names
 		fmt.Print(reg.String())
 		if reg.Find([]byte(topic.Name)) == nil {
 			continue

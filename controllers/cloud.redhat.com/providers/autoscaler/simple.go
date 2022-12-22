@@ -123,8 +123,8 @@ func (d *simpleHPAMaker) makeMetricsSpecs() []v2.MetricSpec {
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
 	if d.deployment.AutoScalerSimple.RAM.ScaleAtValue != "" {
-		threshhold := res.MustParse(d.deployment.AutoScalerSimple.RAM.ScaleAtValue)
-		metricsSpec := d.makeAverageValueMetricSpec(v1.ResourceMemory, threshhold)
+		threshold := res.MustParse(d.deployment.AutoScalerSimple.RAM.ScaleAtValue)
+		metricsSpec := d.makeAverageValueMetricSpec(v1.ResourceMemory, threshold)
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
 
@@ -133,25 +133,25 @@ func (d *simpleHPAMaker) makeMetricsSpecs() []v2.MetricSpec {
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
 	if d.deployment.AutoScalerSimple.CPU.ScaleAtValue != "" {
-		threshhold := res.MustParse(d.deployment.AutoScalerSimple.CPU.ScaleAtValue)
-		metricsSpec := d.makeAverageValueMetricSpec(v1.ResourceCPU, threshhold)
+		threshold := res.MustParse(d.deployment.AutoScalerSimple.CPU.ScaleAtValue)
+		metricsSpec := d.makeAverageValueMetricSpec(v1.ResourceCPU, threshold)
 		metricsSpecs = append(metricsSpecs, metricsSpec)
 	}
 
 	return metricsSpecs
 }
 
-func (d *simpleHPAMaker) makeAverageValueMetricSpec(resource v1.ResourceName, threshhold res.Quantity) v2.MetricSpec {
+func (d *simpleHPAMaker) makeAverageValueMetricSpec(resource v1.ResourceName, threshold res.Quantity) v2.MetricSpec {
 	ms := d.makeBasicMetricSpec(resource)
 	ms.Resource.Target.Type = v2.AverageValueMetricType
-	ms.Resource.Target.AverageValue = &threshhold
+	ms.Resource.Target.AverageValue = &threshold
 	return ms
 }
 
-func (d *simpleHPAMaker) makeAverageUtilizationMetricSpec(resource v1.ResourceName, threshhold int32) v2.MetricSpec {
+func (d *simpleHPAMaker) makeAverageUtilizationMetricSpec(resource v1.ResourceName, threshold int32) v2.MetricSpec {
 	ms := d.makeBasicMetricSpec(resource)
 	ms.Resource.Target.Type = v2.UtilizationMetricType
-	ms.Resource.Target.AverageUtilization = &threshhold
+	ms.Resource.Target.AverageUtilization = &threshold
 	return ms
 }
 

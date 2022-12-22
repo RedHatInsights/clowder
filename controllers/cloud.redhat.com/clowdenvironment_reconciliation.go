@@ -123,7 +123,7 @@ func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error
 
 // Perform finalization of the environment. Called by markedForDeleteion
 // Note: _ at beginning of method name indicates that a method is called
-// by a step method, not directly by the reconcilation loop
+// by a step method, not directly by the reconciliation loop
 func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() error {
 
 	provider := providers.Provider{
@@ -315,7 +315,7 @@ func (r *ClowdEnvironmentReconciliation) applyCache() (ctrl.Result, error) {
 
 // Sets info for the apps in the environment
 // This method is the step and contains most of the error handling, logging etc
-// The full implementaiton is pushed out into another method
+// The full implementation is pushed out into another method
 func (r *ClowdEnvironmentReconciliation) setAppInfo() (ctrl.Result, error) {
 	if setAppErr := r.setAppInfoImplementation(); setAppErr != nil {
 		r.log.Info("setAppInfo error", "err", setAppErr)
