@@ -2942,6 +2942,9 @@ objects:
                                   type: string
                                 type: array
                             type: object
+                          tls:
+                            description: TLS enables encryption annotations on the service definition
+                            type: boolean
                         type: object
                     required:
                     - name

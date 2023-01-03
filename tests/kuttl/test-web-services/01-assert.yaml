@@ -12,6 +12,19 @@ metadata:
     name: puptoo
 type: Opaque
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo-processor-tls-cert
+  namespace: test-web-services
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,6 +47,8 @@ kind: Service
 metadata:
   name: puptoo-processor
   namespace: test-web-services
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: "puptoo-processor-tls-cert"
 spec:
   selector:
     pod: puptoo-processor

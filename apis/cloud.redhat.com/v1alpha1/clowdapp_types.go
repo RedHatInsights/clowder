@@ -173,6 +173,7 @@ type WebServices struct {
 	Public  PublicWebService  `json:"public,omitempty"`
 	Private PrivateWebService `json:"private,omitempty"`
 	Metrics MetricsWebService `json:"metrics,omitempty"`
+	TLS     bool              `json:"tls,omitempty"`
 }
 
 // K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'
