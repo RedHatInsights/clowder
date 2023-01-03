@@ -113,7 +113,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	if deployment.WebServices.TLS {
 		var certName string = app.Name + "-tls-cert"
-		annotations := map[string]string{"service.beta.openshift.io/service-cert-secret-name": certName}
+		annotations := map[string]string{"service.beta.openshift.io/serving-cert-secret-name": certName}
 
 		utils.UpdateAnnotations(s, annotations)
 	}
