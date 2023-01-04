@@ -738,6 +738,8 @@ spec:
               serviceConfig:
                 description: ServiceConfig provides options for k8s Service resources
                 properties:
+                  tls:
+                    type: boolean
                   type:
                     enum:
                     - ClusterIP
@@ -745,6 +747,7 @@ spec:
                     - ""
                     type: string
                 required:
+                - tls
                 - type
                 type: object
               targetNamespace:

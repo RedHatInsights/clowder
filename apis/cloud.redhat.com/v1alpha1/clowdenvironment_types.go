@@ -419,6 +419,7 @@ type IqeUISeleniumConfig struct {
 type ServiceConfig struct {
 	// +kubebuilder:validation:Enum=ClusterIP;NodePort;""
 	Type string `json:"type"`
+	TLS  bool `json:"tls"`
 }
 
 // ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.

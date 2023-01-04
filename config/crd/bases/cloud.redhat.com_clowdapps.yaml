@@ -2874,10 +2874,6 @@ spec:
                                 type: string
                               type: array
                           type: object
-                        tls:
-                          description: TLS enables encryption between pods within the cluster
-                            by providing a service annotation.
-                          type: boolean
                       type: object
                   required:
                   - name

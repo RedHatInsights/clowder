@@ -5,6 +5,9 @@ metadata:
   name: test-web-services
 spec:
   targetNamespace: test-web-services
+  serviceConfig:
+     type: ClusterIP 
+     tls: True
   providers:
     web:
       port: 8000
@@ -49,7 +52,6 @@ spec:
         - name: ENV_VAR_2
           value: env_var_2
     webServices:
-      tls: true
       private:
         enabled: True
       public:
