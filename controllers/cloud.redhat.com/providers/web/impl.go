@@ -111,7 +111,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		)
 	}
 
-	if env.Spec.ServiceConfig.TLS  {
+	if env.Spec.ServiceConfig.TLS {
 		var certName string = app.Name + "-tls-cert"
 		annotations := map[string]string{"service.beta.openshift.io/serving-cert-secret-name": certName}
 
