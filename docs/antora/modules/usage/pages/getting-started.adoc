@@ -10,7 +10,7 @@ instance. It will also create two new custom resource types that are easy to
 query: ``env`` for ``ClowdEnvs`` and ``app`` for ``ClowdApps``.
 
 If you would like to install Clowder manually and set up a contributing
-developer environment, https://redhatinsights.github.io/clowder/clowder/dev/developer-guide.html[follow the developer guide].
+developer environment, https://consoledot.pages.redhat.com/clowder/dev/developer-guide.html[follow the developer guide].
 
 == Create your first ``ClowdEnvironment``
 
@@ -28,7 +28,7 @@ what source is providing those services. For our purposes, these services are co
 
 The easiest way to install a ClowdEnvironment that is fit for working with ephemeral environments is by using Bonfire.
 
-Bonfire is a cli tool used to deploy apps into ephemeral environments. Read about getting started with bonfire on ephemeral environments https://clouddot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html[here]
+Bonfire is a cli tool used to deploy apps into ephemeral environments. Read about getting started with bonfire on ephemeral environments https://consoledot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html[here]
 
 If you're curious to see what is going to be deployed (without actually applying the config), run:
 
@@ -40,7 +40,7 @@ You can apply the environment's config and wait for it to become "ready" using:
 [source,shell]
 bonfire deploy-env -n jumpstart
 
-This will cause bonfire to apply the https://github.com/RedHatInsights/bonfire/blob/master/bonfire/resources/ephemeral-clowdenvironment.yaml[default ephemeral template] and set the ``targetNamespace`` to ``jumpstart```
+This will cause bonfire to apply the https://github.com/RedHatInsights/bonfire/blob/master/bonfire/resources/ephemeral-cluster-clowdenvironment.yaml[default ephemeral template] and set the ``targetNamespace`` to ``jumpstart```
 
 NOTE: You will only create a ClowdEnvironment in your local minikube. Stage
 and Production will have one ClowdEnv, respectively, shared by all apps in
@@ -84,7 +84,7 @@ everything your app needs to run: database names, object storage, environment
 variables, container images, and cron jobs; the whole party. We'll start small
 and use the example.
 
-The https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdapp[API docs for ClowdApps] can be found on redhatinsights.github.io.
+The https://consoledot.pages.redhat.com/clowder/dev/api_reference.html[API docs for ClowdApps] can be found on redhatinsights.github.io.
 
 A https://github.com/RedHatInsights/clowder/blob/master/docs/examples/clowdapp.yml[fully annotated ClowdApp] file can be found in the Clowder examples directory.
 
