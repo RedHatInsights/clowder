@@ -3,8 +3,11 @@ name: Submit docs
 
 on:
   push:
-    branches: 
-    - master
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+      - '**/*.adoc'
 
 jobs:
   docs_build:
