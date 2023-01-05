@@ -1,7 +1,11 @@
 name: Go
 
 on:
-  - pull_request
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.adoc'
+      - '.github/**'
 
 permissions:
   contents: read
