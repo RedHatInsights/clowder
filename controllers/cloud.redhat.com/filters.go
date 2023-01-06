@@ -16,33 +16,37 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-func logMessage(logr logr.Logger, ctrlName string, msg string, keysAndValues ...interface{}) {
-	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
-		logr.Info(msg, keysAndValues...)
-	}
+type HandlerFuncs struct {
+	// Create returns true if the Create event should be processed
+	CreateFunc func(event.CreateEvent) (bool, string)
+
+	// Delete returns true if the Delete event should be processed
+	DeleteFunc func(event.DeleteEvent) (bool, string)
+
+	// Update returns true if the Update event should be processed
+	UpdateFunc func(event.UpdateEvent) (bool, string)
+
+	// Generic returns true if the Generic event should be processed
+	GenericFunc func(event.GenericEvent) (bool, string)
 }
 
-func defaultPredicate(logr logr.Logger, ctrlName string) predicate.Funcs {
-	return predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
+func logMessage(logr logr.Logger, msg string, keysAndValues ...interface{}) {
+	logr.Info(msg, keysAndValues...)
+}
+
+func defaultFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return HandlerFuncs{
+		CreateFunc: func(e event.CreateEvent) (bool, string) {
+			return true, "create"
 		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
+		DeleteFunc: func(e event.DeleteEvent) (bool, string) {
+			return true, "update"
 		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
-			return true
+		UpdateFunc: func(e event.UpdateEvent) (bool, string) {
+			return true, "update"
 		},
-		GenericFunc: func(e event.GenericEvent) bool {
-			gvk, _ := utils.GetKindFromObj(Scheme, e.Object)
-			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
-			return true
+		GenericFunc: func(e event.GenericEvent) (bool, string) {
+			return true, "generic"
 		},
 	}
 }
@@ -83,40 +87,50 @@ func environmentUpdateFunc(e event.UpdateEvent) bool {
 	return false
 }
 
-func genPredicateFunc(updateFn func(e event.UpdateEvent) bool, logr logr.Logger, ctrlName string) predicate.Funcs {
-	predicates := defaultPredicate(logr, ctrlName)
-	predicates.UpdateFunc = func(e event.UpdateEvent) bool {
+func genFilterFunc(updateFn func(e event.UpdateEvent) bool, logr logr.Logger, ctrlName string) HandlerFuncs {
+	filters := defaultFilter(logr, ctrlName)
+	filters.UpdateFunc = func(e event.UpdateEvent) (bool, string) {
 		result := updateFn(e)
 		if result {
 			gvk, _ := utils.GetKindFromObj(Scheme, e.ObjectNew)
-			logMessage(logr, ctrlName, "Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectNew.GetName(), "namespace", e.ObjectNew.GetNamespace())
 			displayUpdateDiff(e, logr, ctrlName, gvk)
 		}
-		return result
+		return result, "update"
 	}
-	return predicates
+	return filters
 }
 
-func alwaysPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	return genPredicateFunc(func(e event.UpdateEvent) bool {
+func alwaysFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return genFilterFunc(func(e event.UpdateEvent) bool {
 		return true
 	}, logr, ctrlName)
 }
 
-func generationOnlyPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	return genPredicateFunc(predicate.GenerationChangedPredicate{}.Update, logr, ctrlName)
+func generationOnlyFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return genFilterFunc(predicate.GenerationChangedPredicate{}.Update, logr, ctrlName)
 }
 
-func deploymentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	return genPredicateFunc(deploymentUpdateFunc, logr, ctrlName)
+func deploymentFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return genFilterFunc(deploymentUpdateFunc, logr, ctrlName)
 }
 
-func kafkaPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	return genPredicateFunc(kafkaUpdateFunc, logr, ctrlName)
+func kafkaFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return genFilterFunc(kafkaUpdateFunc, logr, ctrlName)
 }
 
 func environmentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
-	return genPredicateFunc(environmentUpdateFunc, logr, ctrlName)
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: environmentUpdateFunc,
+		GenericFunc: func(e event.GenericEvent) bool {
+			return true
+		},
+	}
 }
 
 func displayUpdateDiff(e event.UpdateEvent, logr logr.Logger, ctrlName string, gvk schema.GroupVersionKind) {

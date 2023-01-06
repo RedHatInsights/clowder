@@ -36,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	// Import the providers to initialize them
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
@@ -215,20 +216,20 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
-	ctrlr.Owns(&apps.Deployment{}, builder.WithPredicates(deploymentPredicate(r.Log, "app")))
-	ctrlr.Owns(&core.Service{}, builder.WithPredicates(generationOnlyPredicate(r.Log, "app")))
-	ctrlr.Owns(&core.Secret{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
 	ctrlr.Watches(
 		&source.Kind{Type: &crd.ClowdApp{}},
 		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
-		builder.WithPredicates(generationOnlyPredicate(r.Log, "env")),
+		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 	)
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		ctrlr.Owns(&strimzi.Kafka{}, builder.WithPredicates(kafkaPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaConnect{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaUser{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
-		ctrlr.Owns(&strimzi.KafkaTopic{}, builder.WithPredicates(alwaysPredicate(r.Log, "app")))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.Kafka{}}, createNewHandler(kafkaFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaConnect{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaUser{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaTopic{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
 	}
 
 	ctrlr.WithOptions(controller.Options{
@@ -257,6 +258,8 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a client.Object) 
 		r.Log.Error(err, "Failed to fetch ClowdApp")
 		return nil
 	}
+
+	logMessage(r.Log, "Reconciliation triggered", "ctrl", "env", "type", "update", "resType", "ClowdApp", "name", a.GetName(), "namespace", a.GetNamespace())
 
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
