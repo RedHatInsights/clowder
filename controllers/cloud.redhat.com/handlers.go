@@ -90,77 +90,60 @@ func (e *enqueueRequestForObjectCustom) findOwner(a client.Object) (*types.Names
 	return nil, ""
 }
 
+func (e *enqueueRequestForObjectCustom) getOwner(obj client.Object) (*types.NamespacedName, string) {
+	if obj == nil {
+		return nil, ""
+	}
+	return e.findOwner(obj)
+}
+
+func (e *enqueueRequestForObjectCustom) logMessage(obj client.Object, msg string, toKind string, own *types.NamespacedName) {
+	gvk, _ := utils.GetKindFromObj(Scheme, obj)
+	logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "sourceObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, obj.GetNamespace(), obj.GetName()), "destObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
+}
+
 func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
-	if evt.Object == nil {
-		return
-	}
-	own, toKind := e.findOwner(evt.Object)
-	if own == nil {
-		return
-	}
-	doRequest, msg := e.HandlerFuncs.CreateFunc(evt)
-	if doRequest {
-		gvk, _ := utils.GetKindFromObj(Scheme, evt.Object)
-		logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "fromObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, evt.Object.GetNamespace(), evt.Object.GetName()), "toObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
-		q.Add(reconcile.Request{NamespacedName: *own})
+	if own, toKind := e.getOwner(evt.Object); own != nil {
+		if doRequest, msg := e.HandlerFuncs.CreateFunc(evt); doRequest {
+			e.logMessage(evt.Object, msg, toKind, own)
+			q.Add(reconcile.Request{NamespacedName: *own})
+		}
 	}
 }
 
 func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	switch {
 	case evt.ObjectNew != nil:
-		own, toKind := e.findOwner(evt.ObjectNew)
-		if own == nil {
-			return
-		}
-		doRequest, msg := e.HandlerFuncs.UpdateFunc(evt)
-		if doRequest {
-			gvk, _ := utils.GetKindFromObj(Scheme, evt.ObjectNew)
-			logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "fromObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, evt.ObjectNew.GetNamespace(), evt.ObjectNew.GetName()), "toObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
-			q.Add(reconcile.Request{NamespacedName: *own})
+		if own, toKind := e.getOwner(evt.ObjectNew); own != nil {
+			if doRequest, msg := e.HandlerFuncs.UpdateFunc(evt); doRequest {
+				e.logMessage(evt.ObjectNew, msg, toKind, own)
+				q.Add(reconcile.Request{NamespacedName: *own})
+			}
 		}
 	case evt.ObjectOld != nil:
-		own, toKind := e.findOwner(evt.ObjectOld)
-		if own == nil {
-			return
-		}
-		doRequest, msg := e.HandlerFuncs.UpdateFunc(evt)
-		if doRequest {
-			gvk, _ := utils.GetKindFromObj(Scheme, evt.ObjectOld)
-			logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "fromObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, evt.ObjectOld.GetNamespace(), evt.ObjectOld.GetName()), "toObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
-			q.Add(reconcile.Request{NamespacedName: *own})
+		if own, toKind := e.getOwner(evt.ObjectOld); own != nil {
+			if doRequest, msg := e.HandlerFuncs.UpdateFunc(evt); doRequest {
+				e.logMessage(evt.ObjectNew, msg, toKind, own)
+				q.Add(reconcile.Request{NamespacedName: *own})
+			}
 		}
 	}
 }
 
 func (e *enqueueRequestForObjectCustom) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	if evt.Object == nil {
-		return
-	}
-	own, toKind := e.findOwner(evt.Object)
-	if own == nil {
-		return
-	}
-	doRequest, msg := e.HandlerFuncs.DeleteFunc(evt)
-	if doRequest {
-		gvk, _ := utils.GetKindFromObj(Scheme, evt.Object)
-		logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "fromObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, evt.Object.GetNamespace(), evt.Object.GetName()), "toObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
-		q.Add(reconcile.Request{NamespacedName: *own})
+	if own, toKind := e.getOwner(evt.Object); own != nil {
+		if doRequest, msg := e.HandlerFuncs.DeleteFunc(evt); doRequest {
+			e.logMessage(evt.Object, msg, toKind, own)
+			q.Add(reconcile.Request{NamespacedName: *own})
+		}
 	}
 }
 
 func (e *enqueueRequestForObjectCustom) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
-	if evt.Object == nil {
-		return
-	}
-	own, toKind := e.findOwner(evt.Object)
-	if own == nil {
-		return
-	}
-	doRequest, msg := e.HandlerFuncs.GenericFunc(evt)
-	if doRequest {
-		gvk, _ := utils.GetKindFromObj(Scheme, evt.Object)
-		logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "fromObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, evt.Object.GetNamespace(), evt.Object.GetName()), "toObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
-		q.Add(reconcile.Request{NamespacedName: *own})
+	if own, toKind := e.getOwner(evt.Object); own != nil {
+		if doRequest, msg := e.HandlerFuncs.GenericFunc(evt); doRequest {
+			e.logMessage(evt.Object, msg, toKind, own)
+			q.Add(reconcile.Request{NamespacedName: *own})
+		}
 	}
 }
