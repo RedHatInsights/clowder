@@ -14,7 +14,6 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
-	cond "sigs.k8s.io/cluster-api/util/conditions"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -70,10 +69,7 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 		r.runProviders,
 		r.applyCache,
 		r.setAppInfo,
-		r.setEnvResourceStatus,
 		r.setPrometheusStatus,
-		r.setEnvStatus,
-		r.finalStatusError,
 		r.deleteUnusedResources,
 		r.setClowdEnvConditions,
 		r.logSuccess,
@@ -393,18 +389,6 @@ func (r *ClowdEnvironmentReconciliation) setAppInfoImplementation() error {
 	return nil
 }
 
-func (r *ClowdEnvironmentReconciliation) setEnvResourceStatus() (ctrl.Result, error) {
-	if statusErr := SetEnvResourceStatus(r.ctx, r.client, r.env); statusErr != nil {
-		r.log.Info("SetEnvResourceStatus error", "err", statusErr)
-		if setClowdStatusErr := SetClowdEnvConditions(r.ctx, r.client, r.env, crd.ReconciliationFailed, statusErr); setClowdStatusErr != nil {
-			r.log.Info("Set status error", "err", setClowdStatusErr)
-			return ctrl.Result{Requeue: true}, setClowdStatusErr
-		}
-		return ctrl.Result{Requeue: true}, statusErr
-	}
-	return ctrl.Result{}, nil
-}
-
 func (r *ClowdEnvironmentReconciliation) setPrometheusStatus() (ctrl.Result, error) {
 	var hostname string
 
@@ -416,37 +400,6 @@ func (r *ClowdEnvironmentReconciliation) setPrometheusStatus() (ctrl.Result, err
 
 	r.env.Status.Prometheus = crd.PrometheusStatus{Hostname: hostname}
 
-	return ctrl.Result{}, nil
-}
-
-func (r *ClowdEnvironmentReconciliation) setEnvStatus() (ctrl.Result, error) {
-	envReady, _, getEnvResErr := GetEnvResourceStatus(r.ctx, r.client, r.env)
-	if getEnvResErr != nil {
-		r.log.Info("GetEnvResourceStatus error", "err", getEnvResErr)
-		return ctrl.Result{Requeue: true}, getEnvResErr
-	}
-
-	envStatus := core.ConditionFalse
-	successCond := cond.Get(r.env, crd.ReconciliationSuccessful)
-	if successCond != nil {
-		envStatus = successCond.Status
-	}
-
-	r.env.Status.Ready = envReady && (envStatus == core.ConditionTrue)
-	r.env.Status.Generation = r.env.Generation
-
-	return ctrl.Result{}, nil
-}
-
-func (r *ClowdEnvironmentReconciliation) finalStatusError() (ctrl.Result, error) {
-	if finalStatusErr := r.client.Status().Update(r.ctx, r.env); finalStatusErr != nil {
-		r.log.Info("Final Status error", "err", finalStatusErr)
-		if setClowdStatusErr := SetClowdEnvConditions(r.ctx, r.client, r.env, crd.ReconciliationFailed, finalStatusErr); setClowdStatusErr != nil {
-			r.log.Info("Set status error", "err", setClowdStatusErr)
-			return ctrl.Result{Requeue: true}, setClowdStatusErr
-		}
-		return ctrl.Result{Requeue: true}, finalStatusErr
-	}
 	return ctrl.Result{}, nil
 }
 

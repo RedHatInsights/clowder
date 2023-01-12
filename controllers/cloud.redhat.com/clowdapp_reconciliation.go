@@ -53,7 +53,6 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 		r.createCache,
 		r.runProviders,
 		r.applyCache,
-		r.setAppResourceStatus,
 		r.deletedUnusedResources,
 		r.setReconciliationSuccessful,
 		r.stopMetrics,
@@ -312,14 +311,6 @@ func (r *ClowdAppReconciliation) applyCache() (ctrl.Result, error) {
 		return ctrl.Result{Requeue: true}, cacheErr
 	}
 
-	return ctrl.Result{}, nil
-}
-
-func (r *ClowdAppReconciliation) setAppResourceStatus() (ctrl.Result, error) {
-	if statusErr := SetAppResourceStatus(r.ctx, r.client, r.app); statusErr != nil {
-		r.log.Info("Set status error", "err", statusErr)
-		return ctrl.Result{Requeue: true}, statusErr
-	}
 	return ctrl.Result{}, nil
 }
 

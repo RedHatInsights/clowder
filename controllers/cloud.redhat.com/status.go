@@ -265,22 +265,6 @@ func countKafkaConnects(ctx context.Context, pClient client.Client, o object.Clo
 	return managedConnects, readyConnects, msg, nil
 }
 
-// SetEnvResourceStatus the status on the passed ClowdObject interface.
-func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) error {
-	stats, _, err := GetEnvResourceFigures(ctx, client, o)
-	if err != nil {
-		return err
-	}
-
-	status := o.GetDeploymentStatus()
-	status.ManagedDeployments = stats.ManagedDeployments
-	status.ReadyDeployments = stats.ReadyDeployments
-	status.ManagedTopics = stats.ManagedTopics
-	status.ReadyTopics = stats.ReadyTopics
-
-	return nil
-}
-
 func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, string, error) {
 
 	var totalManagedDeployments int32
@@ -346,29 +330,15 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	return deploymentStats, msg, nil
 }
 
-func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) (bool, error) {
+func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) (bool, crd.AppResourceStatus, error) {
 	stats, _, err := GetAppResourceFigures(ctx, client, o)
 	if err != nil {
-		return false, err
+		return false, stats, err
 	}
 	if stats.ManagedDeployments == stats.ReadyDeployments {
-		return true, nil
+		return true, stats, nil
 	}
-	return false, nil
-}
-
-// SetAppResourceStatus the status on the passed ClowdObject interface.
-func SetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) error {
-	stats, _, err := GetAppResourceFigures(ctx, client, o)
-	if err != nil {
-		return err
-	}
-
-	status := o.GetDeploymentStatus()
-	status.ManagedDeployments = stats.ManagedDeployments
-	status.ReadyDeployments = stats.ReadyDeployments
-
-	return nil
+	return false, stats, nil
 }
 
 func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdApp) (crd.AppResourceStatus, string, error) {
@@ -400,15 +370,15 @@ func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	return deploymentStats, msg, nil
 }
 
-func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (bool, string, error) {
+func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (bool, string, crd.EnvResourceStatus, error) {
 	stats, msg, err := GetEnvResourceFigures(ctx, client, o)
 	if err != nil {
-		return false, msg, err
+		return false, msg, stats, err
 	}
 	if stats.ManagedDeployments == stats.ReadyDeployments && stats.ManagedTopics == stats.ReadyTopics {
-		return true, msg, nil
+		return true, msg, stats, nil
 	}
-	return false, msg, nil
+	return false, msg, stats, nil
 }
 
 func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, err error) error {
@@ -432,10 +402,17 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, msg, err := GetEnvResourceStatus(ctx, client, o)
+	deploymentStatus, msg, stats, err := GetEnvResourceStatus(ctx, client, o)
 	if err != nil {
 		return err
 	}
+
+	statsStatus := o.GetDeploymentStatus()
+	statsStatus.ManagedDeployments = stats.ManagedDeployments
+	statsStatus.ReadyDeployments = stats.ReadyDeployments
+	statsStatus.ManagedTopics = stats.ManagedTopics
+	statsStatus.ReadyTopics = stats.ReadyTopics
+	o.Status.Deployments = *statsStatus
 
 	condition := &clusterv1.Condition{}
 
@@ -459,6 +436,7 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		cond.Set(o, &innerCondition)
 	}
 
+	o.Status.Generation = o.Generation
 	o.Status.Ready = deploymentStatus
 
 	if !equality.Semantic.DeepEqual(*oldStatus, o.Status) {
@@ -490,10 +468,14 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, err := GetAppResourceStatus(ctx, client, o)
+	deploymentStatus, stats, err := GetAppResourceStatus(ctx, client, o)
 	if err != nil {
 		return err
 	}
+
+	status := o.GetDeploymentStatus()
+	status.ManagedDeployments = stats.ManagedDeployments
+	status.ReadyDeployments = stats.ReadyDeployments
 
 	condition := &clusterv1.Condition{}
 
