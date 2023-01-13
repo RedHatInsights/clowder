@@ -40,6 +40,8 @@ spec:
               value: "true"
             - name: ACG_CONFIG
               value: /cdapp/cdappconfig.json
+            - name: IQE_LOG_LEVEL
+              value: "info"
             - name: IQE_PLUGINS
               value: "host-inventory"
             - name: IQE_MARKER_EXPRESSION

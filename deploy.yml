@@ -6544,8 +6544,8 @@ objects:
                         ClowdApp's definition of the job
                       properties:
                         debug:
-                          description: used when desiring to run `oc debug`on the
-                            Job to cause pod to immediately & gracefully exit
+                          description: Use to start the IQE pod without running tests
+                            and leave it up so that 'rsh' can be invoked
                           type: boolean
                         dynaconfEnvName:
                           description: sets value for ENV_FOR_DYNACONF
@@ -6557,6 +6557,18 @@ objects:
                           description: By default, Clowder will set the image on the
                             ClowdJob to be the baseImage:name-of-iqe-plugin, but only
                             the tag can be overridden here
+                          type: string
+                        logLevel:
+                          description: 'sets value for IQE_LOG_LEVEL (default if empty:
+                            "info")'
+                          enum:
+                          - ''
+                          - critical
+                          - error
+                          - warning
+                          - info
+                          - debug
+                          - notset
                           type: string
                         marker:
                           description: sets the pytest -m args

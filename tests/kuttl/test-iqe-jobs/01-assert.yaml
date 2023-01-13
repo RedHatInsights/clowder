@@ -46,6 +46,8 @@ spec:
               value: /cdapp/cdappconfig.json
             - name: IQE_PLUGINS
               value: "some,different,plugins"
+            - name: IQE_LOG_LEVEL
+              value: "debug"
             - name: IQE_MARKER_EXPRESSION
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
