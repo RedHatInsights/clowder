@@ -473,9 +473,10 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		return err
 	}
 
-	status := o.GetDeploymentStatus()
-	status.ManagedDeployments = stats.ManagedDeployments
-	status.ReadyDeployments = stats.ReadyDeployments
+	statsStatus := o.GetDeploymentStatus()
+	statsStatus.ManagedDeployments = stats.ManagedDeployments
+	statsStatus.ReadyDeployments = stats.ReadyDeployments
+	o.Status.Deployments = *statsStatus
 
 	condition := &clusterv1.Condition{}
 
