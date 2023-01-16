@@ -68,7 +68,7 @@ type IqeJobSpec struct {
 	// sets pytest -k args
 	Filter string `json:"filter,omitempty"`
 
-	// used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
+	// Use to start the IQE pod without running tests and leave it up so that 'rsh' can be invoked
 	Debug bool `json:"debug,omitempty"`
 
 	// sets values passed to IQE '--requirements' arg
@@ -79,6 +79,10 @@ type IqeJobSpec struct {
 
 	// sets values passed to IQE '--test-importance' arg
 	TestImportance *[]string `json:"testImportance,omitempty"`
+
+	// sets value for IQE_LOG_LEVEL (default if empty: "info")
+	//+kubebuilder:validation:Enum={"", "critical", "error", "warning", "info", "debug", "notset"}
+	LogLevel string `json:"logLevel,omitempty"`
 }
 
 type IqeUISpec struct {

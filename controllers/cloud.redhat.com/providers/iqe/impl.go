@@ -43,6 +43,12 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 	if cji.Spec.Testing.Iqe.IqePlugins != "" {
 		iqePlugins = cji.Spec.Testing.Iqe.IqePlugins
 	}
+
+	logLevel := cji.Spec.Testing.Iqe.LogLevel
+	if cji.Spec.Testing.Iqe.LogLevel == "" {
+		logLevel = "info"
+	}
+
 	envVars := []core.EnvVar{
 		{Name: "ENV_FOR_DYNACONF", Value: cji.Spec.Testing.Iqe.DynaconfEnvName},
 		{Name: "NAMESPACE", Value: nn.Namespace},
@@ -51,6 +57,7 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		{Name: "IQE_PLUGINS", Value: iqePlugins},
 		{Name: "IQE_MARKER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Marker},
 		{Name: "IQE_FILTER_EXPRESSION", Value: cji.Spec.Testing.Iqe.Filter},
+		{Name: "IQE_LOG_LEVEL", Value: logLevel},
 		{Name: "IQE_REQUIREMENTS", Value: joinNullableSlice(cji.Spec.Testing.Iqe.Requirements)},
 		{Name: "IQE_REQUIREMENTS_PRIORITY", Value: joinNullableSlice(cji.Spec.Testing.Iqe.RequirementsPriority)},
 		{Name: "IQE_TEST_IMPORTANCE", Value: joinNullableSlice(cji.Spec.Testing.Iqe.TestImportance)},

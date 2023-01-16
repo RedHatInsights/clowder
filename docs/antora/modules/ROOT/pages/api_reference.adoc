@@ -587,10 +587,11 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`marker`* __string__ | sets the pytest -m args
 | *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
 | *`filter`* __string__ | sets pytest -k args
-| *`debug`* __boolean__ | used when desiring to run `oc debug`on the Job to cause pod to immediately & gracefully exit
+| *`debug`* __boolean__ | Use to start the IQE pod without running tests and leave it up so that 'rsh' can be invoked
 | *`requirements`* __string__ | sets values passed to IQE '--requirements' arg
 | *`requirementsPriority`* __string__ | sets values passed to IQE '--requirements-priority' arg
 | *`testImportance`* __string__ | sets values passed to IQE '--test-importance' arg
+| *`logLevel`* __string__ | sets value for IQE_LOG_LEVEL (default if empty: "info")
 |===
 
 

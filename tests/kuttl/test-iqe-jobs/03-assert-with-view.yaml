@@ -46,6 +46,8 @@ spec:
               value: "smoke"
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
+            - name: IQE_LOG_LEVEL
+              value: "info"
             - name: IQE_REQUIREMENTS
             - name: IQE_REQUIREMENTS_PRIORITY
             - name: IQE_TEST_IMPORTANCE
