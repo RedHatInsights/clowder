@@ -1936,7 +1936,7 @@
 <p><strong><code>debug</code></strong> <em>boolean</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>used when desiring to run `oc debug`on the Job to cause pod to immediately &amp; gracefully exit</p>
+<p>Use to start the IQE pod without running tests and leave it up so that 'rsh' can be invoked</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1961,6 +1961,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>sets values passed to IQE '--test-importance' arg</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>logLevel</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>sets value for IQE_LOG_LEVEL (default if empty: "info")</p>
 </div></div></td>
 </tr>
 </tbody>
