@@ -34,7 +34,8 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1674053922035,
+      "id": 1002,
+      "iteration": 1674053922039,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -836,7 +837,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$datasource"
+            "uid": "PD295346F7C930967"
           },
           "description": "",
           "fieldConfig": {
@@ -887,7 +888,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "$datasource"
+                "uid": "PD295346F7C930967"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1102,7 +1103,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$datasource"
+            "uid": "PA6124D83F67FD625"
           },
           "fieldConfig": {
             "defaults": {
@@ -1152,7 +1153,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "$datasource"
+                "uid": "PA6124D83F67FD625"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1169,7 +1170,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$datasource"
+            "uid": "PDD8BE47D10408F45"
           },
           "fieldConfig": {
             "defaults": {
@@ -1219,7 +1220,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "$datasource"
+                "uid": "PDD8BE47D10408F45"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1410,7 +1411,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$datasource"
+            "uid": "PC1EAC84DCBBF0697"
           },
           "fieldConfig": {
             "defaults": {
@@ -1456,7 +1457,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "$datasource"
+                "uid": "PC1EAC84DCBBF0697"
               },
               "exemplar": true,
               "expr": "clowder_version",
@@ -2040,8 +2041,8 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "c-rh-c-eph-prometheus",
-              "value": "c-rh-c-eph-prometheus"
+              "text": "crcp01ue1-prometheus",
+              "value": "crcp01ue1-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -2065,6 +2066,6 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 4,
+      "version": 10,
       "weekStart": ""
     }
