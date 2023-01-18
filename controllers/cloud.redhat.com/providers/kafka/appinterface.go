@@ -40,6 +40,23 @@ func (a *appInterface) EnvProvide() error {
 	return nil
 }
 
+func (a *appInterface) setKafkaCA(broker *config.BrokerConfig) error {
+	if a.Env.Spec.Providers.Kafka.Cluster.ForceTLS {
+		kafkaCASecName := types.NamespacedName{
+			Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(a.Env)),
+			Namespace: getKafkaNamespace(a.Env),
+		}
+		kafkaCASecret := core.Secret{}
+		if _, err := utils.UpdateOrErr(a.Client.Get(a.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+			return err
+		}
+
+		broker.Cacert = utils.StringPtr(string(kafkaCASecret.Data["ca.crt"]))
+		broker.Port = utils.IntPtr(9093)
+	}
+	return nil
+}
+
 func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	if app.Spec.Cyndi.Enabled {
 		err := validateCyndiPipeline(a.Ctx, a.Client, app, getConnectNamespace(a.Env))
@@ -57,12 +74,18 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 		Namespace: getKafkaNamespace(a.Env),
 	}
 
+	brokerConfig := config.BrokerConfig{
+		Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
+		Port:     utils.IntPtr(9092),
+	}
+
+	if err := a.setKafkaCA(&brokerConfig); err != nil {
+		return err
+	}
+
 	a.Config.Kafka = &config.KafkaConfig{
-		Topics: []config.TopicConfig{},
-		Brokers: []config.BrokerConfig{{
-			Hostname: fmt.Sprintf("%v-kafka-bootstrap.%v.svc", nn.Name, nn.Namespace),
-			Port:     utils.IntPtr(9092),
-		}},
+		Topics:  []config.TopicConfig{},
+		Brokers: []config.BrokerConfig{brokerConfig},
 	}
 
 	for _, topic := range app.Spec.KafkaTopics {

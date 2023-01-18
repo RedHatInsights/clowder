@@ -726,6 +726,7 @@ KafkaClusterConfig defines options related to the Kafka cluster managed/monitore
 | Field | Description
 | *`name`* __string__ | Defines the kafka cluster name (default: <ClowdEnvironment Name>-<UID>)
 | *`namespace`* __string__ | The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)
+| *`forceTLS`* __boolean__ | Force TLS
 | *`replicas`* __integer__ | The requested number of replicas for kafka/zookeeper. If unset, default is '1'
 | *`storageSize`* __string__ | Persistent volume storage size. If unset, default is '1Gi' Only applies when KafkaConfig.PVC is set to 'true'
 | *`deleteClaim`* __boolean__ | Delete persistent volume claim if the Kafka cluster is deleted Only applies when KafkaConfig.PVC is set to 'true'

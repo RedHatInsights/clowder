@@ -129,6 +129,9 @@ type KafkaClusterConfig struct {
 	// The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)
 	Namespace string `json:"namespace,omitempty"`
 
+	// Force TLS
+	ForceTLS bool `json:"forceTLS,omitempty"`
+
 	// The requested number of replicas for kafka/zookeeper. If unset, default is '1'
 	// +kubebuilder:validation:Minimum:=1
 	Replicas int32 `json:"replicas,omitempty"`

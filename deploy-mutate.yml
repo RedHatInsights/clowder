@@ -5777,6 +5777,9 @@ objects:
                                 cluster is deleted Only applies when KafkaConfig.PVC
                                 is set to 'true'
                               type: boolean
+                            forceTLS:
+                              description: Force TLS
+                              type: boolean
                             jvmOptions:
                               description: JVM Options
                               properties:
