@@ -34,7 +34,6 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 1002,
       "iteration": 1674053922035,
       "links": [],
       "liveNow": false,
@@ -2066,6 +2065,6 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 10,
+      "version": 4,
       "weekStart": ""
     }
