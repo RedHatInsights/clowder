@@ -34,7 +34,8 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1670257371445,
+      "id": 1002,
+      "iteration": 1674053922035,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -836,7 +837,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "73Hs3WBnk"
+            "uid": "PD295346F7C930967"
           },
           "description": "",
           "fieldConfig": {
@@ -887,7 +888,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "73Hs3WBnk"
+                "uid": "PD295346F7C930967"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1102,7 +1103,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "mOIyqZB7k"
+            "uid": "PA6124D83F67FD625"
           },
           "fieldConfig": {
             "defaults": {
@@ -1150,6 +1151,10 @@ data:
           "pluginVersion": "9.0.3",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PA6124D83F67FD625"
+              },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
               "instant": true,
@@ -1165,7 +1170,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "skSy3ZB7k"
+            "uid": "PDD8BE47D10408F45"
           },
           "fieldConfig": {
             "defaults": {
@@ -1213,6 +1218,10 @@ data:
           "pluginVersion": "9.0.3",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PDD8BE47D10408F45"
+              },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
               "instant": true,
@@ -1402,7 +1411,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "pKSsqZB7k"
+            "uid": "PC1EAC84DCBBF0697"
           },
           "fieldConfig": {
             "defaults": {
@@ -1446,6 +1455,10 @@ data:
           "pluginVersion": "9.0.3",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC1EAC84DCBBF0697"
+              },
               "exemplar": true,
               "expr": "clowder_version",
               "instant": true,
@@ -2027,9 +2040,9 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
-              "text": "c-rh-c-eph-prometheus",
-              "value": "c-rh-c-eph-prometheus"
+              "selected": false,
+              "text": "crcp01ue1-prometheus",
+              "value": "crcp01ue1-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -2053,6 +2066,6 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 3,
+      "version": 10,
       "weekStart": ""
     }
