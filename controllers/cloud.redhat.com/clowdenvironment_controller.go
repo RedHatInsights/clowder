@@ -155,12 +155,13 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}()
 
 	reconciliation := ClowdEnvironmentReconciliation{
-		cache:    &cache,
-		recorder: r.Recorder,
-		ctx:      ctx,
-		client:   r.Client,
-		env:      &env,
-		log:      &log,
+		cache:     &cache,
+		recorder:  r.Recorder,
+		ctx:       ctx,
+		client:    r.Client,
+		env:       &env,
+		log:       &log,
+		oldStatus: env.Status.DeepCopy(),
 	}
 
 	result, resErr := reconciliation.Reconcile()

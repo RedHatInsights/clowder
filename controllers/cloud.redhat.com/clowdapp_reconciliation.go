@@ -34,6 +34,7 @@ type ClowdAppReconciliation struct {
 	env                   *crd.ClowdEnvironment
 	reconciliationMetrics ReconciliationMetrics
 	config                *config.AppConfig
+	oldStatus             *crd.ClowdAppStatus
 }
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
@@ -109,6 +110,8 @@ func (r *ClowdAppReconciliation) getApp() (ctrl.Result, error) {
 	// to put it.
 	logWithEnv := r.log.WithValues("env", r.app.Spec.EnvName)
 	r.log = &logWithEnv
+
+	r.oldStatus = r.app.Status.DeepCopy()
 
 	return ctrl.Result{}, nil
 }
@@ -193,7 +196,7 @@ func (r *ClowdAppReconciliation) getClowdEnv() (ctrl.Result, error) {
 	if getEnvErr := r.client.Get(r.ctx, types.NamespacedName{Name: r.app.Spec.EnvName}, r.env); getEnvErr != nil {
 		r.log.Info("ClowdEnv missing", "err", getEnvErr)
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvMissing", "Clowder Environment [%s] is missing", r.app.Spec.EnvName)
-		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, getEnvErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, r.oldStatus, getEnvErr); setClowdStatusErr != nil {
 			r.log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -225,7 +228,7 @@ func (r *ClowdAppReconciliation) isAppNamespaceDeleted() (ctrl.Result, error) {
 func (r *ClowdAppReconciliation) isClowdEnvReconciled() (ctrl.Result, error) {
 	if r.env.Generation != r.env.Status.Generation {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvNotReconciled", "Clowder Environment [%s] is not reconciled", r.app.Spec.EnvName)
-		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, fmt.Errorf("clowd env not reconciled")); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, r.oldStatus, fmt.Errorf("clowd env not reconciled")); setClowdStatusErr != nil {
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 		return ctrl.Result{}, NewSkippedError("env not yet reconciled")
@@ -236,7 +239,7 @@ func (r *ClowdAppReconciliation) isClowdEnvReconciled() (ctrl.Result, error) {
 func (r *ClowdAppReconciliation) isEnvReady() (ctrl.Result, error) {
 	if !r.env.IsReady() {
 		r.recorder.Eventf(r.app, "Warning", "ClowdEnvNotReady", "Clowder Environment [%s] is not ready", r.app.Spec.EnvName)
-		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, fmt.Errorf("clowd env not ready")); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, r.oldStatus, fmt.Errorf("clowd env not ready")); setClowdStatusErr != nil {
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
 		return ctrl.Result{Requeue: true}, NewSkippedError("env isn't ready")
@@ -263,7 +266,7 @@ func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 
 	if provErr := r.runProvidersImplementation(&provider); provErr != nil {
 		r.recorder.Eventf(r.app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", r.app.GetClowdName())
-		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, r.oldStatus, provErr); setClowdStatusErr != nil {
 			r.log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -304,7 +307,7 @@ func (r *ClowdAppReconciliation) applyCache() (ctrl.Result, error) {
 
 	if cacheErr != nil {
 		r.recorder.Eventf(r.app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", r.app.GetClowdName())
-		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, cacheErr); setClowdStatusErr != nil {
+		if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationFailed, r.oldStatus, cacheErr); setClowdStatusErr != nil {
 			r.log.Info("Set status error", "err", setClowdStatusErr)
 			return ctrl.Result{Requeue: true}, setClowdStatusErr
 		}
@@ -339,7 +342,7 @@ func (r *ClowdAppReconciliation) deletedUnusedResources() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) setReconciliationSuccessful() (ctrl.Result, error) {
-	if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationSuccessful, nil); setClowdStatusErr != nil {
+	if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationSuccessful, r.oldStatus, nil); setClowdStatusErr != nil {
 		r.log.Info("Set status error", "err", setClowdStatusErr)
 		return ctrl.Result{Requeue: true}, setClowdStatusErr
 	}

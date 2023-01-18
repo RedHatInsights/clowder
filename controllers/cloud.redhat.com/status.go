@@ -411,8 +411,7 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return false, msg, nil
 }
 
-func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, err error) error {
-	oldStatus := o.Status.DeepCopy()
+func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, oldStatus *crd.ClowdEnvironmentStatus, err error) error {
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
@@ -469,8 +468,7 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 	return nil
 }
 
-func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state clusterv1.ConditionType, err error) error {
-	oldStatus := o.Status.DeepCopy()
+func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state clusterv1.ConditionType, oldStatus *crd.ClowdAppStatus, err error) error {
 	conditions := []clusterv1.Condition{}
 
 	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
