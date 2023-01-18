@@ -2040,9 +2040,9 @@ data:
         "list": [
           {
             "current": {
-              "selected": false,
-              "text": "crcp01ue1-prometheus",
-              "value": "crcp01ue1-prometheus"
+              "selected": true,
+              "text": "c-rh-c-eph-prometheus",
+              "value": "c-rh-c-eph-prometheus"
             },
             "hide": 0,
             "includeAll": false,
