@@ -1,5 +1,32 @@
 #!/bin/bash
 
+changes_excluding_docs() {
+
+    local target_branch=${ghprbTargetBranch:-master}
+    local docs_regex='^docs/.*\|^.*\.adoc'
+
+    git --no-pager diff --name-only "origin/${target_branch}" |\
+        grep -v "$docs_regex" | grep -q '.'
+}
+
+create_junit_dummy_result() {
+
+    mkdir -p 'artifacts'
+
+    cat <<- EOF > 'artifacts/junit-dummy.xml'
+	<?xml version="1.0" encoding="UTF-8"?>
+	<testsuite tests="1">
+	    <testcase classname="dummy" name="dummy-empty-test"/>
+	</testsuite>
+	EOF
+}
+
+if ! changes_excluding_docs; then
+    echo "No code changes detected, exiting"
+    create_junit_dummy_result
+    exit 0
+fi
+
 go version
 
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
