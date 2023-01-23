@@ -114,7 +114,7 @@ path as follows in this example.
 [source,yaml]
 ----
 apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvivonment
+kind: ClowdEnvironment
 metadata:
   name: myenv
 spec:

@@ -71,7 +71,7 @@ options, more information can be found in the API reference.
 [source,yaml]
 ----
 apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvivonment
+kind: ClowdEnvironment
 metadata:
   name: myenv
 spec:
@@ -87,7 +87,7 @@ App-interface mode requires a little more configuration:
 [source,yaml]
 ----
 apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvivonment
+kind: ClowdEnvironment
 metadata:
   name: myenv
 spec:
