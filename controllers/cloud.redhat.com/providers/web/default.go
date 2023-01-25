@@ -14,6 +14,8 @@ type webProvider struct {
 func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CoreService,
+		CoreEnvoyConfigMap,
+		CoreEnvoySecret,
 	)
 	return &webProvider{Provider: *p}, nil
 }
@@ -34,7 +36,7 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, deployment := range app.Spec.Deployments {
 		d := deployment
-		if err := makeService(web.Cache, &d, app, web.Env); err != nil {
+		if err := makeService(web.Ctx, web.Client, web.Cache, &d, app, web.Env); err != nil {
 			return err
 		}
 	}

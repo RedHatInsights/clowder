@@ -456,6 +456,10 @@
                 "app": {
                     "description": "The app name of the ClowdApp hosting the service.",
                     "type": "string"
+                },
+                "tlsPort": {
+                    "description": "The TLS port of the dependent service.",
+                    "type": "integer"
                 }
             },
             "required": [

@@ -10,6 +10,7 @@ import (
 )
 
 const webPort = 8000
+const tlsPort = 8800
 const privatePort = 10000
 
 func defaultMetaObject() metav1.ObjectMeta {
@@ -66,7 +67,7 @@ func TestSingleDependency(t *testing.T) {
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
+	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, &app, &apps)
 
 	if len(missing) > 0 {
 		t.Errorf("We got a missing dep when there shouldn't have been one")
@@ -123,7 +124,7 @@ func TestMissingDependency(t *testing.T) {
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
+	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, &app, &apps)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -189,7 +190,7 @@ func TestOptionalDependency(t *testing.T) {
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
 
-	makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
+	makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, &app, &apps)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -282,7 +283,7 @@ func TestMultiDependency(t *testing.T) {
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, privatePort, &app, &apps)
+	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, &app, &apps)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
