@@ -503,6 +503,9 @@ type DependencyEndpoint struct {
 
 	// The port of the dependent service.
 	Port int `json:"port"`
+
+	// The TLS port of the dependent service.
+	TlsPort *int `json:"tlsPort,omitempty"`
 }
 
 // Deployment Metadata

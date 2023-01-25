@@ -1147,6 +1147,24 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls"]
+==== TLS 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | 
+| *`port`* __integer__ | 
+|===
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig"]
 ==== TestingConfig 
 
@@ -1214,6 +1232,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 |===
 | Field | Description
 | *`port`* __integer__ | The port that web services inside ClowdApp pods should be served on.
+| *`tlsPort`* __integer__ | The port to use for TLS web services (if enabled)
 | *`privatePort`* __integer__ | The private port that web services inside a ClowdApp should be served on.
 | *`aiuthPort`* __integer__ | The auth port that the web local mode will use with the AuthSidecar
 | *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.
@@ -1222,6 +1241,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`ingressClass`* __string__ | Ingress Class Name used only in (*_local_*) mode.
 | *`keycloakVersion`* __string__ | Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
 | *`images`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webimages[$$WebImages$$]__ | Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
+| *`tls`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls[$$TLS$$]__ | TLS sidecar enablement
 |===
 
 
