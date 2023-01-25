@@ -241,4 +241,8 @@ var KubeLinterAnnotations = map[string]string{
 	"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
 }
 
+var AutoScaleAnnotation = map[string]string{
+	"cluster-autoscaler.kubernetes.io/safe-to-evict": "true",
+}
+
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

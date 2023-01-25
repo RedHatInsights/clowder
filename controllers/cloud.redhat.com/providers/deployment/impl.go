@@ -211,6 +211,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	pod := deployment.PodSpec
 
 	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
+	utils.UpdateAnnotations(&d.Spec.Template, provutils.AutoScaleAnnotation)
 
 	setLocalAnnotations(env, deployment, d, app)
 
