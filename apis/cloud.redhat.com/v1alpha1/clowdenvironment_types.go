@@ -58,9 +58,6 @@ type WebConfig struct {
 	// The port that web services inside ClowdApp pods should be served on.
 	Port int32 `json:"port"`
 
-	// The port to use for TLS web services (if enabled)
-	TLSPort int32 `json:"tlsPort,omitempty"`
-
 	// The private port that web services inside a ClowdApp should be served on.
 	PrivatePort int32 `json:"privatePort,omitempty"`
 

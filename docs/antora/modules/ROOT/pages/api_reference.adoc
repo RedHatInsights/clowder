@@ -1232,7 +1232,6 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 |===
 | Field | Description
 | *`port`* __integer__ | The port that web services inside ClowdApp pods should be served on.
-| *`tlsPort`* __integer__ | The port to use for TLS web services (if enabled)
 | *`privatePort`* __integer__ | The private port that web services inside a ClowdApp should be served on.
 | *`aiuthPort`* __integer__ | The auth port that the web local mode will use with the AuthSidecar
 | *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.

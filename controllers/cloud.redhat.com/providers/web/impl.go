@@ -31,6 +31,8 @@ var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_m
 
 var CoreEnvoySecret = rc.NewMultiResourceIdent(ProvName, "core_envoy_secret", &core.Secret{})
 
+var CoreEnvoyCABundle = rc.NewMultiResourceIdent(ProvName, "core_envoy_ca_bundle", &core.ConfigMap{})
+
 func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
@@ -224,7 +226,6 @@ func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 }
 
 func populateSideCar(d *apps.Deployment, name string, port int32) {
-	generateEnvoyConfig()
 	container := core.Container{
 		Name:  "envoy-tls",
 		Image: "envoyproxy/envoy-distroless:v1.24.1",
