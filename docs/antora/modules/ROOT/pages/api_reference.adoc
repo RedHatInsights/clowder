@@ -325,9 +325,8 @@ CyndiSpec is used to indicate whether a ClowdApp needs database syndication conf
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enables or Disables the Cyndi pipeline for the Clowdapp
-| *`appName`* __string__ | application name - if empty will default to Clowdapp's name
-| *`insightsOnly`* __boolean__ | Desired host syndication type (all or Insights hosts only) - defaults to false
-
+| *`appName`* __string__ | Application name - if empty will default to Clowdapp's name
+| *`insightsOnly`* __boolean__ | Desired host syndication type (all or Insights hosts only) - defaults to false (All hosts)
 |===
 
 
