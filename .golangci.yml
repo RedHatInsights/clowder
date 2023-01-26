@@ -7,3 +7,5 @@ issues:
       linters:
         - gofmt
         - goimports
+  exclude:
+    - "G108: Profiling endpoint is automatically"
