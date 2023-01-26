@@ -24,7 +24,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		dep.Provider.Env.Spec.Providers.Web.Port,
-		dep.Provider.Env.Spec.Providers.Web.TLSPort,
+		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
 	)
 
@@ -51,7 +51,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		dep.Provider.Env.Spec.Providers.Web.Port,
-		dep.Provider.Env.Spec.Providers.Web.TLSPort,
+		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
 		app,
 		apps,

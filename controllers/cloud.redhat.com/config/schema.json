@@ -20,6 +20,10 @@
                     "description": "Deprecated: Use 'publicPort' instead.",
                     "type": "integer"
                 },
+                "publicPortCA": {
+                    "description": "Defines the public port CA",
+                    "type": "string"
+                },
                 "metricsPort": {
                     "description": "Defines the metrics port that the app should be configured to listen on for metric traffic.",
                     "type": "integer"

@@ -30,6 +30,7 @@ Reference this group by using
 | [privatePort](#privateport)           | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privatePort")           |
 | [publicPort](#publicport)             | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-publicport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPort")             |
 | [webPort](#webport)                   | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-webport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/webPort")                   |
+| [publicPortCA](#publicportca)         | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-publicportca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPortCA")         |
 | [metricsPort](#metricsport)           | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPort")           |
 | [metricsPath](#metricspath)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPath")           |
 | [logging](#logging)                   | `object`  | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging")                                  |
@@ -90,6 +91,22 @@ Deprecated: Use 'publicPort' instead.
 #### webPort Type
 
 `integer`
+
+### publicPortCA
+
+Defines the public port CA
+
+
+`publicPortCA`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-publicportca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPortCA")
+
+#### publicPortCA Type
+
+`string`
 
 ### metricsPort
 

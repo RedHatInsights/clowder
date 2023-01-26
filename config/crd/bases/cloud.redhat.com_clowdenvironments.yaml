@@ -716,10 +716,6 @@ spec:
                             format: int32
                             type: integer
                         type: object
-                      tlsPort:
-                        description: The port to use for TLS web services (if enabled)
-                        format: int32
-                        type: integer
                     required:
                     - mode
                     - port

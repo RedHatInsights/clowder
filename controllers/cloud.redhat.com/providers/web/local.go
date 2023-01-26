@@ -81,6 +81,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		CoreEnvoyConfigMap,
 		CoreEnvoySecret,
 		CoreService,
+		CoreEnvoyCABundle,
 	)
 	return &localWebProvider{Provider: *p}, nil
 }
@@ -90,6 +91,12 @@ func (web *localWebProvider) EnvProvide() error {
 		web.Env.Status.Hostname = web.Env.GenerateHostname(web.Ctx, web.Client, web.Log, !clowderconfig.LoadedConfig.Features.DisableRandomRoutes)
 		err := web.Client.Status().Update(web.Ctx, web.Env)
 		if err != nil {
+			return err
+		}
+	}
+
+	if web.Env.Spec.Providers.Web.TLS.Enabled {
+		if err := web.createCAConfigMap(); err != nil {
 			return err
 		}
 	}
@@ -190,6 +197,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 	}
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
+	if err := web.populateCA(); err != nil {
+		return err
+	}
+
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
 		if err := makeService(web.Ctx, web.Client, web.Cache, &innerDeployment, app, web.Env); err != nil {
@@ -252,6 +263,50 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 	}
 
+	return nil
+}
+
+func (web *localWebProvider) createCAConfigMap() error {
+	cm := &core.ConfigMap{}
+	cmnn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-envoy-ca", web.Env.Name),
+		Namespace: web.Env.Status.TargetNamespace,
+	}
+
+	if err := web.Cache.Create(CoreEnvoyCABundle, cmnn, cm); err != nil {
+		return err
+	}
+
+	cm.Name = cmnn.Name
+	cm.Namespace = cmnn.Namespace
+	cm.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
+	utils.UpdateAnnotations(cm, map[string]string{
+		"service.beta.openshift.io/inject-cabundle": "true",
+	})
+
+	if err := web.Cache.Update(CoreEnvoyCABundle, cm); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (web *localWebProvider) populateCA() error {
+	if web.Env.Spec.Providers.Web.TLS.Enabled {
+		cm := &core.ConfigMap{}
+		cmnn := types.NamespacedName{
+			Name:      fmt.Sprintf("%s-envoy-ca", web.Env.Name),
+			Namespace: web.Env.Status.TargetNamespace,
+		}
+
+		if err := web.Client.Get(web.Ctx, cmnn, cm); err != nil {
+			return err
+		}
+
+		if _, ok := cm.Data["service-ca.crt"]; !ok {
+			return fmt.Errorf("could not get CA from secret")
+		}
+		web.Config.PublicPortCA = utils.StringPtr(cm.Data["service-ca.crt"])
+	}
 	return nil
 }
 

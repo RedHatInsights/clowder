@@ -114,6 +114,9 @@ type AppConfig struct {
 	// traffic.
 	PublicPort *int `json:"publicPort,omitempty"`
 
+	// Defines the public port CA
+	PublicPortCA *string `json:"publicPortCA,omitempty"`
+
 	// Deprecated: Use 'publicPort' instead.
 	WebPort *int `json:"webPort,omitempty"`
 }
