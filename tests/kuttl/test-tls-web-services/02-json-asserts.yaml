@@ -1,0 +1,12 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-tls-web-services puptoo -o json > /tmp/test-tls-web-services
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-tls-web-services | base64 -d > /tmp/test-tls-web-services-json
+
+- script: jq -r '.publicPort == 8000' -e < /tmp/test-tls-web-services-json
+- script: jq -r '.metricsPort == 9000' -e < /tmp/test-tls-web-services-json
+- script: jq -r '.privatePort == 10000' -e < /tmp/test-tls-web-services-json
+- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-tls-web-services-json
