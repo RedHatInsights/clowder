@@ -1,0 +1,11 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-kafka-app-interface puptoo -o json > /tmp/test-kafka-app-interface
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-app-interface | base64 -d > /tmp/test-kafka-app-interface-json
+
+- script: jq -r '.kafka.brokers[0].hostname == "test-kafka-app-interface-kafka-bootstrap.test-kafka-app-interface.svc"' -e < /tmp/test-kafka-app-interface-json
+- script: jq -r '.kafka.brokers[0].port == 9093' -e < /tmp/test-kafka-app-interface-json
+- script: jq -r '.kafka.brokers[0].cacert == "cacert"' -e < /tmp/test-kafka-app-interface-json
