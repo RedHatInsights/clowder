@@ -47,7 +47,7 @@ func (a *appInterface) setKafkaCA(broker *config.BrokerConfig) error {
 			Namespace: getKafkaNamespace(a.Env),
 		}
 		kafkaCASecret := core.Secret{}
-		if _, err := utils.UpdateOrErr(a.Client.Get(a.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+		if err := a.Client.Get(a.Ctx, kafkaCASecName, &kafkaCASecret); err != nil {
 			return err
 		}
 
