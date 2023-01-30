@@ -85,6 +85,7 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 				SecurityProtocol: utils.StringPtr("SASL_SSL"),
 				SaslMechanism:    utils.StringPtr("PLAIN"),
 			},
+			SecurityProtocol: utils.StringPtr("SASL_SSL"),
 		}},
 		Topics: []config.TopicConfig{},
 	}

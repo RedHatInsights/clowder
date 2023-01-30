@@ -105,6 +105,7 @@ func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.Brok
 		SecurityProtocol: utils.StringPtr("SASL_SSL"),
 		SaslMechanism:    utils.StringPtr("PLAIN"),
 	}
+	broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
 
 	return broker, nil
 }

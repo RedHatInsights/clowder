@@ -53,6 +53,7 @@ func (a *appInterface) setKafkaCA(broker *config.BrokerConfig) error {
 
 		broker.Cacert = utils.StringPtr(string(kafkaCASecret.Data["ca.crt"]))
 		broker.Port = utils.IntPtr(9093)
+		broker.SecurityProtocol = utils.StringPtr("SSL")
 	}
 	return nil
 }
