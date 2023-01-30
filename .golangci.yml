@@ -3,6 +3,9 @@ issues:
     - linters:
         - staticcheck
       text: "web.Config.WebPort is deprecated"
+    - linters:
+        - staticcheck
+      text: "broker.Sasl.SecurityProtocol is deprecated"
     - path: apis/cloud.redhat.com/v1alpha1/groupversion_info.go
       linters:
         - gofmt

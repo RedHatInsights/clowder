@@ -608,7 +608,7 @@ Reference this group by using
 
 ### securityProtocol
 
-
+Deprecated: Use the top level securityProtocol field instead
 
 
 `securityProtocol`
@@ -646,13 +646,14 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig"}
 ```
 
-| Property              | Type      | Required | Nullable       | Defined by                                                                                                                                                                  |
-| :-------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [hostname](#hostname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname") |
-| [port](#port)         | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")         |
-| [cacert](#cacert)     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")     |
-| [authtype](#authtype) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype") |
-| [sasl](#sasl)         | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")                      |
+| Property                                | Type      | Required | Nullable       | Defined by                                                                                                                                                                                  |
+| :-------------------------------------- | --------- | -------- | -------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [hostname](#hostname)                   | `string`  | Required | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/hostname")                 |
+| [port](#port)                           | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/port")                         |
+| [cacert](#cacert)                       | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-cacert.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert")                     |
+| [authtype](#authtype)                   | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-authtype.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/authtype")                 |
+| [sasl](#sasl)                           | `object`  | Optional | cannot be null | [AppConfig](schema-definitions-kafkasaslconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/sasl")                                      |
+| [securityProtocol](#securityprotocol-1) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-brokerconfig-properties-securityprotocol.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/securityProtocol") |
 
 ### hostname
 
@@ -742,6 +743,22 @@ SASL Configuration for Kafka
 #### sasl Type
 
 `object` ([Details](schema-definitions-kafkasaslconfig.md))
+
+### securityProtocol
+
+
+
+
+`securityProtocol`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-brokerconfig-properties-securityprotocol.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/securityProtocol")
+
+#### securityProtocol Type
+
+`string`
 
 ## Definitions group TopicConfig
 

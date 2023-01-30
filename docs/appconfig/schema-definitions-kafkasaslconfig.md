@@ -58,7 +58,7 @@ SASL Configuration for Kafka
 
 ## securityProtocol
 
-
+Deprecated: Use the top level securityProtocol field instead
 
 
 `securityProtocol`

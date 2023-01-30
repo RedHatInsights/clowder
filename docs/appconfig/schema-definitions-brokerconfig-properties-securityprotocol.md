@@ -1,10 +1,10 @@
 # Untitled string in AppConfig Schema
 
 ```txt
-https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/securityProtocol
+https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/securityProtocol
 ```
 
-Deprecated: Use the top level securityProtocol field instead
+
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |

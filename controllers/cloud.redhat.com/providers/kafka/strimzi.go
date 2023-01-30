@@ -871,6 +871,7 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 			broker.Sasl.Password = &password
 			broker.Sasl.SecurityProtocol = utils.StringPtr("SASL_SSL")
 			broker.Sasl.SaslMechanism = utils.StringPtr("SCRAM-SHA-512")
+			broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
 		}
 	}
 	return nil
