@@ -89,8 +89,9 @@ type WebConfig struct {
 }
 
 type TLS struct {
-	Enabled bool  `json:"enabled,omitempty"`
-	Port    int32 `json:"port,omitempty"`
+	Enabled     bool  `json:"enabled,omitempty"`
+	Port        int32 `json:"port,omitempty"`
+	PrivatePort int32 `json:"privatePort,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

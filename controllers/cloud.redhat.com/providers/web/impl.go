@@ -38,6 +38,8 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 	s := &core.Service{}
 	nn := app.GetDeploymentNamespacedName(deployment)
 
+	appProtocol := "http"
+
 	if err := cache.Create(CoreService, nn, s); err != nil {
 		return err
 	}
@@ -52,7 +54,6 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 	containerPorts := []core.ContainerPort{}
 
 	if bool(deployment.Web) || deployment.WebServices.Public.Enabled {
-		appProtocol := "http"
 		// Create the core service port
 		webPort := core.ServicePort{
 			Name:        "public",
@@ -73,27 +74,6 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 			},
 		)
 
-		if env.Spec.Providers.Web.TLS.Enabled {
-			tlsPort := core.ServicePort{
-				Name:        "tls",
-				Port:        env.Spec.Providers.Web.TLS.Port,
-				Protocol:    "TCP",
-				AppProtocol: &appProtocol,
-				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
-			}
-			servicePorts = append(servicePorts, tlsPort)
-
-			if err := generateTLSSecret(ctx, rclient, cache, nn, app); err != nil {
-				return err
-			}
-
-			if err := generateEnvoyConfigMap(cache, nn, app); err != nil {
-				return err
-			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port)
-			setServiceTLSAnnotations(s, nn.Name)
-		}
-
 		if env.Spec.Providers.Web.Mode == "local" {
 			authPortNumber := env.Spec.Providers.Web.AuthPort
 
@@ -113,10 +93,9 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 
 	if deployment.WebServices.Private.Enabled {
 		privatePort := env.Spec.Providers.Web.PrivatePort
-
-		appProtocol := "http"
+		appProtocolPriv := "http"
 		if deployment.WebServices.Private.AppProtocol != "" {
-			appProtocol = string(deployment.WebServices.Private.AppProtocol)
+			appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
 		}
 
 		if privatePort == 0 {
@@ -127,7 +106,7 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 			Name:        "private",
 			Port:        privatePort,
 			Protocol:    "TCP",
-			AppProtocol: &appProtocol,
+			AppProtocol: &appProtocolPriv,
 			TargetPort:  intstr.FromInt(int(privatePort)),
 		}
 		servicePorts = append(servicePorts, webPort)
@@ -140,6 +119,52 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 				Protocol:      core.ProtocolTCP,
 			},
 		)
+	}
+
+	var pub, priv bool
+	var pubPort, privPort uint32
+	if env.Spec.Providers.Web.TLS.Enabled {
+		if deployment.WebServices.Public.Enabled {
+			tlsPort := core.ServicePort{
+				Name:        "tls",
+				Port:        env.Spec.Providers.Web.TLS.Port,
+				Protocol:    "TCP",
+				AppProtocol: &appProtocol,
+				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
+			}
+			servicePorts = append(servicePorts, tlsPort)
+			pub = true
+			pubPort = uint32(env.Spec.Providers.Web.TLS.Port)
+		}
+		if deployment.WebServices.Private.Enabled {
+			appProtocolPriv := "http"
+			if deployment.WebServices.Private.AppProtocol != "" {
+				appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
+			}
+
+			if appProtocolPriv == "http" {
+				tlsPrivatePort := core.ServicePort{
+					Name:        "tls-private",
+					Port:        env.Spec.Providers.Web.TLS.PrivatePort,
+					Protocol:    "TCP",
+					AppProtocol: &appProtocolPriv,
+					TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
+				}
+				servicePorts = append(servicePorts, tlsPrivatePort)
+				priv = true
+				privPort = uint32(env.Spec.Providers.Web.TLS.PrivatePort)
+			}
+		}
+
+		if err := generateTLSSecret(ctx, rclient, cache, nn, app); err != nil {
+			return err
+		}
+
+		if err := generateEnvoyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
+			return err
+		}
+		populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+		setServiceTLSAnnotations(s, nn.Name)
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())
@@ -195,7 +220,7 @@ func generateTLSSecret(ctx context.Context, client client.Client, cache *rc.Obje
 	return nil
 }
 
-func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp) error {
+func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32) error {
 	cm := &core.ConfigMap{}
 	snn := types.NamespacedName{
 		Name:      envoyConfigName(nn.Name),
@@ -210,7 +235,7 @@ func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	cm.Namespace = snn.Namespace
 	cm.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 
-	cmData, err := generateEnvoyConfig()
+	cmData, err := generateEnvoyConfig(pub, priv, pubPort, privPort)
 	if err != nil {
 		return err
 	}
@@ -225,7 +250,23 @@ func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	return nil
 }
 
-func populateSideCar(d *apps.Deployment, name string, port int32) {
+func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
+	ports := []core.ContainerPort{}
+	if pub {
+		ports = append(ports, core.ContainerPort{
+			Name:          "tls",
+			ContainerPort: port,
+			Protocol:      core.ProtocolTCP,
+		})
+	}
+	if priv {
+		ports = append(ports, core.ContainerPort{
+			Name:          "tls-private",
+			ContainerPort: privatePort,
+			Protocol:      core.ProtocolTCP,
+		})
+	}
+
 	container := core.Container{
 		Name:  "envoy-tls",
 		Image: "envoyproxy/envoy-distroless:v1.24.1",
@@ -244,11 +285,7 @@ func populateSideCar(d *apps.Deployment, name string, port int32) {
 				MountPath: "/etc/envoy",
 			},
 		},
-		Ports: []core.ContainerPort{{
-			Name:          "tls",
-			ContainerPort: port,
-			Protocol:      core.ProtocolTCP,
-		}},
+		Ports: ports,
 	}
 	envoyTLSVol := core.Volume{
 		Name: "envoy-tls",

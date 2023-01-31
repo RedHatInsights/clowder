@@ -34,8 +34,7 @@ func generateTLSContext() (*anypb.Any, error) {
 	})
 }
 
-func generateHTTPConnectionManager() (*anypb.Any, error) {
-
+func generateHTTPConnectionManager(cluster string) (*anypb.Any, error) {
 	routerObj, err := anypb.New(&router.Router{})
 	if err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func generateHTTPConnectionManager() (*anypb.Any, error) {
 						Action: &route.Route_Route{
 							Route: &route.RouteAction{
 								ClusterSpecifier: &route.RouteAction_Cluster{
-									Cluster: "service_envoyproxy_io",
+									Cluster: cluster,
 								},
 							},
 						},
@@ -74,25 +73,25 @@ func generateHTTPConnectionManager() (*anypb.Any, error) {
 	})
 }
 
-func generateListeners() ([]*listener.Listener, error) {
+func generateListener(cluster string, port uint32, name string) (*listener.Listener, error) {
 	tlsContextObj, err := generateTLSContext()
 	if err != nil {
 		return nil, err
 	}
 
-	httpConectionManagerObj, err := generateHTTPConnectionManager()
+	httpConectionManagerObj, err := generateHTTPConnectionManager(cluster)
 	if err != nil {
 		return nil, err
 	}
 
-	return []*listener.Listener{{
-		Name: "listener_0",
+	return &listener.Listener{
+		Name: name,
 		Address: &core.Address{
 			Address: &core.Address_SocketAddress{
 				SocketAddress: &core.SocketAddress{
 					Address: "0.0.0.0",
 					PortSpecifier: &core.SocketAddress_PortValue{
-						PortValue: 8800,
+						PortValue: port,
 					},
 				},
 			},
@@ -111,13 +110,34 @@ func generateListeners() ([]*listener.Listener, error) {
 				},
 			},
 		}},
-	}}, nil
+	}, nil
 }
 
-func generateClusters() ([]*cluster.Cluster, error) {
-	return []*cluster.Cluster{{
-		Name: "service_envoyproxy_io", LoadAssignment: &endpoint.ClusterLoadAssignment{
-			ClusterName: "service_envoyproxy_io",
+func generateListeners(pub bool, priv bool, pubPort uint32, privPort uint32) ([]*listener.Listener, error) {
+	listeners := []*listener.Listener{}
+
+	if pub {
+		listener, err := generateListener("public_endpoint", pubPort, "public")
+		if err != nil {
+			return nil, err
+		}
+		listeners = append(listeners, listener)
+	}
+	if priv {
+		listener, err := generateListener("private_endpoint", privPort, "private")
+		if err != nil {
+			return nil, err
+		}
+		listeners = append(listeners, listener)
+	}
+
+	return listeners, nil
+}
+
+func generateCluster(name string, port uint32) *cluster.Cluster {
+	return &cluster.Cluster{
+		Name: name, LoadAssignment: &endpoint.ClusterLoadAssignment{
+			ClusterName: name,
 			Endpoints: []*endpoint.LocalityLbEndpoints{{
 				LbEndpoints: []*endpoint.LbEndpoint{{
 					HostIdentifier: &endpoint.LbEndpoint_Endpoint{
@@ -127,7 +147,7 @@ func generateClusters() ([]*cluster.Cluster, error) {
 									SocketAddress: &core.SocketAddress{
 										Address: "127.0.0.1",
 										PortSpecifier: &core.SocketAddress_PortValue{
-											PortValue: 8000,
+											PortValue: port,
 										},
 									},
 								},
@@ -137,25 +157,33 @@ func generateClusters() ([]*cluster.Cluster, error) {
 				}},
 			}},
 		},
-	}}, nil
+	}
 }
 
-func generateEnvoyConfig() (string, error) {
+func generateClusters(pub bool, priv bool) []*cluster.Cluster {
+	clusters := []*cluster.Cluster{}
+	if pub {
+		clusters = append(clusters, generateCluster("public_endpoint", 8000))
+	}
+	if priv {
+		clusters = append(clusters, generateCluster("private_endpoint", 10000))
+	}
+	return clusters
+}
+
+func generateEnvoyConfig(pub bool, priv bool, pubPort uint32, privPort uint32) (string, error) {
 
 	beat := &envoy.Bootstrap{}
 	beat.StaticResources = &envoy.Bootstrap_StaticResources{}
 
-	listeners, err := generateListeners()
+	listeners, err := generateListeners(pub, priv, pubPort, privPort)
 	if err != nil {
 		return "", err
 	}
 
 	beat.StaticResources.Listeners = listeners
 
-	clusters, err := generateClusters()
-	if err != nil {
-		return "", err
-	}
+	clusters := generateClusters(pub, priv)
 
 	beat.StaticResources.Clusters = clusters
 	err = beat.Validate()

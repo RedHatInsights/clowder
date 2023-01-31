@@ -38,6 +38,9 @@ spec:
         - containerPort: 8800
           name: tls
           protocol: TCP
+        - containerPort: 18800
+          name: tls-private
+          protocol: TCP
         volumeMounts:
         - mountPath: /certs
           name: envoy-tls
@@ -73,14 +76,19 @@ spec:
     name: public
     protocol: TCP
     appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    protocol: TCP
+    appProtocol: http
   - port: 8800
     targetPort: 8800
     name: tls
     protocol: TCP
     appProtocol: http
-  - port: 10000
-    targetPort: 10000
-    name: private
+  - port: 18800
+    targetPort: 18800
+    name: tls-private
     protocol: TCP
     appProtocol: http
   - port: 9000

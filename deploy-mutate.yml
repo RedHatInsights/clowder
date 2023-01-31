@@ -6321,6 +6321,9 @@ objects:
                             port:
                               format: int32
                               type: integer
+                            privatePort:
+                              format: int32
+                              type: integer
                           type: object
                       required:
                       - mode
