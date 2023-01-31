@@ -13,6 +13,7 @@ spec:
       tls:
         enabled: true
         port: 8800
+        privatePort: 18800
     metrics:
       port: 9000
       mode: operator

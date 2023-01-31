@@ -1162,6 +1162,7 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 | Field | Description
 | *`enabled`* __boolean__ | 
 | *`port`* __integer__ | 
+| *`privatePort`* __integer__ | 
 |===
 
 

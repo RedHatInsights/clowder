@@ -26,6 +26,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		dep.Provider.Env.Spec.Providers.Web.Port,
 		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
+		dep.Provider.Env.Spec.Providers.Web.TLS.PrivatePort,
 	)
 
 	// Return if no deps
@@ -53,6 +54,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		dep.Provider.Env.Spec.Providers.Web.Port,
 		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
+		dep.Provider.Env.Spec.Providers.Web.TLS.PrivatePort,
 		app,
 		apps,
 	)
@@ -79,6 +81,7 @@ func makeDepConfig(
 	webPort int32,
 	tlsPort int32,
 	privatePort int32,
+	tlsPrivatePort int32,
 	app *crd.ClowdApp,
 	apps *crd.ClowdAppList,
 ) (missingDeps []string) {
@@ -89,8 +92,8 @@ func makeDepConfig(
 		appMap[iapp.Name] = iapp
 	}
 
-	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort)
-	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort)
+	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
+	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
 
 	return missingDeps
 }
@@ -103,6 +106,7 @@ func processAppEndpoints(
 	webPort int32,
 	tlsPort int32,
 	privatePort int32,
+	tlsPrivatePort int32,
 ) (missingDeps []string) {
 
 	missingDeps = []string{}
@@ -135,6 +139,7 @@ func processAppEndpoints(
 					Port:     int(privatePort),
 					Name:     innerDeployment.Name,
 					App:      depApp.Name,
+					TlsPort:  utils.IntPtr(int(tlsPrivatePort)),
 				})
 			}
 		}
