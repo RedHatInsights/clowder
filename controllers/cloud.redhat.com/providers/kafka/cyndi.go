@@ -173,7 +173,8 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 			}
 		case "app-interface":
 			if app.Spec.Database.Name != "" {
-				dbConfig, err := db.GetDbConfig(s.GetCtx(), s.GetClient(), app.Namespace, app.Name, app.Name, app.Spec.Database)
+				rdsCaBundleURL := s.GetEnv().Spec.Providers.Database.CaBundleURL
+				dbConfig, err := db.GetDbConfig(s.GetCtx(), s.GetClient(), app.Namespace, app.Name, app.Name, app.Spec.Database, rdsCaBundleURL)
 
 				if err != nil {
 					return nil, errors.Wrap("could not get database config", err)
