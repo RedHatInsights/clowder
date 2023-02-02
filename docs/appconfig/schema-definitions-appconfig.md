@@ -22,7 +22,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [privatePort](#privateport)           | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privatePort")           |
 | [publicPort](#publicport)             | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-publicport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPort")             |
 | [webPort](#webport)                   | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-webport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/webPort")                   |
-| [publicPortCA](#publicportca)         | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-publicportca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPortCA")         |
+| [TLSPath](#tlspath)                   | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-tlspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/TLSPath")                   |
 | [metricsPort](#metricsport)           | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPort")           |
 | [metricsPath](#metricspath)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPath")           |
 | [logging](#logging)                   | `object`  | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging")                                  |
@@ -84,19 +84,19 @@ Deprecated: Use 'publicPort' instead.
 
 `integer`
 
-## publicPortCA
+## TLSPath
 
-Defines the public port CA
+Defines the port CA path
 
 
-`publicPortCA`
+`TLSPath`
 
 -   is optional
 -   Type: `string`
 -   cannot be null
--   defined in: [AppConfig](schema-definitions-appconfig-properties-publicportca.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPortCA")
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-tlspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/TLSPath")
 
-### publicPortCA Type
+### TLSPath Type
 
 `string`
 
