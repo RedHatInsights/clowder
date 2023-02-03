@@ -356,13 +356,16 @@ type AutoScaler struct {
 // CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the
 // cyndi operator and exposes a limited set of cyndi configuration options
 type CyndiSpec struct {
+	// Enables or Disables the Cyndi pipeline for the Clowdapp
 	Enabled bool `json:"enabled,omitempty"`
 
+	// Application name - if empty will default to Clowdapp's name
 	// +kubebuilder:validation:MinLength:=1
 	// +kubebuilder:validation:MaxLength:=64
 	// +kubebuilder:validation:Pattern:="[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
 	AppName string `json:"appName,omitempty"`
 
+	// Desired host syndication type (all or Insights hosts only) - defaults to false (All hosts)
 	InsightsOnly bool `json:"insightsOnly,omitempty"`
 }
 

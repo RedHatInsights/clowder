@@ -61,13 +61,18 @@ spec:
                   configuration option has no effect.
                 properties:
                   appName:
+                    description: Application name - if empty will default to Clowdapp's
+                      name
                     maxLength: 64
                     minLength: 1
                     pattern: '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
                     type: string
                   enabled:
+                    description: Enables or Disables the Cyndi pipeline for the Clowdapp
                     type: boolean
                   insightsOnly:
+                    description: Desired host syndication type (all or Insights hosts
+                      only) - defaults to false (All hosts)
                     type: boolean
                 type: object
               database:
