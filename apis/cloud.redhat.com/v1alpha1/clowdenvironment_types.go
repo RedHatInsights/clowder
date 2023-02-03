@@ -258,6 +258,11 @@ type DatabaseConfig struct {
 	// where the provider will spin up a local instance of the database.
 	Mode DatabaseMode `json:"mode"`
 
+	// Indicates where Clowder will fetch the database CA certificate bundle from. Currently only used in
+	// (*_app-interface_*) mode. If none is specified, the AWS RDS combined CA bundle is used.
+	// +kubebuilder:validation:Pattern=`^https?:\/\/.+$`
+	CaBundleURL string `json:"caBundleURL,omitempty"`
+
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`

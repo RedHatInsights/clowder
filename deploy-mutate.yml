@@ -5665,6 +5665,13 @@ objects:
                       description: Defines the Configuration for the Clowder Database
                         Provider.
                       properties:
+                        caBundleURL:
+                          description: Indicates where Clowder will fetch the database
+                            CA certificate bundle from. Currently only used in (*_app-interface_*)
+                            mode. If none is specified, the AWS RDS combined CA bundle
+                            is used.
+                          pattern: ^https?:\/\/.+$
+                          type: string
                         mode:
                           description: 'The mode of operation of the Clowder Database
                             Provider. Valid options are: (*_app-interface_*) where

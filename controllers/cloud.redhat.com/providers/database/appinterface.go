@@ -18,16 +18,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var rdsCa string
+var rdsCaBundles = make(map[string]string)
 
-const caURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
+const defaultCaBundleURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
 
 type appInterface struct {
 	providers.Provider
 }
 
-func fetchCa() (string, error) {
-	resp, err := http.Get(caURL)
+func fetchCa(caURL string) (string, error) {
+	resp, err := http.Get(caURL) // nolint
 
 	if err != nil {
 		return "", errors.Wrap("Error fetching CA bundle", err)
@@ -60,15 +60,21 @@ func NewAppInterfaceDBProvider(p *providers.Provider) (providers.ClowderProvider
 }
 
 func (a *appInterface) EnvProvide() error {
-	if rdsCa == "" {
-		_rdsCa, err := fetchCa()
+	caURL := a.Env.Spec.Providers.Database.CaBundleURL
+	if caURL == "" {
+		caURL = defaultCaBundleURL
+	}
+
+	if rdsCaBundles[caURL] == "" {
+		_rdsCa, err := fetchCa(caURL)
 
 		if err != nil {
 			return errors.Wrap("Failed to fetch RDS CA bundle", err)
 		}
 
-		rdsCa = _rdsCa
+		rdsCaBundles[caURL] = _rdsCa
 	}
+
 	return nil
 }
 
@@ -106,7 +112,8 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 		searchAppName = refApp.Name
 	}
 
-	matched, err := GetDbConfig(a.Ctx, a.Client, namespace, app.Name, searchAppName, dbSpec)
+	rdsCaBundleURL := a.Env.Spec.Providers.Database.CaBundleURL
+	matched, err := GetDbConfig(a.Ctx, a.Client, namespace, app.Name, searchAppName, dbSpec, rdsCaBundleURL)
 
 	if err != nil {
 		return err
@@ -117,7 +124,9 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
-func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName, searchAppName string, dbSpec crd.DatabaseSpec) (*config.DatabaseConfigContainer, error) {
+func GetDbConfig(
+	ctx context.Context, pClient client.Client, namespace, appName, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
+) (*config.DatabaseConfigContainer, error) {
 	secrets := core.SecretList{}
 	err := pClient.List(ctx, &secrets, client.InNamespace(namespace))
 
@@ -151,7 +160,7 @@ func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName,
 		if matched == (config.DatabaseConfigContainer{}) {
 			missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
 				Source:  "database",
-				Details: fmt.Sprintf("DB secret named '%s' not found in namespace '%s'", searchAppName, namespace),
+				Details: fmt.Sprintf("DB secret matching app '%s' not found in namespace '%s'", searchAppName, namespace),
 			})
 			return nil, &missingDep
 		}
@@ -162,10 +171,13 @@ func GetDbConfig(ctx context.Context, pClient client.Client, namespace, appName,
 	// The creds given by app-interface have elevated privileges
 	matched.Config.AdminPassword = matched.Config.Password
 	matched.Config.AdminUsername = matched.Config.Username
-	matched.Config.RdsCa = &rdsCa
+	if rdsCaBundleURL == "" {
+		rdsCaBundleURL = defaultCaBundleURL
+	}
+	bundle := rdsCaBundles[rdsCaBundleURL]
+	matched.Config.RdsCa = &bundle
 
 	return &matched, nil
-
 }
 
 func resolveDb(spec crd.DatabaseSpec, c []config.DatabaseConfigContainer) config.DatabaseConfigContainer {

@@ -5,3 +5,11 @@ metadata:
 spec:
   finalizers:
   - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-multi-app-interface-db-default-ca
+spec:
+  finalizers:
+  - kubernetes
