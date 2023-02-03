@@ -78,6 +78,13 @@ the `name` attribute of a topic when connecting to Kafka.
 
 A helper is available below to facilitate quick access via a map.
 
+If a the `cacert` and `securityProtocol` fields are populated, then the kafka
+instance will be using TLS and the client should be configured as such
+
+NOTE: The `securityProtocol` field has been deprecated from within the SASL
+stanza and in the future will only be available at the top level broker
+stanza.
+
 === JSON structure
 
 [source,json]
@@ -87,7 +94,9 @@ A helper is available below to facilitate quick access via a map.
       "brokers": [
           {
               "hostname": "broker-host",
-              "port": 27015
+              "port": 27015,
+              "securityProtocol": "SSL",
+              "cacert": "<some CA string>"
           }
       ],
       "topics": [
@@ -101,7 +110,7 @@ A helper is available below to facilitate quick access via a map.
 }
 ----
 
-A TLS/User auth enabled Kafka will look like this
+A User auth enabled Kafka will look like this
 [source,json]
 ----
 {
@@ -114,7 +123,8 @@ A TLS/User auth enabled Kafka will look like this
               "cacert": "-----BEGIN CERTIFICATE-----\nMIIDLTCCAhWgAwIBAgIJAPOWU.........",
               "sasl":{
                   "username": "kafkausername",
-                  "password": "kafkapassword"
+                  "password": "kafkapassword",
+                  "securityProtocol": "SASL_SSL"
               }
           }
       ],
