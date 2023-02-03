@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Cyndi Provider :: Clowder Documentation</title>
+    <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/cyndi.html">
+    <meta name="generator" content="Antora 3.1.2">
+    <link rel="stylesheet" href="../../../ui/css/site.css">
+    <script>var uiRootPath = '../../../ui'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="clowder" data-version="dev">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Clowder</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../api_reference.html">API Reference</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../developer-guide.html">Developer Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../crc-guide.html">CodeReady Containers Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sop.html">SOP</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../faq.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../migration/index.html">Migration</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../migration/migration.html">Migration Docs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../migration/checklist.html">Check List</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Providers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="confighash.html">Config Hash</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="cronjob.html">CronJob</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="database.html">Database</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="dependencies.html">Dependencies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="deployment.html">Deployment</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="featureflags.html">Feature Flags</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="inmemorydb.html">In-Memory DB</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="kafka.html">Kafka</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="logging.html">Logging</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="metrics.html">Metrics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="objectstore.html">Object Storage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="serviceaccount.html">Service Accounts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="servicemesh.html">Service Mesh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="web.html">Web</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../usage/index.html">Usage</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/app-workflow.html">App Workflow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/getting-started.html">Getting Started</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../usage/jobs.html">Jobs</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Clowder</span>
+    <span class="version">dev</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Clowder</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">dev</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Clowder</a></li>
+    <li><a href="cyndi.html">Cyndi Provider</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/cyndi.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Cyndi Provider</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>Cyndi Provider</strong> is responsible for ensuring the Cyndi pipeline is configured in the
+environment, and on Clowder managed environments. It is also responsible of creating the
+CyndiPipeline resource, and configuring the underlying <code>Kafka Connect</code> so that the data syndication
+from Host Inventory database to the app&#8217;s database works correctly.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> is the core component used to perform Inventory’s host database
+syndication for some of the Insights platform applications, and uses an Operator to orchestrate
+the synchronization process.</p>
+</div>
+<div class="paragraph">
+<p>It does so by using a <code>CyndiPipeline</code> resource, which is created by Clowder, and injecting in the database
+secrets for both the target db (the application’s) and the host inventory db.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> streams table updates to keep data syndicated between the host
+inventory db and the application’s hosts view.</p>
+</div>
+<div class="paragraph">
+<p>Please refer to the corresponing projects for more information about the <a href="https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#cyndi">Cyndi project</a>, the <code>CyndiPipeline</code> resource or the <a href="https://github.com/RedHatInsights/cyndi-operator#cyndi-operator">Cyndi Operator</a> itself.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_clowdapp_configuration"><a class="anchor" href="#_clowdapp_configuration"></a>ClowdApp Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In order to request a <code>ClowdApp</code> to get the host syndication enabled by Cyndi, the <code>Cyndi</code> stanza
+needs to be used. A snippet of how that config would look like follows.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># my-clowdapp.yml
+# ...
+cyndi:
+  enabled: true
+  appName: fancyapp
+  insightsOnly: true
+# ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The attributes are described in Clowder’s API Spec documentation <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">here</a></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>enabled</strong> <code>[bool] default: true</code> - enables or disables the Cyndi dependency for this particular ClowdApp resource.</p>
+</li>
+<li>
+<p><strong>appName</strong> <code>[str] default: ''</code> - a string that sets the unique identifier of this ClowdApp on Cyndi.</p>
+</li>
+<li>
+<p><strong>insightsOnly</strong> <code>[bool] default: false</code> - enables the data syndication for all hosts or Insights hosts only.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_clowdenv_configuration"><a class="anchor" href="#_clowdenv_configuration"></a>ClowdEnv Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>Cyndi</strong> provider will run in one of the two following modes, depending on whether if Clowder
+manages the environment or not;</p>
+</div>
+<div class="paragraph">
+<p>On non-Clowder managed environments (at the time of this writing, Stage and Production) Clowder
+will only check that the CyndiPipeline resource is available for the Clowdapp that is being
+reconciled in case it has the “cyndi” flag enabled in it’s template definition.
+Clowder will not try to create or update any resource related to Cyndi on environments it does not
+manage.</p>
+</div>
+<div class="paragraph">
+<p>On Clowder managed environments (Ephemeral environment) Clowder will configure and deploy Kafka
+using the Strimzi operator and will setup the CyndiPipeline to enable the host syndication process
+for the Clowdapps that require it on their spec files (see <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">Clowder API reference</a>)</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../../../ui/js/site.js" data-ui-root-path="../../../ui"></script>
+<script async src="../../../ui/js/vendor/highlight.js"></script>
+  </body>
+</html>
