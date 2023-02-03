@@ -68,10 +68,10 @@ func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig
 	)
 }
 
-func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, string, error) {
+func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, string, string, error) {
 	port, err := strconv.Atoi(string(secret.Data["port"]))
 	if err != nil {
-		return 0, "", "", "", "", err
+		return 0, "", "", "", "", "", err
 	}
 	password := string(secret.Data["password"])
 	username := string(secret.Data["username"])
@@ -80,13 +80,17 @@ func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, stri
 	if val, ok := secret.Data["cacert"]; ok {
 		cacert = string(val)
 	}
-	return port, password, username, hostname, cacert, nil
+	saslMechanism := "PLAIN"
+	if val, ok := secret.Data["saslMechanism"]; ok {
+		saslMechanism = string(val)
+	}
+	return port, password, username, hostname, cacert, saslMechanism, nil
 }
 
 func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {
 	broker := config.BrokerConfig{}
 
-	port, password, username, hostname, cacert, err := k.destructureSecret(secret)
+	port, password, username, hostname, cacert, saslMechanism, err := k.destructureSecret(secret)
 	if err != nil {
 		return broker, err
 	}
@@ -103,7 +107,7 @@ func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.Brok
 		Password:         &password,
 		Username:         &username,
 		SecurityProtocol: utils.StringPtr("SASL_SSL"),
-		SaslMechanism:    utils.StringPtr("PLAIN"),
+		SaslMechanism:    utils.StringPtr(saslMechanism),
 	}
 	broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
 
