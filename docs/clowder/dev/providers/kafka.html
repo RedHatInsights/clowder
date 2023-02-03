@@ -315,6 +315,24 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 <div class="paragraph">
 <p>A helper is available below to facilitate quick access via a map.</p>
 </div>
+<div class="paragraph">
+<p>If a the <code>cacert</code> and <code>securityProtocol</code> fields are populated, then the kafka
+instance will be using TLS and the client should be configured as such</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>securityProtocol</code> field has been deprecated from within the SASL
+stanza and in the future will only be available at the top level broker
+stanza.
+</td>
+</tr>
+</table>
+</div>
 <div class="sect2">
 <h3 id="_json_structure"><a class="anchor" href="#_json_structure"></a>JSON structure</h3>
 <div class="listingblock">
@@ -324,7 +342,9 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
       "brokers": [
           {
               "hostname": "broker-host",
-              "port": 27015
+              "port": 27015,
+              "securityProtocol": "SSL",
+              "cacert": "&lt;some CA string&gt;"
           }
       ],
       "topics": [
@@ -339,7 +359,7 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>A TLS/User auth enabled Kafka will look like this</p>
+<p>A User auth enabled Kafka will look like this</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -353,7 +373,8 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
               "cacert": "-----BEGIN CERTIFICATE-----\nMIIDLTCCAhWgAwIBAgIJAPOWU.........",
               "sasl":{
                   "username": "kafkausername",
-                  "password": "kafkapassword"
+                  "password": "kafkapassword",
+                  "securityProtocol": "SASL_SSL"
               }
           }
       ],
