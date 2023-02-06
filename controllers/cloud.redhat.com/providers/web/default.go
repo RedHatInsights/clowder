@@ -3,6 +3,8 @@ package web
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	apps "k8s.io/api/apps/v1"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
@@ -38,8 +40,22 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, deployment := range app.Spec.Deployments {
-		d := deployment
-		if err := makeService(web.Ctx, web.Client, web.Cache, &d, app, web.Env); err != nil {
+		innerDeployment := deployment
+		if err := makeService(web.Ctx, web.Client, web.Cache, &innerDeployment, app, web.Env); err != nil {
+			return err
+		}
+
+		d := &apps.Deployment{}
+		dnn := app.GetDeploymentNamespacedName(&innerDeployment)
+		if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+			return err
+		}
+
+		if web.Env.Spec.Providers.Web.TLS.Enabled {
+			addCertVolume(d, dnn.Name)
+		}
+
+		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
 			return err
 		}
 	}
@@ -48,7 +64,7 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 
 func (web *webProvider) populateCA() error {
 	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TLSPath = utils.StringPtr("/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
+		web.Config.TLSPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
 	}
 	return nil
 }

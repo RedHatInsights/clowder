@@ -87,5 +87,5 @@ kind: ConfigMap
 metadata:
   annotations:
     service.beta.openshift.io/inject-cabundle: "true"
-  name: test-tls-web-services-envoy-ca
+  name: openshift-service-ca.crt
   namespace: test-tls-web-services

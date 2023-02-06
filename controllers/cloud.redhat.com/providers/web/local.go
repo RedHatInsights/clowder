@@ -239,6 +239,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
+		if web.Env.Spec.Providers.Web.TLS.Enabled {
+			addCertVolume(d, dnn.Name)
+		}
+
 		annotations := map[string]string{
 			"clowder/authsidecar-confighash": hash,
 		}
@@ -260,7 +264,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 func (web *localWebProvider) populateCA() error {
 	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TLSPath = utils.StringPtr("/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
+		web.Config.TLSPath = utils.StringPtr("/cdapp/certs/openshift-service-ca.crt")
 	}
 	return nil
 }
