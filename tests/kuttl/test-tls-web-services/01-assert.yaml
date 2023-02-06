@@ -61,6 +61,10 @@ spec:
         secret:
           defaultMode: 420
           secretName: puptoo-processor-serving-cert
+      - configMap:
+          defaultMode: 420
+          name: openshift-service-ca.crt
+        name: tls-ca
 ---
 apiVersion: v1
 kind: Service
