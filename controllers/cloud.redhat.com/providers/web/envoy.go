@@ -21,12 +21,12 @@ func generateTLSContext() (*anypb.Any, error) {
 			TlsCertificates: []*tls.TlsCertificate{{
 				CertificateChain: &core.DataSource{
 					Specifier: &core.DataSource_Filename{
-						Filename: "/certs/cert.pem",
+						Filename: "/certs/tls.crt",
 					},
 				},
 				PrivateKey: &core.DataSource{
 					Specifier: &core.DataSource_Filename{
-						Filename: "/certs/key.pem",
+						Filename: "/certs/tls.key",
 					},
 				},
 			}},

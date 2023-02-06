@@ -15,7 +15,6 @@ func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CoreService,
 		CoreEnvoyConfigMap,
-		CoreEnvoySecret,
 	)
 	return &webProvider{Provider: *p}, nil
 }

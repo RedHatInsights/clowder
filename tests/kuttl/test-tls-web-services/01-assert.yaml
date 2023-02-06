@@ -60,7 +60,7 @@ spec:
       - name: envoy-tls
         secret:
           defaultMode: 420
-          secretName: puptoo-processor-serving-cert-combined
+          secretName: puptoo-processor-serving-cert
 ---
 apiVersion: v1
 kind: Service
