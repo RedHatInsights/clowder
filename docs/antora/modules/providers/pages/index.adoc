@@ -2,6 +2,7 @@
 
 - xref:confighash.adoc[Config Hash]
 - xref:cronjob.adoc[CronJob]
+- xref:cyndi.adoc[Cyndi]
 - xref:database.adoc[Database]
 - xref:dependencies.adoc[Dependencies]
 - xref:deployment.adoc[Deployment]

@@ -10,6 +10,7 @@
 * xref:providers:index.adoc[Providers]
 ** xref:providers:confighash.adoc[Config Hash]
 ** xref:providers:cronjob.adoc[CronJob]
+** xref:providers:cyndi.adoc[Cyndi]
 ** xref:providers:database.adoc[Database]
 ** xref:providers:dependencies.adoc[Dependencies]
 ** xref:providers:deployment.adoc[Deployment]
