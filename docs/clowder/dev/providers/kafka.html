@@ -461,6 +461,93 @@ more information can be found in the API reference.</p>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_cyndi"><a class="anchor" href="#_cyndi"></a>Cyndi</h2>
+<div class="sectionbody">
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p>The <strong>Cyndi</strong> attribute of a ClowdApp definition is responsible for ensuring the Cyndi host
+syndication process is in place for the ClowdApp. On Clowder managed environments, the
+provider is also responsible of creating the CyndiPipeline resource, and configuring the underlying
+<code>Kafka Connect</code> so that the data syndication from Host Inventory database to the app&#8217;s database
+works correctly.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> is the core component used to perform Inventory’s host database
+syndication for some of the Insights platform applications, and uses an Operator to orchestrate
+the synchronization process.</p>
+</div>
+<div class="paragraph">
+<p>It does so by using a <code>CyndiPipeline</code> resource, which can be created by Clowder, and by injecting
+in the database secrets for both the target db (the application’s) and the host inventory db.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> streams table updates to keep data syndicated between the host
+inventory db and the application’s hosts view.</p>
+</div>
+<div class="paragraph">
+<p>Please refer to the corresponing projects for more information about the
+<a href="https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#cyndi">Cyndi project</a>, the <code>CyndiPipeline</code> resource or the <a href="https://github.com/RedHatInsights/cyndi-operator#cyndi-operator">Cyndi Operator</a>
+itself.</p>
+</div>
+<div class="paragraph">
+<p>=== ClowdApp Configuration</p>
+</div>
+<div class="paragraph">
+<p>In order to request a <code>ClowdApp</code> to get the host syndication enabled by Cyndi, the <code>Cyndi</code> stanza
+needs to be used. A snippet of how that config would look like follows.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># my-clowdapp.yml
+# ...
+cyndi:
+  enabled: true
+  appName: fancyapp
+  insightsOnly: true
+# ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The attributes are described in Clowder’s API Spec documentation <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">here</a></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>enabled</strong> <code>[bool] default: true</code> - enables or disables the Cyndi dependency for this particular ClowdApp resource.</p>
+</li>
+<li>
+<p><strong>appName</strong> <code>[str] default: ''</code> - a string that sets the unique identifier of this ClowdApp on Cyndi.</p>
+</li>
+<li>
+<p><strong>insightsOnly</strong> <code>[bool] default: false</code> - enables the data syndication for all hosts or Insights hosts only.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>=== ClowdEnv Configuration</p>
+</div>
+<div class="paragraph">
+<p>The <strong>Cyndi</strong> provider will run in one of the two following modes, depending on whether if Clowder
+manages the environment or not;</p>
+</div>
+<div class="paragraph">
+<p>On non-Clowder managed environments (at the time of this writing, Stage and Production) Clowder
+will only check that the CyndiPipeline resource is available for the Clowdapp that is being
+reconciled in case it has the “cyndi” flag enabled in it’s template definition.
+Clowder will not try to create or update any resource related to Cyndi on environments it does not
+manage.</p>
+</div>
+<div class="paragraph">
+<p>On Clowder managed environments (Ephemeral environment) Clowder will configure and deploy Kafka
+using the Strimzi operator and will setup the CyndiPipeline to enable the host syndication process
+for the Clowdapps that require it on their spec files (see <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">Clowder API reference</a>)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
 </article>
   </div>
 </main>
