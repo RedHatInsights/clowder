@@ -29,8 +29,6 @@ var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Servi
 
 var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_map", &core.ConfigMap{})
 
-var CoreEnvoySecret = rc.NewMultiResourceIdent(ProvName, "core_envoy_secret", &core.Secret{})
-
 func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
@@ -154,10 +152,6 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 			}
 		}
 
-		if err := generateTLSSecret(ctx, rclient, cache, nn, app); err != nil {
-			return err
-		}
-
 		if err := generateEnvoyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
 			return err
 		}
@@ -177,44 +171,6 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 		return err
 	}
 
-	return nil
-}
-
-func generateTLSSecret(ctx context.Context, client client.Client, cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp) error {
-	s := &core.Secret{}
-	snn := types.NamespacedName{
-		Name:      certSecretNameCombined(nn.Name),
-		Namespace: nn.Namespace,
-	}
-
-	if err := cache.Create(CoreEnvoySecret, snn, s); err != nil {
-		return err
-	}
-
-	hs := &core.Secret{}
-	hsnn := types.NamespacedName{
-		Name:      certSecretName(nn.Name),
-		Namespace: nn.Namespace,
-	}
-	if err := client.Get(ctx, hsnn, hs); err != nil {
-		return err
-	}
-
-	s.Name = snn.Name
-	s.Namespace = snn.Namespace
-	s.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
-	s.Type = core.SecretTypeOpaque
-
-	s.StringData = map[string]string{}
-	cert := hs.Data["tls.crt"]
-	key := hs.Data["tls.key"]
-
-	s.StringData["cert.pem"] = string(cert)
-	s.StringData["key.pem"] = string(cert) + "\n" + string(key)
-
-	if err := cache.Update(CoreEnvoySecret, s); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -289,7 +245,7 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 		Name: "envoy-tls",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: certSecretNameCombined(name),
+				SecretName: certSecretName(name),
 			},
 		},
 	}
@@ -312,10 +268,6 @@ func setServiceTLSAnnotations(s *core.Service, name string) {
 		"service.beta.openshift.io/serving-cert-secret-name": certSecretName(name),
 	}
 	utils.UpdateAnnotations(s, annos)
-}
-
-func certSecretNameCombined(name string) string {
-	return fmt.Sprintf("%s-serving-cert-combined", name)
 }
 
 func certSecretName(name string) string {

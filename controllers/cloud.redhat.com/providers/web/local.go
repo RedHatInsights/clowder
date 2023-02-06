@@ -79,7 +79,6 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebKeycloakSecret,
 		WebIngress,
 		CoreEnvoyConfigMap,
-		CoreEnvoySecret,
 		CoreService,
 	)
 	return &localWebProvider{Provider: *p}, nil
