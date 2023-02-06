@@ -45,18 +45,19 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		d := &apps.Deployment{}
-		dnn := app.GetDeploymentNamespacedName(&innerDeployment)
-		if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
-			return err
-		}
-
 		if web.Env.Spec.Providers.Web.TLS.Enabled {
-			addCertVolume(d, dnn.Name)
-		}
+			d := &apps.Deployment{}
+			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 
-		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
-			return err
+			if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+				return err
+			}
+
+			addCertVolume(d, dnn.Name)
+
+			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

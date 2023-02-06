@@ -152,11 +152,13 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 			}
 		}
 
-		if err := generateEnvoyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
-			return err
+		if priv || pub {
+			if err := generateEnvoyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
+				return err
+			}
+			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			setServiceTLSAnnotations(s, nn.Name)
 		}
-		populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
-		setServiceTLSAnnotations(s, nn.Name)
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())
