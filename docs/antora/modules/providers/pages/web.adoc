@@ -125,3 +125,46 @@ spec:
       privatePort: 10000
       port: 8000
 ----
+
+== TLS Auth
+The *Web Provider* also features a TLS sidecar option which will dynamically create and append an
+Envoy sidecar to the deployment pod. This requires enabling in the configuration with an example
+below.
+
+[source,yaml]
+----
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    web:
+      # As above
+      tls:
+        enabled: true
+        port: 18000
+        privatePort: 18800
+----
+
+This configuration will do several things:
+
+* Creates TLS annotations on the deployment's `Service` resource to allow *OpenShift* to create the
+cert `Secret`
+* Add new ports to the `Service` resource based on if the app has **public** or **private** ports 
+enabled
+* Creates a `ConfigMap` for the *Envoy* sidecar
+* Adds the *Envoy* sidecar to the app's pod
+** Sets VolumeMounts/Volumes for the config
+** Sets VolumeMounts/Volumes for the cert/key
+* Adds VolumeMounts/Volumes to the app's deployment to mount the CA chain, which is available in
+every namespace via *OpenShift*
+* Adds container ports to the app's deployment based on if the app has **public** or **private** 
+ports enabled
+
+Applications are then able to connect to other services in the cluster using the enpoints listed
+in the `cdappconfig.json`. A `TLSPath` field is in the `cdappconfig.json` to tell people where the 
+CA cert chain can be found for connecting to other services. All certs are registered against the
+full hostname including *namespace* and *svc*. These hostnames are present in full in the endpoints
+list and should be taken from there.
