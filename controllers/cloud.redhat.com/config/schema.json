@@ -20,7 +20,7 @@
                     "description": "Deprecated: Use 'publicPort' instead.",
                     "type": "integer"
                 },
-                "TLSPath": {
+                "tlsCAPath": {
                     "description": "Defines the port CA path",
                     "type": "string"
                 },

@@ -264,7 +264,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 func (web *localWebProvider) populateCA() error {
 	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TLSPath = utils.StringPtr("/cdapp/certs/openshift-service-ca.crt")
+		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/openshift-service-ca.crt")
 	}
 	return nil
 }

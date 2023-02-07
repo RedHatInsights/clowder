@@ -164,7 +164,7 @@ every namespace via *OpenShift*
 ports enabled
 
 Applications are then able to connect to other services in the cluster using the enpoints listed
-in the `cdappconfig.json`. A `TLSPath` field is in the `cdappconfig.json` to tell people where the 
+in the `cdappconfig.json`. A `tlsCAPath` field is in the `cdappconfig.json` to tell people where the 
 CA cert chain can be found for connecting to other services. All certs are registered against the
 full hostname including *namespace* and *svc*. These hostnames are present in full in the endpoints
 list and should be taken from there.

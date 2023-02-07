@@ -112,3 +112,4 @@ status:
       - hostname: puptoo-processor.test-tls-web-services.svc
         name: puptoo-processor
         port: 8000
+        tlsPort: 8800

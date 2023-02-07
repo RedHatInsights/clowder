@@ -71,9 +71,6 @@ type AppConfig struct {
 	// Defines the path to the BOPURL.
 	BOPURL *string `json:"BOPURL,omitempty"`
 
-	// Defines the port CA path
-	TLSPath *string `json:"TLSPath,omitempty"`
-
 	// Database corresponds to the JSON schema field "database".
 	Database *DatabaseConfig `json:"database,omitempty"`
 
@@ -116,6 +113,9 @@ type AppConfig struct {
 	// Defines the public port that the app should be configured to listen on for API
 	// traffic.
 	PublicPort *int `json:"publicPort,omitempty"`
+
+	// Defines the port CA path
+	TlsCAPath *string `json:"tlsCAPath,omitempty"`
 
 	// Deprecated: Use 'publicPort' instead.
 	WebPort *int `json:"webPort,omitempty"`

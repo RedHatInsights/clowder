@@ -65,7 +65,7 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 
 func (web *webProvider) populateCA() error {
 	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TLSPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
+		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
 	}
 	return nil
 }
