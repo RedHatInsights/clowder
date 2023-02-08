@@ -196,7 +196,7 @@ more information can be found in the API reference.
 
 
 == Cyndi
-================
+
 :kafka-connect: https://docs.confluent.io/platform/current/connect/index.html#kafka-connect
 :project-cyndi: https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#cyndi
 :cyndi-operator: https://github.com/RedHatInsights/cyndi-operator#cyndi-operator
