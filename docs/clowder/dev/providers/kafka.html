@@ -464,8 +464,6 @@ more information can be found in the API reference.</p>
 <div class="sect1">
 <h2 id="_cyndi"><a class="anchor" href="#_cyndi"></a>Cyndi</h2>
 <div class="sectionbody">
-<div class="exampleblock">
-<div class="content">
 <div class="paragraph">
 <p>The <strong>Cyndi</strong> attribute of a ClowdApp definition is responsible for ensuring the Cyndi host
 syndication process is in place for the ClowdApp. On Clowder managed environments, the
@@ -491,9 +489,8 @@ inventory db and the application’s hosts view.</p>
 <a href="https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#cyndi">Cyndi project</a>, the <code>CyndiPipeline</code> resource or the <a href="https://github.com/RedHatInsights/cyndi-operator#cyndi-operator">Cyndi Operator</a>
 itself.</p>
 </div>
-<div class="paragraph">
-<p>=== ClowdApp Configuration</p>
-</div>
+<div class="sect2">
+<h3 id="_clowdapp_configuration_2"><a class="anchor" href="#_clowdapp_configuration_2"></a>ClowdApp Configuration</h3>
 <div class="paragraph">
 <p>In order to request a <code>ClowdApp</code> to get the host syndication enabled by Cyndi, the <code>Cyndi</code> stanza
 needs to be used. A snippet of how that config would look like follows.</p>
@@ -525,9 +522,9 @@ cyndi:
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>=== ClowdEnv Configuration</p>
 </div>
+<div class="sect2">
+<h3 id="_clowdenv_configuration_3"><a class="anchor" href="#_clowdenv_configuration_3"></a>ClowdEnv Configuration</h3>
 <div class="paragraph">
 <p>The <strong>Cyndi</strong> provider will run in one of the two following modes, depending on whether if Clowder
 manages the environment or not;</p>
@@ -543,7 +540,6 @@ manage.</p>
 <p>On Clowder managed environments (Ephemeral environment) Clowder will configure and deploy Kafka
 using the Strimzi operator and will setup the CyndiPipeline to enable the host syndication process
 for the Clowdapps that require it on their spec files (see <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">Clowder API reference</a>)</p>
-</div>
 </div>
 </div>
 </div>
