@@ -1,7 +1,7 @@
 # Untitled string in AppConfig Schema
 
 ```txt
-https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/TLSPath
+https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/tlsCAPath
 ```
 
 Defines the port CA path
@@ -11,6 +11,6 @@ Defines the port CA path
 | :------------------ | ---------- | -------------- | ----------------------- | :---------------- | --------------------- | ------------------- | ------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [schema.json\*](../../out/schema.json "open original schema") |
 
-## TLSPath Type
+## tlsCAPath Type
 
 `string`
