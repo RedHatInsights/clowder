@@ -83,6 +83,15 @@ type WebConfig struct {
 
 	// Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
 	Images WebImages `json:"images,omitempty"`
+
+	// TLS sidecar enablement
+	TLS TLS `json:"tls,omitempty"`
+}
+
+type TLS struct {
+	Enabled     bool  `json:"enabled,omitempty"`
+	Port        int32 `json:"port,omitempty"`
+	PrivatePort int32 `json:"privatePort,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

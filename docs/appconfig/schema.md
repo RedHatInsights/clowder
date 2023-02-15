@@ -30,6 +30,7 @@ Reference this group by using
 | [privatePort](#privateport)           | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privatePort")           |
 | [publicPort](#publicport)             | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-publicport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/publicPort")             |
 | [webPort](#webport)                   | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-webport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/webPort")                   |
+| [tlsCAPath](#tlscapath)               | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-tlscapath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/tlsCAPath")               |
 | [metricsPort](#metricsport)           | `integer` | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPort")           |
 | [metricsPath](#metricspath)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-appconfig-properties-metricspath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/metricsPath")           |
 | [logging](#logging)                   | `object`  | Required | cannot be null | [AppConfig](schema-definitions-loggingconfig.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/logging")                                  |
@@ -90,6 +91,22 @@ Deprecated: Use 'publicPort' instead.
 #### webPort Type
 
 `integer`
+
+### tlsCAPath
+
+Defines the port CA path
+
+
+`tlsCAPath`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-tlscapath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/tlsCAPath")
+
+#### tlsCAPath Type
+
+`string`
 
 ### metricsPort
 
@@ -1359,6 +1376,7 @@ Reference this group by using
 | [hostname](#hostname-5) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
 | [port](#port-5)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
 | [app](#app)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
+| [tlsPort](#tlsport)     | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/tlsPort")   |
 
 ### name
 
@@ -1424,6 +1442,22 @@ The app name of the ClowdApp hosting the service.
 
 `string`
 
+### tlsPort
+
+The TLS port of the dependent service.
+
+
+`tlsPort`
+
+-   is optional
+-   Type: `integer`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-dependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/tlsPort")
+
+#### tlsPort Type
+
+`integer`
+
 ## Definitions group PrivateDependencyEndpoint
 
 Reference this group by using
@@ -1438,6 +1472,7 @@ Reference this group by using
 | [hostname](#hostname-6) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/hostname") |
 | [port](#port-6)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/port")         |
 | [app](#app-1)           | `string`  | Required | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/app")           |
+| [tlsPort](#tlsport-1)   | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-privatedependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/tlsPort")   |
 
 ### name
 
@@ -1502,3 +1537,19 @@ The app name of the ClowdApp hosting the service.
 #### app Type
 
 `string`
+
+### tlsPort
+
+The TLS port of the dependent service.
+
+
+`tlsPort`
+
+-   is optional
+-   Type: `integer`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-privatedependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/PrivateDependencyEndpoint/properties/tlsPort")
+
+#### tlsPort Type
+
+`integer`

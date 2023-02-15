@@ -707,6 +707,18 @@ spec:
                           should be served on.
                         format: int32
                         type: integer
+                      tls:
+                        description: TLS sidecar enablement
+                        properties:
+                          enabled:
+                            type: boolean
+                          port:
+                            format: int32
+                            type: integer
+                          privatePort:
+                            format: int32
+                            type: integer
+                        type: object
                     required:
                     - mode
                     - port

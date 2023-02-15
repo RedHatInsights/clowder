@@ -78,6 +78,8 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebSecret,
 		WebKeycloakSecret,
 		WebIngress,
+		CoreEnvoyConfigMap,
+		CoreService,
 	)
 	return &localWebProvider{Provider: *p}, nil
 }
@@ -187,9 +189,13 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 	}
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
+	if err := web.populateCA(); err != nil {
+		return err
+	}
+
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
-		if err := makeService(web.Cache, &innerDeployment, app, web.Env); err != nil {
+		if err := makeService(web.Ctx, web.Client, web.Cache, &innerDeployment, app, web.Env); err != nil {
 			return err
 		}
 
@@ -233,6 +239,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
+		if web.Env.Spec.Providers.Web.TLS.Enabled {
+			addCertVolume(d, dnn.Name)
+		}
+
 		annotations := map[string]string{
 			"clowder/authsidecar-confighash": hash,
 		}
@@ -249,6 +259,13 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 	}
 
+	return nil
+}
+
+func (web *localWebProvider) populateCA() error {
+	if web.Env.Spec.Providers.Web.TLS.Enabled {
+		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/openshift-service-ca.crt")
+	}
 	return nil
 }
 

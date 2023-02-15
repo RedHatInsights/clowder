@@ -6,6 +6,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
@@ -23,7 +24,9 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		dep.Provider.Env.Spec.Providers.Web.Port,
+		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
+		dep.Provider.Env.Spec.Providers.Web.TLS.PrivatePort,
 	)
 
 	// Return if no deps
@@ -49,7 +52,9 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		dep.Provider.Env.Spec.Providers.Web.Port,
+		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
 		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
+		dep.Provider.Env.Spec.Providers.Web.TLS.PrivatePort,
 		app,
 		apps,
 	)
@@ -74,7 +79,9 @@ func makeDepConfig(
 	depConfig *[]config.DependencyEndpoint,
 	privDepConfig *[]config.PrivateDependencyEndpoint,
 	webPort int32,
+	tlsPort int32,
 	privatePort int32,
+	tlsPrivatePort int32,
 	app *crd.ClowdApp,
 	apps *crd.ClowdAppList,
 ) (missingDeps []string) {
@@ -85,8 +92,8 @@ func makeDepConfig(
 		appMap[iapp.Name] = iapp
 	}
 
-	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, privatePort)
-	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webPort, privatePort)
+	missingDeps = processAppEndpoints(appMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
+	_ = processAppEndpoints(appMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
 
 	return missingDeps
 }
@@ -97,7 +104,9 @@ func processAppEndpoints(
 	depConfig *[]config.DependencyEndpoint,
 	privDepConfig *[]config.PrivateDependencyEndpoint,
 	webPort int32,
+	tlsPort int32,
 	privatePort int32,
+	tlsPrivatePort int32,
 ) (missingDeps []string) {
 
 	missingDeps = []string{}
@@ -120,6 +129,7 @@ func processAppEndpoints(
 					Port:     int(webPort),
 					Name:     innerDeployment.Name,
 					App:      depApp.Name,
+					TlsPort:  utils.IntPtr(int(tlsPort)),
 				})
 			}
 			if innerDeployment.WebServices.Private.Enabled {
@@ -129,6 +139,7 @@ func processAppEndpoints(
 					Port:     int(privatePort),
 					Name:     innerDeployment.Name,
 					App:      depApp.Name,
+					TlsPort:  utils.IntPtr(int(tlsPrivatePort)),
 				})
 			}
 		}
