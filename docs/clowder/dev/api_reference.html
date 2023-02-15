@@ -3705,6 +3705,53 @@
 </table>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls"></a>TLS</h4>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig">WebConfig</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>enabled</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>port</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>privatePort</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig"></a>TestingConfig</h4>
 <div class="sidebarblock">
 <div class="content">
@@ -3928,6 +3975,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Optional images to use for web provider components&#8201;&#8212;&#8201;only applies when running in (<strong><em>local</em></strong>) mode.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>tls</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls">TLS</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>TLS sidecar enablement</p>
 </div></div></td>
 </tr>
 </tbody>

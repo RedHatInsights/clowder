@@ -404,6 +404,79 @@ spec:
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_tls_auth"><a class="anchor" href="#_tls_auth"></a>TLS Auth</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>Web Provider</strong> also features a TLS sidecar option which will dynamically create and append an
+Envoy sidecar to the deployment pod. This requires enabling in the configuration with an example
+below.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    web:
+      # As above
+      tls:
+        enabled: true
+        port: 18000
+        privatePort: 18800</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This configuration will do several things:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Creates TLS annotations on the deployment&#8217;s <code>Service</code> resource to allow <strong>OpenShift</strong> to create the
+cert <code>Secret</code></p>
+</li>
+<li>
+<p>Add new ports to the <code>Service</code> resource based on if the app has <strong>public</strong> or <strong>private</strong> ports
+enabled</p>
+</li>
+<li>
+<p>Creates a <code>ConfigMap</code> for the <strong>Envoy</strong> sidecar</p>
+</li>
+<li>
+<p>Adds the <strong>Envoy</strong> sidecar to the app&#8217;s pod</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Sets VolumeMounts/Volumes for the config</p>
+</li>
+<li>
+<p>Sets VolumeMounts/Volumes for the cert/key</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Adds VolumeMounts/Volumes to the app&#8217;s deployment to mount the CA chain, which is available in
+every namespace via <strong>OpenShift</strong></p>
+</li>
+<li>
+<p>Adds container ports to the app&#8217;s deployment based on if the app has <strong>public</strong> or <strong>private</strong>
+ports enabled</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Applications are then able to connect to other services in the cluster using the enpoints listed
+in the <code>cdappconfig.json</code>. A <code>tlsCAPath</code> field is in the <code>cdappconfig.json</code> to tell people where the
+CA cert chain can be found for connecting to other services. All certs are registered against the
+full hostname including <strong>namespace</strong> and <strong>svc</strong>. These hostnames are present in full in the endpoints
+list and should be taken from there.</p>
+</div>
+</div>
+</div>
 </article>
   </div>
 </main>
