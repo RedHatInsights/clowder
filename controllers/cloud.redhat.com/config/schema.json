@@ -70,6 +70,13 @@
                 "BOPURL": {
                     "description": "Defines the path to the BOPURL.",
                     "type": "string"
+                },
+                "hashCache": {
+                    "description": "A set of config/secret hashes",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
             "required": [

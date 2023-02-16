@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
@@ -9,7 +12,9 @@ import (
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -87,6 +92,110 @@ func environmentUpdateFunc(e event.UpdateEvent) bool {
 	return false
 }
 
+func updateHashCache(obj client.Object) (bool, error) {
+	gvk, err := utils.GetKindFromObj(Scheme, obj)
+	if err != nil {
+		return true, err
+	}
+
+	var jsonData []byte
+	var prefix string
+	switch gvk.Kind {
+	case "ConfigMap":
+		cm := &core.ConfigMap{}
+		prefix = "cm"
+		err = Scheme.Convert(obj, cm, context.Background())
+
+		if err != nil {
+			return true, fmt.Errorf("couldn't convert: %s", err)
+		}
+		jsonData, err = json.Marshal(cm.Data)
+		if err != nil {
+			return true, nil
+		}
+	case "Secret":
+		s := &core.Secret{}
+		prefix = "sc"
+		err = Scheme.Convert(obj, s, context.Background())
+
+		if err != nil {
+			return true, fmt.Errorf("couldn't convert: %s", err)
+		}
+		jsonData, err = json.Marshal(s.Data)
+		if err != nil {
+			return true, nil
+		}
+	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	currentHash := ReadHashCache(fmt.Sprintf("%s-%s-%s", prefix, obj.GetName(), obj.GetNamespace()))
+
+	if currentHash == hash {
+		return false, nil
+	}
+
+	SetHashCache(fmt.Sprintf("%s-%s-%s", prefix, obj.GetName(), obj.GetNamespace()), hash)
+
+	return true, nil
+}
+
+func checkForReconcile(obj client.Object) bool {
+	if obj.GetLabels()["watch"] == "me" {
+		return true
+	}
+	for _, owner := range obj.GetOwnerReferences() {
+		if owner.Kind == "ClowdApp" && *owner.Controller {
+			return true
+		}
+	}
+	return false
+}
+
+func configMapCreateFunc(e event.CreateEvent) (bool, string) {
+	if checkForReconcile(e.Object) {
+		doReconcile, _ := updateHashCache(e.Object)
+		return doReconcile, "create"
+	}
+	return false, "create"
+}
+
+func configMapGenericFunc(e event.GenericEvent) (bool, string) {
+	if checkForReconcile(e.Object) {
+		doReconcile, _ := updateHashCache(e.Object)
+		return doReconcile, "generic"
+	}
+	return false, "generic"
+}
+
+func configMapUpdateFunc(e event.UpdateEvent) (bool, string) {
+	if e.ObjectNew.GetLabels()["watch"] == "me" {
+		doReconcile, _ := updateHashCache(e.ObjectNew)
+		return doReconcile, "update"
+	}
+	if e.ObjectNew.GetLabels()["watch"] != "me" {
+		name := e.ObjectNew.GetName()
+		namespace := e.ObjectNew.GetNamespace()
+		DeleteHashCache(fmt.Sprintf("cm-%s-%s", name, namespace))
+		return true, "update"
+	}
+	for _, owner := range e.ObjectNew.GetOwnerReferences() {
+		if owner.Kind == "ClowdApp" && *owner.Controller {
+			return true, "update"
+		}
+	}
+	return false, "update"
+}
+
+func configMapDeleteFunc(e event.DeleteEvent) (bool, string) {
+	name := e.Object.GetName()
+	namespace := e.Object.GetNamespace()
+	DeleteHashCache(fmt.Sprintf("cm-%s-%s", name, namespace))
+	return true, "delete"
+}
+
 func genFilterFunc(updateFn func(e event.UpdateEvent) bool, logr logr.Logger, ctrlName string) HandlerFuncs {
 	filters := defaultFilter(logr, ctrlName)
 	filters.UpdateFunc = func(e event.UpdateEvent) (bool, string) {
@@ -96,6 +205,23 @@ func genFilterFunc(updateFn func(e event.UpdateEvent) bool, logr logr.Logger, ct
 			displayUpdateDiff(e, logr, ctrlName, gvk)
 		}
 		return result, "update"
+	}
+	return filters
+}
+
+func configMapFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	filters := defaultFilter(logr, ctrlName)
+	filters.GenericFunc = func(e event.GenericEvent) (bool, string) {
+		return configMapGenericFunc(e)
+	}
+	filters.CreateFunc = func(e event.CreateEvent) (bool, string) {
+		return configMapCreateFunc(e)
+	}
+	filters.UpdateFunc = func(e event.UpdateEvent) (bool, string) {
+		return configMapUpdateFunc(e)
+	}
+	filters.DeleteFunc = func(e event.DeleteEvent) (bool, string) {
+		return configMapDeleteFunc(e)
 	}
 	return filters
 }

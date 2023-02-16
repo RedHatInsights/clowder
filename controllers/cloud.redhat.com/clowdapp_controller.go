@@ -183,9 +183,16 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	)
 	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "app", &crd.ClowdApp{}))
 	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}))
-	ctrlr.Watches(&source.Kind{Type: &core.ConfigMap{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}))
-	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "app", &crd.ClowdApp{}))
-	ctrlr.WithOptions(controller.Options{
+	ctrlr.Watches(
+		&source.Kind{Type: &core.ConfigMap{}},
+		createNewHandler(configMapFilter, r.Log, "app", &crd.ClowdApp{}),
+	).
+		ctrlr.Watches(
+		&source.Kind{Type: &core.Secret{}},
+		handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponConfigMapOrSecretUpdate),
+		builder.WithPredicates(getConfigMapOrSecretPredicate(r.Log, "app")),
+	).
+		ctrlr.WithOptions(controller.Options{
 		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 	})
 	return ctrlr.Complete(r)

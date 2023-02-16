@@ -17,7 +17,7 @@ type ClowderConfig struct {
 	DebugOptions struct {
 		Logging struct {
 			DebugLogging bool `json:"debugLogging"`
-		}
+		} `json:"logging"`
 		Trigger struct {
 			Diff bool `json:"diff"`
 		} `json:"trigger"`
