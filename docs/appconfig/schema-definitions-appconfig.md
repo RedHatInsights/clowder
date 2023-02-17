@@ -35,6 +35,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
 | [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
+| [hashCache](#hashcache)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")               |
 
 ## privatePort
 
@@ -291,3 +292,19 @@ Defines the path to the BOPURL.
 ### BOPURL Type
 
 `string`
+
+## hashCache
+
+A set of config/secret hashes
+
+
+`hashCache`
+
+-   is optional
+-   Type: `string[]`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")
+
+### hashCache Type
+
+`string[]`
