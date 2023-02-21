@@ -14,6 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+func generateHashFromData(data []byte) (hash string) {
+	h := sha256.New()
+	h.Write([]byte(data))
+	hash = fmt.Sprintf("%x", h.Sum(nil))
+	return
+}
+
 func (ch *confighashProvider) updateHashCacheConfigMap(nn types.NamespacedName, c *config.AppConfig) error {
 
 	cfgmap := &core.ConfigMap{}
@@ -33,9 +40,7 @@ func (ch *confighashProvider) updateHashCacheConfigMap(nn types.NamespacedName, 
 		return errors.Wrap("failed to marshal configmap JSON", err)
 	}
 
-	h := sha256.New()
-	h.Write([]byte(jsonData))
-	hash := fmt.Sprintf("%x", h.Sum(nil))
+	hash := generateHashFromData(jsonData)
 	c.HashCache = append(c.HashCache, fmt.Sprintf("cm-%s-%s", nn.Name, hash))
 	return nil
 }
@@ -59,9 +64,7 @@ func (ch *confighashProvider) updateHashCacheSecret(nn types.NamespacedName, c *
 		return errors.Wrap("failed to marshal secret JSON", err)
 	}
 
-	h := sha256.New()
-	h.Write([]byte(jsonData))
-	hash := fmt.Sprintf("%x", h.Sum(nil))
+	hash := generateHashFromData(jsonData)
 	c.HashCache = append(c.HashCache, fmt.Sprintf("sc-%s-%s", nn.Name, hash))
 	return nil
 }
