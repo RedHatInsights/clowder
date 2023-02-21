@@ -3,8 +3,10 @@ package controllers
 import (
 	"fmt"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	"github.com/go-logr/logr"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -102,7 +104,47 @@ func (e *enqueueRequestForObjectCustom) logMessage(obj client.Object, msg string
 	logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "sourceObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, obj.GetNamespace(), obj.GetName()), "destObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
 }
 
+func updateHashCacheForConfigMapAndSecret(obj client.Object) (bool, error) {
+	switch obj.(type) {
+	case *core.ConfigMap, *core.Secret:
+		if obj.GetAnnotations()["qontract.reconcile"] == "true" {
+			return HashCache.CreateOrUpdateObject(obj)
+		}
+	}
+	return false, nil
+}
+
 func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
+	shouldUpdate, err := updateHashCacheForConfigMapAndSecret(evt.Object)
+	if err != nil {
+		e.logMessage(evt.Object, err.Error(), "", &types.NamespacedName{
+			Name:      evt.Object.GetName(),
+			Namespace: evt.Object.GetNamespace(),
+		})
+	}
+
+	if shouldUpdate {
+		obj, err := HashCache.Read(evt.Object)
+		if err != nil {
+			e.logMessage(evt.Object, err.Error(), "", &types.NamespacedName{
+				Name:      evt.Object.GetName(),
+				Namespace: evt.Object.GetNamespace(),
+			})
+		}
+
+		var loopObjs map[types.NamespacedName]bool
+		switch e.TypeOfOwner.(type) {
+		case *crd.ClowdApp:
+			loopObjs = obj.ClowdApps
+		case *crd.ClowdEnvironment:
+			loopObjs = obj.ClowdEnvs
+		}
+
+		for k := range loopObjs {
+			q.Add(reconcile.Request{NamespacedName: k})
+		}
+	}
+
 	if own, toKind := e.getOwner(evt.Object); own != nil {
 		if doRequest, msg := e.HandlerFuncs.CreateFunc(evt); doRequest {
 			e.logMessage(evt.Object, msg, toKind, own)
