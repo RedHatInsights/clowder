@@ -1,4 +1,4 @@
-package controllers
+package hashcache
 
 import (
 	"testing"
@@ -155,4 +155,51 @@ func TestHashCacheDeleteClowdObj(t *testing.T) {
 	obj, err = hc.Read(sec)
 	assert.NoError(t, err)
 	assert.NotContains(t, obj.ClowdApps, clowdObjNamespaceName)
+}
+
+func TestHashCacheSuperCache(t *testing.T) {
+	sec := &core.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			Name:        "test",
+			Namespace:   "def",
+			Annotations: map[string]string{"qontract.reconcile": "true"},
+		},
+	}
+
+	sec2 := &core.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			Name:        "test2",
+			Namespace:   "def",
+			Annotations: map[string]string{"qontract.reconcile": "true"},
+		},
+	}
+
+	capp := &crd.ClowdApp{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "testapp",
+			Namespace: "def",
+		},
+	}
+
+	clowdObjNamespaceName := types.NamespacedName{
+		Name:      capp.GetName(),
+		Namespace: capp.GetNamespace(),
+	}
+
+	hc := NewHashCache()
+	hc.CreateOrUpdateObject(sec)
+	hc.AddClowdObjectToObject(capp, sec)
+	obj, err := hc.Read(sec)
+	assert.NoError(t, err)
+	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)
+
+	hc.CreateOrUpdateObject(sec2)
+	hc.AddClowdObjectToObject(capp, sec2)
+	obj, err = hc.Read(sec2)
+	assert.NoError(t, err)
+	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)
+
+	superHash := hc.GetSuperHashForClowdObject(capp)
+	superHash2 := hc.GetSuperHashForClowdObject(capp)
+	assert.Equal(t, superHash, superHash2)
 }

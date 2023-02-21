@@ -19,6 +19,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 )
 
 type enqueueRequestForObjectCustom struct {
@@ -108,7 +110,7 @@ func updateHashCacheForConfigMapAndSecret(obj client.Object) (bool, error) {
 	switch obj.(type) {
 	case *core.ConfigMap, *core.Secret:
 		if obj.GetAnnotations()["qontract.reconcile"] == "true" {
-			return HashCache.CreateOrUpdateObject(obj)
+			return hashcache.CHashCache.CreateOrUpdateObject(obj)
 		}
 	}
 	return false, nil
@@ -124,7 +126,7 @@ func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueu
 	}
 
 	if shouldUpdate {
-		obj, err := HashCache.Read(evt.Object)
+		obj, err := hashcache.CHashCache.Read(evt.Object)
 		if err != nil {
 			e.logMessage(evt.Object, err.Error(), "", &types.NamespacedName{
 				Name:      evt.Object.GetName(),

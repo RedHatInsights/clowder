@@ -1,9 +1,10 @@
-package controllers
+package hashcache
 
 import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"sync"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -32,13 +33,13 @@ type hashObject struct {
 	ClowdEnvs map[types.NamespacedName]bool
 }
 
-type hashCache struct {
+type HashCache struct {
 	data map[ident]*hashObject
 	lock sync.RWMutex
 }
 
-func NewHashCache() hashCache {
-	return hashCache{
+func NewHashCache() HashCache {
+	return HashCache{
 		data: map[ident]*hashObject{},
 		lock: sync.RWMutex{},
 	}
@@ -60,7 +61,7 @@ func (a ItemNotFoundError) Error() string {
 	return fmt.Sprintf("item [%s] not found", a.item)
 }
 
-func (hc *hashCache) Read(obj client.Object) (*hashObject, error) {
+func (hc *HashCache) Read(obj client.Object) (*hashObject, error) {
 	var oType string
 	switch obj.(type) {
 	case *core.ConfigMap:
@@ -79,8 +80,7 @@ func (hc *hashCache) Read(obj client.Object) (*hashObject, error) {
 	return v, nil
 }
 
-func (hc *hashCache) RemoveClowdObjectFromObjects(obj client.Object) {
-
+func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	for _, v := range hc.data {
 		switch obj.(type) {
 		case *crd.ClowdEnvironment:
@@ -97,7 +97,7 @@ func (hc *hashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	}
 }
 
-func (hc *hashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
+func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 	// NEED TO PASS IN Q HERE TO GET IT TO ALSO TRIGGER
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -136,7 +136,42 @@ func (hc *hashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 	}
 }
 
-func (hc *hashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
+func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) string {
+	nn := types.NamespacedName{
+		Name:      clowdObj.GetName(),
+		Namespace: clowdObj.GetNamespace(),
+	}
+	keys := []ident{}
+	for k, v := range hc.data {
+		switch clowdObj.(type) {
+		case *crd.ClowdEnvironment:
+			for env := range v.ClowdEnvs {
+				if nn == env {
+					keys = append(keys, k)
+				}
+			}
+		case *crd.ClowdApp:
+			for app := range v.ClowdApps {
+				if nn == app {
+					keys = append(keys, k)
+				}
+			}
+		}
+	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return fmt.Sprintf("%s/%s/%s", keys[i].NN.Name, keys[i].NN.Namespace, keys[i].Type) < fmt.Sprintf("%s/%s/%s", keys[j].NN.Name, keys[j].NN.Namespace, keys[i].Type)
+	})
+
+	superstring := ""
+	for _, k := range keys {
+		superstring += hc.data[k].Hash
+	}
+
+	return generateHashFromData([]byte(superstring))
+}
+
+func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
 	var oType string
 
 	switch obj.(type) {
@@ -167,7 +202,7 @@ func (hc *hashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 	return nil
 }
 
-func (hc *hashCache) Delete(obj client.Object) {
+func (hc *HashCache) Delete(obj client.Object) {
 	var oType string
 
 	switch obj.(type) {
@@ -184,4 +219,4 @@ func (hc *hashCache) Delete(obj client.Object) {
 	delete(hc.data, id)
 }
 
-var HashCache = NewHashCache()
+var CHashCache = NewHashCache()
