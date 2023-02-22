@@ -11,8 +11,64 @@ import (
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
+func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *crd.ClowdApp) error {
+	for _, deployment := range dList.Items {
+		for _, cont := range deployment.Spec.Template.Spec.Containers {
+			for _, env := range cont.Env {
+				if env.ValueFrom != nil && env.ValueFrom.ConfigMapKeyRef != nil {
+					nn := types.NamespacedName{
+						Name:      env.ValueFrom.ConfigMapKeyRef.Name,
+						Namespace: app.Namespace,
+					}
+					cf := &core.ConfigMap{}
+					ch.Client.Get(ch.Ctx, nn, cf)
+					if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
+						return err
+					}
+				}
+				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
+					nn := types.NamespacedName{
+						Name:      env.ValueFrom.SecretKeyRef.Name,
+						Namespace: app.Namespace,
+					}
+					sec := &core.Secret{}
+					ch.Client.Get(ch.Ctx, nn, sec)
+					if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		for _, volume := range deployment.Spec.Template.Spec.Volumes {
+			if volume.ConfigMap != nil {
+				nn := types.NamespacedName{
+					Name:      volume.ConfigMap.Name,
+					Namespace: app.Namespace,
+				}
+				cf := &core.ConfigMap{}
+				ch.Client.Get(ch.Ctx, nn, cf)
+				if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
+					return err
+				}
+			}
+			if volume.Secret != nil {
+				nn := types.NamespacedName{
+					Name:      volume.Secret.SecretName,
+					Namespace: app.Namespace,
+				}
+				sec := &core.Secret{}
+				ch.Client.Get(ch.Ctx, nn, sec)
+				if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
 func (ch *confighashProvider) persistConfig(app *crd.ClowdApp) (string, error) {
 
 	// In any case, we want to overwrite the secret, so this just
@@ -29,7 +85,12 @@ func (ch *confighashProvider) persistConfig(app *crd.ClowdApp) (string, error) {
 		return "", err
 	}
 
+	if err := ch.updateHashCache(&dList, app); err != nil {
+		return "", err
+	}
+
 	ch.Config.HashCache = hashcache.CHashCache.GetSuperHashForClowdObject(app)
+	ch.Config.HashCache += hashcache.CHashCache.GetSuperHashForClowdObject(ch.Env)
 
 	jsonData, err := json.Marshal(ch.Config)
 	if err != nil {

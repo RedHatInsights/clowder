@@ -22,7 +22,7 @@ func generateHashFromData(data []byte) (hash string) {
 	return
 }
 
-type ident struct {
+type Ident struct {
 	NN   types.NamespacedName
 	Type string
 }
@@ -34,13 +34,13 @@ type hashObject struct {
 }
 
 type HashCache struct {
-	data map[ident]*hashObject
+	data map[Ident]*hashObject
 	lock sync.RWMutex
 }
 
 func NewHashCache() HashCache {
 	return HashCache{
-		data: map[ident]*hashObject{},
+		data: map[Ident]*hashObject{},
 		lock: sync.RWMutex{},
 	}
 }
@@ -70,7 +70,7 @@ func (hc *HashCache) Read(obj client.Object) (*hashObject, error) {
 		oType = "Secret"
 	}
 
-	id := ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
+	id := Ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
 	hc.lock.RLock()
 	defer hc.lock.RUnlock()
 	v, ok := hc.data[id]
@@ -121,7 +121,7 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 		hash = generateHashFromData(jsonData)
 	}
 
-	id := ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
+	id := Ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
 
 	hashObject, ok := hc.data[id]
 
@@ -141,7 +141,7 @@ func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) str
 		Name:      clowdObj.GetName(),
 		Namespace: clowdObj.GetNamespace(),
 	}
-	keys := []ident{}
+	keys := []Ident{}
 	for k, v := range hc.data {
 		switch clowdObj.(type) {
 		case *crd.ClowdEnvironment:
@@ -172,6 +172,11 @@ func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) str
 }
 
 func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
+
+	if obj.GetAnnotations()["qontract.reconcile"] != "true" {
+		return nil
+	}
+
 	var oType string
 
 	switch obj.(type) {
@@ -181,7 +186,7 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 		oType = "Secret"
 	}
 
-	id := ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
+	id := Ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
 
 	hashObject, ok := hc.data[id]
 
@@ -212,7 +217,7 @@ func (hc *HashCache) Delete(obj client.Object) {
 		oType = "Secret"
 	}
 
-	id := ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
+	id := Ident{NN: types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, Type: oType}
 
 	hc.lock.Lock()
 	defer hc.lock.Unlock()

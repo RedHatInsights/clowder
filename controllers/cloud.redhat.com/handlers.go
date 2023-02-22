@@ -156,6 +156,36 @@ func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueu
 }
 
 func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+	shouldUpdate, err := updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
+	if err != nil {
+		e.logMessage(evt.ObjectNew, err.Error(), "", &types.NamespacedName{
+			Name:      evt.ObjectNew.GetName(),
+			Namespace: evt.ObjectNew.GetNamespace(),
+		})
+	}
+
+	if shouldUpdate {
+		obj, err := hashcache.CHashCache.Read(evt.ObjectNew)
+		if err != nil {
+			e.logMessage(evt.ObjectNew, err.Error(), "", &types.NamespacedName{
+				Name:      evt.ObjectNew.GetName(),
+				Namespace: evt.ObjectNew.GetNamespace(),
+			})
+		}
+
+		var loopObjs map[types.NamespacedName]bool
+		switch e.TypeOfOwner.(type) {
+		case *crd.ClowdApp:
+			loopObjs = obj.ClowdApps
+		case *crd.ClowdEnvironment:
+			loopObjs = obj.ClowdEnvs
+		}
+
+		for k := range loopObjs {
+			q.Add(reconcile.Request{NamespacedName: k})
+		}
+	}
+
 	switch {
 	case evt.ObjectNew != nil:
 		if own, toKind := e.getOwner(evt.ObjectNew); own != nil {
@@ -175,6 +205,8 @@ func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueu
 }
 
 func (e *enqueueRequestForObjectCustom) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
+	hashcache.CHashCache.Delete(evt.Object)
+
 	if own, toKind := e.getOwner(evt.Object); own != nil {
 		if doRequest, msg := e.HandlerFuncs.DeleteFunc(evt); doRequest {
 			e.logMessage(evt.Object, msg, toKind, own)

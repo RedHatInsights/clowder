@@ -256,6 +256,9 @@ func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
+
+	hashcache.CHashCache.RemoveClowdObjectFromObjects(r.app)
+
 	provider := providers.Provider{
 		Client:    r.client,
 		Ctx:       r.ctx,
