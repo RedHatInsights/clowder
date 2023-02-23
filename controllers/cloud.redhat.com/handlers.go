@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -30,6 +31,8 @@ type enqueueRequestForObjectCustom struct {
 	mapObj       meta.RESTMapper
 	logr         logr.Logger
 	ctrlName     string
+	client       client.Client
+	context      context.Context
 }
 
 var _ handler.EventHandler = &enqueueRequestForObjectCustom{}
@@ -44,6 +47,14 @@ var _ inject.Mapper = &enqueueRequestForObjectCustom{}
 
 func (e *enqueueRequestForObjectCustom) InjectMapper(m meta.RESTMapper) error {
 	e.mapObj = m
+	return nil
+}
+
+var _ inject.Client = &enqueueRequestForObjectCustom{}
+
+func (e *enqueueRequestForObjectCustom) InjectClient(c client.Client) error {
+	e.client = c
+	e.context = context.Background()
 	return nil
 }
 
@@ -126,24 +137,11 @@ func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueu
 	}
 
 	if shouldUpdate {
-		obj, err := hashcache.CHashCache.Read(evt.Object)
-		if err != nil {
-			e.logMessage(evt.Object, err.Error(), "", &types.NamespacedName{
-				Name:      evt.Object.GetName(),
-				Namespace: evt.Object.GetNamespace(),
-			})
-		}
-
-		var loopObjs map[types.NamespacedName]bool
-		switch e.TypeOfOwner.(type) {
-		case *crd.ClowdApp:
-			loopObjs = obj.ClowdApps
-		case *crd.ClowdEnvironment:
-			loopObjs = obj.ClowdEnvs
-		}
-
-		for k := range loopObjs {
-			q.Add(reconcile.Request{NamespacedName: k})
+		e.doUpdateToHash(evt.Object, q)
+		capps := &crd.ClowdAppList{}
+		e.client.List(e.context, capps, client.InNamespace(evt.Object.GetNamespace()))
+		for _, app := range capps.Items {
+			q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: app.GetName(), Namespace: evt.Object.GetNamespace()}})
 		}
 	}
 
@@ -155,34 +153,61 @@ func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueu
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	shouldUpdate, err := updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
+func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q workqueue.RateLimitingInterface) error {
+	e.logMessage(obj, "update needed because changed", "", &types.NamespacedName{
+		Name:      obj.GetName(),
+		Namespace: obj.GetNamespace(),
+	})
+	hashObj, err := hashcache.CHashCache.Read(obj)
 	if err != nil {
-		e.logMessage(evt.ObjectNew, err.Error(), "", &types.NamespacedName{
+		e.logMessage(obj, err.Error(), "", &types.NamespacedName{
+			Name:      obj.GetName(),
+			Namespace: obj.GetNamespace(),
+		})
+		return err
+	}
+
+	var loopObjs map[types.NamespacedName]bool
+	switch e.TypeOfOwner.(type) {
+	case *crd.ClowdApp:
+		loopObjs = hashObj.ClowdApps
+	case *crd.ClowdEnvironment:
+		loopObjs = hashObj.ClowdEnvs
+	}
+
+	for k := range loopObjs {
+		q.Add(reconcile.Request{NamespacedName: k})
+	}
+	return nil
+}
+
+func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+	if evt.ObjectNew.GetAnnotations()["qontract.reconcile"] == "true" {
+		shouldUpdate, err := updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
+		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), &types.NamespacedName{
 			Name:      evt.ObjectNew.GetName(),
 			Namespace: evt.ObjectNew.GetNamespace(),
 		})
-	}
-
-	if shouldUpdate {
-		obj, err := hashcache.CHashCache.Read(evt.ObjectNew)
 		if err != nil {
 			e.logMessage(evt.ObjectNew, err.Error(), "", &types.NamespacedName{
 				Name:      evt.ObjectNew.GetName(),
 				Namespace: evt.ObjectNew.GetNamespace(),
 			})
 		}
-
-		var loopObjs map[types.NamespacedName]bool
-		switch e.TypeOfOwner.(type) {
-		case *crd.ClowdApp:
-			loopObjs = obj.ClowdApps
-		case *crd.ClowdEnvironment:
-			loopObjs = obj.ClowdEnvs
+		if shouldUpdate {
+			e.doUpdateToHash(evt.ObjectNew, q)
 		}
-
-		for k := range loopObjs {
-			q.Add(reconcile.Request{NamespacedName: k})
+		if evt.ObjectOld.GetAnnotations()["qontract.reconcile"] != evt.ObjectNew.GetAnnotations()["qontract.reconcile"] {
+			capps := &crd.ClowdAppList{}
+			e.client.List(e.context, capps, client.InNamespace(evt.ObjectNew.GetNamespace()))
+			for _, app := range capps.Items {
+				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: app.GetName(), Namespace: evt.ObjectNew.GetNamespace()}})
+			}
+		}
+	} else if _, err := hashcache.CHashCache.Read(evt.ObjectNew); err == nil {
+		err := e.doUpdateToHash(evt.ObjectNew, q)
+		if err != nil {
+			hashcache.CHashCache.Delete(evt.ObjectNew)
 		}
 	}
 

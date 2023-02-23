@@ -81,6 +81,9 @@ func (hc *HashCache) Read(obj client.Object) (*hashObject, error) {
 }
 
 func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
+	hc.lock.Lock()
+	defer hc.lock.Unlock()
+
 	for _, v := range hc.data {
 		switch obj.(type) {
 		case *crd.ClowdEnvironment:
@@ -137,6 +140,9 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 }
 
 func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) string {
+	hc.lock.RLock()
+	defer hc.lock.RUnlock()
+
 	nn := types.NamespacedName{
 		Name:      clowdObj.GetName(),
 		Namespace: clowdObj.GetNamespace(),
@@ -193,6 +199,9 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 	if !ok {
 		return ItemNotFoundError{item: fmt.Sprintf("%s/%s", id.NN.Name, id.NN.Namespace)}
 	} else {
+		hc.lock.Lock()
+		defer hc.lock.Unlock()
+
 		clowdObjNamespaceName := types.NamespacedName{
 			Name:      clowdObj.GetName(),
 			Namespace: clowdObj.GetNamespace(),
