@@ -33,6 +33,7 @@ type enqueueRequestForObjectCustom struct {
 	ctrlName     string
 	client       client.Client
 	context      context.Context
+	hashCache    *hashcache.HashCache
 }
 
 var _ handler.EventHandler = &enqueueRequestForObjectCustom{}
@@ -67,13 +68,14 @@ func (e *enqueueRequestForObjectCustom) parseOwnerScheme(s *runtime.Scheme) erro
 	return nil
 }
 
-func createNewHandler(input func(logr logr.Logger, ctrlName string) HandlerFuncs, log logr.Logger, ctrlName string, typeOfOwner runtime.Object) handler.EventHandler {
+func createNewHandler(input func(logr logr.Logger, ctrlName string) HandlerFuncs, log logr.Logger, ctrlName string, typeOfOwner runtime.Object, hashCache *hashcache.HashCache) handler.EventHandler {
 	handleFuncs := input(log, ctrlName)
 	obj := enqueueRequestForObjectCustom{
 		HandlerFuncs: handleFuncs,
 		TypeOfOwner:  typeOfOwner,
 		logr:         log,
 		ctrlName:     ctrlName,
+		hashCache:    hashCache,
 	}
 	return &obj
 }
@@ -117,18 +119,18 @@ func (e *enqueueRequestForObjectCustom) logMessage(obj client.Object, msg string
 	logMessage(e.logr, "Reconciliation trigger", "ctrl", e.ctrlName, "type", msg, "resType", gvk.Kind, "sourceObj", fmt.Sprintf("%s/%s/%s", gvk.Kind, obj.GetNamespace(), obj.GetName()), "destObj", fmt.Sprintf("%s/%s/%s", toKind, own.Namespace, own.Name))
 }
 
-func updateHashCacheForConfigMapAndSecret(obj client.Object) (bool, error) {
+func (e *enqueueRequestForObjectCustom) updateHashCacheForConfigMapAndSecret(obj client.Object) (bool, error) {
 	switch obj.(type) {
 	case *core.ConfigMap, *core.Secret:
 		if obj.GetAnnotations()["qontract.reconcile"] == "true" {
-			return hashcache.CHashCache.CreateOrUpdateObject(obj)
+			return e.hashCache.CreateOrUpdateObject(obj)
 		}
 	}
 	return false, nil
 }
 
 func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
-	shouldUpdate, err := updateHashCacheForConfigMapAndSecret(evt.Object)
+	shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.Object)
 	if err != nil {
 		e.logMessage(evt.Object, err.Error(), "", &types.NamespacedName{
 			Name:      evt.Object.GetName(),
@@ -158,7 +160,7 @@ func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q work
 		Name:      obj.GetName(),
 		Namespace: obj.GetNamespace(),
 	})
-	hashObj, err := hashcache.CHashCache.Read(obj)
+	hashObj, err := e.hashCache.Read(obj)
 	if err != nil {
 		e.logMessage(obj, err.Error(), "", &types.NamespacedName{
 			Name:      obj.GetName(),
@@ -183,7 +185,7 @@ func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q work
 
 func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	if evt.ObjectNew.GetAnnotations()["qontract.reconcile"] == "true" {
-		shouldUpdate, err := updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
+		shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
 		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), &types.NamespacedName{
 			Name:      evt.ObjectNew.GetName(),
 			Namespace: evt.ObjectNew.GetNamespace(),
@@ -204,10 +206,10 @@ func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueu
 				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: app.GetName(), Namespace: evt.ObjectNew.GetNamespace()}})
 			}
 		}
-	} else if _, err := hashcache.CHashCache.Read(evt.ObjectNew); err == nil {
+	} else if _, err := e.hashCache.Read(evt.ObjectNew); err == nil {
 		err := e.doUpdateToHash(evt.ObjectNew, q)
 		if err != nil {
-			hashcache.CHashCache.Delete(evt.ObjectNew)
+			e.hashCache.Delete(evt.ObjectNew)
 		}
 	}
 
@@ -230,7 +232,7 @@ func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueu
 }
 
 func (e *enqueueRequestForObjectCustom) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	hashcache.CHashCache.Delete(evt.Object)
+	e.hashCache.Delete(evt.Object)
 
 	if own, toKind := e.getOwner(evt.Object); own != nil {
 		if doRequest, msg := e.HandlerFuncs.DeleteFunc(evt); doRequest {

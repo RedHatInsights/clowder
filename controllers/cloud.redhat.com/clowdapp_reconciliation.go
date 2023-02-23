@@ -36,6 +36,7 @@ type ClowdAppReconciliation struct {
 	reconciliationMetrics ReconciliationMetrics
 	config                *config.AppConfig
 	oldStatus             *crd.ClowdAppStatus
+	hashCache             *hashcache.HashCache
 }
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
@@ -257,7 +258,7 @@ func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
 
 func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 
-	hashcache.CHashCache.RemoveClowdObjectFromObjects(r.app)
+	r.hashCache.RemoveClowdObjectFromObjects(r.app)
 
 	provider := providers.Provider{
 		Client:    r.client,
@@ -266,7 +267,7 @@ func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
 		Cache:     r.cache,
 		Log:       *r.log,
 		Config:    r.config,
-		HashCache: &hashcache.CHashCache,
+		HashCache: r.hashCache,
 	}
 
 	if provErr := r.runProvidersImplementation(&provider); provErr != nil {

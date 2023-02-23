@@ -40,6 +40,7 @@ import (
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 
 	// These imports are to register the providers with the provider registration system
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/autoscaler"
@@ -120,9 +121,10 @@ func (rm *ReconciliationMetrics) stop() {
 // ClowdAppReconciler reconciles a ClowdApp object
 type ClowdAppReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Log       logr.Logger
+	Scheme    *runtime.Scheme
+	Recorder  record.EventRecorder
+	HashCache *hashcache.HashCache
 }
 
 // Reconcile fn
@@ -139,13 +141,14 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	log.Info("Reconciliation started")
 
 	reconciliation := ClowdAppReconciliation{
-		ctx:      ctx,
-		client:   r.Client,
-		recorder: r.Recorder,
-		app:      &app,
-		log:      &log,
-		req:      &req,
-		config:   &config.AppConfig{},
+		ctx:       ctx,
+		client:    r.Client,
+		recorder:  r.Recorder,
+		app:       &app,
+		log:       &log,
+		req:       &req,
+		config:    &config.AppConfig{},
+		hashCache: r.HashCache,
 	}
 	res, err := reconciliation.Reconcile()
 	if err != nil {
@@ -161,7 +164,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // SetupWithManager sets up with Manager
-func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager, hashCache *hashcache.HashCache) error {
 	r.Log.Info("Setting up manager")
 	utils.Log = r.Log.WithValues("name", "util")
 	r.Recorder = mgr.GetEventRecorderFor("app")
@@ -181,10 +184,10 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 		builder.WithPredicates(environmentPredicate(r.Log, "app")),
 	)
-	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "app", &crd.ClowdApp{}))
-	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}))
-	ctrlr.Watches(&source.Kind{Type: &core.ConfigMap{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}))
-	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "app", &crd.ClowdApp{}))
+	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
+	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
+	ctrlr.Watches(&source.Kind{Type: &core.ConfigMap{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
+	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
 	ctrlr.WithOptions(controller.Options{
 		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 	})

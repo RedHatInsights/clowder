@@ -233,4 +233,4 @@ func (hc *HashCache) Delete(obj client.Object) {
 	delete(hc.data, id)
 }
 
-var CHashCache = NewHashCache()
+var DefaultHashCache = NewHashCache()
