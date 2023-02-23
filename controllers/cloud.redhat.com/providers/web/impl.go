@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -23,6 +24,8 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
+
+var DefaultImageEnvoy = "envoyproxy/envoy-distroless:v1.24.1"
 
 // CoreService is the service for the apps deployments.
 var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
@@ -223,9 +226,14 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 		})
 	}
 
+	image := DefaultImageEnvoy
+	if clowderconfig.LoadedConfig.Images.Envoy != "" {
+		image = clowderconfig.LoadedConfig.Images.Envoy
+	}
+
 	container := core.Container{
 		Name:  "envoy-tls",
-		Image: "envoyproxy/envoy-distroless:v1.24.1",
+		Image: image,
 		Args: []string{
 			"-c", "/etc/envoy/envoy.json",
 		},

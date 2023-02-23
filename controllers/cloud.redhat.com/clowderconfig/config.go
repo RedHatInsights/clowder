@@ -12,6 +12,7 @@ type ClowderConfig struct {
 		Caddy          string `json:"caddy"`
 		Keycloak       string `json:"Keycloak"`
 		Mocktitlements string `json:"mocktitlements"`
+		Envoy          string `json:"envoy"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {
