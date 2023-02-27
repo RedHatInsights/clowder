@@ -10,6 +10,7 @@ import (
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -22,9 +23,15 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 						Name:      env.ValueFrom.ConfigMapKeyRef.Name,
 						Namespace: app.Namespace,
 					}
+					if nn.Name == app.Name {
+						continue
+					}
 					cf := &core.ConfigMap{}
 					if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-						return fmt.Errorf("could not get configmap: %w", err)
+						if env.ValueFrom.ConfigMapKeyRef.Optional != nil && *env.ValueFrom.ConfigMapKeyRef.Optional && k8serr.IsNotFound(err) {
+							continue
+						}
+						return fmt.Errorf("could not get env configmap: %w", err)
 					}
 					if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
 						return err
@@ -35,9 +42,15 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 						Name:      env.ValueFrom.SecretKeyRef.Name,
 						Namespace: app.Namespace,
 					}
+					if nn.Name == app.Name {
+						continue
+					}
 					sec := &core.Secret{}
 					if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-						return fmt.Errorf("could not get secret: %w", err)
+						if env.ValueFrom.SecretKeyRef.Optional != nil && *env.ValueFrom.SecretKeyRef.Optional && k8serr.IsNotFound(err) {
+							continue
+						}
+						return fmt.Errorf("could not get env secret: %w", err)
 					}
 					if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
 						return err
@@ -51,9 +64,15 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 					Name:      volume.ConfigMap.Name,
 					Namespace: app.Namespace,
 				}
+				if nn.Name == app.Name {
+					continue
+				}
 				cf := &core.ConfigMap{}
 				if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-					return fmt.Errorf("could not get configmap: %w", err)
+					if volume.ConfigMap.Optional != nil && *volume.ConfigMap.Optional && k8serr.IsNotFound(err) {
+						continue
+					}
+					return fmt.Errorf("could not get vol configmap: %w", err)
 				}
 				if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
 					return err
@@ -64,9 +83,15 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 					Name:      volume.Secret.SecretName,
 					Namespace: app.Namespace,
 				}
+				if nn.Name == app.Name {
+					continue
+				}
 				sec := &core.Secret{}
 				if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-					return fmt.Errorf("could not get secret: %w", err)
+					if volume.Secret.Optional != nil && *volume.Secret.Optional && k8serr.IsNotFound(err) {
+						continue
+					}
+					return fmt.Errorf("could not get vol secret: %w", err)
 				}
 				if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
 					return err
