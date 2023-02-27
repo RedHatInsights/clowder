@@ -27,26 +27,26 @@ type Ident struct {
 	Type string
 }
 
-type hashObject struct {
+type HashObject struct {
 	Hash      string
 	ClowdApps map[types.NamespacedName]bool
 	ClowdEnvs map[types.NamespacedName]bool
 }
 
 type HashCache struct {
-	data map[Ident]*hashObject
+	data map[Ident]*HashObject
 	lock sync.RWMutex
 }
 
 func NewHashCache() HashCache {
 	return HashCache{
-		data: map[Ident]*hashObject{},
+		data: map[Ident]*HashObject{},
 		lock: sync.RWMutex{},
 	}
 }
 
-func NewHashObject(hash string) hashObject {
-	return hashObject{
+func NewHashObject(hash string) HashObject {
+	return HashObject{
 		Hash:      hash,
 		ClowdApps: map[types.NamespacedName]bool{},
 		ClowdEnvs: map[types.NamespacedName]bool{},
@@ -61,7 +61,7 @@ func (a ItemNotFoundError) Error() string {
 	return fmt.Sprintf("item [%s] not found", a.item)
 }
 
-func (hc *HashCache) Read(obj client.Object) (*hashObject, error) {
+func (hc *HashCache) Read(obj client.Object) (*HashObject, error) {
 	var oType string
 	switch obj.(type) {
 	case *core.ConfigMap:
@@ -132,11 +132,10 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 		hashObj := NewHashObject(hash)
 		hc.data[id] = &hashObj
 		return true, nil
-	} else {
-		oldHash := hashObject.Hash
-		hashObject.Hash = hash
-		return oldHash != hash, nil
 	}
+	oldHash := hashObject.Hash
+	hashObject.Hash = hash
+	return oldHash != hash, nil
 }
 
 func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) string {
@@ -198,20 +197,19 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 
 	if !ok {
 		return ItemNotFoundError{item: fmt.Sprintf("%s/%s", id.NN.Name, id.NN.Namespace)}
-	} else {
-		hc.lock.Lock()
-		defer hc.lock.Unlock()
+	}
+	hc.lock.Lock()
+	defer hc.lock.Unlock()
 
-		clowdObjNamespaceName := types.NamespacedName{
-			Name:      clowdObj.GetName(),
-			Namespace: clowdObj.GetNamespace(),
-		}
-		switch clowdObj.(type) {
-		case *crd.ClowdApp:
-			hashObject.ClowdApps[clowdObjNamespaceName] = true
-		case *crd.ClowdEnvironment:
-			hashObject.ClowdEnvs[clowdObjNamespaceName] = true
-		}
+	clowdObjNamespaceName := types.NamespacedName{
+		Name:      clowdObj.GetName(),
+		Namespace: clowdObj.GetNamespace(),
+	}
+	switch clowdObj.(type) {
+	case *crd.ClowdApp:
+		hashObject.ClowdApps[clowdObjNamespaceName] = true
+	case *crd.ClowdEnvironment:
+		hashObject.ClowdEnvs[clowdObjNamespaceName] = true
 	}
 	return nil
 }

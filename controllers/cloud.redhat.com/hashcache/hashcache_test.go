@@ -38,8 +38,9 @@ func TestHashCacheDeleteItem(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	hc.CreateOrUpdateObject(sec)
-
+	shouldUpdate, err := hc.CreateOrUpdateObject(sec)
+	assert.True(t, shouldUpdate)
+	assert.NoError(t, err)
 	obj, err := hc.Read(sec)
 	assert.Equal(t, "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", obj.Hash)
 	assert.NoError(t, err)
@@ -61,7 +62,8 @@ func TestHashCacheUpdateItem(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	hc.CreateOrUpdateObject(sec)
+	_, err := hc.CreateOrUpdateObject(sec)
+	assert.NoError(t, err)
 
 	obj, err := hc.Read(sec)
 	assert.Equal(t, "63e7360f7b4cc56da3192298bbcfeb9d85fffdd68d41d6d2723787cbf1344954", obj.Hash)
@@ -117,8 +119,11 @@ func TestHashCacheAddClowdObj(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	hc.CreateOrUpdateObject(sec)
-	hc.AddClowdObjectToObject(capp, sec)
+	_, err := hc.CreateOrUpdateObject(sec)
+	assert.NoError(t, err)
+
+	err = hc.AddClowdObjectToObject(capp, sec)
+	assert.NoError(t, err)
 	obj, err := hc.Read(sec)
 	assert.NoError(t, err)
 	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)
@@ -146,8 +151,11 @@ func TestHashCacheDeleteClowdObj(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	hc.CreateOrUpdateObject(sec)
-	hc.AddClowdObjectToObject(capp, sec)
+	_, err := hc.CreateOrUpdateObject(sec)
+	assert.NoError(t, err)
+
+	err = hc.AddClowdObjectToObject(capp, sec)
+	assert.NoError(t, err)
 	obj, err := hc.Read(sec)
 	assert.NoError(t, err)
 	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)
@@ -187,14 +195,18 @@ func TestHashCacheSuperCache(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	hc.CreateOrUpdateObject(sec)
-	hc.AddClowdObjectToObject(capp, sec)
+	_, err := hc.CreateOrUpdateObject(sec)
+	assert.NoError(t, err)
+	err = hc.AddClowdObjectToObject(capp, sec)
+	assert.NoError(t, err)
 	obj, err := hc.Read(sec)
 	assert.NoError(t, err)
 	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)
 
-	hc.CreateOrUpdateObject(sec2)
-	hc.AddClowdObjectToObject(capp, sec2)
+	_, err = hc.CreateOrUpdateObject(sec2)
+	assert.NoError(t, err)
+	err = hc.AddClowdObjectToObject(capp, sec2)
+	assert.NoError(t, err)
 	obj, err = hc.Read(sec2)
 	assert.NoError(t, err)
 	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)

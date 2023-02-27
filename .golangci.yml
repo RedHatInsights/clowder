@@ -12,3 +12,18 @@ issues:
         - goimports
   exclude:
     - "G108: Profiling endpoint is automatically"
+linters:
+  enable:
+    - errcheck
+    - gocritic
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - revive
+    - staticcheck
+    - typecheck
+    - unused
+    - bodyclose

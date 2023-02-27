@@ -23,7 +23,9 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 						Namespace: app.Namespace,
 					}
 					cf := &core.ConfigMap{}
-					ch.Client.Get(ch.Ctx, nn, cf)
+					if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
+						return fmt.Errorf("could not get configmap: %w", err)
+					}
 					if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
 						return err
 					}
@@ -34,7 +36,9 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 						Namespace: app.Namespace,
 					}
 					sec := &core.Secret{}
-					ch.Client.Get(ch.Ctx, nn, sec)
+					if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
+						return fmt.Errorf("could not get secret: %w", err)
+					}
 					if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
 						return err
 					}
@@ -48,7 +52,9 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 					Namespace: app.Namespace,
 				}
 				cf := &core.ConfigMap{}
-				ch.Client.Get(ch.Ctx, nn, cf)
+				if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
+					return fmt.Errorf("could not get configmap: %w", err)
+				}
 				if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
 					return err
 				}
@@ -59,7 +65,9 @@ func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *c
 					Namespace: app.Namespace,
 				}
 				sec := &core.Secret{}
-				ch.Client.Get(ch.Ctx, nn, sec)
+				if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
+					return fmt.Errorf("could not get secret: %w", err)
+				}
 				if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
 					return err
 				}

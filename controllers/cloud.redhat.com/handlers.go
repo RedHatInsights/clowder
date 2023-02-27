@@ -129,22 +129,22 @@ func (e *enqueueRequestForObjectCustom) updateHashCacheForConfigMapAndSecret(obj
 	return false, nil
 }
 
+func getNamespacedName(obj client.Object) *types.NamespacedName {
+	return &types.NamespacedName{
+		Name:      obj.GetName(),
+		Namespace: obj.GetNamespace(),
+	}
+}
+
 func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
 	shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.Object)
 	if err != nil {
-		e.logMessage(evt.Object, err.Error(), "", &types.NamespacedName{
-			Name:      evt.Object.GetName(),
-			Namespace: evt.Object.GetNamespace(),
-		})
+		e.logMessage(evt.Object, err.Error(), "", getNamespacedName(evt.Object))
 	}
 
 	if shouldUpdate {
-		e.doUpdateToHash(evt.Object, q)
-		capps := &crd.ClowdAppList{}
-		e.client.List(e.context, capps, client.InNamespace(evt.Object.GetNamespace()))
-		for _, app := range capps.Items {
-			q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: app.GetName(), Namespace: evt.Object.GetNamespace()}})
-		}
+		_ = e.doUpdateToHash(evt.Object, q)
+		e.reconcileAllAppsUsingObject(evt.Object, q)
 	}
 
 	if own, toKind := e.getOwner(evt.Object); own != nil {
@@ -156,16 +156,10 @@ func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueu
 }
 
 func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q workqueue.RateLimitingInterface) error {
-	e.logMessage(obj, "update needed because changed", "", &types.NamespacedName{
-		Name:      obj.GetName(),
-		Namespace: obj.GetNamespace(),
-	})
+	e.logMessage(obj, "update needed because changed", "", getNamespacedName(obj))
 	hashObj, err := e.hashCache.Read(obj)
 	if err != nil {
-		e.logMessage(obj, err.Error(), "", &types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		})
+		e.logMessage(obj, err.Error(), "", getNamespacedName(obj))
 		return err
 	}
 
@@ -183,28 +177,28 @@ func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q work
 	return nil
 }
 
+func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(obj client.Object, q workqueue.RateLimitingInterface) {
+	capps := &crd.ClowdAppList{}
+	if err := e.client.List(e.context, capps, client.InNamespace(obj.GetNamespace())); err != nil {
+		e.logMessage(obj, err.Error(), "error listing apps", getNamespacedName(obj))
+	}
+	for _, app := range capps.Items {
+		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: app.GetName(), Namespace: obj.GetNamespace()}})
+	}
+}
+
 func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	if evt.ObjectNew.GetAnnotations()["qontract.reconcile"] == "true" {
 		shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
-		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), &types.NamespacedName{
-			Name:      evt.ObjectNew.GetName(),
-			Namespace: evt.ObjectNew.GetNamespace(),
-		})
+		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), getNamespacedName(evt.ObjectNew))
 		if err != nil {
-			e.logMessage(evt.ObjectNew, err.Error(), "", &types.NamespacedName{
-				Name:      evt.ObjectNew.GetName(),
-				Namespace: evt.ObjectNew.GetNamespace(),
-			})
+			e.logMessage(evt.ObjectNew, err.Error(), "", getNamespacedName(evt.ObjectNew))
 		}
 		if shouldUpdate {
-			e.doUpdateToHash(evt.ObjectNew, q)
+			_ = e.doUpdateToHash(evt.ObjectNew, q)
 		}
 		if evt.ObjectOld.GetAnnotations()["qontract.reconcile"] != evt.ObjectNew.GetAnnotations()["qontract.reconcile"] {
-			capps := &crd.ClowdAppList{}
-			e.client.List(e.context, capps, client.InNamespace(evt.ObjectNew.GetNamespace()))
-			for _, app := range capps.Items {
-				q.Add(reconcile.Request{NamespacedName: types.NamespacedName{Name: app.GetName(), Namespace: evt.ObjectNew.GetNamespace()}})
-			}
+			e.reconcileAllAppsUsingObject(evt.ObjectNew, q)
 		}
 	} else if _, err := e.hashCache.Read(evt.ObjectNew); err == nil {
 		err := e.doUpdateToHash(evt.ObjectNew, q)
