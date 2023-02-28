@@ -101,7 +101,6 @@ func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 }
 
 func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
-	// NEED TO PASS IN Q HERE TO GET IT TO ALSO TRIGGER
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
 
