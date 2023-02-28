@@ -8,6 +8,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -177,8 +178,13 @@ func (ch *confighashProvider) persistConfig(app *crd.ClowdApp) (string, error) {
 		return "", err
 	}
 
-	ch.Config.HashCache = ch.HashCache.GetSuperHashForClowdObject(app)
-	ch.Config.HashCache += ch.HashCache.GetSuperHashForClowdObject(ch.Env)
+	ch.Config.HashCache = utils.StringPtr(
+		fmt.Sprintf(
+			"%s%s",
+			ch.HashCache.GetSuperHashForClowdObject(app),
+			ch.HashCache.GetSuperHashForClowdObject(ch.Env),
+		),
+	)
 
 	jsonData, err := json.Marshal(ch.Config)
 	if err != nil {

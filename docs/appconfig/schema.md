@@ -43,7 +43,7 @@ Reference this group by using
 | [endpoints](#endpoints)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-endpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints")               |
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
 | [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
-| [hashCache](#hashcache)               | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")               |
+| [hashCache](#hashcache)               | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")               |
 
 ### privatePort
 
@@ -309,13 +309,13 @@ A set of config/secret hashes
 `hashCache`
 
 -   is optional
--   Type: `string[]`
+-   Type: `string`
 -   cannot be null
 -   defined in: [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")
 
 #### hashCache Type
 
-`string[]`
+`string`
 
 ## Definitions group LoggingConfig
 

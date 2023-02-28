@@ -81,7 +81,7 @@ type AppConfig struct {
 	FeatureFlags *FeatureFlagsConfig `json:"featureFlags,omitempty"`
 
 	// A set of config/secret hashes
-	HashCache string `json:"hashCache,omitempty"`
+	HashCache *string `json:"hashCache,omitempty"`
 
 	// InMemoryDb corresponds to the JSON schema field "inMemoryDb".
 	InMemoryDb *InMemoryDBConfig `json:"inMemoryDb,omitempty"`

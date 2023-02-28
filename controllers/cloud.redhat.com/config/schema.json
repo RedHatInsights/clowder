@@ -73,10 +73,7 @@
                 },
                 "hashCache": {
                     "description": "A set of config/secret hashes",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 }
             },
             "required": [

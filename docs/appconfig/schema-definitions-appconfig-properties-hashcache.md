@@ -1,4 +1,4 @@
-# Untitled array in AppConfig Schema
+# Untitled string in AppConfig Schema
 
 ```txt
 https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache
@@ -13,4 +13,4 @@ A set of config/secret hashes
 
 ## hashCache Type
 
-`string[]`
+`string`
