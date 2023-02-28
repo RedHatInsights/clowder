@@ -146,7 +146,7 @@ func (fc *FakeClient) DeleteAllOf(ctx context.Context, obj client.Object, opts .
 	return nil
 }
 
-func (fc *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (fc *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	p, _ := obj.(*core.Secret)
 	p.Data = make(map[string][]byte)
 	p.Data["port"] = []byte("2345")
