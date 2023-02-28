@@ -14,89 +14,145 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *crd.ClowdApp) error {
-	for _, deployment := range dList.Items {
-		for _, cont := range deployment.Spec.Template.Spec.Containers {
-			for _, env := range cont.Env {
-				if env.ValueFrom != nil && env.ValueFrom.ConfigMapKeyRef != nil {
-					nn := types.NamespacedName{
-						Name:      env.ValueFrom.ConfigMapKeyRef.Name,
-						Namespace: app.Namespace,
-					}
-					if nn.Name == app.Name {
-						continue
-					}
-					cf := &core.ConfigMap{}
-					if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-						if env.ValueFrom.ConfigMapKeyRef.Optional != nil && *env.ValueFrom.ConfigMapKeyRef.Optional && k8serr.IsNotFound(err) {
-							continue
-						}
-						return fmt.Errorf("could not get env configmap: %w", err)
-					}
-					if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
-						return err
-					}
-				}
-				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
-					nn := types.NamespacedName{
-						Name:      env.ValueFrom.SecretKeyRef.Name,
-						Namespace: app.Namespace,
-					}
-					if nn.Name == app.Name {
-						continue
-					}
-					sec := &core.Secret{}
-					if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-						if env.ValueFrom.SecretKeyRef.Optional != nil && *env.ValueFrom.SecretKeyRef.Optional && k8serr.IsNotFound(err) {
-							continue
-						}
-						return fmt.Errorf("could not get env secret: %w", err)
-					}
-					if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
-						return err
-					}
-				}
+func (ch *confighashProvider) envConfigMap(app *crd.ClowdApp, env core.EnvVar) error {
+	if env.ValueFrom == nil {
+		return nil
+	}
+	if env.ValueFrom.ConfigMapKeyRef == nil {
+		return nil
+	}
+	nn := types.NamespacedName{
+		Name:      env.ValueFrom.ConfigMapKeyRef.Name,
+		Namespace: app.Namespace,
+	}
+	if nn.Name == app.Name {
+		return nil
+	}
+	cf := &core.ConfigMap{}
+	if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
+		if env.ValueFrom.ConfigMapKeyRef.Optional != nil && *env.ValueFrom.ConfigMapKeyRef.Optional && k8serr.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("could not get env configmap: %w", err)
+	}
+	if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ch *confighashProvider) envSecret(app *crd.ClowdApp, env core.EnvVar) error {
+	if env.ValueFrom == nil {
+		return nil
+	}
+	if env.ValueFrom.SecretKeyRef == nil {
+		return nil
+	}
+	nn := types.NamespacedName{
+		Name:      env.ValueFrom.SecretKeyRef.Name,
+		Namespace: app.Namespace,
+	}
+	if nn.Name == app.Name {
+		return nil
+	}
+	sec := &core.Secret{}
+	if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
+		if env.ValueFrom.SecretKeyRef.Optional != nil && *env.ValueFrom.SecretKeyRef.Optional && k8serr.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("could not get env secret: %w", err)
+	}
+	if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume) error {
+	if volume.ConfigMap == nil {
+		return nil
+	}
+	nn := types.NamespacedName{
+		Name:      volume.ConfigMap.Name,
+		Namespace: app.Namespace,
+	}
+	if nn.Name == app.Name {
+		return nil
+	}
+	cf := &core.ConfigMap{}
+	if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
+		if volume.ConfigMap.Optional != nil && *volume.ConfigMap.Optional && k8serr.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("could not get vol configmap: %w", err)
+	}
+	if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) error {
+	if volume.Secret == nil {
+		return nil
+	}
+	nn := types.NamespacedName{
+		Name:      volume.Secret.SecretName,
+		Namespace: app.Namespace,
+	}
+	if nn.Name == app.Name {
+		return nil
+	}
+	sec := &core.Secret{}
+	if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
+		if volume.Secret.Optional != nil && *volume.Secret.Optional && k8serr.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("could not get vol secret: %w", err)
+	}
+	if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ch *confighashProvider) iterateEnvVars(app *crd.ClowdApp, deployment apps.Deployment) error {
+	for _, cont := range deployment.Spec.Template.Spec.Containers {
+		for _, env := range cont.Env {
+			if err := ch.envConfigMap(app, env); err != nil {
+				return err
+			}
+			if err := ch.envSecret(app, env); err != nil {
+				return err
 			}
 		}
-		for _, volume := range deployment.Spec.Template.Spec.Volumes {
-			if volume.ConfigMap != nil {
-				nn := types.NamespacedName{
-					Name:      volume.ConfigMap.Name,
-					Namespace: app.Namespace,
-				}
-				if nn.Name == app.Name {
-					continue
-				}
-				cf := &core.ConfigMap{}
-				if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-					if volume.ConfigMap.Optional != nil && *volume.ConfigMap.Optional && k8serr.IsNotFound(err) {
-						continue
-					}
-					return fmt.Errorf("could not get vol configmap: %w", err)
-				}
-				if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
-					return err
-				}
-			}
-			if volume.Secret != nil {
-				nn := types.NamespacedName{
-					Name:      volume.Secret.SecretName,
-					Namespace: app.Namespace,
-				}
-				if nn.Name == app.Name {
-					continue
-				}
-				sec := &core.Secret{}
-				if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-					if volume.Secret.Optional != nil && *volume.Secret.Optional && k8serr.IsNotFound(err) {
-						continue
-					}
-					return fmt.Errorf("could not get vol secret: %w", err)
-				}
-				if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
-					return err
-				}
-			}
+	}
+
+	return nil
+}
+
+func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, deployment apps.Deployment) error {
+	for _, volume := range deployment.Spec.Template.Spec.Volumes {
+		if err := ch.volConfigMap(app, volume); err != nil {
+			return err
+		}
+		if err := ch.volSecret(app, volume); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *crd.ClowdApp) error {
+	for _, deployment := range dList.Items {
+		deploy := deployment
+		if err := ch.iterateEnvVars(app, deploy); err != nil {
+			return err
+		}
+		if err := ch.iterateVolumes(app, deploy); err != nil {
+			return err
 		}
 	}
 	return nil
