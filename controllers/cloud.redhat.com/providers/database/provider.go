@@ -11,6 +11,7 @@ import (
 var DefaultImageDatabasePG10 = "quay.io/cloudservices/postgresql-rds:10-9ee2984"
 var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-9ee2984"
 var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-9ee2984"
+var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-99c8c27"
 var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-e9e67a5"
 
 // ProvName is the providers name ident.
@@ -40,6 +41,7 @@ func init() {
 	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
 	imageList = map[int32]string{
 		15: DefaultImageDatabasePG15,
+		14: DefaultImageDatabasePG14,
 		13: DefaultImageDatabasePG13,
 		12: DefaultImageDatabasePG12,
 		10: DefaultImageDatabasePG10,
