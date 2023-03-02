@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/RedHatInsights/cyndi-operator v0.1.9
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/rhc-osdk-utils v0.7.0
+	github.com/RedHatInsights/rhc-osdk-utils v0.7.1
 	github.com/RedHatInsights/strimzi-client-go v0.28.1
 	github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1
 	github.com/go-logr/logr v1.2.3
@@ -37,7 +37,7 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.88 // indirect
+	github.com/aws/aws-sdk-go v1.44.211 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
@@ -79,7 +79,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
-	github.com/redhatinsights/platform-go-middlewares v0.10.0 // indirect
+	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
