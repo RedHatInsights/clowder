@@ -57,7 +57,7 @@ type InitContainer struct {
 // DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 type DatabaseSpec struct {
 	// Defines the Version of the PostGreSQL database, defaults to 12.
-	// +kubebuilder:validation:Enum:=10;12;13
+	// +kubebuilder:validation:Enum:=10;12;13;14;15
 	Version *int32 `json:"version,omitempty"`
 
 	// Defines the Name of the database to be created. This will be used as the

@@ -111,6 +111,8 @@ spec:
                     - 10
                     - 12
                     - 13
+                    - 14
+                    - 15
                     format: int32
                     type: integer
                 type: object
