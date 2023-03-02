@@ -7,6 +7,7 @@ changes_excluding_docs() {
 
     git --no-pager diff --name-only "origin/${target_branch}" |\
         grep -v "$docs_regex" | grep -q '.'
+    return 0
 }
 
 create_junit_dummy_result() {
