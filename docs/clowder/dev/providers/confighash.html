@@ -194,6 +194,8 @@
 </aside>
 <article class="doc">
 <h1 class="page">ConfigHash Provider</h1>
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
 <p>The <strong>ConfigHash Provider</strong> is responsible for creating the configuration hash
 annotation on the <code>Deployment</code> resource. Changes to configuration then modify
@@ -202,6 +204,30 @@ forcing them to pick up the new configuration.</p>
 </div>
 <div class="paragraph">
 <p>There is no configuration for this provider.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_secret_and_configmap_restart_triggers"><a class="anchor" href="#_secret_and_configmap_restart_triggers"></a>Secret and ConfigMap restart triggers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Clowder has a handler that watches all secrets and configmaps. If a secret or
+configmap has the <code>qontract.recycle</code> annotation set to <code>true</code> then the
+secret&#8217;s contents are hashed and kept in a cache. When reconciling an app,
+the <strong>ConfigHash Provider</strong> will iterate over all <strong>environment variables</strong> and
+<strong>volumes</strong> to see if any ConfigMaps or Secrets are used for the app. If they
+are, then the <strong>ConfigHash Provider</strong> adds the ClowdApp to the list of dependant
+apps for that secret.</p>
+</div>
+<div class="paragraph">
+<p>Future updates to the secret will then trigger reconciliations for each
+ClowdApp listed. Each secret is hashed, and then the list of these hashes is
+also hashed to provude a unique fingerprint that is injected into the
+<code>cdappconfig.json</code>. If this value is different than it was before, the
+<code>configHash</code> annotation on the pod will be updated and this will restarted the
+pod.</p>
+</div>
+</div>
 </div>
 </article>
   </div>
