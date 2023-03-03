@@ -15,6 +15,7 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 func generateTLSContext() (*anypb.Any, error) {
@@ -65,6 +66,9 @@ func generateHTTPConnectionManager(cluster string) (*anypb.Any, error) {
 							Route: &route.RouteAction{
 								ClusterSpecifier: &route.RouteAction_Cluster{
 									Cluster: cluster,
+								},
+								Timeout: &durationpb.Duration{
+									Seconds: 600,
 								},
 							},
 						},
