@@ -9,6 +9,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 
 	"github.com/go-logr/logr"
@@ -76,12 +77,13 @@ type Labels map[string]string
 
 // Provider is a struct that holds a client/context and ClowdEnvironment object.
 type Provider struct {
-	Client client.Client
-	Ctx    context.Context
-	Env    *crd.ClowdEnvironment
-	Cache  *rc.ObjectCache
-	Log    logr.Logger
-	Config *config.AppConfig
+	Client    client.Client
+	Ctx       context.Context
+	Env       *crd.ClowdEnvironment
+	Cache     *rc.ObjectCache
+	Log       logr.Logger
+	Config    *config.AppConfig
+	HashCache *hashcache.HashCache
 }
 
 func (prov *Provider) GetClient() client.Client {

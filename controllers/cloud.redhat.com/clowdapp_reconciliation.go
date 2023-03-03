@@ -9,6 +9,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
@@ -35,6 +36,7 @@ type ClowdAppReconciliation struct {
 	reconciliationMetrics ReconciliationMetrics
 	config                *config.AppConfig
 	oldStatus             *crd.ClowdAppStatus
+	hashCache             *hashcache.HashCache
 }
 
 func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
@@ -255,13 +257,17 @@ func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) runProviders() (ctrl.Result, error) {
+
+	r.hashCache.RemoveClowdObjectFromObjects(r.app)
+
 	provider := providers.Provider{
-		Client: r.client,
-		Ctx:    r.ctx,
-		Env:    r.env,
-		Cache:  r.cache,
-		Log:    *r.log,
-		Config: r.config,
+		Client:    r.client,
+		Ctx:       r.ctx,
+		Env:       r.env,
+		Cache:     r.cache,
+		Log:       *r.log,
+		Config:    r.config,
+		HashCache: r.hashCache,
 	}
 
 	if provErr := r.runProvidersImplementation(&provider); provErr != nil {

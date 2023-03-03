@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 	"github.com/prometheus/client_golang/prometheus"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -127,19 +128,24 @@ func Run(signalHandler context.Context, metricsAddr string, probeAddr string, en
 }
 
 func addControllersToManager(mgr manager.Manager) error {
+	AppHashCache := hashcache.NewHashCache()
+	EnvHashCache := hashcache.NewHashCache()
+
 	if err := (&ClowdAppReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdApp"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+		Client:    mgr.GetClient(),
+		Log:       ctrl.Log.WithName("controllers").WithName("ClowdApp"),
+		Scheme:    mgr.GetScheme(),
+		HashCache: &AppHashCache,
+	}).SetupWithManager(mgr, &AppHashCache); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdApp")
 		return err
 	}
 	if err := (&ClowdEnvironmentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+		Client:    mgr.GetClient(),
+		Log:       ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
+		Scheme:    mgr.GetScheme(),
+		HashCache: &EnvHashCache,
+	}).SetupWithManager(mgr, &EnvHashCache); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
 		return err
 	}

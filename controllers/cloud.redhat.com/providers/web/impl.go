@@ -30,7 +30,7 @@ var DefaultImageEnvoy = "envoyproxy/envoy-distroless:v1.24.1"
 // CoreService is the service for the apps deployments.
 var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
 
-var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_map", &core.ConfigMap{})
+var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
 func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 

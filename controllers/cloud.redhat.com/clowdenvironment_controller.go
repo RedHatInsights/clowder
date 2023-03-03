@@ -39,6 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	// Import the providers to initialize them
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
+
+	// These blank imports make the providers go wheeeeee
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
@@ -82,9 +85,10 @@ const (
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
 type ClowdEnvironmentReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Log       logr.Logger
+	Scheme    *runtime.Scheme
+	Recorder  record.EventRecorder
+	HashCache *hashcache.HashCache
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
@@ -212,14 +216,14 @@ func runProvidersForEnvFinalize(log logr.Logger, provider providers.Provider) er
 }
 
 // SetupWithManager sets up with manager
-func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager, hashCache *hashcache.HashCache) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
-	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "env", &crd.ClowdEnvironment{}))
-	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
-	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
+	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
+	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
 	ctrlr.Watches(
 		&source.Kind{Type: &crd.ClowdApp{}},
 		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
@@ -227,10 +231,10 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	)
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		ctrlr.Watches(&source.Kind{Type: &strimzi.Kafka{}}, createNewHandler(kafkaFilter, r.Log, "env", &crd.ClowdEnvironment{}))
-		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaConnect{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
-		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaUser{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
-		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaTopic{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.Kafka{}}, createNewHandler(kafkaFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaConnect{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaUser{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
+		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaTopic{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
 	}
 
 	ctrlr.WithOptions(controller.Options{
