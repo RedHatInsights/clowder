@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 )
 
@@ -122,7 +123,7 @@ func (e *enqueueRequestForObjectCustom) logMessage(obj client.Object, msg string
 func (e *enqueueRequestForObjectCustom) updateHashCacheForConfigMapAndSecret(obj client.Object) (bool, error) {
 	switch obj.(type) {
 	case *core.ConfigMap, *core.Secret:
-		if obj.GetAnnotations()["qontract.reconcile"] == "true" {
+		if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] == "true" {
 			return e.hashCache.CreateOrUpdateObject(obj)
 		}
 	}
@@ -188,7 +189,7 @@ func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(obj client.O
 }
 
 func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
-	if evt.ObjectNew.GetAnnotations()["qontract.reconcile"] == "true" {
+	if evt.ObjectNew.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] == "true" {
 		shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
 		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), getNamespacedName(evt.ObjectNew))
 		if err != nil {
@@ -197,7 +198,7 @@ func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueu
 		if shouldUpdate {
 			_ = e.doUpdateToHash(evt.ObjectNew, q)
 		}
-		if evt.ObjectOld.GetAnnotations()["qontract.reconcile"] != evt.ObjectNew.GetAnnotations()["qontract.reconcile"] {
+		if evt.ObjectOld.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != evt.ObjectNew.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] {
 			e.reconcileAllAppsUsingObject(evt.ObjectNew, q)
 		}
 	} else if _, err := e.hashCache.Read(evt.ObjectNew); err == nil {

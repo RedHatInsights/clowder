@@ -10,7 +10,7 @@ There is no configuration for this provider.
 == Secret and ConfigMap restart triggers
 
 Clowder has a handler that watches all secrets and configmaps. If a secret or
-configmap has the `qontract.reconcile` annotation set to `true` then the 
+configmap has the `qontract.recycle` annotation set to `true` then the 
 secret's contents are hashed and kept in a cache. When reconciling an app, 
 the *ConfigHash Provider* will iterate over all *environment variables* and 
 *volumes* to see if any ConfigMaps or Secrets are used for the app. If they 

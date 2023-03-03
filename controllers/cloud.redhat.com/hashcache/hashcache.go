@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	core "k8s.io/api/core/v1"
@@ -177,7 +178,7 @@ func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) str
 
 func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
 
-	if obj.GetAnnotations()["qontract.reconcile"] != "true" {
+	if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != "true" {
 		return nil
 	}
 

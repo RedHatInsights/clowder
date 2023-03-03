@@ -8,7 +8,7 @@ metadata:
   name: test-config-secret-restarter-secret1
   namespace: test-config-secret-restarter
   annotations:
-    qontract.reconcile: "true"
+    qontract.recycle: "true"
 type: Opaque
 ---
 apiVersion: v1
@@ -19,4 +19,4 @@ metadata:
   name: test-config-secret-restarter-configmap1
   namespace: test-config-secret-restarter
   annotations:
-    qontract.reconcile: "true"
+    qontract.recycle: "true"

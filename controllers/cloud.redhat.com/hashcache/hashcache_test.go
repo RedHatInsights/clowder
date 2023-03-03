@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +16,7 @@ func TestHashCacheAddItemAndRetrieve(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 
@@ -33,7 +34,7 @@ func TestHashCacheDeleteItem(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 
@@ -54,7 +55,7 @@ func TestHashCacheUpdateItem(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 		Data: map[string][]byte{
 			"test": []byte("test"),
@@ -88,7 +89,7 @@ func TestHashCacheRetrieveUnknownItem(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 
@@ -102,7 +103,7 @@ func TestHashCacheAddClowdObj(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 
@@ -134,7 +135,7 @@ func TestHashCacheDeleteClowdObj(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 
@@ -170,7 +171,7 @@ func TestHashCacheSuperCache(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 
@@ -178,7 +179,7 @@ func TestHashCacheSuperCache(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			Name:        "test2",
 			Namespace:   "def",
-			Annotations: map[string]string{"qontract.reconcile": "true"},
+			Annotations: map[string]string{clowderconfig.LoadedConfig.Settings.RestarterAnnotationName: "true"},
 		},
 	}
 

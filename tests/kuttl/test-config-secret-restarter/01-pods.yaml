@@ -7,7 +7,7 @@ metadata:
   name: test-config-secret-restarter-secret1
   namespace: test-config-secret-restarter
   annotations:
-    qontract.reconcile: "false"
+    qontract.recycle: "false"
 type: Opaque
 ---
 apiVersion: v1
@@ -18,7 +18,7 @@ metadata:
   name: test-config-secret-restarter-configmap1
   namespace: test-config-secret-restarter
   annotations:
-    qontract.reconcile: "false"
+    qontract.recycle: "false"
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment

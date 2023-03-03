@@ -46,6 +46,7 @@ type ClowderConfig struct {
 	} `json:"features"`
 	Settings struct {
 		ManagedKafkaEphemDeleteRegex string `json:"managedKafkaEphemDeleteRegex"`
+		RestarterAnnotationName      string `json:"restarterAnnotation"`
 	} `json:"settings"`
 }
 
@@ -71,6 +72,10 @@ func getConfig() ClowderConfig {
 	if err != nil {
 		fmt.Printf("Couldn't parse json:\n" + err.Error())
 		return ClowderConfig{}
+	}
+
+	if clowderConfig.Settings.RestarterAnnotationName == "" {
+		clowderConfig.Settings.RestarterAnnotationName = "qontract.recycle"
 	}
 
 	return clowderConfig
