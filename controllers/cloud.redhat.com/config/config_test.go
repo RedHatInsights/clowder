@@ -17,7 +17,8 @@ func TestDbasePopulate(t *testing.T) {
 	}
 
 	config := &DatabaseConfig{}
-	config.Populate(&inputData)
+	err := config.Populate(&inputData)
+	assert.NoError(t, err, "couldn't convert to int")
 	assert.Equal(t, inputData["port"], "9000", "they should be equal")
 	assert.Equal(t, inputData["hostname"], "hostname", "they should be equal")
 	assert.Equal(t, inputData["username"], "username", "they should be equal")

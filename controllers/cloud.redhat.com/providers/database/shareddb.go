@@ -99,7 +99,10 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}
 
-	dbCfg.Populate(secMap)
+	err = dbCfg.Populate(secMap)
+	if err != nil {
+		return nil, errors.Wrap("couldn't convert to int", err)
+	}
 	dbCfg.AdminUsername = "postgres"
 	dbCfg.SslMode = "disable"
 
@@ -235,9 +238,9 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	var port int
+	var port uint64
 	var err error
-	if port, err = strconv.Atoi(string(vSec.Data["port"])); err != nil {
+	if port, err = strconv.ParseUint(string(vSec.Data["port"]), 10, 16); err != nil {
 		return err
 	}
 
@@ -247,7 +250,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	dbCfg.Name = app.Spec.Database.Name
 	dbCfg.Password = string(vSec.Data["password"])
 	dbCfg.Username = string(vSec.Data["username"])
-	dbCfg.Port = port
+	dbCfg.Port = int(port)
 	dbCfg.SslMode = "disable"
 
 	host := dbCfg.Hostname
@@ -363,7 +366,10 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 		(secMap)[k] = string(v)
 	}
 
-	dbCfg.Populate(&secMap)
+	err = dbCfg.Populate(&secMap)
+	if err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
 	dbCfg.AdminUsername = "postgres"
 
 	db.Config.Database = &dbCfg

@@ -41,7 +41,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 
 	for _, secret := range secrets.Items {
 		if secret.Name == secretName {
-			port, err := strconv.Atoi(string(secret.Data["db.port"]))
+			port, err := strconv.ParseUint(string(secret.Data["db.port"]), 10, 16)
 
 			if err != nil {
 				return errors.Wrap(
@@ -56,7 +56,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 			}
 
 			creds.Hostname = string(secret.Data["db.endpoint"])
-			creds.Port = port
+			creds.Port = int(port)
 			found = true
 			break
 		}

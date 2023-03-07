@@ -476,11 +476,11 @@ func (mep *managedEphemProvider) getMaxFromList(list []string, floor int, ceilin
 		if err != nil {
 			return max, errors.NewClowderError(fmt.Sprintf("could not compute max for %v", list))
 		}
-		maxValInt, err := strconv.Atoi(maxValue)
+		maxValInt, err := strconv.ParseUint(maxValue, 10, 16)
 		if err != nil {
 			return max, errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxValInt))
 		}
-		max = maxValInt
+		max = int(maxValInt)
 		if max < 1 {
 			max = floor
 		} else if ceiling > 0 && ceiling >= floor && max > ceiling {

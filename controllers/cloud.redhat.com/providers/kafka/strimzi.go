@@ -1068,11 +1068,11 @@ func processTopicValues(
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
-		maxReplicasInt, err := strconv.Atoi(maxReplicas)
+		maxReplicasInt, err := strconv.ParseUint(maxReplicas, 10, 16)
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
-		k.Spec.Replicas = utils.Int32Ptr(maxReplicasInt)
+		k.Spec.Replicas = utils.Int32Ptr(int(maxReplicasInt))
 		if *k.Spec.Replicas < int32(1) {
 			// if unset, default to 3
 			k.Spec.Replicas = utils.Int32Ptr(3)
@@ -1084,11 +1084,11 @@ func processTopicValues(
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
-		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
+		maxPartitionsInt, err := strconv.ParseUint(maxPartitions, 10, 16)
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
-		k.Spec.Partitions = utils.Int32Ptr(maxPartitionsInt)
+		k.Spec.Partitions = utils.Int32Ptr(int(maxPartitionsInt))
 		if *k.Spec.Partitions < int32(1) {
 			// if unset, default to 3
 			k.Spec.Partitions = utils.Int32Ptr(3)
