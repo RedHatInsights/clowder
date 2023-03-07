@@ -69,7 +69,7 @@ func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig
 }
 
 func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, string, string, error) {
-	port, err := strconv.Atoi(string(secret.Data["port"]))
+	port, err := strconv.ParseUint(string(secret.Data["port"]), 10, 16)
 	if err != nil {
 		return 0, "", "", "", "", "", err
 	}
@@ -84,7 +84,7 @@ func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, stri
 	if val, ok := secret.Data["saslMechanism"]; ok {
 		saslMechanism = string(val)
 	}
-	return port, password, username, hostname, cacert, saslMechanism, nil
+	return int(port), password, username, hostname, cacert, saslMechanism, nil
 }
 
 func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {

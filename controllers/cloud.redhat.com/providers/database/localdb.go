@@ -112,7 +112,10 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
 
-	dbCfg.Populate(secMap)
+	err = dbCfg.Populate(secMap)
+	if err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
 	dbCfg.AdminUsername = "postgres"
 	dbCfg.SslMode = "disable"
 
@@ -208,7 +211,10 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp) error {
 		(secMap)[k] = string(v)
 	}
 
-	dbCfg.Populate(&secMap)
+	err = dbCfg.Populate(&secMap)
+	if err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
 	dbCfg.AdminUsername = "postgres"
 
 	db.Config.Database = &dbCfg

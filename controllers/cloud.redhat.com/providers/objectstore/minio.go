@@ -111,15 +111,15 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	var port int
+	var port uint64
 	var err error
-	if port, err = strconv.Atoi(string(secret.Data["port"])); err != nil {
+	if port, err = strconv.ParseUint(string(secret.Data["port"]), 10, 16); err != nil {
 		return err
 	}
 
 	m.Config.ObjectStore = &config.ObjectStoreConfig{
 		Hostname:  string(secret.Data["hostname"]),
-		Port:      port,
+		Port:      int(port),
 		AccessKey: utils.StringPtr(string(secret.Data["accessKey"])),
 		SecretKey: utils.StringPtr(string(secret.Data["secretKey"])),
 		Tls:       false,
@@ -212,13 +212,16 @@ func createMinioProvider(
 ) (*minioProvider, error) {
 	mp := &minioProvider{Provider: *p}
 
-	port, _ := strconv.Atoi(secMap["port"])
+	port, err := strconv.ParseUint(secMap["port"], 10, 16)
+	if err != nil {
+		return nil, err
+	}
 	mp.Ctx = p.Ctx
 
 	mp.BucketHandler = handler
-	err := mp.BucketHandler.CreateClient(
+	err = mp.BucketHandler.CreateClient(
 		secMap["hostname"],
-		port,
+		int(port),
 		providers.StrPtr(secMap["accessKey"]),
 		providers.StrPtr(secMap["secretKey"]),
 	)

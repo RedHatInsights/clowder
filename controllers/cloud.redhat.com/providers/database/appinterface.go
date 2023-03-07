@@ -207,7 +207,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfigContainer, erro
 	var err error
 
 	extractFn := func(secret *core.Secret) {
-		port, erro := strconv.Atoi(string(secret.Data["db.port"]))
+		port, erro := strconv.ParseUint(string(secret.Data["db.port"]), 10, 16)
 
 		if erro != nil {
 			err = errors.Wrap("Failed to parse DB port", err)
@@ -217,7 +217,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfigContainer, erro
 		dbConfig := config.DatabaseConfigContainer{
 			Config: config.DatabaseConfig{
 				Hostname: string(secret.Data["db.host"]),
-				Port:     port,
+				Port:     int(port),
 				Username: string(secret.Data["db.user"]),
 				Password: string(secret.Data["db.password"]),
 				Name:     string(secret.Data["db.name"]),

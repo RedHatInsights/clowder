@@ -7,14 +7,18 @@ import (
 )
 
 // Populate sets the database configuration on the object from the passed in map.
-func (dbc *DatabaseConfig) Populate(data *map[string]string) {
-	port, _ := strconv.Atoi((*data)["port"])
+func (dbc *DatabaseConfig) Populate(data *map[string]string) error {
+	port, err := strconv.ParseUint((*data)["port"], 10, 16)
+	if err != nil {
+		return err
+	}
 	dbc.Hostname = (*data)["hostname"]
 	dbc.Name = (*data)["name"]
 	dbc.Password = (*data)["password"]
 	dbc.AdminPassword = (*data)["pgPass"]
-	dbc.Port = port
+	dbc.Port = int(port)
 	dbc.Username = (*data)["username"]
+	return nil
 }
 
 type DatabaseConfigContainer struct {
