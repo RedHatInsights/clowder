@@ -51,7 +51,7 @@ type ClowderConfig struct {
 }
 
 func getConfig() ClowderConfig {
-	configPath := "/config/clowder_config.json"
+	configPath := "./config/clowder_config.json"
 
 	if path := os.Getenv("CLOWDER_CONFIG_PATH"); path != "" {
 		configPath = path

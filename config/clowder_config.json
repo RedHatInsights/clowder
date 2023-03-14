@@ -1,0 +1,24 @@
+    {
+    "debugOptions": {
+        "trigger": {
+            "diff": false
+        },
+        "cache": {
+            "create": false,
+            "update": false,
+            "apply": false
+        },
+        "pprof": {
+            "enable": true,
+            "cpuFile": "testcpu"
+        }
+    },
+    "features": {
+        "createServiceMonitor": true,
+        "watchStrimziResources": true,
+        "enableKedaResources": true,
+        "reconciliationMetrics": true,
+        "enableExternalStrimzi": true,
+        "disableWebhooks": true
+    }
+}
