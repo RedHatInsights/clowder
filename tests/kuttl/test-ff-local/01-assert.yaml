@@ -23,3 +23,9 @@ kind: Deployment
 metadata:
   name: test-ff-local-featureflags
   namespace: test-ff-local
+spec:
+  template:
+    spec:
+      serviceAccountName: test-ff-local-env
+      serviceAccount: test-ff-local-env
+        
