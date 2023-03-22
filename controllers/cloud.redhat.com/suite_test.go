@@ -502,7 +502,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	metadataValidation(suite.T(), app, jsonContent)
 
-	kafkaValidation(suite.T(), env, app, jsonContent, clowdAppNN)
+	kafkaValidation(suite.T(), env, app, jsonContent)
 
 	clowdWatchValidation(suite.T(), jsonContent, cwData)
 
@@ -512,7 +512,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	assert.NoError(suite.T(), err)
 
-	scaledObjectValidation(suite.T(), app, &scaler, &d)
+	scaledObjectValidation(suite.T(), &scaler)
 
 	resp, err := http.Get("http://127.0.0.1:2019/config/")
 	assert.NoError(suite.T(), err, "failed test because get failed")
@@ -549,7 +549,7 @@ func metadataValidation(t *testing.T, app *crd.ClowdApp, jsonContent *config.App
 	assert.Len(t, jsonContent.Metadata.Deployments, len(app.Spec.Deployments))
 }
 
-func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp, jsonContent *config.AppConfig, clowdAppNN types.NamespacedName) {
+func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp, jsonContent *config.AppConfig) {
 	// Kafka validation
 
 	topicWithPartitionsReplicasName := "inventory"
@@ -610,7 +610,7 @@ func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData ma
 	}
 }
 
-func scaledObjectValidation(t *testing.T, app *crd.ClowdApp, scaler *keda.ScaledObject, deployment *apps.Deployment) {
+func scaledObjectValidation(t *testing.T, scaler *keda.ScaledObject) {
 	// Scaled object validation
 	expectTarget := keda.ScaleTarget{
 		Kind: "Deployment",
@@ -829,7 +829,7 @@ func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error
 	return &resp, nil
 }
 
-func (m *MockEphemManagedKafkaHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+func (m *MockEphemManagedKafkaHTTPClient) Post(_, _ string, body io.Reader) (*http.Response, error) {
 	bodyData, _ := io.ReadAll(body)
 	kafkaObj := &kafka.JSONPayload{}
 	err := json.Unmarshal(bodyData, kafkaObj)

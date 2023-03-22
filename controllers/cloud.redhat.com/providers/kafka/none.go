@@ -18,6 +18,6 @@ func (k *noneKafkaProvider) EnvProvide() error {
 	return nil
 }
 
-func (k *noneKafkaProvider) Provide(app *crd.ClowdApp) error {
+func (k *noneKafkaProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }

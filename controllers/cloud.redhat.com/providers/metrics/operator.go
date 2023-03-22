@@ -87,11 +87,7 @@ func (m *metricsProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := createSubscription(m.Cache, m.Env); err != nil {
-		return err
-	}
-
-	return nil
+	return createSubscription(m.Cache, m.Env)
 }
 
 func (m *metricsProvider) Provide(app *crd.ClowdApp) error {
@@ -101,7 +97,7 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
-		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
+		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Env.Name, m.Env.Status.TargetNamespace); err != nil {
 			return err
 		}
 
@@ -129,11 +125,7 @@ func createPrometheusServiceAccount(cache *rc.ObjectCache, env *crd.ClowdEnviron
 	labeler := utils.GetCustomLabeler(map[string]string{}, nn, env)
 	labeler(cr)
 
-	if err := cache.Update(PrometheusServiceAccount, cr); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(PrometheusServiceAccount, cr)
 }
 
 func createPrometheusRoleBinding(cache *rc.ObjectCache, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
@@ -164,11 +156,7 @@ func createPrometheusRoleBinding(cache *rc.ObjectCache, app *crd.ClowdApp, env *
 	labeler := utils.GetCustomLabeler(map[string]string{}, nn, app)
 	labeler(crb)
 
-	if err := cache.Update(PrometheusRoleBinding, crb); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(PrometheusRoleBinding, crb)
 }
 
 func createSubscription(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
@@ -197,9 +185,5 @@ func createSubscription(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error 
 		StartingCSV:         utils.StringPtr("prometheusoperator.0.47.0"),
 	}
 
-	if err := cache.Update(PrometheusSubscription, subObj); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(PrometheusSubscription, subObj)
 }

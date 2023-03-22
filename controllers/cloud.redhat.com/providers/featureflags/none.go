@@ -18,6 +18,6 @@ func (db *noneFeatureFlagProvider) EnvProvide() error {
 	return nil
 }
 
-func (db *noneFeatureFlagProvider) Provide(app *crd.ClowdApp) error {
+func (db *noneFeatureFlagProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }

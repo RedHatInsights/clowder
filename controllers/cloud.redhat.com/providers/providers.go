@@ -269,7 +269,7 @@ func ExtractSecretDataAnno(secrets []core.Secret, fn ExtractFnAnno, annoKey stri
 // MakeOrGetSecret tries to get the secret described by nn, if it exists it populates a map with the
 // key/value pairs from the secret. If it doesn't exist the dataInit function is run and the
 // resulting data is returned, as well as the secret being created.
-func MakeOrGetSecret(ctx context.Context, obj obj.ClowdObject, cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
+func MakeOrGetSecret(obj obj.ClowdObject, cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	if err := cache.Create(resourceIdent, nn, secret); err != nil {
 		return nil, err

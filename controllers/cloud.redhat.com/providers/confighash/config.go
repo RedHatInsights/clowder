@@ -36,10 +36,7 @@ func (ch *confighashProvider) envConfigMap(app *crd.ClowdApp, env core.EnvVar) e
 		}
 		return fmt.Errorf("could not get env configmap: %w", err)
 	}
-	if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
-		return err
-	}
-	return nil
+	return ch.HashCache.AddClowdObjectToObject(app, cf)
 }
 
 func (ch *confighashProvider) envSecret(app *crd.ClowdApp, env core.EnvVar) error {
@@ -63,10 +60,7 @@ func (ch *confighashProvider) envSecret(app *crd.ClowdApp, env core.EnvVar) erro
 		}
 		return fmt.Errorf("could not get env secret: %w", err)
 	}
-	if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
-		return err
-	}
-	return nil
+	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
 
 func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume) error {
@@ -87,10 +81,7 @@ func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume
 		}
 		return fmt.Errorf("could not get vol configmap: %w", err)
 	}
-	if err := ch.HashCache.AddClowdObjectToObject(app, cf); err != nil {
-		return err
-	}
-	return nil
+	return ch.HashCache.AddClowdObjectToObject(app, cf)
 }
 
 func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) error {
@@ -111,11 +102,7 @@ func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) e
 		}
 		return fmt.Errorf("could not get vol secret: %w", err)
 	}
-	if err := ch.HashCache.AddClowdObjectToObject(app, sec); err != nil {
-		return err
-	}
-
-	return nil
+	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
 
 func (ch *confighashProvider) iterateEnvVars(app *crd.ClowdApp, deployment apps.Deployment) error {

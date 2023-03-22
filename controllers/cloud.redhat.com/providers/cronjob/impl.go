@@ -36,12 +36,9 @@ func (j *cronjobProvider) makeCronJob(cronjob *crd.Job, app *crd.ClowdApp) error
 		return err
 	}
 
-	applyCronJob(app, j.Env, c, &pt, nn, cronjob)
+	applyCronJob(app, c, &pt, nn, cronjob)
 
-	if err := j.Cache.Update(CoreCronJob, c); err != nil {
-		return err
-	}
-	return nil
+	return j.Cache.Update(CoreCronJob, c)
 }
 
 func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.PodTemplateSpec, nn types.NamespacedName, cronjob *crd.Job) error {
@@ -163,7 +160,7 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 	return nil
 }
 
-func applyCronJob(app *crd.ClowdApp, env *crd.ClowdEnvironment, cj *batch.CronJob, pt *core.PodTemplateSpec, nn types.NamespacedName, cronjob *crd.Job) {
+func applyCronJob(app *crd.ClowdApp, cj *batch.CronJob, pt *core.PodTemplateSpec, nn types.NamespacedName, cronjob *crd.Job) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))

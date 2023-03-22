@@ -94,7 +94,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 		}
 	}
 
-	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, SharedDBSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(p.Env, p.Cache, SharedDBSecret, nn, dataInit)
 	if err != nil {
 		return nil, errors.Wrap("Couldn't set/get secret", err)
 	}

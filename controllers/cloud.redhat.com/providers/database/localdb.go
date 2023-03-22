@@ -107,7 +107,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
-	secMap, err := providers.MakeOrGetSecret(db.Ctx, app, db.Cache, LocalDBSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(app, db.Cache, LocalDBSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHTTPClientCacheSet(t *testing.T) {
+func TestHTTPClientCacheSet(_ *testing.T) {
 	hcc := newHTTPClientCahce()
 	client := http.Client{}
 	hcc.Set("test", &client)
@@ -23,7 +23,7 @@ func TestHTTPClientCacheGet(t *testing.T) {
 	assert.False(t, notOK)
 }
 
-func TestHTTPClientCacheRemove(t *testing.T) {
+func TestHTTPClientCacheRemove(_ *testing.T) {
 	hcc := newHTTPClientCahce()
 	client := http.Client{}
 	hcc.Set("test", &client)

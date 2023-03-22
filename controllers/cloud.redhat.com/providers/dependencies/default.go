@@ -19,9 +19,5 @@ func (dep *dependenciesProvider) EnvProvide() error {
 }
 
 func (dep *dependenciesProvider) Provide(app *crd.ClowdApp) error {
-
-	if err := dep.makeDependencies(app); err != nil {
-		return err
-	}
-	return nil
+	return dep.makeDependencies(app)
 }

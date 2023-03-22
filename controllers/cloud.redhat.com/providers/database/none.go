@@ -18,6 +18,6 @@ func (db *noneDbProvider) EnvProvide() error {
 	return nil
 }
 
-func (db *noneDbProvider) Provide(app *crd.ClowdApp) error {
+func (db *noneDbProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }

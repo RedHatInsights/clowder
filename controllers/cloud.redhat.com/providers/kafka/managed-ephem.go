@@ -104,11 +104,7 @@ func (mep *managedEphemProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	if err := mep.processTopics(app, httpClient, adminHostname); err != nil {
-		return err
-	}
-
-	return nil
+	return mep.processTopics(app, httpClient, adminHostname)
 }
 
 func NewManagedEphemKafkaFinalizer(p *providers.Provider) error {
@@ -329,11 +325,7 @@ func (mep *managedEphemProvider) createConnectSecret() error {
 	secret.SetNamespace(nn.Namespace)
 	secret.SetLabels(providers.Labels{"env": mep.Env.Name})
 
-	if err := mep.Cache.Update(EphemKafkaConnectSecret, secret); err != nil {
-		return err
-	}
-
-	return nil
+	return mep.Cache.Update(EphemKafkaConnectSecret, secret)
 }
 
 func (mep *managedEphemProvider) configureKafkaConnectCluster() error {
@@ -385,11 +377,7 @@ func (mep *managedEphemProvider) configCyndi(app *crd.ClowdApp) error {
 		return err
 	}
 
-	if err := createCyndiPipeline(mep, app, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env)); err != nil {
-		return err
-	}
-
-	return nil
+	return createCyndiPipeline(mep, app, getConnectNamespace(mep.Env), getConnectClusterName(mep.Env))
 }
 
 func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp, httpClient HTTPClient, adminHostname string) error {
@@ -404,7 +392,7 @@ func (mep *managedEphemProvider) processTopics(app *crd.ClowdApp, httpClient HTT
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := ephemGetTopicName(topic, *mep.Env)
 
-		err := mep.ephemProcessTopicValues(mep.Env, app, appList, topic, topicName, httpClient, adminHostname)
+		err := mep.ephemProcessTopicValues(mep.Env, appList, topic, topicName, httpClient, adminHostname)
 
 		if err != nil {
 			return err
@@ -592,7 +580,6 @@ func (mep *managedEphemProvider) handleKafkaHTTPError(resp *http.Response, msg s
 
 func (mep *managedEphemProvider) ephemProcessTopicValues(
 	env *crd.ClowdEnvironment,
-	app *crd.ClowdApp,
 	appList *crd.ClowdAppList,
 	topic crd.KafkaTopicSpec,
 	newTopicName string,

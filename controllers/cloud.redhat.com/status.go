@@ -575,7 +575,7 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 
 	o.Status.Completed = jobStatus
 	// Purposefully clobber this err
-	_ = UpdateInvokedJobStatus(ctx, jobs, o)
+	_ = UpdateInvokedJobStatus(jobs, o)
 
 	if !equality.Semantic.DeepEqual(*oldStatus, o.Status) {
 		if err := client.Status().Update(ctx, o); err != nil {

@@ -141,7 +141,7 @@ func GetRootStack(err error) string {
 }
 
 // LogError logs an error using the given contexts logger and a string.
-func LogError(ctx context.Context, name string, err *ClowderError) {
+func LogError(ctx context.Context, err *ClowderError) {
 	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
 	log.Error(err, err.Msg, "stack", GetRootStack(err))
 }

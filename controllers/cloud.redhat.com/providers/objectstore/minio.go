@@ -61,7 +61,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		return createDefaultMinioSecMap(nn.Name, nn.Namespace)
 	}
 	// MakeOrGetSecret will set data if it already exists
-	secMap, err := providers.MakeOrGetSecret(p.Ctx, p.Env, p.Cache, MinioSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(p.Env, p.Cache, MinioSecret, nn, dataInit)
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't set/get secret", err)
 		raisedErr.Requeue = true
@@ -275,11 +275,7 @@ func createNetworkPolicy(p *providers.Provider) error {
 	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
 	labeler(np)
 
-	if err := p.Cache.Update(MinioNetworkPolicy, np); err != nil {
-		return err
-	}
-
-	return nil
+	return p.Cache.Update(MinioNetworkPolicy, np)
 }
 
 func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {

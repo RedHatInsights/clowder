@@ -34,11 +34,7 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 		return err
 	}
 
-	if err := dp.Cache.Update(CoreDeployment, d); err != nil {
-		return err
-	}
-
-	return nil
+	return dp.Cache.Update(CoreDeployment, d)
 }
 
 func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {

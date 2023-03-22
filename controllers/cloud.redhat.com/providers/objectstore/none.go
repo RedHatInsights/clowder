@@ -18,6 +18,6 @@ func (k *noneObjectStoreProvider) EnvProvide() error {
 	return nil
 }
 
-func (k *noneObjectStoreProvider) Provide(app *crd.ClowdApp) error {
+func (k *noneObjectStoreProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }
