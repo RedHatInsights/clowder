@@ -61,6 +61,7 @@ func (sa *serviceaccountProvider) EnvProvide() error {
 
 	resourceIdentsToUpdate := []rc.ResourceIdent{
 		featureflags.LocalFFDBDeployment,
+		featureflags.LocalFFDeployment,
 		objectstore.MinioDeployment,
 		database.SharedDBDeployment,
 	}
