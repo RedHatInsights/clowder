@@ -42,11 +42,7 @@ func CreateServiceAccount(cache *rc.ObjectCache, ident rc.ResourceIdent, nn type
 
 	labeler(sa)
 
-	if err := cache.Update(ident, sa); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(ident, sa)
 }
 
 func CreateRoleBinding(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object), accessLevel crd.K8sAccessLevel) error {
@@ -79,9 +75,5 @@ func CreateRoleBinding(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.N
 		rb.RoleRef.Name = "edit"
 	}
 
-	if err := cache.Update(ident, rb); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(ident, rb)
 }

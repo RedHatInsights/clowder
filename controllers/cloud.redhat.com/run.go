@@ -136,7 +136,7 @@ func addControllersToManager(mgr manager.Manager) error {
 		Log:       ctrl.Log.WithName("controllers").WithName("ClowdApp"),
 		Scheme:    mgr.GetScheme(),
 		HashCache: &AppHashCache,
-	}).SetupWithManager(mgr, &AppHashCache); err != nil {
+	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdApp")
 		return err
 	}
@@ -145,7 +145,7 @@ func addControllersToManager(mgr manager.Manager) error {
 		Log:       ctrl.Log.WithName("controllers").WithName("ClowdEnvironment"),
 		Scheme:    mgr.GetScheme(),
 		HashCache: &EnvHashCache,
-	}).SetupWithManager(mgr, &EnvHashCache); err != nil {
+	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdEnvironment")
 		return err
 	}

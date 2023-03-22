@@ -435,11 +435,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 	k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
 
-	if err := s.Cache.Update(KafkaInstance, k); err != nil {
-		return err
-	}
-
-	return nil
+	return s.Cache.Update(KafkaInstance, k)
 }
 
 func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, error) {
@@ -536,11 +532,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 		})
 	}
 
-	if err := s.Cache.Update(KafkaConnectUser, ku); err != nil {
-		return err
-	}
-
-	return nil
+	return s.Cache.Update(KafkaConnectUser, ku)
 }
 
 func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConfig) error {
@@ -671,11 +663,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 	k.SetNamespace(getConnectNamespace(s.Env))
 	k.SetLabels(providers.Labels{"env": s.Env.Name})
 
-	if err := s.Cache.Update(KafkaConnect, k); err != nil {
-		return err
-	}
-
-	return nil
+	return s.Cache.Update(KafkaConnect, k)
 }
 
 func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error {
@@ -819,11 +807,7 @@ func createNetworkPolicies(p *providers.Provider) error {
 	labeler := utils.GetCustomLabeler(nil, nn, p.Env)
 	labeler(np)
 
-	if err := p.Cache.Update(KafkaNetworkPolicy, np); err != nil {
-		return err
-	}
-
-	return nil
+	return p.Cache.Update(KafkaNetworkPolicy, np)
 }
 
 func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *config.KafkaConfig) error {
@@ -932,11 +916,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 		},
 	})
 
-	if err := s.Cache.Update(KafkaUser, ku); err != nil {
-		return err
-	}
-
-	return nil
+	return s.Cache.Update(KafkaUser, ku)
 }
 
 func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig) error {
@@ -976,7 +956,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig
 
 		k.Spec = &strimzi.KafkaTopicSpec{}
 
-		err := processTopicValues(k, s.Env, app, appList, topic)
+		err := processTopicValues(k, s.Env, appList, topic)
 
 		if err != nil {
 			return err
@@ -1007,7 +987,6 @@ func getTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment, namespace 
 func processTopicValues(
 	k *strimzi.KafkaTopic,
 	env *crd.ClowdEnvironment,
-	app *crd.ClowdApp,
 	appList *crd.ClowdAppList,
 	topic crd.KafkaTopicSpec,
 ) error {

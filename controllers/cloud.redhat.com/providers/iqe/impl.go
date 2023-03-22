@@ -101,7 +101,7 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 	return &c
 }
 
-func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) *core.Container {
+func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment) *core.Container {
 	// set image tag
 	image := env.Spec.Providers.Testing.Iqe.UI.Selenium.ImageBase
 	if image == "" {
@@ -143,7 +143,7 @@ func createSeleniumContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.C
 	return &c
 }
 
-func attachConfigVolumes(ctx context.Context, c *core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, j *batchv1.Job, logger logr.Logger, client client.Client) error {
+func attachConfigVolumes(ctx context.Context, c *core.Container, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, j *batchv1.Job, logger logr.Logger, client client.Client) error {
 	j.Spec.Template.Spec.Volumes = []core.Volume{}
 
 	configAccess := env.Spec.Providers.Testing.ConfigAccess
@@ -151,7 +151,7 @@ func attachConfigVolumes(ctx context.Context, c *core.Container, cache *rc.Objec
 	switch configAccess {
 	// Build cdenvconfig.json and mount it
 	case "environment":
-		if secretErr := addIqeSecretToCache(ctx, cache, cji, app, env.Name, logger, client); secretErr != nil {
+		if secretErr := addIqeSecretToCache(ctx, cache, cji, app, logger, client); secretErr != nil {
 			logger.Error(secretErr, "cannot add IQE secret to cache")
 			return secretErr
 		}
@@ -235,14 +235,14 @@ func CreateIqeJobResource(ctx context.Context, cache *rc.ObjectCache, cji *crd.C
 	}
 
 	// Mount volumes to the IQE container
-	if err := attachConfigVolumes(ctx, iqeContainer, cache, cji, env, app, nn, j, logger, client); err != nil {
+	if err := attachConfigVolumes(ctx, iqeContainer, cache, cji, env, app, j, logger, client); err != nil {
 		return err
 	}
 
 	containers := []core.Container{*iqeContainer}
 
 	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
-		selContainer := createSeleniumContainer(j, nn, cji, env, app)
+		selContainer := createSeleniumContainer(j, cji, env)
 		containers = append(containers, *selContainer)
 	}
 
@@ -340,7 +340,7 @@ func addVaultSecretToCache(ctx context.Context, cache *rc.ObjectCache, cji *crd.
 	return vaultSecret, err
 }
 
-func addIqeSecretToCache(ctx context.Context, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, envName string, logger logr.Logger, client client.Client) error {
+func addIqeSecretToCache(ctx context.Context, cache *rc.ObjectCache, cji *crd.ClowdJobInvocation, app *crd.ClowdApp, logger logr.Logger, client client.Client) error {
 	iqeSecret := &core.Secret{}
 	secretName := fmt.Sprintf("%s-iqe", cji.Name)
 

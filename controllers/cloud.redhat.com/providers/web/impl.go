@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -19,7 +18,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -32,7 +30,7 @@ var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Servi
 
 var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
-func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
+func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
 	nn := app.GetDeploymentNamespacedName(deployment)
@@ -172,11 +170,7 @@ func makeService(ctx context.Context, rclient client.Client, cache *rc.ObjectCac
 		return err
 	}
 
-	if err := cache.Update(deployProvider.CoreDeployment, d); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
 func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32) error {
@@ -203,10 +197,7 @@ func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 		"envoy.json": cmData,
 	}
 
-	if err := cache.Update(CoreEnvoyConfigMap, cm); err != nil {
-		return err
-	}
-	return nil
+	return cache.Update(CoreEnvoyConfigMap, cm)
 }
 
 func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
@@ -314,14 +305,10 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 
 	userData.StringData["redhat-external-realm.json"] = string(userImportDataString)
 
-	if err := cache.Update(WebKeycloakImportSecret, userData); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(WebKeycloakImportSecret, userData)
 }
 
-func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)
@@ -468,7 +455,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 
 }
 
-func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mbop")
 
@@ -598,7 +585,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 
 }
 
-func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mocktitlements")
 

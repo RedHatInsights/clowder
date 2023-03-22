@@ -34,7 +34,7 @@ func logMessage(logr logr.Logger, msg string, keysAndValues ...interface{}) {
 	logr.Info(msg, keysAndValues...)
 }
 
-func defaultFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+func defaultFilter(_ logr.Logger, _ string) HandlerFuncs {
 	return HandlerFuncs{
 		CreateFunc: func(e event.CreateEvent) (bool, string) {
 			return true, "create"
@@ -118,7 +118,7 @@ func kafkaFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
 	return genFilterFunc(kafkaUpdateFunc, logr, ctrlName)
 }
 
-func environmentPredicate(logr logr.Logger, ctrlName string) predicate.Predicate {
+func environmentPredicate(_ logr.Logger, _ string) predicate.Predicate {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return true

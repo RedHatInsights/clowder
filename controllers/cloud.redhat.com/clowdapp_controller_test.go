@@ -25,7 +25,7 @@ func TestReconcileMetricsStartEnabled(t *testing.T) {
 	assert.NotEmpty(t, reconciler.reconcileStartTime)
 }
 
-func TestReconcileMetricsEndEnabled(t *testing.T) {
+func TestReconcileMetricsEndEnabled(_ *testing.T) {
 	// After hours of messing with the prometheus lib I'm convinced there's no way
 	// to read metrics from it. Metrics go into it, but you don't get metrics out of it
 	// I originally wanted to assert on some valid equivalent of reconciliationMetrics is empty

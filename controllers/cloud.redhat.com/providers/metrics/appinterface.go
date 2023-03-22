@@ -25,7 +25,7 @@ func (m *appinterfaceMetricsProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
-		if err := createServiceMonitorObjects(m.Cache, m.Env, app, m.Config, "app-sre", "openshift-customer-monitoring"); err != nil {
+		if err := createServiceMonitorObjects(m.Cache, m.Env, app, "app-sre", "openshift-customer-monitoring"); err != nil {
 			return err
 		}
 	}

@@ -23,7 +23,7 @@ type mutantPod struct {
 	decoder  *admission.Decoder
 }
 
-func (p *mutantPod) Handle(ctx context.Context, req admission.Request) admission.Response {
+func (p *mutantPod) Handle(_ context.Context, req admission.Request) admission.Response {
 	pod := &core.Pod{}
 
 	err := p.decoder.Decode(req, pod)

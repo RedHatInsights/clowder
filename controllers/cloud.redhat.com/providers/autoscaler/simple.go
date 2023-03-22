@@ -43,10 +43,7 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 // Adds the HPA to the resource cache
 func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment crd.Deployment, hpaResource v2.HorizontalPodAutoscaler) error {
 	nn := app.GetDeploymentNamespacedName(&deployment)
-	if err := sp.Cache.Create(SimpleAutoScaler, nn, &hpaResource); err != nil {
-		return err
-	}
-	return nil
+	return sp.Cache.Create(SimpleAutoScaler, nn, &hpaResource)
 }
 
 // Get the core apps.Deployment from the provider cache

@@ -56,7 +56,7 @@ func (r *ClowdApp) ValidateCreate() error {
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateUpdate(old runtime.Object) error {
+func (r *ClowdApp) ValidateUpdate(_ runtime.Object) error {
 	clowdapplog.Info("validate update", "name", r.Name)
 
 	return r.processValidations(r,

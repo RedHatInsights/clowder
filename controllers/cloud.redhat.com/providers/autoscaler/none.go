@@ -18,6 +18,6 @@ func (db *noneAutoScalerProvider) EnvProvide() error {
 	return nil
 }
 
-func (db *noneAutoScalerProvider) Provide(app *crd.ClowdApp) error {
+func (db *noneAutoScalerProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }

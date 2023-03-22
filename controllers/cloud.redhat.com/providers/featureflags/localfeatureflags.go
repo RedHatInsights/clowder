@@ -108,7 +108,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		}
 	}
 
-	secMap, err := providers.MakeOrGetSecret(ff.Ctx, ff.Env, ff.Cache, LocalFFDBSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(ff.Env, ff.Cache, LocalFFDBSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
@@ -167,7 +167,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
-func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp) error {
+func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 	ff.Config.FeatureFlags = &config.FeatureFlagsConfig{
 		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
 		Port:     4242,
@@ -177,7 +177,7 @@ func (ff *localFeatureFlagsProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "featureflags")
 
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)

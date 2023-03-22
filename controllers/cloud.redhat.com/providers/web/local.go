@@ -8,7 +8,6 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
@@ -118,7 +117,7 @@ func (web *localWebProvider) EnvProvide() error {
 		}
 	}
 
-	dataMap, err := providers.MakeOrGetSecret(web.Ctx, web.Env, web.Cache, WebKeycloakSecret, nn, dataInit)
+	dataMap, err := providers.MakeOrGetSecret(web.Env, web.Cache, WebKeycloakSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("couldn't set/get secret", err)
 	}
@@ -158,7 +157,7 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := makeMocktitlementsSecret(&web.Provider, web.Config); err != nil {
+	if err := makeMocktitlementsSecret(&web.Provider); err != nil {
 		return err
 	}
 
@@ -195,7 +194,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
-		if err := makeService(web.Ctx, web.Client, web.Cache, &innerDeployment, app, web.Env); err != nil {
+		if err := makeService(web.Cache, &innerDeployment, app, web.Env); err != nil {
 			return err
 		}
 
@@ -288,7 +287,7 @@ func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVer
 	return nil
 }
 
-func makeMocktitlementsSecret(p *providers.Provider, cfg *config.AppConfig) error {
+func makeMocktitlementsSecret(p *providers.Provider) error {
 	nn := types.NamespacedName{
 		Name:      "caddy-config-mocktitlements",
 		Namespace: p.Env.GetClowdNamespace(),
@@ -341,10 +340,7 @@ func makeMocktitlementsSecret(p *providers.Provider, cfg *config.AppConfig) erro
 		return err
 	}
 
-	if err := p.Cache.Update(WebSecret, sec); err != nil {
-		return err
-	}
-	return nil
+	return p.Cache.Update(WebSecret, sec)
 }
 
 func makeMocktitlementsIngress(p *providers.Provider) error {
@@ -396,10 +392,7 @@ func makeMocktitlementsIngress(p *providers.Provider) error {
 		},
 	}
 
-	if err := p.Cache.Update(WebMocktitlementsIngress, netobj); err != nil {
-		return err
-	}
-	return nil
+	return p.Cache.Update(WebMocktitlementsIngress, netobj)
 }
 
 func makeAuthIngress(p *providers.Provider) error {
@@ -451,10 +444,7 @@ func makeAuthIngress(p *providers.Provider) error {
 		},
 	}
 
-	if err := p.Cache.Update(WebKeycloakIngress, netobj); err != nil {
-		return err
-	}
-	return nil
+	return p.Cache.Update(WebKeycloakIngress, netobj)
 }
 
 func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.Deployment) error {
@@ -514,11 +504,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 		},
 	}
 
-	if err := web.Cache.Update(WebIngress, netobj); err != nil {
-		return err
-	}
-
-	return nil
+	return web.Cache.Update(WebIngress, netobj)
 }
 
 func getAuthHostname(hostname string) string {

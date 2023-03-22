@@ -186,7 +186,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		// We have a match that isn't running and can invoke the job
 		r.Log.Info("Invoking job", "jobinvocation", job.Name, "namespace", app.Namespace)
 
-		if err := r.InvokeJob(ctx, &cache, &job, &app, &env, &cji); err != nil {
+		if err := r.InvokeJob(&cache, &job, &app, &env, &cji); err != nil {
 			r.Log.Error(err, "Job Invocation Failed", "jobinvocation", jobName, "namespace", app.Namespace)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
 				return ctrl.Result{}, condErr
@@ -260,7 +260,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 // InvokeJob is responsible for applying the Job. It also updates and reports
 // the status of that job
-func (r *ClowdJobInvocationReconciler) InvokeJob(ctx context.Context, cache *rc.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
+func (r *ClowdJobInvocationReconciler) InvokeJob(cache *rc.ObjectCache, job *crd.Job, app *crd.ClowdApp, env *crd.ClowdEnvironment, cji *crd.ClowdJobInvocation) error {
 	// Update job name to avoid collisions
 	randomString := utils.RandStringLower(7)
 	jobName := fmt.Sprintf("%s-%s", job.Name, randomString)
@@ -322,7 +322,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Complete(r)
 }
 
-func UpdateInvokedJobStatus(ctx context.Context, jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
+func UpdateInvokedJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
 
 	for j := range cji.Status.JobMap {
 		for _, s := range jobs.Items {

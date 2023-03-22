@@ -22,7 +22,7 @@ func (ff *appInterfaceFeatureFlagProvider) EnvProvide() error {
 	return nil
 }
 
-func (ff *appInterfaceFeatureFlagProvider) Provide(app *crd.ClowdApp) error {
+func (ff *appInterfaceFeatureFlagProvider) Provide(_ *crd.ClowdApp) error {
 	emptyNN := crd.NamespacedName{}
 	if ff.Env.Spec.Providers.FeatureFlags.CredentialRef == emptyNN {
 		return errors.NewClowderError("no feature flag secret defined")

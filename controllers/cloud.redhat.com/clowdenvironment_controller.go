@@ -216,7 +216,7 @@ func runProvidersForEnvFinalize(log logr.Logger, provider providers.Provider) er
 }
 
 // SetupWithManager sets up with manager
-func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager, hashCache *hashcache.HashCache) error {
+func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})

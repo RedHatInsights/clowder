@@ -111,11 +111,7 @@ func createCyndiPipeline(
 	// are not permitted, make this owned by the ClowdEnvironment
 	pipeline.SetOwnerReferences([]metav1.OwnerReference{s.GetEnv().MakeOwnerReference()})
 
-	if err := s.GetCache().Update(CyndiPipeline, pipeline); err != nil {
-		return err
-	}
-
-	return nil
+	return s.GetCache().Update(CyndiPipeline, pipeline)
 }
 
 func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (*core.Secret, error) {
@@ -174,7 +170,7 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 		case "app-interface":
 			if app.Spec.Database.Name != "" {
 				rdsCaBundleURL := s.GetEnv().Spec.Providers.Database.CaBundleURL
-				dbConfig, err := db.GetDbConfig(s.GetCtx(), s.GetClient(), app.Namespace, app.Name, app.Name, app.Spec.Database, rdsCaBundleURL)
+				dbConfig, err := db.GetDbConfig(s.GetCtx(), s.GetClient(), app.Namespace, app.Name, app.Spec.Database, rdsCaBundleURL)
 
 				if err != nil {
 					return nil, errors.Wrap("could not get database config", err)
@@ -220,11 +216,7 @@ func applySecretToConnectNamespace(
 	// are not permitted, make this owned by the ClowdEnvironment
 	secret.SetOwnerReferences([]metav1.OwnerReference{s.GetEnv().MakeOwnerReference()})
 
-	if err := s.GetCache().Update(resourceIdent, secret); err != nil {
-		return err
-	}
-
-	return nil
+	return s.GetCache().Update(resourceIdent, secret)
 }
 
 // create a secret that tells the cyndi operator how to connect to an app's db
@@ -323,9 +315,5 @@ func createCyndiConfigMap(
 	// are not permitted, make this owned by the ClowdEnvironment
 	cm.SetOwnerReferences([]metav1.OwnerReference{s.GetEnv().MakeOwnerReference()})
 
-	if err := s.GetCache().Update(CyndiConfigMap, cm); err != nil {
-		return err
-	}
-
-	return nil
+	return s.GetCache().Update(CyndiConfigMap, cm)
 }

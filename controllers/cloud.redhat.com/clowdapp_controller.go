@@ -164,7 +164,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // SetupWithManager sets up with Manager
-func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager, hashCache *hashcache.HashCache) error {
+func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager")
 	utils.Log = r.Log.WithValues("name", "util")
 	r.Recorder = mgr.GetEventRecorderFor("app")

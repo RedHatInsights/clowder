@@ -19,7 +19,7 @@ func (a *noneLoggingProvider) EnvProvide() error {
 	return nil
 }
 
-func (a *noneLoggingProvider) Provide(app *crd.ClowdApp) error {
+func (a *noneLoggingProvider) Provide(_ *crd.ClowdApp) error {
 	a.Config.Logging = config.LoggingConfig{
 		Cloudwatch: &config.CloudWatchConfig{
 			AccessKeyId:     "",

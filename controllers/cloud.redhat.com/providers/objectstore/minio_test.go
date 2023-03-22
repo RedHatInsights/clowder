@@ -34,7 +34,7 @@ type mockBucketHandler struct {
 	MockBuckets           []mockBucket
 }
 
-func (c *mockBucketHandler) Exists(ctx context.Context, bucketName string) (bool, error) {
+func (c *mockBucketHandler) Exists(_ context.Context, bucketName string) (bool, error) {
 	// track the calls to this mock func
 	c.ExistsCalls = append(c.ExistsCalls, bucketName)
 
@@ -50,7 +50,7 @@ func (c *mockBucketHandler) Exists(ctx context.Context, bucketName string) (bool
 	return false, nil
 }
 
-func (c *mockBucketHandler) Make(ctx context.Context, bucketName string) (err error) {
+func (c *mockBucketHandler) Make(_ context.Context, bucketName string) (err error) {
 	// track the calls to this mock func
 	c.MakeCalls = append(c.MakeCalls, bucketName)
 
@@ -126,34 +126,34 @@ type FakeClient struct {
 type FakeStatus struct {
 }
 
-func (fc *FakeClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+func (fc *FakeClient) Create(_ context.Context, _ client.Object, _ ...client.CreateOption) error {
 	return nil
 }
 
-func (fc *FakeClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+func (fc *FakeClient) Delete(_ context.Context, _ client.Object, _ ...client.DeleteOption) error {
 	return nil
 }
 
-func (fc *FakeClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (fc *FakeClient) Update(_ context.Context, _ client.Object, _ ...client.UpdateOption) error {
 	return nil
 }
 
-func (fc *FakeClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (fc *FakeClient) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.PatchOption) error {
 	return nil
 }
 
-func (fc *FakeClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+func (fc *FakeClient) DeleteAllOf(_ context.Context, _ client.Object, _ ...client.DeleteAllOfOption) error {
 	return nil
 }
 
-func (fc *FakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+func (fc *FakeClient) Get(_ context.Context, _ client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
 	p, _ := obj.(*core.Secret)
 	p.Data = make(map[string][]byte)
 	p.Data["port"] = []byte("2345")
 	return nil
 }
 
-func (fc *FakeClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+func (fc *FakeClient) List(_ context.Context, _ client.ObjectList, _ ...client.ListOption) error {
 	return nil
 }
 
@@ -169,11 +169,11 @@ func (fc *FakeClient) Status() client.StatusWriter {
 	return &FakeStatus{}
 }
 
-func (fc *FakeStatus) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (fc *FakeStatus) Update(_ context.Context, _ client.Object, _ ...client.UpdateOption) error {
 	return nil
 }
 
-func (fc *FakeStatus) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (fc *FakeStatus) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.PatchOption) error {
 	return nil
 }
 

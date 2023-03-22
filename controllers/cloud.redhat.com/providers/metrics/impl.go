@@ -56,11 +56,7 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		return err
 	}
 
-	if err := cache.Update(deployProvider.CoreDeployment, d); err != nil {
-		return err
-	}
-
-	return nil
+	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
 func createMetricsOnDeployments(cache *rc.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig) error {
@@ -77,7 +73,7 @@ func createMetricsOnDeployments(cache *rc.ObjectCache, env *crd.ClowdEnvironment
 	return nil
 }
 
-func createServiceMonitorObjects(cache *rc.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig, promLabel string, namespace string) error {
+func createServiceMonitorObjects(cache *rc.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, promLabel string, namespace string) error {
 	for _, deployment := range app.Spec.Deployments {
 		sm := &prom.ServiceMonitor{}
 		name := fmt.Sprintf("%s-%s", app.Name, deployment.Name)

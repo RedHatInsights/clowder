@@ -113,7 +113,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	}
 
 	rdsCaBundleURL := a.Env.Spec.Providers.Database.CaBundleURL
-	matched, err := GetDbConfig(a.Ctx, a.Client, namespace, app.Name, searchAppName, dbSpec, rdsCaBundleURL)
+	matched, err := GetDbConfig(a.Ctx, a.Client, namespace, searchAppName, dbSpec, rdsCaBundleURL)
 
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 }
 
 func GetDbConfig(
-	ctx context.Context, pClient client.Client, namespace, appName, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
+	ctx context.Context, pClient client.Client, namespace, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
 ) (*config.DatabaseConfigContainer, error) {
 	secrets := core.SecretList{}
 	err := pClient.List(ctx, &secrets, client.InNamespace(namespace))

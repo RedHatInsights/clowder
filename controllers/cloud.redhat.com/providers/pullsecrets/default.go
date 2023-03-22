@@ -45,10 +45,7 @@ func (ps *pullsecretProvider) EnvProvide() error {
 
 	addAllSecrets(secList, sa)
 
-	if err := ps.Cache.Update(serviceaccount.CoreEnvServiceAccount, sa); err != nil {
-		return err
-	}
-	return nil
+	return ps.Cache.Update(serviceaccount.CoreEnvServiceAccount, sa)
 }
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
@@ -94,11 +91,7 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 
 	addAllSecrets(secList, sa)
 
-	if err := ps.Cache.Update(serviceaccount.CoreAppServiceAccount, sa); err != nil {
-		return err
-	}
-
-	return nil
+	return ps.Cache.Update(serviceaccount.CoreAppServiceAccount, sa)
 }
 
 func copyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {

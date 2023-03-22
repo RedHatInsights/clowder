@@ -24,7 +24,7 @@ func (ch *servicemeshProvider) EnvProvide() error {
 	return nil
 }
 
-func (ch *servicemeshProvider) Provide(app *crd.ClowdApp) error {
+func (ch *servicemeshProvider) Provide(_ *crd.ClowdApp) error {
 	if ch.Env.Spec.Providers.ServiceMesh.Mode != "enabled" {
 		return nil
 	}

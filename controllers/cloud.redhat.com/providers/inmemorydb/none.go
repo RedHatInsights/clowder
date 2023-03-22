@@ -18,6 +18,6 @@ func (r *noneInMemoryDbProvider) EnvProvide() error {
 	return nil
 }
 
-func (r *noneInMemoryDbProvider) Provide(app *crd.ClowdApp) error {
+func (r *noneInMemoryDbProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }

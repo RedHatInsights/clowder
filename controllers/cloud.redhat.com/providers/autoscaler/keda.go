@@ -26,11 +26,7 @@ func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.Ap
 
 	initAutoScaler(asp.Env, app, d, s, nn, deployment, c)
 
-	if err := asp.Cache.Update(CoreAutoScaler, s); err != nil {
-		return err
-	}
-
-	return nil
+	return asp.Cache.Update(CoreAutoScaler, s)
 }
 
 func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment crd.Deployment) error {
