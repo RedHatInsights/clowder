@@ -226,4 +226,14 @@ func addCertVolume(d *apps.Deployment, dnn string) {
 		}
 		d.Spec.Template.Spec.Containers[i].VolumeMounts = vms
 	}
+
+	for i, iContainer := range d.Spec.Template.Spec.InitContainers {
+		vms := iContainer.VolumeMounts
+		vms = append(vms, v1.VolumeMount{
+			Name:      "tls-ca",
+			ReadOnly:  true,
+			MountPath: "/cdapp/certs",
+		})
+		d.Spec.Template.Spec.InitContainers[i].VolumeMounts = vms
+	}
 }
