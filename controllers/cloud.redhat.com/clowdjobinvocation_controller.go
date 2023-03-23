@@ -175,7 +175,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		job, err := getJobFromName(jobName, &app)
 		if err != nil {
 			r.Recorder.Eventf(&app, "Warning", "JobNameMissing", "ClowdApp [%s] has no job defined for that name", jobName)
-			r.Log.Info("Missing Job Definition", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
+			r.Log.Info("Error finding job", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace, "err", err)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
 				return ctrl.Result{}, condErr
 			}
@@ -304,6 +304,9 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *rc.ObjectCache, job *crd
 func getJobFromName(jobName string, app *crd.ClowdApp) (job crd.Job, err error) {
 	for _, j := range app.Spec.Jobs {
 		if j.Name == jobName {
+			if j.Disabled {
+				return crd.Job{}, errors.NewClowderError(fmt.Sprintf("Job [%s] is disabled", jobName))
+			}
 			return j, nil
 		}
 	}

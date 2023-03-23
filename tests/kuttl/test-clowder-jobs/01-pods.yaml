@@ -102,6 +102,31 @@ spec:
         - /bin/sh
         - -c
         - echo "Hello!"
+    - name: im-disabled
+      # testing that a cronjob is not created
+      # when the disabled flag is set to false
+      schedule: "*/1 * * * *"
+      restartPolicy: OnFailure
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        args:
+          - ./clowder-hello
+          - boo
+      disabled: true
+    - name: hello-cji-disabled
+      # Testing incorrect specs, should be thrown away
+      # because it goes to a different controller
+      # without a schedule attribute
+      disabled: true
+      suspend: false
+      activeDeadlineSeconds: 6000
+      successfulJobsHistoryLimit: 1
+      podSpec:
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - echo "Hello!"
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
@@ -112,3 +137,13 @@ spec:
   appName: puptoo
   jobs:
     - hello-cji
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: runner-disabled
+  namespace: test-clowder-jobs
+spec:
+  appName: puptoo
+  jobs:
+    - hello-cji-disabled

@@ -56,7 +56,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, cronJob := range app.Spec.Jobs {
 		innerCronJob := cronJob
-		if innerCronJob.Schedule == "" {
+		if innerCronJob.Schedule == "" || innerCronJob.Disabled {
 			continue
 		}
 		cj := &batch.CronJob{}
