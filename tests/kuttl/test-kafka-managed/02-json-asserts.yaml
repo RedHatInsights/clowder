@@ -15,3 +15,4 @@ commands:
 - script: jq -r '.kafka.brokers[].sasl.password == "kafka-password"' -e < /tmp/test-kafka-managed-json
 - script: jq -r '.kafka.brokers[].sasl.securityProtocol == "SASL_SSL"' -e < /tmp/test-kafka-managed-json
 - script: jq -r '.kafka.brokers[].sasl.saslMechanism == "PLAIN"' -e < /tmp/test-kafka-managed-json
+- script: jq -r '.kafka.brokers[].securityProtocol == "SASL_SSL"' -e < /tmp/test-kafka-managed-json
