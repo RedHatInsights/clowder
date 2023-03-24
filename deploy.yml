@@ -2995,6 +2995,11 @@ objects:
                         description: Defines the concurrency policy for the CronJob,
                           defaults to Allow Only applies to Cronjobs
                         type: string
+                      disabled:
+                        description: Disabled allows a job to be disabled, as such,
+                          the resource is not created on the system and cannot be
+                          invoked with a CJI
+                        type: boolean
                       failedJobsHistoryLimit:
                         description: The number of failed finished jobs to retain.
                           Value must be non-negative integer. Defaults to 1. Only

@@ -27,7 +27,7 @@ func (j *cronjobProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, cronjob := range app.Spec.Jobs {
 		innerCronjob := cronjob
-		if innerCronjob.Schedule != "" {
+		if innerCronjob.Schedule != "" && !innerCronjob.Disabled {
 			if err := j.makeCronJob(&innerCronjob, app); err != nil {
 				return err
 			}

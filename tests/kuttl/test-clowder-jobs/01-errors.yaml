@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: puptoo-im-disabled
+  namespace: test-clowder-jobs
+spec:
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+            "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+        spec:
+          serviceAccount: puptoo-app
+          serviceAccountName: puptoo-app
+          containers:
+            - name: puptoo-im-disabled
+              image: quay.io/psav/clowder-hello
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: test-clowder-jobs
+  labels:
+    job: puptoo-hello-cji-disabled
+spec:
+  activeDeadlineSeconds: 6000
+  template:
+    metadata:
+      annotations:
+        "ignore-check.kube-linter.io/no-liveness-probe": "probes not required on Job pods"
+        "ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods"
+    spec:
+      serviceAccount: puptoo-app
+      serviceAccountName: puptoo-app
+      containers:
+        - image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - echo "Hello!"

@@ -86,6 +86,10 @@ type Job struct {
 	// CronJob resource, the container will be name identically.
 	Name string `json:"name"`
 
+	// Disabled allows a job to be disabled, as such, the resource is not
+	// created on the system and cannot be invoked with a CJI
+	Disabled bool `json:"disabled,omitempty"`
+
 	// Defines the schedule for the job to run
 	Schedule string `json:"schedule,omitempty"`
 

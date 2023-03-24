@@ -1,4 +1,12 @@
 ---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-clowder-jobs
+status:
+  ready: true
+---
 apiVersion: v1
 kind: Secret
 metadata:
@@ -151,3 +159,26 @@ spec:
           - /bin/sh
           - -c
           - echo "Hello!"
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: runner-disabled
+  namespace: test-clowder-jobs
+spec:
+  appName: puptoo
+  jobs:
+  - hello-cji-disabled
+status:
+  completed: false
+  conditions:
+  - message: Some Jobs are still incomplete
+    reason: 'Job [hello-cji-disabled] is disabled: '
+    status: "False"
+    type: JobInvocationComplete
+  - reason: 'Job [hello-cji-disabled] is disabled: '
+    status: "True"
+    type: ReconciliationFailed
+  - status: "False"
+    type: ReconciliationSuccessful
+  jobMap: {}
