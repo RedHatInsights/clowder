@@ -10,8 +10,6 @@ import (
 	router "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
 	httpconman "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	tls "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
-	apps "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -202,38 +200,4 @@ func generateEnvoyConfig(pub bool, priv bool, pubPort uint32, privPort uint32) (
 		return "", err
 	}
 	return string(configString), nil
-}
-
-func addCertVolume(d *apps.Deployment, dnn string) {
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, v1.Volume{
-		Name: "tls-ca",
-		VolumeSource: v1.VolumeSource{
-			ConfigMap: &v1.ConfigMapVolumeSource{
-				LocalObjectReference: v1.LocalObjectReference{
-					Name: "openshift-service-ca.crt",
-				},
-			},
-		},
-	})
-	for i, container := range d.Spec.Template.Spec.Containers {
-		vms := container.VolumeMounts
-		if container.Name == dnn {
-			vms = append(vms, v1.VolumeMount{
-				Name:      "tls-ca",
-				ReadOnly:  true,
-				MountPath: "/cdapp/certs",
-			})
-		}
-		d.Spec.Template.Spec.Containers[i].VolumeMounts = vms
-	}
-
-	for i, iContainer := range d.Spec.Template.Spec.InitContainers {
-		vms := iContainer.VolumeMounts
-		vms = append(vms, v1.VolumeMount{
-			Name:      "tls-ca",
-			ReadOnly:  true,
-			MountPath: "/cdapp/certs",
-		})
-		d.Spec.Template.Spec.InitContainers[i].VolumeMounts = vms
-	}
 }

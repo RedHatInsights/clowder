@@ -239,7 +239,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		}
 
 		if web.Env.Spec.Providers.Web.TLS.Enabled {
-			addCertVolume(d, dnn.Name)
+			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
 		}
 
 		annotations := map[string]string{

@@ -13,5 +13,5 @@ func GetCronJob(c *p.Provider) (p.ClowderProvider, error) {
 }
 
 func init() {
-	p.ProvidersRegistration.Register(GetCronJob, 4, ProvName)
+	p.ProvidersRegistration.Register(GetCronJob, 0, ProvName)
 }

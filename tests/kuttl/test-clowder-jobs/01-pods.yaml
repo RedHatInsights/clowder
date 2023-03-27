@@ -9,6 +9,11 @@ spec:
     web:
       port: 8000
       mode: operator
+      privatePort: 10000
+      tls:
+        enabled: true
+        port: 8800
+        privatePort: 18800
     metrics:
       port: 9000
       mode: operator
@@ -147,3 +152,35 @@ spec:
   appName: puptoo
   jobs:
     - hello-cji-disabled
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ingress
+  namespace: test-clowder-jobs
+spec:
+  dnsNames:
+  - puptoo-processor.test-clowder-jobs.svc
+  - puptoo-processor.test-clowder-jobs.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: puptoo-processor-serving-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: test-clowder-jobs
+spec:
+  selfSigned: {}
+---
+apiVersion: v1
+data:
+  service-ca.crt: test-ca
+kind: ConfigMap
+metadata:
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+  name: openshift-service-ca.crt
+  namespace: test-clowder-jobs
