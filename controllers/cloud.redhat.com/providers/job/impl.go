@@ -137,6 +137,10 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 		},
 	})
 
+	if env.Spec.Providers.Web.TLS.Enabled {
+		provutils.AddCertVolume(&j.Spec.Template.Spec, nn.Name)
+	}
+
 	utils.UpdateAnnotations(&j.Spec.Template, provutils.KubeLinterAnnotations, cji.Annotations)
 	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations, app.ObjectMeta.Annotations)
 

@@ -14,6 +14,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -242,3 +243,37 @@ var KubeLinterAnnotations = map[string]string{
 }
 
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+func AddCertVolume(d *v1.PodSpec, dnn string) {
+	d.Volumes = append(d.Volumes, v1.Volume{
+		Name: "tls-ca",
+		VolumeSource: v1.VolumeSource{
+			ConfigMap: &v1.ConfigMapVolumeSource{
+				LocalObjectReference: v1.LocalObjectReference{
+					Name: "openshift-service-ca.crt",
+				},
+			},
+		},
+	})
+	for i, container := range d.Containers {
+		vms := container.VolumeMounts
+		if container.Name == dnn {
+			vms = append(vms, v1.VolumeMount{
+				Name:      "tls-ca",
+				ReadOnly:  true,
+				MountPath: "/cdapp/certs",
+			})
+		}
+		d.Containers[i].VolumeMounts = vms
+	}
+
+	for i, iContainer := range d.InitContainers {
+		vms := iContainer.VolumeMounts
+		vms = append(vms, v1.VolumeMount{
+			Name:      "tls-ca",
+			ReadOnly:  true,
+			MountPath: "/cdapp/certs",
+		})
+		d.InitContainers[i].VolumeMounts = vms
+	}
+}

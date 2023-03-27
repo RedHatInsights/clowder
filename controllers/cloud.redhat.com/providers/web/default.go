@@ -2,9 +2,13 @@ package web
 
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provCronjob "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	apps "k8s.io/api/apps/v1"
+	batch "k8s.io/api/batch/v1"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
@@ -36,13 +40,13 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
 	if err := web.populateCA(); err != nil {
-		return err
+		return errors.Wrap("populating ca", err)
 	}
 
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
 		if err := makeService(web.Cache, &innerDeployment, app, web.Env); err != nil {
-			return err
+			return errors.Wrap("making service", err)
 		}
 
 		if web.Env.Spec.Providers.Web.TLS.Enabled {
@@ -50,16 +54,35 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 
 			if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
-				return err
+				return errors.Wrap("getting core deployment", err)
 			}
 
-			addCertVolume(d, dnn.Name)
+			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
 
 			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
-				return err
+				return errors.Wrap("updating core deployment", err)
 			}
 		}
 	}
+
+	if web.Env.Spec.Providers.Web.TLS.Enabled {
+		d := &batch.CronJobList{}
+
+		if err := web.Cache.List(provCronjob.CoreCronJob, d); err != nil {
+			return errors.Wrap("get cronjob list", err)
+		}
+
+		for _, item := range d.Items {
+			innerItem := item
+			provutils.AddCertVolume(&innerItem.Spec.JobTemplate.Spec.Template.Spec, innerItem.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Name)
+
+			if err := web.Cache.Update(provCronjob.CoreCronJob, &innerItem); err != nil {
+				return err
+
+			}
+		}
+	}
+
 	return nil
 }
 

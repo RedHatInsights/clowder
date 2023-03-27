@@ -56,6 +56,23 @@ spec:
             value: "true"
             operator: "Equal"
             effect: "NoSchedule"
+          containers:
+          - volumeMounts:
+            - mountPath: /cdapp/
+              name: config-secret
+            - mountPath: /cdapp/certs
+              name: tls-ca
+              readOnly: true
+          volumes:
+          - name: config-secret
+            secret:
+              defaultMode: 420
+              secretName: puptoo
+          - configMap:
+              defaultMode: 420
+              name: openshift-service-ca.crt
+            name: tls-ca
+
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -159,6 +176,21 @@ spec:
           - /bin/sh
           - -c
           - echo "Hello!"
+          volumeMounts:
+          - mountPath: /cdapp/
+            name: config-secret
+          - mountPath: /cdapp/certs
+            name: tls-ca
+            readOnly: true
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: puptoo
+      - configMap:
+          defaultMode: 420
+          name: openshift-service-ca.crt
+        name: tls-ca
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
