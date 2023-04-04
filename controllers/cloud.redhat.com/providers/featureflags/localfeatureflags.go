@@ -231,7 +231,17 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 
 	port := int32(4242)
 
-	envVars := []core.EnvVar{
+	envVars := []core.EnvVar{{
+		Name: "DATABASE_PASSWORD",
+		ValueFrom: &core.EnvVarSource{
+			SecretKeyRef: &core.SecretKeySelector{
+				LocalObjectReference: core.LocalObjectReference{
+					Name: "featureflags-db",
+				},
+				Key: "password",
+			},
+		},
+	},
 		{
 			Name:  "DATABASE_SSL",
 			Value: "false",
