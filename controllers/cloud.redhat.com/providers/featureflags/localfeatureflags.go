@@ -62,8 +62,6 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 	return &localFeatureFlagsProvider{Provider: *p}, nil
 }
 
-// Runs when Env is reconciled
-// CachedMakeComponent: helper function to create a PVC, Service, Deployment (The Cached spin was created around the time Cache system was created)
 func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 	dataInit := createDefaultFFSecMap
