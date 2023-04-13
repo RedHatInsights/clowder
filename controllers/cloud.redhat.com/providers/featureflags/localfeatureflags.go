@@ -182,7 +182,8 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 func createDefaultFFSecMap() map[string]string {
 	return map[string]string{
-		"adminAccessToken": "*.*:" + utils.RandHexString(32),
+		"adminAccessToken":  "*:*." + utils.RandHexString(32),
+		"clientAccessToken": "default:development." + utils.RandHexString(32),
 	}
 }
 
