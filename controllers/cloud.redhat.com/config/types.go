@@ -525,6 +525,9 @@ type DeploymentMetadata struct {
 
 // Feature Flags Configuration
 type FeatureFlagsConfig struct {
+	// Defines the admin access token to use when connect to the FeatureFlags server
+	AdminAccessToken *string `json:"adminAccessToken,omitempty"`
+
 	// Defines the client access token to use when connect to the FeatureFlags server
 	ClientAccessToken *string `json:"clientAccessToken,omitempty"`
 

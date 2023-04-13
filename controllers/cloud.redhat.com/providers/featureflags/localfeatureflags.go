@@ -198,10 +198,11 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 	}
 
 	ff.Config.FeatureFlags = &config.FeatureFlagsConfig{
-		Hostname:         fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
-		Port:             4242,
-		Scheme:           config.FeatureFlagsConfigSchemeHttp,
-		AdminAccessToken: utils.StringPtr(string(secret.Data["adminAccessToken"])),
+		Hostname:          fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
+		Port:              4242,
+		Scheme:            config.FeatureFlagsConfigSchemeHttp,
+		ClientAccessToken: utils.StringPtr(string(secret.Data["clientAccessToken"])),
+		AdminAccessToken:  utils.StringPtr(string(secret.Data["adminAccessToken"])),
 	}
 
 	return nil
@@ -246,6 +247,17 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 			Value: "false",
 		},
 		{
+			Name: "INIT_CLIENT_API_TOKENS",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: nn.Name,
+					},
+					Key: "clientAccessToken",
+				},
+			},
+		},
+		{
 			Name: "INIT_ADMIN_API_TOKENS",
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
@@ -255,7 +267,6 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 					Key: "adminAccessToken",
 				},
 			},
-			//			Value: "*:*.unleash-admin-api-token",
 		},
 	}
 

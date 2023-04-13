@@ -400,6 +400,10 @@
                     "description": "Defines the port for the FeatureFlags server",
                     "type": "integer"
                 },
+                "adminAccessToken": {
+                    "description": "Defines the admin access token to use when connect to the FeatureFlags server",
+                    "type": "string"
+                },
                 "clientAccessToken": {
                     "description": "Defines the client access token to use when connect to the FeatureFlags server",
                     "type": "string"
