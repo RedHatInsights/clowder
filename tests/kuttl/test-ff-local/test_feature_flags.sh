@@ -28,7 +28,7 @@ post_request() {
 }
 
 if get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
-    echo "Feature toggle '$FEATURE_TOGGLE_NAME' should exist"
+    echo "Feature toggle '$FEATURE_TOGGLE_NAME' should not exist"
     exit 1
 fi
 
@@ -51,7 +51,7 @@ fi
 
 if ! post_request "$ADMIN_TOKEN" \
     "/api/admin/projects/default/features/$FEATURE_TOGGLE_NAME/environments/development/on" ; then
-    echo "Error enabling toggle '$FEATURE_TOGGLE_NAME'"
+    echo "Error enabling feature toggle '$FEATURE_TOGGLE_NAME'"
     exit 1
 fi
 

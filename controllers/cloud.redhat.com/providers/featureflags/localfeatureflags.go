@@ -203,7 +203,6 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 		Port:              4242,
 		Scheme:            config.FeatureFlagsConfigSchemeHttp,
 		ClientAccessToken: utils.StringPtr(string(secret.Data["clientAccessToken"])),
-		AdminAccessToken:  utils.StringPtr(string(secret.Data["adminAccessToken"])),
 	}
 
 	return nil
