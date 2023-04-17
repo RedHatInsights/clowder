@@ -76,7 +76,7 @@ func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume
 	}
 	cf := &core.ConfigMap{}
 	if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-		if volume.ConfigMap.Optional != nil && *volume.ConfigMap.Optional && k8serr.IsNotFound(err) {
+		if volume.ConfigMap.Optional != nil && !*volume.ConfigMap.Optional && k8serr.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("could not get vol configmap: %w", err)
@@ -97,7 +97,7 @@ func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) e
 	}
 	sec := &core.Secret{}
 	if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-		if volume.Secret.Optional != nil && *volume.Secret.Optional && k8serr.IsNotFound(err) {
+		if volume.Secret.Optional != nil && !*volume.Secret.Optional && k8serr.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("could not get vol secret: %w", err)
