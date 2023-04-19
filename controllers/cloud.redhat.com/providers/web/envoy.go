@@ -57,6 +57,24 @@ func generateHTTPConnectionManager(cluster string) (*anypb.Any, error) {
 					Routes: []*route.Route{{
 						Match: &route.RouteMatch{
 							PathSpecifier: &route.RouteMatch_Prefix{
+								Prefix: "/envoy_stats",
+							},
+						},
+						Action: &route.Route_Route{
+							Route: &route.RouteAction{
+								ClusterSpecifier: &route.RouteAction_Cluster{
+									Cluster: "envoy-stats",
+								},
+								Timeout: &durationpb.Duration{
+									Seconds: 5,
+								},
+								PrefixRewrite: "/stats/prometheus",
+							},
+						},
+						StatPrefix: "service",
+					}, {
+						Match: &route.RouteMatch{
+							PathSpecifier: &route.RouteMatch_Prefix{
 								Prefix: "/",
 							},
 						},
@@ -172,6 +190,7 @@ func generateClusters(pub bool, priv bool) []*cluster.Cluster {
 	if priv {
 		clusters = append(clusters, generateCluster("private_endpoint", 10000))
 	}
+	clusters = append(clusters, generateCluster("envoy-stats", 9999))
 	return clusters
 }
 
@@ -179,6 +198,19 @@ func generateEnvoyConfig(pub bool, priv bool, pubPort uint32, privPort uint32) (
 
 	beat := &envoy.Bootstrap{}
 	beat.StaticResources = &envoy.Bootstrap_StaticResources{}
+
+	beat.Admin = &envoy.Admin{
+		Address: &core.Address{
+			Address: &core.Address_SocketAddress{
+				SocketAddress: &core.SocketAddress{
+					Address: "127.0.0.1",
+					PortSpecifier: &core.SocketAddress_PortValue{
+						PortValue: 9999,
+					},
+				},
+			},
+		},
+	}
 
 	listeners, err := generateListeners(pub, priv, pubPort, privPort)
 	if err != nil {
