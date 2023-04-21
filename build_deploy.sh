@@ -41,3 +41,9 @@ fi
 make update-version
 docker --config="$DOCKER_CONF" build  --build-arg BASE_IMAGE="$BASE_IMG" -t "${IMAGE}:${IMAGE_TAG}" .
 docker --config="$DOCKER_CONF" push "${IMAGE}:${IMAGE_TAG}"
+
+# If the "security-compliance" branch is used for the build, it will tag the image as such.
+if [[ $GIT_BRANCH == *"security-compliance"* ]]; then
+    docker --config="$DOCKER_CONF" tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:security-compliance"
+    docker --config="$DOCKER_CONF" push "${IMAGE}:security-compliance"
+fi
