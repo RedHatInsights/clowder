@@ -6608,6 +6608,14 @@ objects:
                         marker:
                           description: sets the pytest -m args
                           type: string
+                        parallelEnabled:
+                          description: sets value passed to IQE 'IQE_PARALLEL_ENABLED'
+                            arg
+                          type: string
+                        parallelWorkerCount:
+                          description: sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT'
+                            arg
+                          type: string
                         plugins:
                           description: By default, Clowder will use the plugin name
                             indicated in the ClowdApp's spec.testing.iqePlugin field.

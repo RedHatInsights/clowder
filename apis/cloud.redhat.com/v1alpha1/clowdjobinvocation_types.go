@@ -83,6 +83,12 @@ type IqeJobSpec struct {
 	// sets value for IQE_LOG_LEVEL (default if empty: "info")
 	//+kubebuilder:validation:Enum={"", "critical", "error", "warning", "info", "debug", "notset"}
 	LogLevel string `json:"logLevel,omitempty"`
+
+	// sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg
+	ParallelEnabled string `json:"parallelEnabled,omitempty"`
+
+	// sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
+	ParallelWorkerCount string `json:"parallelWorkerCount,omitempty"`
 }
 
 type IqeUISpec struct {
