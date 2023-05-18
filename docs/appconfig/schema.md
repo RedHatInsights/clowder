@@ -303,7 +303,7 @@ Defines the path to the BOPURL.
 
 ### hashCache
 
-A set of configMap/secret hashes
+A set of config/secret hashes
 
 
 `hashCache`

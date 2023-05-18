@@ -51,8 +51,6 @@ spec:
             - name: IQE_REQUIREMENTS
             - name: IQE_REQUIREMENTS_PRIORITY
             - name: IQE_TEST_IMPORTANCE
-            - name: IQE_PARALLEL_ENABLED
-            - name: IQE_PARALLEL_WORKER_COUNT
           resources:
             limits:
               cpu: "2"

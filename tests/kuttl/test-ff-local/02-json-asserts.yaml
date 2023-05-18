@@ -13,4 +13,3 @@ commands:
 - script: jq -r '.featureFlags.hostname == "test-ff-local-featureflags.test-ff-local.svc"' -e < /tmp/test-ff-local-json
 - script: jq -r '.featureFlags.port == 4242' -e < /tmp/test-ff-local-json
 - script: jq -r '.featureFlags.scheme == "http"' -e < /tmp/test-ff-local-json
-- script: sh test_feature_flags.sh

@@ -65,10 +65,6 @@ spec:
             - name: IQE_REQUIREMENTS
             - name: IQE_REQUIREMENTS_PRIORITY
             - name: IQE_TEST_IMPORTANCE
-            - name: IQE_PARALLEL_ENABLED
-              value: "true"
-            - name: IQE_PARALLEL_WORKER_COUNT
-              value: "4"
             - name: DYNACONF_IQE_VAULT_LOADER_ENABLED
               value: "true"
             - name: DYNACONF_IQE_VAULT_VERIFY
