@@ -24,23 +24,10 @@ spec:
     spec:
       containers:
       - env:
-        - name: ENV_VAR_1
-          value: "env_var_1"
-        - name: ENV_VAR_2
-          valueFrom:
-            configMapKeyRef:
-              key: configmapkey1
-              name: test-config-secret-restarter-configmap1
-        - name: ENV_VAR_3
-          valueFrom:
-            configMapKeyRef:
-              name: non-existant-config-map
-              key: test
-              optional: true
         - name: ACG_CONFIG
           value: /cdapp/cdappconfig.json
 status:
-  observedGeneration: 5
+  observedGeneration: 9
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment

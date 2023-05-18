@@ -7,7 +7,7 @@ import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var DefaultImageFeatureFlagsUnleash = "quay.io/cloudservices/unleash-docker:3.9"
+var DefaultImageFeatureFlagsUnleash = "quay.io/cloudservices/unleash-docker:4.22.3"
 
 // ProvName identifies the featureflags provider.
 var ProvName = "featureflags"

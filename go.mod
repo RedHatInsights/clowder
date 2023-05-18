@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/RedHatInsights/cyndi-operator v0.1.9
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/rhc-osdk-utils v0.7.1
+	github.com/RedHatInsights/rhc-osdk-utils v0.8.0
 	github.com/RedHatInsights/strimzi-client-go v0.28.1
 	github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1
 	github.com/go-logr/logr v1.2.3

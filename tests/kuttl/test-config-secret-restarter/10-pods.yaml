@@ -63,34 +63,22 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          valueFrom: 
-            configMapKeyRef:
-              name: test-config-secret-restarter-configmap1
-              key: configmapkey1
-        - name: ENV_VAR_3
-          valueFrom:
-            configMapKeyRef:
-              name: non-existant-config-map
-              key: test
-              optional: true
+      volumeMounts:
+      - name: foo
+        mountPath: "/etc/foo"
+        readOnly: true
+      volumes:
+      - name: foo
+        configMap:
+          name: test-config-secret-restarter-configmap1
   - name: processor2
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
-        - name: ENV_VAR_1
-          value: env_var_1
-        - name: ENV_VAR_2
-          valueFrom: 
-            secretKeyRef :
-              name: test-config-secret-restarter-secret1
-              key: secretkey1
-        - name: ENV_VAR_3
-          valueFrom:
-            secretKeyRef:
-              name: non-existant-secret
-              key: test
-              optional: true
+      volumeMounts:
+      - name: foo
+        mountPath: "/etc/foo"
+        readOnly: true
+      volumes:
+      - name: foo
+        secret:
+          secretName: test-config-secret-restarter-secret1

@@ -61,6 +61,8 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		{Name: "IQE_REQUIREMENTS", Value: joinNullableSlice(cji.Spec.Testing.Iqe.Requirements)},
 		{Name: "IQE_REQUIREMENTS_PRIORITY", Value: joinNullableSlice(cji.Spec.Testing.Iqe.RequirementsPriority)},
 		{Name: "IQE_TEST_IMPORTANCE", Value: joinNullableSlice(cji.Spec.Testing.Iqe.TestImportance)},
+		{Name: "IQE_PARALLEL_ENABLED", Value: cji.Spec.Testing.Iqe.ParallelEnabled},
+		{Name: "IQE_PARALLEL_WORKER_COUNT", Value: cji.Spec.Testing.Iqe.ParallelWorkerCount},
 	}
 
 	// set image tag
@@ -109,7 +111,7 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	}
 	tag := env.Spec.Providers.Testing.Iqe.UI.Selenium.DefaultImageTag
 	if tag == "" {
-		tag = "ff_91.9.1esr_chrome_103.0.5060.114"
+		tag = "ff_102.9.0esr_chrome_112.0.5615.121"
 	}
 
 	// check if this CJI has specified an image tag override
