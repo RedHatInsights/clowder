@@ -41,9 +41,6 @@ var LocalFFDBPVC = rc.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.Persis
 // LocalFFDBSecret is the ident referring to the local Feature Flags DB secret object.
 var LocalFFDBSecret = rc.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
 
-// LocalFFSecret is the ident referring to the local Feature Flags secret object.
-var LocalFFSecret = rc.NewSingleResourceIdent(ProvName, "ff_secret", &core.Secret{})
-
 type localFeatureFlagsProvider struct {
 	providers.Provider
 }
@@ -62,18 +59,6 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 }
 
 func (ff *localFeatureFlagsProvider) EnvProvide() error {
-
-	dataInit := createDefaultFFSecMap
-
-	namespacedName := providers.GetNamespacedName(ff.Env, "featureflags")
-
-	_, err := providers.MakeOrGetSecret(ff.Env, ff.Cache, LocalFFSecret, namespacedName, dataInit)
-	if err != nil {
-		raisedErr := errors.Wrap("Couldn't set/get secret", err)
-		raisedErr.Requeue = true
-		return raisedErr
-	}
-
 	objList := []rc.ResourceIdent{
 		LocalFFDeployment,
 		LocalFFService,
@@ -83,13 +68,13 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		return err
 	}
 
-	namespacedNameDb := types.NamespacedName{
+	nn := types.NamespacedName{
 		Name:      "featureflags-db",
 		Namespace: ff.Env.Status.TargetNamespace,
 	}
 
 	dd := &apps.Deployment{}
-	if err := ff.Cache.Create(LocalFFDBDeployment, namespacedNameDb, dd); err != nil {
+	if err := ff.Cache.Create(LocalFFDBDeployment, nn, dd); err != nil {
 		return err
 	}
 
@@ -106,11 +91,11 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 	}
 
 	username := utils.RandString(16)
-	hostname := fmt.Sprintf("%v.%v.svc", namespacedNameDb.Name, namespacedNameDb.Namespace)
+	hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
 	passwordEncode := url.QueryEscape(password)
 	connectionURL := fmt.Sprintf("postgres://%s:%s@%s/%s", username, passwordEncode, hostname, "unleash")
 
-	dataInitDb := func() map[string]string {
+	dataInit := func() map[string]string {
 
 		return map[string]string{
 			"hostname":      hostname,
@@ -123,12 +108,12 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		}
 	}
 
-	secMapDb, err := providers.MakeOrGetSecret(ff.Env, ff.Cache, LocalFFDBSecret, namespacedNameDb, dataInitDb)
+	secMap, err := providers.MakeOrGetSecret(ff.Env, ff.Cache, LocalFFDBSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
 
-	err = dbCfg.Populate(secMapDb)
+	err = dbCfg.Populate(secMap)
 	if err != nil {
 		return errors.Wrap("couldn't convert to int", err)
 	}
@@ -147,18 +132,18 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		},
 	}
 
-	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
+	provutils.MakeLocalDB(dd, nn, ff.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
 
 	if err = ff.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return err
 	}
 
 	s := &core.Service{}
-	if err := ff.Cache.Create(LocalFFDBService, namespacedNameDb, s); err != nil {
+	if err := ff.Cache.Create(LocalFFDBService, nn, s); err != nil {
 		return err
 	}
 
-	provutils.MakeLocalDBService(s, namespacedNameDb, ff.Env, labels)
+	provutils.MakeLocalDBService(s, nn, ff.Env, labels)
 
 	if err = ff.Cache.Update(LocalFFDBService, s); err != nil {
 		return err
@@ -166,11 +151,11 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 	if ff.Env.Spec.Providers.FeatureFlags.PVC {
 		pvc := &core.PersistentVolumeClaim{}
-		if err = ff.Cache.Create(LocalFFDBPVC, namespacedNameDb, pvc); err != nil {
+		if err = ff.Cache.Create(LocalFFDBPVC, nn, pvc); err != nil {
 			return err
 		}
 
-		provutils.MakeLocalDBPVC(pvc, namespacedNameDb, ff.Env, sizing.GetDefaultVolCapacity())
+		provutils.MakeLocalDBPVC(pvc, nn, ff.Env, sizing.GetDefaultVolCapacity())
 
 		if err = ff.Cache.Update(LocalFFDBPVC, pvc); err != nil {
 			return err
@@ -180,29 +165,13 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 	return nil
 }
 
-func createDefaultFFSecMap() map[string]string {
-	return map[string]string{
-		"adminAccessToken":  "*:*." + utils.RandHexString(32),
-		"clientAccessToken": "default:development." + utils.RandHexString(32),
-	}
-}
-
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
-
-	secret := &core.Secret{}
-	nn := providers.GetNamespacedName(ff.Env, "featureflags")
-
-	if err := ff.Client.Get(ff.Ctx, nn, secret); err != nil {
-		return err
-	}
-
 	ff.Config.FeatureFlags = &config.FeatureFlagsConfig{
-		Hostname:          fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
-		Port:              4242,
-		Scheme:            config.FeatureFlagsConfigSchemeHttp,
-		ClientAccessToken: utils.StringPtr(string(secret.Data["clientAccessToken"])),
+		Hostname: fmt.Sprintf("%s-featureflags.%s.svc", ff.Env.Name, ff.Env.Status.TargetNamespace),
+		Port:     4242,
+		Scheme:   config.FeatureFlagsConfigSchemeHttp,
 	}
 
 	return nil
@@ -230,44 +199,17 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 
 	port := int32(4242)
 
-	envVars := []core.EnvVar{
-		{
-			Name: "DATABASE_URL",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: "featureflags-db",
-					},
-					Key: "connectionURL",
+	envVars := []core.EnvVar{{
+		Name: "DATABASE_URL",
+		ValueFrom: &core.EnvVarSource{
+			SecretKeyRef: &core.SecretKeySelector{
+				LocalObjectReference: core.LocalObjectReference{
+					Name: "featureflags-db",
 				},
+				Key: "connectionURL",
 			},
 		},
-		{
-			Name:  "DATABASE_SSL",
-			Value: "false",
-		},
-		{
-			Name: "INIT_CLIENT_API_TOKENS",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: nn.Name,
-					},
-					Key: "clientAccessToken",
-				},
-			},
-		},
-		{
-			Name: "INIT_ADMIN_API_TOKENS",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: nn.Name,
-					},
-					Key: "adminAccessToken",
-				},
-			},
-		},
+	},
 	}
 
 	ports := []core.ContainerPort{{

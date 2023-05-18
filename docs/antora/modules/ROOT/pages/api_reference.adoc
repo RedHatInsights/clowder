@@ -593,8 +593,6 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`requirementsPriority`* __string__ | sets values passed to IQE '--requirements-priority' arg
 | *`testImportance`* __string__ | sets values passed to IQE '--test-importance' arg
 | *`logLevel`* __string__ | sets value for IQE_LOG_LEVEL (default if empty: "info")
-| *`parallelEnabled`* __string__ | Whether tests should run in parallel or not
-| *`parallelWorkerCount`* __string__ | sets value for IQE '--parallel-worker-count'
 |===
 
 
