@@ -37,12 +37,12 @@ type ClowderConfig struct {
 		WatchStrimziResources       bool `json:"watchStrimziResources"`
 		UseComplexStrimziTopicNames bool `json:"useComplexStrimziTopicNames"`
 		EnableAuthSidecarHook       bool `json:"enableAuthSidecarHook"`
-		KedaResources               bool `json:"enableKedaResources"`
-		PerProviderMetrics          bool `json:"perProviderMetrics"`
-		ReconciliationMetrics       bool `json:"reconciliationMetrics"`
-		DisableCloudWatchLogging    bool `json:"disableCloudWatchLogging"`
-		EnableExternalStrimzi       bool `json:"enableExternalStrimzi"`
-		DisableRandomRoutes         bool `json:"disableRandomRoutes"`
+		// KedaResources               bool `json:"enableKedaResources"`
+		PerProviderMetrics       bool `json:"perProviderMetrics"`
+		ReconciliationMetrics    bool `json:"reconciliationMetrics"`
+		DisableCloudWatchLogging bool `json:"disableCloudWatchLogging"`
+		EnableExternalStrimzi    bool `json:"enableExternalStrimzi"`
+		DisableRandomRoutes      bool `json:"disableRandomRoutes"`
 	} `json:"features"`
 	Settings struct {
 		ManagedKafkaEphemDeleteRegex string `json:"managedKafkaEphemDeleteRegex"`

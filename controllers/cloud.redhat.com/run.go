@@ -8,7 +8,6 @@ import (
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
-	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -48,7 +47,7 @@ func init() {
 	utilruntime.Must(crd.AddToScheme(Scheme))
 	utilruntime.Must(strimzi.AddToScheme(Scheme))
 	utilruntime.Must(cyndi.AddToScheme(Scheme))
-	utilruntime.Must(keda.AddToScheme(Scheme))
+	// utilruntime.Must(keda.AddToScheme(Scheme))
 	utilruntime.Must(prom.AddToScheme(Scheme))
 	utilruntime.Must(sub.AddToScheme(Scheme))
 	// +kubebuilder:scaffold:scheme
@@ -57,10 +56,10 @@ func init() {
 	gvk, _ := utils.GetKindFromObj(Scheme, &strimzi.KafkaTopic{})
 	ProtectedGVKs[gvk] = true
 
-	if !clowderconfig.LoadedConfig.Features.KedaResources {
-		gvk, _ := utils.GetKindFromObj(Scheme, &keda.ScaledObject{})
-		ProtectedGVKs[gvk] = true
-	}
+	// if !clowderconfig.LoadedConfig.Features.KedaResources {
+	// 	gvk, _ := utils.GetKindFromObj(Scheme, &keda.ScaledObject{})
+	// 	ProtectedGVKs[gvk] = true
+	// }
 
 	DebugOptions = rc.DebugOptions{
 		Create: clowderconfig.LoadedConfig.DebugOptions.Cache.Create,

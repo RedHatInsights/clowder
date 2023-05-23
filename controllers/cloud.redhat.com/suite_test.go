@@ -51,7 +51,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/kafka"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
-	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	// keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -101,8 +101,8 @@ func (suite *TestSuite) SetupSuite() {
 	err = strimzi.AddToScheme(clientgoscheme.Scheme)
 	assert.NoError(suite.T(), err, "failed to add scheme")
 
-	err = keda.AddToScheme(clientgoscheme.Scheme)
-	assert.NoError(suite.T(), err, "failed to add scheme")
+	// err = keda.AddToScheme(clientgoscheme.Scheme)
+	// assert.NoError(suite.T(), err, "failed to add scheme")
 
 	// +kubebuilder:scaffold:scheme
 
@@ -309,7 +309,7 @@ func createClowdApp(env crd.ClowdEnvironment, objMeta metav1.ObjectMeta) (crd.Cl
 	ctx := context.Background()
 
 	replicas := int32(32)
-	maxReplicas := int32(64)
+	// maxReplicas := int32(64)
 	partitions := int32(5)
 	dbVersion := int32(12)
 	topicName := "inventory"
@@ -333,17 +333,17 @@ func createClowdApp(env crd.ClowdEnvironment, objMeta metav1.ObjectMeta) (crd.Cl
 					Image: "test:test",
 				},
 				Name: "testpod",
-				AutoScaler: &crd.AutoScaler{
-					MaxReplicaCount: &maxReplicas,
-					Triggers: []keda.ScaleTriggers{
-						{
-							Type: "cpu",
-							Metadata: map[string]string{
-								"type":  "Utilization",
-								"value": "50",
-							},
-						},
-					}},
+				// AutoScaler: &crd.AutoScaler{
+				// 	MaxReplicaCount: &maxReplicas,
+				// 	Triggers: []keda.ScaleTriggers{
+				// 		{
+				// 			Type: "cpu",
+				// 			Metadata: map[string]string{
+				// 				"type":  "Utilization",
+				// 				"value": "50",
+				// 			},
+				// 		},
+				// 	}},
 			}},
 			EnvName:     env.Name,
 			KafkaTopics: kafkaTopics,
@@ -506,13 +506,13 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	clowdWatchValidation(suite.T(), jsonContent, cwData)
 
-	scaler := keda.ScaledObject{}
+	// scaler := keda.ScaledObject{}
 
-	err = fetchWithDefaults(appnn, &scaler)
+	// err = fetchWithDefaults(appnn, &scaler)
 
-	assert.NoError(suite.T(), err)
+	// assert.NoError(suite.T(), err)
 
-	scaledObjectValidation(suite.T(), &scaler)
+	// scaledObjectValidation(suite.T(), &scaler)
 
 	resp, err := http.Get("http://127.0.0.1:2019/config/")
 	assert.NoError(suite.T(), err, "failed test because get failed")
@@ -610,27 +610,27 @@ func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData ma
 	}
 }
 
-func scaledObjectValidation(t *testing.T, scaler *keda.ScaledObject) {
-	// Scaled object validation
-	expectTarget := keda.ScaleTarget{
-		Kind: "Deployment",
-		Name: "test-testpod",
-	}
-	expectedTrigger := keda.ScaleTriggers{
-		Type: "cpu",
-		Metadata: map[string]string{
-			"type":  "Utilization",
-			"value": "50",
-		},
-	}
-	for _, trigger := range scaler.Spec.Triggers {
-		assert.Equal(t, expectedTrigger.Type, trigger.Type)
-		assert.Equal(t, expectedTrigger.Metadata, trigger.Metadata)
-	}
+// func scaledObjectValidation(t *testing.T, scaler *keda.ScaledObject) {
+// 	// Scaled object validation
+// 	expectTarget := keda.ScaleTarget{
+// 		Kind: "Deployment",
+// 		Name: "test-testpod",
+// 	}
+// 	expectedTrigger := keda.ScaleTriggers{
+// 		Type: "cpu",
+// 		Metadata: map[string]string{
+// 			"type":  "Utilization",
+// 			"value": "50",
+// 		},
+// 	}
+// 	for _, trigger := range scaler.Spec.Triggers {
+// 		assert.Equal(t, expectedTrigger.Type, trigger.Type)
+// 		assert.Equal(t, expectedTrigger.Metadata, trigger.Metadata)
+// 	}
 
-	assert.Equal(t, expectTarget.Kind, scaler.Spec.ScaleTargetRef.Kind)
-	assert.Equal(t, expectTarget.Name, scaler.Spec.ScaleTargetRef.Name)
-}
+// 	assert.Equal(t, expectTarget.Kind, scaler.Spec.ScaleTargetRef.Kind)
+// 	assert.Equal(t, expectTarget.Name, scaler.Spec.ScaleTargetRef.Name)
+// }
 
 func fetchWithDefaults(name types.NamespacedName, resource client.Object) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

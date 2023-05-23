@@ -18,21 +18,21 @@ metadata:
   name: puptoo-processor
   namespace: test-kafka-app-autoscale
 ---
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  name: puptoo-processor
-  namespace: test-kafka-app-autoscale
-spec:
-  maxReplicaCount: 5
-  minReplicaCount: 1
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: puptoo-processor
-  triggers:
-    - metadata:
-        bootstrapServers: 'test-kafka-app-autoscale-kafka-bootstrap.test-kafka-app-autoscale.svc:9092'
-        consumerGroup: my-group
-        topic: topicone
-      type: kafka
+# apiVersion: keda.sh/v1alpha1
+# kind: ScaledObject
+# metadata:
+#   name: puptoo-processor
+#   namespace: test-kafka-app-autoscale
+# spec:
+#   maxReplicaCount: 5
+#   minReplicaCount: 1
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: puptoo-processor
+#   triggers:
+#     - metadata:
+#         bootstrapServers: 'test-kafka-app-autoscale-kafka-bootstrap.test-kafka-app-autoscale.svc:9092'
+#         consumerGroup: my-group
+#         topic: topicone
+#       type: kafka

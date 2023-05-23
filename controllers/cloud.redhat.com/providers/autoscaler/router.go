@@ -13,7 +13,7 @@ type autoScaleProviderRouter struct {
 func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		SimpleAutoScaler,
-		CoreAutoScaler,
+		// CoreAutoScaler,
 	)
 	return &autoScaleProviderRouter{Provider: *p}, nil
 }
@@ -31,10 +31,10 @@ func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp) error {
 			continue
 		}
 		// If we find a Keda autoscaler config create one
-		if deployment.AutoScaler != nil {
-			err = ProvideKedaAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
-			continue
-		}
+		// if deployment.AutoScaler != nil {
+		// 	err = ProvideKedaAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)
+		// 	continue
+		// }
 	}
 	return err
 }

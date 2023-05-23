@@ -3,7 +3,6 @@ package autoscaler
 import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
-	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	v2 "k8s.io/api/autoscaling/v2"
 )
 
@@ -11,17 +10,18 @@ import (
 var ProvName = "autoscaler"
 
 const ENABLED = "enabled"
-const KEDA = "keda"
+
+// const KEDA = "keda"
 
 // CoreAutoScaler is the config that is presented as the cdappconfig.json file.
-var CoreAutoScaler = rc.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
+// var CoreAutoScaler = rc.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
 var SimpleAutoScaler = rc.NewMultiResourceIdent(ProvName, "simple_hpa", &v2.HorizontalPodAutoscaler{})
 
 // GetAutoscaler returns the correct end provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 	mode := c.Env.Spec.Providers.AutoScaler.Mode
 	// Keda is preserved as a synonym of enabled for backwards compatibility
-	if mode == ENABLED || mode == KEDA {
+	if mode == ENABLED { // || mode == KEDA
 		return NewAutoScaleProviderRouter(c)
 	}
 	return NewNoneAutoScalerProvider(c)
