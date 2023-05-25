@@ -18,6 +18,7 @@ data:
         "features": {
             "createServiceMonitor": ${CREATE_SERVICE_MONITORS},
             "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES},
+            "enableKedaResources": ${ENABLE_KEDA_RESOURCES},
             "perProviderMetrics": ${PER_PROVIDER_METRICS},
             "reconciliationMetrics": ${RECONCILIATION_METRICS}
         },
