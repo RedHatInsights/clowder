@@ -335,7 +335,7 @@ spec:
                         type: object
                       managedPrefix:
                         description: Managed topic prefix for the managed cluster.
-                          Only used in (*_managed_*) mode.
+                          Only used in (*_managed_*) and (*_operator_*) modes.
                         type: string
                       managedSecretRef:
                         description: Defines the secret reference for the Managed

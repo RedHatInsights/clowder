@@ -929,6 +929,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig
 	}
 
 	for _, topic := range app.Spec.KafkaTopics {
+		s.appendTopic(topic, c)
 		k := &strimzi.KafkaTopic{}
 
 		topicName := getTopicName(topic, *s.Env, app.Namespace)
@@ -975,6 +976,23 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig
 	c.Topics = topicConfig
 
 	return nil
+}
+
+func (k *strimziProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig *config.KafkaConfig) {
+
+	topicName := topic.TopicName
+
+	if k.Env.Spec.Providers.Kafka.ManagedPrefix != "" {
+		topicName = fmt.Sprintf("%s%s", k.Env.Spec.Providers.Kafka.ManagedPrefix, topicName)
+	}
+
+	kafkaConfig.Topics = append(
+		kafkaConfig.Topics,
+		config.TopicConfig{
+			Name:          topicName,
+			RequestedName: topic.TopicName,
+		},
+	)
 }
 
 func getTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment, namespace string) string {
