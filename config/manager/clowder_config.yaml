@@ -17,6 +17,7 @@ data:
         },
         "features": {
             "createServiceMonitor": true,
-            "watchStrimziResources": true
+            "watchStrimziResources": true,
+            "enableKedaResources": false
         }
     }
