@@ -31,7 +31,7 @@ func (ch *confighashProvider) envConfigMap(app *crd.ClowdApp, env core.EnvVar) e
 	}
 	cf := &core.ConfigMap{}
 	if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-		if k8serr.IsNotFound(err) {
+		if env.ValueFrom.ConfigMapKeyRef.Optional != nil && *env.ValueFrom.ConfigMapKeyRef.Optional && k8serr.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("could not get env configmap: %w", err)
@@ -55,7 +55,7 @@ func (ch *confighashProvider) envSecret(app *crd.ClowdApp, env core.EnvVar) erro
 	}
 	sec := &core.Secret{}
 	if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-		if k8serr.IsNotFound(err) {
+		if env.ValueFrom.SecretKeyRef.Optional != nil && *env.ValueFrom.SecretKeyRef.Optional && k8serr.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("could not get env secret: %w", err)
@@ -76,7 +76,7 @@ func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume
 	}
 	cf := &core.ConfigMap{}
 	if err := ch.Client.Get(ch.Ctx, nn, cf); err != nil {
-		if k8serr.IsNotFound(err) {
+		if volume.ConfigMap.Optional != nil && *volume.ConfigMap.Optional && k8serr.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("could not get vol configmap: %w", err)
@@ -97,7 +97,7 @@ func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) e
 	}
 	sec := &core.Secret{}
 	if err := ch.Client.Get(ch.Ctx, nn, sec); err != nil {
-		if k8serr.IsNotFound(err) {
+		if volume.Secret.Optional != nil && *volume.Secret.Optional && k8serr.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("could not get vol secret: %w", err)

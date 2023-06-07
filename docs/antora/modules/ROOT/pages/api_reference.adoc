@@ -1286,4 +1286,3 @@ WebServices defines the structs for the three exposed web services: public, priv
 | *`metrics`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricswebservice[$$MetricsWebService$$]__ | 
 |===
 
-

@@ -72,7 +72,7 @@
                     "type": "string"
                 },
                 "hashCache": {
-                    "description": "A set of configMap/secret hashes",
+                    "description": "A set of config/secret hashes",
                     "type": "string"
                 }
             },

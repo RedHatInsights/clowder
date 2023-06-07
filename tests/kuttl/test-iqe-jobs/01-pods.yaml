@@ -87,5 +87,3 @@ spec:
       testImportance:
       - "critical"
       - "high"
-      parallelEnabled: "true"
-      parallelWorkerCount: "4"

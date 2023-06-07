@@ -194,7 +194,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum by (method) (rate(rest_client_requests_total{namespace=\"clowder-system\"}[1m]))",
+              "expr": "sum by (method) (rate(rest_client_requests_total[1m]))",
               "interval": "",
               "legendFormat": "{{operation}}",
               "refId": "A"
