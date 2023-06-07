@@ -4,6 +4,7 @@ set -exv
 
 IMAGE="quay.io/cloudservices/clowder"
 IMAGE_TAG=$(git rev-parse --short=8 HEAD)
+SECURITY_COMPLIANCE_TAG="sc-$(date +%Y%m%d)"
 
 if [[ -z "$QUAY_USER" || -z "$QUAY_TOKEN" ]]; then
     echo "QUAY_USER and QUAY_TOKEN must be set"
@@ -44,6 +45,6 @@ docker --config="$DOCKER_CONF" push "${IMAGE}:${IMAGE_TAG}"
 
 # If the "security-compliance" branch is used for the build, it will tag the image as such.
 if [[ $GIT_BRANCH == *"security-compliance"* ]]; then
-    docker --config="$DOCKER_CONF" tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:security-compliance"
-    docker --config="$DOCKER_CONF" push "${IMAGE}:security-compliance"
+    docker --config="$DOCKER_CONF" tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:${SECURITY_COMPLIANCE_TAG}"
+    docker --config="$DOCKER_CONF" push "${IMAGE}:${SECURITY_COMPLIANCE_TAG}"
 fi
