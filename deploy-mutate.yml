@@ -7547,9 +7547,10 @@ objects:
       \          \"create\": ${DEBUG_CACHE_CREATE},\n            \"update\": ${DEBUG_CACHE_UPDATE},\n\
       \            \"apply\": ${DEBUG_CACHE_APPLY}\n        }\n    },\n    \"features\"\
       : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
-      \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"perProviderMetrics\"\
-      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
-      \    },\n    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
+      \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"enableKedaResources\"\
+      : ${ENABLE_KEDA_RESOURCES},\n        \"perProviderMetrics\": ${PER_PROVIDER_METRICS},\n\
+      \        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n    },\n    \"\
+      settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
       \n    }\n}\n"
   kind: ConfigMap
   metadata:
@@ -7577,4 +7578,6 @@ parameters:
   value: 'false'
 - name: MANAGED_EPHEM_DELETE_REGEX
   value: .*ephemeral.*
+- name: ENABLE_KEDA_RESOURCES
+  value: 'false'
 

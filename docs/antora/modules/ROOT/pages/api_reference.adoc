@@ -593,6 +593,8 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`requirementsPriority`* __string__ | sets values passed to IQE '--requirements-priority' arg
 | *`testImportance`* __string__ | sets values passed to IQE '--test-importance' arg
 | *`logLevel`* __string__ | sets value for IQE_LOG_LEVEL (default if empty: "info")
+| *`parallelEnabled`* __string__ | sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg
+| *`parallelWorkerCount`* __string__ | sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
 |===
 
 
@@ -1283,5 +1285,4 @@ WebServices defines the structs for the three exposed web services: public, priv
 | *`private`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice[$$PrivateWebService$$]__ | 
 | *`metrics`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricswebservice[$$MetricsWebService$$]__ | 
 |===
-
 
