@@ -26,5 +26,5 @@ parameters:
 - name: MANAGED_EPHEM_DELETE_REGEX
   value: ".*ephemeral.*"
 - name: ENABLE_KEDA_RESOURCES
-  value: "false"
+  value: "true"
 objects: []
