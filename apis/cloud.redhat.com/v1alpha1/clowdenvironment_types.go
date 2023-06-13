@@ -228,13 +228,6 @@ type KafkaConfig struct {
 	// Managed topic prefix for the managed cluster. Only used in (*_managed_*) mode.
 	ManagedPrefix string `json:"managedPrefix,omitempty"`
 
-	// Defines the secret reference for the Ephemeral Managed Kafka mode. Only used in (*_managed-ephem_*) mode.
-	EphemManagedSecretRef NamespacedName `json:"ephemManagedSecretRef,omitempty"`
-
-	// Deprecated: topics being deleted will be done so using the env name and a regex that combines - with .
-	// There is also a clowder top level setting to ensure that only certain topics can be deleted.
-	EphemManagedDeletePrefix string `json:"ephemManagedDeletePrefix,omitempty"`
-
 	// (Deprecated) Defines the cluster name to be used by the Kafka Provider this will
 	// be used in some modes to locate the Kafka instance.
 	ClusterName string `json:"clusterName,omitempty"`

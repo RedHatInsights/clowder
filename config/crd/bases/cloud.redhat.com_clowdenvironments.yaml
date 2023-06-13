@@ -313,26 +313,6 @@ spec:
                       enableLegacyStrimzi:
                         description: EnableLegacyStrimzi disables TLS + user auth
                         type: boolean
-                      ephemManagedDeletePrefix:
-                        description: 'Deprecated: topics being deleted will be done
-                          so using the env name and a regex that combines - with .
-                          There is also a clowder top level setting to ensure that
-                          only certain topics can be deleted.'
-                        type: string
-                      ephemManagedSecretRef:
-                        description: Defines the secret reference for the Ephemeral
-                          Managed Kafka mode. Only used in (*_managed-ephem_*) mode.
-                        properties:
-                          name:
-                            description: Name defines the Name of a resource.
-                            type: string
-                          namespace:
-                            description: Namespace defines the Namespace of a resource.
-                            type: string
-                        required:
-                        - name
-                        - namespace
-                        type: object
                       managedPrefix:
                         description: Managed topic prefix for the managed cluster.
                           Only used in (*_managed_*) mode.

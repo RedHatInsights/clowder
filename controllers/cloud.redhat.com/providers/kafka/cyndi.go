@@ -3,7 +3,6 @@ package kafka
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -279,41 +278,4 @@ func createCyndiInventoryDbSecret(
 	}
 
 	return secretName, nil
-}
-
-// create a configmap to tweak the connector config for CyndiPipelines created in a specific namespace
-// at the moment this function is only called when the kafka provider mode is 'managed-ephem'
-func createCyndiConfigMap(
-	s prov.RootProvider,
-	connectClusterNamespace string,
-) error {
-	// TODO: as a followup, make these topic names configurable
-	eventsTopic := fmt.Sprintf("%s-platform.inventory.events", s.GetEnv().Name)
-	deadLetterQueueTopic := fmt.Sprintf("%s-platform.cyndi.dlq", s.GetEnv().Name)
-	replicationFactor := 3
-
-	nn := types.NamespacedName{
-		Namespace: connectClusterNamespace,
-		Name:      "cyndi",
-	}
-
-	cm := &core.ConfigMap{}
-
-	if err := s.GetCache().Create(CyndiConfigMap, nn, cm); err != nil {
-		return err
-	}
-
-	cm.Data = map[string]string{
-		"connector.topic":                      eventsTopic,
-		"connector.deadletterqueue.topic.name": deadLetterQueueTopic,
-		"connector.topic.replication.factor":   strconv.Itoa(replicationFactor),
-	}
-
-	cm.SetName(nn.Name)
-	cm.SetNamespace(nn.Namespace)
-	// it would be best for the ClowdApp to own this, but since cross-namespace OwnerReferences
-	// are not permitted, make this owned by the ClowdEnvironment
-	cm.SetOwnerReferences([]metav1.OwnerReference{s.GetEnv().MakeOwnerReference()})
-
-	return s.GetCache().Update(CyndiConfigMap, cm)
 }
