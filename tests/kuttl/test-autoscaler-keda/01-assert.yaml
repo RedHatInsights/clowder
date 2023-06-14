@@ -17,6 +17,8 @@ kind: Deployment
 metadata:
   name: puptoo-processor
   namespace: test-autoscaler
+spec:
+  replicas: 2
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -24,7 +26,7 @@ metadata:
   name: puptoo-processor
   namespace: test-autoscaler
 spec:
-  maxReplicaCount: 5
+  maxReplicaCount: 3
   minReplicaCount: 1
   scaleTargetRef:
     apiVersion: apps/v1
@@ -36,33 +38,7 @@ spec:
         value: '50'
       type: cpu
     - metadata:
-        metricName: http_requests_total
-        query: summation_query
-        serverAddress: prometheus-operated.test-autoscaler.svc.cluster.local
+        query: sum(promhttp_metric_handler_requests_total{job="puptoo-processor",code="200"})
+        serverAddress: http://prometheus-operated.test-autoscaler.svc.cluster.local:9090
         threshold: '4'
       type: prometheus
----
-apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: keda-hpa-puptoo-processor
-  namespace: test-autoscaler
-  labels:
-    app.kubernetes.io/managed-by: keda-operator
-    scaledobject.keda.sh/name: puptoo-processor
-spec:
-  maxReplicas: 5
-  minReplicas: 1
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: puptoo-processor
-  targetCPUUtilizationPercentage: 50
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: puptoo-hpa-processor
-  namespace: test-autoscaler
-spec:
-  replicas: 2

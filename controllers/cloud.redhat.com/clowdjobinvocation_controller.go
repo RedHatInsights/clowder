@@ -76,7 +76,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions})
+	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions, Ordering: applyOrder})
 	cache := rc.NewObjectCache(ctx, r.Client, &log, cacheConfig)
 	cache.AddPossibleGVKFromIdent(
 		iqe.IqeSecret,
