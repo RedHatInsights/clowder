@@ -64,7 +64,7 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.29.0
+    STRIMZI_VERSION=0.34.0
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
@@ -115,8 +115,8 @@ function install_strimzi_operator {
         --clusterrole=strimzi-cluster-operator-namespaced --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
     ${KUBECTL_CMD} create clusterrolebinding strimzi-cluster-operator-entity-operator-delegation \
         --clusterrole=strimzi-entity-operator --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
-    ${KUBECTL_CMD} create clusterrolebinding strimzi-cluster-operator-topic-operator-delegation \
-        --clusterrole=strimzi-topic-operator --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
+    ${KUBECTL_CMD} create clusterrolebinding strimzi-cluster-operator-watched \
+        --clusterrole=strimzi-cluster-operator-watched --serviceaccount ${STRIMZI_OPERATOR_NS}:strimzi-cluster-operator || echo " ... ignoring that error"
 
     if [ $REINSTALL -ne 1 ]; then
         echo "*** Installing Strimzi resources ..."
@@ -286,7 +286,7 @@ function install_keda_operator {
     fi
 
     echo "*** Applying keda-operator manifest ..."
-    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v2.4.0/keda-2.4.0.yaml
+    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v2.10.1/keda-2.10.1.yaml
 
     echo "*** Will wait for keda-operator to come up in background"
     ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[keda-operator] /" &

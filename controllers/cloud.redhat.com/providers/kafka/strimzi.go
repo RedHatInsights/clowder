@@ -181,7 +181,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Cluster.Version
 	if version == "" {
-		version = "3.1.0"
+		version = "3.4.0"
 	}
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
@@ -510,9 +510,11 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 		topic := "*"
 		patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
 
+		all := strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll
+
 		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 			Host:      &address,
-			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Operation: &all,
 			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
 				Name:        &topic,
 				PatternType: &patternType,
@@ -523,7 +525,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 		group := "*"
 		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 			Host:      &address,
-			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Operation: &all,
 			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
 				Name:        &group,
 				PatternType: &patternType,
@@ -595,7 +597,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	version := s.Env.Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "3.1.0"
+		version = "3.4.0"
 	}
 
 	image := s.Env.Spec.Providers.Kafka.Connect.Image
@@ -890,13 +892,14 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 
 	address := "*"
 	patternType := strimzi.KafkaUserSpecAuthorizationAclsElemResourcePatternTypeLiteral
+	all := strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll
 
 	for _, topic := range app.Spec.KafkaTopics {
 		topicName := getTopicName(topic, *s.Env, app.Namespace)
 
 		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 			Host:      &address,
-			Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+			Operation: &all,
 			Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
 				Name:        &topicName,
 				PatternType: &patternType,
@@ -908,7 +911,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	group := "*"
 	ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 		Host:      &address,
-		Operation: strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll,
+		Operation: &all,
 		Resource: strimzi.KafkaUserSpecAuthorizationAclsElemResource{
 			Name:        &group,
 			PatternType: &patternType,

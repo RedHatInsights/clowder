@@ -7,7 +7,7 @@ IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
 CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=8 HEAD)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.24
+ENVTEST_K8S_VERSION = 1.26
 
 # Image URL to use all building/pushing image targets
 ifeq ($(findstring -minikube,${MAKECMDGOALS}), -minikube)

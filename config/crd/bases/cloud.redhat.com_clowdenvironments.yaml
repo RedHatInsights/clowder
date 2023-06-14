@@ -517,6 +517,29 @@ spec:
                               default resource requirements from the ClowdEnvironment
                               will be used.
                             properties:
+                              claims:
+                                description: "Claims lists the names of resources,
+                                  defined in spec.resourceClaims, that are used by
+                                  this container. \n This is an alpha field and requires
+                                  enabling the DynamicResourceAllocation feature gate.
+                                  \n This field is immutable."
+                                items:
+                                  description: ResourceClaim references one entry
+                                    in PodSpec.ResourceClaims.
+                                  properties:
+                                    name:
+                                      description: Name must match the name of one
+                                        entry in pod.spec.resourceClaims of the Pod
+                                        where this field is used. It makes that resource
+                                        available inside a container.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                type: array
+                                x-kubernetes-list-map-keys:
+                                - name
+                                x-kubernetes-list-type: map
                               limits:
                                 additionalProperties:
                                   anyOf:
@@ -561,6 +584,30 @@ spec:
                                     description: Defines the resource requests/limits
                                       set on selenium containers
                                     properties:
+                                      claims:
+                                        description: "Claims lists the names of resources,
+                                          defined in spec.resourceClaims, that are
+                                          used by this container. \n This is an alpha
+                                          field and requires enabling the DynamicResourceAllocation
+                                          feature gate. \n This field is immutable."
+                                        items:
+                                          description: ResourceClaim references one
+                                            entry in PodSpec.ResourceClaims.
+                                          properties:
+                                            name:
+                                              description: Name must match the name
+                                                of one entry in pod.spec.resourceClaims
+                                                of the Pod where this field is used.
+                                                It makes that resource available inside
+                                                a container.
+                                              type: string
+                                          required:
+                                          - name
+                                          type: object
+                                        type: array
+                                        x-kubernetes-list-map-keys:
+                                        - name
+                                        x-kubernetes-list-type: map
                                       limits:
                                         additionalProperties:
                                           anyOf:
@@ -714,6 +761,26 @@ spec:
                   k8s format in the event that they omitted from a PodSpec inside
                   a ClowdApp.
                 properties:
+                  claims:
+                    description: "Claims lists the names of resources, defined in
+                      spec.resourceClaims, that are used by this container. \n This
+                      is an alpha field and requires enabling the DynamicResourceAllocation
+                      feature gate. \n This field is immutable."
+                    items:
+                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                      properties:
+                        name:
+                          description: Name must match the name of one entry in pod.spec.resourceClaims
+                            of the Pod where this field is used. It makes that resource
+                            available inside a container.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   limits:
                     additionalProperties:
                       anyOf:
