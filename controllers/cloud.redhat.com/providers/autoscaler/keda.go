@@ -88,44 +88,44 @@ func getTriggerRoute(triggerType string, c *config.AppConfig, env *crd.ClowdEnvi
 	// See https://github.com/kedacore/keda/blob/main/pkg/scaling/scale_handler.go#L313.
 	// These are here in case we need to pull clowdapp config info into
 	// the keda autoscaler.
-	case "artemis-queue":
-	case "aws-cloudwatch":
-	case "aws-kinesis-stream":
-	case "aws-sqs-queue":
-	case "azure-blob":
-	case "azure-eventhub":
-	case "azure-log-analytics":
-	case "azure-monitor":
-	case "azure-pipelines":
-	case "azure-queue":
-	case "azure-servicebus":
-	case "cpu":
-	case "cron":
-	case "external":
-	case "external-push":
-	case "gcp-pubsub":
-	case "graphite":
-	case "huawei-cloudeye":
-	case "ibmmq":
-	case "influxdb":
-	case "kubernetes-workload":
-	case "liiklus":
-	case "memory":
-	case "metrics-api":
-	case "mongodb":
-	case "mssql":
-	case "mysql":
-	case "openstack-metric":
-	case "openstack-swift":
-	case "postgresql":
-	case "rabbitmq":
-	case "redis":
-	case "redis-cluster":
-	case "redis-cluster-streams":
-	case "redis-streams":
-	case "selenium-grid":
-	case "solace-event-queue":
-	case "stan":
+	// case "artemis-queue":
+	// case "aws-cloudwatch":
+	// case "aws-kinesis-stream":
+	// case "aws-sqs-queue":
+	// case "azure-blob":
+	// case "azure-eventhub":
+	// case "azure-log-analytics":
+	// case "azure-monitor":
+	// case "azure-pipelines":
+	// case "azure-queue":
+	// case "azure-servicebus":
+	// case "cpu":
+	// case "cron":
+	// case "external":
+	// case "external-push":
+	// case "gcp-pubsub":
+	// case "graphite":
+	// case "huawei-cloudeye":
+	// case "ibmmq":
+	// case "influxdb":
+	// case "kubernetes-workload":
+	// case "liiklus":
+	// case "memory":
+	// case "metrics-api":
+	// case "mongodb":
+	// case "mssql":
+	// case "mysql":
+	// case "openstack-metric":
+	// case "openstack-swift":
+	// case "postgresql":
+	// case "rabbitmq":
+	// case "redis":
+	// case "redis-cluster":
+	// case "redis-cluster-streams":
+	// case "redis-streams":
+	// case "selenium-grid":
+	// case "solace-event-queue":
+	// case "stan":
 	default:
 		return nil
 	}

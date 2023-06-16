@@ -76,36 +76,12 @@ func (s *strimziProvider) EnvProvide() error {
 }
 
 func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
-	clusterNN := types.NamespacedName{
-		Namespace: getKafkaNamespace(s.Env),
-		Name:      getKafkaName(s.Env),
-	}
-	kafkaResource := strimzi.Kafka{}
-	if err := s.Client.Get(s.Ctx, clusterNN, &kafkaResource); err != nil {
-		return err
-	}
-
-	kafkaCASecName := types.NamespacedName{
-		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
-		Namespace: getKafkaNamespace(s.Env),
-	}
-	kafkaCASecret := core.Secret{}
-	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
-		return err
-	}
-
-	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
-
 	s.Config.Kafka = &config.KafkaConfig{}
 	s.Config.Kafka.Brokers = []config.BrokerConfig{}
 	s.Config.Kafka.Topics = []config.TopicConfig{}
 
-	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type != nil && *listener.Type == "tls" {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
-		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
-		}
+	if err := s.configureKafkaCA(); err != nil {
+		return err
 	}
 
 	if app.Spec.Cyndi.Enabled {
@@ -136,11 +112,113 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+func (s *strimziProvider) configureKafkaCA() error {
+	clusterNN := types.NamespacedName{
+		Namespace: getKafkaNamespace(s.Env),
+		Name:      getKafkaName(s.Env),
+	}
+	kafkaResource := strimzi.Kafka{}
+	if err := s.Client.Get(s.Ctx, clusterNN, &kafkaResource); err != nil {
+		return err
+	}
+
+	kafkaCASecName := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+	kafkaCASecret := core.Secret{}
+	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+		return err
+	}
+
+	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
+
+	for _, listener := range kafkaResource.Status.Listeners {
+		if listener.Type != nil && *listener.Type == "tls" {
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
+		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
+		}
+	}
+	return nil
+}
+
 var conversionMap = map[string]func([]string) (string, error){
 	"retention.ms":          utils.IntMax,
 	"retention.bytes":       utils.IntMax,
 	"min.compaction.lag.ms": utils.IntMax,
 	"cleanup.policy":        utils.ListMerge,
+}
+
+type defaultDataBase struct {
+	apiObj     apiextensions.JSON
+	byteString []byte
+}
+
+var defaultData = map[string]defaultDataBase{
+	"KafRequests": {
+		byteString: []byte(`{
+			"cpu": "250m",
+			"memory": "600Mi"
+		}`)},
+	"KafLimits": {
+		byteString: []byte(`{
+			"cpu": "500m",
+			"memory": "1Gi"
+		}`)},
+	"ZLimits": {
+		byteString: []byte(`{
+			"cpu": "200m",
+			"memory": "400Mi"
+		}`)},
+	"ZRequests": {
+		byteString: []byte(`{
+			"cpu": "200m",
+			"memory": "400Mi"
+		}`)},
+	"EntityUserLimits": {
+		byteString: []byte(`{
+			"cpu": "400m",
+			"memory": "500Mi"
+		}`)},
+	"EntityUserRequests": {
+		byteString: []byte(`{
+			"cpu": "50m",
+			"memory": "250Mi"
+		}`)},
+	"EntityTopicLimits": {
+		byteString: []byte(`{
+			"cpu": "200m",
+			"memory": "500Mi"
+		}`)},
+	"EntityTopicRequests": {
+		byteString: []byte(`{
+			"cpu": "50m",
+			"memory": "250Mi"
+		}`)},
+	"EntityTLSLimits": {
+		byteString: []byte(`{
+			"cpu": "100m",
+			"memory": "100Mi"
+		}`)},
+	"EntityTLSRequests": {
+		byteString: []byte(`{
+			"cpu": "50m",
+			"memory": "50Mi"
+		}`)},
+}
+
+func init() {
+	ndefaultData := map[string]defaultDataBase{}
+	for k, v := range defaultData {
+		a := v
+		err := a.apiObj.UnmarshalJSON(a.byteString)
+		if err != nil {
+			panic("bad mistake here in converting")
+		}
+		ndefaultData[k] = a
+	}
+	defaultData = ndefaultData
 }
 
 func (s *strimziProvider) configureKafkaCluster() error {
@@ -187,96 +265,23 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
 
 	// default values for config/requests/limits in Strimzi resource specs
-	var kafConfig, kafRequests, kafLimits, zLimits, zRequests apiextensions.JSON
-	var entityUserLimits, entityUserRequests apiextensions.JSON
-	var entityTopicLimits, entityTopicRequests apiextensions.JSON
-	var entityTLSLimits, entityTLSRequests apiextensions.JSON
+	var kafConfig apiextensions.JSON
+	kafRequests := defaultData["KafRequests"].apiObj
+	kafLimits := defaultData["KafLimits"].apiObj
+	zRequests := defaultData["ZRequests"].apiObj
+	zLimits := defaultData["ZLimits"].apiObj
+	entityTopicRequests := defaultData["EntityTopicRequests"].apiObj
+	entityTopicLimits := defaultData["EntityTopicLimits"].apiObj
+	entityUserRequests := defaultData["EntityUserRequests"].apiObj
+	entityUserLimits := defaultData["EntityUserLimits"].apiObj
+	entityTLSRequests := defaultData["EntityTLSRequests"].apiObj
+	entityTLSLimits := defaultData["EntityTLSLimits"].apiObj
 
 	err = kafConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
 		"offsets.topic.replication.factor": %s
 	}`, strconv.Itoa(int(replicas)))))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kConfig: %w", err)
-	}
-
-	err = kafRequests.UnmarshalJSON([]byte(`{
-        "cpu": "250m",
-        "memory": "600Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal kRequests: %w", err)
-	}
-
-	err = kafLimits.UnmarshalJSON([]byte(`{
-        "cpu": "500m",
-        "memory": "1Gi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal kLimits: %w", err)
-	}
-
-	err = zRequests.UnmarshalJSON([]byte(`{
-        "cpu": "200m",
-        "memory": "400Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal zRequests: %w", err)
-	}
-
-	err = zLimits.UnmarshalJSON([]byte(`{
-        "cpu": "350m",
-        "memory": "800Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal zLimits: %w", err)
-	}
-
-	err = entityUserRequests.UnmarshalJSON([]byte(`{
-        "cpu": "50m",
-        "memory": "250Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal entityUserRequests: %w", err)
-	}
-
-	err = entityUserLimits.UnmarshalJSON([]byte(`{
-        "cpu": "400m",
-        "memory": "500Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal entityUserLimits: %w", err)
-	}
-
-	err = entityTopicRequests.UnmarshalJSON([]byte(`{
-        "cpu": "50m",
-        "memory": "250Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal entityTopicRequests: %w", err)
-	}
-
-	err = entityTopicLimits.UnmarshalJSON([]byte(`{
-        "cpu": "200m",
-        "memory": "500Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal entityTopicLimits: %w", err)
-	}
-
-	err = entityTLSRequests.UnmarshalJSON([]byte(`{
-        "cpu": "50m",
-        "memory": "50Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal entityTlsRequests: %w", err)
-	}
-
-	err = entityTLSLimits.UnmarshalJSON([]byte(`{
-        "cpu": "100m",
-        "memory": "100Mi"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal entityTlsLimits: %w", err)
 	}
 
 	// check if defaults have been overridden in ClowdEnvironment
@@ -537,8 +542,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 	return s.Cache.Update(KafkaConnectUser, ku)
 }
 
-func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConfig) error {
-	var kcRequests, kcLimits apiextensions.JSON
+func (s *strimziProvider) createDefaultRequestsLimits(kcRequests, kcLimits *apiextensions.JSON) error {
 
 	// default values for config/requests/limits in Strimzi resource specs
 	err := kcRequests.UnmarshalJSON([]byte(`{
@@ -559,10 +563,19 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	// check if defaults have been overridden in ClowdEnvironment
 	if s.Env.Spec.Providers.Kafka.Connect.Resources.Requests != nil {
-		kcRequests = *s.Env.Spec.Providers.Kafka.Connect.Resources.Requests
+		*kcRequests = *s.Env.Spec.Providers.Kafka.Connect.Resources.Requests
 	}
 	if s.Env.Spec.Providers.Kafka.Connect.Resources.Limits != nil {
-		kcLimits = *s.Env.Spec.Providers.Kafka.Connect.Resources.Limits
+		*kcLimits = *s.Env.Spec.Providers.Kafka.Connect.Resources.Limits
+	}
+	return nil
+}
+
+func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConfig) error {
+	var kcRequests, kcLimits apiextensions.JSON
+
+	if err := s.createDefaultRequestsLimits(&kcRequests, &kcLimits); err != nil {
+		return err
 	}
 
 	clusterNN := types.NamespacedName{
@@ -609,7 +622,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	var config apiextensions.JSON
 
-	err = config.UnmarshalJSON([]byte(`{
+	err := config.UnmarshalJSON([]byte(`{
 		"config.storage.replication.factor":       "1",
 		"config.storage.topic":                    "connect-cluster-configs",
 		"connector.client.config.override.policy": "All",
@@ -959,8 +972,7 @@ func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig
 
 		k.Spec = &strimzi.KafkaTopicSpec{}
 
-		err := processTopicValues(k, s.Env, appList, topic)
-
+		err := s.processTopicValues(k, appList, topic)
 		if err != nil {
 			return err
 		}
@@ -987,17 +999,30 @@ func getTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment, namespace 
 	return topic.TopicName
 }
 
-func processTopicValues(
-	k *strimzi.KafkaTopic,
-	env *crd.ClowdEnvironment,
-	appList *crd.ClowdAppList,
-	topic crd.KafkaTopicSpec,
-) error {
+func generateJSON(inputData configData, jsonDataStruct *apiextensions.JSON) error {
+	jsonData := "{"
 
-	keys := map[string][]string{}
-	replicaValList := []string{}
-	partitionValList := []string{}
+	for key, valList := range inputData {
+		f, ok := conversionMap[key]
+		if ok {
+			out, _ := f(valList)
+			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
+		} else {
+			return errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
+		}
+	}
 
+	if len(jsonData) > 1 {
+		jsonData = jsonData[0 : len(jsonData)-1]
+	}
+	jsonData += "}"
+
+	return jsonDataStruct.UnmarshalJSON([]byte(jsonData))
+}
+
+func generateRawConfig(appList *crd.ClowdAppList, topic crd.KafkaTopicSpec) ([]string, []string, configData) {
+	var replicaValList, partitionValList []string
+	var keys = configData{}
 	for _, iapp := range appList.Items {
 		if iapp.Spec.KafkaTopics != nil {
 			for _, itopic := range iapp.Spec.KafkaTopics {
@@ -1016,31 +1041,22 @@ func processTopicValues(
 			}
 		}
 	}
+	return replicaValList, partitionValList, keys
+}
 
-	jsonData := "{"
+type configData map[string][]string
 
-	for key, valList := range keys {
-		f, ok := conversionMap[key]
-		if ok {
-			out, _ := f(valList)
-			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
-		} else {
-			return errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
-		}
-	}
+func (s *strimziProvider) processTopicValues(
+	k *strimzi.KafkaTopic,
+	appList *crd.ClowdAppList,
+	topic crd.KafkaTopicSpec,
+) error {
 
-	if len(jsonData) > 1 {
-		jsonData = jsonData[0 : len(jsonData)-1]
-	}
-	jsonData += "}"
+	replicaValList, partitionValList, keys := generateRawConfig(appList, topic)
 
 	var config apiextensions.JSON
-
-	err := config.UnmarshalJSON([]byte(jsonData))
-
-	if err != nil {
+	if err := generateJSON(keys, &config); err != nil {
 		return err
-
 	}
 
 	k.Spec.Config = &config
@@ -1077,10 +1093,10 @@ func processTopicValues(
 		}
 	}
 
-	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
+	if s.Env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
 		k.Spec.Replicas = utils.Int32Ptr(1)
-	} else if env.Spec.Providers.Kafka.Cluster.Replicas < *k.Spec.Replicas {
-		k.Spec.Replicas = &env.Spec.Providers.Kafka.Cluster.Replicas
+	} else if s.Env.Spec.Providers.Kafka.Cluster.Replicas < *k.Spec.Replicas {
+		k.Spec.Replicas = &s.Env.Spec.Providers.Kafka.Cluster.Replicas
 	}
 
 	return nil
