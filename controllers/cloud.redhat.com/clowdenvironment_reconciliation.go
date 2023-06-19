@@ -193,12 +193,12 @@ func (r *ClowdEnvironmentReconciliation) perProviderMetrics() (ctrl.Result, erro
 
 // Get or create and then update the cache for the target namespace
 func (r *ClowdEnvironmentReconciliation) initTargetNamespace() (ctrl.Result, error) {
-	result := ctrl.Result{}
-	var err error
-
 	if r.env.Status.TargetNamespace != "" {
-		return result, err
+		return ctrl.Result{}, nil
 	}
+
+	var result ctrl.Result
+	var err error
 
 	if r.env.Spec.TargetNamespace == "" {
 		result, err = r.makeTargetNamespace()
@@ -269,6 +269,11 @@ func (r *ClowdEnvironmentReconciliation) updateTargetNamespace() (ctrl.Result, e
 func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (ctrl.Result, error) {
 	ens := &core.Namespace{}
 	if getNSErr := r.client.Get(r.ctx, types.NamespacedName{Name: r.env.Status.TargetNamespace}, ens); getNSErr != nil {
+		r.log.Info("Get namespace error", "err", getNSErr)
+		if setClowdStatusErr := SetClowdEnvConditions(r.ctx, r.client, r.env, crd.ReconciliationFailed, r.oldStatus, getNSErr); setClowdStatusErr != nil {
+			r.log.Info("Set status error", "err", setClowdStatusErr)
+			return ctrl.Result{Requeue: true}, setClowdStatusErr
+		}
 		return ctrl.Result{Requeue: true}, getNSErr
 	}
 
