@@ -1387,13 +1387,14 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint"}
 ```
 
-| Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                              |
-| :---------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name-5)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
-| [hostname](#hostname-5) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
-| [port](#port-5)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
-| [app](#app)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
-| [tlsPort](#tlsport)     | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/tlsPort")   |
+| Property                | Type          | Required | Nullable       | Defined by                                                                                                                                                                              |
+| :---------------------- | ------------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name-5)         | `string`      | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
+| [hostname](#hostname-5) | `string`      | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
+| [port](#port-5)         | `integer`     | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
+| [app](#app)             | `string`      | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
+| [tlsPort](#tlsport)     | `integer`     | Optional | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/tlsPort")   |
+| [apiPath](#apipath)     | Not specified | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-apipath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPath")   |
 
 ### name
 
@@ -1474,6 +1475,22 @@ The TLS port of the dependent service.
 #### tlsPort Type
 
 `integer`
+
+### apiPath
+
+The top level api path that the app should serve from /api/<apiPath>
+
+
+`apiPath`
+
+-   is required
+-   Type: unknown
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-dependencyendpoint-properties-apipath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPath")
+
+#### apiPath Type
+
+unknown
 
 ## Definitions group PrivateDependencyEndpoint
 

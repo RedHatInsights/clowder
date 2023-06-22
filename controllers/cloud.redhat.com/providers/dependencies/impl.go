@@ -122,6 +122,13 @@ func processAppEndpoints(
 
 		for _, deployment := range depApp.Spec.Deployments {
 			innerDeployment := deployment
+
+			apiPath := deployment.WebServices.Public.APIPath
+
+			if apiPath == "" {
+				apiPath = depApp.GetDeploymentNamespacedName(&innerDeployment).Name
+			}
+
 			if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
 				name := depApp.GetDeploymentNamespacedName(&innerDeployment).Name
 				*depConfig = append(*depConfig, config.DependencyEndpoint{
@@ -130,6 +137,7 @@ func processAppEndpoints(
 					Name:     innerDeployment.Name,
 					App:      depApp.Name,
 					TlsPort:  utils.IntPtr(int(tlsPort)),
+					ApiPath:  fmt.Sprintf("/api/%s/", apiPath),
 				})
 			}
 			if innerDeployment.WebServices.Private.Enabled {
