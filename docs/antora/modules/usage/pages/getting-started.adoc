@@ -28,7 +28,7 @@ what source is providing those services. For our purposes, these services are co
 
 The easiest way to install a ClowdEnvironment that is fit for working with ephemeral environments is by using Bonfire.
 
-Bonfire is a cli tool used to deploy apps into ephemeral environments. Read about getting started with bonfire on ephemeral environments https://consoledot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html[here]
+Bonfire is a cli tool used to deploy apps into ephemeral environments. Read about getting started with bonfire on ephemeral environments https://consoledot.pages.redhat.com/docs/dev/creating-a-new-app/using-ee/index.html[here]
 
 If you're curious to see what is going to be deployed (without actually applying the config), run:
 
