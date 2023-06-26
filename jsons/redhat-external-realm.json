@@ -670,21 +670,7 @@
             "access.token.claim": "true",
             "claim.name": "entitlements",
             "jsonType.label": "String"
-          },
-          "defaultClientScopes": [
-            "web-origins",
-            "roles",
-            "profile",
-            "email",
-            "nameandterms"
-          ],
-          "optionalClientScopes": [
-            "address",
-            "phone",
-            "offline_access",
-            "microprofile-jwt",
-            "profile_level.name_and_dev_terms"
-          ]
+          }
         },
         {
           "id": "account_number",
@@ -867,13 +853,15 @@
         "web-origins",
         "roles",
         "profile",
-        "email"
+        "email",
+        "nameandterms"
       ],
       "optionalClientScopes": [
         "address",
         "phone",
         "offline_access",
-        "microprofile-jwt"
+        "microprofile-jwt",
+        "profile_level.name_and_dev_terms"
       ]
     },
     {
