@@ -38,8 +38,6 @@ A client helper is available for the endpoints and privateEndpoints.
 
 === JSON structure
 
-.. code-block:: json
-
 [source,json]
 ----
 {
@@ -85,20 +83,20 @@ following attribute names.
 
 [options="header"]
 |=================================================
-| Language  | Attribute Name                      
-| Python    | ``LoadedConfig.dependencyEndpoints``
-| Go        | ``LoadedConfig.DependencyEndpoints``
-| Javscript | ``LoadedConfig.dependencyEndpoints``
-| Ruby      | ``LoadedConfig.dependencyEndpoints``
+| Language   | Attribute Name                      
+| Python     | ``LoadedConfig.dependencyEndpoints``
+| Go         | ``LoadedConfig.DependencyEndpoints``
+| Javascript | ``LoadedConfig.dependencyEndpoints``
+| Ruby       | ``LoadedConfig.dependencyEndpoints``
 |=================================================
 
 Private endpoints are accessible via these attribute names.
 
 [options="header"]
 |=========================================================
-| Language  | Attribute Name                             
-| Python    | ``LoadedConfig.privateDependencyEndpoints``
-| Go        | ``LoadedConfig.PrivateDependencyEndpoints``
-| Javscript | ``LoadedConfig.privateDependencyEndpoints``
-| Ruby      | ``LoadedConfig.privateDependencyEndpoints``
+| Language   | Attribute Name                             
+| Python     | ``LoadedConfig.privateDependencyEndpoints``
+| Go         | ``LoadedConfig.PrivateDependencyEndpoints``
+| Javascript | ``LoadedConfig.privateDependencyEndpoints``
+| Ruby       | ``LoadedConfig.privateDependencyEndpoints``
 |=========================================================
