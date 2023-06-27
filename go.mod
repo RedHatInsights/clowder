@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.18
+go 1.19
 
 require (
 	github.com/RedHatInsights/cyndi-operator v0.1.9
