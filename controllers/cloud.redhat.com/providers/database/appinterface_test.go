@@ -21,7 +21,7 @@ func TestAppInterfaceDb(t *testing.T) {
 		},
 	}}
 
-	configs, err := genDbConfigs(secrets)
+	configs, err := genDbConfigs(secrets, false)
 
 	assert.NoError(t, err, "failed to gen db config")
 	assert.Equal(t, len(configs), 1, "wrong number of configs")
