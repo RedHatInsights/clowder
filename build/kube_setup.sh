@@ -302,6 +302,13 @@ function install_subscription_crd {
     cd "$ROOT_DIR"
 }
 
+function install_floorist_crd {
+    echo "*** Applying Floorist CRD ..."
+    ${KUBECTL_CMD} apply -k "https://github.com/RedHatInsights/floorist-operator/config/crd?ref=main"
+
+    cd "$ROOT_DIR"
+}
+
 install_strimzi_operator
 install_cert_manager
 install_prometheus_operator
@@ -310,6 +317,7 @@ install_xjoin_operator
 install_elasticsearch_operator
 install_keda_operator
 install_subscription_crd
+install_floorist_crd
 
 FAILURES=0
 if [ ${#BG_PIDS[@]} -gt 0 ]; then
