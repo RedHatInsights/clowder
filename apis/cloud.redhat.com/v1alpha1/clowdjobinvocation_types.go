@@ -117,6 +117,9 @@ type ClowdJobInvocationSpec struct {
 
 	// Testing is the struct for building out test jobs (iqe, etc) in a CJI
 	Testing JobTestingSpec `json:"testing,omitempty"`
+
+	// RunOnNotReady is a flag that when true, the job will not wait for the deployment to be ready to run
+	RunOnNotReady bool `json:"runOnNotReady,omitempty"`
 }
 
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
