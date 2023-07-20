@@ -53,6 +53,8 @@ spec:
             - name: IQE_TEST_IMPORTANCE
             - name: IQE_PARALLEL_ENABLED
             - name: IQE_PARALLEL_WORKER_COUNT
+            - name: IQE_RP_ARGS
+            - name: IQE_IBUTSU_SOURCE
           resources:
             limits:
               cpu: "2"

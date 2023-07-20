@@ -63,6 +63,8 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		{Name: "IQE_TEST_IMPORTANCE", Value: joinNullableSlice(cji.Spec.Testing.Iqe.TestImportance)},
 		{Name: "IQE_PARALLEL_ENABLED", Value: cji.Spec.Testing.Iqe.ParallelEnabled},
 		{Name: "IQE_PARALLEL_WORKER_COUNT", Value: cji.Spec.Testing.Iqe.ParallelWorkerCount},
+		{Name: "IQE_RP_ARGS", Value: cji.Spec.Testing.Iqe.RpArgs},
+		{Name: "IQE_IBUTSU_SOURCE", Value: cji.Spec.Testing.Iqe.IbutsuSource},
 	}
 
 	// set image tag

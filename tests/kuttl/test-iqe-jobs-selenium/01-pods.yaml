@@ -91,3 +91,5 @@ spec:
       filter: "test_plugin_accessible"
       parallelEnabled: "true"
       parallelWorkerCount: "4"
+      rpArgs: "true"
+      ibutsuSource: "post_stage_deploy"

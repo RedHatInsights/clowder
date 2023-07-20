@@ -89,3 +89,5 @@ spec:
       - "high"
       parallelEnabled: "true"
       parallelWorkerCount: "4"
+      rpArgs: "true"
+      ibutsuSource: "post_stage_deploy"

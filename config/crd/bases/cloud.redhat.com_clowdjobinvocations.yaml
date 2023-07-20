@@ -67,6 +67,10 @@ spec:
                       filter:
                         description: sets pytest -k args
                         type: string
+                      ibutsuSource:
+                        description: sets value passed to IQE 'IQE_IBUTSU_SOURCE'
+                          args
+                        type: string
                       imageTag:
                         description: By default, Clowder will set the image on the
                           ClowdJob to be the baseImage:name-of-iqe-plugin, but only
@@ -112,6 +116,10 @@ spec:
                         items:
                           type: string
                         type: array
+                      rpArgs:
+                        description: sets value passed to IQE 'IQE_RP_ARGS' report
+                          portal args
+                        type: string
                       testImportance:
                         description: sets values passed to IQE '--test-importance'
                           arg
