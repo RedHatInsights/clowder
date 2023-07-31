@@ -846,7 +846,7 @@ MetricsConfig configures the Clowder provider controlling the creation of metric
 | Field | Description
 | *`port`* __integer__ | The port that metrics services inside ClowdApp pods should be served on.
 | *`path`* __string__ | A prefix path that pods will be instructed to use when setting up their metrics server.
-| *`mode`* __MetricsMode__ | The mode of operation of the Metrics provider. The allowed modes are (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated. (*_app-interface_*) where services and probes are generated for app-interface.
+| *`mode`* __MetricsMode__ | The mode of operation of the Metrics provider. The allowed modes are  (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated. (*_app-interface_*) where services and probes are generated for app-interface.
 | *`prometheus`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-prometheusconfig[$$PrometheusConfig$$]__ | Prometheus specific configuration
 |===
 
