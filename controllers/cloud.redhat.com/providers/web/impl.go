@@ -120,6 +120,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	var pub, priv bool
 	var pubPort, privPort uint32
+	tlsCertOptional := new(bool)
 	if env.Spec.Providers.Web.TLS.Enabled {
 		if deployment.WebServices.Public.Enabled {
 			tlsPort := core.ServicePort{
@@ -132,6 +133,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			servicePorts = append(servicePorts, tlsPort)
 			pub = true
 			pubPort = uint32(env.Spec.Providers.Web.TLS.Port)
+			*tlsCertOptional = true
 		}
 		if deployment.WebServices.Private.Enabled {
 			appProtocolPriv := "http"
@@ -150,6 +152,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 				servicePorts = append(servicePorts, tlsPrivatePort)
 				priv = true
 				privPort = uint32(env.Spec.Providers.Web.TLS.PrivatePort)
+				*tlsCertOptional = true
 			}
 		}
 
@@ -157,7 +160,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			if err := generateEnvoyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
 				return err
 			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv, tlsCertOptional)
 			setServiceTLSAnnotations(s, nn.Name)
 		}
 	}
@@ -200,7 +203,7 @@ func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	return cache.Update(CoreEnvoyConfigMap, cm)
 }
 
-func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
+func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool, tlsCertOptional *bool) {
 	ports := []core.ContainerPort{}
 	if pub {
 		ports = append(ports, core.ContainerPort{
@@ -247,6 +250,7 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				SecretName: certSecretName(name),
+				Optional:   tlsCertOptional,
 			},
 		},
 	}
