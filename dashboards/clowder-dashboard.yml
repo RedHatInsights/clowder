@@ -1768,7 +1768,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Reconciliation Time SLI",
+          "title": "Clowder Reconciliation Time Per Controller SLOs",
           "transparent": true,
           "type": "timeseries"
         },
