@@ -1761,14 +1761,14 @@ data:
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdenvironment|clowdjobinvocation\", le=\"4\"}[28d])) by (controller) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdenvironment|clowdjobinvocation\", le=\"+Inf\"}[28d])) by (controller)",
+              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"4\"}[28d])) by (controller) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"+Inf\"}[28d])) by (controller)",
               "hide": false,
               "legendFormat": "{{controller}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Clowder Controller Reconciliation Time SLOs",
+          "title": "Reconciliation Time SLI",
           "transparent": true,
           "type": "timeseries"
         },
@@ -1870,8 +1870,8 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "crcp01ue1-prometheus",
-              "value": "crcp01ue1-prometheus"
+              "text": "c-rh-c-eph-prometheus",
+              "value": "c-rh-c-eph-prometheus"
             },
             "hide": 0,
             "includeAll": false,
