@@ -149,7 +149,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &env)
-	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions})
+	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions, Ordering: applyOrder})
 	cache := rc.NewObjectCache(ctx, r.Client, &log, cacheConfig)
 
 	r.initMetrics(env)
