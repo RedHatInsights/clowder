@@ -42,28 +42,11 @@ func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewAppInterface(c)
 	case "managed":
 		return NewManagedKafka(c)
-	case "managed-ephem":
-		return NewManagedEphemKafka(c)
 	case "none", "":
 		return NewNoneKafka(c)
 	default:
 		errStr := fmt.Sprintf("No matching kafka mode for %s", kafkaMode)
 		return nil, errors.NewClowderError(errStr)
-	}
-}
-
-// GetKafka returns the correct kafka provider based on the environment.
-func GetKafkaFinalize(c *providers.Provider) error {
-	c.Env.ConvertDeprecatedKafkaSpec()
-	kafkaMode := c.Env.Spec.Providers.Kafka.Mode
-	switch kafkaMode {
-	case "managed-ephem":
-		return NewManagedEphemKafkaFinalizer(c)
-	case "none", "":
-		return nil
-	default:
-		c.Log.Info(fmt.Sprintf("No matching kafka mode for %s", kafkaMode))
-		return nil
 	}
 }
 
@@ -111,5 +94,5 @@ func getConnectClusterUserName(env *crd.ClowdEnvironment) string {
 }
 
 func init() {
-	providers.ProvidersRegistration.Register(GetKafka, 6, ProvName, GetKafkaFinalize)
+	providers.ProvidersRegistration.Register(GetKafka, 6, ProvName)
 }

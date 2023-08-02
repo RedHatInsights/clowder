@@ -18,21 +18,17 @@ package controllers
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
-	"golang.org/x/oauth2/clientcredentials"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -47,8 +43,6 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/kafka"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
@@ -383,27 +377,6 @@ func createCRs(name types.NamespacedName) (*crd.ClowdEnvironment, *crd.ClowdApp,
 	return &env, &app, err
 }
 
-func createManagedKafkaClowderStack(name types.NamespacedName, secretNme string) (*crd.ClowdEnvironment, *crd.ClowdApp, error) {
-	objMeta := metav1.ObjectMeta{
-		Name:      "ephemeral-managed-kafka-name",
-		Namespace: name.Namespace,
-	}
-
-	env := createClowdEnvironment(objMeta)
-
-	env.Spec.Providers.Kafka = crd.KafkaConfig{
-		Mode: "managed-ephem",
-		EphemManagedSecretRef: crd.NamespacedName{
-			Name:      secretNme,
-			Namespace: name.Namespace,
-		},
-	}
-
-	app, err := createClowdApp(env, objMeta)
-
-	return &env, &app, err
-}
-
 func fetchConfig(name types.NamespacedName) (*config.AppConfig, error) {
 
 	secretConfig := core.Secret{}
@@ -655,191 +628,6 @@ func fetch(ctx context.Context, name types.NamespacedName, resource client.Objec
 	}
 
 	return err
-}
-
-func createEphemeralManagedSecret(name string, namespace string, cwData map[string]string) error {
-	secret := core.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		StringData: cwData,
-	}
-
-	return k8sClient.Create(context.Background(), &secret)
-}
-
-var ephemManagedKafkaHTTPLog = []map[string]string{}
-
-func (suite *TestSuite) TestManagedKafkaConnectBuilderCreate() {
-	logger.Info("Starting ephemeral managed kafka e2e test")
-
-	nn := types.NamespacedName{
-		Name:      "managed-ephemeral-kafka",
-		Namespace: "default",
-	}
-
-	secretData := make(map[string]string)
-	secretData["client.id"] = "username"
-	secretData["client.secret"] = "password"
-	secretData["hostname"] = "hostname:443"
-	secretData["admin.url"] = "https://admin.url"
-	secretData["token.url"] = "https://token.url"
-	secName := "managed-ephem-secret"
-	err := createEphemeralManagedSecret(secName, nn.Namespace, secretData)
-	assert.Nil(suite.T(), err)
-
-	cwData := map[string]string{
-		"aws_access_key_id":     "key_id",
-		"aws_secret_access_key": "secret",
-		"log_group_name":        "default",
-		"aws_region":            "us-east-1",
-	}
-
-	_ = createCloudwatchSecret(&cwData)
-
-	mockClient := MockEphemManagedKafkaHTTPClient{topicList: make(map[string]bool)}
-
-	kafka.ClientCreator = func(provider *providers.Provider, clientCred clientcredentials.Config) kafka.HTTPClient {
-		return &mockClient
-	}
-
-	env, app, err := createManagedKafkaClowderStack(nn, secName)
-
-	assert.Nil(suite.T(), err)
-
-	assert.NotNil(suite.T(), app)
-	assert.NotNil(suite.T(), env)
-
-	mockClient.createStaticTopic("ephemeral-dont-delete")
-	mockClient.createStaticTopic("ephemeral.managed.kafka.name.inventory")
-
-	ephemManagedSecret := env.Spec.Providers.Kafka.EphemManagedSecretRef
-	assert.Equal(suite.T(), secName, ephemManagedSecret.Name)
-	assert.Equal(suite.T(), nn.Namespace, ephemManagedSecret.Namespace)
-	assert.Eventually(suite.T(), func() bool {
-		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
-	}, time.Second*15, time.Second*1)
-	assert.Eventually(suite.T(), func() bool {
-		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
-	}, time.Second*15, time.Second*1)
-
-	ctx := context.Background()
-	err = k8sClient.Delete(ctx, env)
-	assert.NoError(suite.T(), err, "couldn't delete resource")
-
-	assert.Eventually(suite.T(), func() bool {
-		return assert.NotContains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory")
-	}, time.Second*15, time.Second*1)
-	assert.Eventually(suite.T(), func() bool {
-		return assert.NotContains(suite.T(), mockClient.topicList, "ephemeral-managed-kafka-name-inventory-default-values")
-	}, time.Second*15, time.Second*1)
-	assert.Eventually(suite.T(), func() bool {
-		return assert.NotContains(suite.T(), mockClient.topicList, "ephemeral.managed.kafka.name.inventory")
-	}, time.Second*15, time.Second*1)
-	assert.Eventually(suite.T(), func() bool {
-		return assert.Contains(suite.T(), mockClient.topicList, "ephemeral-dont-delete")
-	}, time.Second*15, time.Second*1)
-}
-
-type MockEphemManagedKafkaHTTPClient struct {
-	topicList map[string]bool
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) createStaticTopic(topicName string) {
-	m.topicList[topicName] = true
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) makeResp(body string, code int) http.Response {
-	readBody := io.NopCloser(strings.NewReader(body))
-	resp := http.Response{
-		Status:           fmt.Sprint(code),
-		StatusCode:       code,
-		Proto:            "HTTP/1.0",
-		ProtoMajor:       0,
-		ProtoMinor:       0,
-		Header:           make(http.Header, 0),
-		Body:             readBody,
-		ContentLength:    int64(len(body)),
-		TransferEncoding: []string{},
-		Close:            false,
-		Uncompressed:     false,
-		Trailer:          map[string][]string{},
-		Request:          &http.Request{},
-		TLS:              &tls.ConnectionState{},
-	}
-	// buff := bytes.NewBuffer(nil)
-	// resp.Write(buff)
-	return resp
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) logResponse(resp *http.Response) {
-	entry := map[string]string{}
-	entry["status"] = resp.Status
-	entry["code"] = strconv.Itoa(resp.StatusCode)
-	// This is on purpose because whenever I try to read the body I get 0 bytes
-	// and I messed with it for too long and I don't care anymore because this is a
-	// test not the ISS's attitude control system
-	entry["body"] = resp.Proto
-
-	ephemManagedKafkaHTTPLog = append(ephemManagedKafkaHTTPLog, entry)
-
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	url := req.URL.String()
-	var resp *http.Response
-	if req.Method == "PATCH" {
-		r := m.makeResp(`{"msg":"topic patched"}`, 200)
-		resp = &r
-	} else if req.Method == "DELETE" {
-		items := strings.Split(url, "/")
-		delete(m.topicList, items[len(items)-1])
-		r := m.makeResp(`{"msg":"topic found"}`, 200)
-		resp = &r
-	}
-	m.logResponse(resp)
-	return resp, nil
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) Get(url string) (*http.Response, error) {
-	var resp http.Response
-	items := strings.Split(url, "/")
-	if len(items) == 6 {
-		tlist := kafka.TopicsList{}
-		for k := range m.topicList {
-			tlist.Items = append(tlist.Items, kafka.Topic{Name: k})
-		}
-		body, err := json.Marshal(tlist)
-		if err != nil {
-			return nil, fmt.Errorf("can not list topics: %s", err)
-		}
-		resp = m.makeResp(string(body), 200)
-	} else if len(items) == 7 {
-		for k := range m.topicList {
-			if items[len(items)-1] == k {
-				resp = m.makeResp(`{"msg":"topic found"}`, 200)
-				break
-			}
-		}
-		resp = m.makeResp(`{"msg":"topic not found"}`, 404)
-	}
-
-	m.logResponse(&resp)
-	return &resp, nil
-}
-
-func (m *MockEphemManagedKafkaHTTPClient) Post(_, _ string, body io.Reader) (*http.Response, error) {
-	bodyData, _ := io.ReadAll(body)
-	kafkaObj := &kafka.JSONPayload{}
-	err := json.Unmarshal(bodyData, kafkaObj)
-	if err != nil {
-		return nil, err
-	}
-	m.topicList[kafkaObj.Name] = true
-	resp := m.makeResp(`{"msg":"topic created"}`, 200)
-	m.logResponse(&resp)
-	return &resp, nil
 }
 
 func TestSuiteRun(t *testing.T) {

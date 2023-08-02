@@ -165,15 +165,23 @@ func (fc *FakeClient) RESTMapper() meta.RESTMapper {
 	return nil
 }
 
+func (fc *FakeClient) SubResource(_ string) client.SubResourceClient {
+	return nil
+}
+
 func (fc *FakeClient) Status() client.StatusWriter {
 	return &FakeStatus{}
 }
 
-func (fc *FakeStatus) Update(_ context.Context, _ client.Object, _ ...client.UpdateOption) error {
+func (fc *FakeStatus) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.SubResourcePatchOption) error {
 	return nil
 }
 
-func (fc *FakeStatus) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.PatchOption) error {
+func (fc *FakeStatus) Create(_ context.Context, _ client.Object, _ client.Object, _ ...client.SubResourceCreateOption) error {
+	return nil
+}
+
+func (fc *FakeStatus) Update(_ context.Context, _ client.Object, _ ...client.SubResourceUpdateOption) error {
 	return nil
 }
 

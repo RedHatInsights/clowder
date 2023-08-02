@@ -249,8 +249,18 @@ func (r *ClowdAppReconciliation) isEnvReady() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+var applyOrder = []string{
+	"*",
+	"Service",
+	"Secret",
+	"Deployment",
+	"Job",
+	"CronJob",
+	"ScaledObject",
+}
+
 func (r *ClowdAppReconciliation) createCache() (ctrl.Result, error) {
-	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions})
+	cacheConfig := rc.NewCacheConfig(Scheme, nil, ProtectedGVKs, rc.Options{StrictGVK: true, DebugOptions: DebugOptions, Ordering: applyOrder})
 	cache := rc.NewObjectCache(r.ctx, r.client, r.log, cacheConfig)
 	r.cache = &cache
 	return ctrl.Result{}, nil

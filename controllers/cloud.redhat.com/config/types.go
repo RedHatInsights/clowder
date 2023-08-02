@@ -130,6 +130,9 @@ func (j *DependencyEndpoint) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
+	if v, ok := raw["apiPath"]; !ok || v == nil {
+		return fmt.Errorf("field apiPath: required")
+	}
 	if v, ok := raw["app"]; !ok || v == nil {
 		return fmt.Errorf("field app: required")
 	}
@@ -498,6 +501,9 @@ type DatabaseConfig struct {
 
 // Dependent service connection info
 type DependencyEndpoint struct {
+	// The top level api path that the app should serve from /api/<apiPath>
+	ApiPath interface{} `json:"apiPath"`
+
 	// The app name of the ClowdApp hosting the service.
 	App string `json:"app"`
 

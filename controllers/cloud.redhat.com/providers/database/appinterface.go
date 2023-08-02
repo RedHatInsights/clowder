@@ -149,7 +149,7 @@ func GetDbConfig(
 
 	if len(matches) == 0 {
 
-		dbConfigs, err := genDbConfigs(secrets.Items)
+		dbConfigs, err := genDbConfigs(secrets.Items, false)
 
 		if err != nil {
 			return nil, err
@@ -201,7 +201,7 @@ func resolveDb(spec crd.DatabaseSpec, c []config.DatabaseConfigContainer) config
 	return config.DatabaseConfigContainer{}
 }
 
-func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfigContainer, error) {
+func genDbConfigs(secrets []core.Secret, verify bool) ([]config.DatabaseConfigContainer, error) {
 	configs := []config.DatabaseConfigContainer{}
 
 	var err error
@@ -235,7 +235,7 @@ func genDbConfigs(secrets []core.Secret) ([]config.DatabaseConfigContainer, erro
 	keys := []string{"db.host", "db.port", "db.user", "db.password", "db.name"}
 	providers.ExtractSecretData(secrets, extractFn, keys...)
 
-	if err != nil {
+	if verify && err != nil {
 		return nil, err
 	}
 
@@ -246,7 +246,7 @@ func searchAnnotationSecret(appName string, secrets []core.Secret) ([]config.Dat
 	for _, secret := range secrets {
 		anno := secret.GetAnnotations()
 		if v, ok := anno["clowder/database"]; ok && v == appName {
-			configs, err := genDbConfigs([]core.Secret{secret})
+			configs, err := genDbConfigs([]core.Secret{secret}, true)
 			return configs, err
 		}
 	}

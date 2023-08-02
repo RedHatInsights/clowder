@@ -120,6 +120,19 @@ data:
   db.user: dXNlcmJhZAo=  # userbad
   db.password:  cGFzc3dvcmQxMjM=  # password123
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-single
+  namespace: test-multi-app-interface-db
+type: Opaque
+data:
+  db.host: YXBwLXNpbmdsZS1zdGFnZS5yZHMuZXhhbXBsZS5jb20=  # app-single-stage.rds.example.com
+  db.name: ZGJuYW1l  # dbname
+  db.port: cGw=  # pl  This is to check that a bad port doesn't mess with the rest of them
+  db.user: dXNlcmJhZAo=  # userbad
+  db.password:  cGFzc3dvcmQxMjM=  # password123
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
