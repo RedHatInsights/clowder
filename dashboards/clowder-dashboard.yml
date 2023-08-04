@@ -1852,7 +1852,7 @@ data:
               "exemplar": true,
               "expr": "sum(rate(clowder_reconcile_requests{type=\"app\"}[5m])) by (name)",
               "interval": "",
-              "legendFormat": "{{name}}",
+              "legendFormat": "SLI",
               "refId": "A"
             }
           ],
