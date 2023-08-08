@@ -34,7 +34,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 330525,
+      "id": 170656,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -836,7 +836,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "PD295346F7C930967"
           },
           "description": "",
           "fieldConfig": {
@@ -887,7 +887,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${datasource}"
+                "uid": "PD295346F7C930967"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1105,7 +1105,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "PA6124D83F67FD625"
           },
           "fieldConfig": {
             "defaults": {
@@ -1155,7 +1155,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${datasource}"
+                "uid": "PA6124D83F67FD625"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1172,7 +1172,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "PDD8BE47D10408F45"
           },
           "fieldConfig": {
             "defaults": {
@@ -1222,7 +1222,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${datasource}"
+                "uid": "PDD8BE47D10408F45"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1416,7 +1416,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${datasource}"
+            "uid": "PC1EAC84DCBBF0697"
           },
           "fieldConfig": {
             "defaults": {
@@ -1462,7 +1462,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${datasource}"
+                "uid": "PC1EAC84DCBBF0697"
               },
               "exemplar": true,
               "expr": "clowder_version",
@@ -1672,6 +1672,7 @@ data:
             }
           ],
           "title": "Avg reconciliation time by app",
+          "transparent": true,
           "type": "timeseries"
         },
         {
@@ -1715,7 +1716,6 @@ data:
                 }
               },
               "mappings": [],
-              "max": 1,
               "min": 0,
               "thresholds": {
                 "mode": "absolute",
@@ -1725,8 +1725,8 @@ data:
                     "value": null
                   },
                   {
-                    "color": "yellow",
-                    "value": 95
+                    "color": "dark-red",
+                    "value": 0.95
                   }
                 ]
               },
@@ -1761,7 +1761,7 @@ data:
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "100 * sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"4\"}[28d])) by (controller) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"+Inf\"}[28d])) by (controller)",
+              "expr": "sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"4\"}[28d])) by (controller) / sum(avg_over_time(controller_runtime_reconcile_time_seconds_bucket{controller=~\"clowdapp|clowdjobinvocation|clowdenvironment\", le=\"+Inf\"}[28d])) by (controller)",
               "hide": false,
               "legendFormat": "{{controller}}",
               "range": true,
@@ -1788,7 +1788,7 @@ data:
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 30,
+                "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
@@ -1801,14 +1801,14 @@ data:
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
                 },
                 "thresholdsStyle": {
-                  "mode": "line"
+                  "mode": "off"
                 }
               },
               "mappings": [],
@@ -1820,8 +1820,8 @@ data:
                     "value": null
                   },
                   {
-                    "color": "#EAB839",
-                    "value": 99
+                    "color": "red",
+                    "value": 80
                   }
                 ]
               }
@@ -1852,7 +1852,7 @@ data:
               "exemplar": true,
               "expr": "sum(rate(clowder_reconcile_requests{type=\"app\"}[5m])) by (name)",
               "interval": "",
-              "legendFormat": "SLI",
+              "legendFormat": "{{name}}",
               "refId": "A"
             }
           ],
@@ -1869,9 +1869,9 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
-              "text": "c-rh-c-eph-prometheus",
-              "value": "c-rh-c-eph-prometheus"
+              "selected": false,
+              "text": "crcp01ue1-prometheus",
+              "value": "crcp01ue1-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -1888,7 +1888,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-3h",
+        "from": "now-30m",
         "to": "now"
       },
       "timepicker": {},
