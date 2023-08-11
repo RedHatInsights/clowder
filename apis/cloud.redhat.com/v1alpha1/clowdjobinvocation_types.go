@@ -89,6 +89,12 @@ type IqeJobSpec struct {
 
 	// sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
 	ParallelWorkerCount string `json:"parallelWorkerCount,omitempty"`
+
+	// sets value passed to IQE 'IQE_RP_ARGS' report portal args
+	RpArgs string `json:"rpArgs,omitempty"`
+
+	// sets value passed to IQE 'IQE_IBUTSU_SOURCE' args
+	IbutsuSource string `json:"ibutsuSource,omitempty"`
 }
 
 type IqeUISpec struct {
