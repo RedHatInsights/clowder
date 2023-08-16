@@ -315,7 +315,7 @@ install_prometheus_operator
 install_cyndi_operator
 install_xjoin_operator
 install_elasticsearch_operator
-install_keda_operator
+#install_keda_operator
 install_subscription_crd
 install_floorist_crd
 

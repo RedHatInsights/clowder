@@ -6458,6 +6458,13 @@ objects:
                           description: The URL of BOP - only used in (*_none_*/*_operator_*)
                             mode.
                           type: string
+                        gatewayCertMode:
+                          description: Gateway cert
+                          enum:
+                          - self-signed
+                          - acme
+                          - none
+                          type: string
                         images:
                           description: Optional images to use for web provider components
                             -- only applies when running in (*_local_*) mode.

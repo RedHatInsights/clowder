@@ -152,7 +152,7 @@ func createResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn ty
 	err = cache.Create(resourceIdent, nn, nobj)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating object: %s%s %w", nn.Name, nn.Namespace, err)
 	}
 	return nobj, nil
 }
@@ -160,8 +160,20 @@ func createResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn ty
 func updateResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, object client.Object) error {
 	err := cache.Update(resourceIdent, object)
 
+	gvks, nok, werr := cache.GetScheme().ObjectKinds(resourceIdent.GetType())
+
+	if werr != nil {
+		return werr
+	}
+
+	if nok {
+		return fmt.Errorf("this type is unknown")
+	}
+
+	gvk := gvks[0]
+
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating object: %s %s %s %w", object.GetName(), object.GetNamespace(), gvk.Kind, err)
 	}
 	return nil
 }

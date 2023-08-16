@@ -37,6 +37,10 @@ import (
 // +kubebuilder:validation:Enum=none;operator;local
 type WebMode string
 
+// GatewayCertMode details the mode of operation of the Gateway Cert
+// +kubebuilder:validation:Enum=self-signed;acme;none
+type GatewayCertMode string
+
 // WebImages defines optional container image overrides for the web provider components
 type WebImages struct {
 	// Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
@@ -86,6 +90,9 @@ type WebConfig struct {
 
 	// TLS sidecar enablement
 	TLS TLS `json:"tls,omitempty"`
+
+	// Gateway cert
+	GatewayCertMode GatewayCertMode `json:"gatewayCertMode,omitempty"`
 }
 
 type TLS struct {

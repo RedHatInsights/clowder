@@ -8,6 +8,7 @@ import (
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	cert "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
@@ -51,6 +52,7 @@ func init() {
 	utilruntime.Must(keda.AddToScheme(Scheme))
 	utilruntime.Must(prom.AddToScheme(Scheme))
 	utilruntime.Must(sub.AddToScheme(Scheme))
+	utilruntime.Must(cert.AddToScheme(Scheme))
 	// +kubebuilder:scaffold:scheme
 
 	// Add certain resources so that they will be protected an not get deleted
