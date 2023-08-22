@@ -6,6 +6,7 @@
 IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
 CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=8 HEAD)
 
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26
 
@@ -25,6 +26,15 @@ RUNTIME ?= docker
 else
 RUNTIME ?= podman
 endif
+
+# Install gojsonschema if not found
+GOJSONSCHEMA_BIN := $(shell which gojsonschema 2> /dev/null)
+ifndef GOJSONSCHEMA_BIN
+$(info gojsonschema binary not found. Installing...)
+$(shell go install github.com/atombender/go-jsonschema/cmd/gojsonschema@v0.12.1)
+$(info Ensure that $$GOPATH/bin is in your PATH.)
+endif
+
 
 KUTTL_TEST ?= ""
 
