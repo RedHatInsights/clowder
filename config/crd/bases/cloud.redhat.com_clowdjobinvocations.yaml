@@ -49,6 +49,10 @@ spec:
                 items:
                   type: string
                 type: array
+              runOnNotReady:
+                description: RunOnNotReady is a flag that when true, the job will
+                  not wait for the deployment to be ready to run
+                type: boolean
               testing:
                 description: Testing is the struct for building out test jobs (iqe,
                   etc) in a CJI
