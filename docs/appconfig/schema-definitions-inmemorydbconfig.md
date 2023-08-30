@@ -23,6 +23,7 @@ In Memory DB Configuration
 | [port](#port)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/port")         |
 | [username](#username) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-username.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/username") |
 | [password](#password) | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-password.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/password") |
+| [sslMode](#sslmode)   | `boolean` | Optional | cannot be null | [AppConfig](schema-definitions-inmemorydbconfig-properties-sslmode.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/sslMode")   |
 
 ## hostname
 
@@ -87,3 +88,19 @@ Defines the password for the In Memory DB server configuration.
 ### password Type
 
 `string`
+
+## sslMode
+
+Defines the sslMode used by the In Memory DB server coniguration
+
+
+`sslMode`
+
+-   is optional
+-   Type: `boolean`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-inmemorydbconfig-properties-sslmode.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/InMemoryDBConfig/properties/sslMode")
+
+### sslMode Type
+
+`boolean`

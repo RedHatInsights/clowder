@@ -141,16 +141,9 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	// Determine if the ClowdApp containing the Job is ready
-	if !app.IsReady() {
-		r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
-		r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
-		readyErr := errors.NewClowderError(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
-		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, readyErr); condErr != nil {
-			return ctrl.Result{}, condErr
-		}
-
-		// requeue with a buffer to let the app come up
-		return ctrl.Result{Requeue: true}, readyErr
+	notReadyError := r.HandleNotReady(ctx, app, cji)
+	if notReadyError != nil {
+		return ctrl.Result{Requeue: true}, notReadyError
 	}
 
 	// Get the ClowdEnv for InvokeJob. Env is needed to build out our pod
@@ -381,4 +374,22 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 		}
 	}
 	return jobsCompleted
+}
+
+func (r *ClowdJobInvocationReconciler) HandleNotReady(ctx context.Context, app crd.ClowdApp, cji crd.ClowdJobInvocation) error {
+	if app.IsReady() {
+		return nil
+	}
+	if cji.Spec.RunOnNotReady {
+		return nil
+	}
+	r.Recorder.Eventf(&app, "Warning", "ClowdAppNotReady", "ClowdApp [%s] is not ready", cji.Spec.AppName)
+	r.Log.Info("App not yet ready, requeue", "jobinvocation", cji.Spec.AppName, "namespace", app.Namespace)
+	readyErr := errors.NewClowderError(fmt.Sprintf("The %s app must be ready for CJI to start", cji.Spec.AppName))
+	if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, readyErr); condErr != nil {
+		return condErr
+	}
+
+	// requeue with a buffer to let the app come up
+	return readyErr
 }

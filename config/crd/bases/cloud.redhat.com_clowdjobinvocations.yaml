@@ -49,6 +49,10 @@ spec:
                 items:
                   type: string
                 type: array
+              runOnNotReady:
+                description: RunOnNotReady is a flag that when true, the job will
+                  not wait for the deployment to be ready to run
+                type: boolean
               testing:
                 description: Testing is the struct for building out test jobs (iqe,
                   etc) in a CJI
@@ -66,6 +70,10 @@ spec:
                         type: string
                       filter:
                         description: sets pytest -k args
+                        type: string
+                      ibutsuSource:
+                        description: sets value passed to IQE 'IQE_IBUTSU_SOURCE'
+                          args
                         type: string
                       imageTag:
                         description: By default, Clowder will set the image on the
@@ -104,6 +112,10 @@ spec:
                         items:
                           type: string
                         type: array
+                      rpArgs:
+                        description: sets value passed to IQE 'IQE_RP_ARGS' report
+                          portal args
+                        type: string
                       testImportance:
                         description: sets values passed to IQE '--test-importance'
                           arg

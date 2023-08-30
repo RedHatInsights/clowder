@@ -48,11 +48,14 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 	if !app.Spec.InMemoryDB {
 		return nil
 	}
+
+	sslmode := false
+
 	creds := config.InMemoryDBConfig{}
 
 	creds.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
 	creds.Port = 6379
-
+	creds.SslMode = &sslmode
 	nn := providers.GetNamespacedName(app, "redis")
 
 	configMap := &core.ConfigMap{}

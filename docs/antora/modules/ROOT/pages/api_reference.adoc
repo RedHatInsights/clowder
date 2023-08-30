@@ -306,6 +306,7 @@ ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 | *`appName`* __string__ | Name of the ClowdApp who owns the jobs
 | *`jobs`* __string array__ | Jobs is the set of jobs to be run by the invocation
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobtestingspec[$$JobTestingSpec$$]__ | Testing is the struct for building out test jobs (iqe, etc) in a CJI
+| *`runOnNotReady`* __boolean__ | RunOnNotReady is a flag that when true, the job will not wait for the deployment to be ready to run
 |===
 
 
@@ -595,6 +596,8 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | *`logLevel`* __string__ | sets value for IQE_LOG_LEVEL (default if empty: "info")
 | *`parallelEnabled`* __string__ | sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg
 | *`parallelWorkerCount`* __string__ | sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
+| *`rpArgs`* __string__ | sets value passed to IQE 'IQE_RP_ARGS' report portal args
+| *`ibutsuSource`* __string__ | sets value passed to IQE 'IQE_IBUTSU_SOURCE' args
 |===
 
 

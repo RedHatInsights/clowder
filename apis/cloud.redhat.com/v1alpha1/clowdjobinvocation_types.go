@@ -83,6 +83,18 @@ type IqeJobSpec struct {
 	// sets value for IQE_LOG_LEVEL (default if empty: "info")
 	//+kubebuilder:validation:Enum={"", "critical", "error", "warning", "info", "debug", "notset"}
 	LogLevel string `json:"logLevel,omitempty"`
+
+	// sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg
+	ParallelEnabled string `json:"parallelEnabled,omitempty"`
+
+	// sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
+	ParallelWorkerCount string `json:"parallelWorkerCount,omitempty"`
+
+	// sets value passed to IQE 'IQE_RP_ARGS' report portal args
+	RpArgs string `json:"rpArgs,omitempty"`
+
+	// sets value passed to IQE 'IQE_IBUTSU_SOURCE' args
+	IbutsuSource string `json:"ibutsuSource,omitempty"`
 }
 
 type IqeUISpec struct {
@@ -111,6 +123,9 @@ type ClowdJobInvocationSpec struct {
 
 	// Testing is the struct for building out test jobs (iqe, etc) in a CJI
 	Testing JobTestingSpec `json:"testing,omitempty"`
+
+	// RunOnNotReady is a flag that when true, the job will not wait for the deployment to be ready to run
+	RunOnNotReady bool `json:"runOnNotReady,omitempty"`
 }
 
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation

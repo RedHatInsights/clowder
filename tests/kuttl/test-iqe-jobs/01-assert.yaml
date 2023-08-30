@@ -58,6 +58,14 @@ spec:
               value: "some-priority"
             - name: IQE_TEST_IMPORTANCE
               value: "critical,high"
+            - name: IQE_PARALLEL_ENABLED
+              value: "true"
+            - name: IQE_PARALLEL_WORKER_COUNT
+              value: "4"
+            - name: IQE_RP_ARGS
+              value: "true"
+            - name: IQE_IBUTSU_SOURCE
+              value: "post_stage_deploy"
           resources:
             limits:
               cpu: "2"

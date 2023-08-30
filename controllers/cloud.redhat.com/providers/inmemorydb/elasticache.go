@@ -36,8 +36,11 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 	}
 
 	found := false
+	sslmode := true
 
 	creds := config.InMemoryDBConfig{}
+
+	creds.SslMode = &sslmode
 
 	for _, secret := range secrets.Items {
 		if secret.Name == secretName {
