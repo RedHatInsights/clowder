@@ -511,8 +511,6 @@ func makeWebGatewayIngress(p *providers.Provider) error {
 	utils.UpdateAnnotations(netobj, map[string]string{
 		"nginx.ingress.kubernetes.io/ssl-passthrough":  "true",
 		"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
-		//"kubernetes.io/ingress.class":                  "nginx",
-		// "nginx.ingress.kubernetes.io/ssl-redirect": "true",
 	})
 
 	ingressClass := p.Env.Spec.Providers.Web.IngressClass
@@ -521,40 +519,24 @@ func makeWebGatewayIngress(p *providers.Provider) error {
 	}
 
 	netobj.Spec = networking.IngressSpec{
-		// TLS: []networking.IngressTLS{{
-		// 	Hosts: []string{},
-		// }},
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: p.Env.Status.Hostname,
+				Host: getCertHostname(p.Env.Status.Hostname),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
-							Path:     "/api/",
+							Path:     "/",
 							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
 							Backend: networking.IngressBackend{
 								Service: &networking.IngressServiceBackend{
 									Name: nn.Name,
 									Port: networking.ServiceBackendPort{
-										// Name: "gateway",
-										Number: 9090,
+										Name: "gateway",
 									},
 								},
 							},
 						}},
-						// }, {
-						// 	Path:     "/v1/",
-						// 	PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
-						// 	Backend: networking.IngressBackend{
-						// 		Service: &networking.IngressServiceBackend{
-						// 			Name: nn.Name,
-						// 			Port: networking.ServiceBackendPort{
-						// 				Name: "gateway",
-						// 			},
-						// 		},
-						// 	},
-						// }},
 					},
 				},
 			},
@@ -567,6 +549,12 @@ func makeWebGatewayIngress(p *providers.Provider) error {
 func getAuthHostname(hostname string) string {
 	hostComponents := strings.Split(hostname, ".")
 	hostComponents[0] += "-auth"
+	return strings.Join(hostComponents, ".")
+}
+
+func getCertHostname(hostname string) string {
+	hostComponents := strings.Split(hostname, ".")
+	hostComponents[0] += "-cert"
 	return strings.Join(hostComponents, ".")
 }
 
@@ -715,18 +703,27 @@ func makeWebGatewayConfigMap(p *providers.Provider) error {
 				apiPath = innerDeployment.Name
 			}
 
+			name := app.GetDeploymentNamespacedName(&innerDeployment).Name
+			hostname := fmt.Sprintf("%s.%s.svc", name, app.Namespace)
+
 			upstreamList = append(upstreamList, ProxyRoute{
-				Upstream: fmt.Sprintf("http://%s:8000", innerDeployment.Name),
-				Path:     apiPath,
+				Upstream: fmt.Sprintf("%s:%d", hostname, 8080),
+				Path:     fmt.Sprintf("/api/%s/*", apiPath),
 			})
 		}
 	}
 
-	bopHostname := fmt.Sprintf("http://%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
+	bopHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
+	mocktitlementsHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mocktitlements", p.Env.GetClowdNamespace())
 
 	upstreamList = append(upstreamList, ProxyRoute{
 		Upstream: bopHostname,
 		Path:     "/v1/registrations/*",
+	})
+
+	upstreamList = append(upstreamList, ProxyRoute{
+		Upstream: mocktitlementsHostname,
+		Path:     "/api/entitlements/*",
 	})
 
 	cmData, err := GenerateConfig(p.Env.Status.Hostname, bopHostname, whitelistStrings, upstreamList)
@@ -797,7 +794,7 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 
 	//env := o.(*crd.ClowdEnvironment)
 	//image := provutils.GetCaddyImage(env)
-	image := "127.0.0.1:5000/caddy:02"
+	image := "127.0.0.1:5000/caddy:06"
 
 	c := core.Container{
 		Name:           nn.Name,
