@@ -47,6 +47,9 @@ var WebBOPDeployment = rc.NewSingleResourceIdent(ProvName, "web_bop_deployment",
 // WebKeycloakService is the mocked keycloak deployment
 var WebBOPService = rc.NewSingleResourceIdent(ProvName, "web_bop_service", &core.Service{})
 
+// WebKeycloakIngress is the mocked bop ingress
+var WebBOPIngress = rc.NewSingleResourceIdent(ProvName, "web_bop_ingress", &networking.Ingress{})
+
 // WebBOPDeployment is the mocked bop deployment
 var WebMocktitlementsDeployment = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_deployment", &apps.Deployment{})
 
@@ -64,6 +67,9 @@ var WebKeycloakSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_secret
 
 // WebIngress is the mocked secret config
 var WebGatewayDeployment = rc.NewSingleResourceIdent(ProvName, "web_gateway_deployment", &apps.Deployment{})
+
+// WebIngress is the mocked secret config
+var WebIngress = rc.NewMultiResourceIdent(ProvName, "web_ingress", &networking.Ingress{})
 
 // WebIngress is the mocked secret config
 var WebGatewayIngress = rc.NewSingleResourceIdent(ProvName, "web_gateway_ingress", &networking.Ingress{})
@@ -96,6 +102,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebMocktitlementsService,
 		WebMocktitlementsIngress,
 		WebSecret,
+		WebIngress,
 		WebKeycloakSecret,
 		WebGatewayDeployment,
 		WebGatewayIngress,
@@ -183,7 +190,15 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
+	if err := makeMBOPSecret(&web.Provider); err != nil {
+		return err
+	}
+
 	if err := makeMocktitlementsSecret(&web.Provider); err != nil {
+		return err
+	}
+
+	if err := makeBOPIngress(&web.Provider); err != nil {
 		return err
 	}
 
@@ -249,6 +264,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
+		if err := web.createIngress(app, &innerDeployment); err != nil {
+			return err
+		}
+
 		nn := types.NamespacedName{
 			Name:      fmt.Sprintf("caddy-config-%s-%s", app.Name, innerDeployment.Name),
 			Namespace: app.Namespace,
@@ -308,6 +327,66 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.Deployment) error {
+
+	if !deployment.WebServices.Public.Enabled && !bool(deployment.Web) {
+		return nil
+	}
+
+	netobj := &networking.Ingress{}
+
+	nn := app.GetDeploymentNamespacedName(deployment)
+
+	if err := web.Cache.Create(WebIngress, nn, netobj); err != nil {
+		return err
+	}
+	labels := app.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, app)
+
+	labler(netobj)
+
+	ingressClass := web.Env.Spec.Providers.Web.IngressClass
+
+	if ingressClass == "" {
+		ingressClass = "nginx"
+	}
+
+	apiPath := deployment.WebServices.Public.APIPath
+
+	if apiPath == "" {
+		apiPath = nn.Name
+	}
+
+	netobj.Spec = networking.IngressSpec{
+		TLS: []networking.IngressTLS{{
+			Hosts: []string{},
+		}},
+		IngressClassName: &ingressClass,
+		Rules: []networking.IngressRule{
+			{
+				Host: web.Env.Status.Hostname,
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     fmt.Sprintf("/api/%s/", apiPath),
+							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: nn.Name,
+									Port: networking.ServiceBackendPort{
+										Name: "auth",
+									},
+								},
+							},
+						}},
+					},
+				},
+			},
+		},
+	}
+	return web.Cache.Update(WebIngress, netobj)
+}
+
 func (web *localWebProvider) populateCA() error {
 	if web.Env.Spec.Providers.Web.TLS.Enabled {
 		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/openshift-service-ca.crt")
@@ -332,6 +411,62 @@ func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVer
 		return errors.Wrap("couldn't update secret in cache", err)
 	}
 	return nil
+}
+
+func makeMBOPSecret(p *providers.Provider) error {
+	nn := types.NamespacedName{
+		Name:      "caddy-config-mbop",
+		Namespace: p.Env.GetClowdNamespace(),
+	}
+
+	sec := &core.Secret{}
+	if err := p.Cache.Create(WebSecret, nn, sec); err != nil {
+		return err
+	}
+
+	sec.Name = nn.Name
+	sec.Namespace = nn.Namespace
+	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
+	sec.Type = core.SecretTypeOpaque
+
+	envSec := &core.Secret{}
+	envSecnn := providers.GetNamespacedName(p.Env, "keycloak")
+	if err := p.Client.Get(p.Ctx, envSecnn, envSec); err != nil {
+		return err
+	}
+
+	sec.StringData = map[string]string{
+		"bopurl":      string(envSec.Data["bopurl"]),
+		"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "keycloak", p.Env.GetClowdNamespace()),
+		"whitelist":   "",
+	}
+
+	jsonData, err := json.Marshal(sec.StringData)
+	if err != nil {
+		return errors.Wrap("Failed to marshal config JSON", err)
+	}
+
+	h := sha256.New()
+	h.Write([]byte(jsonData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	d := &apps.Deployment{}
+	dnn := providers.GetNamespacedName(p.Env, "mbop")
+	if err := p.Cache.Get(WebBOPDeployment, d, dnn); err != nil {
+		return err
+	}
+
+	annotations := map[string]string{
+		"clowder/authsidecar-confighash": hash,
+	}
+
+	utils.UpdateAnnotations(&d.Spec.Template, annotations)
+
+	if err := p.Cache.Update(WebBOPDeployment, d); err != nil {
+		return err
+	}
+
+	return p.Cache.Update(WebSecret, sec)
 }
 
 func makeMocktitlementsSecret(p *providers.Provider) error {
@@ -440,6 +575,71 @@ func makeMocktitlementsIngress(p *providers.Provider) error {
 	}
 
 	return p.Cache.Update(WebMocktitlementsIngress, netobj)
+}
+
+func makeBOPIngress(p *providers.Provider) error {
+	netobj := &networking.Ingress{}
+
+	nn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-mbop", p.Env.Name),
+		Namespace: p.Env.Status.TargetNamespace,
+	}
+
+	if err := p.Cache.Create(WebBOPIngress, nn, netobj); err != nil {
+		return err
+	}
+
+	labels := p.Env.GetLabels()
+	labler := utils.MakeLabeler(nn, labels, p.Env)
+	labler(netobj)
+
+	ingressClass := p.Env.Spec.Providers.Web.IngressClass
+	if ingressClass == "" {
+		ingressClass = "nginx"
+	}
+
+	netobj.Spec = networking.IngressSpec{
+		TLS: []networking.IngressTLS{{
+			Hosts: []string{},
+		}},
+		IngressClassName: &ingressClass,
+		Rules: []networking.IngressRule{
+			{
+				Host: p.Env.Status.Hostname,
+				IngressRuleValue: networking.IngressRuleValue{
+					HTTP: &networking.HTTPIngressRuleValue{
+						Paths: []networking.HTTPIngressPath{{
+							Path:     "/v1/registrations",
+							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+							Backend: networking.IngressBackend{
+								Service: &networking.IngressServiceBackend{
+									Name: fmt.Sprintf("%s-mbop", p.Env.Name),
+									Port: networking.ServiceBackendPort{
+										Name: "auth",
+									},
+								},
+							},
+						},
+							{
+								Path:     "/v1/check_registration",
+								PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+								Backend: networking.IngressBackend{
+									Service: &networking.IngressServiceBackend{
+										Name: fmt.Sprintf("%s-mbop", p.Env.Name),
+										Port: networking.ServiceBackendPort{
+											Name: "auth",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return p.Cache.Update(WebBOPIngress, netobj)
 }
 
 func makeAuthIngress(p *providers.Provider) error {
@@ -684,9 +884,16 @@ func makeWebGatewayConfigMap(p *providers.Provider) error {
 	if err != nil {
 		return err
 	}
+	bopHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
 
 	whitelistStrings := []string{}
-	upstreamList := []ProxyRoute{}
+	upstreamList := []ProxyRoute{{
+		Upstream: bopHostname,
+		Path:     "/v1/registrations*",
+	}, {
+		Upstream: bopHostname,
+		Path:     "/v1/check_registration*",
+	}}
 	for _, app := range appList.Items {
 		innerApp := app
 		for _, deployment := range innerApp.Spec.Deployments {
@@ -707,26 +914,18 @@ func makeWebGatewayConfigMap(p *providers.Provider) error {
 			hostname := fmt.Sprintf("%s.%s.svc", name, app.Namespace)
 
 			upstreamList = append(upstreamList, ProxyRoute{
-				Upstream: fmt.Sprintf("%s:%d", hostname, 8080),
+				Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
 				Path:     fmt.Sprintf("/api/%s/*", apiPath),
 			})
 		}
 	}
 
-	bopHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
-	mocktitlementsHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mocktitlements", p.Env.GetClowdNamespace())
-
-	upstreamList = append(upstreamList, ProxyRoute{
-		Upstream: bopHostname,
-		Path:     "/v1/registrations/*",
-	})
-
-	upstreamList = append(upstreamList, ProxyRoute{
-		Upstream: mocktitlementsHostname,
-		Path:     "/api/entitlements/*",
-	})
-
-	cmData, err := GenerateConfig(p.Env.Status.Hostname, bopHostname, whitelistStrings, upstreamList)
+	cmData, err := GenerateConfig(
+		getCertHostname(p.Env.Status.Hostname),
+		fmt.Sprintf("http://%s", bopHostname),
+		whitelistStrings,
+		upstreamList,
+	)
 	if err != nil {
 		return err
 	}
@@ -794,7 +993,7 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 
 	//env := o.(*crd.ClowdEnvironment)
 	//image := provutils.GetCaddyImage(env)
-	image := "127.0.0.1:5000/caddy:06"
+	image := "127.0.0.1:5000/caddy:14"
 
 	c := core.Container{
 		Name:           nn.Name,

@@ -476,6 +476,18 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort boo
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
+	env := o.(*crd.ClowdEnvironment)
+	caddyImage := provutils.GetCaddyImage(env)
+
+	annotations := map[string]string{
+		"clowder/authsidecar-image":   caddyImage,
+		"clowder/authsidecar-enabled": "true",
+		"clowder/authsidecar-port":    "8090",
+		"clowder/authsidecar-config":  "caddy-config-mbop",
+	}
+
+	utils.UpdateAnnotations(&dd.Spec.Template, annotations)
+
 	envVars := []core.EnvVar{
 		{
 			Name:  "KEYCLOAK_SERVER",
@@ -517,6 +529,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort boo
 	}
 
 	port := int32(8090)
+	authPort := int32(8080)
 
 	ports := []core.ContainerPort{{
 		Name:          "service",
@@ -544,7 +557,6 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort boo
 		TimeoutSeconds:      2,
 	}
 
-	env := o.(*crd.ClowdEnvironment)
 	image := provutils.GetMockBOPImage(env)
 
 	c := core.Container{
@@ -578,6 +590,12 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort boo
 			Port:       port,
 			Protocol:   "TCP",
 			TargetPort: intstr.FromInt(int(port)),
+		},
+		{
+			Name:       "auth",
+			Port:       authPort,
+			Protocol:   "TCP",
+			TargetPort: intstr.FromInt(int(authPort)),
 		},
 	}
 
