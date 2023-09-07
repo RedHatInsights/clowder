@@ -23,6 +23,7 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -56,8 +57,10 @@ type IqeJobSpec struct {
 	IqePlugins string `json:"plugins,omitempty"`
 
 	// Indiciates the presence of a selenium container
-	// Note: currently not implemented
 	UI IqeUISpec `json:"ui,omitempty"`
+
+	// Specifies environment variables to set on the IQE container
+	Env []core.EnvVar `json:"env,omitempty"`
 
 	// sets the pytest -m args
 	Marker string `json:"marker,omitempty"`

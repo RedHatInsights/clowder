@@ -585,7 +585,8 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 | Field | Description
 | *`imageTag`* __string__ | By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here
 | *`plugins`* __string__ | By default, Clowder will use the plugin name indicated in the ClowdApp's spec.testing.iqePlugin field. A comma,separated,list of plugins can be supplied here if you wish you override the plugins.
-| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec[$$IqeUISpec$$]__ | Indiciates the presence of a selenium container Note: currently not implemented
+| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec[$$IqeUISpec$$]__ | Indiciates the presence of a selenium container
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core[$$EnvVar$$] array__ | Specifies environment variables to set on the IQE container
 | *`marker`* __string__ | sets the pytest -m args
 | *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
 | *`filter`* __string__ | sets pytest -k args
