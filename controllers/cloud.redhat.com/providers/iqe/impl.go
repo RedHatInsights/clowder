@@ -84,7 +84,9 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		{Name: "IQE_IBUTSU_SOURCE", Value: cji.Spec.Testing.Iqe.IbutsuSource},
 	}
 
-	envVars = updateEnvVars(envVars, *cji.Spec.Testing.Iqe.Env)
+	if cji.Spec.Testing.Iqe.Env != nil {
+		envVars = updateEnvVars(envVars, *cji.Spec.Testing.Iqe.Env)
+	}
 
 	// set image tag
 	iqeImage := env.Spec.Providers.Testing.Iqe.ImageBase
