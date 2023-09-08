@@ -583,22 +583,22 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`imageTag`* __string__ | By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here
-| *`plugins`* __string__ | By default, Clowder will use the plugin name indicated in the ClowdApp's spec.testing.iqePlugin field. A comma,separated,list of plugins can be supplied here if you wish you override the plugins.
-| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec[$$IqeUISpec$$]__ | Indiciates the presence of a selenium container
+| *`imageTag`* __string__ | Image tag to use for IQE container. By default, Clowder will set the image tag to be baseImage:name-of-iqe-plugin, where baseImage is defined in the ClowdEnvironment. Only the tag can be overridden here.
+| *`plugins`* __string__ | A comma,separated,list indicating IQE plugin(s) to run tests for. By default, Clowder will use the plugin name given on the ClowdApp's spec.testing.iqePlugin field. Use this field if you wish you override the plugin list.
+| *`ui`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec[$$IqeUISpec$$]__ | Defines configuration for a selenium container (optional)
 | *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core[$$EnvVar$$]__ | Specifies environment variables to set on the IQE container
-| *`marker`* __string__ | sets the pytest -m args
-| *`dynaconfEnvName`* __string__ | sets value for ENV_FOR_DYNACONF
-| *`filter`* __string__ | sets pytest -k args
-| *`debug`* __boolean__ | Use to start the IQE pod without running tests and leave it up so that 'rsh' can be invoked
-| *`requirements`* __string__ | sets values passed to IQE '--requirements' arg
-| *`requirementsPriority`* __string__ | sets values passed to IQE '--requirements-priority' arg
-| *`testImportance`* __string__ | sets values passed to IQE '--test-importance' arg
-| *`logLevel`* __string__ | sets value for IQE_LOG_LEVEL (default if empty: "info")
-| *`parallelEnabled`* __string__ | sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg
-| *`parallelWorkerCount`* __string__ | sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
-| *`rpArgs`* __string__ | sets value passed to IQE 'IQE_RP_ARGS' report portal args
-| *`ibutsuSource`* __string__ | sets value passed to IQE 'IQE_IBUTSU_SOURCE' args
+| *`debug`* __boolean__ | Changes entrypoint to invoke 'iqe container-debug' so that container starts but does not run tests, allowing 'rsh' to be invoked
+| *`marker`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_MARKER_EXPRESSION env var on the IQE container
+| *`dynaconfEnvName`* __string__ | (DEPRECATED, using 'env' now preferred) sets ENV_FOR_DYNACONF env var on the IQE container
+| *`filter`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_FILTER_EXPRESSION env var on the IQE container
+| *`requirements`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_REQUIREMENTS env var on the IQE container
+| *`requirementsPriority`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_REQUIREMENTS_PRIORITY env var on the IQE container
+| *`testImportance`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_TEST_IMPORTANCE env var on the IQE container
+| *`logLevel`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_LOG_LEVEL env var on the IQE container
+| *`parallelEnabled`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_PARALLEL_ENABLED env var on the IQE container
+| *`parallelWorkerCount`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_PARALLEL_WORKER_COUNT env var on the IQE container
+| *`rpArgs`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_RP_ARGS env var on the IQE container
+| *`ibutsuSource`* __string__ | (DEPRECATED, using 'env' now preferred) sets IQE_IBUTSU_SOURCE env var on the IQE container
 |===
 
 

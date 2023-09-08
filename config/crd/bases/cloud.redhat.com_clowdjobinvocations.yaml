@@ -62,11 +62,13 @@ spec:
                       ClowdApp's definition of the job
                     properties:
                       debug:
-                        description: Use to start the IQE pod without running tests
-                          and leave it up so that 'rsh' can be invoked
+                        description: Changes entrypoint to invoke 'iqe container-debug'
+                          so that container starts but does not run tests, allowing
+                          'rsh' to be invoked
                         type: boolean
                       dynaconfEnvName:
-                        description: sets value for ENV_FOR_DYNACONF
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          ENV_FOR_DYNACONF env var on the IQE container
                         type: string
                       env:
                         description: Specifies environment variables to set on the
@@ -184,20 +186,22 @@ spec:
                           type: object
                         type: array
                       filter:
-                        description: sets pytest -k args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_FILTER_EXPRESSION env var on the IQE container
                         type: string
                       ibutsuSource:
-                        description: sets value passed to IQE 'IQE_IBUTSU_SOURCE'
-                          args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_IBUTSU_SOURCE env var on the IQE container
                         type: string
                       imageTag:
-                        description: By default, Clowder will set the image on the
-                          ClowdJob to be the baseImage:name-of-iqe-plugin, but only
-                          the tag can be overridden here
+                        description: Image tag to use for IQE container. By default,
+                          Clowder will set the image tag to be baseImage:name-of-iqe-plugin,
+                          where baseImage is defined in the ClowdEnvironment. Only
+                          the tag can be overridden here.
                         type: string
                       logLevel:
-                        description: 'sets value for IQE_LOG_LEVEL (default if empty:
-                          "info")'
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_LOG_LEVEL env var on the IQE container
                         enum:
                         - ""
                         - critical
@@ -208,45 +212,48 @@ spec:
                         - notset
                         type: string
                       marker:
-                        description: sets the pytest -m args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_MARKER_EXPRESSION env var on the IQE container
                         type: string
                       parallelEnabled:
-                        description: sets value passed to IQE 'IQE_PARALLEL_ENABLED'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_PARALLEL_ENABLED env var on the IQE container
                         type: string
                       parallelWorkerCount:
-                        description: sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_PARALLEL_WORKER_COUNT env var on the IQE container
                         type: string
                       plugins:
-                        description: By default, Clowder will use the plugin name
-                          indicated in the ClowdApp's spec.testing.iqePlugin field.
-                          A comma,separated,list of plugins can be supplied here if
-                          you wish you override the plugins.
+                        description: A comma,separated,list indicating IQE plugin(s)
+                          to run tests for. By default, Clowder will use the plugin
+                          name given on the ClowdApp's spec.testing.iqePlugin field.
+                          Use this field if you wish you override the plugin list.
                         type: string
                       requirements:
-                        description: sets values passed to IQE '--requirements' arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_REQUIREMENTS env var on the IQE container
                         items:
                           type: string
                         type: array
                       requirementsPriority:
-                        description: sets values passed to IQE '--requirements-priority'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_REQUIREMENTS_PRIORITY env var on the IQE container
                         items:
                           type: string
                         type: array
                       rpArgs:
-                        description: sets value passed to IQE 'IQE_RP_ARGS' report
-                          portal args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_RP_ARGS env var on the IQE container
                         type: string
                       testImportance:
-                        description: sets values passed to IQE '--test-importance'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_TEST_IMPORTANCE env var on the IQE container
                         items:
                           type: string
                         type: array
                       ui:
-                        description: Indiciates the presence of a selenium container
+                        description: Defines configuration for a selenium container
+                          (optional)
                         properties:
                           enabled:
                             description: No longer used
