@@ -60,7 +60,7 @@ type IqeJobSpec struct {
 	UI IqeUISpec `json:"ui,omitempty"`
 
 	// Specifies environment variables to set on the IQE container
-	Env []core.EnvVar `json:"env,omitempty"`
+	Env *[]core.EnvVar `json:"env,omitempty"`
 
 	// sets the pytest -m args
 	Marker string `json:"marker,omitempty"`
