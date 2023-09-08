@@ -40,9 +40,9 @@ func joinNullableSlice(s *[]string) string {
 func updateEnvVars(existingEnvVars []core.EnvVar, newEnvVars []core.EnvVar) []core.EnvVar {
 	for _, newEnvVar := range newEnvVars {
 		replaced := false
-		for _, existingEnvVar := range existingEnvVars {
+		for idx, existingEnvVar := range existingEnvVars {
 			if existingEnvVar.Name == newEnvVar.Name {
-				p := &existingEnvVar
+				p := &existingEnvVars[idx]
 				p.Value = newEnvVar.Value
 				replaced = true
 			}
