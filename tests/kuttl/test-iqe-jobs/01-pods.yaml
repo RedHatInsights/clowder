@@ -73,6 +73,12 @@ spec:
     iqe:
       imageTag: latest
       plugins: "some,different,plugins"
+      env:
+      - name: SOME_ENV_VAR
+        value: some_value
+      # test env var override behavior using IQE_LOG_LEVEL
+      - name: IQE_LOG_LEVEL
+        value: warning
       ui:
         enabled: false
       marker: "smoke"
