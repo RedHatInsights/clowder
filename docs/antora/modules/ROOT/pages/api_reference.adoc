@@ -570,6 +570,18 @@ FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags Provi
 
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"]
+==== GatewayCertMode (string) 
+
+GatewayCertMode details the mode of operation of the Gateway Cert
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig"]
 ==== InMemoryDBConfig 
 
@@ -1404,7 +1416,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`keycloakVersion`* __string__ | Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
 | *`images`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webimages[$$WebImages$$]__ | Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
 | *`tls`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls[$$TLS$$]__ | TLS sidecar enablement
-| *`gatewayCertMode`* __GatewayCertMode__ | Gateway cert
+| *`gatewayCertMode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode[$$GatewayCertMode$$]__ | Gateway cert
 |===
 
 

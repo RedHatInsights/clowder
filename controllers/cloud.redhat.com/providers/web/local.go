@@ -801,7 +801,7 @@ func makeWebGatewayCertificateIssuer(p *providers.Provider) error {
 	if p.Env.Spec.Providers.Web.GatewayCertMode == "acme" {
 		certi.Spec = *acmeIssuerSpec(p)
 	} else {
-		certi.Spec = *selfSignedIssuerSpec(p)
+		certi.Spec = *selfSignedIssuerSpec()
 	}
 
 	return p.Cache.Update(WebGatewayCertificateIssuer, certi)
@@ -829,7 +829,7 @@ func acmeIssuerSpec(p *providers.Provider) *certmanager.IssuerSpec {
 	}
 }
 
-func selfSignedIssuerSpec(p *providers.Provider) *certmanager.IssuerSpec {
+func selfSignedIssuerSpec() *certmanager.IssuerSpec {
 	return &certmanager.IssuerSpec{
 		IssuerConfig: certmanager.IssuerConfig{
 			SelfSigned: &certmanager.SelfSignedIssuer{},
@@ -852,6 +852,7 @@ func acmeCert(p *providers.Provider) *certmanager.CertificateSpec {
 
 func selfSignedCert(p *providers.Provider) *certmanager.CertificateSpec {
 	return &certmanager.CertificateSpec{
+		CommonName: p.Env.Name + "-cert",
 		DNSNames: []string{
 			p.Env.Status.Hostname,
 		},
@@ -991,9 +992,7 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 		FailureThreshold:    3,
 	}
 
-	//env := o.(*crd.ClowdEnvironment)
-	//image := provutils.GetCaddyImage(env)
-	image := "127.0.0.1:5000/caddy:14"
+	image := "127.0.0.1:5000/caddy:17-uba"
 
 	c := core.Container{
 		Name:           nn.Name,
