@@ -42,7 +42,8 @@ func updateEnvVars(existingEnvVars []core.EnvVar, newEnvVars []core.EnvVar) []co
 		replaced := false
 		for _, existingEnvVar := range existingEnvVars {
 			if existingEnvVar.Name == newEnvVar.Name {
-				existingEnvVar.Value = newEnvVar.Value
+				p := &existingEnvVar
+				p.Value = newEnvVar.Value
 				replaced = true
 			}
 		}
