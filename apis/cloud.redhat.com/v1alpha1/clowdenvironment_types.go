@@ -52,6 +52,9 @@ type WebImages struct {
 	// Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	Caddy string `json:"caddy,omitempty"`
 
+	// Caddy Gateway image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	CaddyGateway string `json:"caddyGateway,omitempty"`
+
 	// Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	MockBOP string `json:"mockBop,omitempty"`
 }
@@ -92,7 +95,12 @@ type WebConfig struct {
 	TLS TLS `json:"tls,omitempty"`
 
 	// Gateway cert
-	GatewayCertMode GatewayCertMode `json:"gatewayCertMode,omitempty"`
+	GatewayCert GatewayCert `json:"gatewayCert,omitempty"`
+}
+
+type GatewayCert struct {
+	Mode             GatewayCertMode `json:"mode,omitempty"`
+	LocalCAConfigMap string          `json:"localCAConfigMap,omitempty"`
 }
 
 type TLS struct {

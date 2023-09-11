@@ -6458,13 +6458,20 @@ objects:
                           description: The URL of BOP - only used in (*_none_*/*_operator_*)
                             mode.
                           type: string
-                        gatewayCertMode:
+                        gatewayCert:
                           description: Gateway cert
-                          enum:
-                          - self-signed
-                          - acme
-                          - none
-                          type: string
+                          properties:
+                            localCAConfigMap:
+                              type: string
+                            mode:
+                              description: GatewayCertMode details the mode of operation
+                                of the Gateway Cert
+                              enum:
+                              - self-signed
+                              - acme
+                              - none
+                              type: string
+                          type: object
                         images:
                           description: Optional images to use for web provider components
                             -- only applies when running in (*_local_*) mode.
@@ -6473,6 +6480,11 @@ objects:
                               description: Caddy image -- if not defined, value from
                                 operator config is used if set, otherwise a hard-coded
                                 default is used.
+                              type: string
+                            caddyGateway:
+                              description: Caddy Gateway image -- if not defined,
+                                value from operator config is used if set, otherwise
+                                a hard-coded default is used.
                               type: string
                             keycloak:
                               description: Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}'
