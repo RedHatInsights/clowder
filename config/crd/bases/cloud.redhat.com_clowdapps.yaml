@@ -5539,7 +5539,7 @@ spec:
                 type: array
               optionalDependencies:
                 description: A list of optional dependencies in the form of the name
-                  of the ClowdApps that are will be added to the configuration when
+                  of the ClowdApps that will be added to the configuration when
                   present.
                 items:
                   type: string
