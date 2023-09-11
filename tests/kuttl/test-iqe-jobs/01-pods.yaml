@@ -84,7 +84,7 @@ spec:
       marker: "smoke"
       dynaconfEnvName: "clowder_smoke"
       filter: "test_plugin_accessible"
-      logLevel: "debug"
+      logLevel: "debug"  # we expect this to be overridden
       requirements:
       - "some"
       - "requirements"
