@@ -62,8 +62,8 @@ github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
-github.com/RedHatInsights/crc-caddy-plugin v0.0.1 h1:QIJtXWyNFPv3AAegAff1a2lNkjL9DYUKlvd533nq02Q=
-github.com/RedHatInsights/crc-caddy-plugin v0.0.1/go.mod h1:GVcDx5Kve7SoZjFEajZv4Ngsuc83lG36ydHAghR6Ox8=
+github.com/RedHatInsights/crc-caddy-plugin v0.2.1 h1:RuBSnNrEE1qj/ujO1mCR1zYmEeqQU9pHRczw9GsaXBI=
+github.com/RedHatInsights/crc-caddy-plugin v0.2.1/go.mod h1:hOEjVcf/V+Xy1WXIcFkujLIMQYg4fitlf0Q214EDu/U=
 github.com/RedHatInsights/cyndi-operator v0.1.9 h1:0KAeAtI3x7nND1O/bt/hHJdYorw30kkprfzd2oM6ZKU=
 github.com/RedHatInsights/cyndi-operator v0.1.9/go.mod h1:aqq1uTYlZhB93bE9N9AohrMQ55y22v6dMK3gx1b7dbA=
 github.com/RedHatInsights/go-difflib v1.0.0 h1:BoruyjZfxO81sEynhkG6c4SMAQOjuBWezcJxtGK8dyw=
@@ -710,8 +710,8 @@ github.com/quic-go/qtls-go1-20 v0.1.0/go.mod h1:JKtK6mjbAVcUTN/9jZpvLbGxvdWIKS8u
 github.com/quic-go/quic-go v0.32.0 h1:lY02md31s1JgPiiyfqJijpu/UX/Iun304FI3yUqX7tA=
 github.com/quic-go/quic-go v0.32.0/go.mod h1:/fCsKANhQIeD5l76c2JFU+07gVE3KaA0FP+0zMWwfwo=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
-github.com/redhatinsights/crcauthlib v0.1.3 h1:1wFrm/iB9JY53itFYsItcm+5YyvvtrjhwBBE0r20wxI=
-github.com/redhatinsights/crcauthlib v0.1.3/go.mod h1:HBYibOewkVk6IdEqoL2LkNCgisaBHo2LkkhHXoIT0YI=
+github.com/redhatinsights/crcauthlib v0.2.1 h1:poMoHZ6rsVUckOh8pEAOqqBTeKP0P+IcjDau6xq3cng=
+github.com/redhatinsights/crcauthlib v0.2.1/go.mod h1:HBYibOewkVk6IdEqoL2LkNCgisaBHo2LkkhHXoIT0YI=
 github.com/redhatinsights/platform-go-middlewares v0.20.0 h1:qwK9ArGYRlORsZ56PXXLJrGvzTsMe3bk2lR+WN5aIjM=
 github.com/redhatinsights/platform-go-middlewares v0.20.0/go.mod h1:i5gVDZJ/quCQhs5AW5CwkRPXlz1HfDBvyNtXHnlXZfM=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=

@@ -40,11 +40,7 @@ func configureMBOP(web *localWebProvider) error {
 		return err
 	}
 
-	if err := makeBOPIngress(&web.Provider); err != nil {
-		return err
-	}
-
-	return nil
+	return makeBOPIngress(&web.Provider)
 }
 
 func makeMBOPSecret(p *providers.Provider) error {

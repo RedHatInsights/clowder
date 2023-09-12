@@ -105,10 +105,7 @@ func configureWebGateway(web *localWebProvider) error {
 
 	utils.UpdateAnnotations(&webDep.Spec.Template, annotations)
 
-	if err := web.Cache.Update(WebGatewayDeployment, webDep); err != nil {
-		return err
-	}
-	return nil
+	return web.Cache.Update(WebGatewayDeployment, webDep)
 }
 
 func makeWebGatewayCertificate(p *providers.Provider) error {

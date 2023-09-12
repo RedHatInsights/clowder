@@ -80,11 +80,7 @@ func (web *localWebProvider) EnvProvide() error {
 		return err
 	}
 
-	if err := configureWebGateway(web); err != nil {
-		return err
-	}
-
-	return nil
+	return configureWebGateway(web)
 }
 
 func (web *localWebProvider) Provide(app *crd.ClowdApp) error {

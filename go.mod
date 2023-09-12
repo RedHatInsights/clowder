@@ -3,7 +3,7 @@ module github.com/RedHatInsights/clowder
 go 1.19
 
 require (
-	github.com/RedHatInsights/crc-caddy-plugin v0.0.1
+	github.com/RedHatInsights/crc-caddy-plugin v0.2.1
 	github.com/RedHatInsights/cyndi-operator v0.1.9
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.10.0
@@ -125,7 +125,7 @@ require (
 	github.com/quic-go/qtls-go1-19 v0.2.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.1.0 // indirect
 	github.com/quic-go/quic-go v0.32.0 // indirect
-	github.com/redhatinsights/crcauthlib v0.1.3 // indirect
+	github.com/redhatinsights/crcauthlib v0.2.1 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

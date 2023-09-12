@@ -40,11 +40,7 @@ func configureMocktitlements(web *localWebProvider) error {
 		return err
 	}
 
-	if err := makeMocktitlementsIngress(&web.Provider); err != nil {
-		return err
-	}
-
-	return nil
+	return makeMocktitlementsIngress(&web.Provider)
 }
 
 func makeMocktitlementsSecret(p *providers.Provider) error {

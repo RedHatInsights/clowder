@@ -46,7 +46,7 @@ func GenerateRoute(upstream ProxyRoute, warnings *[]caddyconfig.Warning) *caddyh
 	return &route
 }
 
-func GenerateConfig(hostname string, bopAddress string, whitelist []string, route []ProxyRoute) (string, error) {
+func GenerateConfig(hostname string, bopAddress string, whitelist []string, appRoutes []ProxyRoute) (string, error) {
 	var warnings []caddyconfig.Warning
 
 	host := caddyhttp.MatchHost{hostname}
@@ -67,8 +67,8 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, rout
 		},
 	}
 
-	for _, route := range route {
-		subRoute.Routes = append(subRoute.Routes, *GenerateRoute(route, &warnings))
+	for _, appRoute := range appRoutes {
+		subRoute.Routes = append(subRoute.Routes, *GenerateRoute(appRoute, &warnings))
 	}
 
 	sni := []string{hostname}

@@ -86,10 +86,7 @@ func configureKeycloak(web *localWebProvider) error {
 		return err
 	}
 
-	if err := makeAuthIngress(&web.Provider); err != nil {
-		return err
-	}
-	return nil
+	return makeAuthIngress(&web.Provider)
 }
 
 func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, password string) error {
