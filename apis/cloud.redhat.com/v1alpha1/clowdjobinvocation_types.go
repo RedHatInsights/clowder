@@ -23,6 +23,7 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -46,54 +47,55 @@ type JobTestingSpec struct {
 }
 
 type IqeJobSpec struct {
-	// By default, Clowder will set the image on the ClowdJob to be the
-	// baseImage:name-of-iqe-plugin, but only the tag can be overridden here
+	// Image tag to use for IQE container. By default, Clowder will set the image tag to be
+	// baseImage:name-of-iqe-plugin, where baseImage is defined in the ClowdEnvironment. Only the tag can be overridden here.
 	ImageTag string `json:"imageTag,omitempty"`
 
-	// By default, Clowder will use the plugin name indicated in the ClowdApp's
-	// spec.testing.iqePlugin field. A comma,separated,list of plugins can be supplied
-	// here if you wish you override the plugins.
+	// A comma,separated,list indicating IQE plugin(s) to run tests for. By default, Clowder will use the plugin name given on the ClowdApp's
+	// spec.testing.iqePlugin field. Use this field if you wish you override the plugin list.
 	IqePlugins string `json:"plugins,omitempty"`
 
-	// Indiciates the presence of a selenium container
-	// Note: currently not implemented
+	// Defines configuration for a selenium container (optional)
 	UI IqeUISpec `json:"ui,omitempty"`
 
-	// sets the pytest -m args
-	Marker string `json:"marker,omitempty"`
+	// Specifies environment variables to set on the IQE container
+	Env *[]core.EnvVar `json:"env,omitempty"`
 
-	// sets value for ENV_FOR_DYNACONF
-	DynaconfEnvName string `json:"dynaconfEnvName"`
-
-	// sets pytest -k args
-	Filter string `json:"filter,omitempty"`
-
-	// Use to start the IQE pod without running tests and leave it up so that 'rsh' can be invoked
+	// Changes entrypoint to invoke 'iqe container-debug' so that container starts but does not run tests, allowing 'rsh' to be invoked
 	Debug bool `json:"debug,omitempty"`
 
-	// sets values passed to IQE '--requirements' arg
+	// (DEPRECATED, using 'env' now preferred) sets IQE_MARKER_EXPRESSION env var on the IQE container
+	Marker string `json:"marker,omitempty"`
+
+	// (DEPRECATED, using 'env' now preferred) sets ENV_FOR_DYNACONF env var on the IQE container
+	DynaconfEnvName string `json:"dynaconfEnvName"`
+
+	// (DEPRECATED, using 'env' now preferred) sets IQE_FILTER_EXPRESSION env var on the IQE container
+	Filter string `json:"filter,omitempty"`
+
+	// (DEPRECATED, using 'env' now preferred) sets IQE_REQUIREMENTS env var on the IQE container
 	Requirements *[]string `json:"requirements,omitempty"`
 
-	// sets values passed to IQE '--requirements-priority' arg
+	// (DEPRECATED, using 'env' now preferred) sets IQE_REQUIREMENTS_PRIORITY env var on the IQE container
 	RequirementsPriority *[]string `json:"requirementsPriority,omitempty"`
 
-	// sets values passed to IQE '--test-importance' arg
+	// (DEPRECATED, using 'env' now preferred) sets IQE_TEST_IMPORTANCE env var on the IQE container
 	TestImportance *[]string `json:"testImportance,omitempty"`
 
-	// sets value for IQE_LOG_LEVEL (default if empty: "info")
+	// (DEPRECATED, using 'env' now preferred) sets IQE_LOG_LEVEL env var on the IQE container
 	//+kubebuilder:validation:Enum={"", "critical", "error", "warning", "info", "debug", "notset"}
 	LogLevel string `json:"logLevel,omitempty"`
 
-	// sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg
+	// (DEPRECATED, using 'env' now preferred) sets IQE_PARALLEL_ENABLED env var on the IQE container
 	ParallelEnabled string `json:"parallelEnabled,omitempty"`
 
-	// sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg
+	// (DEPRECATED, using 'env' now preferred) sets IQE_PARALLEL_WORKER_COUNT env var on the IQE container
 	ParallelWorkerCount string `json:"parallelWorkerCount,omitempty"`
 
-	// sets value passed to IQE 'IQE_RP_ARGS' report portal args
+	// (DEPRECATED, using 'env' now preferred) sets IQE_RP_ARGS env var on the IQE container
 	RpArgs string `json:"rpArgs,omitempty"`
 
-	// sets value passed to IQE 'IQE_IBUTSU_SOURCE' args
+	// (DEPRECATED, using 'env' now preferred) sets IQE_IBUTSU_SOURCE env var on the IQE container
 	IbutsuSource string `json:"ibutsuSource,omitempty"`
 }
 

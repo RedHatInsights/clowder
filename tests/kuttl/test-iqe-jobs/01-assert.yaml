@@ -51,7 +51,7 @@ spec:
             - name: IQE_FILTER_EXPRESSION
               value: "test_plugin_accessible"
             - name: IQE_LOG_LEVEL
-              value: "debug"
+              value: "warning"
             - name: IQE_REQUIREMENTS
               value: "some,requirements"
             - name: IQE_REQUIREMENTS_PRIORITY
@@ -66,6 +66,8 @@ spec:
               value: "true"
             - name: IQE_IBUTSU_SOURCE
               value: "post_stage_deploy"
+            - name: SOME_ENV_VAR
+              value: "some_value"
           resources:
             limits:
               cpu: "2"

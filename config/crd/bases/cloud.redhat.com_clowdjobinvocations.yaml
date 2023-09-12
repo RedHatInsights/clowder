@@ -62,27 +62,146 @@ spec:
                       ClowdApp's definition of the job
                     properties:
                       debug:
-                        description: Use to start the IQE pod without running tests
-                          and leave it up so that 'rsh' can be invoked
+                        description: Changes entrypoint to invoke 'iqe container-debug'
+                          so that container starts but does not run tests, allowing
+                          'rsh' to be invoked
                         type: boolean
                       dynaconfEnvName:
-                        description: sets value for ENV_FOR_DYNACONF
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          ENV_FOR_DYNACONF env var on the IQE container
                         type: string
+                      env:
+                        description: Specifies environment variables to set on the
+                          IQE container
+                        items:
+                          description: EnvVar represents an environment variable present
+                            in a Container.
+                          properties:
+                            name:
+                              description: Name of the environment variable. Must
+                                be a C_IDENTIFIER.
+                              type: string
+                            value:
+                              description: 'Variable references $(VAR_NAME) are expanded
+                                using the previously defined environment variables
+                                in the container and any service environment variables.
+                                If a variable cannot be resolved, the reference in
+                                the input string will be unchanged. Double $$ are
+                                reduced to a single $, which allows for escaping the
+                                $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce
+                                the string literal "$(VAR_NAME)". Escaped references
+                                will never be expanded, regardless of whether the
+                                variable exists or not. Defaults to "".'
+                              type: string
+                            valueFrom:
+                              description: Source for the environment variable's value.
+                                Cannot be used if value is not empty.
+                              properties:
+                                configMapKeyRef:
+                                  description: Selects a key of a ConfigMap.
+                                  properties:
+                                    key:
+                                      description: The key to select.
+                                      type: string
+                                    name:
+                                      description: 'Name of the referent. More info:
+                                        https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                        TODO: Add other useful fields. apiVersion,
+                                        kind, uid?'
+                                      type: string
+                                    optional:
+                                      description: Specify whether the ConfigMap or
+                                        its key must be defined
+                                      type: boolean
+                                  required:
+                                  - key
+                                  type: object
+                                fieldRef:
+                                  description: 'Selects a field of the pod: supports
+                                    metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                    `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                    spec.serviceAccountName, status.hostIP, status.podIP,
+                                    status.podIPs.'
+                                  properties:
+                                    apiVersion:
+                                      description: Version of the schema the FieldPath
+                                        is written in terms of, defaults to "v1".
+                                      type: string
+                                    fieldPath:
+                                      description: Path of the field to select in
+                                        the specified API version.
+                                      type: string
+                                  required:
+                                  - fieldPath
+                                  type: object
+                                resourceFieldRef:
+                                  description: 'Selects a resource of the container:
+                                    only resources limits and requests (limits.cpu,
+                                    limits.memory, limits.ephemeral-storage, requests.cpu,
+                                    requests.memory and requests.ephemeral-storage)
+                                    are currently supported.'
+                                  properties:
+                                    containerName:
+                                      description: 'Container name: required for volumes,
+                                        optional for env vars'
+                                      type: string
+                                    divisor:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      description: Specifies the output format of
+                                        the exposed resources, defaults to "1"
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    resource:
+                                      description: 'Required: resource to select'
+                                      type: string
+                                  required:
+                                  - resource
+                                  type: object
+                                secretKeyRef:
+                                  description: Selects a key of a secret in the pod's
+                                    namespace
+                                  properties:
+                                    key:
+                                      description: The key of the secret to select
+                                        from.  Must be a valid secret key.
+                                      type: string
+                                    name:
+                                      description: 'Name of the referent. More info:
+                                        https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                        TODO: Add other useful fields. apiVersion,
+                                        kind, uid?'
+                                      type: string
+                                    optional:
+                                      description: Specify whether the Secret or its
+                                        key must be defined
+                                      type: boolean
+                                  required:
+                                  - key
+                                  type: object
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
                       filter:
-                        description: sets pytest -k args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_FILTER_EXPRESSION env var on the IQE container
                         type: string
                       ibutsuSource:
-                        description: sets value passed to IQE 'IQE_IBUTSU_SOURCE'
-                          args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_IBUTSU_SOURCE env var on the IQE container
                         type: string
                       imageTag:
-                        description: By default, Clowder will set the image on the
-                          ClowdJob to be the baseImage:name-of-iqe-plugin, but only
-                          the tag can be overridden here
+                        description: Image tag to use for IQE container. By default,
+                          Clowder will set the image tag to be baseImage:name-of-iqe-plugin,
+                          where baseImage is defined in the ClowdEnvironment. Only
+                          the tag can be overridden here.
                         type: string
                       logLevel:
-                        description: 'sets value for IQE_LOG_LEVEL (default if empty:
-                          "info")'
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_LOG_LEVEL env var on the IQE container
                         enum:
                         - ""
                         - critical
@@ -93,46 +212,48 @@ spec:
                         - notset
                         type: string
                       marker:
-                        description: sets the pytest -m args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_MARKER_EXPRESSION env var on the IQE container
                         type: string
                       parallelEnabled:
-                        description: sets value passed to IQE 'IQE_PARALLEL_ENABLED'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_PARALLEL_ENABLED env var on the IQE container
                         type: string
                       parallelWorkerCount:
-                        description: sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_PARALLEL_WORKER_COUNT env var on the IQE container
                         type: string
                       plugins:
-                        description: By default, Clowder will use the plugin name
-                          indicated in the ClowdApp's spec.testing.iqePlugin field.
-                          A comma,separated,list of plugins can be supplied here if
-                          you wish you override the plugins.
+                        description: A comma,separated,list indicating IQE plugin(s)
+                          to run tests for. By default, Clowder will use the plugin
+                          name given on the ClowdApp's spec.testing.iqePlugin field.
+                          Use this field if you wish you override the plugin list.
                         type: string
                       requirements:
-                        description: sets values passed to IQE '--requirements' arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_REQUIREMENTS env var on the IQE container
                         items:
                           type: string
                         type: array
                       requirementsPriority:
-                        description: sets values passed to IQE '--requirements-priority'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_REQUIREMENTS_PRIORITY env var on the IQE container
                         items:
                           type: string
                         type: array
                       rpArgs:
-                        description: sets value passed to IQE 'IQE_RP_ARGS' report
-                          portal args
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_RP_ARGS env var on the IQE container
                         type: string
                       testImportance:
-                        description: sets values passed to IQE '--test-importance'
-                          arg
+                        description: (DEPRECATED, using 'env' now preferred) sets
+                          IQE_TEST_IMPORTANCE env var on the IQE container
                         items:
                           type: string
                         type: array
                       ui:
-                        description: 'Indiciates the presence of a selenium container
-                          Note: currently not implemented'
+                        description: Defines configuration for a selenium container
+                          (optional)
                         properties:
                           enabled:
                             description: No longer used

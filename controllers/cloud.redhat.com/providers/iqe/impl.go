@@ -37,6 +37,24 @@ func joinNullableSlice(s *[]string) string {
 	return ""
 }
 
+func updateEnvVars(existingEnvVars []core.EnvVar, newEnvVars []core.EnvVar) []core.EnvVar {
+	for _, newEnvVar := range newEnvVars {
+		replaced := false
+		for idx, existingEnvVar := range existingEnvVars {
+			if existingEnvVar.Name == newEnvVar.Name {
+				p := &existingEnvVars[idx]
+				p.Value = newEnvVar.Value
+				replaced = true
+			}
+		}
+		if !replaced {
+			existingEnvVars = append(existingEnvVars, newEnvVar)
+		}
+	}
+
+	return existingEnvVars
+}
+
 func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) *core.Container {
 	// create env vars
 	iqePlugins := app.Spec.Testing.IqePlugin
@@ -65,6 +83,10 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		{Name: "IQE_PARALLEL_WORKER_COUNT", Value: cji.Spec.Testing.Iqe.ParallelWorkerCount},
 		{Name: "IQE_RP_ARGS", Value: cji.Spec.Testing.Iqe.RpArgs},
 		{Name: "IQE_IBUTSU_SOURCE", Value: cji.Spec.Testing.Iqe.IbutsuSource},
+	}
+
+	if cji.Spec.Testing.Iqe.Env != nil {
+		envVars = updateEnvVars(envVars, *cji.Spec.Testing.Iqe.Env)
 	}
 
 	// set image tag
