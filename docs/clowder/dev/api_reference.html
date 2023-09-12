@@ -1909,7 +1909,7 @@
 <p><strong><code>imageTag</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>By default, Clowder will set the image on the ClowdJob to be the baseImage:name-of-iqe-plugin, but only the tag can be overridden here</p>
+<p>Image tag to use for IQE container. By default, Clowder will set the image tag to be baseImage:name-of-iqe-plugin, where baseImage is defined in the ClowdEnvironment. Only the tag can be overridden here.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1917,7 +1917,7 @@
 <p><strong><code>plugins</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>By default, Clowder will use the plugin name indicated in the ClowdApp&#8217;s spec.testing.iqePlugin field. A comma,separated,list of plugins can be supplied here if you wish you override the plugins.</p>
+<p>A comma,separated,list indicating IQE plugin(s) to run tests for. By default, Clowder will use the plugin name given on the ClowdApp&#8217;s spec.testing.iqePlugin field. Use this field if you wish you override the plugin list.</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1925,31 +1925,15 @@
 <p><strong><code>ui</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec">IqeUISpec</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Indiciates the presence of a selenium container Note: currently not implemented</p>
+<p>Defines configuration for a selenium container (optional)</p>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>marker</code></strong> <em>string</em></p>
+<p><strong><code>env</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#envvar-v1-core">EnvVar</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets the pytest -m args</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>dynaconfEnvName</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets value for ENV_FOR_DYNACONF</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>filter</code></strong> <em>string</em></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets pytest -k args</p>
+<p>Specifies environment variables to set on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1957,7 +1941,31 @@
 <p><strong><code>debug</code></strong> <em>boolean</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Use to start the IQE pod without running tests and leave it up so that 'rsh' can be invoked</p>
+<p>Changes entrypoint to invoke 'iqe container-debug' so that container starts but does not run tests, allowing 'rsh' to be invoked</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>marker</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_MARKER_EXPRESSION env var on the IQE container</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>dynaconfEnvName</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>(DEPRECATED, using 'env' now preferred) sets ENV_FOR_DYNACONF env var on the IQE container</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>filter</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_FILTER_EXPRESSION env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1965,7 +1973,7 @@
 <p><strong><code>requirements</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets values passed to IQE '--requirements' arg</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_REQUIREMENTS env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1973,7 +1981,7 @@
 <p><strong><code>requirementsPriority</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets values passed to IQE '--requirements-priority' arg</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_REQUIREMENTS_PRIORITY env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1981,7 +1989,7 @@
 <p><strong><code>testImportance</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets values passed to IQE '--test-importance' arg</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_TEST_IMPORTANCE env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1989,7 +1997,7 @@
 <p><strong><code>logLevel</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets value for IQE_LOG_LEVEL (default if empty: "info")</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_LOG_LEVEL env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1997,7 +2005,7 @@
 <p><strong><code>parallelEnabled</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets value passed to IQE 'IQE_PARALLEL_ENABLED' arg</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_PARALLEL_ENABLED env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -2005,7 +2013,7 @@
 <p><strong><code>parallelWorkerCount</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets value passed to IQE 'IQE_PARALLEL_WORKER_COUNT' arg</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_PARALLEL_WORKER_COUNT env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -2013,7 +2021,7 @@
 <p><strong><code>rpArgs</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets value passed to IQE 'IQE_RP_ARGS' report portal args</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_RP_ARGS env var on the IQE container</p>
 </div></div></td>
 </tr>
 <tr>
@@ -2021,7 +2029,7 @@
 <p><strong><code>ibutsuSource</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>sets value passed to IQE 'IQE_IBUTSU_SOURCE' args</p>
+<p>(DEPRECATED, using 'env' now preferred) sets IQE_IBUTSU_SOURCE env var on the IQE container</p>
 </div></div></td>
 </tr>
 </tbody>
