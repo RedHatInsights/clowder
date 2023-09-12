@@ -448,7 +448,7 @@ type ClowdAppSpec struct {
 	// required to be present for this ClowdApp to function.
 	Dependencies []string `json:"dependencies,omitempty"`
 
-	// A list of optional dependencies in the form of the name of the ClowdApps that are
+	// A list of optional dependencies in the form of the name of the ClowdApps that
 	// will be added to the configuration when present.
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
 
