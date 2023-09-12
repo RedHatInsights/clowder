@@ -23,7 +23,7 @@ import (
 
 var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:a988cd2"
 var DefaultImageCaddyGateway = DefaultImageCaddySideCar
-var DefaultImageMBOP = "quay.io/cloudservices/mbop:bb071db"
+var DefaultImageMBOP = "quay.io/cloudservices/mbop:959d00d"
 var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:e24820c"
 var DefaultKeyCloakVersion = "15.0.2"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)

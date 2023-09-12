@@ -1,47 +1,10 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: puptoo-processor
-  namespace: test-ephemeral-gateway
-spec:
-  template:
-    metadata:
-      annotations:
-        clowder/authsidecar-config: caddy-config-puptoo-processor
-        clowder/authsidecar-enabled: "true"
-        clowder/authsidecar-port: "8000"
-        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:1c4882e
-    spec:
-      serviceAccountName: puptoo-processor
-status:
-  readyReplicas: 1
----
 apiVersion: v1
 kind: Secret
 metadata:
   name: test-ephemeral-gateway-keycloak
   namespace: test-ephemeral-gateway
 type: Opaque
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: puptoo-processor
-  namespace: test-ephemeral-gateway
-spec:
-  ingressClassName: "openshift"
-  rules:
-  - host: test-ephemeral-gateway
-    http:
-      paths:
-      - backend:
-          service:
-            name: puptoo-processor
-            port:
-              name: auth
-        path: /api/puptoo/
-        pathType: Prefix
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -79,28 +42,6 @@ spec:
         path: /api/entitlements/
         pathType: Prefix
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: puptoo-processor
-  namespace: test-ephemeral-gateway
-spec:
-  selector:
-    pod: puptoo-processor
-  ports:
-  - port: 8000
-    targetPort: 8000
-    name: public
-    appProtocol: http
-  - port: 8080
-    targetPort: 8080
-    name: auth
-    appProtocol: http
-  - port: 9000
-    targetPort: 9000
-    name: metrics
-    appProtocol: http
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -121,7 +62,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/cloudservices/mbop:bb071db
+      - image: quay.io/cloudservices/mbop:959d00d
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -134,8 +75,30 @@ spec:
       annotations:
         clowder/authsidecar-config: caddy-config-mocktitlements
         clowder/authsidecar-enabled: "true"
-        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:1c4882e
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:a988cd2
         clowder/authsidecar-port: "8090"
     spec:
       containers:
       - image: quay.io/cloudservices/mocktitlements:e24820c
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: caddy-cert
+  namespace: test-ephemeral-gateway
+spec:
+  commonName: 36f23107-9b7c-48f6-8d5b-e6691e7dd235
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: test-ephemeral-gateway
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  secretName: test-ephemeral-gateway-test-cert
+status:
+  conditions:
+  - message: Certificate is up to date and has not expired
+    reason: Ready
+    status: "True"
+    type: Ready
