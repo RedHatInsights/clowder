@@ -491,6 +491,7 @@
         "web-origins",
         "roles",
         "profile",
+        "rhfull",
         "email"
       ],
       "optionalClientScopes": [
