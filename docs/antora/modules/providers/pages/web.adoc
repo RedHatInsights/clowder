@@ -70,12 +70,72 @@ The `whitelistPaths` parameter sets the paths that will not be required to go th
 - /suffixed/path*
 - *
 
+==== mTLS cert-auth
+Clowder also creates a cert-auth based gateway which can handle the mTLS flow
+that is used in ConsoleDot for client machines. This creates a new gateway pod
+which uses the same image as the sidecar, and configures an individual route
+for each web service.
+
+Note:
+Just because a service is accessible via cert-auth in *local* mode, does not mean it is 
+accessible in stage/production. Right now, there is no distinction between apps
+that are and apps that are not available. This could change in the future, and would
+require a ClowdApp flag addition.
+
+The OpenShift or Minikube cluster is configured to passthrough SSL to this 
+gateway, which enforcs strict SNI and requires mTLS.
+
+===== Registration of cert
+To facilitate cert-auth to be used in an environment the client must first
+register the `CN` presented inside the clients cert, which has been signed by the
+CA recognised by the Caddy Gateway. By default this CA is the `candlepin-ca` so
+that machines may register to the real RHSM and use this cert in a local
+instance.
+
+Note: 
+A *local* instance here corresponds to a ClowdEnvironment that has the *Web
+Provider* set to *local* mode. This is the case for ephemeral environments.
+
+The registration must be performed using an existing user account in the org,
+and that user must be an `orgAdmin`. The default user provided with the *local* 
+setup, has these permissions.
+
+The registration command should look similar to the following, notice the UUID
+is the same in all places for this example and **MUST** follow a UUID format:
+
+[source,text]
+----
+> cat /tmp/test.json
+{"uid": "36f23107-9b7c-48f6-8d5b-e6691e7dd235", "display_name": "36f23107-9b7c-48f6-8d5b-e6691e7dd235"}
+
+> curl -k http://environment-host/v1/registrations -H "Authorization: Basic $EPHEM_BASE64" -vvv -H "Content-Type: application/json" -d @/tmp/test.json -H "x-rh-certauth-cn:/CN=36f23107-9b7c-48f6-8d5b-e6691e7dd235"
+----
+
+The `orgID` of the user credentials used to call the registrations endpoint will
+be used to register this `CN`.
+
+Note:
+In systems registered with RHSM, there is an `orgId` present in the certificate,
+but this will be ignored when registering with the registrations endpoint, as it
+is not relevant to a local environment, which has been provisioned with it's own
+Keycloak and hence its own `orgIDs`.
+
+===== Making API calls with certs
+The client cert/key combination can now be used to make API requests to services
+via a new hostname with `-cert` appended. An example of this is shown below
+
+[source,text]
+----
+> curl https://environment-host-cert/api/puptoo/ -vvv --key /tmp/tls.key --cert /tmp/tls.crt"
+----
+
 ClowdEnv Config options available:
 
 - `port`
 - `privatePort`
 - `apiPrefix`
 - `authPort`
+- `gatewayCert`
 
 == Generated App Configuration
 
@@ -126,7 +186,7 @@ spec:
       port: 8000
 ----
 
-== TLS Auth
+==== TLS Auth
 The *Web Provider* also features a TLS sidecar option which will dynamically create and append an
 Envoy sidecar to the deployment pod. This requires enabling in the configuration with an example
 below.
@@ -168,3 +228,28 @@ in the `cdappconfig.json`. A `tlsCAPath` field is in the `cdappconfig.json` to t
 CA cert chain can be found for connecting to other services. All certs are registered against the
 full hostname including *namespace* and *svc*. These hostnames are present in full in the endpoints
 list and should be taken from there.
+
+==== Customizing Cert Auth
+The ClowdEnvironment can be configured to work with both `acme` and `self-signed`
+certs by using the `spec.provides.web.gatewayCert.mode` flag.
+
+Custom CA certs may also be used by supplying the correct configuration as detailed below.
+The `localCaConfigMap` field should point to a ConfigMap in the env namespace and
+is expected to have the CA in PEM format `ca.pem` field.
+
+[source,yaml]
+----
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    web:
+      # As above
+      gatewayCert:
+        mode: self-signed
+        localCAConfigMap: my-configmap
+----
+

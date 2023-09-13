@@ -6,8 +6,6 @@ kubectl exec -n test-ephemeral-gateway $PODNAME  -- /bin/bash -c "curl -o /tmp/t
 kubectl cp -n test-ephemeral-gateway $PODNAME:/tmp/test-ephemeral-gateway-output /tmp/test-ephemeral-gateway-output
 grep "./clowder-hello" /tmp/test-ephemeral-gateway-output
 
-echo "OH SNAP"
-
 kubectl exec -n test-ephemeral-gateway $PODNAME -- /bin/bash -c "mkdir -p /tmp/test-ephemeral-gateway"
 kubectl cp /tmp/test-ephemeral-gateway/tls.crt test-ephemeral-gateway/$PODNAME:/tmp/test-ephemeral-gateway/tls.crt
 kubectl cp /tmp/test-ephemeral-gateway/tls.key test-ephemeral-gateway/$PODNAME:/tmp/test-ephemeral-gateway/tls.key
