@@ -491,7 +491,8 @@
         "web-origins",
         "roles",
         "profile",
-        "email"
+        "email",
+        "rhfull"
       ],
       "optionalClientScopes": [
         "address",
@@ -1397,6 +1398,15 @@
           }
         }
       ]
+    },
+    {
+      "id": "a6139f4a-843f-4dc0-9297-131a8ae0bbe2",
+      "name": "rhfull",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      }
     },
     {
       "id": "a74fe6d3-51f9-4bf8-9512-851088ded3fd",
