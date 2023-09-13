@@ -491,8 +491,7 @@
         "web-origins",
         "roles",
         "profile",
-        "email",
-        "rhfull"
+        "email"
       ],
       "optionalClientScopes": [
         "address",
@@ -855,7 +854,8 @@
         "roles",
         "profile",
         "email",
-        "nameandterms"
+        "nameandterms",
+        "rhfull"
       ],
       "optionalClientScopes": [
         "address",
