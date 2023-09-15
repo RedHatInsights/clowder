@@ -9,11 +9,12 @@ import (
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
 	acme "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"

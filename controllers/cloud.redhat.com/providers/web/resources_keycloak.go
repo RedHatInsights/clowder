@@ -11,6 +11,9 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -18,9 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
 // WebKeycloakDeployment is the mocked keycloak deployment
