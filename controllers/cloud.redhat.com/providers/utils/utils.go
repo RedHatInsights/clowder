@@ -14,7 +14,6 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -244,12 +243,12 @@ var KubeLinterAnnotations = map[string]string{
 
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
-func AddCertVolume(d *v1.PodSpec, dnn string) {
-	d.Volumes = append(d.Volumes, v1.Volume{
+func AddCertVolume(d *core.PodSpec, dnn string) {
+	d.Volumes = append(d.Volumes, core.Volume{
 		Name: "tls-ca",
-		VolumeSource: v1.VolumeSource{
-			ConfigMap: &v1.ConfigMapVolumeSource{
-				LocalObjectReference: v1.LocalObjectReference{
+		VolumeSource: core.VolumeSource{
+			ConfigMap: &core.ConfigMapVolumeSource{
+				LocalObjectReference: core.LocalObjectReference{
 					Name: "openshift-service-ca.crt",
 				},
 			},
@@ -258,7 +257,7 @@ func AddCertVolume(d *v1.PodSpec, dnn string) {
 	for i, container := range d.Containers {
 		vms := container.VolumeMounts
 		if container.Name == dnn {
-			vms = append(vms, v1.VolumeMount{
+			vms = append(vms, core.VolumeMount{
 				Name:      "tls-ca",
 				ReadOnly:  true,
 				MountPath: "/cdapp/certs",
@@ -269,7 +268,7 @@ func AddCertVolume(d *v1.PodSpec, dnn string) {
 
 	for i, iContainer := range d.InitContainers {
 		vms := iContainer.VolumeMounts
-		vms = append(vms, v1.VolumeMount{
+		vms = append(vms, core.VolumeMount{
 			Name:      "tls-ca",
 			ReadOnly:  true,
 			MountPath: "/cdapp/certs",
