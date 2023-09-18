@@ -20,6 +20,6 @@ if ! command -v asciidoctor; then
 	exit 1
 fi
 
-docs/build/crd-ref-docs/crd-ref-docs --source-path=./apis --config=docs/build/crd-ref-docs/config.yaml \
+docs/build/crd-ref-docs/crd-ref-docs --source-path=./apis --config=docs/config.yaml \
 	--renderer=asciidoctor --templates-dir=docs/build/crd-ref-docs/templates/asciidoctor \
 	--output-path=docs/antora/modules/ROOT/pages/api_reference.adoc
