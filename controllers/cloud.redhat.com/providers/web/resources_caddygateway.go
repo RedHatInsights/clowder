@@ -198,6 +198,7 @@ func acmeCert(p *providers.Provider) *certmanager.CertificateSpec {
 			Kind:  "Issuer",
 			Name:  p.Env.GetClowdNamespace(),
 		},
+		SecretName: providers.GetNamespacedName(p.Env, "caddy-gateway").Name,
 	}
 }
 
@@ -441,15 +442,30 @@ func makeWebGatewayIngress(p *providers.Provider) error {
 		ingressClass = "nginx"
 	}
 
+	path := networking.HTTPIngressPath{
+		Backend: networking.IngressBackend{
+			Service: &networking.IngressServiceBackend{
+				Name: nn.Name,
+				Port: networking.ServiceBackendPort{
+					Name: "gateway",
+				},
+			},
+		},
+	}
+
 	if ingressClass == "nginx" {
 		utils.UpdateAnnotations(netobj, map[string]string{
 			"nginx.ingress.kubernetes.io/ssl-passthrough":  "true",
 			"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
 		})
+		path.Path = "/"
+		path.PathType = (*networking.PathType)(utils.StringPtr("Prefix"))
 	} else {
 		utils.UpdateAnnotations(netobj, map[string]string{
 			"route.openshift.io/termination": "passthrough",
 		})
+		path.Path = ""
+		path.PathType = (*networking.PathType)(utils.StringPtr("ImplementationSpecific"))
 	}
 
 	netobj.Spec = networking.IngressSpec{
