@@ -63,6 +63,7 @@ data:
   CLIENT_SECRET: Y2xpZW50X3NlY3JldA== #client_secret
   ISSUER_URL: aHR0cDovLzEyNy4wLjAuMQ== #http://127.0.0.1
   URL: aHR0cDovLzEyNy4wLjAuMQ== #http://127.0.0.1
+  SCOPE: b3BlbmlkIG9mZmxpbmVfYWNjZXNz #openid offline_access
 kind: Secret
 metadata:
   name: puptoo-token-refresher
