@@ -87,3 +87,60 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 
 	assert.Equal(t, &expected, c)
 }
+
+func TestAppInterfaceBadBucket(t *testing.T) {
+	c := config.ObjectStoreConfig{
+		Hostname: "original",
+		Buckets: []config.ObjectStoreBucket{{
+			AccessKey:     utils.StringPtr("access"),
+			Endpoint:      utils.StringPtr("endpoint"),
+			Name:          "badger",
+			Region:        utils.StringPtr("region"),
+			RequestedName: "badger",
+			SecretKey:     utils.StringPtr("secret"),
+			Tls:           utils.TruePtr(),
+		}},
+	}
+	err := resolveBucketDeps([]string{"test-bucket"}, &c)
+
+	assert.Error(t, err)
+}
+
+func TestAppInterfaceGoodAndBadBucket(t *testing.T) {
+	c := config.ObjectStoreConfig{
+		Hostname: "original",
+		Buckets: []config.ObjectStoreBucket{
+			{
+				AccessKey:     utils.StringPtr("access"),
+				Endpoint:      utils.StringPtr("endpoint"),
+				Name:          "badger",
+				Region:        utils.StringPtr("region"),
+				RequestedName: "badger",
+				SecretKey:     utils.StringPtr("secret"),
+				Tls:           utils.TruePtr(),
+			}, {
+				AccessKey:     utils.StringPtr("access"),
+				Endpoint:      utils.StringPtr("test-endpoint"),
+				Name:          "test-bucket",
+				Region:        utils.StringPtr("region"),
+				RequestedName: "test-bucket",
+				SecretKey:     utils.StringPtr("secret"),
+				Tls:           utils.TruePtr(),
+			},
+			{
+				AccessKey:     utils.StringPtr("access"),
+				Endpoint:      utils.StringPtr("endpoint"),
+				Name:          "badgerRage",
+				Region:        utils.StringPtr("region"),
+				RequestedName: "badgerRage",
+				SecretKey:     utils.StringPtr("secret"),
+				Tls:           utils.TruePtr(),
+			},
+		},
+	}
+	err := resolveBucketDeps([]string{"test-bucket"}, &c)
+
+	assert.NoError(t, err)
+	assert.Len(t, c.Buckets, 1)
+	assert.Equal(t, c.Hostname, "test-endpoint")
+}
