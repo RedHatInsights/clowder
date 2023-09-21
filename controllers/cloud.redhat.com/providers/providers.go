@@ -127,11 +127,6 @@ type ClowderProvider interface {
 	GetConfig() *config.AppConfig
 }
 
-// StrPtr returns a pointer to a string.
-func StrPtr(s string) *string {
-	return &s
-}
-
 type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool)
 
 func createResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName) (client.Object, error) {

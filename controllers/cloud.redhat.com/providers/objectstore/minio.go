@@ -144,6 +144,7 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 		newBucket := config.ObjectStoreBucket{
 			Name:          bucket,
 			RequestedName: bucket,
+			Endpoint:      utils.StringPtr(string(secret.Data["hostname"])),
 		}
 
 		if string(secret.Data["accessKey"]) != "" {
@@ -222,8 +223,8 @@ func createMinioProvider(
 	err = mp.BucketHandler.CreateClient(
 		secMap["hostname"],
 		int(port),
-		providers.StrPtr(secMap["accessKey"]),
-		providers.StrPtr(secMap["secretKey"]),
+		utils.StringPtr(secMap["accessKey"]),
+		utils.StringPtr(secMap["secretKey"]),
 	)
 
 	if err != nil {

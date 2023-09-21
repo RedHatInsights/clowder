@@ -342,6 +342,14 @@
                 "name": {
                     "description": "The actual name of the bucket being accessed.",
                     "type": "string"
+                },
+                "tls": {
+                    "description": "Details if the Object Server uses TLS.",
+                    "type": "boolean"
+                },
+                "endpoint": {
+                    "description": "Defines the endpoint for the Object Storage server configuration.",
+                    "type": "string"
                 }
             },
             "required": [

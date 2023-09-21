@@ -8,6 +8,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -89,10 +90,12 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 
 	extractFn := func(secret *core.Secret, bucket string) {
 		bucketConfig := config.ObjectStoreBucket{
-			AccessKey: providers.StrPtr(string(secret.Data["aws_access_key_id"])),
-			SecretKey: providers.StrPtr(string(secret.Data["aws_secret_access_key"])),
+			AccessKey: utils.StringPtr(string(secret.Data["aws_access_key_id"])),
+			SecretKey: utils.StringPtr(string(secret.Data["aws_secret_access_key"])),
 			Name:      bucket,
-			Region:    providers.StrPtr(string(secret.Data["aws_region"])),
+			Region:    utils.StringPtr(string(secret.Data["aws_region"])),
+			Endpoint:  utils.StringPtr(string(secret.Data["endpoint"])),
+			Tls:       utils.TruePtr(),
 		}
 
 		if endpoint, ok := secret.Data["endpoint"]; ok {
