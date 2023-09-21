@@ -99,6 +99,7 @@ func getTokenRefresher(appName string) *core.Container {
 		"--oidc.issuer-url=$(ISSUER_URL)",
 		"--url=$(URL)",
 		"--web.listen=:8082",
+		"--scope=$(SCOPE)",
 	}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
@@ -155,6 +156,17 @@ func getTokenRefresher(appName string) *core.Container {
 						Name: fmt.Sprintf("%s-token-refresher", appName),
 					},
 					Key: "URL",
+				},
+			},
+		},
+		{
+			Name: "SCOPE",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: fmt.Sprintf("%s-token-refresher", appName),
+					},
+					Key: "SCOPE",
 				},
 			},
 		},
