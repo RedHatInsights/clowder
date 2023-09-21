@@ -66,6 +66,9 @@ func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) e
 				found = true
 				bucket.RequestedName = requestedBucket
 				buckets = append(buckets, bucket)
+				if *bucket.Endpoint != "" {
+					c.Hostname = *bucket.Endpoint
+				}
 				break
 			}
 		}
@@ -73,6 +76,11 @@ func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) e
 		if !found {
 			missing = append(missing, requestedBucket)
 		}
+	}
+
+	if len(buckets) > 0 && c.Hostname == "" {
+		err := errors.NewClowderError("Could not find object store hostname from secrets")
+		return err
 	}
 
 	if len(missing) > 0 {
@@ -98,10 +106,6 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 			Tls:       utils.TruePtr(),
 		}
 
-		if endpoint, ok := secret.Data["endpoint"]; ok {
-			objectStoreConfig.Hostname = string(endpoint)
-		}
-
 		buckets = append(buckets, bucketConfig)
 	}
 
@@ -114,11 +118,6 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	providers.ExtractSecretDataAnno(secrets, extractFn, annoKey, keys...)
 	keys = append(keys, "bucket")
 	providers.ExtractSecretData(secrets, extractFnNoAnno, keys...)
-
-	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
-		err := errors.NewClowderError("Could not find object store hostname from secrets")
-		return nil, err
-	}
 
 	objectStoreConfig.Buckets = buckets
 	objectStoreConfig.Tls = true

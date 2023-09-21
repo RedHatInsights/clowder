@@ -66,16 +66,21 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 
 	assert.NoError(t, err, "error calling genObjStoreConfig")
 
+	err = resolveBucketDeps([]string{"test-bucket"}, c)
+
+	assert.NoError(t, err, "error calling resolveBucketDeps")
+
 	expected := config.ObjectStoreConfig{
 		Port:     443,
 		Hostname: testSecretSpecs.ExactKeys["endpoint"],
 		Buckets: []config.ObjectStoreBucket{{
-			Region:    utils.StringPtr("us-east-1"),
-			AccessKey: utils.StringPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
-			SecretKey: utils.StringPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
-			Name:      testSecretSpecs.ExactKeys["bucket"],
-			Endpoint:  utils.StringPtr("s3.us-east-1.aws.amazon.com"),
-			Tls:       utils.TruePtr(),
+			Region:        utils.StringPtr("us-east-1"),
+			AccessKey:     utils.StringPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
+			SecretKey:     utils.StringPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
+			Name:          testSecretSpecs.ExactKeys["bucket"],
+			Endpoint:      utils.StringPtr(testSecretSpecs.ExactKeys["endpoint"]),
+			Tls:           utils.TruePtr(),
+			RequestedName: testSecretSpecs.ExactKeys["bucket"],
 		}},
 		Tls: true,
 	}
