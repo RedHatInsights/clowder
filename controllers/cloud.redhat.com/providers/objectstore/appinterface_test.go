@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 
@@ -67,14 +66,21 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 
 	assert.NoError(t, err, "error calling genObjStoreConfig")
 
+	err = resolveBucketDeps([]string{"test-bucket"}, c)
+
+	assert.NoError(t, err, "error calling resolveBucketDeps")
+
 	expected := config.ObjectStoreConfig{
 		Port:     443,
 		Hostname: testSecretSpecs.ExactKeys["endpoint"],
 		Buckets: []config.ObjectStoreBucket{{
-			Region:    utils.StringPtr("us-east-1"),
-			AccessKey: providers.StrPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
-			SecretKey: providers.StrPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
-			Name:      testSecretSpecs.ExactKeys["bucket"],
+			Region:        utils.StringPtr("us-east-1"),
+			AccessKey:     utils.StringPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
+			SecretKey:     utils.StringPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
+			Name:          testSecretSpecs.ExactKeys["bucket"],
+			Endpoint:      utils.StringPtr(testSecretSpecs.ExactKeys["endpoint"]),
+			Tls:           utils.TruePtr(),
+			RequestedName: testSecretSpecs.ExactKeys["bucket"],
 		}},
 		Tls: true,
 	}

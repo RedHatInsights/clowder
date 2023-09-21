@@ -8,6 +8,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	core "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -65,6 +66,9 @@ func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) e
 				found = true
 				bucket.RequestedName = requestedBucket
 				buckets = append(buckets, bucket)
+				if *bucket.Endpoint != "" {
+					c.Hostname = *bucket.Endpoint
+				}
 				break
 			}
 		}
@@ -72,6 +76,11 @@ func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) e
 		if !found {
 			missing = append(missing, requestedBucket)
 		}
+	}
+
+	if len(buckets) > 0 && c.Hostname == "" {
+		err := errors.NewClowderError("Could not find object store hostname from secrets")
+		return err
 	}
 
 	if len(missing) > 0 {
@@ -89,14 +98,12 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 
 	extractFn := func(secret *core.Secret, bucket string) {
 		bucketConfig := config.ObjectStoreBucket{
-			AccessKey: providers.StrPtr(string(secret.Data["aws_access_key_id"])),
-			SecretKey: providers.StrPtr(string(secret.Data["aws_secret_access_key"])),
+			AccessKey: utils.StringPtr(string(secret.Data["aws_access_key_id"])),
+			SecretKey: utils.StringPtr(string(secret.Data["aws_secret_access_key"])),
 			Name:      bucket,
-			Region:    providers.StrPtr(string(secret.Data["aws_region"])),
-		}
-
-		if endpoint, ok := secret.Data["endpoint"]; ok {
-			objectStoreConfig.Hostname = string(endpoint)
+			Region:    utils.StringPtr(string(secret.Data["aws_region"])),
+			Endpoint:  utils.StringPtr(string(secret.Data["endpoint"])),
+			Tls:       utils.TruePtr(),
 		}
 
 		buckets = append(buckets, bucketConfig)
@@ -111,11 +118,6 @@ func genObjStoreConfig(secrets []core.Secret) (*config.ObjectStoreConfig, error)
 	providers.ExtractSecretDataAnno(secrets, extractFn, annoKey, keys...)
 	keys = append(keys, "bucket")
 	providers.ExtractSecretData(secrets, extractFnNoAnno, keys...)
-
-	if len(buckets) > 0 && objectStoreConfig.Hostname == "" {
-		err := errors.NewClowderError("Could not find object store hostname from secrets")
-		return nil, err
-	}
 
 	objectStoreConfig.Buckets = buckets
 	objectStoreConfig.Tls = true

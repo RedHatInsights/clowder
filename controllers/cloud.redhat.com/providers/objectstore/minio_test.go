@@ -260,7 +260,7 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.MakeCalls, 0)
 		assert.Contains(handler.ExistsCalls, bucketName)
 
-		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName}
+		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName, Endpoint: &mp.Config.ObjectStore.Hostname}
 		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 	})
@@ -288,7 +288,7 @@ func TestMinio(t *testing.T) {
 		assert.Contains(handler.ExistsCalls, bucketName)
 		assert.Contains(handler.MakeCalls, bucketName)
 
-		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName}
+		wantBucketConfig := config.ObjectStoreBucket{Name: bucketName, RequestedName: bucketName, Endpoint: &mp.Config.ObjectStore.Hostname}
 		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 	})
@@ -318,7 +318,7 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.MakeCalls, 3)
 		assert.Len(mp.Config.ObjectStore.Buckets, 3)
 		for _, b := range []string{b1, b2, b3} {
-			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b}
+			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b, Endpoint: &mp.Config.ObjectStore.Hostname}
 			assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 			assert.Contains(handler.ExistsCalls, b)
 			assert.Contains(handler.MakeCalls, b)
@@ -350,7 +350,7 @@ func TestMinio(t *testing.T) {
 		assert.Len(mp.Config.ObjectStore.Buckets, 3)
 		for _, b := range []string{b1, b2, b3} {
 			assert.Contains(handler.ExistsCalls, b)
-			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b}
+			wantBucketConfig := config.ObjectStoreBucket{Name: b, RequestedName: b, Endpoint: &mp.Config.ObjectStore.Hostname}
 			assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 		}
 		assert.Contains(handler.MakeCalls, b3)
@@ -383,7 +383,7 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 1)
 		assert.Len(mp.Config.ObjectStore.Buckets, 1)
-		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
+		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1, Endpoint: &mp.Config.ObjectStore.Hostname}
 		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 	})
 
@@ -414,7 +414,7 @@ func TestMinio(t *testing.T) {
 		assert.Len(handler.ExistsCalls, 2)
 		assert.Len(handler.MakeCalls, 2)
 		assert.Len(mp.Config.ObjectStore.Buckets, 1)
-		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1}
+		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1, Endpoint: &mp.Config.ObjectStore.Hostname}
 		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
 	})
 }

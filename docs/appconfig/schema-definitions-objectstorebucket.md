@@ -17,13 +17,15 @@ Object Storage Bucket
 
 # undefined Properties
 
-| Property                        | Type     | Required | Nullable       | Defined by                                                                                                                                                                                      |
-| :------------------------------ | -------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [accessKey](#accesskey)         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-accesskey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/accessKey")         |
-| [secretKey](#secretkey)         | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-secretkey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/secretKey")         |
-| [region](#region)               | `string` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-region.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/region")               |
-| [requestedName](#requestedname) | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-requestedname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/requestedName") |
-| [name](#name)                   | `string` | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/name")                   |
+| Property                        | Type      | Required | Nullable       | Defined by                                                                                                                                                                                      |
+| :------------------------------ | --------- | -------- | -------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [accessKey](#accesskey)         | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-accesskey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/accessKey")         |
+| [secretKey](#secretkey)         | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-secretkey.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/secretKey")         |
+| [region](#region)               | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-region.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/region")               |
+| [requestedName](#requestedname) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-requestedname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/requestedName") |
+| [name](#name)                   | `string`  | Required | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/name")                   |
+| [tls](#tls)                     | `boolean` | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-tls.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/tls")                     |
+| [endpoint](#endpoint)           | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-objectstorebucket-properties-endpoint.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/endpoint")           |
 
 ## accessKey
 
@@ -102,5 +104,37 @@ The actual name of the bucket being accessed.
 -   defined in: [AppConfig](schema-definitions-objectstorebucket-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/name")
 
 ### name Type
+
+`string`
+
+## tls
+
+Details if the Object Server uses TLS.
+
+
+`tls`
+
+-   is optional
+-   Type: `boolean`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-objectstorebucket-properties-tls.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/tls")
+
+### tls Type
+
+`boolean`
+
+## endpoint
+
+Defines the endpoint for the Object Storage server configuration.
+
+
+`endpoint`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-objectstorebucket-properties-endpoint.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreBucket/properties/endpoint")
+
+### endpoint Type
 
 `string`
