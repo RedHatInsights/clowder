@@ -40,8 +40,14 @@ if [[ "$VALID_TAGS_LENGTH" -eq 0 ]]; then
 fi
 
 make update-version
-docker --config="$DOCKER_CONF" build  --build-arg BASE_IMAGE="$BASE_IMG" -t "${IMAGE}:${IMAGE_TAG}" .
-docker --config="$DOCKER_CONF" push "${IMAGE}:${IMAGE_TAG}"
+docker --config="$DOCKER_CONF"  build  --platform linux/amd64 --build-arg BASE_IMAGE="$BASE_IMG" -t "${IMAGE}:${IMAGE_TAG}-amd64" --push .
+docker --config="$DOCKER_CONF"  build  --platform linux/arm64 --build-arg BASE_IMAGE="$BASE_IMG" -t "${IMAGE}:${IMAGE_TAG}-arm64" --push .
+
+docker --config="$DOCKER_CONF" manifest create "${IMAGE}:${IMAGE_TAG}" \
+    "${IMAGE}:${IMAGE_TAG}-amd64" \
+    "${IMAGE}:${IMAGE_TAG}-arm64"
+
+docker --config="$DOCKER_CONF" manifest push "${IMAGE}:${IMAGE_TAG}"
 
 # If the "security-compliance" branch is used for the build, it will tag the image as such.
 if [[ $GIT_BRANCH == *"security-compliance"* ]]; then

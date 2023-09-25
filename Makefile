@@ -134,7 +134,7 @@ docker-build: update-version
 
 # Build the docker image
 docker-build-no-test-quick: update-version
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o bin/manager-cgo main.go
+	CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -o bin/manager-cgo main.go
 	$(RUNTIME) build -f build/Dockerfile-local . -t ${IMG}
 
 # Build the docker image
