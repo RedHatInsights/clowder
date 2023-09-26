@@ -288,3 +288,22 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 		d.InitContainers[i].VolumeMounts = vms
 	}
 }
+
+func GetAPIPaths(deployment *crd.Deployment, defaultPath string) []string {
+	apiPaths := []string{}
+	if deployment.WebServices.Public.APIPaths == nil {
+		// singular apiPath is deprecated, use it only if apiPaths is undefined
+		apiPath := deployment.WebServices.Public.APIPath
+		if apiPath == "" {
+			apiPath = defaultPath
+		}
+		apiPaths = []string{fmt.Sprintf("/api/%s/", apiPath)}
+	} else {
+		// apiPaths was defined, use it and ignore 'apiPath'
+		for _, path := range deployment.WebServices.Public.APIPaths {
+			// convert crd.APIPath array items into plain strings
+			apiPaths = append(apiPaths, string(path))
+		}
+	}
+	return apiPaths
+}

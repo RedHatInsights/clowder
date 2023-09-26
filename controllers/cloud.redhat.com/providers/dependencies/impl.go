@@ -6,6 +6,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
@@ -119,15 +120,11 @@ func processAppEndpoints(
 		}
 
 		// If app has public endpoint, add it to app config
-
 		for _, deployment := range depApp.Spec.Deployments {
+			// avoid implicit memory aliasing
 			innerDeployment := deployment
 
-			apiPath := deployment.WebServices.Public.APIPath
-
-			if apiPath == "" {
-				apiPath = depApp.GetDeploymentNamespacedName(&innerDeployment).Name
-			}
+			apiPaths := provutils.GetAPIPaths(&innerDeployment, depApp.GetDeploymentNamespacedName(&innerDeployment).Name)
 
 			if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
 				name := depApp.GetDeploymentNamespacedName(&innerDeployment).Name
@@ -137,7 +134,9 @@ func processAppEndpoints(
 					Name:     innerDeployment.Name,
 					App:      depApp.Name,
 					TlsPort:  utils.IntPtr(int(tlsPort)),
-					ApiPath:  fmt.Sprintf("/api/%s/", apiPath),
+					// if app has multiple paths set, set apiPath to first name for backward compatibility
+					ApiPath:  apiPaths[0],
+					ApiPaths: apiPaths,
 				})
 			}
 			if innerDeployment.WebServices.Private.Enabled {

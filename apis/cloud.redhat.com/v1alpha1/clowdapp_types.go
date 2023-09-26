@@ -137,6 +137,10 @@ type Job struct {
 // WebDeprecated defines a boolean flag to help distinguish from the newer WebServices
 type WebDeprecated bool
 
+// A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
+// +kubebuilder:validation:Pattern=`^\/api\/[a-zA-Z0-9-]+\/$`
+type APIPath string
+
 // PublicWebService is the definition of the public web service. There can be only
 // one public service managed by Clowder.
 type PublicWebService struct {
@@ -145,8 +149,11 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// APIPath describes the api path that will be configured to serve this backend from.
+	// (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from.
 	APIPath string `json:"apiPath,omitempty"`
+
+	// Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from.
+	APIPaths []APIPath `json:"apiPaths,omitempty"`
 
 	// WhitelistPaths define the paths that do not require authentication
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
