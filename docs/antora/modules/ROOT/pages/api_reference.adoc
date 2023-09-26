@@ -583,8 +583,10 @@ FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags Provi
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`enabled`* __boolean__ | 
 | *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode[$$GatewayCertMode$$]__ | 
 | *`localCAConfigMap`* __string__ | 
+| *`emailAddress`* __string__ | 
 |===
 
 

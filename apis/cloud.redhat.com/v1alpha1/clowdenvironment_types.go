@@ -99,8 +99,10 @@ type WebConfig struct {
 }
 
 type GatewayCert struct {
-	Mode             GatewayCertMode `json:"mode,omitempty"`
+	Enabled          bool            `json:"enabled,omitempty"`
+	CertMode         GatewayCertMode `json:"mode,omitempty"`
 	LocalCAConfigMap string          `json:"localCAConfigMap,omitempty"`
+	EmailAddress     string          `json:"emailAddress,omitempty"`
 }
 
 type TLS struct {
@@ -782,7 +784,7 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		domain := spec["domain"]
 		if domain != "" {
 			if random {
-				return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
+				return fmt.Sprintf("ee-%s.%s", randomIdent, domain)
 			}
 			return fmt.Sprintf("%s.%s", i.Name, domain)
 		}

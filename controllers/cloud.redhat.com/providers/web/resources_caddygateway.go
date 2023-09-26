@@ -44,6 +44,10 @@ var WebGatewayCertificateIssuer = rc.NewSingleResourceIdent(ProvName, "web_gatew
 var WebGatewayCertificate = rc.NewSingleResourceIdent(ProvName, "web_gateway_certificate", &certmanager.Certificate{})
 
 func configureWebGateway(web *localWebProvider) error {
+	if !web.Env.Spec.Providers.Web.GatewayCert.Enabled {
+		return nil
+	}
+
 	if err := makeWebGatewayIngress(&web.Provider); err != nil {
 		return err
 	}
@@ -125,7 +129,7 @@ func makeWebGatewayCertificate(p *providers.Provider) error {
 	labler := utils.MakeLabeler(nn, labels, p.Env)
 	labler(certi)
 
-	if p.Env.Spec.Providers.Web.GatewayCert.Mode == "acme" {
+	if p.Env.Spec.Providers.Web.GatewayCert.CertMode == "acme" {
 		certi.Spec = *acmeCert(p)
 	} else {
 		certi.Spec = *selfSignedCert(p)
@@ -149,8 +153,12 @@ func makeWebGatewayCertificateIssuer(p *providers.Provider) error {
 	labler := utils.MakeLabeler(nn, labels, p.Env)
 	labler(certi)
 
-	if p.Env.Spec.Providers.Web.GatewayCert.Mode == "acme" {
-		certi.Spec = *acmeIssuerSpec(p)
+	if p.Env.Spec.Providers.Web.GatewayCert.CertMode == "acme" {
+		cert, err := acmeIssuerSpec(p)
+		if err != nil {
+			return err
+		}
+		certi.Spec = *cert
 	} else {
 		certi.Spec = *selfSignedIssuerSpec()
 	}
@@ -158,11 +166,14 @@ func makeWebGatewayCertificateIssuer(p *providers.Provider) error {
 	return p.Cache.Update(WebGatewayCertificateIssuer, certi)
 }
 
-func acmeIssuerSpec(p *providers.Provider) *certmanager.IssuerSpec {
+func acmeIssuerSpec(p *providers.Provider) (*certmanager.IssuerSpec, error) {
+	if p.Env.Spec.Providers.Web.GatewayCert.EmailAddress == "" {
+		return nil, fmt.Errorf("could not get env.Spec.EmailAddress for Cert")
+	}
 	return &certmanager.IssuerSpec{
 		IssuerConfig: certmanager.IssuerConfig{
 			ACME: &acme.ACMEIssuer{
-				Email:          "psavage@redhat.com",
+				Email:          p.Env.Spec.Providers.Web.GatewayCert.EmailAddress,
 				PreferredChain: "",
 				PrivateKey: v1.SecretKeySelector{
 					LocalObjectReference: v1.LocalObjectReference{
@@ -177,7 +188,7 @@ func acmeIssuerSpec(p *providers.Provider) *certmanager.IssuerSpec {
 				}},
 			},
 		},
-	}
+	}, nil
 }
 
 func selfSignedIssuerSpec() *certmanager.IssuerSpec {
@@ -191,7 +202,7 @@ func selfSignedIssuerSpec() *certmanager.IssuerSpec {
 func acmeCert(p *providers.Provider) *certmanager.CertificateSpec {
 	return &certmanager.CertificateSpec{
 		DNSNames: []string{
-			p.Env.Status.Hostname,
+			getCertHostname(p.Env.Status.Hostname),
 		},
 		IssuerRef: v1.ObjectReference{
 			Group: "cert-manager.io",
@@ -204,9 +215,9 @@ func acmeCert(p *providers.Provider) *certmanager.CertificateSpec {
 
 func selfSignedCert(p *providers.Provider) *certmanager.CertificateSpec {
 	return &certmanager.CertificateSpec{
-		CommonName: p.Env.Name + "-cert",
+		CommonName: getCertHostname(p.Env.Status.Hostname),
 		DNSNames: []string{
-			p.Env.Status.Hostname,
+			getCertHostname(p.Env.Status.Hostname),
 		},
 		IssuerRef: v1.ObjectReference{
 			Group: "cert-manager.io",
@@ -475,18 +486,7 @@ func makeWebGatewayIngress(p *providers.Provider) error {
 				Host: getCertHostname(p.Env.Status.Hostname),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
-						Paths: []networking.HTTPIngressPath{{
-							Path:     "/",
-							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
-							Backend: networking.IngressBackend{
-								Service: &networking.IngressServiceBackend{
-									Name: nn.Name,
-									Port: networking.ServiceBackendPort{
-										Name: "gateway",
-									},
-								},
-							},
-						}},
+						Paths: []networking.HTTPIngressPath{path},
 					},
 				},
 			},

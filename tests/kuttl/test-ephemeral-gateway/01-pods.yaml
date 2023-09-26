@@ -12,6 +12,7 @@ spec:
       ingressClass: openshift
       gatewayCert:
         localCAConfigMap: test-ephemeral-gateway-cert-ca
+        enabled: true
     metrics:
       port: 9000
       mode: operator

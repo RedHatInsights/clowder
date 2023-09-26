@@ -688,6 +688,10 @@ spec:
                       gatewayCert:
                         description: Gateway cert
                         properties:
+                          emailAddress:
+                            type: string
+                          enabled:
+                            type: boolean
                           localCAConfigMap:
                             type: string
                           mode:
