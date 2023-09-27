@@ -583,10 +583,10 @@ FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags Provi
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`enabled`* __boolean__ | 
-| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode[$$GatewayCertMode$$]__ | 
-| *`localCAConfigMap`* __string__ | 
-| *`emailAddress`* __string__ | 
+| *`enabled`* __boolean__ | Determines whether to enable the gateway cert, default is disabled
+| *`certMode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode[$$GatewayCertMode$$]__ | Determines the mode of certificate generation, either self-signed or acme
+| *`localCAConfigMap`* __string__ | Determines a ConfigMap in the target namespace of the env which has ca.pem detailing the cert to use for mTLS verification
+| *`emailAddress`* __string__ | The email address used to register with Let's Encrypt for acme mode certs
 |===
 
 

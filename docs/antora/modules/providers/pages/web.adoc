@@ -231,7 +231,7 @@ list and should be taken from there.
 
 ==== Customizing Cert Auth
 The ClowdEnvironment can be configured to work with both `acme` and `self-signed`
-certs by using the `spec.provides.web.gatewayCert.mode` flag.
+certs by using the `spec.provides.web.gatewayCert.certMode` flag.
 
 Custom CA certs may also be used by supplying the correct configuration as detailed below.
 The `localCaConfigMap` field should point to a ConfigMap in the env namespace and
@@ -249,7 +249,10 @@ spec:
     web:
       # As above
       gatewayCert:
-        mode: self-signed
+        enabled: true
+        certMode: self-signed
         localCAConfigMap: my-configmap
 ----
 
+For `acme` cert generation an `emailAddress` field needs to be supplied with the email address
+to use for the cert generation.

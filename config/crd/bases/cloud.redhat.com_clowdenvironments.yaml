@@ -688,19 +688,26 @@ spec:
                       gatewayCert:
                         description: Gateway cert
                         properties:
-                          emailAddress:
-                            type: string
-                          enabled:
-                            type: boolean
-                          localCAConfigMap:
-                            type: string
-                          mode:
-                            description: GatewayCertMode details the mode of operation
-                              of the Gateway Cert
+                          certMode:
+                            description: Determines the mode of certificate generation,
+                              either self-signed or acme
                             enum:
                             - self-signed
                             - acme
                             - none
+                            type: string
+                          emailAddress:
+                            description: The email address used to register with Let's
+                              Encrypt for acme mode certs
+                            type: string
+                          enabled:
+                            description: Determines whether to enable the gateway
+                              cert, default is disabled
+                            type: boolean
+                          localCAConfigMap:
+                            description: Determines a ConfigMap in the target namespace
+                              of the env which has ca.pem detailing the cert to use
+                              for mTLS verification
                             type: string
                         type: object
                       images:

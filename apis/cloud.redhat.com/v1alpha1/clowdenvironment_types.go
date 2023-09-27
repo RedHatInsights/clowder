@@ -99,10 +99,17 @@ type WebConfig struct {
 }
 
 type GatewayCert struct {
-	Enabled          bool            `json:"enabled,omitempty"`
-	CertMode         GatewayCertMode `json:"mode,omitempty"`
-	LocalCAConfigMap string          `json:"localCAConfigMap,omitempty"`
-	EmailAddress     string          `json:"emailAddress,omitempty"`
+	// Determines whether to enable the gateway cert, default is disabled
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Determines the mode of certificate generation, either self-signed or acme
+	CertMode GatewayCertMode `json:"certMode,omitempty"`
+
+	// Determines a ConfigMap in the target namespace of the env which has ca.pem detailing the cert to use for mTLS verification
+	LocalCAConfigMap string `json:"localCAConfigMap,omitempty"`
+
+	// The email address used to register with Let's Encrypt for acme mode certs
+	EmailAddress string `json:"emailAddress,omitempty"`
 }
 
 type TLS struct {
