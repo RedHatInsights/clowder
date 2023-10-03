@@ -151,9 +151,7 @@ please visit the xref:docs/antora/modules/ROOT/pages/clowder-design.adoc[design 
 
 Any questions, please ask one of the Clowder development team
 
-* https://github.com/kylape[@kylape]
 * https://github.com/psav[@psav]
 * https://github.com/bsquizz[@bsquizz]
-* https://github.com/BlakeHolifield[@BlakeHolified]
 * https://github.com/bennyturns[@bennyturns]
 * https://github.com/adamrdrew[@adamrdrew]
