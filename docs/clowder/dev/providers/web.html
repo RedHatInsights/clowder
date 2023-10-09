@@ -303,6 +303,79 @@ be configured to route to the <code>auth</code> service port for that deployment
 </li>
 </ul>
 </div>
+<div class="sect3">
+<h4 id="_mtls_cert_auth"><a class="anchor" href="#_mtls_cert_auth"></a>mTLS cert-auth</h4>
+<div class="paragraph">
+<p>Clowder also creates a cert-auth based gateway which can handle the mTLS flow
+that is used in ConsoleDot for client machines. This creates a new gateway pod
+which uses the same image as the sidecar, and configures an individual route
+for each web service.</p>
+</div>
+<div class="paragraph">
+<p>Note:
+Just because a service is accessible via cert-auth in <strong>local</strong> mode, does not mean it is
+accessible in stage/production. Right now, there is no distinction between apps
+that are and apps that are not available. This could change in the future, and would
+require a ClowdApp flag addition.</p>
+</div>
+<div class="paragraph">
+<p>The OpenShift or Minikube cluster is configured to passthrough SSL to this
+gateway, which enforcs strict SNI and requires mTLS.</p>
+</div>
+<div class="sect4">
+<h5 id="_registration_of_cert"><a class="anchor" href="#_registration_of_cert"></a>Registration of cert</h5>
+<div class="paragraph">
+<p>To facilitate cert-auth to be used in an environment the client must first
+register the <code>CN</code> presented inside the clients cert, which has been signed by the
+CA recognised by the Caddy Gateway. By default this CA is the <code>candlepin-ca</code> so
+that machines may register to the real RHSM and use this cert in a local
+instance.</p>
+</div>
+<div class="paragraph">
+<p>Note:
+A <strong>local</strong> instance here corresponds to a ClowdEnvironment that has the <strong>Web
+Provider</strong> set to <strong>local</strong> mode. This is the case for ephemeral environments.</p>
+</div>
+<div class="paragraph">
+<p>The registration must be performed using an existing user account in the org,
+and that user must be an <code>orgAdmin</code>. The default user provided with the <strong>local</strong>
+setup, has these permissions.</p>
+</div>
+<div class="paragraph">
+<p>The registration command should look similar to the following, notice the UUID
+is the same in all places for this example and <strong>MUST</strong> follow a UUID format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">&gt; cat /tmp/test.json
+{"uid": "36f23107-9b7c-48f6-8d5b-e6691e7dd235", "display_name": "36f23107-9b7c-48f6-8d5b-e6691e7dd235"}
+
+&gt; curl -k http://environment-host/v1/registrations -H "Authorization: Basic $EPHEM_BASE64" -vvv -H "Content-Type: application/json" -d @/tmp/test.json -H "x-rh-certauth-cn:/CN=36f23107-9b7c-48f6-8d5b-e6691e7dd235"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>orgID</code> of the user credentials used to call the registrations endpoint will
+be used to register this <code>CN</code>.</p>
+</div>
+<div class="paragraph">
+<p>Note:
+In systems registered with RHSM, there is an <code>orgId</code> present in the certificate,
+but this will be ignored when registering with the registrations endpoint, as it
+is not relevant to a local environment, which has been provisioned with it&#8217;s own
+Keycloak and hence its own <code>orgIDs</code>.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_making_api_calls_with_certs"><a class="anchor" href="#_making_api_calls_with_certs"></a>Making API calls with certs</h5>
+<div class="paragraph">
+<p>The client cert/key combination can now be used to make API requests to services
+via a new hostname with <code>-cert</code> appended. An example of this is shown below</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">&gt; curl https://environment-host-cert/api/puptoo/ -vvv --key /tmp/tls.key --cert /tmp/tls.crt"</code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>ClowdEnv Config options available:</p>
 </div>
@@ -320,7 +393,12 @@ be configured to route to the <code>auth</code> service port for that deployment
 <li>
 <p><code>authPort</code></p>
 </li>
+<li>
+<p><code>gatewayCert</code></p>
+</li>
 </ul>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -400,12 +478,8 @@ spec:
       port: 8000</code></pre>
 </div>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_tls_auth"><a class="anchor" href="#_tls_auth"></a>TLS Auth</h2>
-<div class="sectionbody">
+<div class="sect3">
+<h4 id="_tls_auth"><a class="anchor" href="#_tls_auth"></a>TLS Auth</h4>
 <div class="paragraph">
 <p>The <strong>Web Provider</strong> also features a TLS sidecar option which will dynamically create and append an
 Envoy sidecar to the deployment pod. This requires enabling in the configuration with an example
@@ -473,6 +547,41 @@ in the <code>cdappconfig.json</code>. A <code>tlsCAPath</code> field is in the <
 CA cert chain can be found for connecting to other services. All certs are registered against the
 full hostname including <strong>namespace</strong> and <strong>svc</strong>. These hostnames are present in full in the endpoints
 list and should be taken from there.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_customizing_cert_auth"><a class="anchor" href="#_customizing_cert_auth"></a>Customizing Cert Auth</h4>
+<div class="paragraph">
+<p>The ClowdEnvironment can be configured to work with both <code>acme</code> and <code>self-signed</code>
+certs by using the <code>spec.provides.web.gatewayCert.certMode</code> flag.</p>
+</div>
+<div class="paragraph">
+<p>Custom CA certs may also be used by supplying the correct configuration as detailed below.
+The <code>localCaConfigMap</code> field should point to a ConfigMap in the env namespace and
+is expected to have the CA in PEM format <code>ca.pem</code> field.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    web:
+      # As above
+      gatewayCert:
+        enabled: true
+        certMode: self-signed
+        localCAConfigMap: my-configmap</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For <code>acme</code> cert generation an <code>emailAddress</code> field needs to be supplied with the email address
+to use for the cert generation.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
