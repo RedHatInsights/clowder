@@ -31,7 +31,11 @@ func deploymentStatusChecker(deployment apps.Deployment) bool {
 	}
 
 	for _, condition := range deployment.Status.Conditions {
-		if condition.Type == "Available" && condition.Status == "True" {
+		if condition.Type == "Available" &&
+			condition.Status == "True" &&
+			deployment.Status.AvailableReplicas == *deployment.Spec.Replicas &&
+			deployment.Status.UpdatedReplicas == *deployment.Spec.Replicas {
+
 			return true
 		}
 	}
