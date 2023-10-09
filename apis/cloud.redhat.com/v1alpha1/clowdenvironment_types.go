@@ -37,6 +37,10 @@ import (
 // +kubebuilder:validation:Enum=none;operator;local
 type WebMode string
 
+// GatewayCertMode details the mode of operation of the Gateway Cert
+// +kubebuilder:validation:Enum=self-signed;acme;none
+type GatewayCertMode string
+
 // WebImages defines optional container image overrides for the web provider components
 type WebImages struct {
 	// Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
@@ -47,6 +51,9 @@ type WebImages struct {
 
 	// Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	Caddy string `json:"caddy,omitempty"`
+
+	// Caddy Gateway image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	CaddyGateway string `json:"caddyGateway,omitempty"`
 
 	// Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	MockBOP string `json:"mockBop,omitempty"`
@@ -86,6 +93,23 @@ type WebConfig struct {
 
 	// TLS sidecar enablement
 	TLS TLS `json:"tls,omitempty"`
+
+	// Gateway cert
+	GatewayCert GatewayCert `json:"gatewayCert,omitempty"`
+}
+
+type GatewayCert struct {
+	// Determines whether to enable the gateway cert, default is disabled
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Determines the mode of certificate generation, either self-signed or acme
+	CertMode GatewayCertMode `json:"certMode,omitempty"`
+
+	// Determines a ConfigMap in the target namespace of the env which has ca.pem detailing the cert to use for mTLS verification
+	LocalCAConfigMap string `json:"localCAConfigMap,omitempty"`
+
+	// The email address used to register with Let's Encrypt for acme mode certs
+	EmailAddress string `json:"emailAddress,omitempty"`
 }
 
 type TLS struct {
@@ -767,7 +791,7 @@ func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.
 		domain := spec["domain"]
 		if domain != "" {
 			if random {
-				return fmt.Sprintf("%s-%s.%s", i.Name, randomIdent, domain)
+				return fmt.Sprintf("ee-%s.%s", randomIdent, domain)
 			}
 			return fmt.Sprintf("%s.%s", i.Name, domain)
 		}

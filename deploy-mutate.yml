@@ -6458,6 +6458,31 @@ objects:
                           description: The URL of BOP - only used in (*_none_*/*_operator_*)
                             mode.
                           type: string
+                        gatewayCert:
+                          description: Gateway cert
+                          properties:
+                            certMode:
+                              description: Determines the mode of certificate generation,
+                                either self-signed or acme
+                              enum:
+                              - self-signed
+                              - acme
+                              - none
+                              type: string
+                            emailAddress:
+                              description: The email address used to register with
+                                Let's Encrypt for acme mode certs
+                              type: string
+                            enabled:
+                              description: Determines whether to enable the gateway
+                                cert, default is disabled
+                              type: boolean
+                            localCAConfigMap:
+                              description: Determines a ConfigMap in the target namespace
+                                of the env which has ca.pem detailing the cert to
+                                use for mTLS verification
+                              type: string
+                          type: object
                         images:
                           description: Optional images to use for web provider components
                             -- only applies when running in (*_local_*) mode.
@@ -6466,6 +6491,11 @@ objects:
                               description: Caddy image -- if not defined, value from
                                 operator config is used if set, otherwise a hard-coded
                                 default is used.
+                              type: string
+                            caddyGateway:
+                              description: Caddy Gateway image -- if not defined,
+                                value from operator config is used if set, otherwise
+                                a hard-coded default is used.
                               type: string
                             keycloak:
                               description: Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}'
@@ -7346,6 +7376,18 @@ objects:
     - patch
     - update
     - watch
+  - apiGroups:
+    - cert-manager.io
+    resources:
+    - certificates
+    - issuers
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
   - apiGroups:
     - cloud.redhat.com
     resources:

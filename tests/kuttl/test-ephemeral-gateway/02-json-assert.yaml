@@ -2,9 +2,11 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 10
-- script: kubectl get secret test-ephemeral-gateway-keycloak -n test-ephemeral-gateway -o json | jq -r '.data.defaultUsername == "amRvZQ=="'
-- script: kubectl get secret test-ephemeral-gateway-keycloak -n test-ephemeral-gateway -o json | jq -r '.data.version == "MTUuMC4yCg=="'
-- script: kubectl get pod -l pod=puptoo-processor -n test-ephemeral-gateway -o json  | jq -r '.items[0].spec.containers[0].name=="puptoo-processor"'
-- script: kubectl get pod -l pod=puptoo-processor -n test-ephemeral-gateway -o json  | jq -r '.items[0].spec.containers[1].name=="crcauth"'
-- script: sh test_creds.sh
+- script: sleep 2
+- script: mkdir -p /tmp/test-ephemeral-gateway/
+- script: kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["ca.crt"] | @base64d' > /tmp/test-ephemeral-gateway/ca.pem
+- script: kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["tls.crt"] | @base64d' > /tmp/test-ephemeral-gateway/tls.crt
+- script: kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["tls.key"] | @base64d' > /tmp/test-ephemeral-gateway/tls.key
+- script: kubectl delete configmap  -n test-ephemeral-gateway test-ephemeral-gateway-cert-ca --ignore-not-found=true
+- script: sleep 2
+- script: kubectl create configmap --from-file=/tmp/test-ephemeral-gateway/ca.pem -n test-ephemeral-gateway test-ephemeral-gateway-cert-ca

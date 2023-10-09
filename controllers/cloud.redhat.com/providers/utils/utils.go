@@ -21,8 +21,9 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:1c4882e"
-var DefaultImageMBOP = "quay.io/cloudservices/mbop:bb071db"
+var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:a988cd2"
+var DefaultImageCaddyGateway = DefaultImageCaddySideCar
+var DefaultImageMBOP = "quay.io/cloudservices/mbop:959d00d"
 var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:e24820c"
 var DefaultKeyCloakVersion = "15.0.2"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
@@ -165,6 +166,17 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
 func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, capacity string) {
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
+}
+
+// GetCaddyImage returns the caddy image to use in a given environment
+func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.Images.CaddyGateway != "" {
+		return env.Spec.Providers.Web.Images.CaddyGateway
+	}
+	if clowderconfig.LoadedConfig.Images.CaddyGateway != "" {
+		return clowderconfig.LoadedConfig.Images.CaddyGateway
+	}
+	return DefaultImageCaddyGateway
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment

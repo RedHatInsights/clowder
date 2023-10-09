@@ -10,6 +10,9 @@ spec:
       port: 8000
       mode: local
       ingressClass: openshift
+      gatewayCert:
+        localCAConfigMap: test-ephemeral-gateway-cert-ca
+        enabled: true
     metrics:
       port: 9000
       mode: operator
@@ -44,7 +47,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/psav/clowder-hello:01
       readinessProbe:
         failureThreshold: 3
         httpGet:
@@ -69,3 +72,27 @@ spec:
       public:
         enabled: true
         apiPath: puptoo
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: test-ephemeral-gateway
+  namespace: test-ephemeral-gateway
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: caddy-cert
+  namespace: test-ephemeral-gateway
+spec:
+  commonName: 36f23107-9b7c-48f6-8d5b-e6691e7dd235
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: test-ephemeral-gateway
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  secretName: test-ephemeral-gateway-test-cert

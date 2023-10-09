@@ -570,6 +570,38 @@ FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags Provi
 
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycert"]
+==== GatewayCert 
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | Determines whether to enable the gateway cert, default is disabled
+| *`certMode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode[$$GatewayCertMode$$]__ | Determines the mode of certificate generation, either self-signed or acme
+| *`localCAConfigMap`* __string__ | Determines a ConfigMap in the target namespace of the env which has ca.pem detailing the cert to use for mTLS verification
+| *`emailAddress`* __string__ | The email address used to register with Let's Encrypt for acme mode certs
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"]
+==== GatewayCertMode (string) 
+
+GatewayCertMode details the mode of operation of the Gateway Cert
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycert[$$GatewayCert$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig"]
 ==== InMemoryDBConfig 
 
@@ -1404,6 +1436,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`keycloakVersion`* __string__ | Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
 | *`images`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webimages[$$WebImages$$]__ | Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
 | *`tls`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls[$$TLS$$]__ | TLS sidecar enablement
+| *`gatewayCert`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycert[$$GatewayCert$$]__ | Gateway cert
 |===
 
 
@@ -1435,6 +1468,7 @@ WebImages defines optional container image overrides for the web provider compon
 | *`mocktitlements`* __string__ | Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 | *`keycloak`* __string__ | Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here
 | *`caddy`* __string__ | Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+| *`caddyGateway`* __string__ | Caddy Gateway image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 | *`mockBop`* __string__ | Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 |===
 

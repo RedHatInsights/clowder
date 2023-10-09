@@ -1,0 +1,114 @@
+{
+  "apps": {
+    "http": {
+      "http_port": 8888,
+      "https_port": 9090,
+      "servers": {
+        "srv0": {
+          "listen": [
+            ":9090"
+          ],
+          "routes": [
+            {
+              "match": [
+                {
+                  "host": [
+                    "host"
+                  ]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "handler": "crcauth",
+                          "output": "stdout",
+                          "url": "bop",
+                          "whitelist": [
+                            "wer"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "group": "group2",
+                      "handle": [
+                        {
+                          "handler": "subroute",
+                          "routes": [
+                            {
+                              "handle": [
+                                {
+                                  "handler": "reverse_proxy",
+                                  "upstreams": [
+                                    {
+                                      "dial": "11"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "match": [
+                        {
+                          "path": [
+                            "22"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "terminal": true
+            }
+          ],
+          "tls_connection_policies": [
+            {
+              "match": {
+                "sni": [
+                  "host"
+                ]
+              },
+              "certificate_selection": {
+                "any_tag": [
+                  "cert0"
+                ]
+              },
+              "client_authentication": {
+                "trusted_ca_certs_pem_files": [
+                  "/cas/ca.pem"
+                ],
+                "mode": "verify_if_given"
+              }
+            },
+            {}
+          ],
+          "logs": {
+            "logger_names": {
+              "localhost.localdomain:9090": ""
+            }
+          }
+        }
+      }
+    },
+    "tls": {
+      "certificates": {
+        "load_files": [
+          {
+            "certificate": "/certs/tls.crt",
+            "key": "/certs/tls.key",
+            "tags": [
+              "cert0"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
