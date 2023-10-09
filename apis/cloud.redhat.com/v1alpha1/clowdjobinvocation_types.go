@@ -68,7 +68,7 @@ type IqeJobSpec struct {
 	Marker string `json:"marker,omitempty"`
 
 	// (DEPRECATED, using 'env' now preferred) sets ENV_FOR_DYNACONF env var on the IQE container
-	DynaconfEnvName string `json:"dynaconfEnvName"`
+	DynaconfEnvName string `json:"dynaconfEnvName,omitempty"`
 
 	// (DEPRECATED, using 'env' now preferred) sets IQE_FILTER_EXPRESSION env var on the IQE container
 	Filter string `json:"filter,omitempty"`
