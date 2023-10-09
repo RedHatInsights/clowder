@@ -138,9 +138,9 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 		tag = "ff_102.9.0esr_chrome_112.0.5615.121"
 	}
 
-	// check if this CJI has specified an image tag override
+	// check if this CJI has specified a selenium image tag override
 	if cji.Spec.Testing.Iqe.UI.Selenium.ImageTag != "" {
-		tag = cji.Spec.Testing.Iqe.ImageTag
+		tag = cji.Spec.Testing.Iqe.UI.Selenium.ImageTag
 	}
 
 	// create pod container
