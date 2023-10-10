@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.2.1
-	github.com/RedHatInsights/cyndi-operator v0.1.9
+	github.com/RedHatInsights/cyndi-operator v0.1.12
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.10.0
 	github.com/RedHatInsights/strimzi-client-go v0.34.2

@@ -369,6 +369,9 @@ type CyndiSpec struct {
 	// +kubebuilder:validation:Pattern:="[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
 	AppName string `json:"appName,omitempty"`
 
+	// AdditionalFilters
+	AdditionalFilters []map[string]string `json:"additionalFilters,omitempty"`
+
 	// Desired host syndication type (all or Insights hosts only) - defaults to false (All hosts)
 	InsightsOnly bool `json:"insightsOnly,omitempty"`
 }

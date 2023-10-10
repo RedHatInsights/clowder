@@ -60,6 +60,13 @@ spec:
                   kafka-connect namespace. For all other kafka provider modes, this
                   configuration option has no effect.
                 properties:
+                  additionalFilters:
+                    description: AdditionalFilters
+                    items:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    type: array
                   appName:
                     description: Application name - if empty will default to Clowdapp's
                       name
