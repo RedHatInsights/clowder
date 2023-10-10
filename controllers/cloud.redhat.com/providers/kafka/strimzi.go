@@ -47,6 +47,7 @@ var KafkaNetworkPolicy = rc.NewSingleResourceIdent(ProvName, "kafka_network_poli
 
 type strimziProvider struct {
 	providers.Provider
+	rootKafkaProvider
 }
 
 // NewStrimzi returns a new strimzi provider object.
@@ -438,6 +439,10 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	return s.Cache.Update(KafkaInstance, k)
 }
 
+func (s *strimziProvider) getConnectClusterUserName() string {
+	return fmt.Sprintf("%s-connect", s.Env.Name)
+}
+
 func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, error) {
 	cm := &core.ConfigMap{}
 	nn := types.NamespacedName{
@@ -463,9 +468,9 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	return nn, nil
 }
 
-func (s *strimziProvider) getBootstrapServersString(configs *config.KafkaConfig) string {
+func (s *strimziProvider) getBootstrapServersString() string {
 	strArray := []string{}
-	for _, bc := range configs.Brokers {
+	for _, bc := range s.Config.Kafka.Brokers {
 		if bc.Port != nil {
 			strArray = append(strArray, fmt.Sprintf("%s:%d", bc.Hostname, *bc.Port))
 		} else {
@@ -479,7 +484,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 
 	clusterNN := types.NamespacedName{
 		Namespace: getConnectNamespace(s.Env),
-		Name:      getConnectClusterUserName(s.Env),
+		Name:      s.getConnectClusterUserName(),
 	}
 
 	ku := &strimzi.KafkaUser{}
@@ -537,7 +542,7 @@ func (s *strimziProvider) createKafkaConnectUser() error {
 	return s.Cache.Update(KafkaConnectUser, ku)
 }
 
-func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConfig) error {
+func (s *strimziProvider) configureKafkaConnectCluster() error {
 	var kcRequests, kcLimits apiextensions.JSON
 
 	// default values for config/requests/limits in Strimzi resource specs
@@ -568,10 +573,6 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 	clusterNN := types.NamespacedName{
 		Namespace: getConnectNamespace(s.Env),
 		Name:      getConnectClusterName(s.Env),
-	}
-
-	if err := s.createKafkaConnectUser(); err != nil {
-		return err
 	}
 
 	k := &strimzi.KafkaConnect{}
@@ -605,7 +606,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 		image = DefaultImageKafkaXjoin
 	}
 
-	username := getConnectClusterUserName(s.Env)
+	username := s.getConnectClusterUserName()
 
 	var config apiextensions.JSON
 
@@ -625,7 +626,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
-		BootstrapServers: s.getBootstrapServersString(configs),
+		BootstrapServers: s.getBootstrapServersString(),
 		Version:          &version,
 		Config:           &config,
 		Image:            &image,
@@ -668,7 +669,7 @@ func (s *strimziProvider) configureKafkaConnectCluster(configs *config.KafkaConf
 	return s.Cache.Update(KafkaConnect, k)
 }
 
-func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error {
+func (s *strimziProvider) configureListeners() error {
 	clusterNN := types.NamespacedName{
 		Namespace: getKafkaNamespace(s.Env),
 		Name:      getKafkaName(s.Env),
@@ -697,16 +698,16 @@ func (s *strimziProvider) configureListeners(configs *config.KafkaConfig) error 
 
 	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
 
-	configs.Brokers = []config.BrokerConfig{}
+	s.Config.Kafka.Brokers = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
 		if listener.Type != nil && *listener.Type == "tls" {
-			configs.Brokers = append(configs.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
 		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
-			configs.Brokers = append(configs.Brokers, buildTCPBrokerConfig(listener))
+			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
 
-	if len(configs.Brokers) < 1 {
+	if len(s.Config.Kafka.Brokers) < 1 {
 		return fmt.Errorf(
 			"kafka cluster '%s' in ns '%s' has no listeners", clusterNN.Name, clusterNN.Namespace,
 		)
@@ -748,17 +749,23 @@ func (s *strimziProvider) configureBrokers() error {
 		return errors.Wrap("failed to provision kafka cluster", err)
 	}
 
-	config := &config.KafkaConfig{}
+	s.Config = &config.AppConfig{
+		Kafka: &config.KafkaConfig{},
+	}
 
 	// Look up Kafka cluster's listeners and configure s.Config.Brokers
 	// (we need to know the bootstrap server addresses before provisioning KafkaConnect)
-	if err := s.configureListeners(config); err != nil {
+	if err := s.configureListeners(); err != nil {
 		clowdErr := errors.Wrap("unable to determine kafka broker addresses", err)
 		clowdErr.Requeue = true
 		return clowdErr
 	}
 
-	if err := s.configureKafkaConnectCluster(config); err != nil {
+	if err := s.createKafkaConnectUser(); err != nil {
+		return err
+	}
+
+	if err := s.configureKafkaConnectCluster(); err != nil {
 		return errors.Wrap("failed to provision kafka connect cluster", err)
 	}
 
@@ -895,7 +902,7 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	all := strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll
 
 	for _, topic := range app.Spec.KafkaTopics {
-		topicName := getTopicName(topic, *s.Env, app.Namespace)
+		topicName := s.KafkaTopicName(topic, app.Namespace)
 
 		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 			Host:      &address,
@@ -923,165 +930,20 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 }
 
 func (s *strimziProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig) error {
-	topicConfig := []config.TopicConfig{}
-
-	appList, err := s.Env.GetAppsInEnv(s.Ctx, s.Client)
-
-	if err != nil {
-		return errors.Wrap("Topic creation failed: Error listing apps", err)
-	}
-
-	for _, topic := range app.Spec.KafkaTopics {
-		k := &strimzi.KafkaTopic{}
-
-		topicName := getTopicName(topic, *s.Env, app.Namespace)
-		knn := types.NamespacedName{
-			Namespace: getKafkaNamespace(s.Env),
-			Name:      topicName,
-		}
-
-		if err := s.Cache.Create(KafkaTopic, knn, k); err != nil {
-			return err
-		}
-
-		labels := providers.Labels{
-			"strimzi.io/cluster": getKafkaName(s.Env),
-			"env":                app.Spec.EnvName,
-			// If we label it with the app name, since app names should be
-			// unique? can we use for delete selector?
-		}
-
-		k.SetName(topicName)
-		k.SetNamespace(getKafkaNamespace(s.Env))
-		// the ClowdEnvironment is the owner of this topic
-		k.SetOwnerReferences([]metav1.OwnerReference{s.Env.MakeOwnerReference()})
-		k.SetLabels(labels)
-
-		k.Spec = &strimzi.KafkaTopicSpec{}
-
-		err := processTopicValues(k, s.Env, appList, topic)
-
-		if err != nil {
-			return err
-		}
-
-		if err := s.Cache.Update(KafkaTopic, k); err != nil {
-			return err
-		}
-
-		topicConfig = append(
-			topicConfig,
-			config.TopicConfig{Name: topicName, RequestedName: topic.TopicName},
-		)
-	}
-
-	c.Topics = topicConfig
-
-	return nil
+	return processTopics(s, app, c)
 }
 
-func getTopicName(topic crd.KafkaTopicSpec, env crd.ClowdEnvironment, namespace string) string {
+func (s *strimziProvider) KafkaTopicName(topic crd.KafkaTopicSpec, namespace string) string {
 	if clowderconfig.LoadedConfig.Features.UseComplexStrimziTopicNames {
-		return fmt.Sprintf("%s-%s-%s", topic.TopicName, env.Name, namespace)
+		return fmt.Sprintf("%s-%s-%s", topic.TopicName, s.GetEnv().Name, namespace)
 	}
 	return topic.TopicName
 }
 
-func processTopicValues(
-	k *strimzi.KafkaTopic,
-	env *crd.ClowdEnvironment,
-	appList *crd.ClowdAppList,
-	topic crd.KafkaTopicSpec,
-) error {
+func (s *strimziProvider) KafkaName() string {
+	return getKafkaName(s.Env)
+}
 
-	keys := map[string][]string{}
-	replicaValList := []string{}
-	partitionValList := []string{}
-
-	for _, iapp := range appList.Items {
-		if iapp.Spec.KafkaTopics != nil {
-			for _, itopic := range iapp.Spec.KafkaTopics {
-				if itopic.TopicName != topic.TopicName {
-					// Only consider a topic that matches the name
-					continue
-				}
-				replicaValList = append(replicaValList, strconv.Itoa(int(itopic.Replicas)))
-				partitionValList = append(partitionValList, strconv.Itoa(int(itopic.Partitions)))
-				for key := range itopic.Config {
-					if _, ok := keys[key]; !ok {
-						keys[key] = []string{}
-					}
-					keys[key] = append(keys[key], itopic.Config[key])
-				}
-			}
-		}
-	}
-
-	jsonData := "{"
-
-	for key, valList := range keys {
-		f, ok := conversionMap[key]
-		if ok {
-			out, _ := f(valList)
-			jsonData = fmt.Sprintf("%s\"%s\":\"%s\",", jsonData, key, out)
-		} else {
-			return errors.NewClowderError(fmt.Sprintf("no conversion type for %s", key))
-		}
-	}
-
-	if len(jsonData) > 1 {
-		jsonData = jsonData[0 : len(jsonData)-1]
-	}
-	jsonData += "}"
-
-	var config apiextensions.JSON
-
-	err := config.UnmarshalJSON([]byte(jsonData))
-
-	if err != nil {
-		return err
-
-	}
-
-	k.Spec.Config = &config
-
-	if len(replicaValList) > 0 {
-		maxReplicas, err := utils.IntMax(replicaValList)
-		if err != nil {
-			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", replicaValList))
-		}
-		maxReplicasInt, err := strconv.ParseUint(maxReplicas, 10, 16)
-		if err != nil {
-			return errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
-		}
-		k.Spec.Replicas = utils.Int32Ptr(int(maxReplicasInt))
-		if *k.Spec.Replicas < int32(1) {
-			// if unset, default to 3
-			k.Spec.Replicas = utils.Int32Ptr(3)
-		}
-	}
-
-	if len(partitionValList) > 0 {
-		maxPartitions, err := utils.IntMax(partitionValList)
-		if err != nil {
-			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", partitionValList))
-		}
-		maxPartitionsInt, err := strconv.ParseUint(maxPartitions, 10, 16)
-		if err != nil {
-			return errors.NewClowderError(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
-		}
-		k.Spec.Partitions = utils.Int32Ptr(int(maxPartitionsInt))
-		if *k.Spec.Partitions < int32(1) {
-			// if unset, default to 3
-			k.Spec.Partitions = utils.Int32Ptr(3)
-		}
-	}
-
-	if env.Spec.Providers.Kafka.Cluster.Replicas < int32(1) {
-		k.Spec.Replicas = utils.Int32Ptr(1)
-	} else if env.Spec.Providers.Kafka.Cluster.Replicas < *k.Spec.Replicas {
-		k.Spec.Replicas = &env.Spec.Providers.Kafka.Cluster.Replicas
-	}
-
-	return nil
+func (s *strimziProvider) KafkaNamespace() string {
+	return getKafkaNamespace(s.Env)
 }

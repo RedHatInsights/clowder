@@ -116,6 +116,7 @@ type RootProvider interface {
 	GetEnv() *crd.ClowdEnvironment
 	GetCache() *rc.ObjectCache
 	GetLog() logr.Logger
+	GetConfig() *config.AppConfig
 }
 
 // ClowderProvider is an interface providing a way for a provider to perform its duty.

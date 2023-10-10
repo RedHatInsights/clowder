@@ -6026,6 +6026,10 @@ objects:
                               description: Version. If unset, default is '2.5.0'
                               type: string
                           type: object
+                        clusterAnnotation:
+                          description: Cluster annotation identifier for (*_msk_*)
+                            mode.
+                          type: string
                         clusterName:
                           description: (Deprecated) Defines the cluster name to be
                             used by the Kafka Provider this will be used in some modes
@@ -6112,7 +6116,7 @@ objects:
                             is created in the desired cluster namespace and configured
                             to auto-create topics.'
                           enum:
-                          - managed-ephem
+                          - ephem-msk
                           - managed
                           - operator
                           - app-interface
@@ -6132,6 +6136,10 @@ objects:
                           type: boolean
                         suffix:
                           description: (Deprecated) (Unused)
+                          type: string
+                        topicNamespace:
+                          description: Namespace that kafkaTopics should be written
+                            to for (*_msk_*) mode.
                           type: string
                       required:
                       - mode

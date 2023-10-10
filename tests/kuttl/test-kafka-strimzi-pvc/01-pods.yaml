@@ -17,7 +17,6 @@ spec:
       cluster:
         namespace: test-kafka-strimzi-pvc-kafka
         name: my-pvc-cluster
-        provisionCluster: true
         storageSize: 100Mi
       mode: operator
       pvc: true
