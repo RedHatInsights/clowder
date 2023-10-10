@@ -1,26 +1,19 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
-
-	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
-
-// KafkaTopic is the resource ident for a KafkaTopic object.
-var MSKKafkaTopic = rc.NewSingleResourceIdent(ProvName, "msk_kafka_topic", &strimzi.KafkaTopic{}, rc.ResourceOptions{WriteNow: true})
-
-// MSKKafkaConnect is the resource ident for a KafkaConnect object.
-var MSKKafkaConnect = rc.NewSingleResourceIdent(ProvName, "msk_kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
 
 type mskProvider struct {
 	providers.Provider
@@ -33,13 +26,16 @@ func NewMSK(p *providers.Provider) (providers.ClowderProvider, error) {
 		CyndiAppSecret,
 		CyndiHostInventoryAppSecret,
 		CyndiConfigMap,
-		MSKKafkaTopic,
-		MSKKafkaConnect,
+		KafkaTopic,
+		KafkaConnect,
 	)
 	return &mskProvider{Provider: *p}, nil
 }
 
 func (s *mskProvider) EnvProvide() error {
+	s.Config = &config.AppConfig{
+		Kafka: &config.KafkaConfig{},
+	}
 	return s.configureBrokers()
 }
 
@@ -48,7 +44,15 @@ func (s *mskProvider) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	if err := s.processTopics(app, s.Config.Kafka); err != nil {
+	s.Config.Kafka = &config.KafkaConfig{}
+	s.Config.Kafka.Brokers = []config.BrokerConfig{}
+	s.Config.Kafka.Topics = []config.TopicConfig{}
+
+	if err := s.configureListeners(); err != nil {
+		return err
+	}
+
+	if err := processTopics(s, app); err != nil {
 		return err
 	}
 
@@ -72,6 +76,28 @@ func (s *mskProvider) getBootstrapServersString() string {
 		}
 	}
 	return strings.Join(strArray, ",")
+}
+
+type genericConfig map[string]string
+
+func (s mskProvider) connectConfig(config *apiextensions.JSON) error {
+
+	connectConfig := genericConfig{
+		"config.storage.replication.factor":       "1",
+		"config.storage.topic":                    fmt.Sprintf("%v-connect-cluster-configs", s.Env.Name),
+		"connector.client.config.override.policy": "All",
+		"group.id":                          "connect-cluster",
+		"offset.storage.replication.factor": "1",
+		"offset.storage.topic":              fmt.Sprintf("%v-connect-cluster-offsets", s.Env.Name),
+		"status.storage.replication.factor": "1",
+		"status.storage.topic":              fmt.Sprintf("%v-connect-cluster-status", s.Env.Name),
+	}
+
+	byteData, err := json.Marshal(connectConfig)
+	if err != nil {
+		return err
+	}
+	return config.UnmarshalJSON(byteData)
 }
 
 func (s *mskProvider) getKafkaConfig(broker config.BrokerConfig) *config.KafkaConfig {
@@ -119,12 +145,16 @@ func (s *mskProvider) configureBrokers() error {
 	return nil
 }
 
-func (s *mskProvider) processTopics(app *crd.ClowdApp, c *config.KafkaConfig) error {
-	return processTopics(s, app, c)
+func (s *mskProvider) getKafkaConnectTrustedCertSecretName() (string, error) {
+	secRef, err := getSecretRef(s)
+	if err != nil {
+		return "", err
+	}
+	return secRef.Name, nil
 }
 
 func (s *mskProvider) getConnectClusterUserName() string {
-	return fmt.Sprintf("%s-connect", s.Env.Name)
+	return *s.Config.Kafka.Brokers[0].Sasl.Username
 }
 
 func (s *mskProvider) KafkaTopicName(topic crd.KafkaTopicSpec, namespace string) string {

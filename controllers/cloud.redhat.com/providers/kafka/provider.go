@@ -28,6 +28,8 @@ type providerInterface interface {
 	KafkaNamespace() string
 	getConnectClusterUserName() string
 	getBootstrapServersString() string
+	connectConfig(*apiextensions.JSON) error
+	getKafkaConnectTrustedCertSecretName() (string, error)
 }
 
 type rootKafkaProvider struct {
@@ -50,6 +52,12 @@ var CyndiHostInventoryAppSecret = rc.NewSingleResourceIdent(ProvName, "cyndi_hos
 
 // CyndiConfigMap is the resource ident for a CyndiConfigMap object.
 var CyndiConfigMap = rc.NewSingleResourceIdent(ProvName, "cyndi_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
+
+// KafkaTopic is the resource ident for a KafkaTopic object.
+var KafkaTopic = rc.NewSingleResourceIdent(ProvName, "kafka_topic", &strimzi.KafkaTopic{}, rc.ResourceOptions{WriteNow: true})
+
+// KafkaConnect is the resource ident for a KafkaConnect object.
+var KafkaConnect = rc.NewSingleResourceIdent(ProvName, "kafka_connect", &strimzi.KafkaConnect{}, rc.ResourceOptions{WriteNow: true})
 
 // GetKafka returns the correct kafka provider based on the environment.
 func GetKafka(c *providers.Provider) (providers.ClowderProvider, error) {
@@ -115,7 +123,7 @@ func init() {
 	providers.ProvidersRegistration.Register(GetKafka, 6, ProvName)
 }
 
-func processTopics(s providerInterface, app *crd.ClowdApp, c *config.KafkaConfig) error {
+func processTopics(s providerInterface, app *crd.ClowdApp) error {
 	topicConfig := []config.TopicConfig{}
 
 	appList, err := s.GetEnv().GetAppsInEnv(s.GetCtx(), s.GetClient())
@@ -168,7 +176,7 @@ func processTopics(s providerInterface, app *crd.ClowdApp, c *config.KafkaConfig
 		)
 	}
 
-	c.Topics = topicConfig
+	s.GetConfig().Kafka.Topics = topicConfig
 
 	return nil
 }
@@ -338,16 +346,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	var config apiextensions.JSON
 
-	err = config.UnmarshalJSON([]byte(`{
-		"config.storage.replication.factor":       "1",
-		"config.storage.topic":                    "connect-cluster-configs",
-		"connector.client.config.override.policy": "All",
-		"group.id":                                "connect-cluster",
-		"offset.storage.replication.factor":       "1",
-		"offset.storage.topic":                    "connect-cluster-offsets",
-		"status.storage.replication.factor":       "1",
-		"status.storage.topic":                    "connect-cluster-status"
-	}`))
+	err = s.connectConfig(&config)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal config: %w", err)
 	}
@@ -366,11 +365,16 @@ func configureKafkaConnectCluster(s providerInterface) error {
 		},
 	}
 
+	secName, err := s.getKafkaConnectTrustedCertSecretName()
+	if err != nil {
+		return err
+	}
+
 	if !s.GetEnv().Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
 			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
 				Certificate: "ca.crt",
-				SecretName:  fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.GetEnv())),
+				SecretName:  secName,
 			}},
 		}
 		k.Spec.Authentication = &strimzi.KafkaConnectSpecAuthentication{
