@@ -105,6 +105,7 @@ func createCyndiPipeline(
 	pipeline.Spec.DbSecret = &appDbSecret
 	pipeline.Spec.ConnectCluster = &connectClusterName
 	pipeline.Spec.InsightsOnly = app.Spec.Cyndi.InsightsOnly
+	pipeline.Spec.AdditionalFilters = app.Spec.Cyndi.AdditionalFilters
 
 	// it would be best for the ClowdApp to own this, but since cross-namespace OwnerReferences
 	// are not permitted, make this owned by the ClowdEnvironment
