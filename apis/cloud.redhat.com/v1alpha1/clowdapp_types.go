@@ -60,9 +60,11 @@ type DatabaseSpec struct {
 	// +kubebuilder:validation:Enum:=10;12;13;14;15
 	Version *int32 `json:"version,omitempty"`
 
-	// Defines the Name of the database to be created. This will be used as the
-	// name of the logical database inside the database server in (*_local_*) mode
-	// and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
+	// Defines the Name of the database used by this app. This will be used as the
+	// name of the logical database created by Clowder when the DB provider is in (*_local_*) mode.
+	// In (*_app-interface_*) mode, the name here is used to locate the DB secret as a fallback mechanism
+	// in cases where there is no 'clowder/database: <app-name>' annotation set on any secrets by looking
+	// for a secret with 'db.host' starting with '<name>-<env>' where env is usually 'stage' or 'prod'
 	Name string `json:"name,omitempty"`
 
 	// Defines the Name of the app to share a database from

@@ -455,7 +455,7 @@ DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 |===
 | Field | Description
 | *`version`* __integer__ | Defines the Version of the PostGreSQL database, defaults to 12.
-| *`name`* __string__ | Defines the Name of the database to be created. This will be used as the name of the logical database inside the database server in (*_local_*) mode and the name of the secret to be used for Database configuration in (*_app-interface_*) mode.
+| *`name`* __string__ | Defines the Name of the database used by this app. This will be used as the name of the logical database created by Clowder when the DB provider is in (*_local_*) mode. In (*_app-interface_*) mode, the name here is used to locate the DB secret as a fallback mechanism in cases where there is no 'clowder/database: <app-name>' annotation set on any secrets by looking for a secret with 'db.host' starting with '<name>-<env>' where env is usually 'stage' or 'prod'
 | *`sharedDbAppName`* __string__ | Defines the Name of the app to share a database from
 | *`dbVolumeSize`* __string__ | T-shirt size, one of small, medium, large
 | *`dbResourceSize`* __string__ | T-shirt size, one of small, medium, large
