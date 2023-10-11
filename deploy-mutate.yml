@@ -7042,8 +7042,6 @@ objects:
                                   type: string
                               type: object
                           type: object
-                      required:
-                      - dynaconfEnvName
                       type: object
                   type: object
               required:
