@@ -231,6 +231,27 @@
 </ul>
 </div>
 <div class="sect3">
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-apipath"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-apipath"></a>APIPath</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
+<div class="paragraph">
+<p>A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-publicwebservice">PublicWebService</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
 <h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"></a>AppInfo</h4>
 <div class="paragraph">
 <p>AppInfo details information about a specific app.</p>
@@ -3843,7 +3864,15 @@
 <p><strong><code>apiPath</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>APIPath describes the api path that will be configured to serve this backend from.</p>
+<p>(DEPRECATED, use apiPaths instead) Configures a path named '/api/&lt;apiPath&gt;/' that this app will serve requests from.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>apiPaths</code></strong> <em><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-apipath">APIPath</a> array</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from.</p>
 </div></div></td>
 </tr>
 <tr>
