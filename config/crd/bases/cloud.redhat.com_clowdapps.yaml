@@ -423,6 +423,9 @@ spec:
                             services that do not have public facing endpoints.
                           type: string
                       type: object
+                    disabled:
+                      description: Disable reconciliation for this deployment
+                      type: boolean
                     k8sAccessLevel:
                       description: K8sAccessLevel defines the level of access for
                         this deployment

@@ -27,6 +27,10 @@ func (dp *deploymentProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, deployment := range app.Spec.Deployments {
 
+		if deployment.Disabled {
+			continue
+		}
+
 		if err := dp.makeDeployment(deployment, app); err != nil {
 			return err
 		}

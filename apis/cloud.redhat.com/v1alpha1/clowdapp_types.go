@@ -228,6 +228,9 @@ type Deployment struct {
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
+
+	// Disable reconciliation for this deployment
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 func (d *Deployment) GetReplicaCount() *int32 {
