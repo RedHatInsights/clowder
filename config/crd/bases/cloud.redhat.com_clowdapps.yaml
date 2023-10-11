@@ -2950,9 +2950,21 @@ spec:
                             by Clowder.
                           properties:
                             apiPath:
-                              description: APIPath describes the api path that will
-                                be configured to serve this backend from.
+                              description: (DEPRECATED, use apiPaths instead) Configures
+                                a path named '/api/<apiPath>/' that this app will
+                                serve requests from.
                               type: string
+                            apiPaths:
+                              description: 'Defines a list of API paths (each matching
+                                format: "/api/some-path/") that this app will serve
+                                requests from.'
+                              items:
+                                description: A string representing an API path that
+                                  should route to this app for Clowder-managed Ingresses
+                                  (in format "/api/somepath/")
+                                pattern: ^\/api\/[a-zA-Z0-9-]+\/$
+                                type: string
+                              type: array
                             enabled:
                               description: Enabled describes if Clowder should enable
                                 the public service and provide the configuration in

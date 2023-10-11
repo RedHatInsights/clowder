@@ -190,11 +190,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 		ingressClass = "nginx"
 	}
 
-	apiPath := deployment.WebServices.Public.APIPath
-
-	if apiPath == "" {
-		apiPath = nn.Name
-	}
+	apiPaths := provutils.GetAPIPaths(deployment, nn.Name)
 
 	netobj.Spec = networking.IngressSpec{
 		TLS: []networking.IngressTLS{{
@@ -206,23 +202,29 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 				Host: web.Env.Status.Hostname,
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
-						Paths: []networking.HTTPIngressPath{{
-							Path:     fmt.Sprintf("/api/%s/", apiPath),
-							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
-							Backend: networking.IngressBackend{
-								Service: &networking.IngressServiceBackend{
-									Name: nn.Name,
-									Port: networking.ServiceBackendPort{
-										Name: "auth",
-									},
-								},
-							},
-						}},
+						Paths: []networking.HTTPIngressPath{},
 					},
 				},
 			},
 		},
 	}
+
+	for _, path := range apiPaths {
+		path := networking.HTTPIngressPath{
+			Path:     path,
+			PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+			Backend: networking.IngressBackend{
+				Service: &networking.IngressServiceBackend{
+					Name: nn.Name,
+					Port: networking.ServiceBackendPort{
+						Name: "auth",
+					},
+				},
+			},
+		}
+		netobj.Spec.Rules[0].IngressRuleValue.HTTP.Paths = append(netobj.Spec.Rules[0].IngressRuleValue.HTTP.Paths, path)
+	}
+
 	return web.Cache.Update(WebIngress, netobj)
 }
 

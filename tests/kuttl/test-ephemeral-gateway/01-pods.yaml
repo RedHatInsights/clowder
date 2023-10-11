@@ -73,6 +73,44 @@ spec:
         enabled: true
         apiPath: puptoo
 ---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo-2paths
+  namespace: test-ephemeral-gateway
+spec:
+  envName: test-ephemeral-gateway
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello:01
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: 8000
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+    webServices:
+      public:
+        enabled: true
+        apiPaths:
+        - /api/puptoo1/
+        - /api/puptoo2/
+---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:

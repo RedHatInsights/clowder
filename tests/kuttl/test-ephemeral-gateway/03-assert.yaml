@@ -24,6 +24,24 @@ spec:
 status:
   readyReplicas: 1
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-2paths-processor
+  namespace: test-ephemeral-gateway
+spec:
+  template:
+    metadata:
+      annotations:
+        clowder/authsidecar-config: caddy-config-puptoo-2paths-processor
+        clowder/authsidecar-enabled: "true"
+        clowder/authsidecar-port: "8000"
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:a988cd2
+    spec:
+      serviceAccountName: puptoo-2paths-processor
+status:
+  readyReplicas: 1
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -43,6 +61,32 @@ spec:
         path: /api/puptoo/
         pathType: Prefix
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: puptoo-2paths-processor
+  namespace: test-ephemeral-gateway
+spec:
+  ingressClassName: "openshift"
+  rules:
+  - host: test-ephemeral-gateway
+    http:
+      paths:
+      - backend:
+          service:
+            name: puptoo-2paths-processor
+            port:
+              name: auth
+        path: /api/puptoo1/
+        pathType: Prefix
+      - backend:
+          service:
+            name: puptoo-2paths-processor
+            port:
+              name: auth
+        path: /api/puptoo2/
+        pathType: Prefix
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -51,6 +95,28 @@ metadata:
 spec:
   selector:
     pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    appProtocol: http
+  - port: 8080
+    targetPort: 8080
+    name: auth
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    appProtocol: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-2paths-processor
+  namespace: test-ephemeral-gateway
+spec:
+  selector:
+    pod: puptoo-2paths-processor
   ports:
   - port: 8000
     targetPort: 8000
