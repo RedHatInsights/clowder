@@ -275,7 +275,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appprotocol"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appprotocol"></a>AppProtocol (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appprotocol"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appprotocol"></a>AppProtocol</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>AppProtocol is used to define an appProtocol for Istio</p>
 </div>
@@ -396,19 +399,19 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>advanced</code></strong> <em>AdvancedConfig</em></p>
+<p><strong><code>advanced</code></strong> <em><a href="#k8s-api-github-com-kedacore-keda-v2-apis-keda-v1alpha1-advancedconfig">AdvancedConfig</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>triggers</code></strong> <em><a href="#k8s-api-github-com-kedacore-keda-v2-apis-keda-v1alpha1-scaletriggers">ScaleTriggers</a> array</em></p>
+<p><strong><code>triggers</code></strong> <em>ScaleTriggers array</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><strong><code>fallback</code></strong> <em>Fallback</em></p>
+<p><strong><code>fallback</code></strong> <em><a href="#k8s-api-github-com-kedacore-keda-v2-apis-keda-v1alpha1-fallback">Fallback</a></em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
@@ -464,7 +467,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalermode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalermode"></a>AutoScalerMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalermode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalermode"></a>AutoScalerMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility</p>
 </div>
@@ -1146,7 +1152,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-configaccessmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-configaccessmode"></a>ConfigAccessMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-configaccessmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-configaccessmode"></a>ConfigAccessMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>Describes what amount of app config is mounted to the pod</p>
 </div>
@@ -1284,7 +1293,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasemode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasemode"></a>DatabaseMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasemode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasemode"></a>DatabaseMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>DatabaseMode details the mode of operation of the Clowder Database Provider</p>
 </div>
@@ -1343,7 +1355,7 @@
 <p><strong><code>name</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Defines the Name of the database to be created. This will be used as the name of the logical database inside the database server in (<strong><em>local</em></strong>) mode and the name of the secret to be used for Database configuration in (<strong><em>app-interface</em></strong>) mode.</p>
+<p>Defines the Name of the database used by this app. This will be used as the name of the logical database created by Clowder when the DB provider is in (<strong><em>local</em></strong>) mode. In (<strong><em>app-interface</em></strong>) mode, the name here is used to locate the DB secret as a fallback mechanism in cases where there is no 'clowder/database: &lt;app-name&gt;' annotation set on any secrets by looking for a secret with 'db.host' starting with '&lt;name&gt;-&lt;env&gt;' where env is usually 'stage' or 'prod'</p>
 </div></div></td>
 </tr>
 <tr>
@@ -1772,7 +1784,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsmode"></a>FeatureFlagsMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsmode"></a>FeatureFlagsMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags Provider</p>
 </div>
@@ -1851,7 +1866,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"></a>GatewayCertMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"></a>GatewayCertMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>GatewayCertMode details the mode of operation of the Gateway Cert</p>
 </div>
@@ -1917,7 +1935,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorymode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorymode"></a>InMemoryMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorymode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorymode"></a>InMemoryMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>InMemoryMode details the mode of operation of the Clowder InMemoryDB Provider</p>
 </div>
@@ -2547,7 +2568,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobconditionstate"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobconditionstate"></a>JobConditionState (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobconditionstate"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobconditionstate"></a>JobConditionState</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Appears In:</div>
@@ -2599,7 +2623,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel"></a>K8sAccessLevel (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel"></a>K8sAccessLevel</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'</p>
 </div>
@@ -2940,7 +2967,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkamode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkamode"></a>KafkaMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkamode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkamode"></a>KafkaMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>KafkaMode details the mode of operation of the Clowder Kafka Provider</p>
 </div>
@@ -3062,7 +3092,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingmode"></a>LoggingMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingmode"></a>LoggingMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>LoggingMode details the mode of operation of the Clowder Logging Provider</p>
 </div>
@@ -3144,7 +3177,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsmode"></a>MetricsMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsmode"></a>MetricsMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>MetricsMode details the mode of operation of the Clowder Metrics Provider</p>
 </div>
@@ -3155,6 +3191,24 @@
 <ul>
 <li>
 <p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsconfig">MetricsConfig</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricswebservice"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricswebservice"></a>MetricsWebService</h4>
+<div class="paragraph">
+<p>MetricsWebService is the definition of the metrics web service. This is automatically enabled and the configuration here at the moment is included for completeness, as there are no configurable options.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Appears In:</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices">WebServices</a></p>
 </li>
 </ul>
 </div>
@@ -3275,7 +3329,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode"></a>ObjectStoreMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode"></a>ObjectStoreMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>ObjectStoreMode details the mode of operation of the Clowder ObjectStore Provider</p>
 </div>
@@ -3877,7 +3934,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshmode"></a>ServiceMeshMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshmode"></a>ServiceMeshMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>ServiceMeshMode just determines if we enable or disable the service mesh</p>
 </div>
@@ -4357,7 +4417,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webdeprecated"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webdeprecated"></a>WebDeprecated (boolean)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webdeprecated"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webdeprecated"></a>WebDeprecated</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>boolean</em></p>
+</div>
 <div class="paragraph">
 <p>WebDeprecated defines a boolean flag to help distinguish from the newer WebServices</p>
 </div>
@@ -4447,7 +4510,10 @@
 </table>
 </div>
 <div class="sect3">
-<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webmode"></a>WebMode (string)</h4>
+<h4 id="k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webmode"><a class="anchor" href="#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webmode"></a>WebMode</h4>
+<div class="paragraph">
+<p><em>Underlying type:</em> <em>string</em></p>
+</div>
 <div class="paragraph">
 <p>WebMode details the mode of operation of the Clowder Web Provider</p>
 </div>
