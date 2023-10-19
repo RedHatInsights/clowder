@@ -73,7 +73,7 @@ func makeMBOPSecret(p *providers.Provider) error {
 	}
 
 	sec.StringData = map[string]string{
-		"bopurl":      string(envSec.Data["bopurl"]),
+		"bopurl":      "http://127.0.0.1:8090",
 		"keycloakurl": fmt.Sprintf("http://%s-%s.%s.svc:8080", p.Env.GetClowdName(), "keycloak", p.Env.GetClowdNamespace()),
 		"whitelist":   "",
 	}
