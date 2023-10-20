@@ -23,6 +23,8 @@ kind: Deployment
 metadata:
   name: test-ff-local-featureflags
   namespace: test-ff-local
+  labels:
+    service: featureflags
 spec:
   template:
     spec:

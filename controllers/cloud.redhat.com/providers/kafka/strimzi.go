@@ -287,6 +287,15 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		kafLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
 	}
 
+	var klabels apiextensions.JSON
+
+	err = klabels.UnmarshalJSON([]byte(`{
+        "service" : "strimziKafka"
+	}`))
+	if err != nil {
+		return fmt.Errorf("could not unmarshal klabels: %w", err)
+	}
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
 			Config:   &kafConfig,
@@ -296,6 +305,18 @@ func (s *strimziProvider) configureKafkaCluster() error {
 				Requests: &kafRequests,
 				Limits:   &kafLimits,
 			},
+			Template: &strimzi.KafkaSpecKafkaTemplate{
+				PerPodService: &strimzi.KafkaSpecKafkaTemplatePerPodService{
+					Metadata: &strimzi.KafkaSpecKafkaTemplatePerPodServiceMetadata{
+						Labels: &klabels,
+					},
+				},
+				Pod: &strimzi.KafkaSpecKafkaTemplatePod{
+					Metadata: &strimzi.KafkaSpecKafkaTemplatePodMetadata{
+						Labels: &klabels,
+					},
+				},
+			},
 		},
 		Zookeeper: strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
@@ -303,8 +324,27 @@ func (s *strimziProvider) configureKafkaCluster() error {
 				Requests: &zRequests,
 				Limits:   &zLimits,
 			},
+			Template: &strimzi.KafkaSpecZookeeperTemplate{
+				NodesService: &strimzi.KafkaSpecZookeeperTemplateNodesService{
+					Metadata: &strimzi.KafkaSpecZookeeperTemplateNodesServiceMetadata{
+						Labels: &klabels,
+					},
+				},
+				Pod: &strimzi.KafkaSpecZookeeperTemplatePod{
+					Metadata: &strimzi.KafkaSpecZookeeperTemplatePodMetadata{
+						Labels: &klabels,
+					},
+				},
+			},
 		},
 		EntityOperator: &strimzi.KafkaSpecEntityOperator{
+			Template: &strimzi.KafkaSpecEntityOperatorTemplate{
+				Pod: &strimzi.KafkaSpecEntityOperatorTemplatePod{
+					Metadata: &strimzi.KafkaSpecEntityOperatorTemplatePodMetadata{
+						Labels: &klabels,
+					},
+				},
+			},
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
 				Resources: &strimzi.KafkaSpecEntityOperatorTopicOperatorResources{
 					Requests: &entityTopicRequests,

@@ -35,11 +35,34 @@ spec:
         requests:
           cpu: 250m
           memory: 600Mi
+    template:
+      perPodService:
+        metadata:
+          labels:
+            service: strimziKafka
+      pod:
+        metadata:
+          labels:
+            service: strimziKafka
   zookeeper:
     replicas: 1
     storage:
       type: ephemeral
+    template:
+      nodesService:
+        metadata:
+          labels:
+            service: strimziKafka
+      pod:
+        metadata:
+          labels:
+            service: strimziKafka
   entityOperator:
+    template:
+      pod:
+        metadata:
+          labels:
+            service: strimziKafka
     topicOperator: {}
 ---
 apiVersion: kafka.strimzi.io/v1beta2

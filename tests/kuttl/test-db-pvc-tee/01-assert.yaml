@@ -4,6 +4,8 @@ kind: Deployment
 metadata:
   name: app-a-db
   namespace: test-db-pvc-tee
+  labels:
+    service: db
 spec:
   template:
     spec:

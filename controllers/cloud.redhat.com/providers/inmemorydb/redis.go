@@ -97,6 +97,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
+	labels["service"] = "redis"
 	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)
