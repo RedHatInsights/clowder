@@ -26,7 +26,7 @@ import (
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	g "github.com/onsi/gomega"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	//+kubebuilder:scaffold:imports
@@ -47,7 +47,7 @@ var ctx context.Context
 var cancel context.CancelFunc
 
 func TestAPIs(t *testing.T) {
-	RegisterFailHandler(ginkgo.Fail)
+	g.RegisterFailHandler(ginkgo.Fail)
 
 	ginkgo.RunSpecs(t,
 		"Webhook Suite",
@@ -69,21 +69,21 @@ var _ = ginkgo.BeforeSuite(func() {
 	}
 
 	cfg, err := testEnv.Start()
-	Expect(err).NotTo(HaveOccurred())
-	Expect(cfg).NotTo(BeNil())
+	g.Expect(err).NotTo(g.HaveOccurred())
+	g.Expect(cfg).NotTo(g.BeNil())
 
 	scheme := runtime.NewScheme()
 	err = AddToScheme(scheme)
-	Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(g.HaveOccurred())
 
 	err = admissionv1beta1.AddToScheme(scheme)
-	Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(g.HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme})
-	Expect(err).NotTo(HaveOccurred())
-	Expect(k8sClient).NotTo(BeNil())
+	g.Expect(err).NotTo(g.HaveOccurred())
+	g.Expect(k8sClient).NotTo(g.BeNil())
 
 	// start webhook server using Manager
 	webhookInstallOptions := &testEnv.WebhookInstallOptions
@@ -95,31 +95,31 @@ var _ = ginkgo.BeforeSuite(func() {
 		LeaderElection:     false,
 		MetricsBindAddress: "0",
 	})
-	Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(g.HaveOccurred())
 
 	err = (&ClowdApp{}).SetupWebhookWithManager(mgr)
-	Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(g.HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook
 
 	go func() {
 		err = mgr.Start(ctx)
 		if err != nil {
-			Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(g.HaveOccurred())
 		}
 	}()
 
 	// wait for the webhook server to get ready
 	dialer := &net.Dialer{Timeout: time.Second}
 	addrPort := fmt.Sprintf("%s:%d", webhookInstallOptions.LocalServingHost, webhookInstallOptions.LocalServingPort)
-	Eventually(func() error {
+	g.Eventually(func() error {
 		conn, err := tls.DialWithDialer(dialer, "tcp", addrPort, &tls.Config{InsecureSkipVerify: true}) //nolint:gosec
 		if err != nil {
 			return err
 		}
 		conn.Close()
 		return nil
-	}).Should(Succeed())
+	}).Should(g.Succeed())
 
 })
 
@@ -127,5 +127,5 @@ var _ = ginkgo.AfterSuite(func() {
 	cancel()
 	ginkgo.By("tearing down the test environment")
 	err := testEnv.Stop()
-	Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(g.HaveOccurred())
 })
