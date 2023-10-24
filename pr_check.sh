@@ -44,7 +44,7 @@ set -exv
 
 # ------------ DELETE THIS -------------------
 ROOT_DIR=$(pwd)
-$ROOT_DIR/build/${FIX_NAMESPACE_SCRIPT}
+$ROOT_DIR/build/delete_this.py
 # ------------ DELETE THIS -------------------
 
 BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 8`
