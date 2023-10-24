@@ -1,0 +1,43 @@
+name: Base image auto update
+on:
+  schedule:
+    - cron: "5 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up skopeo
+        run: sudo apt-get install -y skopeo    
+      - name: Check ubi8-minimal change
+        run: |
+          UBIVERSION=$(skopeo inspect docker://registry.access.redhat.com/ubi8/ubi-minimal:latest |jq '.Labels.url' |sed 's/"//g' |awk -F/ '{print $NF}')
+          echo "ubiversion=$UBIVERSION" >> "$GITHUB_ENV"
+      - name: Check go-toolset change
+        run: |
+          GOTOOLSETVER=$(skopeo inspect docker://registry.access.redhat.com/ubi8/go-toolset:latest |jq '.Labels.url' |sed 's/"//g' |awk -F/ '{print $NF}')
+          echo "gotoolsetver=$GOTOOLSETVER" >> "$GITHUB_ENV"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.SIGN_KEY }}
+          passphrase: ${{ secrets.SIGN_KEY_PHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: Do change if the version changed
+        run: |
+          git config user.name 'DevProdBot'
+          git config user.email 'platform-developerproductivity@redhat.com>'
+          git checkout -b update
+          sed -i "s/registry.access.redhat.com\/ubi8\/ubi-minimal:[0-9.-]*/registry.access.redhat.com\/ubi8\/ubi-minimal:$ubiversion/" Dockerfile
+          sed -i "s/registry.access.redhat.com\/ubi8\/go-toolset:[0-9.-]*/registry.access.redhat.com\/ubi8\/go-toolset:$gotoolsetver/" Dockerfile.base
+          git add -A
+          git commit -S -m "Update to ubi-minimal or go-toolset image" || echo "No changes to commit"
+          git push -u origin update || git push -f origin update
+      - name: Create pull request
+        run: gh pr create --title 'Regular docker image update' --body 'Automation \o/' --reviewer psav
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
