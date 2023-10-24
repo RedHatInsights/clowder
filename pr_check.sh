@@ -42,11 +42,6 @@ done <<< "$(git log --pretty=format:%s $(git merge-base master HEAD)..HEAD)"
 
 set -exv
 
-# ------------ DELETE THIS -------------------
-ROOT_DIR=$(pwd)
-python3 $ROOT_DIR/build/delete_this.py
-# ------------ DELETE THIS -------------------
-
 BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 8`
 BASE_IMG=quay.io/cloudservices/clowder-base:$BASE_TAG
 
