@@ -501,11 +501,13 @@ type DatabaseConfig struct {
 
 // Dependent service connection info
 type DependencyEndpoint struct {
-	// (DEPRECATED, use apiPaths instead) Defines the API path that this app should serve requests from.
-    ApiPath string `json:"apiPath"`
+	// The top level api path that the app should serve from /api/<apiPath>
+	// (deprecated, use apiPaths)
+	ApiPath string `json:"apiPath"`
 
-	// Defines the list of API paths that this app should serve requests from.
-	ApiPaths []string `json:"apiPaths"`
+	// The list of API paths (each matching format: '/api/some-path/') that this app
+	// will serve requests from
+	ApiPaths []string `json:"apiPaths,omitempty"`
 
 	// The app name of the ClowdApp hosting the service.
 	App string `json:"app"`
