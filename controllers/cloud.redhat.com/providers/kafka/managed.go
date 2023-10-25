@@ -35,19 +35,19 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 
 	var err error
 	var secret *core.Secret
-	var broker []config.BrokerConfig
+	var brokers []config.BrokerConfig
 
 	secret, err = k.getSecret()
 	if err != nil {
 		return err
 	}
 
-	broker, err = k.getBrokerConfig(secret)
+	brokers, err = k.getBrokerConfig(secret)
 	if err != nil {
 		return err
 	}
 
-	k.Config.Kafka = k.getKafkaConfig(broker, app)
+	k.Config.Kafka = k.getKafkaConfig(brokers, app)
 
 	return nil
 }
@@ -69,10 +69,10 @@ func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig
 	)
 }
 
-func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, string, string, error) {
+func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, []string, string, string, error) {
 	port, err := strconv.ParseUint(string(secret.Data["port"]), 10, 16)
 	if err != nil {
-		return 0, "", "", "", "", "", err
+		return 0, "", "", "", []string{}, "", "", err
 	}
 	password := string(secret.Data["password"])
 	username := string(secret.Data["username"])
@@ -85,21 +85,31 @@ func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, stri
 	if val, ok := secret.Data["saslMechanism"]; ok {
 		saslMechanism = string(val)
 	}
-	return int(port), password, username, hostname, cacert, saslMechanism, nil
+	hostnames := []string{}
+	if val, ok := secret.Data["hostnames"]; ok {
+		// 'hostnames' key is expected to be a comma,separated,list of broker hostnames
+		hostnames = strings.Split(string(val), ",")
+	}
+	return int(port), password, username, hostname, hostnames, cacert, saslMechanism, nil
 }
 
 func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) ([]config.BrokerConfig, error) {
 	brokers := []config.BrokerConfig{}
 
-	port, password, username, hostnames, cacert, saslMechanism, err := k.destructureSecret(secret)
+	port, password, username, hostname, hostnames, cacert, saslMechanism, err := k.destructureSecret(secret)
 	if err != nil {
 		return brokers, err
+	}
+
+	if len(hostnames) == 0 {
+		// if there is no 'hostnames' key found, fall back to using 'hostname' key
+		hostnames = append(hostnames, hostname)
 	}
 
 	saslType := config.BrokerConfigAuthtypeSasl
 
 	broker := config.BrokerConfig{}
-	for _, hostname := range strings.Split(hostnames, ",") {
+	for _, hostname := range hostnames {
 		broker.Hostname = string(hostname)
 		broker.Port = &port
 		broker.Authtype = &saslType
@@ -119,9 +129,9 @@ func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) ([]config.Br
 	return brokers, nil
 }
 
-func (k *managedKafkaProvider) getKafkaConfig(broker []config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
+func (k *managedKafkaProvider) getKafkaConfig(brokers []config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
 	kafkaConfig := &config.KafkaConfig{}
-	kafkaConfig.Brokers = broker
+	kafkaConfig.Brokers = brokers
 	kafkaConfig.Topics = []config.TopicConfig{}
 
 	for _, topic := range app.Spec.KafkaTopics {
