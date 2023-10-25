@@ -3,6 +3,7 @@ package kafka
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -34,7 +35,7 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 
 	var err error
 	var secret *core.Secret
-	var broker config.BrokerConfig
+	var broker []config.BrokerConfig
 
 	secret, err = k.getSecret()
 	if err != nil {
@@ -87,36 +88,40 @@ func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, stri
 	return int(port), password, username, hostname, cacert, saslMechanism, nil
 }
 
-func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {
-	broker := config.BrokerConfig{}
+func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) ([]config.BrokerConfig, error) {
+	brokers := []config.BrokerConfig{}
 
-	port, password, username, hostname, cacert, saslMechanism, err := k.destructureSecret(secret)
+	port, password, username, hostnames, cacert, saslMechanism, err := k.destructureSecret(secret)
 	if err != nil {
-		return broker, err
+		return brokers, err
 	}
 
 	saslType := config.BrokerConfigAuthtypeSasl
 
-	broker.Hostname = hostname
-	broker.Port = &port
-	broker.Authtype = &saslType
-	if cacert != "" {
-		broker.Cacert = &cacert
+	broker := config.BrokerConfig{}
+	for _, hostname := range strings.Split(hostnames, ",") {
+		broker.Hostname = string(hostname)
+		broker.Port = &port
+		broker.Authtype = &saslType
+		if cacert != "" {
+			broker.Cacert = &cacert
+		}
+		broker.Sasl = &config.KafkaSASLConfig{
+			Password:         &password,
+			Username:         &username,
+			SecurityProtocol: utils.StringPtr("SASL_SSL"),
+			SaslMechanism:    utils.StringPtr(saslMechanism),
+		}
+		broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
+		brokers = append(brokers, broker)
 	}
-	broker.Sasl = &config.KafkaSASLConfig{
-		Password:         &password,
-		Username:         &username,
-		SecurityProtocol: utils.StringPtr("SASL_SSL"),
-		SaslMechanism:    utils.StringPtr(saslMechanism),
-	}
-	broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
 
-	return broker, nil
+	return brokers, nil
 }
 
-func (k *managedKafkaProvider) getKafkaConfig(broker config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
+func (k *managedKafkaProvider) getKafkaConfig(broker []config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
 	kafkaConfig := &config.KafkaConfig{}
-	kafkaConfig.Brokers = []config.BrokerConfig{broker}
+	kafkaConfig.Brokers = broker
 	kafkaConfig.Topics = []config.TopicConfig{}
 
 	for _, topic := range app.Spec.KafkaTopics {
