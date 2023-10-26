@@ -4,7 +4,7 @@ kind: ClowdEnvironment
 metadata:
   name: test-basic-app
 spec:
-  targetNamespace: test-basic-app
+  targetNamespace: "{{ .Namespace }}"
   providers:
     web:
       port: 8000
@@ -25,9 +25,9 @@ spec:
       mode: none
     pullSecrets:
     - name: test-basic-app
-      namespace: test-basic-app-secret
+      namespace: "{{ .Namespace }}"
     - name: test-basic-app-same-ns
-      namespace: test-basic-app
+      namespace: "{{ .Namespace }}"
   resourceDefaults:
     limits:
       cpu: 400m
@@ -40,7 +40,7 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-basic-app
+  namespace: "{{ .Namespace }}"
 spec:
   envName: test-basic-app
   deployments:
@@ -113,7 +113,7 @@ data:
 kind: Secret
 metadata:
   name: test-basic-app
-  namespace: test-basic-app-secret
+  namespace: "{{ .Namespace }}"
 type: Opaque
 ---
 apiVersion: v1
@@ -126,5 +126,5 @@ data:
 kind: Secret
 metadata:
   name: test-basic-app-same-ns
-  namespace: test-basic-app
+  namespace: "{{ .Namespace }}"
 type: Opaque

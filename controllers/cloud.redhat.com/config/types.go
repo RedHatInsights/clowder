@@ -502,7 +502,7 @@ type DatabaseConfig struct {
 // Dependent service connection info
 type DependencyEndpoint struct {
 	// (DEPRECATED, use apiPaths instead) Defines the API path that this app should serve requests from.
-    ApiPath string `json:"apiPath"`
+	ApiPath string `json:"apiPath"`
 
 	// Defines the list of API paths that this app should serve requests from.
 	ApiPaths []string `json:"apiPaths"`
