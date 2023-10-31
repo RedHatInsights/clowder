@@ -21,5 +21,4 @@ https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/pro
 
 | Value    | Explanation |
 | :------- | ----------- |
-| `"mtls"` |             |
 | `"sasl"` |             |

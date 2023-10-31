@@ -610,7 +610,7 @@ Reference this group by using
 
 ### username
 
-
+Broker SASL username
 
 
 `username`
@@ -626,7 +626,7 @@ Reference this group by using
 
 ### password
 
-
+Broker SASL password
 
 
 `password`
@@ -642,7 +642,7 @@ Reference this group by using
 
 ### securityProtocol
 
-Deprecated: Use the top level securityProtocol field instead
+Broker security protocol. DEPRECATED, use the top level securityProtocol field instead
 
 
 `securityProtocol`
@@ -656,9 +656,18 @@ Deprecated: Use the top level securityProtocol field instead
 
 `string`
 
+#### securityProtocol Constraints
+
+**enum**: the value of this property must be equal to one of the following values:
+
+| Value        | Explanation |
+| :----------- | ----------- |
+| `"SASL_SSL"` |             |
+| `"SSL"`      |             |
+
 ### saslMechanism
 
-
+Broker SASL mechanism
 
 
 `saslMechanism`
@@ -671,6 +680,14 @@ Deprecated: Use the top level securityProtocol field instead
 #### saslMechanism Type
 
 `string`
+
+#### saslMechanism Constraints
+
+**enum**: the value of this property must be equal to one of the following values:
+
+| Value             | Explanation |
+| :---------------- | ----------- |
+| `"SCRAM-SHA-512"` |             |
 
 ## Definitions group BrokerConfig
 
@@ -691,7 +708,7 @@ Reference this group by using
 
 ### hostname
 
-
+Hostname of kafka broker
 
 
 `hostname`
@@ -707,7 +724,7 @@ Reference this group by using
 
 ### port
 
-
+Port of kafka broker
 
 
 `port`
@@ -723,7 +740,7 @@ Reference this group by using
 
 ### cacert
 
-
+CA certificate trust list for broker in PEM format. If absent, client should use OS default trust list
 
 
 `cacert`
@@ -759,7 +776,6 @@ Reference this group by using
 
 | Value    | Explanation |
 | :------- | ----------- |
-| `"mtls"` |             |
 | `"sasl"` |             |
 
 ### sasl
@@ -780,7 +796,7 @@ SASL Configuration for Kafka
 
 ### securityProtocol
 
-
+Broker security procotol
 
 
 `securityProtocol`
@@ -793,6 +809,15 @@ SASL Configuration for Kafka
 #### securityProtocol Type
 
 `string`
+
+#### securityProtocol Constraints
+
+**enum**: the value of this property must be equal to one of the following values:
+
+| Value        | Explanation |
+| :----------- | ----------- |
+| `"SASL_SSL"` |             |
+| `"SSL"`      |             |
 
 ## Definitions group TopicConfig
 
@@ -1438,14 +1463,15 @@ Reference this group by using
 {"$ref":"https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint"}
 ```
 
-| Property                | Type          | Required | Nullable       | Defined by                                                                                                                                                                              |
-| :---------------------- | ------------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name-5)         | `string`      | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
-| [hostname](#hostname-5) | `string`      | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
-| [port](#port-5)         | `integer`     | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
-| [app](#app)             | `string`      | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
-| [tlsPort](#tlsport)     | `integer`     | Optional | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/tlsPort")   |
-| [apiPath](#apipath)     | Not specified | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-apipath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPath")   |
+| Property                | Type      | Required | Nullable       | Defined by                                                                                                                                                                              |
+| :---------------------- | --------- | -------- | -------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name-5)         | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-name.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/name")         |
+| [hostname](#hostname-5) | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/hostname") |
+| [port](#port-5)         | `integer` | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-port.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/port")         |
+| [app](#app)             | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-app.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/app")           |
+| [tlsPort](#tlsport)     | `integer` | Optional | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-tlsport.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/tlsPort")   |
+| [apiPath](#apipath)     | `string`  | Required | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-apipath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPath")   |
+| [apiPaths](#apipaths)   | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-dependencyendpoint-properties-apipaths.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPaths") |
 
 ### name
 
@@ -1529,19 +1555,35 @@ The TLS port of the dependent service.
 
 ### apiPath
 
-The top level api path that the app should serve from /api/<apiPath>
+The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)
 
 
 `apiPath`
 
 -   is required
--   Type: unknown
+-   Type: `string`
 -   cannot be null
 -   defined in: [AppConfig](schema-definitions-dependencyendpoint-properties-apipath.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPath")
 
 #### apiPath Type
 
-unknown
+`string`
+
+### apiPaths
+
+The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from
+
+
+`apiPaths`
+
+-   is optional
+-   Type: `string[]`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-dependencyendpoint-properties-apipaths.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPaths")
+
+#### apiPaths Type
+
+`string[]`
 
 ## Definitions group PrivateDependencyEndpoint
 
