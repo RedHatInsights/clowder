@@ -12,6 +12,11 @@ spec:
         - name: lifecycle-processor
           image: quay.io/psav/clowder-hello
           lifecycle:
+            postStart:
+              exec:
+                command:
+                  - ./clowder-hello
+                  - boo
             preStop:
               httpGet:
                 path: /healthz
