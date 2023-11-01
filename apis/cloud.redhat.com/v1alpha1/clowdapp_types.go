@@ -313,7 +313,7 @@ type PodSpec struct {
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 
 	// A pass-through of Lifecycle specification in standard k8s format
-	Lifecycle *v1.Lifecycle `json:"lifecyle,omitempty"`
+	Lifecycle *v1.Lifecycle `json:"lifecycle,omitempty"`
 
 	// A pass-through of TerminationGracePeriodSeconds specification in standard k8s format
 	// default is 30 seconds

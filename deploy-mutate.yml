@@ -767,7 +767,7 @@ objects:
                                   type: string
                               type: object
                             type: array
-                          lifecyle:
+                          lifecycle:
                             description: A pass-through of Lifecycle specification
                               in standard k8s format
                             properties:
@@ -3619,7 +3619,7 @@ objects:
                                   type: string
                               type: object
                             type: array
-                          lifecyle:
+                          lifecycle:
                             description: A pass-through of Lifecycle specification
                               in standard k8s format
                             properties:
