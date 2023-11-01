@@ -54,11 +54,13 @@
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`
 -   [Untitled array in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets`
 -   [Untitled array in AppConfig](./schema-definitions-appconfig-properties-endpoints.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/endpoints`
+-   [Untitled array in AppConfig](./schema-definitions-dependencyendpoint-properties-apipaths.md "The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPaths`
 -   [Untitled array in AppConfig](./schema-definitions-appconfig-properties-privateendpoints.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints`
 -   [Untitled array in AppConfig](./schema-definitions-appmetadata-properties-deployments.md "Metadata pertaining to an application's deployments") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppMetadata/properties/deployments`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-brokers.md "Defines the brokers the app should connect to for Kafka services") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/brokers`
 -   [Untitled array in AppConfig](./schema-definitions-kafkaconfig-properties-topics.md "Defines a list of the topic configurations available to the application") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaConfig/properties/topics`
 -   [Untitled array in AppConfig](./schema-definitions-objectstoreconfig-properties-buckets.md) – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/ObjectStoreConfig/properties/buckets`
+-   [Untitled array in AppConfig](./schema-definitions-dependencyendpoint-properties-apipaths.md "The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from") – `https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPaths`
 
 ## Version Note
 
