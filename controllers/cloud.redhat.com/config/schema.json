@@ -209,14 +209,12 @@
                     "type": "string"
                 },
                 "securityProtocol": {
-                    "description": "Broker security protocol. DEPRECATED, use the top level securityProtocol field instead",
-                    "type": "string",
-                    "enum": ["SASL_SSL", "SSL"]
+                    "description": "Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead",
+                    "type": "string"
                 },
                 "saslMechanism": {
-                    "description": "Broker SASL mechanism",
-                    "type": "string",
-                    "enum": ["SCRAM-SHA-512"]
+                    "description": "Broker SASL mechanism, expect: SCRAM-SHA-512",
+                    "type": "string"
                 }
             },
             "required": []
@@ -246,9 +244,8 @@
                     "$ref": "#/definitions/KafkaSASLConfig"
                 },
                 "securityProtocol": {
-                    "description": "Broker security procotol",
-                    "type": "string",
-                    "enum": ["SASL_SSL", "SSL"]
+                    "description": "Broker security procotol, expect one of either: SASL_SSL, SSL",
+                    "type": "string"
                 }
             },
             "required": [

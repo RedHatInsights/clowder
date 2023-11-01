@@ -4,7 +4,7 @@
 https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/securityProtocol
 ```
 
-Broker security procotol
+Broker security procotol, expect one of either: SASL_SSL, SSL
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
@@ -14,12 +14,3 @@ Broker security procotol
 ## securityProtocol Type
 
 `string`
-
-## securityProtocol Constraints
-
-**enum**: the value of this property must be equal to one of the following values:
-
-| Value        | Explanation |
-| :----------- | ----------- |
-| `"SASL_SSL"` |             |
-| `"SSL"`      |             |

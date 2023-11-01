@@ -58,7 +58,7 @@ Broker SASL password
 
 ## securityProtocol
 
-Broker security protocol. DEPRECATED, use the top level securityProtocol field instead
+Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead
 
 
 `securityProtocol`
@@ -72,18 +72,9 @@ Broker security protocol. DEPRECATED, use the top level securityProtocol field i
 
 `string`
 
-### securityProtocol Constraints
-
-**enum**: the value of this property must be equal to one of the following values:
-
-| Value        | Explanation |
-| :----------- | ----------- |
-| `"SASL_SSL"` |             |
-| `"SSL"`      |             |
-
 ## saslMechanism
 
-Broker SASL mechanism
+Broker SASL mechanism, expect: SCRAM-SHA-512
 
 
 `saslMechanism`
@@ -96,11 +87,3 @@ Broker SASL mechanism
 ### saslMechanism Type
 
 `string`
-
-### saslMechanism Constraints
-
-**enum**: the value of this property must be equal to one of the following values:
-
-| Value             | Explanation |
-| :---------------- | ----------- |
-| `"SCRAM-SHA-512"` |             |
