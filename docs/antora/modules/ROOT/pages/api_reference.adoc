@@ -23,8 +23,24 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-apipath"]
+==== APIPath
+
+_Underlying type:_ _string_
+
+A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-publicwebservice[$$PublicWebService$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appinfo"]
-==== AppInfo 
+==== AppInfo
+
+
 
 AppInfo details information about a specific app.
 
@@ -41,8 +57,24 @@ AppInfo details information about a specific app.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appprotocol"]
+==== AppProtocol
+
+_Underlying type:_ _string_
+
+AppProtocol is used to define an appProtocol for Istio
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice[$$PrivateWebService$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appresourcestatus"]
-==== AppResourceStatus 
+==== AppResourceStatus
+
+
 
 
 
@@ -60,7 +92,9 @@ AppInfo details information about a specific app.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler"]
-==== AutoScaler 
+==== AutoScaler
+
+
 
 AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting the given deployment.
 
@@ -76,15 +110,17 @@ AutoScaler defines the autoscaling parameters of a KEDA ScaledObject targeting t
 | *`cooldownPeriod`* __integer__ | CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before scaling the deployment down. Default is 5 minutes (300 seconds).
 | *`maxReplicaCount`* __integer__ | MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to. Default is 10.
 | *`minReplicaCount`* __integer__ | MinReplicaCount is the minimum number of replicas the scaler will scale the deployment to.
-| *`advanced`* __AdvancedConfig__ | 
-| *`triggers`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-scaletriggers[$$ScaleTriggers$$] array__ | 
-| *`fallback`* __Fallback__ | 
+| *`advanced`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-advancedconfig[$$AdvancedConfig$$]__ | 
+| *`triggers`* __ScaleTriggers array__ | 
+| *`fallback`* __xref:{anchor_prefix}-github-com-kedacore-keda-v2-apis-keda-v1alpha1-fallback[$$Fallback$$]__ | 
 | *`externalHPA`* __boolean__ | ExternalHPA allows replicas on deployments to be controlled by another resource, but will not be allowed to fall under the minReplicas as set in the ClowdApp.
 |===
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig"]
-==== AutoScalerConfig 
+==== AutoScalerConfig
+
+
 
 AutoScalerConfig configures the Clowder provider controlling the creation of AutoScaler configuration.
 
@@ -96,12 +132,28 @@ AutoScalerConfig configures the Clowder provider controlling the creation of Aut
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __AutoScalerMode__ | Enable the autoscaler feature
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalermode[$$AutoScalerMode$$]__ | Enable the autoscaler feature
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalermode"]
+==== AutoScalerMode
+
+_Underlying type:_ _string_
+
+AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalerconfig[$$AutoScalerConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple"]
-==== AutoScalerSimple 
+==== AutoScalerSimple
+
+
 
 SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by value and utilization thresholds, along with replica count limits
 
@@ -120,7 +172,9 @@ SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by value and 
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapp"]
-==== ClowdApp 
+==== ClowdApp
+
+
 
 ClowdApp is the Schema for the clowdapps API
 
@@ -141,7 +195,9 @@ ClowdApp is the Schema for the clowdapps API
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdapplist"]
-==== ClowdAppList 
+==== ClowdAppList
+
+
 
 ClowdAppList contains a list of ClowdApp
 
@@ -159,7 +215,9 @@ ClowdAppList contains a list of ClowdApp
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappspec"]
-==== ClowdAppSpec 
+==== ClowdAppSpec
+
+
 
 ClowdAppSpec is the main specification for a single Clowder Application it defines n pods along with dependencies that are shared between them.
 
@@ -190,7 +248,9 @@ ClowdAppSpec is the main specification for a single Clowder Application it defin
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironment"]
-==== ClowdEnvironment 
+==== ClowdEnvironment
+
+
 
 ClowdEnvironment is the Schema for the clowdenvironments API
 
@@ -211,7 +271,9 @@ ClowdEnvironment is the Schema for the clowdenvironments API
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentlist"]
-==== ClowdEnvironmentList 
+==== ClowdEnvironmentList
+
+
 
 ClowdEnvironmentList contains a list of ClowdEnvironment
 
@@ -229,7 +291,9 @@ ClowdEnvironmentList contains a list of ClowdEnvironment
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdenvironmentspec"]
-==== ClowdEnvironmentSpec 
+==== ClowdEnvironmentSpec
+
+
 
 ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 
@@ -252,7 +316,9 @@ ClowdEnvironmentSpec defines the desired state of ClowdEnvironment.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation"]
-==== ClowdJobInvocation 
+==== ClowdJobInvocation
+
+
 
 ClowdJobInvocation is the Schema for the jobinvocations API
 
@@ -273,7 +339,9 @@ ClowdJobInvocation is the Schema for the jobinvocations API
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationlist"]
-==== ClowdJobInvocationList 
+==== ClowdJobInvocationList
+
+
 
 ClowdJobInvocationList contains a list of ClowdJobInvocation
 
@@ -291,7 +359,9 @@ ClowdJobInvocationList contains a list of ClowdJobInvocation
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationspec"]
-==== ClowdJobInvocationSpec 
+==== ClowdJobInvocationSpec
+
+
 
 ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 
@@ -312,8 +382,24 @@ ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-configaccessmode"]
+==== ConfigAccessMode
+
+_Underlying type:_ _string_
+
+Describes what amount of app config is mounted to the pod
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec"]
-==== CyndiSpec 
+==== CyndiSpec
+
+
 
 CyndiSpec is used to indicate whether a ClowdApp needs database syndication configured by the cyndi operator and exposes a limited set of cyndi configuration options
 
@@ -333,7 +419,9 @@ CyndiSpec is used to indicate whether a ClowdApp needs database syndication conf
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databaseconfig"]
-==== DatabaseConfig 
+==== DatabaseConfig
+
+
 
 DatabaseConfig configures the Clowder provider controlling the creation of Database instances.
 
@@ -345,14 +433,30 @@ DatabaseConfig configures the Clowder provider controlling the creation of Datab
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __DatabaseMode__ | The mode of operation of the Clowder Database Provider. Valid options are: (*_app-interface_*) where the provider will pass through database credentials found in the secret defined by the database name in the ClowdApp, and (*_local_*) where the provider will spin up a local instance of the database.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasemode[$$DatabaseMode$$]__ | The mode of operation of the Clowder Database Provider. Valid options are: (*_app-interface_*) where the provider will pass through database credentials found in the secret defined by the database name in the ClowdApp, and (*_local_*) where the provider will spin up a local instance of the database.
 | *`caBundleURL`* __string__ | Indicates where Clowder will fetch the database CA certificate bundle from. Currently only used in (*_app-interface_*) mode. If none is specified, the AWS RDS combined CA bundle is used.
 | *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasemode"]
+==== DatabaseMode
+
+_Underlying type:_ _string_
+
+DatabaseMode details the mode of operation of the Clowder Database Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databaseconfig[$$DatabaseConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-databasespec"]
-==== DatabaseSpec 
+==== DatabaseSpec
+
+
 
 DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 
@@ -373,7 +477,9 @@ DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment"]
-==== Deployment 
+==== Deployment
+
+
 
 Deployment defines a service running inside a ClowdApp and will output a deployment resource. Only one container per pod is allowed and this is defined in the PodSpec attribute.
 
@@ -388,10 +494,10 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 | *`name`* __string__ | Name defines the identifier of a Pod inside the ClowdApp. This name will be used along side the name of the ClowdApp itself to form a <app>-<pod> pattern which will be used for all other created resources and also for some labels. It must be unique within a ClowdApp.
 | *`minReplicas`* __integer__ | Deprecated: Use Replicas instead If Replicas is not set and MinReplicas is set, then MinReplicas will be used
 | *`replicas`* __integer__ | Defines the desired replica count for the pod
-| *`web`* __WebDeprecated__ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+| *`web`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webdeprecated[$$WebDeprecated$$]__ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
 | *`webServices`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]__ | 
 | *`podSpec`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec[$$PodSpec$$]__ | PodSpec defines a container running inside a ClowdApp.
-| *`k8sAccessLevel`* __K8sAccessLevel__ | K8sAccessLevel defines the level of access for this deployment
+| *`k8sAccessLevel`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel[$$K8sAccessLevel$$]__ | K8sAccessLevel defines the level of access for this deployment
 | *`autoScaler`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscaler[$$AutoScaler$$]__ | AutoScaler defines the configuration for the Keda auto scaler
 | *`autoScalerSimple`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-autoscalersimple[$$AutoScalerSimple$$]__ | 
 | *`deploymentStrategy`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy[$$DeploymentStrategy$$]__ | DeploymentStrategy allows the deployment strategy to be set only if the deployment has no public service enabled
@@ -401,7 +507,9 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentconfig"]
-==== DeploymentConfig 
+==== DeploymentConfig
+
+
 
 
 
@@ -418,7 +526,9 @@ Deployment defines a service running inside a ClowdApp and will output a deploym
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentinfo"]
-==== DeploymentInfo 
+==== DeploymentInfo
+
+
 
 DeploymentInfo defailts information about a specific deployment.
 
@@ -437,7 +547,9 @@ DeploymentInfo defailts information about a specific deployment.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentmetadata"]
-==== DeploymentMetadata 
+==== DeploymentMetadata
+
+
 
 
 
@@ -454,7 +566,9 @@ DeploymentInfo defailts information about a specific deployment.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deploymentstrategy"]
-==== DeploymentStrategy 
+==== DeploymentStrategy
+
+
 
 
 
@@ -471,7 +585,9 @@ DeploymentInfo defailts information about a specific deployment.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-envresourcestatus"]
-==== EnvResourceStatus 
+==== EnvResourceStatus
+
+
 
 
 
@@ -491,7 +607,9 @@ DeploymentInfo defailts information about a specific deployment.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsconfig"]
-==== FeatureFlagsConfig 
+==== FeatureFlagsConfig
+
+
 
 FeatureFlagsConfig configures the Clowder provider controlling the creation of FeatureFlag instances.
 
@@ -503,7 +621,7 @@ FeatureFlagsConfig configures the Clowder provider controlling the creation of F
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __FeatureFlagsMode__ | The mode of operation of the Clowder FeatureFlag Provider. Valid options are: (*_app-interface_*) where the provider will pass through credentials to the app configuration, and (*_local_*) where a local Unleash instance will be created.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsmode[$$FeatureFlagsMode$$]__ | The mode of operation of the Clowder FeatureFlag Provider. Valid options are: (*_app-interface_*) where the provider will pass through credentials to the app configuration, and (*_local_*) where a local Unleash instance will be created.
 | *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
 | *`credentialRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret containing the client access token, only used for (*_app-interface_*) mode.
 | *`hostname`* __string__ | Defines the hostname for (*_app-interface_*) mode
@@ -511,8 +629,24 @@ FeatureFlagsConfig configures the Clowder provider controlling the creation of F
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsmode"]
+==== FeatureFlagsMode
+
+_Underlying type:_ _string_
+
+FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsconfig[$$FeatureFlagsConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycert"]
-==== GatewayCert 
+==== GatewayCert
+
+
 
 
 
@@ -525,14 +659,30 @@ FeatureFlagsConfig configures the Clowder provider controlling the creation of F
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Determines whether to enable the gateway cert, default is disabled
-| *`certMode`* __GatewayCertMode__ | Determines the mode of certificate generation, either self-signed or acme
+| *`certMode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode[$$GatewayCertMode$$]__ | Determines the mode of certificate generation, either self-signed or acme
 | *`localCAConfigMap`* __string__ | Determines a ConfigMap in the target namespace of the env which has ca.pem detailing the cert to use for mTLS verification
 | *`emailAddress`* __string__ | The email address used to register with Let's Encrypt for acme mode certs
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycertmode"]
+==== GatewayCertMode
+
+_Underlying type:_ _string_
+
+GatewayCertMode details the mode of operation of the Gateway Cert
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-gatewaycert[$$GatewayCert$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig"]
-==== InMemoryDBConfig 
+==== InMemoryDBConfig
+
+
 
 InMemoryDBConfig configures the Clowder provider controlling the creation of InMemoryDB instances.
 
@@ -544,13 +694,29 @@ InMemoryDBConfig configures the Clowder provider controlling the creation of InM
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __InMemoryMode__ | The mode of operation of the Clowder InMemory Provider. Valid options are: (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*) which will search the namespace of the ClowdApp for a secret called 'elasticache'
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorymode[$$InMemoryMode$$]__ | The mode of operation of the Clowder InMemory Provider. Valid options are: (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*) which will search the namespace of the ClowdApp for a secret called 'elasticache'
 | *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorymode"]
+==== InMemoryMode
+
+_Underlying type:_ _string_
+
+InMemoryMode details the mode of operation of the Clowder InMemoryDB Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-inmemorydbconfig[$$InMemoryDBConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-initcontainer"]
-==== InitContainer 
+==== InitContainer
+
+
 
 InitContainer is a struct defining a k8s init container. This will be deployed along with the parent pod and is used to carry out one time initialization procedures.
 
@@ -572,7 +738,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeconfig"]
-==== IqeConfig 
+==== IqeConfig
+
+
 
 
 
@@ -592,7 +760,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqejobspec"]
-==== IqeJobSpec 
+==== IqeJobSpec
+
+
 
 
 
@@ -624,7 +794,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeseleniumspec"]
-==== IqeSeleniumSpec 
+==== IqeSeleniumSpec
+
+
 
 
 
@@ -642,7 +814,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiconfig"]
-==== IqeUIConfig 
+==== IqeUIConfig
+
+
 
 
 
@@ -659,7 +833,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuiseleniumconfig"]
-==== IqeUISeleniumConfig 
+==== IqeUISeleniumConfig
+
+
 
 
 
@@ -678,7 +854,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeuispec"]
-==== IqeUISpec 
+==== IqeUISpec
+
+
 
 
 
@@ -696,7 +874,9 @@ InitContainer is a struct defining a k8s init container. This will be deployed a
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-job"]
-==== Job 
+==== Job
+
+
 
 Job defines a ClowdJob A Job struct will deploy as a CronJob if `schedule` is set and will deploy as a Job if it is not set. Unsupported fields will be dropped from Jobs
 
@@ -724,8 +904,24 @@ Job defines a ClowdJob A Job struct will deploy as a CronJob if `schedule` is se
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobconditionstate"]
+==== JobConditionState
+
+_Underlying type:_ _string_
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocationstatus[$$ClowdJobInvocationStatus$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobtestingspec"]
-==== JobTestingSpec 
+==== JobTestingSpec
+
+
 
 
 
@@ -741,8 +937,25 @@ Job defines a ClowdJob A Job struct will deploy as a CronJob if `schedule` is se
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel"]
+==== K8sAccessLevel
+
+_Underlying type:_ _string_
+
+K8sAccessLevel defines the access level for the deployment, one of 'default', 'view' or 'edit'
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig[$$TestingConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaclusterconfig"]
-==== KafkaClusterConfig 
+==== KafkaClusterConfig
+
+
 
 KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
 
@@ -768,7 +981,9 @@ KafkaClusterConfig defines options related to the Kafka cluster managed/monitore
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaconfig"]
-==== KafkaConfig 
+==== KafkaConfig
+
+
 
 KafkaConfig configures the Clowder provider controlling the creation of Kafka instances.
 
@@ -780,7 +995,7 @@ KafkaConfig configures the Clowder provider controlling the creation of Kafka in
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __KafkaMode__ | The mode of operation of the Clowder Kafka Provider. Valid options are: (*_operator_*) which provisions Strimzi resources and will configure KafkaTopic CRs and place them in the Kafka cluster's namespace described in the configuration, (*_app-interface_*) which simply passes the topic names through to the App's cdappconfig.json and expects app-interface to have created the relevant topics, and (*_local_*) where a small instance of Kafka is created in the desired cluster namespace and configured to auto-create topics.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkamode[$$KafkaMode$$]__ | The mode of operation of the Clowder Kafka Provider. Valid options are: (*_operator_*) which provisions Strimzi resources and will configure KafkaTopic CRs and place them in the Kafka cluster's namespace described in the configuration, (*_app-interface_*) which simply passes the topic names through to the App's cdappconfig.json and expects app-interface to have created the relevant topics, and (*_local_*) where a small instance of Kafka is created in the desired cluster namespace and configured to auto-create topics.
 | *`enableLegacyStrimzi`* __boolean__ | EnableLegacyStrimzi disables TLS + user auth
 | *`pvc`* __boolean__ | If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned Kafka instance to use a PVC instead of emptyDir for its volumes.
 | *`cluster`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaclusterconfig[$$KafkaClusterConfig$$]__ | Defines options related to the Kafka cluster for this environment. Ignored for (*_local_*) mode.
@@ -796,7 +1011,9 @@ KafkaConfig configures the Clowder provider controlling the creation of Kafka in
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaconnectclusterconfig"]
-==== KafkaConnectClusterConfig 
+==== KafkaConnectClusterConfig
+
+
 
 KafkaConnectClusterConfig defines options related to the Kafka Connect cluster managed/monitored by Clowder
 
@@ -817,8 +1034,24 @@ KafkaConnectClusterConfig defines options related to the Kafka Connect cluster m
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkamode"]
+==== KafkaMode
+
+_Underlying type:_ _string_
+
+KafkaMode details the mode of operation of the Clowder Kafka Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaconfig[$$KafkaConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkatopicspec"]
-==== KafkaTopicSpec 
+==== KafkaTopicSpec
+
+
 
 KafkaTopicSpec defines the desired state of KafkaTopic
 
@@ -838,7 +1071,9 @@ KafkaTopicSpec defines the desired state of KafkaTopic
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingconfig"]
-==== LoggingConfig 
+==== LoggingConfig
+
+
 
 LoggingConfig configures the Clowder provider controlling the creation of Logging instances.
 
@@ -850,12 +1085,28 @@ LoggingConfig configures the Clowder provider controlling the creation of Loggin
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __LoggingMode__ | The mode of operation of the Clowder Logging Provider. Valid options are: (*_app-interface_*) where the provider will pass through cloudwatch credentials to the app configuration, and (*_none_*) where no logging will be configured.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingmode[$$LoggingMode$$]__ | The mode of operation of the Clowder Logging Provider. Valid options are: (*_app-interface_*) where the provider will pass through cloudwatch credentials to the app configuration, and (*_none_*) where no logging will be configured.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingmode"]
+==== LoggingMode
+
+_Underlying type:_ _string_
+
+LoggingMode details the mode of operation of the Clowder Logging Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-loggingconfig[$$LoggingConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsconfig"]
-==== MetricsConfig 
+==== MetricsConfig
+
+
 
 MetricsConfig configures the Clowder provider controlling the creation of metrics services and their probes.
 
@@ -869,17 +1120,45 @@ MetricsConfig configures the Clowder provider controlling the creation of metric
 | Field | Description
 | *`port`* __integer__ | The port that metrics services inside ClowdApp pods should be served on.
 | *`path`* __string__ | A prefix path that pods will be instructed to use when setting up their metrics server.
-| *`mode`* __MetricsMode__ | The mode of operation of the Metrics provider. The allowed modes are (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated. (*_app-interface_*) where services and probes are generated for app-interface.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsmode[$$MetricsMode$$]__ | The mode of operation of the Metrics provider. The allowed modes are (*_none_*), which disables metrics service generation, or (*_operator_*) where services and probes are generated. (*_app-interface_*) where services and probes are generated for app-interface.
 | *`prometheus`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-prometheusconfig[$$PrometheusConfig$$]__ | Prometheus specific configuration
 |===
 
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsmode"]
+==== MetricsMode
+
+_Underlying type:_ _string_
+
+MetricsMode details the mode of operation of the Clowder Metrics Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricsconfig[$$MetricsConfig$$]
+****
+
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-metricswebservice"]
+==== MetricsWebService
+
+
+
+MetricsWebService is the definition of the metrics web service. This is automatically enabled and the configuration here at the moment is included for completeness, as there are no configurable options.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices[$$WebServices$$]
+****
 
 
 
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname"]
-==== NamespacedName 
+==== NamespacedName
+
+
 
 NamespacedName type to represent a real Namespaced Name
 
@@ -900,7 +1179,9 @@ NamespacedName type to represent a real Namespaced Name
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoreconfig"]
-==== ObjectStoreConfig 
+==== ObjectStoreConfig
+
+
 
 ObjectStoreConfig configures the Clowder provider controlling the creation of ObjectStore instances.
 
@@ -912,14 +1193,30 @@ ObjectStoreConfig configures the Clowder provider controlling the creation of Ob
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __ObjectStoreMode__ | The mode of operation of the Clowder ObjectStore Provider. Valid options are: (*_app-interface_*) where the provider will pass through Amazon S3 credentials to the app configuration, and (*_minio_*) where a local Minio instance will be created.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode[$$ObjectStoreMode$$]__ | The mode of operation of the Clowder ObjectStore Provider. Valid options are: (*_app-interface_*) where the provider will pass through Amazon S3 credentials to the app configuration, and (*_minio_*) where a local Minio instance will be created.
 | *`suffix`* __string__ | Currently unused.
 | *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode"]
+==== ObjectStoreMode
+
+_Underlying type:_ _string_
+
+ObjectStoreMode details the mode of operation of the Clowder ObjectStore Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoreconfig[$$ObjectStoreConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspec"]
-==== PodSpec 
+==== PodSpec
+
+
 
 PodSpec defines a container running inside a ClowdApp.
 
@@ -952,7 +1249,9 @@ PodSpec defines a container running inside a ClowdApp.
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-podspecmetadata"]
-==== PodspecMetadata 
+==== PodspecMetadata
+
+
 
 Metadata for applying annotations etc to PodSpec
 
@@ -969,7 +1268,9 @@ Metadata for applying annotations etc to PodSpec
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice"]
-==== PrivateWebService 
+==== PrivateWebService
+
+
 
 PrivateWebService is the definition of the private web service. There can be only one private service managed by Clowder.
 
@@ -982,12 +1283,14 @@ PrivateWebService is the definition of the private web service. There can be onl
 |===
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the private service and provide the configuration in the cdappconfig.
-| *`appProtocol`* __AppProtocol__ | AppProtocol determines the protocol to be used for the private port, (defaults to http)
+| *`appProtocol`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-appprotocol[$$AppProtocol$$]__ | AppProtocol determines the protocol to be used for the private port, (defaults to http)
 |===
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-prometheusconfig"]
-==== PrometheusConfig 
+==== PrometheusConfig
+
+
 
 
 
@@ -1005,7 +1308,9 @@ PrivateWebService is the definition of the private web service. There can be onl
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-prometheusstatus"]
-==== PrometheusStatus 
+==== PrometheusStatus
+
+
 
 PrometheusStatus provides info on how to connect to Prometheus
 
@@ -1022,7 +1327,9 @@ PrometheusStatus provides info on how to connect to Prometheus
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-providersconfig"]
-==== ProvidersConfig 
+==== ProvidersConfig
+
+
 
 ProvidersConfig defines a group of providers configuration for a ClowdEnvironment.
 
@@ -1052,7 +1359,9 @@ ProvidersConfig defines a group of providers configuration for a ClowdEnvironmen
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-publicwebservice"]
-==== PublicWebService 
+==== PublicWebService
+
+
 
 PublicWebService is the definition of the public web service. There can be only one public service managed by Clowder.
 
@@ -1066,13 +1375,15 @@ PublicWebService is the definition of the public web service. There can be only 
 | Field | Description
 | *`enabled`* __boolean__ | Enabled describes if Clowder should enable the public service and provide the configuration in the cdappconfig.
 | *`apiPath`* __string__ | (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from.
-| *`apiPaths`* __APIPath array__ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from.
+| *`apiPaths`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-apipath[$$APIPath$$] array__ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from.
 | *`whitelistPaths`* __string array__ | WhitelistPaths define the paths that do not require authentication
 |===
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-serviceconfig"]
-==== ServiceConfig 
+==== ServiceConfig
+
+
 
 ServiceConfig provides options for k8s Service resources
 
@@ -1089,7 +1400,9 @@ ServiceConfig provides options for k8s Service resources
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshconfig"]
-==== ServiceMeshConfig 
+==== ServiceMeshConfig
+
+
 
 ServiceMeshConfig determines if this env should be part of a service mesh and, if enabled, configures the service mesh
 
@@ -1101,12 +1414,28 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`mode`* __ServiceMeshMode__ | 
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshmode[$$ServiceMeshMode$$]__ | 
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshmode"]
+==== ServiceMeshMode
+
+_Underlying type:_ _string_
+
+ServiceMeshMode just determines if we enable or disable the service mesh
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-servicemeshconfig[$$ServiceMeshConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecar"]
-==== Sidecar 
+==== Sidecar
+
+
 
 
 
@@ -1124,7 +1453,9 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecars"]
-==== Sidecars 
+==== Sidecars
+
+
 
 
 
@@ -1141,7 +1472,9 @@ ServiceMeshConfig determines if this env should be part of a service mesh and, i
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalermetric"]
-==== SimpleAutoScalerMetric 
+==== SimpleAutoScalerMetric
+
+
 
 SimpleAutoScalerMetric defines a metric of either a value or utilization
 
@@ -1159,7 +1492,9 @@ SimpleAutoScalerMetric defines a metric of either a value or utilization
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-simpleautoscalerreplicas"]
-==== SimpleAutoScalerReplicas 
+==== SimpleAutoScalerReplicas
+
+
 
 SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the auto scaler
 
@@ -1177,7 +1512,9 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tls"]
-==== TLS 
+==== TLS
+
+
 
 
 
@@ -1196,7 +1533,9 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingconfig"]
-==== TestingConfig 
+==== TestingConfig
+
+
 
 
 
@@ -1209,13 +1548,15 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 |===
 | Field | Description
 | *`iqe`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-iqeconfig[$$IqeConfig$$]__ | Defines the environment for iqe/smoke testing
-| *`k8sAccessLevel`* __K8sAccessLevel__ | The mode of operation of the testing Pod. Valid options are: 'default', 'view' or 'edit'
-| *`configAccess`* __ConfigAccessMode__ | The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted
+| *`k8sAccessLevel`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-k8saccesslevel[$$K8sAccessLevel$$]__ | The mode of operation of the testing Pod. Valid options are: 'default', 'view' or 'edit'
+| *`configAccess`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-configaccessmode[$$ConfigAccessMode$$]__ | The mode of operation for access to outside app configs. Valid options are: (*_none_*) -- no app config is mounted to the pod (*_app_*) -- only the ClowdApp's config is mounted to the pod (*_environment_*) -- the config for all apps in the env are mounted
 |===
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-testingspec"]
-==== TestingSpec 
+==== TestingSpec
+
+
 
 
 
@@ -1232,7 +1573,9 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-tokenrefresherconfig"]
-==== TokenRefresherConfig 
+==== TokenRefresherConfig
+
+
 
 
 
@@ -1249,7 +1592,9 @@ SimpleAutoScalerReplicas defines the minimum and maximum replica counts for the 
 
 
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig"]
-==== WebConfig 
+==== WebConfig
+
+
 
 WebConfig configures the Clowder provider controlling the creation of web services and their probes.
 
@@ -1265,7 +1610,7 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 | *`privatePort`* __integer__ | The private port that web services inside a ClowdApp should be served on.
 | *`aiuthPort`* __integer__ | The auth port that the web local mode will use with the AuthSidecar
 | *`apiPrefix`* __string__ | An api prefix path that pods will be instructed to use when setting up their web server.
-| *`mode`* __WebMode__ | The mode of operation of the Web provider. The allowed modes are (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
+| *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webmode[$$WebMode$$]__ | The mode of operation of the Web provider. The allowed modes are (*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP.
 | *`bopURL`* __string__ | The URL of BOP - only used in (*_none_*/*_operator_*) mode.
 | *`ingressClass`* __string__ | Ingress Class Name used only in (*_local_*) mode.
 | *`keycloakVersion`* __string__ | Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
@@ -1275,8 +1620,24 @@ WebConfig configures the Clowder provider controlling the creation of web servic
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webdeprecated"]
+==== WebDeprecated
+
+_Underlying type:_ _boolean_
+
+WebDeprecated defines a boolean flag to help distinguish from the newer WebServices
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-deployment[$$Deployment$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webimages"]
-==== WebImages 
+==== WebImages
+
+
 
 WebImages defines optional container image overrides for the web provider components
 
@@ -1296,8 +1657,24 @@ WebImages defines optional container image overrides for the web provider compon
 |===
 
 
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webmode"]
+==== WebMode
+
+_Underlying type:_ _string_
+
+WebMode details the mode of operation of the Clowder Web Provider
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webconfig[$$WebConfig$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-webservices"]
-==== WebServices 
+==== WebServices
+
+
 
 WebServices defines the structs for the three exposed web services: public, private and metrics.
 

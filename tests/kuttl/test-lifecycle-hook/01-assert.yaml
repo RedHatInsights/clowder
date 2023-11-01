@@ -1,0 +1,20 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lifecycle-processor
+  namespace: test-lifecycle-hook
+spec:
+  template:
+    spec:
+      serviceAccountName: lifecycle-processor
+      containers:
+        - name: lifecycle-processor
+          image: quay.io/psav/clowder-hello
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /healthz
+                port: 8000
+                scheme: HTTP
+      terminationGracePeriodSeconds: 500
