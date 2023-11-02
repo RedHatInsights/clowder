@@ -610,7 +610,7 @@ Reference this group by using
 
 ### username
 
-
+Broker SASL username
 
 
 `username`
@@ -626,7 +626,7 @@ Reference this group by using
 
 ### password
 
-
+Broker SASL password
 
 
 `password`
@@ -642,7 +642,7 @@ Reference this group by using
 
 ### securityProtocol
 
-Deprecated: Use the top level securityProtocol field instead
+Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead
 
 
 `securityProtocol`
@@ -658,7 +658,7 @@ Deprecated: Use the top level securityProtocol field instead
 
 ### saslMechanism
 
-
+Broker SASL mechanism, expect: SCRAM-SHA-512
 
 
 `saslMechanism`
@@ -691,7 +691,7 @@ Reference this group by using
 
 ### hostname
 
-
+Hostname of kafka broker
 
 
 `hostname`
@@ -707,7 +707,7 @@ Reference this group by using
 
 ### port
 
-
+Port of kafka broker
 
 
 `port`
@@ -723,7 +723,7 @@ Reference this group by using
 
 ### cacert
 
-
+CA certificate trust list for broker in PEM format. If absent, client should use OS default trust list
 
 
 `cacert`
@@ -759,7 +759,6 @@ Reference this group by using
 
 | Value    | Explanation |
 | :------- | ----------- |
-| `"mtls"` |             |
 | `"sasl"` |             |
 
 ### sasl
@@ -780,7 +779,7 @@ SASL Configuration for Kafka
 
 ### securityProtocol
 
-
+Broker security procotol, expect one of either: SASL_SSL, SSL
 
 
 `securityProtocol`

@@ -4,7 +4,7 @@
 https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/saslMechanism
 ```
 
-
+Broker SASL mechanism, expect: SCRAM-SHA-512
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |

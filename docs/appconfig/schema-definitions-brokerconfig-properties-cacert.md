@@ -4,7 +4,7 @@
 https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/BrokerConfig/properties/cacert
 ```
 
-
+CA certificate trust list for broker in PEM format. If absent, client should use OS default trust list
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
