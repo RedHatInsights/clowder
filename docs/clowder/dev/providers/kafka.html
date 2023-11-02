@@ -250,25 +250,6 @@ CR. The CR will be placed in the environment specified in the <code>ClowdEnv</co
 topic name will be modified as described above, to facilitate using the same
 Kafka instance for multiple apps in differing environments.</p>
 </div>
-<div class="paragraph">
-<p>ClowdEnv Config options available:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>clusterName</code></p>
-</li>
-<li>
-<p><code>namespace</code></p>
-</li>
-<li>
-<p><code>connectNamespace</code></p>
-</li>
-<li>
-<p><code>connectClusterName</code></p>
-</li>
-</ul>
-</div>
 </div>
 <div class="sect2">
 <h3 id="_app_interface"><a class="anchor" href="#_app_interface"></a>app-interface</h3>
@@ -276,25 +257,6 @@ Kafka instance for multiple apps in differing environments.</p>
 <p>In app-interface mode, the Clowder operator does not create any resources and
 simply passes through the topic names from the <code>ClowdApp</code> to the client
 config. The topics should be created via the usual app-interface means.</p>
-</div>
-<div class="paragraph">
-<p>ClowdEnv Config options available:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>clusterName</code></p>
-</li>
-<li>
-<p><code>namespace</code></p>
-</li>
-<li>
-<p><code>connectNamespace</code></p>
-</li>
-<li>
-<p><code>connectClusterName</code></p>
-</li>
-</ul>
 </div>
 </div>
 </div>
@@ -314,9 +276,14 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 <div class="paragraph">
 <p>A helper is available below to facilitate quick access via a map.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_authentication_ssl_and_ca_certificates"><a class="anchor" href="#_authentication_ssl_and_ca_certificates"></a>Authentication, SSL, and CA Certificates</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>If a the <code>cacert</code> and <code>securityProtocol</code> fields are populated, then the kafka
-instance will be using TLS and the client should be configured as such</p>
+<p>If the <code>securityProtocol</code> field is populated and its value is "SSL" or
+"SASL_SSL", then the client should use SSL to communicate with the broker.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -332,58 +299,87 @@ stanza.
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>If the <code>cacert</code> field is populated, clients should use this as the CA trust
+list when connecting to the broker. If it is not populated, then the broker&#8217;s
+certificate is expected to be signed using a well-trusted certificate
+authority and clients should use the OS default CA trust list.</p>
+</div>
 <div class="sect2">
-<h3 id="_json_structure"><a class="anchor" href="#_json_structure"></a>JSON structure</h3>
+<h3 id="_example_json_structures"><a class="anchor" href="#_example_json_structures"></a>Example JSON structures</h3>
+<div class="paragraph">
+<p>Broker is using SSL, a custom CA cert, and username/password auth:</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
   "kafka": {
-      "brokers": [
-          {
-              "hostname": "broker-host",
-              "port": 27015,
-              "securityProtocol": "SSL",
-              "cacert": "&lt;some CA string&gt;"
-          }
-      ],
-      "topics": [
-          {
-              "requestedName": "originalName",
-              "name": "someTopic",
-              "consumerGroupName": "someGroupName"
-          }
-      ]
+    "brokers": [
+      {
+        "authtype": "sasl",
+        "cacert": "&lt;CA certs in PEM format&gt;",
+        "hostname": "hostname.kafka.com",
+        "port": 9096,
+        "sasl": {
+          "password": "pw",
+          "saslMechanism": "SCRAM-SHA-512",
+          "securityProtocol": "SASL_SSL",
+          "username": "username"
+        },
+        "securityProtocol": "SASL_SSL"
+      }
+    ],
+    "topics": [
+      {
+        "requestedName": "originalName",
+        "name": "actualTopicName",
+      }
+    ]
   }
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>A User auth enabled Kafka will look like this</p>
+<p>Broker is unsecured (common in ephemeral environments)</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
-  "kafka": {
-      "brokers": [
-          {
-              "hostname": "broker-host",
-              "port": 27015,
-              "authtype": "sasl",
-              "cacert": "-----BEGIN CERTIFICATE-----\nMIIDLTCCAhWgAwIBAgIJAPOWU.........",
-              "sasl":{
-                  "username": "kafkausername",
-                  "password": "kafkapassword",
-                  "securityProtocol": "SASL_SSL"
-              }
-          }
-      ],
-      "topics": [
-          {
-              "requestedName": "originalName",
-              "name": "someTopic",
-              "consumerGroupName": "someGroupName"
-          }
-      ]
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">  "kafka": {
+    "brokers": [
+      {
+        "hostname": "hostname.kafka.com",
+        "port": 9092
+      }
+    ],
+    "topics": [
+      {
+        "requestedName": "originalName",
+        "name": "actualTopicName",
+      }
+    ]
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Broker is using SSL but not SASL, and is signed by a commonly trusted CA (cacert not provided by Clowder)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">  "kafka": {
+    "brokers": [
+      {
+        "hostname": "hostname.kafka.com",
+        "port": 9093,
+        "securityProtocol": "SSL"
+      }
+    ],
+    "topics": [
+      {
+        "requestedName": "originalName",
+        "name": "actualTopicName",
+      }
+    ]
   }
 }</code></pre>
 </div>
@@ -464,24 +460,21 @@ more information can be found in the API reference.</p>
 <h2 id="_cyndi"><a class="anchor" href="#_cyndi"></a>Cyndi</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <strong>Cyndi</strong> attribute of a ClowdApp definition is responsible for ensuring the Cyndi host
-syndication process is in place for the ClowdApp. On Clowder managed environments, the
-provider is also responsible of creating the CyndiPipeline resource, and configuring the underlying
-<code>Kafka Connect</code> so that the data syndication from Host Inventory database to the app&#8217;s database
-works correctly.</p>
-</div>
-<div class="paragraph">
 <p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> is the core component used to perform Inventory’s host database
-syndication for some of the Insights platform applications, and uses an Operator to orchestrate
-the synchronization process.</p>
-</div>
-<div class="paragraph">
-<p>It does so by using a <code>CyndiPipeline</code> resource, which can be created by Clowder, and by injecting
-in the database secrets for both the target db (the application’s) and the host inventory db.</p>
+syndication for some of the Insights platform applications, with the Cyndi operator managing the
+creation of KafkaConnector resources which facilitate the synchronization process via a <code>CyndiPipeline</code>
+resource.</p>
 </div>
 <div class="paragraph">
 <p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> streams table updates to keep data syndicated between the host
-inventory db and the application’s hosts view.</p>
+inventory DB and the application database&#8217;s "hosts" view.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>cyndi</strong> attribute of a ClowdApp definition causes Clowder to ensure that a <code>CyndiPipeline</code> is in
+place for the ClowdApp. In ephemeral environments, Clowder will create the CyndiPipeline resource,
+itself, while in static environments like stage/prod, the CyndiPipeline is expected to already be
+present in the cluster. The ClowdEnvironment configuration controls Clowder&#8217;s behavior in these
+different environments.</p>
 </div>
 <div class="paragraph">
 <p>Please refer to the corresponing projects for more information about the
@@ -491,8 +484,8 @@ itself.</p>
 <div class="sect2">
 <h3 id="_clowdapp_configuration_2"><a class="anchor" href="#_clowdapp_configuration_2"></a>ClowdApp Configuration</h3>
 <div class="paragraph">
-<p>In order to request a <code>ClowdApp</code> to get the host syndication enabled by Cyndi, the <code>Cyndi</code> stanza
-needs to be used. A snippet of how that config would look like follows.</p>
+<p>In order to request a <code>ClowdApp</code> to get the host syndication enabled by Cyndi, the <code>cyndi</code> stanza
+needs to be used. A snippet of how that config would look like follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -520,25 +513,6 @@ cyndi:
 <p><strong>insightsOnly</strong> <code>[bool] default: false</code> - enables the data syndication for all hosts or Insights hosts only.</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_clowdenv_configuration_3"><a class="anchor" href="#_clowdenv_configuration_3"></a>ClowdEnv Configuration</h3>
-<div class="paragraph">
-<p>The <strong>Cyndi</strong> provider will run in one of the two following modes, depending on whether if Clowder
-manages the environment or not;</p>
-</div>
-<div class="paragraph">
-<p>On non-Clowder managed environments (at the time of this writing, Stage and Production) Clowder
-will only check that the CyndiPipeline resource is available for the Clowdapp that is being
-reconciled in case it has the “cyndi” flag enabled in it’s template definition.
-Clowder will not try to create or update any resource related to Cyndi on environments it does not
-manage.</p>
-</div>
-<div class="paragraph">
-<p>On Clowder managed environments (Ephemeral environment) Clowder will configure and deploy Kafka
-using the Strimzi operator and will setup the CyndiPipeline to enable the host syndication process
-for the Clowdapps that require it on their spec files (see <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">Clowder API reference</a>)</p>
 </div>
 </div>
 </div>
