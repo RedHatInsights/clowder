@@ -43,12 +43,6 @@ spec:
     podSpec:
       image: quay.io/psav/clowder-hello
       lifecycle:
-        # postStart:
-        #   exec:
-        #     command:
-        #     - "/bin/sh"
-        #     - "-c"
-        #     - echo "$(date -Iseconds) ...MESSAGE FROM THE POSTSTART HOOK..." > /proc/1/fd/1
         postStart:
           exec:
             command:
