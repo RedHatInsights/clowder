@@ -1241,6 +1241,8 @@ PodSpec defines a container running inside a ClowdApp.
 | *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
 | *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#volume-v1-core[$$Volume$$] array__ | A pass-through of a list of Volumes in standa k8s format.
 | *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
+| *`lifecycle`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#lifecycle-v1-core[$$Lifecycle$$]__ | A pass-through of Lifecycle specification in standard k8s format
+| *`terminationGracePeriodSeconds`* __integer__ | A pass-through of TerminationGracePeriodSeconds specification in standard k8s format default is 30 seconds
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecar[$$Sidecar$$] array__ | Lists the expected side cars, will be validated in the validating webhook
 | *`machinePool`* __string__ | MachinePool allows the pod to be scheduled to a particular machine pool.
 |===
