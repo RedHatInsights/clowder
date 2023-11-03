@@ -2,16 +2,12 @@ package kafka
 
 import (
 	"fmt"
-	"strconv"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type managedKafkaProvider struct {
@@ -36,12 +32,12 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 	var secret *core.Secret
 	var broker config.BrokerConfig
 
-	secret, err = k.getSecret()
+	secret, err = getSecret(k)
 	if err != nil {
 		return err
 	}
 
-	broker, err = k.getBrokerConfig(secret)
+	broker, err = getBrokerConfig(secret)
 	if err != nil {
 		return err
 	}
@@ -68,52 +64,6 @@ func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig
 	)
 }
 
-func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, string, string, error) {
-	port, err := strconv.ParseUint(string(secret.Data["port"]), 10, 16)
-	if err != nil {
-		return 0, "", "", "", "", "", err
-	}
-	password := string(secret.Data["password"])
-	username := string(secret.Data["username"])
-	hostname := string(secret.Data["hostname"])
-	cacert := ""
-	if val, ok := secret.Data["cacert"]; ok {
-		cacert = string(val)
-	}
-	saslMechanism := "PLAIN"
-	if val, ok := secret.Data["saslMechanism"]; ok {
-		saslMechanism = string(val)
-	}
-	return int(port), password, username, hostname, cacert, saslMechanism, nil
-}
-
-func (k *managedKafkaProvider) getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {
-	broker := config.BrokerConfig{}
-
-	port, password, username, hostname, cacert, saslMechanism, err := k.destructureSecret(secret)
-	if err != nil {
-		return broker, err
-	}
-
-	saslType := config.BrokerConfigAuthtypeSasl
-
-	broker.Hostname = hostname
-	broker.Port = &port
-	broker.Authtype = &saslType
-	if cacert != "" {
-		broker.Cacert = &cacert
-	}
-	broker.Sasl = &config.KafkaSASLConfig{
-		Password:         &password,
-		Username:         &username,
-		SecurityProtocol: utils.StringPtr("SASL_SSL"),
-		SaslMechanism:    utils.StringPtr(saslMechanism),
-	}
-	broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
-
-	return broker, nil
-}
-
 func (k *managedKafkaProvider) getKafkaConfig(broker config.BrokerConfig, app *crd.ClowdApp) *config.KafkaConfig {
 	kafkaConfig := &config.KafkaConfig{}
 	kafkaConfig.Brokers = []config.BrokerConfig{broker}
@@ -125,31 +75,4 @@ func (k *managedKafkaProvider) getKafkaConfig(broker config.BrokerConfig, app *c
 
 	return kafkaConfig
 
-}
-
-func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
-	secretRef, err := k.getSecretRef()
-	if err != nil {
-		return nil, err
-	}
-
-	secret := &core.Secret{}
-
-	if err = k.Client.Get(k.Ctx, secretRef, secret); err != nil {
-		return nil, err
-	}
-
-	return secret, nil
-}
-
-func (k *managedKafkaProvider) getSecretRef() (types.NamespacedName, error) {
-	secretRef := types.NamespacedName{
-		Name:      k.Env.Spec.Providers.Kafka.ManagedSecretRef.Name,
-		Namespace: k.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
-	}
-	nullName := types.NamespacedName{}
-	if secretRef == nullName {
-		return nullName, errors.NewClowderError("no secret ref defined for managed Kafka")
-	}
-	return secretRef, nil
 }

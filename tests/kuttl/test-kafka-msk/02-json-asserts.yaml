@@ -1,0 +1,10 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect -o json > /tmp/test-kafka-msk-user
+- script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert -o json > /tmp/test-kafka-msk-cluster-ca-cert
+
+- script: sh create_json.sh
+- script: kubectl apply -f /tmp/managed-secret.yaml -n test-kafka-msk

@@ -286,7 +286,7 @@ function install_keda_operator {
     fi
 
     echo "*** Applying keda-operator manifest ..."
-    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v2.10.1/keda-2.10.1.yaml
+    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml --server-side
 
     echo "*** Will wait for keda-operator to come up in background"
     ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[keda-operator] /" &
