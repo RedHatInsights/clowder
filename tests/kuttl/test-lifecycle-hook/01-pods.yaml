@@ -53,3 +53,15 @@ spec:
             port: 8000
             path: /healthz
       terminationGracePeriodSeconds: 500
+  - name: processor-no-termination-period
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 8000
+            path: /healthz
+  - name: processor-only-termination-period
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      terminationGracePeriodSeconds: 29

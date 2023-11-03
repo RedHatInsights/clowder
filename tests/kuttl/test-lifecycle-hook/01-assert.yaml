@@ -23,3 +23,37 @@ spec:
                 port: 8000
                 scheme: HTTP
       terminationGracePeriodSeconds: 500
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lifecycle-processor-no-termination-period
+  namespace: test-lifecycle-hook
+spec:
+  template:
+    spec:
+      serviceAccountName: lifecycle-processor-no-termination-period
+      containers:
+        - name: lifecycle-processor-no-termination-period
+          image: quay.io/psav/clowder-hello
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /healthz
+                port: 8000
+                scheme: HTTP
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lifecycle-processor-only-termination-period
+  namespace: test-lifecycle-hook
+spec:
+  template:
+    spec:
+      serviceAccountName: lifecycle-processor-only-termination-period
+      containers:
+        - name: lifecycle-processor-only-termination-period
+          image: quay.io/psav/clowder-hello
+      terminationGracePeriodSeconds: 29
