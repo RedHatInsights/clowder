@@ -312,6 +312,13 @@ type PodSpec struct {
 	// A pass-through of a list of VolumesMounts in standa k8s format.
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 
+	// A pass-through of Lifecycle specification in standard k8s format
+	Lifecycle *v1.Lifecycle `json:"lifecycle,omitempty"`
+
+	// A pass-through of TerminationGracePeriodSeconds specification in standard k8s format
+	// default is 30 seconds
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+
 	// Lists the expected side cars, will be validated in the validating webhook
 	Sidecars []Sidecar `json:"sidecars,omitempty"`
 

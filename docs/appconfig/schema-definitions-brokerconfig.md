@@ -28,7 +28,7 @@ Broker Configuration
 
 ## hostname
 
-
+Hostname of kafka broker
 
 
 `hostname`
@@ -44,7 +44,7 @@ Broker Configuration
 
 ## port
 
-
+Port of kafka broker
 
 
 `port`
@@ -60,7 +60,7 @@ Broker Configuration
 
 ## cacert
 
-
+CA certificate trust list for broker in PEM format. If absent, client should use OS default trust list
 
 
 `cacert`
@@ -96,7 +96,6 @@ Broker Configuration
 
 | Value    | Explanation |
 | :------- | ----------- |
-| `"mtls"` |             |
 | `"sasl"` |             |
 
 ## sasl
@@ -117,7 +116,7 @@ SASL Configuration for Kafka
 
 ## securityProtocol
 
-
+Broker security procotol, expect one of either: SASL_SSL, SSL
 
 
 `securityProtocol`

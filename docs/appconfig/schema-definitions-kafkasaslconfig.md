@@ -26,7 +26,7 @@ SASL Configuration for Kafka
 
 ## username
 
-
+Broker SASL username
 
 
 `username`
@@ -42,7 +42,7 @@ SASL Configuration for Kafka
 
 ## password
 
-
+Broker SASL password
 
 
 `password`
@@ -58,7 +58,7 @@ SASL Configuration for Kafka
 
 ## securityProtocol
 
-Deprecated: Use the top level securityProtocol field instead
+Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead
 
 
 `securityProtocol`
@@ -74,7 +74,7 @@ Deprecated: Use the top level securityProtocol field instead
 
 ## saslMechanism
 
-
+Broker SASL mechanism, expect: SCRAM-SHA-512
 
 
 `saslMechanism`

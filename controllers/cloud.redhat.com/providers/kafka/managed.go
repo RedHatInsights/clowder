@@ -7,12 +7,9 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type managedKafkaProvider struct {
@@ -37,12 +34,13 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 	var secret *core.Secret
 	var brokers []config.BrokerConfig
 
-	secret, err = k.getSecret()
+	secret, err = getSecret(k)
 	if err != nil {
 		return err
 	}
 
 	brokers, err = k.getBrokerConfig(secret)
+
 	if err != nil {
 		return err
 	}
@@ -140,31 +138,4 @@ func (k *managedKafkaProvider) getKafkaConfig(brokers []config.BrokerConfig, app
 
 	return kafkaConfig
 
-}
-
-func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
-	secretRef, err := k.getSecretRef()
-	if err != nil {
-		return nil, err
-	}
-
-	secret := &core.Secret{}
-
-	if err = k.Client.Get(k.Ctx, secretRef, secret); err != nil {
-		return nil, err
-	}
-
-	return secret, nil
-}
-
-func (k *managedKafkaProvider) getSecretRef() (types.NamespacedName, error) {
-	secretRef := types.NamespacedName{
-		Name:      k.Env.Spec.Providers.Kafka.ManagedSecretRef.Name,
-		Namespace: k.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
-	}
-	nullName := types.NamespacedName{}
-	if secretRef == nullName {
-		return nullName, errors.NewClowderError("no secret ref defined for managed Kafka")
-	}
-	return secretRef, nil
 }

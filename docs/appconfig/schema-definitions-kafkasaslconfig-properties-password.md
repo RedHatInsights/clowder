@@ -4,7 +4,7 @@
 https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/KafkaSASLConfig/properties/password
 ```
 
-
+Broker SASL password
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |

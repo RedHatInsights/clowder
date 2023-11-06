@@ -1,0 +1,45 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-kafka-msk
+status:
+  ready: true
+  conditions:
+  - status: "True"
+    type: DeploymentsReady
+  - status: "False"
+    type: ReconciliationFailed
+  - status: "True"
+    type: ReconciliationSuccessful
+
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-kafka-msk
+status:
+  conditions:
+  - status: "True"
+    type: DeploymentsReady
+  - status: "False"
+    type: ReconciliationFailed
+  - status: "True"
+    type: ReconciliationSuccessful
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: strimzi-topic-operator
+  namespace: test-kafka-msk
+  labels:
+    app: strimzi
+status:
+  conditions:
+  - reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing

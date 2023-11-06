@@ -391,7 +391,6 @@ func (j *BrokerConfigAuthtype) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-const BrokerConfigAuthtypeMtls BrokerConfigAuthtype = "mtls"
 const BrokerConfigAuthtypeSasl BrokerConfigAuthtype = "sasl"
 
 // Cloud Watch configuration
@@ -414,19 +413,20 @@ type BrokerConfig struct {
 	// Authtype corresponds to the JSON schema field "authtype".
 	Authtype *BrokerConfigAuthtype `json:"authtype,omitempty"`
 
-	// Cacert corresponds to the JSON schema field "cacert".
+	// CA certificate trust list for broker in PEM format. If absent, client should
+	// use OS default trust list
 	Cacert *string `json:"cacert,omitempty"`
 
-	// Hostname corresponds to the JSON schema field "hostname".
+	// Hostname of kafka broker
 	Hostname string `json:"hostname"`
 
-	// Port corresponds to the JSON schema field "port".
+	// Port of kafka broker
 	Port *int `json:"port,omitempty"`
 
 	// Sasl corresponds to the JSON schema field "sasl".
 	Sasl *KafkaSASLConfig `json:"sasl,omitempty"`
 
-	// SecurityProtocol corresponds to the JSON schema field "securityProtocol".
+	// Broker security procotol, expect one of either: SASL_SSL, SSL
 	SecurityProtocol *string `json:"securityProtocol,omitempty"`
 }
 
@@ -501,11 +501,13 @@ type DatabaseConfig struct {
 
 // Dependent service connection info
 type DependencyEndpoint struct {
-	// (DEPRECATED, use apiPaths instead) Defines the API path that this app should serve requests from.
-    ApiPath string `json:"apiPath"`
+	// The top level api path that the app should serve from /api/<apiPath>
+	// (deprecated, use apiPaths)
+	ApiPath string `json:"apiPath"`
 
-	// Defines the list of API paths that this app should serve requests from.
-	ApiPaths []string `json:"apiPaths"`
+	// The list of API paths (each matching format: '/api/some-path/') that this app
+	// will serve requests from
+	ApiPaths []string `json:"apiPaths,omitempty"`
 
 	// The app name of the ClowdApp hosting the service.
 	App string `json:"app"`
@@ -581,16 +583,17 @@ type KafkaConfig struct {
 
 // SASL Configuration for Kafka
 type KafkaSASLConfig struct {
-	// Password corresponds to the JSON schema field "password".
+	// Broker SASL password
 	Password *string `json:"password,omitempty"`
 
-	// SaslMechanism corresponds to the JSON schema field "saslMechanism".
+	// Broker SASL mechanism, expect: SCRAM-SHA-512
 	SaslMechanism *string `json:"saslMechanism,omitempty"`
 
-	// Deprecated: Use the top level securityProtocol field instead
+	// Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use
+	// the top level securityProtocol field instead
 	SecurityProtocol *string `json:"securityProtocol,omitempty"`
 
-	// Username corresponds to the JSON schema field "username".
+	// Broker SASL username
 	Username *string `json:"username,omitempty"`
 }
 
@@ -676,7 +679,6 @@ type TopicConfig struct {
 }
 
 var enumValues_BrokerConfigAuthtype = []interface{}{
-	"mtls",
 	"sasl",
 }
 var enumValues_FeatureFlagsConfigScheme = []interface{}{

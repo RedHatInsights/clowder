@@ -1,0 +1,26 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: test-kafka-msk
+  namespace: test-kafka-msk
+status:
+  conditions:
+  - reason: ZooKeeperStorage
+    status: "True"
+    type: Warning
+  - reason: KafkaStorage
+    status: "True"
+    type: Warning
+  - status: "True"
+    type: Ready
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  labels:
+    strimzi.io/cluster: test-kafka-msk
+  name: test-kafka-msk-connect
+  namespace: test-kafka-msk
+status:
+  username: test-kafka-msk-connect

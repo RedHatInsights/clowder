@@ -238,6 +238,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		TerminationMessagePath:   TerminationLogPath,
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
+		Lifecycle:                pod.Lifecycle,
 	}
 
 	setLivenessProbe(&pod, deployment, env, &c)
@@ -269,6 +270,8 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	d.Spec.Template.Spec.InitContainers = ics
+
+	d.Spec.Template.Spec.TerminationGracePeriodSeconds = pod.TerminationGracePeriodSeconds
 
 	d.Spec.Template.Spec.Volumes = pod.Volumes
 	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{

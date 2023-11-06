@@ -1002,6 +1002,8 @@ KafkaConfig configures the Clowder provider controlling the creation of Kafka in
 | *`connect`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-kafkaconnectclusterconfig[$$KafkaConnectClusterConfig$$]__ | Defines options related to the Kafka Connect cluster for this environment. Ignored for (*_local_*) mode.
 | *`managedSecretRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret reference for the Managed Kafka mode. Only used in (*_managed_*) mode.
 | *`managedPrefix`* __string__ | Managed topic prefix for the managed cluster. Only used in (*_managed_*) mode.
+| *`topicNamespace`* __string__ | Namespace that kafkaTopics should be written to for (*_msk_*) mode.
+| *`clusterAnnotation`* __string__ | Cluster annotation identifier for (*_msk_*) mode.
 | *`clusterName`* __string__ | (Deprecated) Defines the cluster name to be used by the Kafka Provider this will be used in some modes to locate the Kafka instance.
 | *`namespace`* __string__ | (Deprecated) The Namespace the cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
 | *`connectNamespace`* __string__ | (Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
@@ -1241,6 +1243,8 @@ PodSpec defines a container running inside a ClowdApp.
 | *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#probe-v1-core[$$Probe$$]__ | A pass-through of a Readiness Probe specification in standard k8s format. If omitted, a standard probe will be setup point to the webPort defined in the ClowdEnvironment and a path of /healthz. Ignored if Web is set to false.
 | *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#volume-v1-core[$$Volume$$] array__ | A pass-through of a list of Volumes in standa k8s format.
 | *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#volumemount-v1-core[$$VolumeMount$$] array__ | A pass-through of a list of VolumesMounts in standa k8s format.
+| *`lifecycle`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#lifecycle-v1-core[$$Lifecycle$$]__ | A pass-through of Lifecycle specification in standard k8s format
+| *`terminationGracePeriodSeconds`* __integer__ | A pass-through of TerminationGracePeriodSeconds specification in standard k8s format default is 30 seconds
 | *`sidecars`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-sidecar[$$Sidecar$$] array__ | Lists the expected side cars, will be validated in the validating webhook
 | *`machinePool`* __string__ | MachinePool allows the pod to be scheduled to a particular machine pool.
 |===

@@ -1,10 +1,10 @@
-# Untitled undefined type in AppConfig Schema
+# Untitled string in AppConfig Schema
 
 ```txt
 https://cloud.redhat.com/schemas/clowder-appconfig#/definitions/DependencyEndpoint/properties/apiPath
 ```
 
-The top level api path that the app should serve from /api/<apiPath>
+The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)
 
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
@@ -13,4 +13,4 @@ The top level api path that the app should serve from /api/<apiPath>
 
 ## apiPath Type
 
-unknown
+`string`
