@@ -2,23 +2,36 @@
 
 set -exv
 
-DOCKER_CONF="$PWD/.docker"
-mkdir -p "$DOCKER_CONF"
-docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
+source <(curl -sSL "https://raw.githubusercontent.com/RedHatInsights/cicd-tools/main/src/bootstrap.sh") image_builder
 
-RESPONSE=$( \
-    curl -Ls -H "Authorization: Bearer $QUAY_API_TOKEN" \
-    "https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/?specificTag=$BASE_TAG" \
-)
+tag_exists() {
 
-echo "received HTTP response: $RESPONSE"
+  local tag="$1"
+  local response valid_tags_length
 
-# find all non-expired tags
-VALID_TAGS_LENGTH=$(echo $RESPONSE | jq '[ .tags[] | select(.end_ts == null) ] | length')
+  response=$(curl -sSL \
+    "https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/?specificTag=${tag}&onlyActiveTags=true")
+
+  echo "received HTTP response: ${response}"
+
+  # find all non-expired tags
+  valid_tags_length=$(jq '.tags | length' <<<"$response")
+
+  # Check if Clowder's base image tag already exists
+  [[ "$valid_tags_length" -ge 1 ]]
+}
+
+get_base_tag() {
+  cat go.mod go.sum Dockerfile.base | sha256sum | head -c 8
+}
+
+export CICD_IMAGE_BUILDER_IMAGE_NAME="quay.io/cloudservices/clowder-base"
+export CICD_IMAGE_BUILDER_IMAGE_TAG=$(get_base_tag)
+export CICD_IMAGE_BUILDER_CONTAINERFILE_PATH="Dockerfile.base"
 
 # Check if Clowder's base image tag already exists
-if [[ "$VALID_TAGS_LENGTH" -eq 0 ]]; then
-    BASE_IMG=$BASE_IMG make docker-build-and-push-base
+if ! tag_exists "$CICD_IMAGE_BUILDER_IMAGE_TAG"; then
+  cicd::image_builder::build_and_push
 else
-    echo "Base image has already been built, Quay image push skipped."
+  echo "Base image has already been built, Quay image push skipped."
 fi
