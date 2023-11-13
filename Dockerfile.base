@@ -3,8 +3,8 @@ FROM registry.access.redhat.com/ubi8/go-toolset:1.19.13-2.1697656138 as builder
 USER 0
 RUN dnf install -y openssh-clients git make which jq python3
 
-COPY build/pr_check_inner.sh .
-RUN chmod 775 pr_check_inner.sh
+COPY ci/minikube_e2e_tests_inner.sh .
+RUN chmod 775 minikube_e2e_tests_inner.sh
 
 WORKDIR /workspace
 
