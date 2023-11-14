@@ -57,33 +57,12 @@ build_main_image() {
   export CICD_IMAGE_BUILDER_IMAGE_NAME="quay.io/cloudservices/clowder"
   export CICD_IMAGE_BUILDER_IMAGE_TAG=$(git rev-parse --short=8 HEAD)
 
-  local security_compliance_tag="sc-$(date +%Y%m%d)-$(git rev-parse --short=8 HEAD)"
-
   # If the "security-compliance" branch is used for the build, it will tag the image as such.
-  if [[ $GIT_BRANCH == *"security-compliance"* ]]; then
-    export CICD_IMAGE_BUILDER_ADDITIONAL_TAGS=("$security_compliance_tag")
+  if [[ "$GIT_BRANCH" == "origin/security-compliance" ]]; then
+    CICD_IMAGE_BUILDER_IMAGE_TAG="sc-$(date +%Y%m%d)-${CICD_IMAGE_BUILDER_IMAGE_TAG}"
   fi
 
-  if ! cicd::image_builder::build --platform 'linux/arm64' --platform 'linux/amd64'; then
-    cicd::log::error "Error building image for platform $platform"
-    return 1
-  fi
-#  for platform in 'linux/amd64' 'linux/arm64'; do
-#    if ! cicd::image_builder::build --platform "$platform"; then
-#      cicd::log::error "Error building image for platform $platform"
-#      return 1
-#    fi
-#  done
-
-  local full_image_name="$(cicd::image_builder::get_full_image_name)"
-  local manifests=("$full_image_name" "${full_image_name}-amd64" "${full_image_name}-arm64")
-
-  cicd::container::cmd manifest create "${manifests[@]}"
-
-  if ! cicd::image_builder::local_build; then
-    cicd::image_builder::push
-    cicd::container::cmd manifest push "$full_image_name"
-  fi
+  cicd::image_builder::build_and_push
 }
 
 BASE_IMAGE_FILES=("go.mod" "go.sum" "Dockerfile.base")
