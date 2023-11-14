@@ -2,54 +2,109 @@
 
 set -exv
 
-IMAGE="quay.io/cloudservices/clowder"
-IMAGE_TAG=$(git rev-parse --short=8 HEAD)
-SECURITY_COMPLIANCE_TAG="sc-$(date +%Y%m%d)-$(git rev-parse --short=8 HEAD)"
+CICD_BOOTSTRAP_URL='https://raw.githubusercontent.com/RedHatInsights/cicd-tools/main/src/bootstrap.sh'
+source <(curl -sSL "$CICD_BOOTSTRAP_URL") image_builder
 
-if [[ -z "$QUAY_USER" || -z "$QUAY_TOKEN" ]]; then
-    echo "QUAY_USER and QUAY_TOKEN must be set"
+get_base_image_tag() {
+
+  local tag
+
+  tag=$(cat "${BASE_IMAGE_FILES[@]}" | sha256sum | head -c 8)
+
+  if ! _base_image_files_unchanged; then
+    CICD_IMAGE_BUILDER_IMAGE_TAG="$tag"
+    tag=$(cicd::image_builder::get_image_tag)
+  fi
+
+  echo -n "$tag"
+}
+
+base_image_tag_exists() {
+
+  local tag="$1"
+  local repository="cloudservices/clowder-base"
+
+  #response=$(curl -Ls -H "Authorization: Bearer $QUAY_API_TOKEN" \
+  #      "https://quay.io/api/v1/repository/${repository}/tag/?specificTag=$tag&onlyActiveTags=true")
+  response=$(curl -sSL \
+    "https://quay.io/api/v1/repository/${repository}/tag/?specificTag=${tag}&onlyActiveTags=true")
+
+  echo "received HTTP response: ${response}"
+
+  # find all non-expired tags
+  [[ 1 -eq $(jq '.tags | length' <<<"$response") ]]
+}
+
+build_base_image() {
+
+  export CICD_IMAGE_BUILDER_IMAGE_NAME="$BASE_IMAGE_NAME"
+  export CICD_IMAGE_BUILDER_IMAGE_TAG="$BASE_IMAGE_TAG"
+  export CICD_IMAGE_BUILDER_CONTAINERFILE_PATH="Dockerfile.base"
+
+  cicd::image_builder::build_and_push
+}
+
+_base_image_files_unchanged() {
+
+  local target_branch=${ghprbTargetBranch:-master}
+
+  git diff --quiet "${BASE_IMAGE_FILES[@]}" "$target_branch"
+}
+
+build_main_image() {
+
+  export CICD_IMAGE_BUILDER_BUILD_ARGS=("BASE_IMAGE=${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG}")
+  export CICD_IMAGE_BUILDER_IMAGE_NAME="quay.io/cloudservices/clowder"
+  export CICD_IMAGE_BUILDER_IMAGE_TAG=$(git rev-parse --short=8 HEAD)
+
+  local security_compliance_tag="sc-$(date +%Y%m%d)-$(git rev-parse --short=8 HEAD)"
+
+  # If the "security-compliance" branch is used for the build, it will tag the image as such.
+  if [[ $GIT_BRANCH == *"security-compliance"* ]]; then
+    export CICD_IMAGE_BUILDER_ADDITIONAL_TAGS=("$security_compliance_tag")
+  fi
+
+  if ! cicd::image_builder::build --platform 'linux/arm64' --platform 'linux/amd64'; then
+    cicd::log::error "Error building image for platform $platform"
+    return 1
+  fi
+#  for platform in 'linux/amd64' 'linux/arm64'; do
+#    if ! cicd::image_builder::build --platform "$platform"; then
+#      cicd::log::error "Error building image for platform $platform"
+#      return 1
+#    fi
+#  done
+
+  local full_image_name="$(cicd::image_builder::get_full_image_name)"
+  local manifests=("$full_image_name" "${full_image_name}-amd64" "${full_image_name}-arm64")
+
+  cicd::container::cmd manifest create "${manifests[@]}"
+
+  if ! cicd::image_builder::local_build; then
+    cicd::image_builder::push
+    cicd::container::cmd manifest push "$full_image_name"
+  fi
+}
+
+BASE_IMAGE_FILES=("go.mod" "go.sum" "Dockerfile.base")
+BASE_IMAGE_NAME='quay.io/cloudservices/clowder-base'
+BASE_IMAGE_TAG=$(get_base_image_tag)
+
+if base_image_tag_exists "$BASE_IMAGE_TAG"; then
+  echo "Base image exists, skipping..."
+else
+  if ! build_base_image; then
+    echo "Error building base image!"
     exit 1
+  fi
 fi
 
-if [[ -z "$RH_REGISTRY_USER" || -z "$RH_REGISTRY_TOKEN" ]]; then
-    echo "RH_REGISTRY_USER and RH_REGISTRY_TOKEN  must be set"
-    exit 1
+if ! make update-version; then
+  echo "Error updating version!"
+  exit 1
 fi
 
-BASE_TAG=`cat go.mod go.sum Dockerfile.base | sha256sum  | head -c 8`
-BASE_IMG=quay.io/cloudservices/clowder-base:$BASE_TAG
-
-DOCKER_CONF="$PWD/.docker"
-mkdir -p "$DOCKER_CONF"
-docker --config="$DOCKER_CONF" login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
-docker --config="$DOCKER_CONF" login -u="$RH_REGISTRY_USER" -p="$RH_REGISTRY_TOKEN" registry.redhat.io
-
-RESPONSE=$( \
-        curl -Ls -H "Authorization: Bearer $QUAY_API_TOKEN" \
-        "https://quay.io/api/v1/repository/cloudservices/clowder-base/tag/?specificTag=$BASE_TAG" \
-    )
-
-echo "received HTTP response: $RESPONSE"
-
-# find all non-expired tags
-VALID_TAGS_LENGTH=$(echo $RESPONSE | jq '[ .tags[] | select(.end_ts == null) ] | length')
-
-if [[ "$VALID_TAGS_LENGTH" -eq 0 ]]; then
-    docker --config="$DOCKER_CONF" build -f Dockerfile.base . -t "$BASE_IMG"
-	docker --config="$DOCKER_CONF" push "$BASE_IMG"
+if ! build_main_image; then
+  echo "Error building image!"
+  exit 1
 fi
-
-# If the "security-compliance" branch is used for the build, it will tag the image as such.
-if [[ "$GIT_BRANCH" == "origin/security-compliance" ]]; then
-    IMAGE_TAG="$SECURITY_COMPLIANCE_TAG"
-fi
-
-make update-version
-docker --config="$DOCKER_CONF"  build  --platform linux/amd64 --build-arg BASE_IMAGE="$BASE_IMG" -t "${IMAGE}:${IMAGE_TAG}-amd64" --push .
-docker --config="$DOCKER_CONF"  build  --platform linux/arm64 --build-arg BASE_IMAGE="$BASE_IMG" -t "${IMAGE}:${IMAGE_TAG}-arm64" --push .
-
-docker --config="$DOCKER_CONF" manifest create "${IMAGE}:${IMAGE_TAG}" \
-    "${IMAGE}:${IMAGE_TAG}-amd64" \
-    "${IMAGE}:${IMAGE_TAG}-arm64"
-
-docker --config="$DOCKER_CONF" manifest push "${IMAGE}:${IMAGE_TAG}"
