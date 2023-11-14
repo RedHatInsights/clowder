@@ -3,6 +3,7 @@
 set -exv
 
 CICD_BOOTSTRAP_URL='https://raw.githubusercontent.com/RedHatInsights/cicd-tools/main/src/bootstrap.sh'
+# shellcheck source=/dev/null
 source <(curl -sSL "$CICD_BOOTSTRAP_URL") image_builder
 
 get_base_image_tag() {
@@ -24,8 +25,6 @@ base_image_tag_exists() {
   local tag="$1"
   local repository="cloudservices/clowder-base"
 
-  #response=$(curl -Ls -H "Authorization: Bearer $QUAY_API_TOKEN" \
-  #      "https://quay.io/api/v1/repository/${repository}/tag/?specificTag=$tag&onlyActiveTags=true")
   response=$(curl -sSL \
     "https://quay.io/api/v1/repository/${repository}/tag/?specificTag=${tag}&onlyActiveTags=true")
 
@@ -55,12 +54,14 @@ build_main_image() {
 
   export CICD_IMAGE_BUILDER_BUILD_ARGS=("BASE_IMAGE=${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG}")
   export CICD_IMAGE_BUILDER_IMAGE_NAME="quay.io/cloudservices/clowder"
-  export CICD_IMAGE_BUILDER_IMAGE_TAG=$(git rev-parse --short=8 HEAD)
+  CICD_IMAGE_BUILDER_IMAGE_TAG=$(git rev-parse --short=8 HEAD)
 
   # If the "security-compliance" branch is used for the build, it will tag the image as such.
   if [[ "$GIT_BRANCH" == "origin/security-compliance" ]]; then
     CICD_IMAGE_BUILDER_IMAGE_TAG="sc-$(date +%Y%m%d)-${CICD_IMAGE_BUILDER_IMAGE_TAG}"
   fi
+
+  export CICD_IMAGE_BUILDER_IMAGE_TAG
 
   cicd::image_builder::build_and_push
 }
