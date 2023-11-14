@@ -72,7 +72,7 @@ func (s *mskProvider) EnvProvide() error {
 func (s *mskProvider) copyManagedSecret(namespace string) error {
 	srcSecretRef := types.NamespacedName{
 		Name:      s.Env.Spec.Providers.Kafka.ManagedSecretRef.Name,
-		Namespace: s.Env.Status.TargetNamespace,
+		Namespace: s.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
 	}
 	dstSecretRef := types.NamespacedName{
 		Name:      srcSecretRef.Name,
