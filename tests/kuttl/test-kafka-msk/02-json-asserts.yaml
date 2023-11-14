@@ -7,4 +7,7 @@ commands:
 - script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert -o json > /tmp/test-kafka-msk-cluster-ca-cert
 
 - script: sh create_json.sh
-- script: kubectl apply -f /tmp/managed-secret.yaml -n test-kafka-msk
+- script: sh create_certs.sh
+- script: kubectl apply -f /tmp/managed-secret.yaml -n test-kafka-msk-sec-source
+- script: kubectl apply -f /tmp/test-kafka-msk-ca-cert.yaml -n test-kafka-msk-sec-source
+- script: kubectl apply -f /tmp/test-kafka-msk-connect-user.yaml -n test-kafka-msk-sec-source

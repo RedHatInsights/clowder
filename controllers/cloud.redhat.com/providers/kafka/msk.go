@@ -12,6 +12,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	core "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -52,64 +53,105 @@ func (s *mskProvider) EnvProvide() error {
 		return err
 	}
 
-	namespaceList, err := s.Env.GetNamespacesInEnv(s.Ctx, s.Client)
-	if err != nil {
-		return err
-	}
-
-	for _, namespace := range namespaceList {
-		if err := s.copyManagedSecret(namespace); err != nil {
-			return err
-		}
-		if err := s.copyConnectSecret(namespace); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *mskProvider) copyManagedSecret(namespace string) error {
-	srcSecretRef := types.NamespacedName{
+	dest := crd.NamespacedName{
 		Name:      s.Env.Spec.Providers.Kafka.ManagedSecretRef.Name,
-		Namespace: s.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
+		Namespace: s.Env.Spec.TargetNamespace,
 	}
-	dstSecretRef := types.NamespacedName{
-		Name:      srcSecretRef.Name,
-		Namespace: namespace,
-	}
-	sec, err := utils.CopySecret(s.Ctx, s.Client, srcSecretRef, dstSecretRef)
 
-	if err != nil {
+	if _, err := s.copyGenericSecret(s.Env, s.Env.Spec.Providers.Kafka.ManagedSecretRef, dest, KafkaManagedSecret); err != nil {
 		return err
 	}
 
-	if err = s.Cache.Create(KafkaManagedSecret, dstSecretRef, sec); err != nil {
-		s.Log.Error(err, "Failed to add managed secret to cache")
+	if err := s.createConnectSecret(); err != nil {
 		return err
 	}
+
+	kafkaCASecName := crd.NamespacedName{
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
+		Namespace: getKafkaNamespace(s.Env),
+	}
+
+	dest = crd.NamespacedName{
+		Name:      fmt.Sprintf("%s-cluster-ca-cert", getKafkaName(s.Env)),
+		Namespace: s.Env.Spec.TargetNamespace,
+	}
+
+	if _, err := s.copyGenericSecret(s.Env, kafkaCASecName, dest, KafkaManagedSecret); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (s *mskProvider) copyConnectSecret(namespace string) error {
+func (s *mskProvider) copyGenericSecret(obj object.ClowdObject, source, dest crd.NamespacedName, destIdent rc.ResourceIdent) (bool, error) {
+	if source.Namespace == dest.Namespace {
+		return true, nil
+	}
+	sourcePullSecObj := &core.Secret{}
+	if err := s.Client.Get(s.Ctx, types.NamespacedName{
+		Name:      source.Name,
+		Namespace: source.Namespace,
+	}, sourcePullSecObj); err != nil {
+		return false, err
+	}
+
+	newPullSecObj := &core.Secret{}
+
+	newSecNN := types.NamespacedName{
+		Name:      dest.Name,
+		Namespace: dest.Namespace,
+	}
+
+	if err := s.Cache.Create(destIdent, newSecNN, newPullSecObj); err != nil {
+		return false, err
+	}
+
+	newPullSecObj.Data = sourcePullSecObj.Data
+	newPullSecObj.Type = sourcePullSecObj.Type
+
+	labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, obj)
+	labeler(newPullSecObj)
+
+	newPullSecObj.Name = newSecNN.Name
+	newPullSecObj.Namespace = newSecNN.Namespace
+
+	if err := s.Cache.Update(destIdent, newPullSecObj); err != nil {
+		return false, err
+	}
+	return false, nil
+}
+
+func (s *mskProvider) createConnectSecret() error {
 	secName := s.getConnectClusterUserName()
 
-	srcSecretRef := types.NamespacedName{
+	newPullSecObj := &core.Secret{}
+
+	newSecNN := types.NamespacedName{
 		Name:      secName,
-		Namespace: s.Env.Spec.Providers.Kafka.ManagedSecretRef.Namespace,
-	}
-	dstSecretRef := types.NamespacedName{
-		Name:      secName,
-		Namespace: namespace,
+		Namespace: s.Env.Status.TargetNamespace,
 	}
 
-	sec, err := utils.CopySecret(s.Ctx, s.Client, srcSecretRef, dstSecretRef)
-	if err != nil {
+	if err := s.Cache.Create(KafkaConnectSecret, newSecNN, newPullSecObj); err != nil {
 		return err
 	}
 
-	if err = s.Cache.Create(KafkaConnectSecret, dstSecretRef, sec); err != nil {
-		s.Log.Error(err, "Failed to add managed secret to cache")
+	newPullSecObj.StringData = map[string]string{
+		"password": *s.Config.Kafka.Brokers[0].Sasl.Password,
+		"sasl.jaas.config": fmt.Sprintf(
+			"org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";",
+			*s.Config.Kafka.Brokers[0].Sasl.Username,
+			*s.Config.Kafka.Brokers[0].Sasl.Password,
+		),
+	}
+	newPullSecObj.Type = core.SecretTypeOpaque
+
+	labeler := utils.GetCustomLabeler(map[string]string{}, newSecNN, s.Env)
+	labeler(newPullSecObj)
+
+	newPullSecObj.Name = newSecNN.Name
+	newPullSecObj.Namespace = newSecNN.Namespace
+
+	if err := s.Cache.Update(KafkaConnectSecret, newPullSecObj); err != nil {
 		return err
 	}
 	return nil

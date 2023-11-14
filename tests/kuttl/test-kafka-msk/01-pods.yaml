@@ -14,14 +14,6 @@ spec:
         requests:
           cpu: 50m
           memory: 50Mi
-    topicOperator:
-      resources:
-        limits:
-          cpu: 200m
-          memory: 500Mi
-        requests:
-          cpu: 50m
-          memory: 250Mi
     userOperator:
       resources:
         limits:
@@ -294,7 +286,7 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: strimzi-topic-operator
-  namespace: test-kafka-msk
+  namespace: test-kafka-msk-sec-source
   labels:
     app: strimzi
 ---
@@ -336,6 +328,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: strimzi-topic-operator
+    namespace: test-kafka-msk-sec-source
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
