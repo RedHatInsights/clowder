@@ -39,6 +39,10 @@ func joinNullableSlice(s *[]string) string {
 
 func updateEnvVars(existingEnvVars []core.EnvVar, newEnvVars []core.EnvVar) []core.EnvVar {
 	for _, newEnvVar := range newEnvVars {
+		if newEnvVar.Value == "" {
+			// do not update value of an env var if the new value is empty
+			continue
+		}
 		replaced := false
 		for idx, existingEnvVar := range existingEnvVars {
 			if existingEnvVar.Name == newEnvVar.Name {
@@ -56,12 +60,13 @@ func updateEnvVars(existingEnvVars []core.EnvVar, newEnvVars []core.EnvVar) []co
 }
 
 func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp) *core.Container {
-	// create env vars
+	// iqePlugins comes from ClowdApp spec unless overridden
 	iqePlugins := app.Spec.Testing.IqePlugin
 	if cji.Spec.Testing.Iqe.IqePlugins != "" {
 		iqePlugins = cji.Spec.Testing.Iqe.IqePlugins
 	}
 
+	// default log level is "info" unless overridden
 	logLevel := cji.Spec.Testing.Iqe.LogLevel
 	if cji.Spec.Testing.Iqe.LogLevel == "" {
 		logLevel = "info"

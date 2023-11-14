@@ -72,13 +72,15 @@ spec:
   testing:
     iqe:
       imageTag: latest
-      plugins: "some,different,plugins"
       env:
       - name: SOME_ENV_VAR
         value: some_value
       # test env var override behavior using IQE_LOG_LEVEL
       - name: IQE_LOG_LEVEL
         value: warning
+      # ensure that this does not override plugin defined on the ClowdApp
+      - name: IQE_PLUGINS
+        value: ""
       ui:
         enabled: false
       marker: "smoke"
