@@ -230,7 +230,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 
 func (web *localWebProvider) populateCA() error {
 	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/openshift-service-ca.crt")
+		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
 	}
 	return nil
 }
