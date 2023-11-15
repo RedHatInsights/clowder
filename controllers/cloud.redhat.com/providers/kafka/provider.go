@@ -23,7 +23,7 @@ import (
 
 type providerInterface interface {
 	providers.RootProvider
-	KafkaTopicName(topic crd.KafkaTopicSpec, namespace string) string
+	KafkaTopicName(topic crd.KafkaTopicSpec, namespace ...string) (string, error)
 	KafkaName() string
 	KafkaNamespace() string
 	getConnectClusterUserName() string
@@ -135,7 +135,11 @@ func processTopics(s providerInterface, app *crd.ClowdApp) error {
 	for _, topic := range app.Spec.KafkaTopics {
 		k := &strimzi.KafkaTopic{}
 
-		topicName := s.KafkaTopicName(topic, app.Namespace)
+		topicName, err := s.KafkaTopicName(topic, app.Namespace)
+		if err != nil {
+			return err
+		}
+
 		knn := types.NamespacedName{
 			Namespace: s.KafkaNamespace(),
 			Name:      topicName,
@@ -160,9 +164,7 @@ func processTopics(s providerInterface, app *crd.ClowdApp) error {
 
 		k.Spec = &strimzi.KafkaTopicSpec{}
 
-		err := processTopicValues(k, s.GetEnv(), appList, topic)
-
-		if err != nil {
+		if err := processTopicValues(k, s.GetEnv(), appList, topic); err != nil {
 			return err
 		}
 
@@ -430,37 +432,46 @@ func getSecret(s providers.RootProvider) (*core.Secret, error) {
 	return secret, nil
 }
 
-func getBrokerConfig(secret *core.Secret) (config.BrokerConfig, error) {
-	broker := config.BrokerConfig{}
+func getBrokerConfig(secret *core.Secret) ([]config.BrokerConfig, error) {
+	brokers := []config.BrokerConfig{}
 
-	port, password, username, hostname, cacert, saslMechanism, err := destructureSecret(secret)
+	port, password, username, hostname, hostnames, cacert, saslMechanism, err := destructureSecret(secret)
 	if err != nil {
-		return broker, err
+		return brokers, err
+	}
+
+	if len(hostnames) == 0 {
+		// if there is no 'hostnames' key found, fall back to using 'hostname' key
+		hostnames = append(hostnames, hostname)
 	}
 
 	saslType := config.BrokerConfigAuthtypeSasl
 
-	broker.Hostname = hostname
-	broker.Port = &port
-	broker.Authtype = &saslType
-	if cacert != "" {
-		broker.Cacert = &cacert
+	for _, hostname := range hostnames {
+		broker := config.BrokerConfig{}
+		broker.Hostname = hostname
+		broker.Port = &port
+		broker.Authtype = &saslType
+		if cacert != "" {
+			broker.Cacert = &cacert
+		}
+		broker.Sasl = &config.KafkaSASLConfig{
+			Password:         &password,
+			Username:         &username,
+			SecurityProtocol: utils.StringPtr("SASL_SSL"),
+			SaslMechanism:    utils.StringPtr(saslMechanism),
+		}
+		broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
+		brokers = append(brokers, broker)
 	}
-	broker.Sasl = &config.KafkaSASLConfig{
-		Password:         &password,
-		Username:         &username,
-		SecurityProtocol: utils.StringPtr("SASL_SSL"),
-		SaslMechanism:    utils.StringPtr(saslMechanism),
-	}
-	broker.SecurityProtocol = utils.StringPtr("SASL_SSL")
 
-	return broker, nil
+	return brokers, nil
 }
 
-func destructureSecret(secret *core.Secret) (int, string, string, string, string, string, error) {
+func destructureSecret(secret *core.Secret) (int, string, string, string, []string, string, string, error) {
 	port, err := strconv.ParseUint(string(secret.Data["port"]), 10, 16)
 	if err != nil {
-		return 0, "", "", "", "", "", err
+		return 0, "", "", "", []string{}, "", "", err
 	}
 	password := string(secret.Data["password"])
 	username := string(secret.Data["username"])
@@ -473,5 +484,11 @@ func destructureSecret(secret *core.Secret) (int, string, string, string, string
 	if val, ok := secret.Data["saslMechanism"]; ok {
 		saslMechanism = string(val)
 	}
-	return int(port), password, username, hostname, cacert, saslMechanism, nil
+
+	hostnames := []string{}
+	if val, ok := secret.Data["hostnames"]; ok {
+		// 'hostnames' key is expected to be a comma,separated,list of broker hostnames
+		hostnames = strings.Split(string(val), ",")
+	}
+	return int(port), password, username, hostname, hostnames, cacert, saslMechanism, nil
 }

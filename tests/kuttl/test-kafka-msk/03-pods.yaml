@@ -113,7 +113,7 @@ spec:
             failureThreshold: 3
           env:
             - name: STRIMZI_NAMESPACE
-              value: test-kafka-msk
+              value: test-kafka-msk-sec-source
             - name: STRIMZI_RESOURCE_LABELS
               value: strimzi.io/cluster=test-kafka-msk
             - name: STRIMZI_KAFKA_BOOTSTRAP_SERVERS

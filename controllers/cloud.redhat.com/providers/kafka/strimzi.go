@@ -829,7 +829,10 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	all := strimzi.KafkaUserSpecAuthorizationAclsElemOperationAll
 
 	for _, topic := range app.Spec.KafkaTopics {
-		topicName := s.KafkaTopicName(topic, app.Namespace)
+		topicName, err := s.KafkaTopicName(topic, app.Namespace)
+		if err != nil {
+			return err
+		}
 
 		ku.Spec.Authorization.Acls = append(ku.Spec.Authorization.Acls, strimzi.KafkaUserSpecAuthorizationAclsElem{
 			Host:      &address,
@@ -856,11 +859,14 @@ func (s *strimziProvider) createKafkaUser(app *crd.ClowdApp) error {
 	return s.Cache.Update(KafkaUser, ku)
 }
 
-func (s *strimziProvider) KafkaTopicName(topic crd.KafkaTopicSpec, namespace string) string {
+func (s *strimziProvider) KafkaTopicName(topic crd.KafkaTopicSpec, namespace ...string) (string, error) {
 	if clowderconfig.LoadedConfig.Features.UseComplexStrimziTopicNames {
-		return fmt.Sprintf("%s-%s-%s", topic.TopicName, s.GetEnv().Name, namespace)
+		if len(namespace) == 0 {
+			return "", fmt.Errorf("no namespace passed to topic name call")
+		}
+		return fmt.Sprintf("%s-%s-%s", topic.TopicName, s.GetEnv().Name, namespace[0]), nil
 	}
-	return topic.TopicName
+	return topic.TopicName, nil
 }
 
 func (s *strimziProvider) KafkaName() string {

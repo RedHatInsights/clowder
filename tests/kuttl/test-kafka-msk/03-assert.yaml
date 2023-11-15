@@ -43,3 +43,13 @@ status:
   - reason: NewReplicaSetAvailable
     status: "True"
     type: Progressing
+---
+kind: KafkaTopic
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: test-kafka-msk-topic-one
+  namespace: test-kafka-msk-sec-source
+status:
+  conditions:
+  - status: "True"
+    type: Ready
