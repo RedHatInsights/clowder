@@ -20,6 +20,7 @@ spec:
         namespace: test-kafka-msk-sec-source
       clusterAnnotation: test-kafka-msk
       topicNamespace: test-kafka-msk-sec-source
+      kafkaConnectReplicaCount: 1
     db:
       mode: none
     logging:
