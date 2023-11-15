@@ -9,7 +9,6 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
@@ -218,9 +217,9 @@ func (s mskProvider) connectConfig(config *apiextensions.JSON) error {
 	return config.UnmarshalJSON(byteData)
 }
 
-func (s *mskProvider) getKafkaConfig(broker config.BrokerConfig) *config.KafkaConfig {
+func (s *mskProvider) getKafkaConfig(brokers []config.BrokerConfig) *config.KafkaConfig {
 	kafkaConfig := &config.KafkaConfig{}
-	kafkaConfig.Brokers = []config.BrokerConfig{broker}
+	kafkaConfig.Brokers = brokers
 	kafkaConfig.Topics = []config.TopicConfig{}
 
 	return kafkaConfig
@@ -230,19 +229,19 @@ func (s *mskProvider) getKafkaConfig(broker config.BrokerConfig) *config.KafkaCo
 func (s *mskProvider) configureListeners() error {
 	var err error
 	var secret *core.Secret
-	var broker config.BrokerConfig
+	var brokers []config.BrokerConfig
 
 	secret, err = getSecret(s)
 	if err != nil {
 		return err
 	}
 
-	broker, err = getBrokerConfig(secret)
+	brokers, err = getBrokerConfig(secret)
 	if err != nil {
 		return err
 	}
 
-	s.Config.Kafka = s.getKafkaConfig(broker)
+	s.Config.Kafka = s.getKafkaConfig(brokers)
 
 	return nil
 }
@@ -275,11 +274,8 @@ func (s *mskProvider) getConnectClusterUserName() string {
 	return *s.Config.Kafka.Brokers[0].Sasl.Username
 }
 
-func (s *mskProvider) KafkaTopicName(topic crd.KafkaTopicSpec, namespace string) string {
-	if clowderconfig.LoadedConfig.Features.UseComplexStrimziTopicNames {
-		return fmt.Sprintf("%s-%s-%s", topic.TopicName, s.Env.Name, namespace)
-	}
-	return topic.TopicName
+func (s *mskProvider) KafkaTopicName(topic crd.KafkaTopicSpec, _ ...string) (string, error) {
+	return fmt.Sprintf("%s-%s", s.Env.Name, topic.TopicName), nil
 }
 
 func (s *mskProvider) KafkaName() string {
