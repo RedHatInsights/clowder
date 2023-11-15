@@ -275,6 +275,9 @@ type KafkaConfig struct {
 
 	// (Deprecated) (Unused)
 	Suffix string `json:"suffix,omitempty"`
+
+	// Sets the replica count for ephem-msk mode for kafka connect
+	KafkaConnectReplicaCount int `json:"kafkaConnectReplicaCount,omitempty"`
 }
 
 // DatabaseMode details the mode of operation of the Clowder Database Provider
