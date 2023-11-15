@@ -1009,6 +1009,7 @@ KafkaConfig configures the Clowder provider controlling the creation of Kafka in
 | *`connectNamespace`* __string__ | (Deprecated) The namespace that the Kafka Connect cluster is expected to reside in. This is only used in (*_app-interface_*) and (*_operator_*) modes.
 | *`connectClusterName`* __string__ | (Deprecated) Defines the kafka connect cluster name that is used in this environment.
 | *`suffix`* __string__ | (Deprecated) (Unused)
+| *`kafkaConnectReplicaCount`* __integer__ | Sets the replica count for ephem-msk mode for kafka connect
 |===
 
 

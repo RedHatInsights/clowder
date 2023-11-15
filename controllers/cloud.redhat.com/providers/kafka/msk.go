@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -199,14 +200,19 @@ type genericConfig map[string]string
 
 func (s mskProvider) connectConfig(config *apiextensions.JSON) error {
 
+	replicas := 3
+	if s.Env.Spec.Providers.Kafka.KafkaConnectReplicaCount != 0 {
+		replicas = s.Env.Spec.Providers.Kafka.KafkaConnectReplicaCount
+	}
+
 	connectConfig := genericConfig{
-		"config.storage.replication.factor":       "1",
+		"config.storage.replication.factor":       strconv.Itoa(replicas),
 		"config.storage.topic":                    fmt.Sprintf("%v-connect-cluster-configs", s.Env.Name),
 		"connector.client.config.override.policy": "All",
 		"group.id":                          "connect-cluster",
-		"offset.storage.replication.factor": "1",
+		"offset.storage.replication.factor": strconv.Itoa(replicas),
 		"offset.storage.topic":              fmt.Sprintf("%v-connect-cluster-offsets", s.Env.Name),
-		"status.storage.replication.factor": "1",
+		"status.storage.replication.factor": strconv.Itoa(replicas),
 		"status.storage.topic":              fmt.Sprintf("%v-connect-cluster-status", s.Env.Name),
 	}
 
