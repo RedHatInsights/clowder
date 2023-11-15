@@ -4,7 +4,7 @@ kind: ClowdEnvironment
 metadata:
   name: test-kafka-msk
 spec:
-  targetNamespace: test-kafka-msk
+  targetNamespace: test-kafka-msk-env
   providers:
     web:
       port: 8000
@@ -17,8 +17,9 @@ spec:
       mode: ephem-msk
       managedSecretRef:
         name: managed-secret
-        namespace: test-kafka-msk
+        namespace: test-kafka-msk-sec-source
       clusterAnnotation: test-kafka-msk
+      topicNamespace: test-kafka-msk-sec-source
     db:
       mode: none
     logging:
@@ -41,7 +42,7 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-kafka-msk
+  namespace: test-kafka-msk-env
 spec:
   envName: test-kafka-msk
   deployments:
@@ -60,7 +61,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: strimzi-topic-operator
-  namespace: test-kafka-msk
+  namespace: test-kafka-msk-sec-source
   labels:
     app: strimzi
 spec:
@@ -112,10 +113,7 @@ spec:
             failureThreshold: 3
           env:
             - name: STRIMZI_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.namespace
+              value: test-kafka-msk
             - name: STRIMZI_RESOURCE_LABELS
               value: strimzi.io/cluster=test-kafka-msk
             - name: STRIMZI_KAFKA_BOOTSTRAP_SERVERS

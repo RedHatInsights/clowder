@@ -18,7 +18,7 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-kafka-msk
+  namespace: test-kafka-msk-env
 status:
   conditions:
   - status: "True"
@@ -32,7 +32,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: strimzi-topic-operator
-  namespace: test-kafka-msk
+  namespace: test-kafka-msk-sec-source
   labels:
     app: strimzi
 status:
