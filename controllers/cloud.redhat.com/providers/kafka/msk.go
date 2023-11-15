@@ -200,13 +200,13 @@ type genericConfig map[string]string
 func (s mskProvider) connectConfig(config *apiextensions.JSON) error {
 
 	connectConfig := genericConfig{
-		"config.storage.replication.factor":       "1",
+		"config.storage.replication.factor":       "3",
 		"config.storage.topic":                    fmt.Sprintf("%v-connect-cluster-configs", s.Env.Name),
 		"connector.client.config.override.policy": "All",
 		"group.id":                          "connect-cluster",
-		"offset.storage.replication.factor": "1",
+		"offset.storage.replication.factor": "3",
 		"offset.storage.topic":              fmt.Sprintf("%v-connect-cluster-offsets", s.Env.Name),
-		"status.storage.replication.factor": "1",
+		"status.storage.replication.factor": "3",
 		"status.storage.topic":              fmt.Sprintf("%v-connect-cluster-status", s.Env.Name),
 	}
 
