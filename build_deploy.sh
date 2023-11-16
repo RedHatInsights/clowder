@@ -12,7 +12,7 @@ get_base_image_tag() {
 
   tag=$(cat "${BASE_IMAGE_FILES[@]}" | sha256sum | head -c 8)
 
-  if ! _base_image_files_unchanged; then
+  if _base_image_files_changed; then
     CICD_IMAGE_BUILDER_IMAGE_TAG="$tag"
     tag=$(cicd::image_builder::get_image_tag)
   fi
@@ -43,11 +43,11 @@ build_base_image() {
   cicd::image_builder::build_and_push
 }
 
-_base_image_files_unchanged() {
+_base_image_files_changed() {
 
   local target_branch=${ghprbTargetBranch:-master}
 
-  git diff --quiet "${BASE_IMAGE_FILES[@]}" "$target_branch"
+  ! git diff --quiet "$target_branch" -- "${BASE_IMAGE_FILES[@]}"
 }
 
 build_main_image() {
