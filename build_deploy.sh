@@ -47,6 +47,7 @@ _base_image_files_changed() {
 
   local target_branch=${ghprbTargetBranch:-master}
 
+  # Use git to check for any non staged differences in the Base Image files
   ! git diff --quiet "$target_branch" -- "${BASE_IMAGE_FILES[@]}"
 }
 
