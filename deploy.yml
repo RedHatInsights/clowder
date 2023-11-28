@@ -8280,10 +8280,10 @@ objects:
           resources:
             limits:
               cpu: 500m
-              memory: ${MEMORY_LIMIT}
+              memory: 1500Mi
             requests:
               cpu: 100m
-              memory: ${MEMORY_REQUEST}
+              memory: 1Gi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -8395,8 +8395,4 @@ parameters:
   value: .*ephemeral.*
 - name: ENABLE_KEDA_RESOURCES
   value: 'false'
-- name: MEMORY_LIMIT
-  value: 1500Mi
-- name: MEMORY_REQUEST
-  value: 1000Mi
 
