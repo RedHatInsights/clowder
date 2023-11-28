@@ -53,9 +53,12 @@ Clowder currently features support for:
 * Object Storage
 * PostgreSQL Database
 * In-Memory DB
-* Feature Flags (development only)
+* Feature Flags
 * CronJob support
 * Jobs Support
+* Istio integration
+* TLS Sidecar
+* Simple Autoscaling
 
 ## Roadmap
 
@@ -69,7 +72,6 @@ Our current roadmap looks like this:
 * Canary deployments (possibly via https://github.com/weaveworks/flagger[Flagger])
 * Operational remediations
 * Observe service status from a `ClowdApp` `status`, based on sevice dependencies.
-* Istio integration
 * Advanced logging configurations (e.g. logging messages to kafka topics)
 
 ## Getting Clowder
