@@ -140,15 +140,15 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 
 	envVars := []core.EnvVar{
 		{
-			Name:  "DB_VENDOR",
-			Value: "h2",
+			Name:  "KC_DB",
+			Value: "dev-mem",
 		},
 		{
 			Name:  "PROXY_ADDRESS_FORWARDING",
 			Value: "true",
 		},
 		{
-			Name: "KEYCLOAK_USER",
+			Name: "KEYCLOAK_ADMIN",
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
@@ -159,7 +159,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 			},
 		},
 		{
-			Name: "KEYCLOAK_PASSWORD",
+			Name: "KEYCLOAK_ADMIN_PASSWORD",
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
@@ -194,7 +194,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 
 	livenessProbe := core.Probe{
 		ProbeHandler:        probeHandler,
-		InitialDelaySeconds: 10,
+		InitialDelaySeconds: 30,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
@@ -202,7 +202,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 	}
 	readinessProbe := core.Probe{
 		ProbeHandler:        probeHandler,
-		InitialDelaySeconds: 20,
+		InitialDelaySeconds: 30,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
@@ -213,9 +213,13 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 	image := provutils.GetKeycloakImage(env)
 
 	c := core.Container{
-		Name:           nn.Name,
-		Image:          image,
-		Env:            envVars,
+		Name:  nn.Name,
+		Image: image,
+		Env:   envVars,
+		Args: []string{
+			"start-dev",
+			"--import-realm",
+		},
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
@@ -235,7 +239,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		VolumeMounts: []core.VolumeMount{
 			{
 				Name:      "realm-import",
-				MountPath: "/json",
+				MountPath: "/opt/keycloak/data/import/",
 			},
 		},
 	}

@@ -51,7 +51,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/keycloak/keycloak:15.0.2
+      - image: quay.io/keycloak/keycloak:23.0.0
 ---
 apiVersion: apps/v1
 kind: Deployment
