@@ -8280,10 +8280,10 @@ objects:
           resources:
             limits:
               cpu: 500m
-              memory: 1Gi
+              memory: 1500Mi
             requests:
               cpu: 100m
-              memory: 500Mi
+              memory: 1000Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
