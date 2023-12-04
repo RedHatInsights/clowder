@@ -1,0 +1,74 @@
+package web
+
+import (
+	"encoding/json"
+	"fmt"
+
+	caddy "github.com/caddyserver/caddy/v2"
+	caddyconfig "github.com/caddyserver/caddy/v2/caddyconfig"
+	caddyhttp "github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	caddytls "github.com/caddyserver/caddy/v2/modules/caddytls"
+)
+
+func generateServers(pub bool, priv bool, pubPort uint32, privPort uint32) (map[string]*caddyhttp.Server, error) {
+	servers := make(map[string]*caddyhttp.Server)
+
+	if pub {
+		servers["pubServer"] = &caddyhttp.Server{
+			Listen: []string{fmt.Sprintf(":%d", pubPort)},
+			Routes: []caddyhttp.Route{{
+				Terminal: true,
+			}},
+		}
+	}
+
+	if priv {
+		servers["privServer"] = &caddyhttp.Server{
+			Listen: []string{fmt.Sprintf(":%d", privPort)},
+			Routes: []caddyhttp.Route{{
+				Terminal: true,
+			}},
+		}
+	}
+
+	return servers, nil
+}
+
+func generateCaddyConfig(pub bool, priv bool, pubPort uint32, privPort uint32) (string, error) {
+	var warnings []caddyconfig.Warning
+
+	var servers map[string]*caddyhttp.Server
+	var err error
+
+	servers, err = generateServers(pub, priv, pubPort, privPort)
+	if err != nil {
+		fmt.Print("error generating caddy server config. Server generation failed")
+	}
+
+	appConfig := caddyhttp.App{
+		// HTTPPort:  8888,
+		// HTTPSPort: 9090,
+		Servers: servers,
+	}
+
+	fl := caddytls.FileLoader{{
+		Certificate: "/certs/tls.crt",
+		Key:         "/certs/tls.key",
+		Tags:        []string{"cert0"},
+	}}
+
+	tlsConfig := caddytls.TLS{
+		CertificatesRaw: caddy.ModuleMap{"load_files": caddyconfig.JSON(fl, &warnings)},
+	}
+
+	v := caddy.Config{
+		StorageRaw: []byte{},
+		AppsRaw: map[string]json.RawMessage{
+			"http": caddyconfig.JSON(appConfig, &warnings),
+			"tls":  caddyconfig.JSON(tlsConfig, &warnings),
+		},
+	}
+
+	pretty, _ := json.MarshalIndent(v, "", "  ")
+	return string(pretty), nil
+}

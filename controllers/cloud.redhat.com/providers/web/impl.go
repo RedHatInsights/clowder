@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 
 	apps "k8s.io/api/apps/v1"
@@ -18,11 +17,14 @@ import (
 )
 
 var DefaultImageEnvoy = "envoyproxy/envoy-distroless:v1.24.1"
+var DefaultImageCaddy = "quay.io/cloudservices/caddy-ubi:latest"
 
 // CoreService is the service for the apps deployments.
 var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
 
 var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
+
+var CoreCaddyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_caddy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
@@ -148,7 +150,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		}
 
 		if priv || pub {
-			if err := generateEnvoyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
+			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
 				return err
 			}
 			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
@@ -167,14 +169,15 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
-func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32) error {
+func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32) error {
+
 	cm := &core.ConfigMap{}
 	snn := types.NamespacedName{
-		Name:      envoyConfigName(nn.Name),
+		Name:      caddyConfigName(nn.Name),
 		Namespace: nn.Namespace,
 	}
 
-	if err := cache.Create(CoreEnvoyConfigMap, snn, cm); err != nil {
+	if err := cache.Create(CoreCaddyConfigMap, snn, cm); err != nil {
 		return err
 	}
 
@@ -182,16 +185,15 @@ func generateEnvoyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	cm.Namespace = snn.Namespace
 	cm.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 
-	cmData, err := generateEnvoyConfig(pub, priv, pubPort, privPort)
+	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort)
 	if err != nil {
 		return err
 	}
 
 	cm.Data = map[string]string{
-		"envoy.json": cmData,
+		"caddy.json": cmData,
 	}
-
-	return cache.Update(CoreEnvoyConfigMap, cm)
+	return cache.Update(CoreCaddyConfigMap, cm)
 }
 
 func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
@@ -211,51 +213,46 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 		})
 	}
 
-	image := DefaultImageEnvoy
-	if clowderconfig.LoadedConfig.Images.Envoy != "" {
-		image = clowderconfig.LoadedConfig.Images.Envoy
-	}
-
 	container := core.Container{
-		Name:  "envoy-tls",
-		Image: image,
+		Name:  "caddy-tls",
+		Image: DefaultImageCaddy,
 		Args: []string{
-			"-c", "/etc/envoy/envoy.json",
+			"--config", "/etc/caddy/caddy.json",
 		},
 		VolumeMounts: []core.VolumeMount{
 			{
-				Name:      "envoy-tls",
+				Name:      "caddy-tls",
 				ReadOnly:  true,
 				MountPath: "/certs",
 			},
 			{
-				Name:      "envoy-config",
+				Name:      "caddy-config",
 				ReadOnly:  true,
-				MountPath: "/etc/envoy",
+				MountPath: "/etc/caddy",
 			},
 		},
 		Ports: ports,
 	}
-	envoyTLSVol := core.Volume{
-		Name: "envoy-tls",
+	caddyTLSVol := core.Volume{
+		Name: "caddy-tls",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				SecretName: certSecretName(name),
 			},
 		},
 	}
-	envoyConfigVol := core.Volume{
-		Name: "envoy-config",
+	caddyConfigVol := core.Volume{
+		Name: "caddy-config",
 		VolumeSource: core.VolumeSource{
 			ConfigMap: &core.ConfigMapVolumeSource{
 				LocalObjectReference: core.LocalObjectReference{
-					Name: envoyConfigName(d.Name),
+					Name: caddyConfigName(d.Name),
 				},
 			},
 		},
 	}
 	d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, container)
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, envoyConfigVol, envoyTLSVol)
+	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, caddyConfigVol, caddyTLSVol)
 }
 
 func setServiceTLSAnnotations(s *core.Service, name string) {
@@ -269,6 +266,6 @@ func certSecretName(name string) string {
 	return fmt.Sprintf("%s-serving-cert", name)
 }
 
-func envoyConfigName(name string) string {
-	return fmt.Sprintf("%s-envoy-config", name)
+func caddyConfigName(name string) string {
+	return fmt.Sprintf("%s-caddy-config", name)
 }
