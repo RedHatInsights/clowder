@@ -4,43 +4,75 @@ import (
 	"encoding/json"
 	"fmt"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+
 	caddy "github.com/caddyserver/caddy/v2"
 	caddyconfig "github.com/caddyserver/caddy/v2/caddyconfig"
 	caddyhttp "github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy"
 	caddytls "github.com/caddyserver/caddy/v2/modules/caddytls"
 )
 
-func generateServers(pub bool, priv bool, pubPort uint32, privPort uint32) (map[string]*caddyhttp.Server, error) {
+func generateServers(pub bool, priv bool, pubPort uint32, privPort uint32, appPubPort int32, appPrivPort int32) (map[string]*caddyhttp.Server, error) {
 	servers := make(map[string]*caddyhttp.Server)
 
+	var warnings []caddyconfig.Warning
+
+	tlsConnPolicy := []*caddytls.ConnectionPolicy{{
+		CertSelection: &caddytls.CustomCertSelectionPolicy{
+			AnyTag: []string{"cert0"},
+		},
+	}}
+
 	if pub {
+		reverseProxy := reverseproxy.Handler{
+			Upstreams: []*reverseproxy.Upstream{{
+				Dial: fmt.Sprintf("localhost:%d", appPubPort),
+			}},
+		}
+
 		servers["pubServer"] = &caddyhttp.Server{
 			Listen: []string{fmt.Sprintf(":%d", pubPort)},
-			Routes: []caddyhttp.Route{{
-				Terminal: true,
+			Routes: caddyhttp.RouteList{{
+				HandlersRaw: []json.RawMessage{
+					caddyconfig.JSONModuleObject(reverseProxy, "handler", "reverse_proxy", &warnings),
+				},
 			}},
+			TLSConnPolicies: tlsConnPolicy,
 		}
 	}
 
 	if priv {
+		reverseProxy := reverseproxy.Handler{
+			Upstreams: []*reverseproxy.Upstream{{
+				Dial: fmt.Sprintf("localhost:%d", appPrivPort),
+			}},
+		}
+
 		servers["privServer"] = &caddyhttp.Server{
 			Listen: []string{fmt.Sprintf(":%d", privPort)},
-			Routes: []caddyhttp.Route{{
-				Terminal: true,
+			Routes: caddyhttp.RouteList{{
+				HandlersRaw: []json.RawMessage{
+					caddyconfig.JSONModuleObject(reverseProxy, "handler", "reverse_proxy", &warnings),
+				},
 			}},
+			TLSConnPolicies: tlsConnPolicy,
 		}
 	}
 
 	return servers, nil
 }
 
-func generateCaddyConfig(pub bool, priv bool, pubPort uint32, privPort uint32) (string, error) {
+func generateCaddyConfig(pub bool, priv bool, pubPort uint32, privPort uint32, env *crd.ClowdEnvironment) (string, error) {
 	var warnings []caddyconfig.Warning
 
 	var servers map[string]*caddyhttp.Server
 	var err error
 
-	servers, err = generateServers(pub, priv, pubPort, privPort)
+	appPubPort := env.Spec.Providers.Web.Port
+	appPrivPort := env.Spec.Providers.Web.PrivatePort
+
+	servers, err = generateServers(pub, priv, pubPort, privPort, appPubPort, appPrivPort)
 	if err != nil {
 		fmt.Print("error generating caddy server config. Server generation failed")
 	}

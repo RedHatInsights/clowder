@@ -16,7 +16,6 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var DefaultImageEnvoy = "envoyproxy/envoy-distroless:v1.24.1"
 var DefaultImageCaddy = "quay.io/cloudservices/caddy-ubi:latest"
 
 // CoreService is the service for the apps deployments.
@@ -150,7 +149,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		}
 
 		if priv || pub {
-			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort); err != nil {
+			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
 				return err
 			}
 			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
@@ -169,7 +168,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
-func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32) error {
+func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32, env *crd.ClowdEnvironment) error {
 
 	cm := &core.ConfigMap{}
 	snn := types.NamespacedName{
@@ -185,7 +184,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	cm.Namespace = snn.Namespace
 	cm.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 
-	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort)
+	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort, env)
 	if err != nil {
 		return err
 	}
@@ -214,10 +213,11 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 	}
 
 	container := core.Container{
-		Name:  "caddy-tls",
-		Image: DefaultImageCaddy,
+		Name:    "caddy-tls",
+		Image:   DefaultImageCaddy,
+		Command: []string{"/usr/bin/caddy"},
 		Args: []string{
-			"--config", "/etc/caddy/caddy.json",
+			"run", "--config", "/etc/caddy/caddy.json",
 		},
 		VolumeMounts: []core.VolumeMount{
 			{
