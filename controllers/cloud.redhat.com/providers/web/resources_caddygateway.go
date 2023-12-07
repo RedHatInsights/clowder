@@ -317,7 +317,7 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
 }
 
-func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) {
+func makeWebGatewayDeployment(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) {
 	nn := providers.GetNamespacedName(o, "caddy-gateway")
 
 	dd := objMap[WebGatewayDeployment].(*apps.Deployment)

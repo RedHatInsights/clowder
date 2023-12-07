@@ -227,6 +227,7 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 	return cache.Update(WebKeycloakImportSecret, userData)
 }
 
+<<<<<<< HEAD
 func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	return core.ProbeHandler{
 		HTTPGet: &core.HTTPGetAction{
@@ -247,6 +248,9 @@ func baseProbeHandler(port int32, path string) core.ProbeHandler {
 }
 
 func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+=======
+func makeKeycloak(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+>>>>>>> b9783e1d (Add resource cache)
 	nn := providers.GetNamespacedName(o, "keycloak")
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)
