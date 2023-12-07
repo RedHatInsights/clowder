@@ -11,6 +11,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -212,8 +213,24 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "featureflags")
+
+	//keycloakName := providers.GetNamespacedName(o, "")
+	keycloakSecret := core.Secret{}
+	cache.Get(web.WebKeycloakSecret, &keycloakSecret)
+
+	secretName := keycloakSecret.Name
+	/*
+		   NOTE: about the order ... set the order in the impl. of each provider
+			REACH the provider, get the data from the cache.
+
+			make "somethingsomething" -> made with component system (make component cache exists)
+			There was a pattern, all compontents were created the same way each time
+			the name is makeCachecomponent (or makecomponentcache, one or the other)
+
+			the objMap ...
+	*/
 
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
 	svc := objMap[LocalFFService].(*core.Service)
