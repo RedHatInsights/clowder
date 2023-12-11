@@ -39,6 +39,10 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebKeycloakService,
 		WebKeycloakIngress,
 		WebKeycloakImportSecret,
+		WebKeycloakDBDeployment,
+		WebKeycloakDBPVC,
+		WebKeycloakDBService,
+		WebKeycloakDBSecret,
 		WebBOPDeployment,
 		WebBOPService,
 		WebMocktitlementsDeployment,
@@ -66,6 +70,10 @@ func (web *localWebProvider) EnvProvide() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if err := configureKeycloakDB(web); err != nil {
+		return err
 	}
 
 	if err := configureKeycloak(web); err != nil {

@@ -6,9 +6,11 @@ import (
 	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
@@ -37,6 +39,113 @@ var WebKeycloakImportSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_
 
 // WebKeycloakSecret is the mocked secret config
 var WebKeycloakSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_secret", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
+
+// WebKeycloakDBDeployment is the ident referring to the local Feature Flags DB deployment object.
+var WebKeycloakDBDeployment = rc.NewSingleResourceIdent(ProvName, "web_keycloak_db_deployment", &apps.Deployment{})
+
+// WebKeycloakDBService is the ident referring to the local Feature Flags DB service object.
+var WebKeycloakDBService = rc.NewSingleResourceIdent(ProvName, "web_keycloak_db_service", &core.Service{})
+
+// WebKeycloakDBPVC is the ident referring to the local Feature Flags DB PVC object.
+var WebKeycloakDBPVC = rc.NewSingleResourceIdent(ProvName, "web_keycloak_db_pvc", &core.PersistentVolumeClaim{})
+
+// WebKeycloakDBSecret is the ident referring to the local Feature Flags DB secret object.
+var WebKeycloakDBSecret = rc.NewSingleResourceIdent(ProvName, "web_keycloak_db_secret", &core.Secret{})
+
+func configureKeycloakDB(web *localWebProvider) error {
+	namespacedNameDb := types.NamespacedName{
+		Name:      "keycloak-db",
+		Namespace: web.Env.Status.TargetNamespace,
+	}
+
+	dd := &apps.Deployment{}
+	if err := web.Cache.Create(WebKeycloakDBDeployment, namespacedNameDb, dd); err != nil {
+		return err
+	}
+
+	dbCfg := config.DatabaseConfig{}
+
+	password, err := utils.RandPassword(16, provutils.RCharSet)
+	if err != nil {
+		return errors.Wrap("password generate failed", err)
+	}
+
+	pgPassword, err := utils.RandPassword(16, provutils.RCharSet)
+	if err != nil {
+		return errors.Wrap("pgPassword generate failed", err)
+	}
+
+	username := utils.RandString(16)
+	hostname := fmt.Sprintf("%v.%v.svc", namespacedNameDb.Name, namespacedNameDb.Namespace)
+
+	dataInitDb := func() map[string]string {
+
+		return map[string]string{
+			"hostname": hostname,
+			"port":     "5432",
+			"username": username,
+			"password": password,
+			"pgPass":   pgPassword,
+			"name":     "keycloak",
+		}
+	}
+
+	secMapDb, err := providers.MakeOrGetSecret(web.Env, web.Cache, WebKeycloakDBSecret, namespacedNameDb, dataInitDb)
+	if err != nil {
+		return errors.Wrap("Couldn't set/get secret", err)
+	}
+
+	err = dbCfg.Populate(secMapDb)
+	if err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
+	dbCfg.AdminUsername = "postgres"
+
+	labels := &map[string]string{"sub": "keycloak"}
+
+	res := core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"memory": resource.MustParse("200Mi"),
+			"cpu":    resource.MustParse("100m"),
+		},
+		Requests: core.ResourceList{
+			"memory": resource.MustParse("100Mi"),
+			"cpu":    resource.MustParse("50m"),
+		},
+	}
+
+	provutils.MakeLocalDB(dd, namespacedNameDb, web.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:15-53ac80c", web.Env.Spec.Providers.Web.KeycloakPVC, "keycloak", &res)
+
+	if err = web.Cache.Update(WebKeycloakDBDeployment, dd); err != nil {
+		return err
+	}
+
+	s := &core.Service{}
+	if err := web.Cache.Create(WebKeycloakDBService, namespacedNameDb, s); err != nil {
+		return err
+	}
+
+	provutils.MakeLocalDBService(s, namespacedNameDb, web.Env, labels)
+
+	if err = web.Cache.Update(WebKeycloakDBService, s); err != nil {
+		return err
+	}
+
+	if web.Env.Spec.Providers.Web.KeycloakPVC {
+		pvc := &core.PersistentVolumeClaim{}
+		if err = web.Cache.Create(WebKeycloakDBPVC, namespacedNameDb, pvc); err != nil {
+			return err
+		}
+
+		provutils.MakeLocalDBPVC(pvc, namespacedNameDb, web.Env, sizing.GetDefaultVolCapacity())
+
+		if err = web.Cache.Update(WebKeycloakDBPVC, pvc); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func configureKeycloak(web *localWebProvider) error {
 	nn := providers.GetNamespacedName(web.Env, "keycloak")
@@ -141,7 +250,55 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 	envVars := []core.EnvVar{
 		{
 			Name:  "KC_DB",
-			Value: "dev-mem",
+			Value: "postgres",
+		},
+		{
+			Name: "KC_DB_USERNAME",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: "keycloak-db",
+					},
+					Key: "username",
+				},
+			},
+		},
+		{
+			Name: "KC_DB_PASSWORD",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: "keycloak-db",
+					},
+					Key: "password",
+				},
+			},
+		},
+		{
+			Name: "KC_DB_URL_DATABASE",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: "keycloak-db",
+					},
+					Key: "name",
+				},
+			},
+		},
+		{
+			Name: "KC_DB_URL_HOST",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: "keycloak-db",
+					},
+					Key: "hostname",
+				},
+			},
+		},
+		{
+			Name:  "KC_DB_URL_PORT",
+			Value: "5432",
 		},
 		{
 			Name:  "PROXY_ADDRESS_FORWARDING",
@@ -217,8 +374,12 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		Image: image,
 		Env:   envVars,
 		Args: []string{
-			"start-dev",
+			"start",
 			"--import-realm",
+			"--hostname-strict",
+			"false",
+			"--http-enabled",
+			"true",
 		},
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,

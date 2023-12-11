@@ -29,6 +29,9 @@ var LocalFFDeployment = rc.NewSingleResourceIdent(ProvName, "ff_deployment", &ap
 // LocalFFService is the ident referring to the local Feature Flags service object.
 var LocalFFService = rc.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
 
+// LocalFFSecret is the ident referring to the local Feature Flags secret object.
+var LocalFFSecret = rc.NewSingleResourceIdent(ProvName, "ff_secret", &core.Secret{})
+
 // LocalFFDBDeployment is the ident referring to the local Feature Flags DB deployment object.
 var LocalFFDBDeployment = rc.NewSingleResourceIdent(ProvName, "ff_db_deployment", &apps.Deployment{})
 
@@ -41,9 +44,6 @@ var LocalFFDBPVC = rc.NewSingleResourceIdent(ProvName, "ff_db_pvc", &core.Persis
 // LocalFFDBSecret is the ident referring to the local Feature Flags DB secret object.
 var LocalFFDBSecret = rc.NewSingleResourceIdent(ProvName, "ff_db_secret", &core.Secret{})
 
-// LocalFFSecret is the ident referring to the local Feature Flags secret object.
-var LocalFFSecret = rc.NewSingleResourceIdent(ProvName, "ff_secret", &core.Secret{})
-
 type localFeatureFlagsProvider struct {
 	providers.Provider
 }
@@ -51,8 +51,9 @@ type localFeatureFlagsProvider struct {
 // NewLocalFeatureFlagsProvider returns a new local featureflags provider object.
 func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
-		LocalFFDBDeployment,
+		LocalFFDeployment,
 		LocalFFService,
+		LocalFFSecret,
 		LocalFFDBDeployment,
 		LocalFFDBService,
 		LocalFFDBPVC,
