@@ -2,8 +2,6 @@
 
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 
-set -x
-
 set -exv
 
 DOCKER_CONF="$PWD/.docker"
@@ -19,6 +17,7 @@ docker rm $tempid
 
 docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $CONTAINER_NAME .
 
+set +e
 docker run -i \
     --name $CONTAINER_NAME \
     -v $PWD:/workspace:ro \
@@ -36,5 +35,7 @@ docker run -i \
 TEST_RESULT=$?
 
 docker cp $CONTAINER_NAME:/container_workspace/artifacts/ $PWD
+
+set -e
 
 exit $TEST_RESULT
