@@ -83,11 +83,11 @@ pipeline {
                 }
             }
         }  
-        post {
-            always {
-                archiveArtifacts artifacts: 'artifacts/**/*', fingerprint: true
-                junit skipPublishingChecks: true, testResults: 'artifacts/junit-*.xml'
-            }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'artifacts/**/*', fingerprint: true
+            junit skipPublishingChecks: true, testResults: 'artifacts/junit-*.xml'
         }
     }
 }
