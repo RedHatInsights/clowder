@@ -380,6 +380,8 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 			"false",
 			"--http-enabled",
 			"true",
+			"--http-relative-path",
+			"/auth",
 		},
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
