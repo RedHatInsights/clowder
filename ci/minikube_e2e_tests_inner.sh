@@ -117,6 +117,5 @@ STRIMZI_PODS=$($KUBECTL_CMD get pod -n strimzi -o jsonpath='{.items[*].metadata.
 for pod in $STRIMZI_PODS; do
     $KUBECTL_CMD logs $pod -n strimzi > artifacts/$pod.log
 done
-set -e
 
 exit $KUTTL_RESULT

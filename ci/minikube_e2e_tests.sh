@@ -37,6 +37,4 @@ TEST_RESULT=$?
 
 docker cp $CONTAINER_NAME:/container_workspace/artifacts/ $PWD
 
-set -e
-
 exit $TEST_RESULT
