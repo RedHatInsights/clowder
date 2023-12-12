@@ -74,16 +74,18 @@ pipeline {
                     }
                     steps {
                         withVault([configuration: configuration, vaultSecrets: secrets]) {
-                            sh './ci/minikube_e2e_tests.sh'
+                            sh '''
+                                ./ci/minikube_e2e_tests.sh
+                                docker rm -f $CONTAINER_NAME
+                            '''
                         }
                     }
+                }
 
-                    post {
-                        always {
-                            sh 'docker rm -f $CONTAINER_NAME'
-                            archiveArtifacts artifacts: 'artifacts/**/*', fingerprint: true
-                            junit skipPublishingChecks: true, testResults: 'artifacts/junit-*.xml'
-                        }
+                post {
+                    always {
+                        archiveArtifacts artifacts: 'artifacts/**/*', fingerprint: true
+                        junit skipPublishingChecks: true, testResults: 'artifacts/junit-*.xml'
                     }
                 }
             }
