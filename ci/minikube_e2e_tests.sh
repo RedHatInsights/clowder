@@ -30,6 +30,7 @@ docker run -i \
     -e MINIKUBE_ROOTDIR=$MINIKUBE_ROOTDIR \
     -e MINIKUBE_USER=$MINIKUBE_USER \
     -e CLOWDER_VERSION=$CLOWDER_VERSION \
+    -e KUTTL_TEST="--test test-ephemeral-gateway" \
     $BASE_IMG \
     ./ci/minikube_e2e_tests_inner.sh
 TEST_RESULT=$?

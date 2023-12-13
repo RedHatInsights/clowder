@@ -98,7 +98,7 @@ set +e
 $KUBECTL_CMD get env
 $KUBECTL_CMD get env
 
-source build/run_kuttl.sh --report xml
+source build/run_kuttl.sh --report xml --test test-ephemeral-gateway
 KUTTL_RESULT=$?
 mv kuttl-report.xml artifacts/junit-kuttl.xml
 
