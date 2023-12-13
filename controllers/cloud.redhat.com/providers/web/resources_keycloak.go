@@ -351,7 +351,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 
 	livenessProbe := core.Probe{
 		ProbeHandler:        probeHandler,
-		InitialDelaySeconds: 30,
+		InitialDelaySeconds: 60,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
@@ -359,7 +359,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 	}
 	readinessProbe := core.Probe{
 		ProbeHandler:        probeHandler,
-		InitialDelaySeconds: 30,
+		InitialDelaySeconds: 60,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
