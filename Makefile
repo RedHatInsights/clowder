@@ -6,6 +6,7 @@
 IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
 CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=8 HEAD)
 
+GO_CMD ?= go
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26
@@ -31,7 +32,7 @@ endif
 GOJSONSCHEMA_BIN := $(shell which gojsonschema 2> /dev/null)
 ifndef GOJSONSCHEMA_BIN
 $(info gojsonschema binary not found. Installing...)
-$(shell go install github.com/atombender/go-jsonschema/cmd/gojsonschema@v0.12.1)
+$(shell $(GO_CMD) install github.com/atombender/go-jsonschema/cmd/gojsonschema@v0.12.1)
 $(info Ensure that $$GOPATH/bin is in your PATH.)
 endif
 
@@ -39,10 +40,10 @@ endif
 KUTTL_TEST ?= ""
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
+ifeq (,$(shell $(GO_CMD) env GOBIN))
+GOBIN=$(shell $(GO_CMD) env GOPATH)/bin
 else
-GOBIN=$(shell go env GOBIN)
+GOBIN=$(shell $(GO_CMD) env GOBIN)
 endif
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -94,13 +95,13 @@ generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 fmt: ## Run go fmt against code.
-	go fmt ./...
+	$(GO_CMD) fmt ./...
 
 vet: ## Run go vet against code.
-	go vet ./...
+	$(GO_CMD) vet ./...
 
 test: update-version manifests envtest generate fmt vet
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" CLOWDER_CONFIG_PATH=$(PROJECT_DIR)/test_config.json go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" CLOWDER_CONFIG_PATH=$(PROJECT_DIR)/test_config.json $(GO_CMD) test ./... -coverprofile cover.out
 
 vscode-debug: update-version manifests envtest generate fmt vet
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" code .
@@ -119,10 +120,10 @@ genconfig:
 	cd controllers/cloud.redhat.com/config && gojsonschema -p config -o types.go schema.json
 
 build: update-version generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+	$(GO_CMD) build -o bin/manager main.go
 
 run: update-version manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	$(GO_CMD) run ./main.go
 
 docker-build-and-push-base:
 	$(RUNTIME) build -f Dockerfile.base . -t $(BASE_IMG)
@@ -134,7 +135,7 @@ docker-build: update-version
 
 # Build the docker image
 docker-build-no-test-quick: update-version
-	CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -o bin/manager-cgo main.go
+	CGO_ENABLED=0 GOOS=linux GO111MODULE=on $(GO_CMD) build -o bin/manager-cgo main.go
 	$(RUNTIME) build -f build/Dockerfile-local . -t ${IMG}
 
 # Build the docker image
@@ -200,9 +201,9 @@ define go-install-tool
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
-go mod init tmp ;\
+$(GO_CMD) mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
+GOBIN=$(PROJECT_DIR)/bin $(GO_CMD) install $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
