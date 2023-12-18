@@ -75,7 +75,7 @@ database will receive a new hostname. With the legacy way of choosing database s
 *app-interface* mode, this would mean changing the name of the database in the ClowdApp stanza
 which will end up causing much disruption. 
 
-In Clwoder 0.16.0, a new way of declaring database secrets in *app-interface* mode was added, this
+In Clowder 0.16.0, a new way of declaring database secrets in *app-interface* mode was added, this
 makes use of annotations to decide which database credential to expose to the application. This
 takes the form of the following example and should be applied in app-interface
 
