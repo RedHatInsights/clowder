@@ -279,7 +279,7 @@ func createNetworkPolicy(p *providers.Provider) error {
 	return p.Cache.Update(MinioNetworkPolicy, np)
 }
 
-func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+func makeLocalMinIO(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "minio")
 
 	dd := objMap[MinioDeployment].(*apps.Deployment)

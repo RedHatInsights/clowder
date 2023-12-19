@@ -227,7 +227,6 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 	return cache.Update(WebKeycloakImportSecret, userData)
 }
 
-<<<<<<< HEAD
 func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	return core.ProbeHandler{
 		HTTPGet: &core.HTTPGetAction{
@@ -247,10 +246,35 @@ func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	}
 }
 
-func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
-=======
+type secretEnvVar struct {
+	Name string
+	Key  string
+}
+
+func newSecretEnvVar(name, key string) secretEnvVar {
+	return secretEnvVar{Name: name, Key: key}
+}
+
+func mapEnvVarsToSecret(inputs []secretEnvVar, secName string) []core.EnvVar {
+	envVars := []core.EnvVar{}
+	for _, env := range inputs {
+		newVar := core.EnvVar{
+			Name: env.Name,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: secName,
+					},
+					Key: env.Key,
+				},
+			},
+		}
+		envVars = append(envVars, newVar)
+	}
+	return envVars
+}
+
 func makeKeycloak(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
->>>>>>> b9783e1d (Add resource cache)
 	nn := providers.GetNamespacedName(o, "keycloak")
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)
