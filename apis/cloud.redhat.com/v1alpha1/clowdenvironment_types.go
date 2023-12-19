@@ -88,6 +88,9 @@ type WebConfig struct {
 	// Optional keycloak version override -- used only in (*_local_*) mode -- if not set, a hard-coded default is used.
 	KeycloakVersion string `json:"keycloakVersion,omitempty"`
 
+	// Optionally use PVC storage for keycloak db
+	KeycloakPVC bool `json:"keycloakPVC,omitempty"`
+
 	// Optional images to use for web provider components -- only applies when running in (*_local_*) mode.
 	Images WebImages `json:"images,omitempty"`
 

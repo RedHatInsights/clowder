@@ -753,6 +753,9 @@ spec:
                       ingressClass:
                         description: Ingress Class Name used only in (*_local_*) mode.
                         type: string
+                      keycloakPVC:
+                        description: Optionally use PVC storage for keycloak db
+                        type: boolean
                       keycloakVersion:
                         description: Optional keycloak version override -- used only
                           in (*_local_*) mode -- if not set, a hard-coded default

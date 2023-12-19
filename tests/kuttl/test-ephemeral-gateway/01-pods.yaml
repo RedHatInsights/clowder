@@ -47,7 +47,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello:01
+      image: quay.io/psav/clowder-hello:ubi8
       readinessProbe:
         failureThreshold: 3
         httpGet:
@@ -83,7 +83,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello:01
+      image: quay.io/psav/clowder-hello:ubi8
       readinessProbe:
         failureThreshold: 3
         httpGet:

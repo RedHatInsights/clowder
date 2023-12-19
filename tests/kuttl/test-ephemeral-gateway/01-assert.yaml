@@ -51,7 +51,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/keycloak/keycloak:15.0.2
+      - image: quay.io/keycloak/keycloak:23.0.1
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -79,7 +79,7 @@ spec:
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/cloudservices/mocktitlements:e24820c
+      - image: quay.io/cloudservices/mocktitlements:81fd80e
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
