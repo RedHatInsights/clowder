@@ -227,6 +227,53 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 	return cache.Update(WebKeycloakImportSecret, userData)
 }
 
+func baseProbeHandler(port int32, path string) core.ProbeHandler {
+	return core.ProbeHandler{
+		HTTPGet: &core.HTTPGetAction{
+			Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: port,
+			},
+			Scheme: core.URISchemeHTTP,
+			HTTPHeaders: []core.HTTPHeader{
+				{
+					Name:  "Accept",
+					Value: "application/json",
+				},
+			},
+			Path: path,
+		},
+	}
+}
+
+type secretEnvVar struct {
+	Name string
+	Key  string
+}
+
+func newSecretEnvVar(name, key string) secretEnvVar {
+	return secretEnvVar{Name: name, Key: key}
+}
+
+func mapEnvVarsToSecret(inputs []secretEnvVar, secName string) []core.EnvVar {
+	envVars := []core.EnvVar{}
+	for _, env := range inputs {
+		newVar := core.EnvVar{
+			Name: env.Name,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: secName,
+					},
+					Key: env.Key,
+				},
+			},
+		}
+		envVars = append(envVars, newVar)
+	}
+	return envVars
+}
+
 func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
@@ -253,50 +300,6 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 			Value: "postgres",
 		},
 		{
-			Name: "KC_DB_USERNAME",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: "keycloak-db",
-					},
-					Key: "username",
-				},
-			},
-		},
-		{
-			Name: "KC_DB_PASSWORD",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: "keycloak-db",
-					},
-					Key: "password",
-				},
-			},
-		},
-		{
-			Name: "KC_DB_URL_DATABASE",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: "keycloak-db",
-					},
-					Key: "name",
-				},
-			},
-		},
-		{
-			Name: "KC_DB_URL_HOST",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: "keycloak-db",
-					},
-					Key: "hostname",
-				},
-			},
-		},
-		{
 			Name:  "KC_DB_URL_PORT",
 			Value: "5432",
 		},
@@ -305,32 +308,30 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 			Value: "true",
 		},
 		{
-			Name: "KEYCLOAK_ADMIN",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: nn.Name,
-					},
-					Key: "username",
-				},
-			},
-		},
-		{
-			Name: "KEYCLOAK_ADMIN_PASSWORD",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: nn.Name,
-					},
-					Key: "password",
-				},
-			},
-		},
-		{
 			Name:  "KEYCLOAK_IMPORT",
 			Value: "/json/redhat-external-realm.json",
 		},
 	}
+
+	dbEnvVars := mapEnvVarsToSecret(
+		[]secretEnvVar{
+			newSecretEnvVar("KC_DB_USERNAME", "username"),
+			newSecretEnvVar("KC_DB_PASSWORD", "password"),
+			newSecretEnvVar("KC_DB_URL_DATABASE", "name"),
+			newSecretEnvVar("KC_DB_URL_HOST", "hostname"),
+		}, "keycloak-db",
+	)
+
+	envVars = append(envVars, dbEnvVars...)
+
+	kcEnvVars := mapEnvVarsToSecret(
+		[]secretEnvVar{
+			newSecretEnvVar("KEYCLOAK_ADMIN", "username"),
+			newSecretEnvVar("KEYCLOAK_ADMIN_PASSWORD", "password"),
+		}, nn.Name,
+	)
+
+	envVars = append(envVars, kcEnvVars...)
 
 	port := int32(8080)
 
@@ -340,17 +341,8 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		Protocol:      core.ProtocolTCP,
 	}}
 
-	probeHandler := core.ProbeHandler{
-		TCPSocket: &core.TCPSocketAction{
-			Port: intstr.IntOrString{
-				Type:   intstr.Int,
-				IntVal: port,
-			},
-		},
-	}
-
 	livenessProbe := core.Probe{
-		ProbeHandler:        probeHandler,
+		ProbeHandler:        baseProbeHandler(port, "auth/health/live"),
 		InitialDelaySeconds: 60,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -358,7 +350,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
-		ProbeHandler:        probeHandler,
+		ProbeHandler:        baseProbeHandler(port, "auth/health/ready"),
 		InitialDelaySeconds: 60,
 		TimeoutSeconds:      2,
 		PeriodSeconds:       10,
@@ -382,6 +374,10 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 			"true",
 			"--http-relative-path",
 			"/auth",
+			"--health-enabled",
+			"true",
+			"--metrics-enabled",
+			"true",
 		},
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
