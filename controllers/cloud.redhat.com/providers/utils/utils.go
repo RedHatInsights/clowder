@@ -307,3 +307,30 @@ func GetAPIPaths(deployment *crd.Deployment, defaultPath string) []string {
 	}
 	return apiPaths
 }
+
+type SecretEnvVar struct {
+	Name string
+	Key  string
+}
+
+func NewSecretEnvVar(name, key string) SecretEnvVar {
+	return SecretEnvVar{Name: name, Key: key}
+}
+
+func AppendEnvVarsFromSecret(envvars []core.EnvVar, secName string, inputs ...SecretEnvVar) []core.EnvVar {
+	for _, env := range inputs {
+		newVar := core.EnvVar{
+			Name: env.Name,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: secName,
+					},
+					Key: env.Key,
+				},
+			},
+		}
+		envvars = append(envvars, newVar)
+	}
+	return envvars
+}

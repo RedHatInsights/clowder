@@ -233,43 +233,18 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 
 	envVars := []core.EnvVar{
 		{
-			Name: "DATABASE_URL",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: "featureflags-db",
-					},
-					Key: "connectionURL",
-				},
-			},
-		},
-		{
 			Name:  "DATABASE_SSL",
 			Value: "false",
 		},
-		{
-			Name: "INIT_CLIENT_API_TOKENS",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: nn.Name,
-					},
-					Key: "clientAccessToken",
-				},
-			},
-		},
-		{
-			Name: "INIT_ADMIN_API_TOKENS",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: nn.Name,
-					},
-					Key: "adminAccessToken",
-				},
-			},
-		},
 	}
+
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, "featureflags-db",
+		provutils.NewSecretEnvVar("DATABASE_URL", "connectionURL"),
+	)
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
+		provutils.NewSecretEnvVar("INIT_CLIENT_API_TOKENS", "clientAccessToken"),
+		provutils.NewSecretEnvVar("INIT_ADMIN_API_TOKENS", "adminAccessToken"),
+	)
 
 	ports := []core.ContainerPort{{
 		Name:          "service",

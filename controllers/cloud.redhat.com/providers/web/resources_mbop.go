@@ -209,40 +209,13 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort boo
 			Name:  "KEYCLOAK_SERVER",
 			Value: fmt.Sprintf("http://%s-keycloak.%s.svc:8080", o.GetClowdName(), o.GetClowdNamespace()),
 		},
-		{
-			Name: "KEYCLOAK_USERNAME",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: snn.Name,
-					},
-					Key: "username",
-				},
-			},
-		},
-		{
-			Name: "KEYCLOAK_PASSWORD",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: snn.Name,
-					},
-					Key: "password",
-				},
-			},
-		},
-		{
-			Name: "KEYCLOAK_VERSION",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: snn.Name,
-					},
-					Key: "version",
-				},
-			},
-		},
 	}
+
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, snn.Name,
+		provutils.NewSecretEnvVar("KEYCLOAK_USERNAME", "username"),
+		provutils.NewSecretEnvVar("KEYCLOAK_PASSWORD", "password"),
+		provutils.NewSecretEnvVar("KEYCLOAK_VERSION", "version"),
+	)
 
 	port := int32(8090)
 	authPort := int32(8080)
