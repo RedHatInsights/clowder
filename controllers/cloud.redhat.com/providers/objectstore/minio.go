@@ -320,27 +320,12 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 
 	port := int32(9000)
 
-	envVars := []core.EnvVar{{
-		Name: "MINIO_ACCESS_KEY",
-		ValueFrom: &core.EnvVarSource{
-			SecretKeyRef: &core.SecretKeySelector{
-				LocalObjectReference: core.LocalObjectReference{
-					Name: nn.Name,
-				},
-				Key: "accessKey",
-			},
-		},
-	}, {
-		Name: "MINIO_SECRET_KEY",
-		ValueFrom: &core.EnvVarSource{
-			SecretKeyRef: &core.SecretKeySelector{
-				LocalObjectReference: core.LocalObjectReference{
-					Name: nn.Name,
-				},
-				Key: "secretKey",
-			},
-		},
-	}}
+	envVars := []core.EnvVar{}
+
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
+		provutils.NewSecretEnvVar("MINIO_ACCESS_KEY", "accessKey"),
+		provutils.NewSecretEnvVar("MINIO_SECRET_KEY", "secretKey"),
+	)
 
 	ports := []core.ContainerPort{{
 		Name:          "minio",

@@ -7,6 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
@@ -114,63 +115,18 @@ func getTokenRefresher(appName string) *core.Container {
 			"memory": resource.MustParse("128Mi"),
 		},
 	}
-	cont.Env = []core.EnvVar{
-		{
-			Name: "CLIENT_ID",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: fmt.Sprintf("%s-token-refresher", appName),
-					},
-					Key: "CLIENT_ID",
-				},
-			},
-		},
-		{
-			Name: "CLIENT_SECRET",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: fmt.Sprintf("%s-token-refresher", appName),
-					},
-					Key: "CLIENT_SECRET",
-				},
-			},
-		},
-		{
-			Name: "ISSUER_URL",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: fmt.Sprintf("%s-token-refresher", appName),
-					},
-					Key: "ISSUER_URL",
-				},
-			},
-		},
-		{
-			Name: "URL",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: fmt.Sprintf("%s-token-refresher", appName),
-					},
-					Key: "URL",
-				},
-			},
-		},
-		{
-			Name: "SCOPE",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: fmt.Sprintf("%s-token-refresher", appName),
-					},
-					Key: "SCOPE",
-				},
-			},
-		},
-	}
+
+	envVars := []core.EnvVar{}
+
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, fmt.Sprintf("%s-token-refresher", appName),
+		provutils.NewSecretEnvVar("CLIENT_ID", "CLIENT_ID"),
+		provutils.NewSecretEnvVar("CLIENT_SECRET", "CLIENT_SECRET"),
+		provutils.NewSecretEnvVar("ISSUER_URL", "ISSUER_URL"),
+		provutils.NewSecretEnvVar("SCOPE", "SCOPE"),
+		provutils.NewSecretEnvVar("URL", "URL"),
+	)
+
+	cont.Env = envVars
 
 	return &cont
 }

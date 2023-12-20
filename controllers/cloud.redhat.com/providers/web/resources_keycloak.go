@@ -246,34 +246,6 @@ func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	}
 }
 
-type secretEnvVar struct {
-	Name string
-	Key  string
-}
-
-func newSecretEnvVar(name, key string) secretEnvVar {
-	return secretEnvVar{Name: name, Key: key}
-}
-
-func mapEnvVarsToSecret(inputs []secretEnvVar, secName string) []core.EnvVar {
-	envVars := []core.EnvVar{}
-	for _, env := range inputs {
-		newVar := core.EnvVar{
-			Name: env.Name,
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: secName,
-					},
-					Key: env.Key,
-				},
-			},
-		}
-		envVars = append(envVars, newVar)
-	}
-	return envVars
-}
-
 func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
@@ -313,25 +285,17 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		},
 	}
 
-	dbEnvVars := mapEnvVarsToSecret(
-		[]secretEnvVar{
-			newSecretEnvVar("KC_DB_USERNAME", "username"),
-			newSecretEnvVar("KC_DB_PASSWORD", "password"),
-			newSecretEnvVar("KC_DB_URL_DATABASE", "name"),
-			newSecretEnvVar("KC_DB_URL_HOST", "hostname"),
-		}, "keycloak-db",
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, "keycloak-db",
+		provutils.NewSecretEnvVar("KC_DB_USERNAME", "username"),
+		provutils.NewSecretEnvVar("KC_DB_PASSWORD", "password"),
+		provutils.NewSecretEnvVar("KC_DB_URL_DATABASE", "name"),
+		provutils.NewSecretEnvVar("KC_DB_URL_HOST", "hostname"),
 	)
 
-	envVars = append(envVars, dbEnvVars...)
-
-	kcEnvVars := mapEnvVarsToSecret(
-		[]secretEnvVar{
-			newSecretEnvVar("KEYCLOAK_ADMIN", "username"),
-			newSecretEnvVar("KEYCLOAK_ADMIN_PASSWORD", "password"),
-		}, nn.Name,
+	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
+		provutils.NewSecretEnvVar("KEYCLOAK_ADMIN", "username"),
+		provutils.NewSecretEnvVar("KEYCLOAK_ADMIN_PASSWORD", "password"),
 	)
-
-	envVars = append(envVars, kcEnvVars...)
 
 	port := int32(8080)
 

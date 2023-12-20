@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
 type mutantPod struct {
@@ -81,53 +81,25 @@ func (p *mutantPod) Handle(_ context.Context, req admission.Request) admission.R
 			FailureThreshold:    3,
 		}
 
-		container := core.Container{
-			Name:           "crcauth",
-			Image:          image,
-			LivenessProbe:  &livenessProbe,
-			ReadinessProbe: &readinessProbe,
-			Env: []core.EnvVar{
-				{
-					Name:  "CADDY_PORT",
-					Value: port,
-				},
-				{
-					Name: "CADDY_BOP_URL",
-					ValueFrom: &core.EnvVarSource{
-						SecretKeyRef: &core.SecretKeySelector{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: config,
-							},
-							Optional: utils.BoolPtr(false),
-							Key:      "bopurl",
-						},
-					},
-				},
-				{
-					Name: "CADDY_KEYCLOAK_URL",
-					ValueFrom: &core.EnvVarSource{
-						SecretKeyRef: &core.SecretKeySelector{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: config,
-							},
-							Optional: utils.BoolPtr(false),
-							Key:      "keycloakurl",
-						},
-					},
-				},
-				{
-					Name: "CADDY_WHITELIST",
-					ValueFrom: &core.EnvVarSource{
-						SecretKeyRef: &core.SecretKeySelector{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: config,
-							},
-							Optional: utils.BoolPtr(false),
-							Key:      "whitelist",
-						},
-					},
-				},
+		envVars := []core.EnvVar{
+			{
+				Name:  "CADDY_PORT",
+				Value: port,
 			},
+		}
+
+		envVars = provutils.AppendEnvVarsFromSecret(envVars, config,
+			provutils.NewSecretEnvVar("CADDY_BOP_URL", "bopurl"),
+			provutils.NewSecretEnvVar("CADDY_KEYCLOAK_URL", "keycloakurl"),
+			provutils.NewSecretEnvVar("CADDY_WHITELIST", "whitelist"),
+		)
+
+		container := core.Container{
+			Name:                     "crcauth",
+			Image:                    image,
+			LivenessProbe:            &livenessProbe,
+			ReadinessProbe:           &readinessProbe,
+			Env:                      envVars,
 			TerminationMessagePath:   "/dev/termination-log",
 			TerminationMessagePolicy: core.TerminationMessageReadFile,
 			ImagePullPolicy:          core.PullIfNotPresent,
