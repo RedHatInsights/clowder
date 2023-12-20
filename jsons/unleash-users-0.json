@@ -1,0 +1,96 @@
+{
+  "realm" : "unleash",
+  "users" : [ {
+    "id" : "0034c486-3436-4888-ab2a-f2ffddf6c786",
+    "createdTimestamp" : 1698736364974,
+    "username" : "unleash-admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Admin",
+    "lastName" : "Unleash",
+    "email" : "unleash.admin@example.com",
+    "credentials" : [ {
+      "id" : "08d153aa-b976-466e-a27a-94578593cffd",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1698736666109,
+      "secretData" : "{\"value\":\"GHuoF6z+nRK8ETuISgClaPTpwYma7J8EtQeCeO4YCWQ=\",\"salt\":\"P6jOVBpXYHNWWf9/RK7P0A==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-unleash", "admin" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "a4e4bd90-b3a8-4869-80ca-4ec6824384f3",
+    "createdTimestamp" : 1698736387870,
+    "username" : "unleash-editor",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Editor",
+    "lastName" : "Unleash",
+    "email" : "unleash.editor@example.com",
+    "credentials" : [ {
+      "id" : "c32b3950-5184-4e07-9451-eb7bf98d9100",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1698736655621,
+      "secretData" : "{\"value\":\"sfK6FP5wds07p4+rtr16X/ZctGC/tyTQg17G8rcVCWw=\",\"salt\":\"1MnJBUf3vVeUYhqCfM39Lg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-unleash", "editor" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "4b3a9ac4-7c0f-4720-9169-40c2fd3b0c01",
+    "createdTimestamp" : 1698739340378,
+    "username" : "unleash-no-role",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "NoRole",
+    "lastName" : "Unleash",
+    "email" : "unleash.no.role@example.com",
+    "credentials" : [ {
+      "id" : "ce21c839-3820-4e1c-be04-5634b0dda137",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1698739350620,
+      "secretData" : "{\"value\":\"W9TwxxpzstygDAwj2koy2/PydJdr5+oVMXdSEv1/Iew=\",\"salt\":\"HSQWXKrg7vvmQD6YZlqQqw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-unleash" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "75e23650-5b23-48db-abad-28210f28fce4",
+    "createdTimestamp" : 1698736412492,
+    "username" : "unleash-viewer",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Viewer",
+    "lastName" : "Unleash",
+    "email" : "unleash.viewer@example.com",
+    "credentials" : [ {
+      "id" : "50110050-0659-45d1-a3a1-090d040c06ca",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1698736644582,
+      "secretData" : "{\"value\":\"kEhGZN7rVupgolbr4mQWzvM/77QdaSw+bTkGvsznOiI=\",\"salt\":\"ka2zdh1bnLx+9KuLUUTZNA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-unleash", "viewer" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

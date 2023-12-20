@@ -220,7 +220,6 @@ func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap prov
 	keycloakSecret := core.Secret{}
 	cache.Get(web.WebKeycloakSecret, &keycloakSecret)
 
-	secretName := keycloakSecret.Name
 	/*
 		   NOTE: about the order ... set the order in the impl. of each provider
 			REACH the provider, get the data from the cache.
