@@ -2,7 +2,6 @@ package featureflags
 
 import (
 	"fmt"
-	"net/url"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -109,19 +108,16 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 	username := utils.RandString(16)
 	hostname := fmt.Sprintf("%v.%v.svc", namespacedNameDb.Name, namespacedNameDb.Namespace)
-	passwordEncode := url.QueryEscape(password)
-	connectionURL := fmt.Sprintf("postgres://%s:%s@%s/%s", username, passwordEncode, hostname, "unleash")
 
 	dataInitDb := func() map[string]string {
 
 		return map[string]string{
-			"hostname":      hostname,
-			"port":          "5432",
-			"username":      username,
-			"password":      password,
-			"pgPass":        pgPassword,
-			"name":          "unleash",
-			"connectionURL": connectionURL,
+			"hostname": hostname,
+			"port":     "5432",
+			"username": username,
+			"password": password,
+			"pgPass":   pgPassword,
+			"name":     "unleash",
 		}
 	}
 
@@ -220,17 +216,6 @@ func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap prov
 	keycloakSecret := core.Secret{}
 	cache.Get(web.WebKeycloakSecret, &keycloakSecret)
 
-	/*
-		   NOTE: about the order ... set the order in the impl. of each provider
-			REACH the provider, get the data from the cache.
-
-			make "somethingsomething" -> made with component system (make component cache exists)
-			There was a pattern, all compontents were created the same way each time
-			the name is makeCachecomponent (or makecomponentcache, one or the other)
-
-			the objMap ...
-	*/
-
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
 	svc := objMap[LocalFFService].(*core.Service)
 
@@ -250,25 +235,43 @@ func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap prov
 
 	port := int32(4242)
 
-	envVars := []core.EnvVar{{
-		Name: "DATABASE_PASSWORD",
-		ValueFrom: &core.EnvVarSource{
-			SecretKeyRef: &core.SecretKeySelector{
-				LocalObjectReference: core.LocalObjectReference{
-					Name: "featureflags-db",
-				},
-				Key: "password",
-			},
-		},
-	},
+	envVars := []core.EnvVar{
 		{
 			Name:  "DATABASE_SSL",
 			Value: "false",
 		},
+		{
+			Name:  "KC_HOST",
+			Value: fmt.Sprintf("http://%s-%s.%s.svc:8080", o.GetClowdName(), "keycloak", o.GetClowdNamespace()),
+		},
+		{
+			Name:  "KC_REALM",
+			Value: "unleash",
+		},
+		{
+			Name:  "KC_CLIENT_ID",
+			Value: "unleash",
+		},
+		{
+			Name:  "KC_ADMIN_ROLES",
+			Value: "admin",
+		},
+		{
+			Name:  "KC_EDITOR_ROLES",
+			Value: "editor",
+		},
+		{
+			Name:  "KC_VIEWER_ROLES",
+			Value: "viewer",
+		},
 	}
 
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, "featureflags-db",
-		provutils.NewSecretEnvVar("DATABASE_URL", "connectionURL"),
+		provutils.NewSecretEnvVar("DATABASE_HOST", "hostname"),
+		provutils.NewSecretEnvVar("DATABASE_PORT", "port"),
+		provutils.NewSecretEnvVar("DATABASE_USERNAME", "username"),
+		provutils.NewSecretEnvVar("DATABASE_PASSWORD", "password"),
+		provutils.NewSecretEnvVar("DATABASE_NAME", "name"),
 	)
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
 		provutils.NewSecretEnvVar("INIT_CLIENT_API_TOKENS", "clientAccessToken"),
