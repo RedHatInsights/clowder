@@ -223,7 +223,7 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 		return fmt.Errorf("could not read unleash-realm data: %w", err)
 	}
 
-	unleashUsersData, err := os.ReadFile("./jsons/unleash-users.json")
+	unleashUsersData, err := os.ReadFile("./jsons/unleash-users-0.json")
 	if err != nil {
 		return fmt.Errorf("could not read unleash-users data: %w", err)
 	}
@@ -234,7 +234,7 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 
 	importData.StringData["redhat-external-realm.json"] = string(redhatRealmDataString)
 	importData.StringData["unleash-realm.json"] = string(unleashRealmData)
-	importData.StringData["unleash-users.json"] = string(unleashUsersData)
+	importData.StringData["unleash-users-0.json"] = string(unleashUsersData)
 
 	return cache.Update(WebKeycloakImportSecret, importData)
 }

@@ -264,6 +264,10 @@ func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap prov
 			Name:  "KC_VIEWER_ROLES",
 			Value: "viewer",
 		},
+		{
+			Name:  "KC_CLIENT_SECRET",
+			Value: "notsosecret",
+		},
 	}
 
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, "featureflags-db",
