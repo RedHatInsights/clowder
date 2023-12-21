@@ -148,7 +148,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		},
 	}
 
-	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:12-9ee2984", ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
+	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:15-53ac80c", ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
 
 	if err = ff.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return err
