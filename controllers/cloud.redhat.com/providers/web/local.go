@@ -262,7 +262,7 @@ func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVer
 	return nil
 }
 
-func getAuthHostname(hostname string) string {
+func GetAuthHostname(hostname string) string {
 	hostComponents := strings.Split(hostname, ".")
 	hostComponents[0] += "-auth"
 	return strings.Join(hostComponents, ".")

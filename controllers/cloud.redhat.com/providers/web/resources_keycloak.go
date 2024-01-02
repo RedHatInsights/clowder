@@ -458,7 +458,7 @@ func makeAuthIngress(p *providers.Provider) error {
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: getAuthHostname(p.Env.Status.Hostname),
+				Host: GetAuthHostname(p.Env.Status.Hostname),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{
