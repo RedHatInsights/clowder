@@ -211,14 +211,9 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 
 func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "featureflags")
-
-	//keycloakName := providers.GetNamespacedName(o, "")
-	keycloakSecret := core.Secret{}
-	cache.Get(web.WebKeycloakSecret, &keycloakSecret)
-
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
 	svc := objMap[LocalFFService].(*core.Service)
-
+	environment := o.(*crd.ClowdEnvironment)
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
 	labels["service"] = "featureflags"
@@ -242,7 +237,7 @@ func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap prov
 		},
 		{
 			Name:  "KC_HOST",
-			Value: fmt.Sprintf("http://%s-%s.%s.svc:8080", o.GetClowdName(), "keycloak", o.GetClowdNamespace()),
+			Value: web.GetAuthHostname(environment.Status.Hostname),
 		},
 		{
 			Name:  "KC_REALM",
