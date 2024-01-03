@@ -23,3 +23,5 @@ fi
 
 rm out/schema.json
 rmdir out
+
+## Lets move to using coveooss/json-schema-for-humans

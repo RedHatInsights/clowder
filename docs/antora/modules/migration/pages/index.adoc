@@ -1,6 +1,0 @@
-= Migration Pages
-
-The following pages are present to assist in migration efforts
-
-- xref:migration.adoc[Migration Docs]
-- xref:checklist.adoc[Check List]

@@ -1,15 +1,21 @@
-# Clowder Readme
+![Clowder - Clowd Platform Operator](docs/img/clowder.svg)
+
+![Build Passing](https://img.shields.io/github/actions/workflow/status/RedHatInsights/clowder/package.yml?branch=master)
+![Downloads](https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg)
+![Release](https://img.shields.io/github/v/release/RedHatInsights/clowder)
+![Go Report Card](https://goreportcard.com/badge/github.com/RedHatInsights/clowder)
+
 ## What is Clowder?
 
 Clowder is a kubernetes operator designed to make it easy to deploy applications
 running on the cloud.redhat.com platform in production, testing and local
 development environments.
 
-[Learn More](learn-more)
+[Learn More](docs/learn-more.md)
 
 ## See Clowder in Action
 
-![Animated GIF terminal example](img/terminal-example.gif)
+![Animated GIF terminal example](docs/img/terminal-example.gif)
 
 ## Why use Clowder?
 
@@ -36,7 +42,7 @@ to consume, leaving teams to focus more on writing code than differences between
 environments. The Clowder config client can assist with this and currently has support
 for Python, Go, Javascript and Ruby.
 
-![Configuration model](img/config.svg)
+![Configuration model](docs/img/config.svg)
 
 ## Feature List
 
@@ -81,7 +87,7 @@ minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 --addons
 
 NOTE:
 Mac OS is also supported with the `virtualbox` and `hyperkit` drivers. A full
-guide [can be found here](./macos)
+guide [can be found here](docs/macos.md)
 
 To persist these changes for every minikube invocation, run the following:
 
@@ -93,7 +99,7 @@ minikube config set driver kvm2
 ```
 
 If you encounter any kvm issues, please take a look
-[at the troubleshooting guide](./developer-guide)
+[at the troubleshooting guide](docs/developer-guide.md)
 
 The ``kube_setup.sh`` script then needs to be run by invoking
 
@@ -122,7 +128,7 @@ Example app developer workflow:
 * Use ``kubectl apply -f clowdapp.yaml`` to apply a ``ClowdApp`` resource to the
   cluster.
 
-More details on how to do this are present in the [Getting Started](usage/getting-started) section
+More details on how to do this are present in the [Getting Started](docs/usage/getting-started.md) section
 of the documentation.
 
 [API Reference](https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html)
@@ -131,12 +137,12 @@ of the documentation.
 
 If you want to run a version of Clowder other than the released version there
 are a few prerequisites you will need. To learn about developing Clowder please
-visit the xref:docs/antora/modules/ROOT/pages/developer-guide.adoc[developing clowder] page for more detailed instructions.
+visit the [developing clowder](docs/developer-guide.md) page for more detailed instructions.
 
 ## History
 
 To understand more about the design decisions made while developing Clowder,
-please visit the xref:docs/antora/modules/ROOT/pages/clowder-design.adoc[design document]
+please visit the [design document](docs/clowder-design.adoc).
 
 ## Connect
 

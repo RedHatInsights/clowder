@@ -12,14 +12,6 @@ if [ ! -d docs/build/crd-ref-docs ]; then
 	cd -
 fi
 
-if ! command -v asciidoctor; then
-	echo "ERROR: 'asciidoctor' not found."
-	echo " "
-	echo "Please install 'asciidoctor'.  On Fedora use 'sudo dnf install -y asciidoctor'"
-	echo "For others, see: https://docs.asciidoctor.org/asciidoctor/latest/install/"
-	exit 1
-fi
-
 docs/build/crd-ref-docs/crd-ref-docs --source-path=./apis --config=docs/config.yaml \
-	--renderer=asciidoctor --templates-dir=docs/build/crd-ref-docs/templates/asciidoctor \
-	--output-path=docs/antora/modules/ROOT/pages/api_reference.adoc
+	--renderer=markdown \
+	--output-path=docs/api_reference.md
