@@ -1,15 +1,14 @@
-= Database Provider
+# Database Provider
 
 The **Database Provider** is responsible for providing access to a PostgreSQL
 database.
 
-== ClowdApp Configuration
+## ClowdApp Configuration
 
-To request a database, a `+ClowdApp+` would use the `+database+` stanza, a
+To request a database, a `ClowdApp` would use the `database` stanza, a
 partial example of which is shown below.
 
-[source,yaml]
-----
+```yaml
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
@@ -19,9 +18,9 @@ spec:
   database:
     name: inventory
     version: 12
-----
+```
 
-=== Using a Shared Database across multiple ClowdApps
+### Using a Shared Database across multiple ClowdApps
 
 To share a database from one ClowdApp to another Clowder supports sharing a database 
 declared in one ClowdApp with many others.
@@ -29,8 +28,7 @@ declared in one ClowdApp with many others.
 Request a database like above, but then in your dependent ClowdApp resource set up
 the shared configuration like so:
 
-[source,yaml]
-----
+```yaml
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
@@ -41,41 +39,41 @@ spec:
     sharedDbAppName: myapp
   dependencies:
   - myapp
-----
+```
 
 This example would set up `myapp-worker` looking at the same database as `myapp`.
 The strings need to be the same.
 
-== ClowdEnv Configuration
+## ClowdEnv Configuration
 
-=== Modes
+### Modes
 
 The **Database Provider** will run in one of the following modes. These are set up
 by the ClowdEnvironment. Depending on the environment you are running you may
 or may not have access to change this mode. More information on provider
 configuration is at the bottom of this page.
 
-==== local
+#### local
 
 In local mode, the **Database Provider** will provision a single node PostgreSQL
 instance for every app that requests a database and place it in the same
-namespace as the `+ClowdApp+`. The client will be given credentials for both a
+namespace as the `ClowdApp`. The client will be given credentials for both a
 normal user and an admin user.
 
 ClowdEnv Config options available:
 
-- `+pvc+`
+- `pvc`
 
-==== shared
+#### shared
 
 In shared mode, the **Database Provider** will provision a single node PostgreSQL
 and configure every app to use the same instance. As in the local mode, the client
 will be given credentials for both a normal and an admin user.
 
 ClowdEnv Config options available:
-- `+pvc+`
+- `pvc`
 
-==== app-interface
+#### app-interface
 
 In app-interface mode, the Clowder operator does not create any resources and
 simply passes through configuration from a secret to the client config. First
@@ -83,11 +81,11 @@ the provider will search for any secrets that have the annotation of
 ``clowder/database: <app-name>`` where the app-name matches the ClowdApp name.
 If this cannot be found then the provider will search all secrets in the same
 namespace looking for a hostname which is of the form
-`+<name>-<env>.*********+` where `+name+` is the name defined in the
-`+ClowdApp+` `+database+` stanza, and `+env+` is usually one of either
-`+stage+` or `+prod+`.
+`<name>-<env>.*********` where `name` is the name defined in the
+`ClowdApp` `database` stanza, and `env` is usually one of either
+`stage` or `prod`.
 
-== Generated App Configuration
+## Generated App Configuration
 
 The Database configuration appears in the cdappconfig.json with the following
 structure. As well as the hostname and port, credentials and database name are
@@ -95,10 +93,9 @@ presented.
 
 A client helper is available for the RDS CA, used in app-interface mode.
 
-=== JSON structure
+### JSON structure
 
-[source,json]
-----
+```yaml
 {
     "database": {
     "name": "dBaseName",
@@ -112,62 +109,44 @@ A client helper is available for the RDS CA, used in app-interface mode.
     "rdsCa": "ca"
     }
 }
-----
+```
 
-=== Client access
+### Client access
 
 For supported languages, the database configuration is access via the following
 attribute names.
 
-[%header,cols="1,2"]
-|===
-|Language
-|Attribute Name
+Language | Attribute 
+------------ | ------------- 
+Python | `LoadedConfig.database`
+Go | `LoadedConfig.Database`
+Javascript | `LoadedConfig.database`
+Ruby | `LoadedConfig.database`
 
-| Python
-| `+LoadedConfig.database+`
-| Go
-| `+LoadedConfig.Database+`
-| Javascript
-| `+LoadedConfig.database+`
-| Ruby
-| `+LoadedConfig.database+`
 
-|===
+### Client helpers
 
-=== Client helpers
-
-==== **RDS Ca**
+#### **RDS Ca**
 
 Returns a filename which points to a temporary file containing the
 contents of the CA cert.
 
-[%header,cols="1,2"]
-|===
-|Language
-|Attribute Name
+Language | Attribute 
+------------ | ------------- 
+Python |`LoadedConfig.rds_ca()`
+Go |`LoadedConfig.RdsCa()`
+Javascript | Not yet implemented
+Ruby | Not yet implemented
 
-|Python
-|`+LoadedConfig.rds_ca()+`
-|Go
-|`LoadedConfig.RdsCa()`
-|Javascript
-|Not yet implemented
-|Ruby
-|Not yet implemented
-
-|===
-
-=== ClowdEnv Configuration
+### ClowdEnv Configuration
 
 Configuring the **Database Provider** is done by providing the follow JSON
-structure to the `+ClowdEnv+` resource. Further details of the options
+structure to the `ClowdEnv` resource. Further details of the options
 available can be found in the API reference. A minimal example is shown below
-for the `+operator+` mode. Different modes can use different configuration
+for the `operator` mode. Different modes can use different configuration
 options, more information can be found in the API reference.
 
-[source,yaml]
-
+```yaml
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
@@ -178,3 +157,4 @@ spec:
   database:
     mode: local
     pvc: false
+```

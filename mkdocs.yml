@@ -1,4 +1,4 @@
-docs_dir: docsmd/
+docs_dir: docs/
 site_name: Clowder Documentation
 plugins:
   - techdocs-core
