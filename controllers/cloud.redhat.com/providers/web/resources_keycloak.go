@@ -378,6 +378,8 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 			"true",
 			"--metrics-enabled",
 			"true",
+			"--proxy",
+			"edge",
 		},
 		Ports:          ports,
 		LivenessProbe:  &livenessProbe,
