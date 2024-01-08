@@ -13,6 +13,9 @@ data:
                 "create": ${DEBUG_CACHE_CREATE},
                 "update": ${DEBUG_CACHE_UPDATE},
                 "apply": ${DEBUG_CACHE_APPLY}
+            },
+            "pprof": {
+                "enable": ${DEBUG_PPROF_ENABLE}
             }
         },
         "features": {
