@@ -16,8 +16,6 @@ import (
 func generateServers(pub bool, priv bool, pubPort uint32, privPort uint32, appPubPort int32, appPrivPort int32) (map[string]*caddyhttp.Server, error) {
 	servers := make(map[string]*caddyhttp.Server)
 
-	var warnings []caddyconfig.Warning
-
 	tlsConnPolicy := []*caddytls.ConnectionPolicy{{
 		CertSelection: &caddytls.CustomCertSelectionPolicy{
 			AnyTag: []string{"cert0"},
@@ -25,42 +23,39 @@ func generateServers(pub bool, priv bool, pubPort uint32, privPort uint32, appPu
 	}}
 
 	if pub {
-		reverseProxy := reverseproxy.Handler{
-			Upstreams: []*reverseproxy.Upstream{{
-				Dial: fmt.Sprintf("localhost:%d", appPubPort),
-			}},
-		}
-
-		servers["pubServer"] = &caddyhttp.Server{
-			Listen: []string{fmt.Sprintf(":%d", pubPort)},
-			Routes: caddyhttp.RouteList{{
-				HandlersRaw: []json.RawMessage{
-					caddyconfig.JSONModuleObject(reverseProxy, "handler", "reverse_proxy", &warnings),
-				},
-			}},
-			TLSConnPolicies: tlsConnPolicy,
-		}
+		pubServer := generateServer(pubPort, appPubPort, tlsConnPolicy)
+		servers["pubServer"] = pubServer
 	}
 
 	if priv {
-		reverseProxy := reverseproxy.Handler{
-			Upstreams: []*reverseproxy.Upstream{{
-				Dial: fmt.Sprintf("localhost:%d", appPrivPort),
-			}},
-		}
-
-		servers["privServer"] = &caddyhttp.Server{
-			Listen: []string{fmt.Sprintf(":%d", privPort)},
-			Routes: caddyhttp.RouteList{{
-				HandlersRaw: []json.RawMessage{
-					caddyconfig.JSONModuleObject(reverseProxy, "handler", "reverse_proxy", &warnings),
-				},
-			}},
-			TLSConnPolicies: tlsConnPolicy,
-		}
+		privServer := generateServer(privPort, appPrivPort, tlsConnPolicy)
+		servers["privServer"] = privServer
 	}
 
 	return servers, nil
+}
+
+func generateServer(port uint32, appPort int32, tlsConnPolicy []*caddytls.ConnectionPolicy) *caddyhttp.Server {
+
+	var warnings []caddyconfig.Warning
+
+	reverseProxy := reverseproxy.Handler{
+		Upstreams: []*reverseproxy.Upstream{{
+			Dial: fmt.Sprintf("localhost:%d", appPort),
+		}},
+	}
+
+	server := &caddyhttp.Server{
+		Listen: []string{fmt.Sprintf(":%d", port)},
+		Routes: caddyhttp.RouteList{{
+			HandlersRaw: []json.RawMessage{
+				caddyconfig.JSONModuleObject(reverseProxy, "handler", "reverse_proxy", &warnings),
+			},
+		}},
+		TLSConnPolicies: tlsConnPolicy,
+	}
+
+	return server
 }
 
 func generateCaddyConfig(pub bool, priv bool, pubPort uint32, privPort uint32, env *crd.ClowdEnvironment) (string, error) {
@@ -78,8 +73,6 @@ func generateCaddyConfig(pub bool, priv bool, pubPort uint32, privPort uint32, e
 	}
 
 	appConfig := caddyhttp.App{
-		// HTTPPort:  8888,
-		// HTTPSPort: 9090,
 		Servers: servers,
 	}
 

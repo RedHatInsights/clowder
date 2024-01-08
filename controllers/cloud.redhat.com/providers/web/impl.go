@@ -5,6 +5,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -15,8 +16,6 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
-
-var DefaultImageCaddy = "quay.io/cloudservices/caddy-ubi:latest"
 
 // CoreService is the service for the apps deployments.
 var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
@@ -214,7 +213,7 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 
 	container := core.Container{
 		Name:    "caddy-tls",
-		Image:   DefaultImageCaddy,
+		Image:   provutils.DefaultImageCaddyProxy,
 		Command: []string{"/usr/bin/caddy"},
 		Args: []string{
 			"run", "--config", "/etc/caddy/caddy.json",
