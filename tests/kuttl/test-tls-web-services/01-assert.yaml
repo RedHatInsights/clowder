@@ -35,8 +35,8 @@ spec:
           value: "env_var_2"
         - name: ACG_CONFIG
           value: /cdapp/cdappconfig.json
-      - command: /usr/bin/caddy
-      - args:
+        command: /usr/bin/caddy
+        args:
         - run
         - --config
         - /etc/caddy/caddy.json
