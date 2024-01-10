@@ -21,42 +21,44 @@ spec:
   template:
     spec:
       initContainers:
-      - volumeMounts:
+      - name: initContainer
+        volumeMounts:
         - mountPath: /cdapp/
           name: config-secret
         - mountPath: /cdapp/certs
           name: tls-ca
           readOnly: true
       containers:
-      - env:
-        - name: ENV_VAR_1
-          value: "env_var_1"
-        - name: ENV_VAR_2
-          value: "env_var_2"
-        - name: ACG_CONFIG
-          value: /cdapp/cdappconfig.json
-        command: /usr/bin/caddy
-        args:
-        - run
-        - --config
-        - /etc/caddy/caddy.json
+      - args:
+          - run
+          - --config
+          - /etc/caddy/caddy.json
+        env:
+          - name: ENV_VAR_1
+            value: "env_var_1"
+          - name: ENV_VAR_2
+            value: "env_var_2"
+          - name: ACG_CONFIG
+            value: /cdapp/cdappconfig.json
+        command: 
+          - /usr/bin/caddy
         image: quay.io/cloudservices/caddy-ubi:latest
         imagePullPolicy: IfNotPresent
         name: caddy-tls
         ports:
-        - containerPort: 8800
-          name: tls
-          protocol: TCP
-        - containerPort: 18800
-          name: tls-private
-          protocol: TCP
+          - containerPort: 8800
+            name: tls
+            protocol: TCP
+          - containerPort: 18800
+            name: tls-private
+            protocol: TCP
         volumeMounts:
-        - mountPath: /certs
-          name: caddy-tls
-          readOnly: true
-        - mountPath: /etc/caddy
-          name: caddy-config
-          readOnly: true
+          - mountPath: /certs
+            name: caddy-tls
+            readOnly: true
+          - mountPath: /etc/caddy
+            name: caddy-config
+            readOnly: true
       volumes:
       - name: config-secret
         secret:
