@@ -8363,12 +8363,13 @@ objects:
     clowder_config.json: "{\n    \"debugOptions\": {\n        \"trigger\": {\n   \
       \         \"diff\": ${DEBUG_TRIGGERS}\n        },\n        \"cache\": {\n  \
       \          \"create\": ${DEBUG_CACHE_CREATE},\n            \"update\": ${DEBUG_CACHE_UPDATE},\n\
-      \            \"apply\": ${DEBUG_CACHE_APPLY}\n        }\n    },\n    \"features\"\
-      : {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n       \
-      \ \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"enableKedaResources\"\
-      : ${ENABLE_KEDA_RESOURCES},\n        \"perProviderMetrics\": ${PER_PROVIDER_METRICS},\n\
-      \        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n    },\n    \"\
-      settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
+      \            \"apply\": ${DEBUG_CACHE_APPLY}\n        },\n        \"pprof\"\
+      : {\n            \"enable\": ${DEBUG_PPROF_ENABLE}\n        }\n    },\n    \"\
+      features\": {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n\
+      \        \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"\
+      enableKedaResources\": ${ENABLE_KEDA_RESOURCES},\n        \"perProviderMetrics\"\
+      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
+      \    },\n    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
       \n    }\n}\n"
   kind: ConfigMap
   metadata:
@@ -8385,6 +8386,8 @@ parameters:
 - name: DEBUG_CACHE_UPDATE
   value: 'false'
 - name: DEBUG_CACHE_APPLY
+  value: 'false'
+- name: DEBUG_PPROF_ENABLE
   value: 'false'
 - name: CREATE_SERVICE_MONITORS
   value: 'false'
