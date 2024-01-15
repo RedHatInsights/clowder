@@ -34,7 +34,6 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 170656,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -1105,7 +1104,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PA6124D83F67FD625"
+            "uid": "P0226E6921DAF4CC1"
           },
           "fieldConfig": {
             "defaults": {
@@ -1155,7 +1154,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "PA6124D83F67FD625"
+                "uid": "P0226E6921DAF4CC1"
               },
               "exemplar": true,
               "expr": "sum(clowder_version) by (version)",
@@ -1465,7 +1464,7 @@ data:
                 "uid": "PC1EAC84DCBBF0697"
               },
               "exemplar": true,
-              "expr": "clowder_version",
+              "expr": "sum(clowder_version) by (version)",
               "instant": true,
               "interval": "",
               "legendFormat": "{{version}}",
@@ -1870,8 +1869,8 @@ data:
           {
             "current": {
               "selected": false,
-              "text": "c-rh-c-eph-prometheus",
-              "value": "c-rh-c-eph-prometheus"
+              "text": "crc-eph-prometheus",
+              "value": "crc-eph-prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -1895,6 +1894,6 @@ data:
       "timezone": "",
       "title": "Clowder Metrics",
       "uid": "VTSfF_0Gk",
-      "version": 5,
+      "version": 6,
       "weekStart": ""
     }
