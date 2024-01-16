@@ -876,7 +876,8 @@
         "roles",
         "profile",
         "rhfull",
-        "email"
+        "email",
+        "api.console"
       ],
       "optionalClientScopes": [
         "address",
@@ -1518,6 +1519,18 @@
         "consent.screen.text": "${offlineAccessScopeConsentText}",
         "display.on.consent.screen": "true"
       }
+    },
+    {
+      "id": "2e34e8ea-c536-43e1-afb7-043db573dfcb",
+      "name": "api.console",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      }
     }
   ],
   "defaultDefaultClientScopes": [
@@ -1526,7 +1539,8 @@
     "email",
     "role_list",
     "web-origins",
-    "acr"
+    "acr",
+    "api.console"
   ],
   "defaultOptionalClientScopes": [
     "phone",
