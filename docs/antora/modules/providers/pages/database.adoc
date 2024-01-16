@@ -39,7 +39,7 @@ spec:
   # Other App Config
   database:
     sharedDbAppName: myapp
-  dependenceis:
+  dependencies:
   - myapp
 ----
 
