@@ -20,8 +20,6 @@ import (
 // CoreService is the service for the apps deployments.
 var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Service{})
 
-var CoreEnvoyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_envoy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
-
 var CoreCaddyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_caddy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {

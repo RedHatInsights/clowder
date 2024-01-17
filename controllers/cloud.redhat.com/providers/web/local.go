@@ -57,7 +57,7 @@ func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, erro
 		WebGatewayConfigMap,
 		WebGatewayCertificate,
 		WebGatewayCertificateIssuer,
-		CoreEnvoyConfigMap,
+		CoreCaddyConfigMap,
 		CoreService,
 	)
 	return &localWebProvider{Provider: *p}, nil
