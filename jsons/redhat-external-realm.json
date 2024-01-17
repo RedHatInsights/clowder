@@ -509,6 +509,7 @@
         "roles",
         "profile",
         "rhfull",
+        "api.console",
         "email"
       ],
       "optionalClientScopes": [
