@@ -188,7 +188,7 @@ spec:
 
 ==== TLS Auth
 The *Web Provider* also features a TLS sidecar option which will dynamically create and append an
-Envoy sidecar to the deployment pod. This requires enabling in the configuration with an example
+Caddy sidecar to the deployment pod. This requires enabling in the configuration with an example
 below.
 
 [source,yaml]
@@ -214,8 +214,8 @@ This configuration will do several things:
 cert `Secret`
 * Add new ports to the `Service` resource based on if the app has **public** or **private** ports 
 enabled
-* Creates a `ConfigMap` for the *Envoy* sidecar
-* Adds the *Envoy* sidecar to the app's pod
+* Creates a `ConfigMap` for the *Caddy* sidecar
+* Adds the *Caddy* sidecar to the app's pod
 ** Sets VolumeMounts/Volumes for the config
 ** Sets VolumeMounts/Volumes for the cert/key
 * Adds VolumeMounts/Volumes to the app's deployment to mount the CA chain, which is available in

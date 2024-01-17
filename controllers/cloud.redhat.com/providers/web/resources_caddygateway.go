@@ -236,7 +236,7 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 	cm := &core.ConfigMap{}
 	snn := providers.GetNamespacedName(p.Env, "caddy-gateway")
 
-	if err := p.Cache.Create(CoreEnvoyConfigMap, snn, cm); err != nil {
+	if err := p.Cache.Create(CoreCaddyConfigMap, snn, cm); err != nil {
 		return "", err
 	}
 
@@ -314,7 +314,7 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 	h.Write([]byte(cmData))
 	hash := fmt.Sprintf("%x", h.Sum(nil))
 
-	return hash, p.Cache.Update(CoreEnvoyConfigMap, cm)
+	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
 }
 
 func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) {
