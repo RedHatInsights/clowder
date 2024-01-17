@@ -36,25 +36,27 @@ spec:
         - name: ACG_CONFIG
           value: /cdapp/cdappconfig.json
       - args:
-        - -c
-        - /etc/envoy/envoy.json
-        image: envoyproxy/envoy-distroless:v1.24.1
-        imagePullPolicy: IfNotPresent
-        name: envoy-tls
+          - run
+          - --config
+          - /etc/caddy/caddy.json
+        command: 
+          - /usr/bin/caddy
+        image: quay.io/cloudservices/caddy-ubi:latest
+        name: caddy-tls
         ports:
-        - containerPort: 8800
-          name: tls
-          protocol: TCP
-        - containerPort: 18800
-          name: tls-private
-          protocol: TCP
+          - containerPort: 8800
+            name: tls
+            protocol: TCP
+          - containerPort: 18800
+            name: tls-private
+            protocol: TCP
         volumeMounts:
-        - mountPath: /certs
-          name: envoy-tls
-          readOnly: true
-        - mountPath: /etc/envoy
-          name: envoy-config
-          readOnly: true
+          - mountPath: /certs
+            name: caddy-tls
+            readOnly: true
+          - mountPath: /etc/caddy
+            name: caddy-config
+            readOnly: true
       volumes:
       - name: config-secret
         secret:
@@ -62,9 +64,9 @@ spec:
           secretName: puptoo
       - configMap:
           defaultMode: 420
-          name: puptoo-processor-envoy-config
-        name: envoy-config
-      - name: envoy-tls
+          name: puptoo-processor-caddy-config
+        name: caddy-config
+      - name: caddy-tls
         secret:
           defaultMode: 420
           secretName: puptoo-processor-serving-cert

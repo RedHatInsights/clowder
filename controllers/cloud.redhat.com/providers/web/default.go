@@ -20,7 +20,7 @@ type webProvider struct {
 func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CoreService,
-		CoreEnvoyConfigMap,
+		CoreCaddyConfigMap,
 	)
 	return &webProvider{Provider: *p}, nil
 }

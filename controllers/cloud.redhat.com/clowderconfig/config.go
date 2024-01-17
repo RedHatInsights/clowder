@@ -8,12 +8,12 @@ import (
 
 type ClowderConfig struct {
 	Images struct {
-		MBOP           string `json:"mbop"`
-		Caddy          string `json:"caddy"`
-		CaddyGateway   string `json:"caddyGateway"`
-		Keycloak       string `json:"Keycloak"`
-		Mocktitlements string `json:"mocktitlements"`
-		Envoy          string `json:"envoy"`
+		MBOP              string `json:"mbop"`
+		Caddy             string `json:"caddy"`
+		CaddyGateway      string `json:"caddyGateway"`
+		Keycloak          string `json:"Keycloak"`
+		Mocktitlements    string `json:"mocktitlements"`
+		CaddyReverseProxy string `json:"caddyReverseProxy"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {
