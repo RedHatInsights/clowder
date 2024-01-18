@@ -47,6 +47,9 @@ func generateServer(port uint32, appPort int32, tlsConnPolicy []*caddytls.Connec
 
 	server := &caddyhttp.Server{
 		Listen: []string{fmt.Sprintf(":%d", port)},
+		AutoHTTPS: &caddyhttp.AutoHTTPSConfig{
+			Disabled: true,
+		},
 		Routes: caddyhttp.RouteList{{
 			HandlersRaw: []json.RawMessage{
 				caddyconfig.JSONModuleObject(reverseProxy, "handler", "reverse_proxy", &warnings),
