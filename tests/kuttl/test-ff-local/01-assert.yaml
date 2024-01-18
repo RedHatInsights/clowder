@@ -30,4 +30,10 @@ spec:
     spec:
       serviceAccountName: test-ff-local-env
       serviceAccount: test-ff-local-env
-        
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ff-local
+status:
+  ready: true
