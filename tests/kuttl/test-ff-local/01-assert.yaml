@@ -30,6 +30,10 @@ spec:
     spec:
       serviceAccountName: test-ff-local-env
       serviceAccount: test-ff-local-env
+status:
+  replicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
