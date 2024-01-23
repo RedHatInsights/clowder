@@ -111,4 +111,4 @@ spec:
   name:                "prometheus"
   source:              "community-operators"
   sourceNamespace:     "openshift-marketplace"
-  startingCSV:         "prometheusoperator.0.47.0"
+  startingCSV:         "prometheusoperator.0.56.3"
