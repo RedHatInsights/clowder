@@ -96,7 +96,7 @@ port.
 Clowder will also set certain fields in the pod spec, inline with best practice, such as pull
 policy, and anti-affinity.
 
-Clowder creates a ``Secret`` resource which will contain the generated configuration
+Clowder creates a ``Secret`` resource that is named the same as the ``ClowdApp`` which will contain the generated configuration
 for that app. This secret will be mounted at ``/cdappconfig.json`` and will be consumed by the app
 to configure itself on startup.
 
