@@ -182,7 +182,7 @@ func createSubscription(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error 
 		Name:                "prometheus",
 		Source:              "community-operators",
 		SourceNamespace:     "openshift-marketplace",
-		StartingCSV:         utils.StringPtr("prometheusoperator.0.47.0"),
+		StartingCSV:         utils.StringPtr("prometheusoperator.0.56.3"),
 	}
 
 	return cache.Update(PrometheusSubscription, subObj)

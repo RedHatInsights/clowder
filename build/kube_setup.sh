@@ -154,7 +154,7 @@ function install_cert_manager {
 }
 
 function install_prometheus_operator {
-    PROM_VERSION=0.47.0
+    PROM_VERSION=0.56.3
     PROM_OPERATOR_NS=default
     PROM_TARFILE="prometheus-operator-${PROM_VERSION}.tar.gz"
 
@@ -179,7 +179,7 @@ function install_prometheus_operator {
 
     echo "*** Applying prometheus operator manifest ..."
     cd prometheus-operator-${PROM_VERSION}
-    ${KUBECTL_CMD} apply -f bundle.yaml
+    ${KUBECTL_CMD} create -f bundle.yaml --validate=false
 
     echo "*** Will wait for Prometheus operator to come up in background"
     ${KUBECTL_CMD} rollout status deployment/prometheus-operator -n $PROM_OPERATOR_NS | sed "s/^/[prometheus] /" &
