@@ -2,7 +2,6 @@ package featureflags
 
 import (
 	"fmt"
-	"net/url"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -11,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -108,19 +108,16 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 	username := utils.RandString(16)
 	hostname := fmt.Sprintf("%v.%v.svc", namespacedNameDb.Name, namespacedNameDb.Namespace)
-	passwordEncode := url.QueryEscape(password)
-	connectionURL := fmt.Sprintf("postgres://%s:%s@%s/%s", username, passwordEncode, hostname, "unleash")
 
 	dataInitDb := func() map[string]string {
 
 		return map[string]string{
-			"hostname":      hostname,
-			"port":          "5432",
-			"username":      username,
-			"password":      password,
-			"pgPass":        pgPassword,
-			"name":          "unleash",
-			"connectionURL": connectionURL,
+			"hostname": hostname,
+			"port":     "5432",
+			"username": username,
+			"password": password,
+			"pgPass":   pgPassword,
+			"name":     "unleash",
 		}
 	}
 
@@ -182,9 +179,12 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 }
 
 func createDefaultFFSecMap() map[string]string {
+
+	randString := utils.RandHexString(32)
+
 	return map[string]string{
-		"adminAccessToken":  "*:*." + utils.RandHexString(32),
-		"clientAccessToken": "default:development." + utils.RandHexString(32),
+		"adminAccessToken":  "*:*." + randString,
+		"clientAccessToken": "*:default." + randString + ",*:development." + randString + ",*:production." + randString,
 	}
 }
 
@@ -209,12 +209,11 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeLocalFeatureFlags(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "featureflags")
-
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
 	svc := objMap[LocalFFService].(*core.Service)
-
+	environment := o.(*crd.ClowdEnvironment)
 	labels := o.GetLabels()
 	labels["env-app"] = nn.Name
 	labels["service"] = "featureflags"
@@ -236,10 +235,42 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 			Name:  "DATABASE_SSL",
 			Value: "false",
 		},
+		{
+			Name:  "KC_HOST",
+			Value: web.GetAuthHostname(environment.Status.Hostname),
+		},
+		{
+			Name:  "KC_REALM",
+			Value: "unleash",
+		},
+		{
+			Name:  "KC_CLIENT_ID",
+			Value: "unleash",
+		},
+		{
+			Name:  "KC_ADMIN_ROLES",
+			Value: "admin",
+		},
+		{
+			Name:  "KC_EDITOR_ROLES",
+			Value: "editor",
+		},
+		{
+			Name:  "KC_VIEWER_ROLES",
+			Value: "viewer",
+		},
+		{
+			Name:  "KC_CLIENT_SECRET",
+			Value: "notsosecret",
+		},
 	}
 
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, "featureflags-db",
-		provutils.NewSecretEnvVar("DATABASE_URL", "connectionURL"),
+		provutils.NewSecretEnvVar("DATABASE_HOST", "hostname"),
+		provutils.NewSecretEnvVar("DATABASE_PORT", "port"),
+		provutils.NewSecretEnvVar("DATABASE_USERNAME", "username"),
+		provutils.NewSecretEnvVar("DATABASE_PASSWORD", "password"),
+		provutils.NewSecretEnvVar("DATABASE_NAME", "name"),
 	)
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
 		provutils.NewSecretEnvVar("INIT_CLIENT_API_TOKENS", "clientAccessToken"),

@@ -1,0 +1,7 @@
+[allowlist]
+description = "Global Allowlist"
+
+regexes = [
+    # keycloak client secret used in local
+    '''ZYhToGucoRMwaWHxXyGKsjunXlXV6Uto''',
+]

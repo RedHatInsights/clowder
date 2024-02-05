@@ -128,7 +128,7 @@ type ClowderProvider interface {
 	GetConfig() *config.AppConfig
 }
 
-type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool)
+type makeFnCache func(cache *rc.ObjectCache, o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool)
 
 func createResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName) (client.Object, error) {
 	gvks, nok, err := cache.GetScheme().ObjectKinds(resourceIdent.GetType())
@@ -200,7 +200,7 @@ func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, o ob
 
 	}
 
-	fn(o, makeFnMap, usePVC, nodePort)
+	fn(cache, o, makeFnMap, usePVC, nodePort)
 
 	for k, v := range makeFnMap {
 		err := updateResource(cache, k, v)

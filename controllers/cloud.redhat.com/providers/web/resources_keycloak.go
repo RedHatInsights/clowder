@@ -199,10 +199,10 @@ func configureKeycloak(web *localWebProvider) error {
 }
 
 func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, password string) error {
-	userData := &core.Secret{}
+	importData := &core.Secret{}
 	userDataNN := providers.GetNamespacedName(o, "keycloak-realm-import")
 
-	if err := cache.Create(WebKeycloakImportSecret, userDataNN, userData); err != nil {
+	if err := cache.Create(WebKeycloakImportSecret, userDataNN, importData); err != nil {
 		return err
 	}
 
@@ -211,20 +211,32 @@ func makeKeycloakImportSecretRealm(cache *rc.ObjectCache, o obj.ClowdObject, pas
 
 	labeler := utils.MakeLabeler(userDataNN, labels, o)
 
-	labeler(userData)
+	labeler(importData)
 
-	userImportData, err := os.ReadFile("./jsons/redhat-external-realm.json")
+	readhatRealmData, err := os.ReadFile("./jsons/redhat-external-realm.json")
 	if err != nil {
 		return fmt.Errorf("could not read user data: %w", err)
 	}
 
-	userData.StringData = map[string]string{}
-	userImportDataString := string(userImportData)
-	userImportDataString = strings.Replace(userImportDataString, "########PASSWORD########", password, 1)
+	unleashRealmData, err := os.ReadFile("./jsons/unleash-realm.json")
+	if err != nil {
+		return fmt.Errorf("could not read unleash-realm data: %w", err)
+	}
 
-	userData.StringData["redhat-external-realm.json"] = string(userImportDataString)
+	unleashUsersData, err := os.ReadFile("./jsons/unleash-users-0.json")
+	if err != nil {
+		return fmt.Errorf("could not read unleash-users data: %w", err)
+	}
 
-	return cache.Update(WebKeycloakImportSecret, userData)
+	importData.StringData = map[string]string{}
+	redhatRealmDataString := string(readhatRealmData)
+	redhatRealmDataString = strings.Replace(redhatRealmDataString, "########PASSWORD########", password, 1)
+
+	importData.StringData["redhat-external-realm.json"] = string(redhatRealmDataString)
+	importData.StringData["unleash-realm.json"] = string(unleashRealmData)
+	importData.StringData["unleash-users-0.json"] = string(unleashUsersData)
+
+	return cache.Update(WebKeycloakImportSecret, importData)
 }
 
 func baseProbeHandler(port int32, path string) core.ProbeHandler {
@@ -246,7 +258,35 @@ func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	}
 }
 
-func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+type secretEnvVar struct {
+	Name string
+	Key  string
+}
+
+func newSecretEnvVar(name, key string) secretEnvVar {
+	return secretEnvVar{Name: name, Key: key}
+}
+
+func mapEnvVarsToSecret(inputs []secretEnvVar, secName string) []core.EnvVar {
+	envVars := []core.EnvVar{}
+	for _, env := range inputs {
+		newVar := core.EnvVar{
+			Name: env.Name,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: secName,
+					},
+					Key: env.Key,
+				},
+			},
+		}
+		envVars = append(envVars, newVar)
+	}
+	return envVars
+}
+
+func makeKeycloak(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)
@@ -278,10 +318,6 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		{
 			Name:  "PROXY_ADDRESS_FORWARDING",
 			Value: "true",
-		},
-		{
-			Name:  "KEYCLOAK_IMPORT",
-			Value: "/json/redhat-external-realm.json",
 		},
 	}
 
@@ -422,7 +458,7 @@ func makeAuthIngress(p *providers.Provider) error {
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{
 			{
-				Host: getAuthHostname(p.Env.Status.Hostname),
+				Host: GetAuthHostname(p.Env.Status.Hostname),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
 						Paths: []networking.HTTPIngressPath{{

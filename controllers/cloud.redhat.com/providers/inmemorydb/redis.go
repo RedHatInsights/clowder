@@ -87,7 +87,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false, r.Env.IsNodePort())
 }
 
-func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeLocalRedis(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	nn := providers.GetNamespacedName(o, "redis")
 
 	dd := objMap[RedisDeployment].(*apps.Deployment)

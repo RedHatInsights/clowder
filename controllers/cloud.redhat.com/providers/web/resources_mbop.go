@@ -171,7 +171,7 @@ func makeBOPIngress(p *providers.Provider) error {
 	return p.Cache.Update(WebBOPIngress, netobj)
 }
 
-func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeBOP(cache *rc.ObjectCache, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
 	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mbop")
 
