@@ -114,7 +114,7 @@ func configureKeycloakDB(web *localWebProvider) error {
 		},
 	}
 
-	provutils.MakeLocalDB(dd, namespacedNameDb, web.Env, labels, &dbCfg, "quay.io/cloudservices/postgresql-rds:15-53ac80c", web.Env.Spec.Providers.Web.KeycloakPVC, "keycloak", &res)
+	provutils.MakeLocalDB(dd, namespacedNameDb, web.Env, labels, &dbCfg, provutils.DefaultImageDatabasePG15, web.Env.Spec.Providers.Web.KeycloakPVC, "keycloak", &res)
 
 	if err = web.Cache.Update(WebKeycloakDBDeployment, dd); err != nil {
 		return err
