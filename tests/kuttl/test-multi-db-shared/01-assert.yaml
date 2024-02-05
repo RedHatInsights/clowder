@@ -19,7 +19,7 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/cloudservices/postgresql-rds:cyndi-10-2318dee
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-10-99c8c27
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
