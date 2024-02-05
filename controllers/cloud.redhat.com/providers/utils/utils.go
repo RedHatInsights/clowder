@@ -28,6 +28,11 @@ var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:81fd80e"
 var DefaultKeyCloakVersion = "23.0.1"
 var DefaultImageCaddyProxy = "quay.io/cloudservices/caddy-ubi:latest"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
+var DefaultImageDatabasePG10 = "quay.io/cloudservices/postgresql-rds:10-99c8c27"
+var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
+var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
+var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
+var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {

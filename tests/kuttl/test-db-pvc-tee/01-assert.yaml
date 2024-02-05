@@ -10,7 +10,7 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/cloudservices/postgresql-rds:12-9ee2984
+        - image: quay.io/cloudservices/postgresql-rds:12-2318dee
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

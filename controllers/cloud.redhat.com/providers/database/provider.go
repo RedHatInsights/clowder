@@ -6,13 +6,8 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
-
-var DefaultImageDatabasePG10 = "quay.io/cloudservices/postgresql-rds:10-9ee2984"
-var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-9ee2984"
-var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-9ee2984"
-var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-99c8c27"
-var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-e9e67a5"
 
 // ProvName is the providers name ident.
 var ProvName = "database"
@@ -40,11 +35,11 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 func init() {
 	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
 	imageList = map[int32]string{
-		15: DefaultImageDatabasePG15,
-		14: DefaultImageDatabasePG14,
-		13: DefaultImageDatabasePG13,
-		12: DefaultImageDatabasePG12,
-		10: DefaultImageDatabasePG10,
+		15: provutils.DefaultImageDatabasePG15,
+		14: provutils.DefaultImageDatabasePG14,
+		13: provutils.DefaultImageDatabasePG13,
+		12: provutils.DefaultImageDatabasePG12,
+		10: provutils.DefaultImageDatabasePG10,
 	}
 }
 
