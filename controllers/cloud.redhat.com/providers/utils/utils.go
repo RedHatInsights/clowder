@@ -86,9 +86,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
 		{Name: "POSTGRESQL_PASSWORD", Value: cfg.Password},
-		{Name: "PGPASSWORD", Value: cfg.AdminPassword}, // Legacy for old db images can likely be removed soon
-		{Name: "POSTGRESQL_MASTER_USER", Value: cfg.AdminUsername},
-		{Name: "POSTGRESQL_MASTER_PASSWORD", Value: cfg.AdminPassword},
+		{Name: "POSTGRESQL_ADMIN_PASSWORD", Value: cfg.AdminPassword},
 		{Name: "POSTGRESQL_DATABASE", Value: dbName},
 	}
 	ports := []core.ContainerPort{{
