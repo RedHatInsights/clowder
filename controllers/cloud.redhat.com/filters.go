@@ -36,16 +36,16 @@ func logMessage(logr logr.Logger, msg string, keysAndValues ...interface{}) {
 
 func defaultFilter(_ logr.Logger, _ string) HandlerFuncs {
 	return HandlerFuncs{
-		CreateFunc: func(e event.CreateEvent) (bool, string) {
+		CreateFunc: func(_ event.CreateEvent) (bool, string) {
 			return true, "create"
 		},
-		DeleteFunc: func(e event.DeleteEvent) (bool, string) {
+		DeleteFunc: func(_ event.DeleteEvent) (bool, string) {
 			return true, "update"
 		},
-		UpdateFunc: func(e event.UpdateEvent) (bool, string) {
+		UpdateFunc: func(_ event.UpdateEvent) (bool, string) {
 			return true, "update"
 		},
-		GenericFunc: func(e event.GenericEvent) (bool, string) {
+		GenericFunc: func(_ event.GenericEvent) (bool, string) {
 			return true, "generic"
 		},
 	}
@@ -101,7 +101,7 @@ func genFilterFunc(updateFn func(e event.UpdateEvent) bool, logr logr.Logger, ct
 }
 
 func alwaysFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
-	return genFilterFunc(func(e event.UpdateEvent) bool {
+	return genFilterFunc(func(_ event.UpdateEvent) bool {
 		return true
 	}, logr, ctrlName)
 }
@@ -120,14 +120,14 @@ func kafkaFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
 
 func environmentPredicate(_ logr.Logger, _ string) predicate.Predicate {
 	return predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
+		CreateFunc: func(_ event.CreateEvent) bool {
 			return true
 		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
+		DeleteFunc: func(_ event.DeleteEvent) bool {
 			return true
 		},
 		UpdateFunc: environmentUpdateFunc,
-		GenericFunc: func(e event.GenericEvent) bool {
+		GenericFunc: func(_ event.GenericEvent) bool {
 			return true
 		},
 	}
