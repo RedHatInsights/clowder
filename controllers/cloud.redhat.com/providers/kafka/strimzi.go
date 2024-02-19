@@ -96,9 +96,9 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 	s.Config.Kafka.Topics = []config.TopicConfig{}
 
 	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type != nil && *listener.Type == "tls" {
+		if listener.Name != nil && *listener.Name == "tls" {
 			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
-		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+		} else if listener.Name != nil && (*listener.Name == "plain" || *listener.Name == "tcp") {
 			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
@@ -627,9 +627,9 @@ func (s *strimziProvider) configureListeners() error {
 
 	s.Config.Kafka.Brokers = []config.BrokerConfig{}
 	for _, listener := range kafkaResource.Status.Listeners {
-		if listener.Type != nil && *listener.Type == "tls" {
+		if listener.Name != nil && *listener.Name == "tls" {
 			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTLSBrokerConfig(listener, kafkaCACert))
-		} else if listener.Type != nil && (*listener.Type == "plain" || *listener.Type == "tcp") {
+		} else if listener.Name != nil && (*listener.Name == "plain" || *listener.Name == "tcp") {
 			s.Config.Kafka.Brokers = append(s.Config.Kafka.Brokers, buildTCPBrokerConfig(listener))
 		}
 	}
