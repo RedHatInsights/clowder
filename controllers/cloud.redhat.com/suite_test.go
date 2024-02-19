@@ -158,7 +158,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 		Namespace: "kafka",
 	}
 	host := "kafka-bootstrap.kafka.svc"
-	listenerType := "plain"
+	listenerName := "plain"
 	kport := int32(9092)
 
 	// this loop will run for 60sec max
@@ -184,7 +184,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 				Type:   utils.StringPtr("Ready"),
 			}},
 			Listeners: []strimzi.KafkaStatusListenersElem{{
-				Type: &listenerType,
+				Name: &listenerName,
 				Addresses: []strimzi.KafkaStatusListenersElemAddressesElem{{
 					Host: &host,
 					Port: &kport,
