@@ -438,7 +438,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	assert.NoError(suite.T(), err)
 
-	assert.Equal(suite.T(), d.Labels, labels, "deployment label mismatch")
+	assert.Equal(suite.T(), labels, d.Labels, "deployment label mismatch")
 
 	antiAffinity := d.Spec.Template.Spec.Affinity.PodAntiAffinity
 	terms := antiAffinity.PreferredDuringSchedulingIgnoredDuringExecution
