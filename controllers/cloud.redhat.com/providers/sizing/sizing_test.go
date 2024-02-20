@@ -32,19 +32,19 @@ func TestGetCPUSizeToCapacityMap(t *testing.T) {
 
 func TestGetRAMSizeToCapacityMap(t *testing.T) {
 	r := conf.RAMSizeToCapacity
-	assert.Equal(t, r["small"], "512Mi")
-	assert.Equal(t, r["medium"], "1Gi")
-	assert.Equal(t, r["large"], "2Gi")
-	assert.Equal(t, r["x-large"], "3Gi")
+	assert.Equal(t, r["small"], "1Gi")
+	assert.Equal(t, r["medium"], "2Gi")
+	assert.Equal(t, r["large"], "3Gi")
+	assert.Equal(t, r["x-large"], "4Gi")
 }
 
 func TestGetDefaultResourceRequirements(t *testing.T) {
 	reqs := GetDefaultResourceRequirements()
 
-	ramSmall := conf.RAMSizeToCapacity["small"]
-	cpuSmall := conf.CPUSizeToCapacity["small"]
-	ramMed := conf.RAMSizeToCapacity["medium"]
-	cpuMed := conf.CPUSizeToCapacity["medium"]
+	ramSmall := conf.RAMSizeToCapacity["x-small"]
+	cpuSmall := conf.CPUSizeToCapacity["x-small"]
+	ramMed := conf.RAMSizeToCapacity["small"]
+	cpuMed := conf.CPUSizeToCapacity["small"]
 
 	assert.Equal(t, reqs.Limits["memory"], resource.MustParse(ramMed))
 	assert.Equal(t, reqs.Limits["cpu"], resource.MustParse(cpuMed))
