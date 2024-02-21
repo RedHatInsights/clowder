@@ -89,7 +89,7 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func reportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) {
+func reportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) (ctrl.Result, error) {
 	// get parent clowdapp name
 	var appName string = o.Name
 	var dependencies []string
@@ -100,7 +100,11 @@ func reportDependencies(ctx context.Context, pClient client.Client, o *crd.Clowd
 
 	applist := crd.ClowdAppList{}
 
-	pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName})
+	err := pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName})
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	// for each dependency
 	for _, dependency := range dependencies {
@@ -116,6 +120,8 @@ func reportDependencies(ctx context.Context, pClient client.Client, o *crd.Clowd
 			}
 		}
 	}
+
+	return ctrl.Result{}, nil
 }
 
 func (r *ClowdAppReconciliation) setPresentAndManagedApps() (ctrl.Result, error) {
