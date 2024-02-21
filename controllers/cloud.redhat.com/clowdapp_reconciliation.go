@@ -90,34 +90,27 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 }
 
 func reportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) (ctrl.Result, error) {
-	// get parent clowdapp name
-	var appName string = o.Name
-	var dependencies []string
-
-	// get dependencies and optional dependencies
-	dependencies = append(dependencies, o.Spec.Dependencies...)
-	dependencies = append(dependencies, o.Spec.OptionalDependencies...)
-
+	appName := o.Name
 	applist := crd.ClowdAppList{}
+	dependencies := append(o.Spec.Dependencies, o.Spec.OptionalDependencies...)
 
-	err := pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName})
-
-	if err != nil {
+	if err := pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName}); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// for each dependency
 	for _, dependency := range dependencies {
-		//   get child clowdapp with name of dependency
 		for _, app := range applist.Items {
-			if app.Name == dependency {
-				//	 report child clowdapp availability
-				if app.Status.Ready {
-					dependencyMetrics.With(prometheus.Labels{"app": appName, "dependency": dependency}).Set(1.0)
-				} else {
-					dependencyMetrics.With(prometheus.Labels{"app": appName, "dependency": dependency}).Set(0.0)
-				}
+			if app.Name != dependency {
+				continue
 			}
+
+			observedReady := 0.0
+			if app.Status.Ready {
+				observedReady = 1.0
+			}
+
+			dependencyMetrics.With(prometheus.Labels{"app": appName, "dependency": dependency}).Set(observedReady)
+
 		}
 	}
 
