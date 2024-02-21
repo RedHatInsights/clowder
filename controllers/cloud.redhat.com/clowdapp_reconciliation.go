@@ -89,6 +89,35 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+func reportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) {
+	// get parent clowdapp name
+	var appName string = o.Name
+	var dependencies []string
+
+	// get dependencies and optional dependencies
+	dependencies = append(dependencies, o.Spec.Dependencies...)
+	dependencies = append(dependencies, o.Spec.OptionalDependencies...)
+
+	applist := crd.ClowdAppList{}
+
+	pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName})
+
+	// for each dependency
+	for _, dependency := range dependencies {
+		//   get child clowdapp with name of dependency
+		for _, app := range applist.Items {
+			if app.Name == dependency {
+				//	 report child clowdapp availability
+				if app.Status.Ready {
+					dependencyMetrics.With(prometheus.Labels{"app": appName, "dependency": dependency}).Set(1.0)
+				} else {
+					dependencyMetrics.With(prometheus.Labels{"app": appName, "dependency": dependency}).Set(0.0)
+				}
+			}
+		}
+	}
+}
+
 func (r *ClowdAppReconciliation) setPresentAndManagedApps() (ctrl.Result, error) {
 	presentApps[r.app.GetIdent()] = true
 
@@ -358,6 +387,8 @@ func (r *ClowdAppReconciliation) deletedUnusedResources() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) setReconciliationSuccessful() (ctrl.Result, error) {
+	reportDependencies(r.ctx, r.client, r.app)
+
 	if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationSuccessful, r.oldStatus, nil); setClowdStatusErr != nil {
 		r.log.Info("Set status error", "err", setClowdStatusErr)
 		return ctrl.Result{Requeue: true}, setClowdStatusErr
