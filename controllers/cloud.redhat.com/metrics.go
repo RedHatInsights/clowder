@@ -95,6 +95,13 @@ var (
 		},
 		[]string{"app", "env"},
 	)
+	dependencyMetrics = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "clowder_dependency_availability",
+			Help: "Clowder dependency availability",
+		},
+		[]string{"app", "dependency"},
+	)
 )
 
 func init() {
@@ -108,5 +115,6 @@ func init() {
 		presentAppsMetric,
 		presentEnvsMetric,
 		reconciliationMetrics,
+		dependencyMetrics,
 	)
 }
