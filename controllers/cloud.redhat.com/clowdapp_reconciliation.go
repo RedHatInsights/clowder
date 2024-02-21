@@ -393,7 +393,10 @@ func (r *ClowdAppReconciliation) deletedUnusedResources() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) setReconciliationSuccessful() (ctrl.Result, error) {
-	reportDependencies(r.ctx, r.client, r.app)
+	_, err := reportDependencies(r.ctx, r.client, r.app)
+	if err != nil {
+		r.log.Info("Error during depency metric reporting", "err", err)
+	}
 
 	if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationSuccessful, r.oldStatus, nil); setClowdStatusErr != nil {
 		r.log.Info("Set status error", "err", setClowdStatusErr)
