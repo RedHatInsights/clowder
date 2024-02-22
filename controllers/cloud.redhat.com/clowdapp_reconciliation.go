@@ -89,13 +89,13 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func reportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) (ctrl.Result, error) {
+func ReportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) error {
 	appName := o.Name
 	applist := crd.ClowdAppList{}
 	dependencies := append(o.Spec.Dependencies, o.Spec.OptionalDependencies...)
 
 	if err := pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName}); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	for _, dependency := range dependencies {
@@ -114,7 +114,7 @@ func reportDependencies(ctx context.Context, pClient client.Client, o *crd.Clowd
 		}
 	}
 
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func (r *ClowdAppReconciliation) setPresentAndManagedApps() (ctrl.Result, error) {
@@ -386,9 +386,8 @@ func (r *ClowdAppReconciliation) deletedUnusedResources() (ctrl.Result, error) {
 }
 
 func (r *ClowdAppReconciliation) setReconciliationSuccessful() (ctrl.Result, error) {
-	_, err := reportDependencies(r.ctx, r.client, r.app)
-	if err != nil {
-		r.log.Info("Error during depency metric reporting", "err", err)
+	if err := ReportDependencies(r.ctx, r.client, r.app); err != nil {
+		r.log.Info("Dependency reporting error", "err", err)
 	}
 
 	if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationSuccessful, r.oldStatus, nil); setClowdStatusErr != nil {
