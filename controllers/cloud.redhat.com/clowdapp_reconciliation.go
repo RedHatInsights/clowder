@@ -92,13 +92,14 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 func ReportDependencies(ctx context.Context, pClient client.Client, o *crd.ClowdApp) error {
 	appName := o.Name
 	applist := crd.ClowdAppList{}
-	dependencies := append(o.Spec.Dependencies, o.Spec.OptionalDependencies...)
+	appDependencies := o.Spec.Dependencies
+	appDependencies = append(appDependencies, o.Spec.OptionalDependencies...)
 
 	if err := pClient.List(ctx, &applist, client.MatchingFields{"spec.envName": o.Spec.EnvName}); err != nil {
 		return err
 	}
 
-	for _, dependency := range dependencies {
+	for _, dependency := range appDependencies {
 		for _, app := range applist.Items {
 			if app.Name != dependency {
 				continue
