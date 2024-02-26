@@ -11,11 +11,12 @@ const (
 	// volume or ram/cpu capacities we just get an empty string, so we need
 	// defaults to plug in there
 	DefaultSizeVol    string = SizeXSmall
-	DefaultSizeCPURAM string = SizeSmall
+	DefaultSizeCPURAM string = SizeXSmall
 )
 
 // Get a map of CPU T-Shirt sizes to capacities
 var CPUSizeToCapacity = map[string]string{
+	SizeXSmall: "300m",
 	SizeSmall:  "600m",
 	SizeMedium: "1200m",
 	SizeLarge:  "1800m",
@@ -36,10 +37,11 @@ var LimitSizeToRequestSize = map[string]string{
 
 // Get a map of RAM T-Shirt sizes to capacities
 var RAMSizeToCapacity = map[string]string{
-	SizeSmall:  "512Mi",
-	SizeMedium: "1Gi",
-	SizeLarge:  "2Gi",
-	SizeXLarge: "3Gi",
+	SizeXSmall: "512Mi",
+	SizeSmall:  "1Gi",
+	SizeMedium: "2Gi",
+	SizeLarge:  "3Gi",
+	SizeXLarge: "4Gi",
 }
 
 // Get a map of volume T-Shirt size to capacities
