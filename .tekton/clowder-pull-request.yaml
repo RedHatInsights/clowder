@@ -214,7 +214,54 @@ spec:
             CLOWDER_PATH="/workspace/output/source"
             
             cd ${CLOWDER_PATH}
-            make test
+            make envtest
+            make update-version
+            
+            ./ci/unit_tests.sh
+    - name: run-minikube-e2e-tests
+      description: run minikube e2e tests
+      params:
+      - name: SNAPSHOT
+        value: $(params.SNAPSHOT)
+      - name: NAMESPACE
+        value: $(params.NAMESPACE)
+      - name: EXPECTED_OUTPUT
+        value: $(params.EXPECTED_OUTPUT)
+      runAfter:
+      - clone-repository
+      workspaces:
+      - name: output
+        workspace: workspace
+      - name: basic-auth
+        workspace: git-auth
+      taskSpec:
+        params:
+        - name: SNAPSHOT
+        - name: NAMESPACE
+        - name: EXPECTED_OUTPUT
+        results:
+        - name: TEST_OUTPUT
+          description: Test output
+        steps:
+        - image: registry.access.redhat.com/ubi8/go-toolset:1.20.10-10
+          env:
+          - name: SNAPSHOT
+            value: $(params.SNAPSHOT)
+          - name: NAMESPACE
+            value: $(params.NAMESPACE)
+          - name: EXPECTED_OUTPUT
+            value: $(params.EXPECTED_OUTPUT)
+          script: |
+            #!/bin/bash
+            set -ex
+
+            CLOWDER_PATH="/workspace/output/source"
+            
+            cd ${CLOWDER_PATH}
+            make envtest
+            make update-version
+            
+            ./ci/minikube_e2e_tests.sh
     - name: prefetch-dependencies
       params:
       - name: input
