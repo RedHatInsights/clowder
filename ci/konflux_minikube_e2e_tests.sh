@@ -2,11 +2,6 @@
 
 set -exv
 
-# copy the workspace from the Jenkins job off the ro volume into this container
-mkdir /container_workspace
-cp -r /workspace/. /container_workspace
-cd /container_workspace
-
 mkdir -p /container_workspace/bin
 cp /opt/app-root/src/go/bin/* /container_workspace/bin
 
