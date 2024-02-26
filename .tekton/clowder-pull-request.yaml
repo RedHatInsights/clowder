@@ -214,10 +214,7 @@ spec:
             CLOWDER_PATH="/workspace/output/source"
             
             cd ${CLOWDER_PATH}
-            make envtest
-            make update-version
-            
-            ./ci/unit_tests.sh
+            make test
     - name: run-minikube-e2e-tests
       description: run minikube e2e tests
       params:
@@ -261,7 +258,7 @@ spec:
             make envtest
             make update-version
             
-            ./ci/minikube_e2e_tests.sh
+            ./ci/minikube_e2e_tests_inner.sh
     - name: prefetch-dependencies
       params:
       - name: input
