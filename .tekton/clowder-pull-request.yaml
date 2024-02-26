@@ -283,7 +283,7 @@ spec:
       - name: EXPECTED_OUTPUT
         value: $(params.EXPECTED_OUTPUT)
       runAfter:
-      - build-clowder-base-img
+      - build-container
       workspaces:
       - name: output
         workspace: workspace
