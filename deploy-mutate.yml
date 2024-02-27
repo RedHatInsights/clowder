@@ -8395,8 +8395,9 @@ objects:
       features\": {\n        \"createServiceMonitor\": ${CREATE_SERVICE_MONITORS},\n\
       \        \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"\
       enableKedaResources\": ${ENABLE_KEDA_RESOURCES},\n        \"perProviderMetrics\"\
-      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS}\n\
-      \    },\n    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
+      : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS},\n\
+      \        \"enableDependencyMetrics\": ${ENABLE_TELEMETRY_METRICS}\n    },\n\
+      \    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
       \n    }\n}\n"
   kind: ConfigMap
   metadata:
@@ -8423,6 +8424,8 @@ parameters:
 - name: PER_PROVIDER_METRICS
   value: 'false'
 - name: RECONCILIATION_METRICS
+  value: 'false'
+- name: ENABLE_TELEMETRY_METRICS
   value: 'false'
 - name: MANAGED_EPHEM_DELETE_REGEX
   value: .*ephemeral.*
