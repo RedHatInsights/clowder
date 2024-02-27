@@ -27,7 +27,7 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: output-base-image
-    value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder-base/clowder-base:{{revision}}
+    value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder-base:{{revision}}
   - name: output-image
     value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:on-pr-{{revision}}
   - name: path-context
@@ -253,7 +253,7 @@ spec:
       - name: COMMIT_SHA
         value: $(tasks.clone-repository.results.commit)
       - name: BASE_IMAGE
-        value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder-base/clowder-base:{{revision}}
+        value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder-base:{{revision}}
       runAfter:
       - build-clowder-base-img
       taskRef:
@@ -298,7 +298,7 @@ spec:
         - name: TEST_OUTPUT
           description: Test output
         steps:
-        - image: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder-base/clowder-base:on-pr-{{revision}}
+        - image: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder-base:on-pr-{{revision}}
           env:
           - name: SNAPSHOT
             value: $(params.SNAPSHOT)
