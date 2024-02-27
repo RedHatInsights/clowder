@@ -339,7 +339,7 @@ spec:
         - name: TEST_OUTPUT
           description: Test output
         steps:
-        - image: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder-base:on-pr-{{revision}}
+        - image: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:on-pr-{{revision}}
           env:
           - name: SNAPSHOT
             value: $(params.SNAPSHOT)
@@ -383,7 +383,7 @@ spec:
         - name: TEST_OUTPUT
           description: Test output
         steps:
-        - image: $(params.output-image)
+        - image: $(params.output-base-image)
           env:
           - name: SNAPSHOT
             value: $(params.SNAPSHOT)
