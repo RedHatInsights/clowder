@@ -23,7 +23,8 @@ data:
             "watchStrimziResources": ${WATCH_STRIMZI_RESOURCES},
             "enableKedaResources": ${ENABLE_KEDA_RESOURCES},
             "perProviderMetrics": ${PER_PROVIDER_METRICS},
-            "reconciliationMetrics": ${RECONCILIATION_METRICS}
+            "reconciliationMetrics": ${RECONCILIATION_METRICS},
+            "enableDependencyMetrics": ${ENABLE_TELEMETRY_METRICS}
         },
         "settings": {
             "managedKafkaEphemDeleteRegex": "${MANAGED_EPHEM_DELETE_REGEX}"
