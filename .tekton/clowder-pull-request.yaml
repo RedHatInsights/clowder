@@ -20,6 +20,8 @@ spec:
   params:
   - name: dockerfile-base
     value: Dockerfile.base
+  - name: dockerfile-test
+    value: Dockerfile.test
   - name: dockerfile
     value: Dockerfile
   - name: git-url
@@ -28,6 +30,8 @@ spec:
     value: 5d
   - name: output-base-image
     value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:clowder-base-{{revision}}
+  - name: output-test-image
+    value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:clowder-test-{{revision}}
   - name: output-image
     value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:on-pr-{{revision}}
   - name: path-context
@@ -236,6 +240,43 @@ spec:
       workspaces:
       - name: source
         workspace: workspace
+    - name: build-clowder-test-img
+      params:
+      - name: IMAGE
+        value: $(params.output-test-image)
+      - name: DOCKERFILE
+        value: $(params.dockerfile-test)
+      - name: CONTEXT
+        value: $(params.path-context)
+      - name: HERMETIC
+        value: $(params.hermetic)
+      - name: PREFETCH_INPUT
+        value: $(params.prefetch-input)
+      - name: IMAGE_EXPIRES_AFTER
+        value: $(params.image-expires-after)
+      - name: COMMIT_SHA
+        value: $(tasks.clone-repository.results.commit)
+      - name: BASE_IMAGE
+        value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:clowder-base-{{revision}}
+      runAfter:
+      - build-clowder-base-img
+      taskRef:
+        params:
+        - name: name
+          value: buildah
+        - name: bundle
+          value: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.1@sha256:c009a191fe7c87ef3a964f973f04438dc1666b002d4d4b5ca74aa71d4c41f429
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(tasks.init.results.build)
+        operator: in
+        values:
+        - "true"
+      workspaces:
+      - name: source
+        workspace: workspace
     - name: build-container
       params:
       - name: IMAGE
@@ -327,7 +368,7 @@ spec:
       - name: EXPECTED_OUTPUT
         value: $(params.EXPECTED_OUTPUT)
       runAfter:
-      - clone-repository
+      - build-clowder-test-img
       workspaces:
       - name: output
         workspace: workspace
