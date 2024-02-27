@@ -257,7 +257,7 @@ spec:
       - name: COMMIT_SHA
         value: $(tasks.clone-repository.results.commit)
       - name: BASE_IMAGE
-        value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:clowder-base-{{revision}}
+        value: $(params.output-test-image)
       runAfter:
       - build-clowder-base-img
       taskRef:
@@ -294,7 +294,7 @@ spec:
       - name: COMMIT_SHA
         value: $(tasks.clone-repository.results.commit)
       - name: BASE_IMAGE
-        value: quay.io/redhat-user-workloads/hcc-devprod-tenant/clowder/clowder:clowder-base-{{revision}}
+        value: $(params.output-image)
       runAfter:
       - build-clowder-base-img
       taskRef:
