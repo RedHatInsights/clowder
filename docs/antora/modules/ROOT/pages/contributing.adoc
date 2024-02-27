@@ -209,6 +209,66 @@ resource is one which is expected to hold multiple resources of the same type, b
 different names. If these resources are required to be updated, then an `+Update()+` call is
 necessary on each one as can be seen above.
 
+
+== Commits
+We are currently testing https://www.conventionalcommits.org[Conventional Commits] as a mandatory
+step in the pipeline. This requires that each commit to the repo be formatted in the following way:
+
+[source,text]
+----
+<purpose>(<scope>): <original commit message>
+
+Original multi line commit message
+* with items
+* in a list
+----
+
+An example of this would be:
+
+[source,text]
+----
+ci(lint): Adds conventional commits
+
+* Adds conventional commits pipeline
+* Updates documentation for the contribution to describe the addition of conventional commits
+----
+
+It is fine to squash things down into smaller commits - you don't have to have separate commits for everything you add, however, if you do this you **MUST** use the `!` flag appropriately, and it is highly suggested that you use the most significant `purpose` to help describe your change. For example, a change to a provider that adds a new feature and adds a test and documentation could be done as three commits with `feat:`, `test:`, `docs:`, but we will accept a single commit that uses `feat:` because the most significant work in this case is the introduction of a new feature.
+
+=== Purposes
+
+Please refer to the https://www.conventionalcommits.org[Conventional Commits] website for more information. As a quick reference we strongly suggest using the following values for `purpose`:
+
+* ``fix``: For a bug fix
+* ``feat``: For a new feature
+* ``build``: For anything related to the building of containers
+* ``chore``: For any maintenance task
+* ``ci``: For anything related to the CI testing pipeline
+* ``docs``: For anything related to documentation
+* ``style``: For a stylisitic change, usually to adhere to a guideline
+* ``refactor``: For any improvements to code structure
+* ``perf``: For performance enhancements to code flow
+* ``test``: For any changes to tests
+
+Using a `!` after the `purpose/scope` denotes a breaking change in the context of Clowder, this should be used whenever the API for either the Clowd* CRD resources, as well as any change to the `cdappconfig.json` spec. An example of a breaing change is shown below:
+
+[source,text]
+----
+chore(crd)!: Removes old web field value
+
+* Removes the old web field
+----
+
+=== Scopes
+`scopes` are entirely optional, but using them to indicate changes to providers within clowder would be greatly appreciated. An example is shown below:
+
+[source,text]
+----
+feat(database)!: Adds new mode for database provider
+
+* Adds MSSQL mode for Clowder
+----
+
 == Pull Request Flow
 
 Changes to the Clowder codebase can be broken down into three distinct categories. Each of these
