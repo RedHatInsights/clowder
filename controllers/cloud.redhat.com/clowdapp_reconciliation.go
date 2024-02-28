@@ -94,6 +94,11 @@ func ReportDependencies(ctx context.Context, pClient client.Client, app *crd.Clo
 	appDependencies := app.Spec.Dependencies
 	appDependencies = append(appDependencies, app.Spec.OptionalDependencies...)
 
+	// Don't record metrics if not enabled
+	if !clowderconfig.LoadedConfig.Features.EnableDependencyMetrics {
+		return nil
+	}
+
 	applist, err := env.GetAppsInEnv(ctx, pClient)
 	if err != nil {
 		return err

@@ -463,6 +463,7 @@ behaviour. They are detailed as follows:
 | ``features.enablekedaResources`` | Turns on the addition of Keda resources into the protectedGVK list. | No
 | ``features.perProviderMetrics`` | Turns on metrics that calculate reconciliation time per provider. | Yes
 | ``features.reconciliationMetrics`` | Enables extra detailed metrics on reconciliations per application. | Yes
+| ``features.enableDependencyMetrics`` | Turns on metrics that report availability of a ClowdApps dependencies. | Yes
 | ``disableCloudWatchLogging`` | Disables logging to CloudWatch. | Yes
 | ``enableExternalStrimzi`` | Enables talking to Strimzi via a local nodeport (only useful on minikube) | Yes
 | ``disableRandomRoutes`` | Gives the ability to disable the extra portion of randomness added to routes. | Yes

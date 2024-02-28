@@ -41,6 +41,7 @@ type ClowderConfig struct {
 		KedaResources               bool `json:"enableKedaResources"`
 		PerProviderMetrics          bool `json:"perProviderMetrics"`
 		ReconciliationMetrics       bool `json:"reconciliationMetrics"`
+		EnableDependencyMetrics     bool `json:"enableDependencyMetrics"`
 		DisableCloudWatchLogging    bool `json:"disableCloudWatchLogging"`
 		EnableExternalStrimzi       bool `json:"enableExternalStrimzi"`
 		DisableRandomRoutes         bool `json:"disableRandomRoutes"`
