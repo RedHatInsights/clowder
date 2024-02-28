@@ -35,6 +35,7 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 func init() {
 	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
 	imageList = map[int32]string{
+		16: provutils.DefaultImageDatabasePG16,
 		15: provutils.DefaultImageDatabasePG15,
 		14: provutils.DefaultImageDatabasePG14,
 		13: provutils.DefaultImageDatabasePG13,
