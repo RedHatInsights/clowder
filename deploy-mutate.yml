@@ -8397,7 +8397,7 @@ objects:
       \        \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"\
       enableKedaResources\": ${ENABLE_KEDA_RESOURCES},\n        \"perProviderMetrics\"\
       : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS},\n\
-      \        \"enableDependencyMetrics\": ${ENABLE_TELEMETRY_METRICS}\n    },\n\
+      \        \"enableDependencyMetrics\": ${ENABLE_DEPENDENCY_METRICS}\n    },\n\
       \    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
       \n    }\n}\n"
   kind: ConfigMap
@@ -8426,7 +8426,7 @@ parameters:
   value: 'false'
 - name: RECONCILIATION_METRICS
   value: 'false'
-- name: ENABLE_TELEMETRY_METRICS
+- name: ENABLE_DEPENDENCY_METRICS
   value: 'false'
 - name: MANAGED_EPHEM_DELETE_REGEX
   value: .*ephemeral.*
