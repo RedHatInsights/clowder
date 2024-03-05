@@ -25,7 +25,7 @@ parameters:
   value: "false"
 - name: RECONCILIATION_METRICS
   value: "false"
-- name: ENABLE_TELEMETRY_METRICS
+- name: ENABLE_DEPENDENCY_METRICS
   value: "false"
 - name: MANAGED_EPHEM_DELETE_REGEX
   value: ".*ephemeral.*"
