@@ -253,7 +253,8 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 	}}
 
 	probeHandler := core.ProbeHandler{
-		TCPSocket: &core.TCPSocketAction{
+		HTTPGet: &core.HTTPGetAction{
+			Path: "/health",
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
 				IntVal: 4242,
