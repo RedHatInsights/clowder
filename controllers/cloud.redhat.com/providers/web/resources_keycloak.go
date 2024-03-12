@@ -425,18 +425,32 @@ func makeAuthIngress(p *providers.Provider) error {
 				Host: getAuthHostname(p.Env.Status.Hostname),
 				IngressRuleValue: networking.IngressRuleValue{
 					HTTP: &networking.HTTPIngressRuleValue{
-						Paths: []networking.HTTPIngressPath{{
-							Path:     "/",
-							PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
-							Backend: networking.IngressBackend{
-								Service: &networking.IngressServiceBackend{
-									Name: fmt.Sprintf("%s-keycloak", p.Env.Name),
-									Port: networking.ServiceBackendPort{
-										Name: "keycloak",
+						Paths: []networking.HTTPIngressPath{
+							{
+								Path:     "/",
+								PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+								Backend: networking.IngressBackend{
+									Service: &networking.IngressServiceBackend{
+										Name: fmt.Sprintf("%s-keycloak", p.Env.Name),
+										Port: networking.ServiceBackendPort{
+											Name: "keycloak",
+										},
 									},
 								},
 							},
-						}},
+							{
+								Path:     "/auth/realms/redhat-external/apis/service_accounts/v1",
+								PathType: (*networking.PathType)(utils.StringPtr("Prefix")),
+								Backend: networking.IngressBackend{
+									Service: &networking.IngressServiceBackend{
+										Name: fmt.Sprintf("%s-mocktitlements", p.Env.Name),
+										Port: networking.ServiceBackendPort{
+											Name: "keycloak",
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
