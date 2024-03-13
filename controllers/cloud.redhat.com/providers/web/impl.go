@@ -108,6 +108,11 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 				Protocol:      core.ProtocolTCP,
 			},
 		)
+
+		// Set session affinity if enabled
+		if deployment.WebServices.Public.SessionAffinity {
+			s.Spec.SessionAffinity = core.ServiceAffinityClientIP
+		}
 	}
 
 	var pub, priv bool

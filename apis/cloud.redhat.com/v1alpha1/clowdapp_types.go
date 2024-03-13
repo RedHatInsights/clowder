@@ -157,6 +157,9 @@ type PublicWebService struct {
 
 	// WhitelistPaths define the paths that do not require authentication
 	WhitelistPaths []string `json:"whitelistPaths,omitempty"`
+
+	// Set SessionAffinity to true to enable sticky sessions
+	SessionAffinity bool `json:"sessionAffinity,omitempty"`
 }
 
 // AppProtocol is used to define an appProtocol for Istio

@@ -1380,6 +1380,7 @@ PublicWebService is the definition of the public web service. There can be only 
 | *`apiPath`* __string__ | (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from.
 | *`apiPaths`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-apipath[$$APIPath$$] array__ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from.
 | *`whitelistPaths`* __string array__ | WhitelistPaths define the paths that do not require authentication
+| *`sessionAffinity`* __boolean__ | Set SessionAffinity to true to enable sticky sessions
 |===
 
 
