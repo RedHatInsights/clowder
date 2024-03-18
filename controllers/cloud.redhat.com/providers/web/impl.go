@@ -63,6 +63,11 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			},
 		)
 
+		// Set session affinity if enabled
+		if deployment.WebServices.Public.SessionAffinity {
+			s.Spec.SessionAffinity = core.ServiceAffinityClientIP
+		}
+
 		if env.Spec.Providers.Web.Mode == "local" {
 			authPortNumber := env.Spec.Providers.Web.AuthPort
 
@@ -108,11 +113,6 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 				Protocol:      core.ProtocolTCP,
 			},
 		)
-
-		// Set session affinity if enabled
-		if deployment.WebServices.Public.SessionAffinity {
-			s.Spec.SessionAffinity = core.ServiceAffinityClientIP
-		}
 	}
 
 	var pub, priv bool
