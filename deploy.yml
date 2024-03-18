@@ -3254,6 +3254,10 @@ objects:
                                   the public service and provide the configuration
                                   in the cdappconfig.
                                 type: boolean
+                              sessionAffinity:
+                                description: Set SessionAffinity to true to enable
+                                  sticky sessions
+                                type: boolean
                               whitelistPaths:
                                 description: WhitelistPaths define the paths that
                                   do not require authentication
