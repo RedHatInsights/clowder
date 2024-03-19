@@ -506,6 +506,7 @@
       "nodeReRegistrationTimeout": 0,
       "defaultClientScopes": [
         "web-origins",
+        "api.iam.service_accounts",
         "roles",
         "profile",
         "rhfull",
@@ -873,6 +874,7 @@
       ],
       "defaultClientScopes": [
         "web-origins",
+        "api.iam.service_accounts",
         "nameandterms",
         "roles",
         "profile",
@@ -1458,6 +1460,18 @@
       ]
     },
     {
+      "id": "4fa51df5-ec2c-4d0d-8db6-ac7a86b61d2a",
+      "name": "api.iam.service_accounts",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      }
+    },
+    {
       "id": "60d9f404-f206-433f-837d-ceca5839c229",
       "name": "address",
       "description": "OpenID Connect built-in scope: address",
@@ -1535,6 +1549,7 @@
     }
   ],
   "defaultDefaultClientScopes": [
+    "api.iam.service_accounts",
     "profile",
     "roles",
     "email",
