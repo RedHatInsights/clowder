@@ -445,7 +445,7 @@ func makeAuthIngress(p *providers.Provider) error {
 									Service: &networking.IngressServiceBackend{
 										Name: fmt.Sprintf("%s-mocktitlements", p.Env.Name),
 										Port: networking.ServiceBackendPort{
-											Name: "keycloak",
+											Name: "auth",
 										},
 									},
 								},

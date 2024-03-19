@@ -23,6 +23,13 @@ spec:
               name: keycloak
         path: /
         pathType: Prefix
+      - backend:
+          service:
+            name: test-ephemeral-gateway-mocktitlements
+            port:
+              name: auth
+        path: /auth/realms/redhat-external/apis/service_accounts/v1
+        pathType: Prefix
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
