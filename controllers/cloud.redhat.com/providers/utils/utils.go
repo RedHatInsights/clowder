@@ -21,10 +21,10 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:a988cd2"
+var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:0ccaf88"
 var DefaultImageCaddyGateway = DefaultImageCaddySideCar
 var DefaultImageMBOP = "quay.io/cloudservices/mbop:959d00d"
-var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:81fd80e"
+var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:89adf1b"
 var DefaultKeyCloakVersion = "23.0.1"
 var DefaultImageCaddyProxy = "quay.io/cloudservices/caddy-ubi:latest"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
