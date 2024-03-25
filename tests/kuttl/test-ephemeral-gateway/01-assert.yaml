@@ -82,7 +82,7 @@ spec:
       annotations:
         clowder/authsidecar-config: caddy-config-mocktitlements
         clowder/authsidecar-enabled: "true"
-        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:0ccaf88
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:39a1c9e
         clowder/authsidecar-port: "8090"
     spec:
       containers:
