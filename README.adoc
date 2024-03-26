@@ -6,6 +6,8 @@ image:https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg[D
 image:https://img.shields.io/github/v/release/RedHatInsights/clowder[Release]
 image:https://goreportcard.com/badge/github.com/RedHatInsights/clowder[Go Report Card]
 
+A CHANGE
+
 ## What is Clowder?
 
 Clowder is a kubernetes operator designed to make it easy to deploy applications
