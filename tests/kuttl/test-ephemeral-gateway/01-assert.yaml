@@ -82,11 +82,11 @@ spec:
       annotations:
         clowder/authsidecar-config: caddy-config-mocktitlements
         clowder/authsidecar-enabled: "true"
-        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:a988cd2
+        clowder/authsidecar-image: quay.io/cloudservices/crc-caddy-plugin:39a1c9e
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/cloudservices/mocktitlements:81fd80e
+      - image: quay.io/cloudservices/mocktitlements:89adf1b
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
