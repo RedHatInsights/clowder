@@ -63,7 +63,7 @@ spec:
       image: quay.io/psav/clowder-hello
   database:
     name: app-b
-    version: 10
+    version: 13
     dbVolumeSize: large
 ---
 apiVersion: cloud.redhat.com/v1alpha1
@@ -79,6 +79,6 @@ spec:
       image: quay.io/psav/clowder-hello
   database:
     sharedDbAppName: app-b
-    version: 10
+    version: 13
   dependencies:
   - app-b

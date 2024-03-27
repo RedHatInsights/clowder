@@ -131,7 +131,6 @@ objects:
                       description: Defines the Version of the PostGreSQL database,
                         defaults to 12.
                       enum:
-                      - 10
                       - 12
                       - 13
                       - 14

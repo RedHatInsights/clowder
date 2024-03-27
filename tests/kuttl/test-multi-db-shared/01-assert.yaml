@@ -13,13 +13,13 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-multi-db-shared-db-v10
+  name: test-multi-db-shared-db-v13
   namespace: test-multi-db-shared
 spec:
   template:
     spec:
       containers:
-        - image: quay.io/cloudservices/postgresql-rds:cyndi-10-99c8c27
+        - image: quay.io/cloudservices/postgresql-rds:cyndi-13-2318dee
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
@@ -117,7 +117,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: test-multi-db-shared-db-v10
+  name: test-multi-db-shared-db-v13
   namespace: test-multi-db-shared
 spec:
   accessModes:
