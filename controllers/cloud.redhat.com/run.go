@@ -25,6 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
@@ -90,9 +91,10 @@ func Run(signalHandler context.Context, metricsAddr string, probeAddr string, en
 	clowderVersion.With(prometheus.Labels{"version": Version}).Inc()
 
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
-		Scheme:                 Scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Scheme: Scheme,
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "068b0003.cloud.redhat.com",
