@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -144,6 +145,14 @@ func (fc *FakeClient) Patch(_ context.Context, _ client.Object, _ client.Patch, 
 
 func (fc *FakeClient) DeleteAllOf(_ context.Context, _ client.Object, _ ...client.DeleteAllOfOption) error {
 	return nil
+}
+
+func (fc *FakeClient) GroupVersionKindFor(runtime.Object) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, nil
+}
+
+func (fc *FakeClient) IsObjectNamespaced(runtime.Object) (bool, error) {
+	return false, nil
 }
 
 func (fc *FakeClient) Get(_ context.Context, _ client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
