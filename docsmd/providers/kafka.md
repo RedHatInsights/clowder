@@ -124,7 +124,7 @@ A User auth enabled Kafka will look like this
                   "saslMechanism": "SCRAM-SHA-512"
                   "securityProtocol": "SASL_SSL"
               },
-              "securityProtocol": "SASL_SSL
+              "securityProtocol": "SASL_SSL"
           }
       ],
       "topics": [
