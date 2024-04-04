@@ -353,7 +353,14 @@ func configureKafkaConnectCluster(s providerInterface) error {
 		return fmt.Errorf("could not unmarshal config: %w", err)
 	}
 
-	username := s.getConnectClusterUserName()
+	pullSecrets := []strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{}
+	for _, pullSecret := range s.GetEnv().Spec.Providers.PullSecrets {
+		secName := fmt.Sprintf("%s-%s-clowder-copy", s.GetEnv().Name, pullSecret.Name)
+		secretRef := strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{
+			Name: utils.StringPtr(secName),
+		}
+		pullSecrets = append(pullSecrets, secretRef)
+	}
 
 	k.Spec = &strimzi.KafkaConnectSpec{
 		Replicas:         &replicas,
@@ -365,12 +372,19 @@ func configureKafkaConnectCluster(s providerInterface) error {
 			Requests: &kcRequests,
 			Limits:   &kcLimits,
 		},
+		Template: &strimzi.KafkaConnectSpecTemplate{
+			Pod: &strimzi.KafkaConnectSpecTemplatePod{
+				ImagePullSecrets: pullSecrets,
+			},
+		},
 	}
 
 	secName, err := s.getKafkaConnectTrustedCertSecretName()
 	if err != nil {
 		return err
 	}
+
+	username := s.getConnectClusterUserName()
 
 	if !s.GetEnv().Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{

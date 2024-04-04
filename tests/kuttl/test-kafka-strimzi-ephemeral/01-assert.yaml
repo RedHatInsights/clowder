@@ -88,3 +88,7 @@ spec:
     requests:
       cpu: 200m
       memory: 500Mi
+  template:
+    pod:
+      imagePullSecrets:
+        - name: env-test-kafka-strimzi-ephemeral-test-pull-secret-clowder-copy

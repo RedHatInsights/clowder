@@ -45,6 +45,9 @@ spec:
       mode: none
     featureFlags:
       mode: none
+    pullSecrets:
+      - namespace: test-kafka-strimzi-ephemeral-kafka
+        name: test-pull-secret
   resourceDefaults:
     limits:
       cpu: 400m
@@ -52,3 +55,16 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
+---
+apiVersion: v1
+data:
+  hostname: a2Fma2EtaG9zdC1uYW1l # kafka-host-name
+  port: MjcwMTU= # 27015
+  username: a2Fma2EtdXNlcm5hbWU= # kafka-username
+  password: a2Fma2EtcGFzc3dvcmQ= # kafka-password
+  cacert: c29tZS1wZW0=
+kind: Secret
+metadata:
+  name: test-pull-secret
+  namespace: test-kafka-strimzi-ephemeral
+type: Opaque
