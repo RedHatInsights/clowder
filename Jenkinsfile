@@ -2,6 +2,8 @@ def secrets = [
     [path: params.VAULT_PATH_QUAY_PUSH, engineVersion: 1, secretValues: [
         [envVar: 'QUAY_USER', vaultKey: 'user'],
         [envVar: 'QUAY_TOKEN', vaultKey: 'token']]],
+    [path: params.VAULT_PATH_QUAY_TOKEN, engineVersion: 1, secretValues: [
+        [envVar: 'QUAY_API_TOKEN', vaultKey: 'api-token'],
     [path: params.VAULT_PATH_MINIKUBE, engineVersion: 1, secretValues: [
         [envVar: 'MINIKUBE_SSH_KEY', vaultKey: 'private-key'],
         [envVar: 'MINIKUBE_HOST', vaultKey: 'hostname'],
