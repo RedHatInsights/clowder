@@ -209,7 +209,7 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "featureflags")
 
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
@@ -279,9 +279,14 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 		FailureThreshold:    3,
 	}
 
+	env, ok := o.(*crd.ClowdEnvironment)
+	if !ok {
+		return fmt.Errorf("could not get env")
+	}
+
 	c := core.Container{
 		Name:                     nn.Name,
-		Image:                    DefaultImageFeatureFlagsUnleash,
+		Image:                    GetFeatureFlagsUnleashImage(env),
 		Env:                      envVars,
 		Ports:                    ports,
 		LivenessProbe:            &livenessProbe,
@@ -312,4 +317,5 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
+	return nil
 }

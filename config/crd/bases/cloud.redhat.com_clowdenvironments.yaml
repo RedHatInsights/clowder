@@ -128,6 +128,12 @@ spec:
                         description: Defines the hostname for (*_app-interface_*)
                           mode
                         type: string
+                      images:
+                        description: Defines images used for the feature flags provider
+                        properties:
+                          unleash:
+                            type: string
+                        type: object
                       mode:
                         description: 'The mode of operation of the Clowder FeatureFlag
                           Provider. Valid options are: (*_app-interface_*) where the
@@ -438,6 +444,12 @@ spec:
                     description: Defines the Configuration for the Clowder ObjectStore
                       Provider.
                     properties:
+                      images:
+                        description: Override the object store images
+                        properties:
+                          minio:
+                            type: string
+                        type: object
                       mode:
                         description: 'The mode of operation of the Clowder ObjectStore
                           Provider. Valid options are: (*_app-interface_*) where the

@@ -158,7 +158,7 @@ func makeMocktitlementsIngress(p *providers.Provider) error {
 	return p.Cache.Update(WebMocktitlementsIngress, netobj)
 }
 
-func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mocktitlements")
 
@@ -277,4 +277,5 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, n
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 
+	return nil
 }

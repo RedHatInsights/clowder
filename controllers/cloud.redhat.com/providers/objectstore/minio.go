@@ -279,7 +279,7 @@ func createNetworkPolicy(p *providers.Provider) error {
 	return p.Cache.Update(MinioNetworkPolicy, np)
 }
 
-func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) {
+func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "minio")
 
 	dd := objMap[MinioDeployment].(*apps.Deployment)
@@ -359,9 +359,14 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		FailureThreshold:    3,
 	}
 
+	env, ok := o.(*crd.ClowdEnvironment)
+	if !ok {
+		return fmt.Errorf("could not get env from object")
+	}
+
 	c := core.Container{
 		Name:  nn.Name,
-		Image: DefaultImageObjectStoreMinio,
+		Image: GetObjectStoreMinioImage(env),
 		Env:   envVars,
 		Ports: ports,
 		VolumeMounts: []core.VolumeMount{{
@@ -394,4 +399,5 @@ func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, 
 		pvc := objMap[MinioPVC].(*core.PersistentVolumeClaim)
 		utils.MakePVC(pvc, nn, labels, "1Gi", o)
 	}
+	return nil
 }

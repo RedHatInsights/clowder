@@ -3,11 +3,23 @@ package featureflags
 import (
 	"fmt"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var DefaultImageFeatureFlagsUnleash = "quay.io/cloudservices/unleash-docker:5.6.9"
+var DefaultImageFeatureFlagsUnleash = "unleashorg/unleash-server:5.6.9"
+
+func GetFeatureFlagsUnleashImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.FeatureFlags.Images.Unleash != "" {
+		return env.Spec.Providers.FeatureFlags.Images.Unleash
+	}
+	if clowderconfig.LoadedConfig.Images.FeatureFlagsUnleash != "" {
+		return clowderconfig.LoadedConfig.Images.FeatureFlagsUnleash
+	}
+	return DefaultImageFeatureFlagsUnleash
+}
 
 // ProvName identifies the featureflags provider.
 var ProvName = "featureflags"

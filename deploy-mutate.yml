@@ -6337,6 +6337,12 @@ objects:
                           description: Defines the hostname for (*_app-interface_*)
                             mode
                           type: string
+                        images:
+                          description: Defines images used for the feature flags provider
+                          properties:
+                            unleash:
+                              type: string
+                          type: object
                         mode:
                           description: 'The mode of operation of the Clowder FeatureFlag
                             Provider. Valid options are: (*_app-interface_*) where
@@ -6653,6 +6659,12 @@ objects:
                       description: Defines the Configuration for the Clowder ObjectStore
                         Provider.
                       properties:
+                        images:
+                          description: Override the object store images
+                          properties:
+                            minio:
+                              type: string
+                          type: object
                         mode:
                           description: 'The mode of operation of the Clowder ObjectStore
                             Provider. Valid options are: (*_app-interface_*) where
@@ -8403,7 +8415,8 @@ objects:
       : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS},\n\
       \        \"enableDependencyMetrics\": ${ENABLE_DEPENDENCY_METRICS}\n    },\n\
       \    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
-      \n    }\n}\n"
+      \n    },\n    \"images\": {\n        \"objectStoreMinio\": \"${OBJECTSTORE_IMAGE}\"\
+      ,\n        \"featureFlagsUnleash\": \"${FEATUREFLAGS_IMAGE}\"\n    }\n}\n"
   kind: ConfigMap
   metadata:
     name: clowder-config
@@ -8436,4 +8449,8 @@ parameters:
   value: .*ephemeral.*
 - name: ENABLE_KEDA_RESOURCES
   value: 'false'
+- name: OBJECTSTORE_IMAGE
+  value: quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64
+- name: FEATUREFLAGS_IMAGE
+  value: quay.io/cloudservices/unleash-docker:5.6.9
 
