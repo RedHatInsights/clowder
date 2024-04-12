@@ -52,7 +52,7 @@ _base_image_files_changed() {
 }
 
 build_main_image() {
-
+  export CICD_IMAGE_BUILDER_CONTAINERFILE_PATH="Dockerfile"
   export CICD_IMAGE_BUILDER_BUILD_ARGS=("BASE_IMAGE=${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG}")
   export CICD_IMAGE_BUILDER_IMAGE_NAME="quay.io/cloudservices/clowder"
   CICD_IMAGE_BUILDER_IMAGE_TAG=$(git rev-parse --short=8 HEAD)
