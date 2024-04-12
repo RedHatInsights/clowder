@@ -329,6 +329,10 @@ type ServiceMeshConfig struct {
 	Mode ServiceMeshMode `json:"mode,omitempty"`
 }
 
+type ObjectStoreImages struct {
+	Minio string `json:"minio,omitempty"`
+}
+
 // ObjectStoreMode details the mode of operation of the Clowder ObjectStore
 // Provider
 // +kubebuilder:validation:Enum=minio;app-interface;none
@@ -349,6 +353,13 @@ type ObjectStoreConfig struct {
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
+
+	// Override the object store images
+	Images ObjectStoreImages `json:"images,omitempty"`
+}
+
+type FeatureFlagsImages struct {
+	Unleash string `json:"unleash,omitempty"`
 }
 
 // FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags
@@ -379,6 +390,9 @@ type FeatureFlagsConfig struct {
 
 	// Defineds the port for (*_app-interface_*) mode
 	Port int32 `json:"port,omitempty"`
+
+	// Defines images used for the feature flags provider
+	Images FeatureFlagsImages `json:"images,omitempty"`
 }
 
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB

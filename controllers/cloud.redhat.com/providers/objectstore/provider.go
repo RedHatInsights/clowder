@@ -3,11 +3,23 @@ package objectstore
 import (
 	"fmt"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var DefaultImageObjectStoreMinio = "quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
+var DefaultImageObjectStoreMinio = "minio/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
+
+func GetObjectStoreMinioImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.ObjectStore.Images.Minio != "" {
+		return env.Spec.Providers.ObjectStore.Images.Minio
+	}
+	if clowderconfig.LoadedConfig.Images.ObjectStoreMinio != "" {
+		return clowderconfig.LoadedConfig.Images.ObjectStoreMinio
+	}
+	return DefaultImageObjectStoreMinio
+}
 
 // ProvName is the providers ident.
 var ProvName = "objectstore"

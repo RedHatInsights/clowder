@@ -626,6 +626,26 @@ FeatureFlagsConfig configures the Clowder provider controlling the creation of F
 | *`credentialRef`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-namespacedname[$$NamespacedName$$]__ | Defines the secret containing the client access token, only used for (*_app-interface_*) mode.
 | *`hostname`* __string__ | Defines the hostname for (*_app-interface_*) mode
 | *`port`* __integer__ | Defineds the port for (*_app-interface_*) mode
+| *`images`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsimages[$$FeatureFlagsImages$$]__ | Defines images used for the feature flags provider
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsimages"]
+==== FeatureFlagsImages
+
+
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-featureflagsconfig[$$FeatureFlagsConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`unleash`* __string__ | 
 |===
 
 
@@ -1199,6 +1219,26 @@ ObjectStoreConfig configures the Clowder provider controlling the creation of Ob
 | *`mode`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoremode[$$ObjectStoreMode$$]__ | The mode of operation of the Clowder ObjectStore Provider. Valid options are: (*_app-interface_*) where the provider will pass through Amazon S3 credentials to the app configuration, and (*_minio_*) where a local Minio instance will be created.
 | *`suffix`* __string__ | Currently unused.
 | *`pvc`* __boolean__ | If using the (*_local_*) mode and PVC is set to true, this instructs the local Database instance to use a PVC instead of emptyDir for its volumes.
+| *`images`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoreimages[$$ObjectStoreImages$$]__ | Override the object store images
+|===
+
+
+[id="{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoreimages"]
+==== ObjectStoreImages
+
+
+
+
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-objectstoreconfig[$$ObjectStoreConfig$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`minio`* __string__ | 
 |===
 
 

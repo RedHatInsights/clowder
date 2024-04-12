@@ -246,7 +246,7 @@ func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	}
 }
 
-func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) {
+func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)
@@ -391,7 +391,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
-
+	return nil
 }
 
 func makeAuthIngress(p *providers.Provider) error {

@@ -31,4 +31,8 @@ parameters:
   value: ".*ephemeral.*"
 - name: ENABLE_KEDA_RESOURCES
   value: "false"
+- name: OBJECTSTORE_IMAGE
+  value: "quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
+- name: FEATUREFLAGS_IMAGE
+  value: "quay.io/cloudservices/unleash-docker:5.6.9"
 objects: []

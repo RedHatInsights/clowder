@@ -28,5 +28,9 @@ data:
         },
         "settings": {
             "managedKafkaEphemDeleteRegex": "${MANAGED_EPHEM_DELETE_REGEX}"
+        },
+        "images": {
+            "objectStoreMinio": "${OBJECTSTORE_IMAGE}",
+            "featureFlagsUnleash": "${FEATUREFLAGS_IMAGE}"
         }
     }
