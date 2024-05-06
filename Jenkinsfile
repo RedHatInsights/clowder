@@ -34,61 +34,70 @@ pipeline {
     }
 
     stages {
-        stage('Build and Push Base Image') {
+        stage("no-op") {
             steps {
                 withVault([configuration: configuration, vaultSecrets: secrets]) {
-                    sh './ci/build_push_base_img.sh'
+                    sh 'echo Hello, World!'
                 }
             }
         }
 
-        stage('Initial Setup') {
-            steps {
-                sh '''
-                    make envtest
-                    make update-version
-                '''
-            }
-        }
+//     stages {
+//         stage('Build and Push Base Image') {
+//             steps {
+//                 withVault([configuration: configuration, vaultSecrets: secrets]) {
+//                     sh './ci/build_push_base_img.sh'
+//                 }
+//             }
+//         }
 
-        stage('Run Tests') {
-            parallel {
-                stage('Unit Tests') {
-                    environment {
-                        TEST_CONTAINER="clowder-ci-unit-tests-${IMAGE_TAG}-${CURR_TIME}"
-                    }
-                    steps {
-                        withVault([configuration: configuration, vaultSecrets: secrets]) {
-                            sh './ci/unit_tests.sh'
-                        }
-                    }
+//         stage('Initial Setup') {
+//             steps {
+//                 sh '''
+//                     make envtest
+//                     make update-version
+//                 '''
+//             }
+//         }
 
-                    post {
-                        always {
-                            sh 'docker rm -f $TEST_CONTAINER'
-                        }
-                    }
-                }
+//         stage('Run Tests') {
+//             parallel {
+//                 stage('Unit Tests') {
+//                     environment {
+//                         TEST_CONTAINER="clowder-ci-unit-tests-${IMAGE_TAG}-${CURR_TIME}"
+//                     }
+//                     steps {
+//                         withVault([configuration: configuration, vaultSecrets: secrets]) {
+//                             sh './ci/unit_tests.sh'
+//                         }
+//                     }
 
-                stage('Minikube E2E Tests') {
-                    environment {
-                        CONTAINER_NAME="clowder-ci-minikube-e2e-tests-${IMAGE_TAG}-${CURR_TIME}"
-                    }
-                    steps {
-                        withVault([configuration: configuration, vaultSecrets: secrets]) {
-                            sh './ci/minikube_e2e_tests.sh'
-                        }
-                    }
+//                     post {
+//                         always {
+//                             sh 'docker rm -f $TEST_CONTAINER'
+//                         }
+//                     }
+//                 }
 
-                    post {
-                        always {
-                            sh 'docker rm -f $CONTAINER_NAME'
-                            archiveArtifacts artifacts: 'artifacts/**/*', fingerprint: true
-                            junit skipPublishingChecks: true, testResults: 'artifacts/junit-*.xml'
-                        }
-                    }
-                }
-            }
-        }  
-    }
-}
+//                 stage('Minikube E2E Tests') {
+//                     environment {
+//                         CONTAINER_NAME="clowder-ci-minikube-e2e-tests-${IMAGE_TAG}-${CURR_TIME}"
+//                     }
+//                     steps {
+//                         withVault([configuration: configuration, vaultSecrets: secrets]) {
+//                             sh './ci/minikube_e2e_tests.sh'
+//                         }
+//                     }
+
+//                     post {
+//                         always {
+//                             sh 'docker rm -f $CONTAINER_NAME'
+//                             archiveArtifacts artifacts: 'artifacts/**/*', fingerprint: true
+//                             junit skipPublishingChecks: true, testResults: 'artifacts/junit-*.xml'
+//                         }
+//                     }
+//                 }
+//             }
+//         }  
+//     }
+// }

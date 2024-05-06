@@ -1,5 +1,4 @@
 # Build the manager binary
-ARG BASE_IMAGE=
 FROM $BASE_IMAGE as builder
 
 WORKDIR /workspace
