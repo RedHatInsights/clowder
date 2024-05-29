@@ -86,7 +86,7 @@ spec:
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/cloudservices/mocktitlements:89adf1b
+      - image: quay.io/cloudservices/mocktitlements:2d55a98
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
