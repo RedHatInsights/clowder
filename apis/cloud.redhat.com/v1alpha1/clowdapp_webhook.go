@@ -27,6 +27,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -44,10 +45,10 @@ func (r *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Validator = &ClowdApp{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateCreate() error {
+func (r *ClowdApp) ValidateCreate() (admission.Warnings, error) {
 	clowdapplog.Info("validate create", "name", r.Name)
 
-	return r.processValidations(r,
+	return []string{}, r.processValidations(r,
 		validateDatabase,
 		validateSidecars,
 		validateInit,
@@ -56,10 +57,10 @@ func (r *ClowdApp) ValidateCreate() error {
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateUpdate(_ runtime.Object) error {
+func (r *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) {
 	clowdapplog.Info("validate update", "name", r.Name)
 
-	return r.processValidations(r,
+	return []string{}, r.processValidations(r,
 		validateDatabase,
 		validateSidecars,
 		validateInit,
@@ -68,9 +69,9 @@ func (r *ClowdApp) ValidateUpdate(_ runtime.Object) error {
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateDelete() error {
+func (r *ClowdApp) ValidateDelete() (admission.Warnings, error) {
 	clowdapplog.Info("validate delete", "name", r.Name)
-	return nil
+	return []string{}, nil
 }
 
 type appValidationFunc func(*ClowdApp) field.ErrorList

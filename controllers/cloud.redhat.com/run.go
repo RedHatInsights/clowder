@@ -25,7 +25,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -90,9 +92,10 @@ func Run(signalHandler context.Context, metricsAddr string, probeAddr string, en
 	clowderVersion.With(prometheus.Labels{"version": Version}).Inc()
 
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
-		Scheme:                 Scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Scheme: Scheme,
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "068b0003.cloud.redhat.com",
@@ -172,6 +175,7 @@ func setupWebhooks(mgr manager.Manager, enableWebHooks bool) error {
 			"/mutate-pod",
 			&webhook.Admission{
 				Handler: &mutantPod{
+					Decoder:  admission.NewDecoder(mgr.GetScheme()),
 					Client:   mgr.GetClient(),
 					Recorder: mgr.GetEventRecorderFor("app"),
 				},

@@ -27,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -576,14 +575,14 @@ type MinioStatus struct {
 type ClowdEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Conditions      []clusterv1.Condition `json:"conditions,omitempty"`
-	TargetNamespace string                `json:"targetNamespace,omitempty"`
-	Ready           bool                  `json:"ready,omitempty"`
-	Deployments     EnvResourceStatus     `json:"deployments,omitempty"`
-	Apps            []AppInfo             `json:"apps,omitempty"`
-	Generation      int64                 `json:"generation,omitempty"`
-	Hostname        string                `json:"hostname,omitempty"`
-	Prometheus      PrometheusStatus      `json:"prometheus,omitempty"`
+	Conditions      []metav1.Condition `json:"conditions,omitempty"`
+	TargetNamespace string             `json:"targetNamespace,omitempty"`
+	Ready           bool               `json:"ready,omitempty"`
+	Deployments     EnvResourceStatus  `json:"deployments,omitempty"`
+	Apps            []AppInfo          `json:"apps,omitempty"`
+	Generation      int64              `json:"generation,omitempty"`
+	Hostname        string             `json:"hostname,omitempty"`
+	Prometheus      PrometheusStatus   `json:"prometheus,omitempty"`
 }
 
 type EnvResourceStatus struct {
@@ -645,11 +644,11 @@ func init() {
 	SchemeBuilder.Register(&ClowdEnvironment{}, &ClowdEnvironmentList{})
 }
 
-func (i *ClowdEnvironment) GetConditions() clusterv1.Conditions {
+func (i *ClowdEnvironment) GetConditions() []metav1.Condition {
 	return i.Status.Conditions
 }
 
-func (i *ClowdEnvironment) SetConditions(conditions clusterv1.Conditions) {
+func (i *ClowdEnvironment) SetConditions(conditions []metav1.Condition) {
 	i.Status.Conditions = conditions
 }
 

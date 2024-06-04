@@ -69,7 +69,6 @@ import (
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
@@ -215,27 +214,46 @@ func runProvidersForEnvFinalize(log logr.Logger, provider providers.Provider) er
 	return nil
 }
 
+func (r *ClowdEnvironmentReconciler) setupWatch(ctrlr *builder.Builder, mgr ctrl.Manager, obj client.Object, handlerBuilder HandlerFuncBuilder) error {
+	handler, err := createNewHandler(mgr, r.Scheme, handlerBuilder, r.Log, "app", &crd.ClowdEnvironment{}, r.HashCache)
+	if err != nil {
+		return err
+	}
+	ctrlr.Watches(obj, handler)
+
+	return nil
+}
+
 // SetupWithManager sets up with manager
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
-	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
-	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
-	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
+	watchers := []Watcher{}
+	watchers = append(watchers, Watcher{obj: &apps.Deployment{}, filter: deploymentFilter})
+	watchers = append(watchers, Watcher{obj: &core.Service{}, filter: alwaysFilter})
+	watchers = append(watchers, Watcher{obj: &core.Secret{}, filter: alwaysFilter})
+
+	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
+		watchers = append(watchers, Watcher{obj: &strimzi.Kafka{}, filter: kafkaFilter})
+		watchers = append(watchers, Watcher{obj: &strimzi.KafkaConnect{}, filter: alwaysFilter})
+		watchers = append(watchers, Watcher{obj: &strimzi.KafkaUser{}, filter: alwaysFilter})
+		watchers = append(watchers, Watcher{obj: &strimzi.KafkaTopic{}, filter: alwaysFilter})
+	}
+
+	for _, watcher := range watchers {
+		err := r.setupWatch(ctrlr, mgr, watcher.obj, watcher.filter)
+		if err != nil {
+			return err
+		}
+	}
+
 	ctrlr.Watches(
-		&source.Kind{Type: &crd.ClowdApp{}},
+		&crd.ClowdApp{},
 		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppUpdate),
 		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 	)
-
-	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
-		ctrlr.Watches(&source.Kind{Type: &strimzi.Kafka{}}, createNewHandler(kafkaFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
-		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaConnect{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
-		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaUser{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
-		ctrlr.Watches(&source.Kind{Type: &strimzi.KafkaTopic{}}, createNewHandler(alwaysFilter, r.Log, "env", &crd.ClowdEnvironment{}, r.HashCache))
-	}
 
 	ctrlr.WithOptions(controller.Options{
 		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
@@ -243,8 +261,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrlr.Complete(r)
 }
 
-func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(a client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(ctx context.Context, a client.Object) []reconcile.Request {
 	obj := types.NamespacedName{
 		Name:      a.GetName(),
 		Namespace: a.GetNamespace(),
