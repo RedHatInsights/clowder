@@ -7,12 +7,11 @@ status:
   ready: true
   conditions:
   - status: "True"
-    type: DeploymentsReady
+    type: ReconciliationSuccessful
   - status: "False"
     type: ReconciliationFailed
   - status: "True"
-    type: ReconciliationSuccessful
-
+    type: DeploymentsReady
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -22,11 +21,11 @@ metadata:
 status:
   conditions:
   - status: "True"
-    type: DeploymentsReady
+    type: ReconciliationSuccessful
   - status: "False"
     type: ReconciliationFailed
   - status: "True"
-    type: ReconciliationSuccessful
+    type: DeploymentsReady
 ---
 kind: Deployment
 apiVersion: apps/v1

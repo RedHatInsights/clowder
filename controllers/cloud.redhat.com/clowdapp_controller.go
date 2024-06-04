@@ -34,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	// Import the providers to initialize them
 
@@ -128,6 +127,11 @@ type ClowdAppReconciler struct {
 	HashCache *hashcache.HashCache
 }
 
+type Watcher struct {
+	obj    client.Object
+	filter HandlerFuncBuilder
+}
+
 // Reconcile fn
 func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("app", req.Name).WithValues("rid", utils.RandString(5)).WithValues("namespace", req.Namespace)
@@ -164,6 +168,16 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return ctrl.Result{}, nil
 }
 
+func (r *ClowdAppReconciler) setupWatch(ctrlr *builder.Builder, mgr ctrl.Manager, obj client.Object, handlerBuilder HandlerFuncBuilder) error {
+	handler, err := createNewHandler(mgr, r.Scheme, handlerBuilder, r.Log, "app", &crd.ClowdApp{}, r.HashCache)
+	if err != nil {
+		return err
+	}
+	ctrlr.Watches(obj, handler)
+
+	return nil
+}
+
 // SetupWithManager sets up with Manager
 func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Log.Info("Setting up manager")
@@ -181,23 +195,32 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdApp{})
 	ctrlr.Watches(
-		&source.Kind{Type: &crd.ClowdEnvironment{}},
+		&crd.ClowdEnvironment{},
 		handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 		builder.WithPredicates(environmentPredicate(r.Log, "app")),
 	)
-	ctrlr.Watches(&source.Kind{Type: &apps.Deployment{}}, createNewHandler(deploymentFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
-	ctrlr.Watches(&source.Kind{Type: &core.Service{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
-	ctrlr.Watches(&source.Kind{Type: &core.ConfigMap{}}, createNewHandler(generationOnlyFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
-	ctrlr.Watches(&source.Kind{Type: &core.Secret{}}, createNewHandler(alwaysFilter, r.Log, "app", &crd.ClowdApp{}, r.HashCache))
+
+	watchers := []Watcher{}
+	watchers = append(watchers, Watcher{obj: &apps.Deployment{}, filter: deploymentFilter})
+	watchers = append(watchers, Watcher{obj: &core.Service{}, filter: generationOnlyFilter})
+	watchers = append(watchers, Watcher{obj: &core.ConfigMap{}, filter: generationOnlyFilter})
+	watchers = append(watchers, Watcher{obj: &core.Secret{}, filter: alwaysFilter})
+
+	for _, watcher := range watchers {
+		err := r.setupWatch(ctrlr, mgr, watcher.obj, watcher.filter)
+		if err != nil {
+			return err
+		}
+	}
+
 	ctrlr.WithOptions(controller.Options{
 		RateLimiter: workqueue.NewItemExponentialFailureRateLimiter(time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 	})
 	return ctrlr.Complete(r)
 }
 
-func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []reconcile.Request {
+func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(ctx context.Context, a client.Object) []reconcile.Request {
 	reqs := []reconcile.Request{}
-	ctx := context.Background()
 	obj := types.NamespacedName{
 		Name:      a.GetName(),
 		Namespace: a.GetNamespace(),

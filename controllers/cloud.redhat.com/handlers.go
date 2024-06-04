@@ -18,8 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
@@ -33,52 +33,34 @@ type enqueueRequestForObjectCustom struct {
 	logr         logr.Logger
 	ctrlName     string
 	client       client.Client
-	context      context.Context
 	hashCache    *hashcache.HashCache
 }
 
 var _ handler.EventHandler = &enqueueRequestForObjectCustom{}
 
-var _ inject.Scheme = &enqueueRequestForObjectCustom{}
+type HandlerFuncBuilder func(logr logr.Logger, ctrlName string) HandlerFuncs
 
-func (e *enqueueRequestForObjectCustom) InjectScheme(s *runtime.Scheme) error {
-	return e.parseOwnerScheme(s)
-}
-
-var _ inject.Mapper = &enqueueRequestForObjectCustom{}
-
-func (e *enqueueRequestForObjectCustom) InjectMapper(m meta.RESTMapper) error {
-	e.mapObj = m
-	return nil
-}
-
-var _ inject.Client = &enqueueRequestForObjectCustom{}
-
-func (e *enqueueRequestForObjectCustom) InjectClient(c client.Client) error {
-	e.client = c
-	e.context = context.Background()
-	return nil
-}
-
-func (e *enqueueRequestForObjectCustom) parseOwnerScheme(s *runtime.Scheme) error {
-	kinds, _, err := s.ObjectKinds(e.TypeOfOwner)
-	if err != nil {
-		return err
-	}
-	e.groupKind = schema.GroupKind{Group: kinds[0].Group, Kind: kinds[0].Kind}
-	return nil
-}
-
-func createNewHandler(input func(logr logr.Logger, ctrlName string) HandlerFuncs, log logr.Logger, ctrlName string, typeOfOwner runtime.Object, hashCache *hashcache.HashCache) handler.EventHandler {
+func createNewHandler(mgr manager.Manager, scheme *runtime.Scheme, input HandlerFuncBuilder, log logr.Logger, ctrlName string, typeOfOwner runtime.Object, hashCache *hashcache.HashCache) (handler.EventHandler, error) {
 	handleFuncs := input(log, ctrlName)
+
+	kinds, _, err := scheme.ObjectKinds(typeOfOwner)
+	if err != nil {
+		return nil, err
+	}
+
+	groupKind := schema.GroupKind{Group: kinds[0].Group, Kind: kinds[0].Kind}
+
 	obj := enqueueRequestForObjectCustom{
 		HandlerFuncs: handleFuncs,
 		TypeOfOwner:  typeOfOwner,
 		logr:         log,
 		ctrlName:     ctrlName,
 		hashCache:    hashCache,
+		client:       mgr.GetClient(),
+		groupKind:    groupKind,
+		mapObj:       mgr.GetRESTMapper(),
 	}
-	return &obj
+	return &obj, nil
 }
 
 func (e *enqueueRequestForObjectCustom) findOwner(a client.Object) (*types.NamespacedName, string) {
@@ -137,7 +119,7 @@ func getNamespacedName(obj client.Object) *types.NamespacedName {
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Create(ctx context.Context, evt event.CreateEvent, q workqueue.RateLimitingInterface) {
 	shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.Object)
 	if err != nil {
 		e.logMessage(evt.Object, err.Error(), "", getNamespacedName(evt.Object))
@@ -145,7 +127,7 @@ func (e *enqueueRequestForObjectCustom) Create(evt event.CreateEvent, q workqueu
 
 	if shouldUpdate {
 		_ = e.doUpdateToHash(evt.Object, q)
-		e.reconcileAllAppsUsingObject(evt.Object, q)
+		e.reconcileAllAppsUsingObject(ctx, evt.Object, q)
 	}
 
 	if own, toKind := e.getOwner(evt.Object); own != nil {
@@ -178,9 +160,10 @@ func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q work
 	return nil
 }
 
-func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(obj client.Object, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(ctx context.Context, obj client.Object, q workqueue.RateLimitingInterface) {
 	capps := &crd.ClowdAppList{}
-	if err := e.client.List(e.context, capps, client.InNamespace(obj.GetNamespace())); err != nil {
+	namespace := client.InNamespace(obj.GetNamespace())
+	if err := e.client.List(ctx, capps, namespace); err != nil {
 		e.logMessage(obj, err.Error(), "error listing apps", getNamespacedName(obj))
 	}
 	for _, app := range capps.Items {
@@ -188,7 +171,7 @@ func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(obj client.O
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Update(ctx context.Context, evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	if evt.ObjectNew.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] == "true" {
 		shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
 		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), getNamespacedName(evt.ObjectNew))
@@ -199,7 +182,7 @@ func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueu
 			_ = e.doUpdateToHash(evt.ObjectNew, q)
 		}
 		if evt.ObjectOld.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != evt.ObjectNew.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] {
-			e.reconcileAllAppsUsingObject(evt.ObjectNew, q)
+			e.reconcileAllAppsUsingObject(ctx, evt.ObjectNew, q)
 		}
 	} else if _, err := e.hashCache.Read(evt.ObjectNew); err == nil {
 		err := e.doUpdateToHash(evt.ObjectNew, q)
@@ -226,7 +209,7 @@ func (e *enqueueRequestForObjectCustom) Update(evt event.UpdateEvent, q workqueu
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Delete(_ context.Context, evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
 	e.hashCache.Delete(evt.Object)
 
 	if own, toKind := e.getOwner(evt.Object); own != nil {
@@ -237,7 +220,7 @@ func (e *enqueueRequestForObjectCustom) Delete(evt event.DeleteEvent, q workqueu
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Generic(_ context.Context, evt event.GenericEvent, q workqueue.RateLimitingInterface) {
 	if own, toKind := e.getOwner(evt.Object); own != nil {
 		if doRequest, msg := e.HandlerFuncs.GenericFunc(evt); doRequest {
 			e.logMessage(evt.Object, msg, toKind, own)

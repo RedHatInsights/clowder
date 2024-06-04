@@ -20,13 +20,13 @@ import (
 type mutantPod struct {
 	Client   client.Client
 	Recorder record.EventRecorder
-	decoder  *admission.Decoder
+	Decoder  *admission.Decoder
 }
 
 func (p *mutantPod) Handle(_ context.Context, req admission.Request) admission.Response {
 	pod := &core.Pod{}
 
-	err := p.decoder.Decode(req, pod)
+	err := p.Decoder.Decode(req, pod)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
@@ -135,6 +135,6 @@ func (p *mutantPod) Handle(_ context.Context, req admission.Request) admission.R
 }
 
 func (p *mutantPod) InjectDecoder(d *admission.Decoder) error {
-	p.decoder = d
+	p.Decoder = d
 	return nil
 }
