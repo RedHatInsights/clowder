@@ -183,10 +183,10 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	// attach sel-downloads volume to share Downloads with iqe container
 	sizeLimit := resource.MustParse("64Mi")
 	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
-		Name:         "sel-downloads",
+		Name: "sel-downloads",
 		VolumeSource: core.VolumeSource{
 			EmptyDir: &core.EmptyDirVolumeSource{
-				Medium: "Memory",
+				Medium:    "Memory",
 				SizeLimit: &sizeLimit,
 			},
 		},
