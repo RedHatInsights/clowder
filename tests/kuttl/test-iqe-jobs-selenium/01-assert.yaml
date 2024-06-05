@@ -39,6 +39,10 @@ spec:
       - emptyDir:
           medium: Memory
         name: shm
+      - emptyDir:
+          medium: Memory
+          sizeLimit: 64Mi
+        name: sel-downloads
       containers:
         - args:
           - "clowder"
@@ -79,6 +83,8 @@ spec:
               cpu: 200m
               memory: 256Mi
           volumeMounts:
+          - mountPath: /sel-downloads
+            name: sel-downloads
           - mountPath: /cdenv
             name: cdenvconfig
           - mountPath: /cdapp
@@ -94,6 +100,8 @@ spec:
           volumeMounts:
           - mountPath: /dev/shm
             name: shm
+          - mountPath: /home/selenium/Downloads
+            name: sel-downloads
 ---
 apiVersion: v1
 kind: Secret
