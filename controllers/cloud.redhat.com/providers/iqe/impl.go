@@ -10,6 +10,7 @@ import (
 	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -129,6 +130,14 @@ func createIqeContainer(j *batchv1.Job, nn types.NamespacedName, cji *crd.ClowdJ
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 	}
 
+	// attach sel-downloads volume to access Downloads from selenim container in case selenium is deployed
+	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
+		c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+			Name:      "sel-downloads",
+			MountPath: "/sel-downloads",
+		})
+	}
+
 	return &c
 }
 
@@ -169,6 +178,23 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 		Name:      "shm",
 		MountPath: "/dev/shm",
+	})
+
+	// attach sel-downloads volume to share Downloads with iqe container
+	sizeLimit := resource.MustParse("64Mi")
+	j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
+		Name: "sel-downloads",
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{
+				Medium:    "Memory",
+				SizeLimit: &sizeLimit,
+			},
+		},
+	})
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "sel-downloads",
+		MountPath: "/home/selenium/Downloads",
 	})
 
 	return &c
