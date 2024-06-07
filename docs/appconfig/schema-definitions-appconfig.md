@@ -36,6 +36,7 @@ ClowdApp deployment configuration for Clowder enabled apps.
 | [privateEndpoints](#privateendpoints) | `array`   | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-privateendpoints.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/privateEndpoints") |
 | [BOPURL](#bopurl)                     | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-bopurl.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/BOPURL")                     |
 | [hashCache](#hashcache)               | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")               |
+| [hostname](#hostname)                 | `string`  | Optional | cannot be null | [AppConfig](schema-definitions-appconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hostname")                 |
 
 ## privatePort
 
@@ -306,5 +307,21 @@ A set of configMap/secret hashes
 -   defined in: [AppConfig](schema-definitions-appconfig-properties-hashcache.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hashCache")
 
 ### hashCache Type
+
+`string`
+
+## hostname
+
+The external hostname of the deployment, where applicable
+
+
+`hostname`
+
+-   is optional
+-   Type: `string`
+-   cannot be null
+-   defined in: [AppConfig](schema-definitions-appconfig-properties-hostname.md "https&#x3A;//cloud.redhat.com/schemas/clowder-appconfig#/definitions/AppConfig/properties/hostname")
+
+### hostname Type
 
 `string`

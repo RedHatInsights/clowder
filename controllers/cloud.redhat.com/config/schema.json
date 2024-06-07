@@ -74,6 +74,10 @@
                 "hashCache": {
                     "description": "A set of configMap/secret hashes",
                     "type": "string"
+                },
+                "hostname": {
+                    "description": "The external hostname of the deployment, where applicable",
+                    "type": "string"
                 }
             },
             "required": [

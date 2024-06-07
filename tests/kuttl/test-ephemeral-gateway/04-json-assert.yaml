@@ -14,6 +14,7 @@ commands:
 - script: jq -r '.endpoints[] | select(.app == "puptoo-2paths") | select(.name == "processor") | .apiPath == "/api/puptoo1/"' -e < /tmp/test-ephemeral-gateway-apipaths-json
 - script: jq -r '.endpoints[] | select(.app == "puptoo-2paths") | select(.name == "processor") | .apiPaths[0] == "/api/puptoo1/"' -e < /tmp/test-ephemeral-gateway-apipaths-json
 - script: jq -r '.endpoints[] | select(.app == "puptoo-2paths") | select(.name == "processor") | .apiPaths[1] == "/api/puptoo2/"' -e < /tmp/test-ephemeral-gateway-apipaths-json
+- script: jq -r '.hostname == "test-ephemeral-gateway"' -e < /tmp/test-ephemeral-gateway-apipaths-json
 
 - script: kubectl get secret test-ephemeral-gateway-keycloak -n test-ephemeral-gateway -o json | jq -r '.data.defaultUsername == "amRvZQ=="'
 - script: kubectl get secret test-ephemeral-gateway-keycloak -n test-ephemeral-gateway -o json | jq -r '.data.version == "MTUuMC4yCg=="'

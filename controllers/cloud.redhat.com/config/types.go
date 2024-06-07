@@ -83,6 +83,9 @@ type AppConfig struct {
 	// A set of configMap/secret hashes
 	HashCache *string `json:"hashCache,omitempty"`
 
+	// The external hostname of the deployment, where applicable
+	Hostname *string `json:"hostname,omitempty"`
+
 	// InMemoryDb corresponds to the JSON schema field "inMemoryDb".
 	InMemoryDb *InMemoryDBConfig `json:"inMemoryDb,omitempty"`
 
