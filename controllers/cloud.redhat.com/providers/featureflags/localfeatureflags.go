@@ -264,16 +264,16 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 
 	livenessProbe := core.Probe{
 		ProbeHandler:        probeHandler,
-		InitialDelaySeconds: 10,
-		TimeoutSeconds:      2,
+		InitialDelaySeconds: 20,
+		TimeoutSeconds:      4,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
 		FailureThreshold:    3,
 	}
 	readinessProbe := core.Probe{
 		ProbeHandler:        probeHandler,
-		InitialDelaySeconds: 20,
-		TimeoutSeconds:      2,
+		InitialDelaySeconds: 40,
+		TimeoutSeconds:      4,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
 		FailureThreshold:    3,
