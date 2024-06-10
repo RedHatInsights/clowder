@@ -161,11 +161,12 @@ metadata:
   namespace: test-kafka-strimzi-topic-auth
 status:
   conditions:
-    - status: 'True'
-      type: ReconciliationSuccessful
+    - type: DeploymentsReady
     - status: 'False'
       type: ReconciliationFailed
-    - type: DeploymentsReady
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -174,8 +175,9 @@ metadata:
   namespace: test-kafka-strimzi-topic-auth
 status:
   conditions:
-    - status: 'True'
-      type: ReconciliationSuccessful
+    - type: DeploymentsReady
     - status: 'False'
       type: ReconciliationFailed
-    - type: DeploymentsReady
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful

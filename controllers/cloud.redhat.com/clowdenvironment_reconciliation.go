@@ -12,10 +12,9 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	cond "sigs.k8s.io/cluster-api/util/conditions"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -433,13 +432,13 @@ func (r *ClowdEnvironmentReconciliation) setEnvStatus() (ctrl.Result, error) {
 		return ctrl.Result{Requeue: true}, getEnvResErr
 	}
 
-	envStatus := metav1.ConditionFalse
-	successCond := meta.FindStatusCondition(r.env.GetConditions(), crd.ReconciliationSuccessful)
+	envStatus := core.ConditionFalse
+	successCond := cond.Get(r.env, crd.ReconciliationSuccessful)
 	if successCond != nil {
 		envStatus = successCond.Status
 	}
 
-	r.env.Status.Ready = envReady && (envStatus == metav1.ConditionTrue)
+	r.env.Status.Ready = envReady && (envStatus == core.ConditionTrue)
 	r.env.Status.Generation = r.env.Generation
 
 	return ctrl.Result{}, nil

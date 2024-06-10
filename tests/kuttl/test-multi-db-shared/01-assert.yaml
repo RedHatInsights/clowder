@@ -35,11 +35,12 @@ metadata:
   namespace: test-multi-db-shared
 status:
   conditions:
-    - status: 'True'
-      type: ReconciliationSuccessful
+    - type: DeploymentsReady
     - status: 'False'
       type: ReconciliationFailed
-    - type: DeploymentsReady
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -48,11 +49,12 @@ metadata:
   namespace: test-multi-db-shared
 status:
   conditions:
-    - status: 'True'
-      type: ReconciliationSuccessful
+    - type: DeploymentsReady
     - status: 'False'
       type: ReconciliationFailed
-    - type: DeploymentsReady
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -61,11 +63,12 @@ metadata:
   namespace: test-multi-db-shared
 status:
   conditions:
-    - status: 'True'
-      type: ReconciliationSuccessful
+    - type: DeploymentsReady
     - status: 'False'
       type: ReconciliationFailed
-    - type: DeploymentsReady
+    - 
+      status: 'True'
+      type: ReconciliationSuccessful
 ---
 apiVersion: v1
 kind: Secret
