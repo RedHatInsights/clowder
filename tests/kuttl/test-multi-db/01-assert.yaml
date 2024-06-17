@@ -19,4 +19,4 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/cloudservices/postgresql-rds:10-99c8c27
+        - image: quay.io/cloudservices/postgresql-rds:13-2318dee

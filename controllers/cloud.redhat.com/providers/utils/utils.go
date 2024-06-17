@@ -28,7 +28,6 @@ var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:2d55a98"
 var DefaultKeyCloakVersion = "23.0.1"
 var DefaultImageCaddyProxy = "quay.io/cloudservices/caddy-ubi:latest"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
-var DefaultImageDatabasePG10 = "quay.io/cloudservices/postgresql-rds:10-99c8c27"
 var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
