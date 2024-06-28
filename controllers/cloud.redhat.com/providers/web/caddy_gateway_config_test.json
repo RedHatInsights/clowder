@@ -91,7 +91,9 @@
           ],
           "logs": {
             "logger_names": {
-              "localhost.localdomain:9090": ""
+              "localhost.localdomain:9090": [
+                ""
+              ]
             }
           }
         }

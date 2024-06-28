@@ -98,7 +98,7 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, appR
 				},
 			}, {}},
 			Logs: &caddyhttp.ServerLogConfig{
-				LoggerNames: map[string]string{"localhost.localdomain:9090": ""},
+				LoggerNames: map[string]caddyhttp.StringArray{"localhost.localdomain:9090": []string{""}},
 			},
 		}},
 	}
