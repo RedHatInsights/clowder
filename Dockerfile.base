@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM registry.access.redhat.com/ubi8/go-toolset:1.21.9-3.1718100004 as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.21.9-3.1719304739 as builder
 USER 0
 RUN dnf install -y openssh-clients git make which jq python3
 
