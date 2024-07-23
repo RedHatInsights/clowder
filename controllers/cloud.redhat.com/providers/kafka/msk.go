@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -123,6 +124,7 @@ func (s *mskProvider) copyGenericSecret(obj object.ClowdObject, source, dest crd
 
 func (s *mskProvider) createConnectSecret() error {
 	secName := s.getConnectClusterUserName()
+	secName = regexp.MustCompile(`[^a-z0-9-]`).ReplaceAllString(strings.ToLower(secName), "-")
 
 	newPullSecObj := &core.Secret{}
 
