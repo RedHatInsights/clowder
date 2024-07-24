@@ -217,11 +217,7 @@ spec:
         - name: name
           value: buildah
         - name: bundle
-<<<<<<< HEAD
-          value: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.2@sha256:24f21fdeaf9651abdcd8a49206b0e7fe4015b5216e5cfa7762f2185ed2edda32
-=======
           value: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.1@sha256:b2d7986b918a77b328864bcdd25526ef59e781f098aa2f35b1db806fd893ed41
->>>>>>> parent of 368d5db8 (chore(deps): update konflux references)
         - name: kind
           value: task
         resolver: bundles
@@ -246,11 +242,7 @@ spec:
         - name: name
           value: source-build
         - name: bundle
-<<<<<<< HEAD
-          value: quay.io/redhat-appstudio-tekton-catalog/task-source-build:0.1@sha256:929bf55a5e364c957a5f907a5516fb8f8893c389ae5985767de7311736eb904a
-=======
           value: quay.io/redhat-appstudio-tekton-catalog/task-source-build:0.1@sha256:83ee909cb8f7d659fac380a2521fb60f30c309e5ecb91f3aad2433936e690d98
->>>>>>> parent of 368d5db8 (chore(deps): update konflux references)
         - name: kind
           value: task
         resolver: bundles
