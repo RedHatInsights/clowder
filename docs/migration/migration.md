@@ -150,7 +150,7 @@ Additional information needed to fill out the other fields:
 The new ``ClowdApp`` can be validated on any cluster that has Clowder
 installed. If access to a cluster with Clowder is not available, Clowder can be
 [installed on Codeready Containers](https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md)
-or on Minikube please see the [usage guide](../usage/index.md) for more information.
+or on Minikube please see the [usage guide](../usage/getting-started.md) for more information.
 
 ## Create deployment template with ``ClowdApp`` resource
 

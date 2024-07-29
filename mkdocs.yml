@@ -3,8 +3,3 @@ site_name: Clowder Documentation
 plugins:
   - techdocs-core
 
-markdown_extensions:
-  - pymdownx.superfences
-  - pymdownx.snippets
-  - callouts
-  - tables

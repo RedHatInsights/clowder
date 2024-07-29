@@ -10,7 +10,7 @@ instance. It will also create two new custom resource types that are easy to
 query: ``env`` for ``ClowdEnvs`` and ``app`` for ``ClowdApps``.
 
 If you would like to install Clowder manually and set up a contributing
-developer environment, [follow the developer guide](../developer-guide).
+developer environment, [follow the developer guide](../developer-guide.md).
 
 ## Create your first ``ClowdEnvironment``
 

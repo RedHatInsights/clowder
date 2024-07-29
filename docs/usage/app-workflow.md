@@ -110,8 +110,8 @@ If the deployment fails to reach a 'ready' state or pods fail to come up, use ``
 
 ## 4. Repeat
 Repeat until you're happy with the results. When satisfied, checkout the
-[migration guide](../../migration/migration/) to start your app on the jouney to ephemeral and beyond.   
+[migration guide](../migration/migration.md) to start your app on the jouney to ephemeral and beyond.   
 
 
 ## Next Steps
-[Migrating a service from v3 to Clowder](../../migration/migration)
+[Migrating a service from v3 to Clowder](../migration/migration.md)
