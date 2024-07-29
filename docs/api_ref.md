@@ -92,6 +92,7 @@
     - [15.1.5. Property `root > privateEndpoints > privateEndpoints items > tlsPort`](#privateEndpoints_items_tlsPort)
 - [16. Property `root > BOPURL`](#BOPURL)
 - [17. Property `root > hashCache`](#hashCache)
+- [18. Property `root > hostname`](#hostname)
 
 **Title:** AppConfig
 
@@ -123,6 +124,7 @@
 | - [privateEndpoints](#privateEndpoints ) | No      | array   | No         | -                                   | -                                                                                                         |
 | - [BOPURL](#BOPURL )                     | No      | string  | No         | -                                   | Defines the path to the BOPURL.                                                                           |
 | - [hashCache](#hashCache )               | No      | string  | No         | -                                   | A set of configMap/secret hashes                                                                          |
+| - [hostname](#hostname )                 | No      | string  | No         | -                                   | The external hostname of the deployment, where applicable                                                 |
 
 ## <a name="privatePort"></a>1. Property `root > privatePort`
 
@@ -1176,5 +1178,14 @@ Must be one of:
 
 **Description:** A set of configMap/secret hashes
 
+## <a name="hostname"></a>18. Property `root > hostname`
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | No       |
+
+**Description:** The external hostname of the deployment, where applicable
+
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-03 at 13:36:45 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-07-29 at 11:17:42 +0100
