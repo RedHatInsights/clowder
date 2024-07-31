@@ -40,7 +40,6 @@ func init() {
 		14: provutils.DefaultImageDatabasePG14,
 		13: provutils.DefaultImageDatabasePG13,
 		12: provutils.DefaultImageDatabasePG12,
-		10: provutils.DefaultImageDatabasePG10,
 	}
 }
 

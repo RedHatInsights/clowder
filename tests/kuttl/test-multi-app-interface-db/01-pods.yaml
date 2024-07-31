@@ -146,7 +146,7 @@ spec:
       image: quay.io/psav/clowder-hello
   database:
     name: app-default-ca
-    version: 10
+    version: 13
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -161,7 +161,7 @@ spec:
       image: quay.io/psav/clowder-hello
   database:
     name: app-b
-    version: 10
+    version: 13
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -176,7 +176,7 @@ spec:
       image: quay.io/psav/clowder-hello
   database:
     sharedDbAppName: app-b
-    version: 10
+    version: 13
   dependencies:
   - app-b
 ---
@@ -193,7 +193,7 @@ spec:
       image: quay.io/psav/clowder-hello
   database:
     name: app-d
-    version: 10
+    version: 13
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
