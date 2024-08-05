@@ -7578,6 +7578,9 @@ objects:
                 appName:
                   description: Name of the ClowdApp who owns the jobs
                   type: string
+                disabled:
+                  description: Disabled is a flag to turn off CJI(s) from running
+                  type: boolean
                 jobs:
                   description: Jobs is the set of jobs to be run by the invocation
                   items:
