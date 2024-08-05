@@ -377,6 +377,7 @@ ClowdJobInvocationSpec defines the desired state of ClowdJobInvocation
 | *`jobs`* __string array__ | Jobs is the set of jobs to be run by the invocation
 | *`testing`* __xref:{anchor_prefix}-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-jobtestingspec[$$JobTestingSpec$$]__ | Testing is the struct for building out test jobs (iqe, etc) in a CJI
 | *`runOnNotReady`* __boolean__ | RunOnNotReady is a flag that when true, the job will not wait for the deployment to be ready to run
+| *`disabled`* __boolean__ | Disabled is a flag to turn off CJI(s) from running
 |===
 
 
