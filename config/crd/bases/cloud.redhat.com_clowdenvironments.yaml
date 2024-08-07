@@ -277,7 +277,7 @@ spec:
                           cluster for this environment. Ignored for (*_local_*) mode.
                         properties:
                           image:
-                            description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+                            description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:sc-20240803-74fcdb1'
                             type: string
                           name:
                             description: 'Defines the kafka connect cluster name (default:

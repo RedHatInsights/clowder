@@ -208,7 +208,7 @@ type KafkaConnectClusterConfig struct {
 	// Version. If unset, default is '2.5.0'
 	Version string `json:"version,omitempty"`
 
-	// Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+	// Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:sc-20240803-74fcdb1'
 	Image string `json:"image,omitempty"`
 
 	// Resource Limits

@@ -74,7 +74,7 @@ metadata:
     strimzi.io/use-connector-resources: 'true'
 spec:
   version: "3.4.0"
-  image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+  image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:sc-20240803-74fcdb1"
   # bootstrapServers is asserted in json asserts
   config:
     group.id: connect-cluster
