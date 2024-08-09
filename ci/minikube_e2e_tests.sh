@@ -20,7 +20,7 @@ docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $CONTAINER
 set +e
 docker run -i \
     --name $CONTAINER_NAME \
-    -v $PWD:/workspace:roz \
+    -v $PWD:/workspace:z \
     -v `$PWD/bin/setup-envtest use -p path`:/bins:ro \
     -e IMAGE_NAME=$IMAGE_NAME \
     -e IMAGE_TAG=$IMAGE_TAG \
