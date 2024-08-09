@@ -1,0 +1,7 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: test-cji-disabled
+  labels:
+    job: puptoo-hello-cji

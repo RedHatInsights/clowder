@@ -128,6 +128,9 @@ type ClowdJobInvocationSpec struct {
 
 	// RunOnNotReady is a flag that when true, the job will not wait for the deployment to be ready to run
 	RunOnNotReady bool `json:"runOnNotReady,omitempty"`
+
+	// Disabled is a flag to turn off CJI(s) from running
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // ClowdJobInvocationStatus defines the observed state of ClowdJobInvocation
