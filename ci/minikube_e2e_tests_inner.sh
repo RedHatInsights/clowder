@@ -65,6 +65,9 @@ EOM
 export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+
 export KUBECONFIG=$PWD/kube-config
 export KUBECTL_CMD="kubectl "
 $KUBECTL_CMD config use-context remote-minikube
