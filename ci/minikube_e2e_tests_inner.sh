@@ -5,6 +5,8 @@ set -exv
 echo "inner script"
 
 ls -alsvh /tmp
+ls -alsvh /tmp/workspace
+ls -alsvh /tmp/jenkins-workspace
 
 # copy the workspace from the Jenkins job off the ro volume into this container
 mkdir /container_workspace
