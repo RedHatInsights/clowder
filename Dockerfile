@@ -2,11 +2,12 @@
 ARG BASE_IMAGE=
 FROM $BASE_IMAGE as builder
 
-WORKDIR /workspace
+WORKDIR /tmp/workspace
 
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
 
 # Copy the go source
+COPY Makefile Makefile
 COPY main.go main.go
 COPY config/ config/
 COPY apis/ apis/
