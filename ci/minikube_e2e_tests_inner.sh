@@ -7,6 +7,7 @@ echo "inner script"
 # copy the workspace from the Jenkins job off the ro volume into this container
 mkdir /container_workspace
 cp -r /tmp/workspace/. /container_workspace
+cp -r /tmp/jenkins-workspace/. /container_workspace
 cd /container_workspace
 
 echo "/container_workspace"
