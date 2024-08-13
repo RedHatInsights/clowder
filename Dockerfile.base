@@ -6,7 +6,7 @@ RUN dnf install -y openssh-clients git make which jq python3
 COPY ci/minikube_e2e_tests_inner.sh .
 RUN chmod 775 minikube_e2e_tests_inner.sh
 
-WORKDIR /workspace
+WORKDIR /tmp/workspace
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
