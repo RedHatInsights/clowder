@@ -69,7 +69,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/cloudservices/mbop:959d00d
+      - image: quay.io/cloudservices/mbop:4fbb291
 ---
 apiVersion: apps/v1
 kind: Deployment
