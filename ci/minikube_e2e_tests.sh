@@ -23,7 +23,7 @@ ls -alsvh
 set +e
 docker run -i \
     --name $CONTAINER_NAME \
-    -v $PWD:/tmp/workspace:ro \
+    -v $PWD:/tmp/jenkins-workspace:ro \
     -v `$PWD/bin/setup-envtest use -p path`:/bins:ro \
     -e IMAGE_NAME=$IMAGE_NAME \
     -e IMAGE_TAG=$IMAGE_TAG \
