@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi8/go-toolset:1.21.11-1.1720406008 as builder
 USER 0
 RUN dnf install -y openssh-clients git make which jq python3
 
-WORKDIR /tmp/tmp/tmp/tmp
+WORKDIR /tmp/tmp/tmp/tmp/tmp
 WORKDIR /tmp/workspace
 
 COPY ci/minikube_e2e_tests_inner.sh .
