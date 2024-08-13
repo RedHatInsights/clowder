@@ -2,15 +2,70 @@
 
 set -exv
 
-# copy the workspace from the Jenkins job off the ro volume into this container
+# Who are we running as?
+echo "Running as user: $(whoami)"
+
+# Check SELinux mode
+if command -v getenforce &>/dev/null; then
+  echo "SELinux status: $(getenforce)"
+  # Debug: Check SELinux context on key directories and files
+  if command -v ls &>/dev/null; then
+    echo "Checking SELinux context for /workspace"
+    ls -Zd /workspace
+    echo "Checking SELinux context for /tmp/container_workspace"
+    ls -Zd /tmp/container_workspace
+    echo "Checking SELinux context for /opt/app-root/src/go/bin"
+    ls -Zd /opt/app-root/src/go/bin
+  fi
+else
+  echo "SELinux not available"
+fi
+
+
+
+# Debug: Permissions on /workspace and its contents
+echo "Checking permissions for /workspace"
+ls -ld /workspace
+ls -l /workspace
+
+# Debug: Permissions on /tmp and /opt/app-root/src/go/bin
+echo "Checking permissions for /tmp"
+ls -ld /tmp
+echo "Checking permissions for /opt/app-root/src/go/bin"
+ls -ld /opt/app-root/src/go/bin
+ls -l /opt/app-root/src/go/bin
+
+# Create directory and check its permissions
+echo "Creating /tmp/container_workspace directory"
 mkdir /tmp/container_workspace
+ls -ld /tmp/container_workspace
+
+# Copy workspace contents and check permissions
+echo "Copying workspace contents"
 cp -r /workspace/. /tmp/container_workspace
+ls -l /tmp/container_workspace
+
+# Change to the new directory
+echo "Changing directory to /tmp/container_workspace"
 cd /tmp/container_workspace
+pwd
 
+# Create bin directory and check its permissions
+echo "Creating bin directory"
 mkdir -p /tmp/container_workspace/bin
-cp /opt/app-root/src/go/bin/* /tmp/container_workspace/bin
+ls -ld /tmp/container_workspace/bin
 
+# Copy Go binaries and check permissions
+echo "Copying go binaries"
+cp /opt/app-root/src/go/bin/* /tmp/container_workspace/bin
+ls -l /tmp/container_workspace/bin
+
+# Set environment variable and confirm
+echo "Setting KUBEBUILDER_ASSETS"
 export KUBEBUILDER_ASSETS=/tmp/container_workspace/testbin/bin
+echo "KUBEBUILDER_ASSETS is set to $KUBEBUILDER_ASSETS"
+
+
 
 (
   set -x; cd "$(mktemp -d)" &&
