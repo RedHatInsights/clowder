@@ -3,4 +3,4 @@ FROM $BASE_IMAGE
 
 WORKDIR /workspace
 
-COPY . .
+COPY . /tmp
