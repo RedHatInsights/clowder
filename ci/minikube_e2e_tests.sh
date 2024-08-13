@@ -34,7 +34,7 @@ docker run -i \
     ./ci/minikube_e2e_tests_inner.sh
 TEST_RESULT=$?
 
-docker cp $CONTAINER_NAME:/tmp/container_workspace/artifacts/ $PWD
+docker cp $CONTAINER_NAME:/container_workspace/artifacts/ $PWD
 
 set -e
 

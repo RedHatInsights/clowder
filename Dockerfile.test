@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=
 FROM $BASE_IMAGE 
 
-WORKDIR /tmp
+WORKDIR /tmp/workspace
 
 COPY . .
