@@ -2,7 +2,6 @@
 ARG BASE_IMAGE=
 FROM $BASE_IMAGE as builder
 
-WORKDIR /tmp/tmp
 WORKDIR /tmp/workspace
 
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
