@@ -31,7 +31,7 @@ docker run -i \
     -e MINIKUBE_USER=$MINIKUBE_USER \
     -e CLOWDER_VERSION=$CLOWDER_VERSION \
     $BASE_IMG \
-    ./tmp/ci/minikube_e2e_tests_inner.sh
+    ./ci/minikube_e2e_tests_inner.sh
 TEST_RESULT=$?
 
 docker cp $CONTAINER_NAME:/tmp/container_workspace/artifacts/ $PWD
