@@ -20,6 +20,8 @@ docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $CONTAINER
 echo "Current dir"
 ls -alsvh
 
+chmod -r 755 $PWD
+
 set +e
 docker run -i \
     --name $CONTAINER_NAME \
