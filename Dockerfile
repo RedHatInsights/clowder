@@ -22,8 +22,8 @@ RUN CGO_ENABLED=1 GOOS=linux GO111MODULE=on go build -o manager main.go
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1018
 WORKDIR /
-COPY --from=builder /workspace/manager .
-COPY --from=builder /workspace/manifest.yaml .
+COPY --from=builder /tmp/workspace/manager .
+COPY --from=builder /tmp/workspace/manifest.yaml .
 COPY jsons ./jsons/
 USER 65534:65534
 
