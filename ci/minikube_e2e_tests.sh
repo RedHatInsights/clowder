@@ -26,7 +26,7 @@ ls -Z ci/minikube_e2e_tests_inner.sh
 set +e
 docker run -i \
     --name $CONTAINER_NAME \
-    -v $PWD:/workspace:ro \
+    -v $PWD:/workspace:ro,Z \
     -v `$PWD/bin/setup-envtest use -p path`:/bins:ro \
     -e IMAGE_NAME=$IMAGE_NAME \
     -e IMAGE_TAG=$IMAGE_TAG \
