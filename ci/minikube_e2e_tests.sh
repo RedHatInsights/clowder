@@ -17,7 +17,8 @@ docker rm $tempid
 
 docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $CONTAINER_NAME .
 
-chmod -R 755 $PWD/workspace
+echo $PWD
+ls -alsvh
 
 set +e
 docker run -i \
