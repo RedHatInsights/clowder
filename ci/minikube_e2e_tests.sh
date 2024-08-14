@@ -19,6 +19,7 @@ docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $CONTAINER
 
 echo $PWD
 ls -alsvh
+ls -alsvh ci/
 
 set +e
 docker run -i \
