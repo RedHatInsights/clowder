@@ -65,6 +65,11 @@ EOM
 export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
+echo $PATH
+echo $KUBEBUILDER_ASSETS
+ls -alsvh /root/go/bin
+which kubectl
+
 export KUBECONFIG=$PWD/kube-config
 export KUBECTL_CMD="kubectl "
 $KUBECTL_CMD config use-context remote-minikube
