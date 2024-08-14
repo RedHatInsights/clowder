@@ -75,7 +75,7 @@ export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
-export KUBECTL_CMD="kubectl --kubeconfig=$KUBECONFIG " 
+export KUBECTL_CMD="kubectl " 
 $KUBECTL_CMD config use-context remote-minikube
 $KUBECTL_CMD get pods --all-namespaces=true
 
