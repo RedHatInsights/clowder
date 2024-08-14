@@ -10,13 +10,12 @@ cd /container_workspace
 mkdir -p /container_workspace/bin
 cp /opt/app-root/src/go/bin/* /container_workspace/bin
 
-ls -alsvh /container_workspace/bin
-
 export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 echo "$(cat kubectl.sha256)  ./kubectl" | sha256sum --check
+chmod +x kubectl
 
 (
   set -x; cd "$(mktemp -d)" &&
