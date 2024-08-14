@@ -16,7 +16,10 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 echo "$(cat kubectl.sha256)  ./kubectl" | sha256sum --check
 chmod +x kubectl
-cp kubectl "${KREW_ROOT:-$HOME/.krew}/bin"
+mv kubectl /container_workspace/bin
+export PATH="/container_workspace/bin:$PATH"
+
+
 
 (
   set -x; cd "$(mktemp -d)" &&
