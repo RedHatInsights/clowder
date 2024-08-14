@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo "Minikube E2E tests - debug exit 0"
-exit 0
-
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 
 set -exv
