@@ -17,12 +17,6 @@ docker rm $tempid
 
 docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $CONTAINER_NAME .
 
-echo $PWD
-ls -alsvh
-ls -alsvh ci/
-getenforce
-ls -Z ci/minikube_e2e_tests_inner.sh
-
 set +e
 docker run -i \
     --name $CONTAINER_NAME \
