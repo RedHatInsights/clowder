@@ -16,6 +16,7 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 echo "$(cat kubectl.sha256)  ./kubectl" | sha256sum --check
 chmod +x kubectl
+cp kubectl "${KREW_ROOT:-$HOME/.krew}/bin"
 
 (
   set -x; cd "$(mktemp -d)" &&
@@ -71,7 +72,7 @@ export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
-export KUBECTL_CMD="./kubectl --kubeconfig=$KUBECONFIG " 
+export KUBECTL_CMD="kubectl --kubeconfig=$KUBECONFIG " 
 $KUBECTL_CMD config use-context remote-minikube
 $KUBECTL_CMD get pods --all-namespaces=true
 
