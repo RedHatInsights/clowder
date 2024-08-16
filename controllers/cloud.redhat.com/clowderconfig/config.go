@@ -74,7 +74,7 @@ func getConfig() ClowderConfig {
 	err = json.Unmarshal(jsonData, &clowderConfig)
 
 	if err != nil {
-		fmt.Printf("Couldn't parse json:\n" + err.Error())
+		fmt.Printf("Couldn't parse json:\n %s", err.Error())
 		return ClowderConfig{}
 	}
 

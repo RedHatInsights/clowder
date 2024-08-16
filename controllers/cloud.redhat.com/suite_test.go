@@ -174,7 +174,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 		err := k8sClient.Get(ctx, nn, &cluster)
 
 		if err != nil {
-			t.Logf(err.Error())
+			t.Logf("%s", err.Error())
 			continue
 		}
 
@@ -195,7 +195,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 		err = k8sClient.Status().Update(ctx, &cluster)
 
 		if err != nil {
-			t.Logf(err.Error())
+			t.Logf("%s", err.Error())
 			continue
 		}
 
@@ -208,7 +208,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 		err = k8sClient.Get(ctx, nn, &connectCluster)
 
 		if err != nil {
-			t.Logf(err.Error())
+			t.Logf("%s", err.Error())
 			continue
 		}
 
@@ -222,7 +222,7 @@ func applyKafkaStatus(t *testing.T, ch chan int) {
 		err = k8sClient.Status().Update(ctx, &connectCluster)
 
 		if err != nil {
-			t.Logf(err.Error())
+			t.Logf("%s", err.Error())
 			continue
 		}
 
