@@ -29,7 +29,7 @@ func (se SkippedError) Error() string {
 }
 
 func NewSkippedError(errString string) error {
-	return SkippedError{err: fmt.Errorf(errString)}
+	return SkippedError{err: fmt.Errorf("%s", errString)}
 }
 
 const (
