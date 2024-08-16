@@ -109,7 +109,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	// CJI has already invoked a job, we'll update the status. The Job map must have entries
 	// because it can exist to update the status without having done any work.
-	if cji.Status.JobMap != nil && len(cji.Status.JobMap) > 0 {
+	if len(cji.Status.JobMap) > 0 {
 		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); condErr != nil {
 			return ctrl.Result{}, condErr
 		}
