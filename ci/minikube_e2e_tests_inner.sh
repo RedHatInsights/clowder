@@ -12,6 +12,15 @@ cp /opt/app-root/src/go/bin/* /container_workspace/bin
 
 export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+echo "$(cat kubectl.sha256)  ./kubectl" | sha256sum --check
+chmod +x kubectl
+mv kubectl /container_workspace/bin
+export PATH="/container_workspace/bin:$PATH"
+
+
+
 (
   set -x; cd "$(mktemp -d)" &&
   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -66,7 +75,7 @@ export PATH="$KUBEBUILDER_ASSETS:$PATH"
 export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
-export KUBECTL_CMD="kubectl "
+export KUBECTL_CMD="kubectl " 
 $KUBECTL_CMD config use-context remote-minikube
 $KUBECTL_CMD get pods --all-namespaces=true
 
