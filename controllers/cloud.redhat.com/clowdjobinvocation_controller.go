@@ -115,9 +115,11 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 		return ctrl.Result{}, nil
 	}
-	// This is a fresh CJI and needs to be invoked the first time
-	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
-	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
+	// This is a fresh CJI and needs to be invoked the first time unless it's disabled
+	if !cji.Spec.Disabled {
+		r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
+		ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
+	}
 
 	// Get the ClowdApp. Used to find definition of job being invoked
 	app := crd.ClowdApp{}
