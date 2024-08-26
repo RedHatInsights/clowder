@@ -163,7 +163,7 @@ no-update:
 
 ##@ Deployment
 
-pre-push: manifests generate build-template api-docs no-update
+pre-push: manifests generate genconfig build-template api-docs no-update
 
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -
