@@ -246,7 +246,7 @@ func processTopicValues(
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", replicaValList))
 		}
-		maxReplicasInt, err := strconv.ParseUint(maxReplicas, 10, 16)
+		maxReplicasInt, err := strconv.Atoi(maxReplicas)
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not convert string to int32 for %v", maxReplicas))
 		}
@@ -262,7 +262,7 @@ func processTopicValues(
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not compute max for %v", partitionValList))
 		}
-		maxPartitionsInt, err := strconv.ParseUint(maxPartitions, 10, 16)
+		maxPartitionsInt, err := strconv.Atoi(maxPartitions)
 		if err != nil {
 			return errors.NewClowderError(fmt.Sprintf("could not convert to string to int32 for %v", maxPartitions))
 		}
@@ -469,7 +469,7 @@ func getBrokerConfig(secret *core.Secret) ([]config.BrokerConfig, error) {
 }
 
 func destructureSecret(secret *core.Secret) (int, string, string, string, []string, string, string, error) {
-	port, err := strconv.ParseUint(string(secret.Data["port"]), 10, 16)
+	port, err := strconv.Atoi(string(secret.Data["port"]))
 	if err != nil {
 		return 0, "", "", "", []string{}, "", "", err
 	}

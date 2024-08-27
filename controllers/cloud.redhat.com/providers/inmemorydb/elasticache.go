@@ -44,7 +44,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 
 	for _, secret := range secrets.Items {
 		if secret.Name == secretName {
-			port, err := strconv.ParseUint(string(secret.Data["db.port"]), 10, 16)
+			port, err := strconv.Atoi(string(secret.Data["db.port"]))
 
 			if err != nil {
 				return errors.Wrap(

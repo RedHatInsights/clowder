@@ -111,9 +111,8 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	var port uint64
-	var err error
-	if port, err = strconv.ParseUint(string(secret.Data["port"]), 10, 16); err != nil {
+	port, err := strconv.Atoi(string(secret.Data["port"]))
+	if err != nil {
 		return err
 	}
 
@@ -213,7 +212,7 @@ func createMinioProvider(
 ) (*minioProvider, error) {
 	mp := &minioProvider{Provider: *p}
 
-	port, err := strconv.ParseUint(secMap["port"], 10, 16)
+	port, err := strconv.Atoi(secMap["port"])
 	if err != nil {
 		return nil, err
 	}

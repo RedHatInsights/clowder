@@ -8,7 +8,7 @@ import (
 
 // Populate sets the database configuration on the object from the passed in map.
 func (dbc *DatabaseConfig) Populate(data *map[string]string) error {
-	port, err := strconv.ParseUint((*data)["port"], 10, 16)
+	port, err := strconv.Atoi((*data)["port"])
 	if err != nil {
 		return err
 	}
