@@ -238,7 +238,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	port, err := strconv.ParseUint(string(vSec.Data["port"]), 10, 16)
+	port, err := strconv.Atoi(string(vSec.Data["port"]))
 	if err != nil {
 		return err
 	}

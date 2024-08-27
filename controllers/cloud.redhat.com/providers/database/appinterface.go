@@ -207,7 +207,7 @@ func genDbConfigs(secrets []core.Secret, verify bool) ([]config.DatabaseConfigCo
 	var err error
 
 	extractFn := func(secret *core.Secret) {
-		port, erro := strconv.ParseUint(string(secret.Data["db.port"]), 10, 16)
+		port, erro := strconv.Atoi(string(secret.Data["db.port"]))
 
 		if erro != nil {
 			err = errors.Wrap("Failed to parse DB port", err)

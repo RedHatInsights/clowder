@@ -70,7 +70,7 @@ func (k *managedKafkaProvider) appendTopic(topic crd.KafkaTopicSpec, kafkaConfig
 }
 
 func (k *managedKafkaProvider) destructureSecret(secret *core.Secret) (int, string, string, string, []string, string, string, error) {
-	port, err := strconv.ParseUint(string(secret.Data["port"]), 10, 16)
+	port, err := strconv.Atoi(string(secret.Data["port"]))
 	if err != nil {
 		return 0, "", "", "", []string{}, "", "", err
 	}
