@@ -34,6 +34,28 @@ pipeline {
     }
 
     stages {
+        stage('Did you run pre-push?') {
+            environment {
+                TEST_CONTAINER="clowder-ci-prepush-test-${IMAGE_TAG}-${CURR_TIME}"
+            }
+            steps {
+                withVault([configuration: configuration, vaultSecrets: secrets]) {
+                    sh '''
+                        docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
+                        docker build -f Dockerfile.test --build-arg BASE_IMAGE=${BASE_IMG} -t $TEST_CONTAINER .
+                        docker run -i $TEST_CONTAINER \
+                            ./githooks/prepush.sh
+                    '''
+                    }
+                }
+            
+            post {
+                always {
+                    sh 'docker rm -f $TEST_CONTAINER'
+                    }
+                }
+            }
+
         stage('Build and Push Base Image') {
             steps {
                 withVault([configuration: configuration, vaultSecrets: secrets]) {
