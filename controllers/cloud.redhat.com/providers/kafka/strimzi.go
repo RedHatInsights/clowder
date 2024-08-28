@@ -345,6 +345,14 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					Requests: &entityTopicRequests,
 					Limits:   &entityTopicLimits,
 				},
+				JvmOptions: &strimzi.KafkaSpecEntityOperatorTopicOperatorJvmOptions{
+					JavaSystemProperties: []strimzi.KafkaSpecEntityOperatorTopicOperatorJvmOptionsJavaSystemPropertiesElem{
+						{
+							Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
+							Value: utils.StringPtr("false"),
+						},
+					},
+				},
 			},
 			UserOperator: &strimzi.KafkaSpecEntityOperatorUserOperator{
 				Resources: &strimzi.KafkaSpecEntityOperatorUserOperatorResources{
