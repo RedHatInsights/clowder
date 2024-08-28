@@ -369,6 +369,17 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		},
 	}
 
+	if clowderconfig.LoadedConfig.Features.EnableStrimziFinalizerUse {
+		k.Spec.EntityOperator.Template = KafkaSpecEntityOperatorTemplateTopicOperatorContainer{{
+			Env: []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
+				{
+					Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
+					Value: utils.StringPtr("true"),
+				},
+			},
+		},
+	}
+
 	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil && len(*s.Env.Spec.Providers.Kafka.Cluster.Config) != 0 {
 		jsonData, err := json.Marshal(s.Env.Spec.Providers.Kafka.Cluster.Config)
 		if err != nil {
