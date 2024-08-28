@@ -154,12 +154,12 @@ structure.
 For supported languages, the web configuration is access via the following
 attribute names.
 
-Language  | Attribute Name      
---|--     
-Python    | `LoadedConfig.publicPort`
-Go        | `LoadedConfig.PublicPort`
-Javscript | `LoadedConfig.publicPort`
-Ruby      | `LoadedConfig.publicPort`
+| Language   | Attribute Name             |
+|------------|----------------------------|    
+| Python     | `LoadedConfig.publicPort`  |
+| Go         | `LoadedConfig.PublicPort`  |
+| Javascript | `LoadedConfig.publicPort`  |
+| Ruby       | `LoadedConfig.publicPort`  |
 
 ### ClowdEnv Configuration
 

@@ -63,12 +63,13 @@ following structure.
 For supported languages, the In-Memory DB configuration is accessed via the following
 attribute names.
 
-Language  | Attribute Name       
---|--      
-Python    | ``LoadedConfig.inMemoryDb``
-Go        | ``LoadedConfig.InMemoryDb``
-Javscript | ``LoadedConfig.inMemoryDb``
-Ruby      | ``LoadedConfig.inMemoryDb``
+| Language   | Attribute Name             |
+|------------|----------------------------|
+| Python     | `LoadedConfig.inMemoryDb`  |
+| Go         | `LoadedConfig.InMemoryDb`  |
+| JavaScript | `LoadedConfig.inMemoryDb`  |
+| Ruby       | `LoadedConfig.inMemoryDb`  |
+
 
 
 ### ClowdEnv Configuration

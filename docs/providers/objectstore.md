@@ -86,12 +86,12 @@ A helper is available below to facilitate quick access via a map.
 For supported languages, the object store configuration is access via the
 following attribute names.
 
-Language  | Attribute Name            
---|--
-Python    | `LoadedConfig.objectStore`
-Go        | `LoadedConfig.ObjectStore`
-Javscript | `LoadedConfig.objectStore`
-Ruby      | `LoadedConfig.objectStore`
+| Language    | Attribute Name              |
+|-------------|-----------------------------|
+| Python      | `LoadedConfig.objectStore`  |
+| Go          | `LoadedConfig.ObjectStore`  |
+| Javascript  | `LoadedConfig.objectStore`  |
+| Ruby        | `LoadedConfig.objectStore`  |
 
 
 ### Client helpers
@@ -99,12 +99,12 @@ Ruby      | `LoadedConfig.objectStore`
 `ObjectBuckets` returns a map of bucket objects, using the original requested
 name as the key and the bucket object as the value.                    
 
-Name        | Object Store Buckets
---|--
-Python      | `ObjectBuckets`     
-Go          | `ObjectBuckets`     
-Javscript   | `ObjectBuckets`     
-Ruby        | `ObjectBuckets`     
+| Name        | Object Store Buckets  |
+|-------------|-----------------------|
+| Python      | `ObjectBuckets`       |
+| Go          | `ObjectBuckets`       |
+| Javascript  | `ObjectBuckets`       |
+| Ruby        | `ObjectBuckets`       |
 
 ### ClowdEnv Configuration
 

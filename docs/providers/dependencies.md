@@ -78,20 +78,22 @@ LoadedConfig.dependencyEndpoints["app_name1"]["deployment1"]
 For supported languages, the dependency configuration is access via the
 following attribute names.
 
-Language   | Attribute Name   
---|--                   
-Python     | ``LoadedConfig.dependencyEndpoints``
-Go         | ``LoadedConfig.DependencyEndpoints``
-Javascript | ``LoadedConfig.dependencyEndpoints``
-Ruby       | ``LoadedConfig.dependencyEndpoints``
+| Language   | Attribute Name                      |
+|------------|-------------------------------------|
+| Python     | `LoadedConfig.dependencyEndpoints`  |
+| Go         | `LoadedConfig.DependencyEndpoints`  |
+| JavaScript | `LoadedConfig.dependencyEndpoints`  |
+| Ruby       | `LoadedConfig.dependencyEndpoints`  |
+
 
 
 Private endpoints are accessible via these attribute names.
 
-Language   | Attribute Name        
---|--                     
-Python     | ``LoadedConfig.privateDependencyEndpoints``
-Go         | ``LoadedConfig.PrivateDependencyEndpoints``
-Javascript | ``LoadedConfig.privateDependencyEndpoints``
-Ruby       | ``LoadedConfig.privateDependencyEndpoints``
+| Language   | Attribute Name                             |
+|------------|--------------------------------------------|
+| Python     | `LoadedConfig.privateDependencyEndpoints`  |
+| Go         | `LoadedConfig.PrivateDependencyEndpoints`  |
+| JavaScript | `LoadedConfig.privateDependencyEndpoints`  |
+| Ruby       | `LoadedConfig.privateDependencyEndpoints`  |
+
 

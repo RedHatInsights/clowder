@@ -417,17 +417,17 @@ defined in the below.
 Clowder currently support several feature flags which are intended to enable or disable certain 
 behaviour. They are detailed as follows:
 
-| Flag Name | Description | Permanent
-|--|--|--
-| ``features.createServiceMonitor`` | Enables the creation of prometheus ``ServiceMonitor`` resources. | No
-| ``features.disableWebhooks`` | While testing locally and for the ``suite_test``, the webhooks need to be disabled. this option facilitates that. | Yes
-| ``features.watchStrimziResources`` | When enabled, Clowder will assume ownership of the ``Kafka`` and ``KafkaConnect`` resources it creates. It will then respond to changes to these resources. | No
-| ``features.useComplexStrimziTopicNames`` | This flag switches Clowder to use non-colliding names for strimzi resources. This is important if using a singular strimzi server for multiple ``ClowdEnvironment`` resources. | Yes
-| ``features.enableAuthSidecarHook`` | Turns the sidecar functionality on or off globally. | Yes
-| ``features.enablekedaResources`` | Turns on the addition of Keda resources into the protectedGVK list. | No
-| ``features.perProviderMetrics`` | Turns on metrics that calculate reconciliation time per provider. | Yes
-| ``features.reconciliationMetrics`` | Enables extra detailed metrics on reconciliations per application. | Yes
-| ``features.enableDependencyMetrics`` | Turns on metrics that report availability of a ClowdApps dependencies. | Yes
-| ``disableCloudWatchLogging`` | Disables logging to CloudWatch. | Yes
-| ``enableExternalStrimzi`` | Enables talking to Strimzi via a local nodeport (only useful on minikube) | Yes
-| ``disableRandomRoutes`` | Gives the ability to disable the extra portion of randomness added to routes. | Yes
+| Flag Name                                      | Description                                                                                                                                         | Permanent |
+|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `features.createServiceMonitor`                | Enables the creation of prometheus `ServiceMonitor` resources.                                                                                      | No        |
+| `features.disableWebhooks`                     | While testing locally and for the `suite_test`, the webhooks need to be disabled. this option facilitates that.                                      | Yes       |
+| `features.watchStrimziResources`               | When enabled, Clowder will assume ownership of the `Kafka` and `KafkaConnect` resources it creates. It will then respond to changes to these resources. | No        |
+| `features.useComplexStrimziTopicNames`         | This flag switches Clowder to use non-colliding names for strimzi resources. This is important if using a singular strimzi server for multiple `ClowdEnvironment` resources. | Yes       |
+| `features.enableAuthSidecarHook`               | Turns the sidecar functionality on or off globally.                                                                                                 | Yes       |
+| `features.enablekedaResources`                 | Turns on the addition of Keda resources into the protectedGVK list.                                                                                  | No        |
+| `features.perProviderMetrics`                  | Turns on metrics that calculate reconciliation time per provider.                                                                                    | Yes       |
+| `features.reconciliationMetrics`               | Enables extra detailed metrics on reconciliations per application.                                                                                   | Yes       |
+| `features.enableDependencyMetrics`             | Turns on metrics that report availability of a ClowdApps dependencies.                                                                               | Yes       |
+| `disableCloudWatchLogging`                     | Disables logging to CloudWatch.                                                                                                                      | Yes       |
+| `enableExternalStrimzi`                        | Enables talking to Strimzi via a local nodeport (only useful on minikube)                                                                            | Yes       |
+| `disableRandomRoutes`                          | Gives the ability to disable the extra portion of randomness added to routes.                                                                        | Yes       |

@@ -144,12 +144,13 @@ A User auth enabled Kafka will look like this
 For supported languages, the kafka configuration is accessed via the following
 attribute names.
 
-Language  | Attribute Name
---|--
-Python    | `LoadedConfig.kafka`
-Go        | `LoadedConfig.Kafka`
-Javscript | `LoadedConfig.kafka`
-Ruby      | `LoadedConfig.kafka`
+| Language   | Attribute Name        |
+|------------|-----------------------|
+| Python     | `LoadedConfig.kafka`  |
+| Go         | `LoadedConfig.Kafka`  |
+| JavaScript | `LoadedConfig.kafka`  |
+| Ruby       | `LoadedConfig.kafka`  |
+
 
 ### Client helpers
 
@@ -157,13 +158,14 @@ Ruby      | `LoadedConfig.kafka`
 as the key and the topic object the value. `KafkaServers` Returns a list of
 Kafka broker strings comprising of hostname and port.
 
-Name        | Kafka Topics                      | Kafka Servers
---|--|--
-Description | Returns a map of topic objects, using the original requested name as the key and the topic object the value. | Returns a list of Kafka broker strings comprising of hostname and port.
-Python      | `KafkaTopics`                     | `KafkaServers`
-Go          | `KafkaTopics`                     | `KafkaServers`
-Javscript   | `KafkaTopics`                     | `KafkaServers`
-Ruby        | `KafkaTopics`                     | `KafkaServers`
+| Name        | Kafka Topics                                                                 | Kafka Servers                                                           |
+|-------------|------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| Description | Returns a map of topic objects, using the original requested name as the key and the topic object as the value. | Returns a list of Kafka broker strings comprising of hostname and port. |
+| Python      | `KafkaTopics`                                                                | `KafkaServers`                                                          |
+| Go          | `KafkaTopics`                                                                | `KafkaServers`                                                          |
+| JavaScript  | `KafkaTopics`                                                                | `KafkaServers`                                                          |
+| Ruby        | `KafkaTopics`                                                                | `KafkaServers`                                                          |
+
 
 ### ClowdEnv Configuration
 

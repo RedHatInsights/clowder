@@ -43,12 +43,12 @@ structure.
 For supported languages, the metrics configuration is access via the following
 attribute names.
 
-Language  | Attribute Name              
---|--
-Python    | `LoadedConfig.metricsPort`
-Go        | `LoadedConfig.MetricsPort`
-Javscript | `LoadedConfig.metricsPort`
-Ruby      | `LoadedConfig.metricsPort`
+| Language   | Attribute Name              |
+|------------|-----------------------------|
+| Python     | `LoadedConfig.metricsPort`  |
+| Go         | `LoadedConfig.MetricsPort`  |
+| Javascript | `LoadedConfig.metricsPort`  |
+| Ruby       | `LoadedConfig.metricsPort`  |
 
 
 ### ClowdEnv Configuration

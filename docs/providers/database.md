@@ -116,12 +116,13 @@ A client helper is available for the RDS CA, used in app-interface mode.
 For supported languages, the database configuration is access via the following
 attribute names.
 
-Language | Attribute 
------------- | ------------- 
-Python | `LoadedConfig.database`
-Go | `LoadedConfig.Database`
-Javascript | `LoadedConfig.database`
-Ruby | `LoadedConfig.database`
+| Language    | Attribute                 |
+|-------------|---------------------------|
+| Python      | `LoadedConfig.database`   |
+| Go          | `LoadedConfig.Database`   |
+| JavaScript  | `LoadedConfig.database`   |
+| Ruby        | `LoadedConfig.database`   |
+
 
 
 ### Client helpers
@@ -131,12 +132,12 @@ Ruby | `LoadedConfig.database`
 Returns a filename which points to a temporary file containing the
 contents of the CA cert.
 
-Language | Attribute 
------------- | ------------- 
-Python |`LoadedConfig.rds_ca()`
-Go |`LoadedConfig.RdsCa()`
-Javascript | Not yet implemented
-Ruby | Not yet implemented
+| Language    | Attribute                  |
+|-------------|----------------------------|
+| Python      | `LoadedConfig.rds_ca()`    |
+| Go          | `LoadedConfig.RdsCa()`     |
+| JavaScript  | Not yet implemented        |
+| Ruby        | Not yet implemented        |
 
 ### ClowdEnv Configuration
 

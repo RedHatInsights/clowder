@@ -46,12 +46,12 @@ structure. The example below is given for `app-interface` mode.
 For supported languages, the logging configuration is access via the following
 attribute names.
 
-| Language  | Attribute Name        
---|--
-| Python    | `LoadedConfig.logging`
-| Go        | `LoadedConfig.Logging`
-| Javscript | `LoadedConfig.logging`
-| Ruby      | `LoadedConfig.logging`
+| Language   | Attribute Name          |
+|------------|-------------------------|
+| Python     | `LoadedConfig.logging`  |
+| Go         | `LoadedConfig.Logging`  |
+| Javascript | `LoadedConfig.logging`  |
+| Ruby       | `LoadedConfig.logging`  |
 
 ### ClowdEnv Configuration
 

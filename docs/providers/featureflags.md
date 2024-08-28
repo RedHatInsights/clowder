@@ -51,12 +51,13 @@ following structure.
 For supported languages, the feature flags configuration is access via the
 following attribute names.
 
-Language  | Attribute Name               
---|--
-Python    | ``LoadedConfig.featureFlags``
-Go        | ``LoadedConfig.FeatureFlags``
-Javscript | ``LoadedConfig.featureFlags``
-Ruby      | ``LoadedConfig.featureFlags``
+| Language   | Attribute Name               |
+|------------|------------------------------|
+| Python     | `LoadedConfig.featureFlags`  |
+| Go         | `LoadedConfig.FeatureFlags`  |
+| JavaScript | `LoadedConfig.featureFlags` |
+| Ruby       | `LoadedConfig.featureFlags`  |
+
 
 
 ### ClowdEnv Configuration
