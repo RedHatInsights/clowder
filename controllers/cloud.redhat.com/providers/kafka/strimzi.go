@@ -339,19 +339,19 @@ func (s *strimziProvider) configureKafkaCluster() error {
 						Labels: &klabels,
 					},
 				},
-			},
-			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
-				Resources: &strimzi.KafkaSpecEntityOperatorTopicOperatorResources{
-					Requests: &entityTopicRequests,
-					Limits:   &entityTopicLimits,
-				},
-				JvmOptions: &strimzi.KafkaSpecEntityOperatorTopicOperatorJvmOptions{
-					JavaSystemProperties: []strimzi.KafkaSpecEntityOperatorTopicOperatorJvmOptionsJavaSystemPropertiesElem{
+				TopicOperatorContainer: &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
+					Env: []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
 						{
 							Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
 							Value: utils.StringPtr("false"),
 						},
 					},
+				},
+			},
+			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
+				Resources: &strimzi.KafkaSpecEntityOperatorTopicOperatorResources{
+					Requests: &entityTopicRequests,
+					Limits:   &entityTopicLimits,
 				},
 			},
 			UserOperator: &strimzi.KafkaSpecEntityOperatorUserOperator{
