@@ -297,14 +297,14 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
 			{
 				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
-				Value: utils.StringPtr("true"),
+				Value: utils.StringPtr("false"),
 			},
 		}
 	} else {
 		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
 			{
 				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
-				Value: utils.StringPtr("false"),
+				Value: utils.StringPtr("true"),
 			},
 		}
 	}
