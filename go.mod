@@ -9,7 +9,7 @@ require (
 	github.com/RedHatInsights/rhc-osdk-utils v0.12.0
 	github.com/RedHatInsights/strimzi-client-go v0.34.2
 	github.com/caddyserver/caddy/v2 v2.8.4
-	github.com/cert-manager/cert-manager v1.11.4
+	github.com/cert-manager/cert-manager v1.12.2
 	github.com/go-logr/logr v1.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.8.1
@@ -174,7 +174,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661 // indirect
 	knative.dev/pkg v0.0.0-20220826162920-93b66e6a8700 // indirect
-	sigs.k8s.io/gateway-api v0.6.0 // indirect
+	sigs.k8s.io/gateway-api v0.7.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
