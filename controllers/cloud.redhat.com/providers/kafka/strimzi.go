@@ -291,6 +291,24 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		return fmt.Errorf("could not unmarshal klabels: %w", err)
 	}
 
+	var useFinalizersEnv []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem
+
+	if clowderconfig.LoadedConfig.Features.EnableStrimziFinalizer {
+		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
+			{
+				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
+				Value: utils.StringPtr("true"),
+			},
+		}
+	} else {
+		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
+			{
+				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
+				Value: utils.StringPtr("false"),
+			},
+		}
+	}
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
 			Config:   &kafConfig,
@@ -340,12 +358,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					},
 				},
 				TopicOperatorContainer: &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
-					Env: []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
-						{
-							Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
-							Value: utils.StringPtr("false"),
-						},
-					},
+					Env: useFinalizersEnv,
 				},
 			},
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
@@ -367,17 +380,6 @@ func (s *strimziProvider) configureKafkaCluster() error {
 				},
 			},
 		},
-	}
-
-	if clowderconfig.LoadedConfig.Features.EnableStrimziFinalizerUse {
-		k.Spec.EntityOperator.Template.TopicOperatorContainer = &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
-			Env: []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
-				{
-					Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
-					Value: utils.StringPtr("true"),
-				},
-			},
-		}
 	}
 
 	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil && len(*s.Env.Spec.Providers.Kafka.Cluster.Config) != 0 {
