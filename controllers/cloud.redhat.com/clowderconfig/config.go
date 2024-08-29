@@ -47,7 +47,7 @@ type ClowderConfig struct {
 		DisableCloudWatchLogging    bool `json:"disableCloudWatchLogging"`
 		EnableExternalStrimzi       bool `json:"enableExternalStrimzi"`
 		DisableRandomRoutes         bool `json:"disableRandomRoutes"`
-		EnableStrimziFinalizerUse   bool `json:"enableStrimziFinalizerUse"`
+		EnableStrimziFinalizer      bool `json:"enableStrimziFinalizerUse"`
 	} `json:"features"`
 	Settings struct {
 		ManagedKafkaEphemDeleteRegex string `json:"managedKafkaEphemDeleteRegex"`
