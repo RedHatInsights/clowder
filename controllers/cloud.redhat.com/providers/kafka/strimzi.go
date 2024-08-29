@@ -293,7 +293,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	var useFinalizersEnv []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem
 
-	if clowderconfig.LoadedConfig.Features.EnableStrimziFinalizer {
+	if clowderconfig.LoadedConfig.Features.DisableStrimziFinalizer {
 		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
 			{
 				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
