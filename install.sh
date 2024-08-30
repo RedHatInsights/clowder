@@ -25,6 +25,13 @@ if [ $? != "0" ]; then
     pip3 install --user --upgrade crc-bonfire
 fi
 
+# Install git precommit hook
+HOOKDIR=".git/hooks"
+mkdir -p "$HOOKDIR"
+cp -r githooks/* "$HOOKDIR/"
+chmod +x "$HOOKDIR/"*
+echo "Githooks installed"
+
 # Start minikube based on specs
 minikube status 2>/dev/null >/dev/null
 if [ $? != "0" ]; then
