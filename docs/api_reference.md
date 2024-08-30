@@ -294,6 +294,7 @@ _Appears in:_
 | `jobs` _string array_ | Jobs is the set of jobs to be run by the invocation |
 | `testing` _[JobTestingSpec](#jobtestingspec)_ | Testing is the struct for building out test jobs (iqe, etc) in a CJI |
 | `runOnNotReady` _boolean_ | RunOnNotReady is a flag that when true, the job will not wait for the deployment to be ready to run |
+| `disabled` _boolean_ | Disabled is a flag to turn off CJI(s) from running |
 
 
 
