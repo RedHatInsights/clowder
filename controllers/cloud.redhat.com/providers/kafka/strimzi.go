@@ -291,6 +291,24 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		return fmt.Errorf("could not unmarshal klabels: %w", err)
 	}
 
+	var useFinalizersEnv []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem
+
+	if clowderconfig.LoadedConfig.Features.DisableStrimziFinalizer {
+		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
+			{
+				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
+				Value: utils.StringPtr("false"),
+			},
+		}
+	} else {
+		useFinalizersEnv = []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem{
+			{
+				Name:  utils.StringPtr("STRIMZI_USE_FINALIZERS"),
+				Value: utils.StringPtr("true"),
+			},
+		}
+	}
+
 	k.Spec = &strimzi.KafkaSpec{
 		Kafka: strimzi.KafkaSpecKafka{
 			Config:   &kafConfig,
@@ -338,6 +356,9 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					Metadata: &strimzi.KafkaSpecEntityOperatorTemplatePodMetadata{
 						Labels: &klabels,
 					},
+				},
+				TopicOperatorContainer: &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
+					Env: useFinalizersEnv,
 				},
 			},
 			TopicOperator: &strimzi.KafkaSpecEntityOperatorTopicOperator{
