@@ -8691,8 +8691,9 @@ objects:
       \        \"watchStrimziResources\": ${WATCH_STRIMZI_RESOURCES},\n        \"\
       enableKedaResources\": ${ENABLE_KEDA_RESOURCES},\n        \"perProviderMetrics\"\
       : ${PER_PROVIDER_METRICS},\n        \"reconciliationMetrics\": ${RECONCILIATION_METRICS},\n\
-      \        \"enableDependencyMetrics\": ${ENABLE_DEPENDENCY_METRICS}\n    },\n\
-      \    \"settings\": {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
+      \        \"enableDependencyMetrics\": ${ENABLE_DEPENDENCY_METRICS},\n      \
+      \  \"disableStrimziFinalizer\": ${STRIMZI_USE_FINALIZERS}\n    },\n    \"settings\"\
+      : {\n        \"managedKafkaEphemDeleteRegex\": \"${MANAGED_EPHEM_DELETE_REGEX}\"\
       \n    },\n    \"images\": {\n        \"objectStoreMinio\": \"${OBJECTSTORE_IMAGE}\"\
       ,\n        \"featureFlagsUnleash\": \"${FEATUREFLAGS_IMAGE}\"\n    }\n}\n"
   kind: ConfigMap

@@ -24,7 +24,8 @@ data:
             "enableKedaResources": ${ENABLE_KEDA_RESOURCES},
             "perProviderMetrics": ${PER_PROVIDER_METRICS},
             "reconciliationMetrics": ${RECONCILIATION_METRICS},
-            "enableDependencyMetrics": ${ENABLE_DEPENDENCY_METRICS}
+            "enableDependencyMetrics": ${ENABLE_DEPENDENCY_METRICS},
+            "disableStrimziFinalizer": ${STRIMZI_USE_FINALIZERS}
         },
         "settings": {
             "managedKafkaEphemDeleteRegex": "${MANAGED_EPHEM_DELETE_REGEX}"
