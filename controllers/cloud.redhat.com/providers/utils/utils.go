@@ -23,7 +23,7 @@ import (
 
 var DefaultImageCaddySideCar = "quay.io/cloudservices/crc-caddy-plugin:27d4bb0"
 var DefaultImageCaddyGateway = DefaultImageCaddySideCar
-var DefaultImageMBOP = "quay.io/cloudservices/mbop:959d00d"
+var DefaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
 var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:2d55a98"
 var DefaultKeyCloakVersion = "23.0.1"
 var DefaultImageCaddyProxy = "quay.io/cloudservices/caddy-ubi:latest"
