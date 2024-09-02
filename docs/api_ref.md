@@ -1188,4 +1188,3 @@ Must be one of:
 **Description:** The external hostname of the deployment, where applicable
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-08-30 at 19:45:19 +0200
