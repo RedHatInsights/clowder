@@ -36,5 +36,5 @@ parameters:
 - name: FEATUREFLAGS_IMAGE
   value: "quay.io/cloudservices/unleash-docker:5.6.9"
 - name: STRIMZI_USE_FINALIZERS
-  value: "true"
+  value: "false"
 objects: []
