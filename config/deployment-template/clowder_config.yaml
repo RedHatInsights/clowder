@@ -25,7 +25,7 @@ data:
             "perProviderMetrics": ${PER_PROVIDER_METRICS},
             "reconciliationMetrics": ${RECONCILIATION_METRICS},
             "enableDependencyMetrics": ${ENABLE_DEPENDENCY_METRICS},
-            "disableStrimziFinalizer": ${STRIMZI_USE_FINALIZERS}
+            "disableStrimziFinalizer": ${DISABLE_STRIMZI_FINALIZER}
         },
         "settings": {
             "managedKafkaEphemDeleteRegex": "${MANAGED_EPHEM_DELETE_REGEX}"
