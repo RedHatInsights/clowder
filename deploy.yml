@@ -8733,5 +8733,5 @@ parameters:
 - name: FEATUREFLAGS_IMAGE
   value: quay.io/cloudservices/unleash-docker:5.6.9
 - name: DISABLE_STRIMZI_FINALIZER
-  value: 'true'
+  value: 'false'
 
