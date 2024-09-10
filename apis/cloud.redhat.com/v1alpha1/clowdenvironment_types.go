@@ -509,6 +509,8 @@ type TokenRefresherConfig struct {
 type Sidecars struct {
 	// Sets up Token Refresher configuration
 	TokenRefresher TokenRefresherConfig `json:"tokenRefresher,omitempty"`
+	// Sets up OpenTelemetry collector configuration
+	OtelCollector OtelCollectorConfig `json:"otelCollector, omitempty"`
 }
 
 type DeploymentConfig struct {
