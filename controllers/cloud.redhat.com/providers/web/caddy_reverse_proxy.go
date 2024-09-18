@@ -35,7 +35,7 @@ func generateServers(pub bool, priv bool, pubPort int32, privPort int32, appPubP
 	return servers, nil
 }
 
-func generateServer(port uint32, appPort int32, tlsConnPolicy []*caddytls.ConnectionPolicy) *caddyhttp.Server {
+func generateServer(port int32, appPort int32, tlsConnPolicy []*caddytls.ConnectionPolicy) *caddyhttp.Server {
 
 	var warnings []caddyconfig.Warning
 
