@@ -116,7 +116,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	}
 
 	var pub, priv bool
-	var pubPort, privPort uint32
+	var pubPort, privPort int32
 	if env.Spec.Providers.Web.TLS.Enabled {
 		if deployment.WebServices.Public.Enabled {
 			tlsPort := core.ServicePort{
@@ -128,7 +128,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			}
 			servicePorts = append(servicePorts, tlsPort)
 			pub = true
-			pubPort = uint32(env.Spec.Providers.Web.TLS.Port)
+			pubPort = int32(env.Spec.Providers.Web.TLS.Port)
 		}
 		if deployment.WebServices.Private.Enabled {
 			appProtocolPriv := "http"
@@ -146,7 +146,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 				}
 				servicePorts = append(servicePorts, tlsPrivatePort)
 				priv = true
-				privPort = uint32(env.Spec.Providers.Web.TLS.PrivatePort)
+				privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
 			}
 		}
 
