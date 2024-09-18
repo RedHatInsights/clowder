@@ -13,7 +13,7 @@ import (
 	caddytls "github.com/caddyserver/caddy/v2/modules/caddytls"
 )
 
-func generateServers(pub bool, priv bool, pubPort uint32, privPort uint32, appPubPort int32, appPrivPort int32) (map[string]*caddyhttp.Server, error) {
+func generateServers(pub bool, priv bool, pubPort int32, privPort int32, appPubPort int32, appPrivPort int32) (map[string]*caddyhttp.Server, error) {
 	servers := make(map[string]*caddyhttp.Server)
 
 	tlsConnPolicy := []*caddytls.ConnectionPolicy{{
@@ -61,7 +61,7 @@ func generateServer(port uint32, appPort int32, tlsConnPolicy []*caddytls.Connec
 	return server
 }
 
-func generateCaddyConfig(pub bool, priv bool, pubPort uint32, privPort uint32, env *crd.ClowdEnvironment) (string, error) {
+func generateCaddyConfig(pub bool, priv bool, pubPort int32, privPort int32, env *crd.ClowdEnvironment) (string, error) {
 	var warnings []caddyconfig.Warning
 
 	var servers map[string]*caddyhttp.Server

@@ -170,7 +170,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
-func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort uint32, privPort uint32, env *crd.ClowdEnvironment) error {
+func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort int32, privPort int32, env *crd.ClowdEnvironment) error {
 
 	cm := &core.ConfigMap{}
 	snn := types.NamespacedName{
