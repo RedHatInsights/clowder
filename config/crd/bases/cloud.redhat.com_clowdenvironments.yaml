@@ -504,12 +504,27 @@ spec:
                   sidecars:
                     description: Defines the sidecar configuration
                     properties:
+                      otelCollector:
+                        description: Sets up OpenTelemetry collector configuration
+                        properties:
+                          enabled:
+                            description: Enable or disable otel collector sidecar
+                            type: boolean
+                          image:
+                            description: Configurable image
+                            type: string
+                        required:
+                        - enabled
+                        type: object
                       tokenRefresher:
                         description: Sets up Token Refresher configuration
                         properties:
                           enabled:
                             description: Enables or disables token refresher sidecars
                             type: boolean
+                          image:
+                            description: Configurable image
+                            type: string
                         required:
                         - enabled
                         type: object

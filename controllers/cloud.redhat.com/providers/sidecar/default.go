@@ -45,6 +45,13 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
 					}
 				}
+			case "otel-collector":
+				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
+					cont := getOtelCollector()
+					if cont != nil {
+						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+					}
+				}
 			default:
 				return fmt.Errorf("%s is not a valid sidecar name", sidecar.Name)
 			}
@@ -71,6 +78,13 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
 					cont := getTokenRefresher(app.Name)
+					if cont != nil {
+						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
+					}
+				}
+			case "otel-collector":
+				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
+					cont := getOtelCollector()
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
 					}
@@ -128,5 +142,27 @@ func getTokenRefresher(appName string) *core.Container {
 
 	cont.Env = envVars
 
+	return &cont
+}
+
+func getOtelCollector() *core.Container {
+	cont := core.Container{}
+
+	cont.Name = "otel-collector"
+	cont.Image = DefaultImageSideCarOtelCollector
+	cont.Args = []string{}
+	cont.TerminationMessagePath = "/dev/termination-log"
+	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
+	cont.ImagePullPolicy = core.PullIfNotPresent
+	cont.Resources = core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"cpu":    resource.MustParse("500m"),
+			"memory": resource.MustParse("2048Mi"),
+		},
+		Requests: core.ResourceList{
+			"cpu":    resource.MustParse("250m"),
+			"memory": resource.MustParse("1024Mi"),
+		},
+	}
 	return &cont
 }

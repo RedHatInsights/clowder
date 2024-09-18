@@ -16,6 +16,8 @@ type ClowderConfig struct {
 		CaddyReverseProxy   string `json:"caddyReverseProxy"`
 		ObjectStoreMinio    string `json:"objectStoreMinio"`
 		FeatureFlagsUnleash string `json:"featureFlagsUnleash"`
+		TokenRefresher      string `json:"tokenRefresher"`
+		OtelCollector       string `json:"otelCollector"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {

@@ -260,7 +260,7 @@ type DeploymentStrategy struct {
 }
 
 type Sidecar struct {
-	// The name of the sidecar, only supported names allowed, (token-refresher)
+	// The name of the sidecar, only supported names allowed, (otel-collector, token-refresher)
 	Name string `json:"name"`
 
 	// Defines if the sidecar is enabled, defaults to False
