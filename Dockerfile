@@ -1,6 +1,22 @@
-# Build the manager binary
-ARG BASE_IMAGE=
-FROM $BASE_IMAGE as builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.21.11-8.1724662611 as builder
+USER 0
+ENV GOSUMDB=off
+
+COPY ci/minikube_e2e_tests_inner.sh .
+RUN chmod 775 minikube_e2e_tests_inner.sh
+
+WORKDIR /workspace
+
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+
+RUN go mod download
+
+COPY Makefile Makefile
 
 WORKDIR /workspace
 

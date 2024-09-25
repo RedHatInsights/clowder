@@ -3,8 +3,8 @@
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # cloud.redhat.com/clowder-bundle:$VERSION and cloud.redhat.com/clowder-catalog:$VERSION.
-IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
-CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=8 HEAD)
+IMAGE_TAG_BASE ?= quay.io/redhat-user-workloads/hcm-eng-prod-tenant/clowder/clowder
+CLOWDER_BUILD_TAG ?= $(shell git rev-parse HEAD)
 
 GO_CMD ?= go
 
@@ -15,7 +15,7 @@ ENVTEST_K8S_VERSION = 1.28
 ifeq ($(findstring -minikube,${MAKECMDGOALS}), -minikube)
 IMG ?= 127.0.0.1:5000/clowder:$(CLOWDER_BUILD_TAG)
 else
-IMG ?= quay.io/cloudservices/clowder:$(CLOWDER_BUILD_TAG)
+IMG ?= quay.io/redhat-user-workloads/hcm-eng-prod-tenant/clowder/clowder:$(CLOWDER_BUILD_TAG)
 endif
 
 CLOWDER_VERSION ?= $(shell git describe --tags)
