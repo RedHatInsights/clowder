@@ -11,9 +11,6 @@ WORKDIR /workspace
 COPY go.mod go.mod
 COPY go.sum go.sum
 
-RUN GO111MODULE=on go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0 \
-    && GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v4@v4.5.2
-
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 
@@ -22,6 +19,9 @@ RUN go mod download
 COPY Makefile Makefile
 
 RUN make controller-gen kustomize
+
+RUN GO111MODULE=on go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0 \
+    && GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v4@v4.5.2
 
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
 
