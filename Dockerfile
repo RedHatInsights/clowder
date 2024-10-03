@@ -18,7 +18,7 @@ RUN go mod download
 
 COPY Makefile Makefile
 
-RUN make controller-gen kustomize
+# RUN make controller-gen kustomize
 
 RUN GO111MODULE=on go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0 \
     && GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v4@v4.5.2
