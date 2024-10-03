@@ -11,5 +11,5 @@ spec:
         service: redis
     spec:    
       containers:
-        - image: quay.io/cloudservices/redis-ephemeral:6
+        - image: registry.redhat.io/rhel9/redis-6:1-199.1726663404
           resources: {}

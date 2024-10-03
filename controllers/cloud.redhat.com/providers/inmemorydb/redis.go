@@ -2,6 +2,7 @@ package inmemorydb
 
 import (
 	"fmt"
+	providerUtils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -145,7 +146,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
-		Image: DefaultImageInMemoryDBRedis,
+		Image: providerUtils.DefaultImageInMemoryDB,
 		Command: []string{
 			"redis-server",
 			"/usr/local/etc/redis/redis.conf",
@@ -171,7 +172,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 		Name:       "redis",
 		Port:       6379,
 		Protocol:   core.ProtocolTCP,
-		TargetPort: intstr.FromInt(int(6379)),
+		TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 6379},
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
