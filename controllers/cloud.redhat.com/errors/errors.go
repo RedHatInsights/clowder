@@ -100,18 +100,6 @@ func (e *MissingDependencies) Error() string {
 	return fmt.Sprintf("Missing dependencies: [%s]", body)
 }
 
-// RootCause takes an error an unwraps it, if it is nil, it calls RootCause on the returned err,
-// this will recursively find an error that has an unwrapped value.
-func RootCause(err error) error {
-	cause := errlib.Unwrap(err)
-
-	if cause != nil {
-		return RootCause(cause)
-	}
-
-	return err
-}
-
 // GetRootStack will recurse through an error until it finds one with a stack string set.
 func GetRootStack(err error) string {
 	var stack string
