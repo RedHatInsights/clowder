@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 
 	crccaddy "github.com/RedHatInsights/crc-caddy-plugin"
-	caddy "github.com/caddyserver/caddy/v2"
-	caddyconfig "github.com/caddyserver/caddy/v2/caddyconfig"
-	caddyhttp "github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig"
+	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	caddyreverseproxy "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy"
-	caddytls "github.com/caddyserver/caddy/v2/modules/caddytls"
+	"github.com/caddyserver/caddy/v2/modules/caddytls"
 )
 
 type ProxyRoute struct {

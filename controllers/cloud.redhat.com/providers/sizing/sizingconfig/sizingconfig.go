@@ -10,8 +10,8 @@ const (
 	// We need to define default sizes because if a ClowdApp doesn't provide
 	// volume or ram/cpu capacities we just get an empty string, so we need
 	// defaults to plug in there
-	DefaultSizeVol    string = SizeXSmall
-	DefaultSizeCPURAM string = SizeXSmall
+	DefaultSizeVol    = SizeXSmall
+	DefaultSizeCPURAM = SizeXSmall
 )
 
 // Get a map of CPU T-Shirt sizes to capacities

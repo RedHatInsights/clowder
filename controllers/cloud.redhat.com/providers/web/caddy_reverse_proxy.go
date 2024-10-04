@@ -6,11 +6,11 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
-	caddy "github.com/caddyserver/caddy/v2"
-	caddyconfig "github.com/caddyserver/caddy/v2/caddyconfig"
-	caddyhttp "github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig"
+	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy"
-	caddytls "github.com/caddyserver/caddy/v2/modules/caddytls"
+	"github.com/caddyserver/caddy/v2/modules/caddytls"
 )
 
 func generateServers(pub bool, priv bool, pubPort int32, privPort int32, appPubPort int32, appPrivPort int32) (map[string]*caddyhttp.Server, error) {

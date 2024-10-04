@@ -45,16 +45,13 @@ func (a *ClowderError) Is(target error) bool {
 	if !ok {
 		return false
 	}
-	return (a.Msg == b.Msg && a.Cause == b.Cause)
+	return a.Msg == b.Msg && a.Cause == b.Cause
 }
 
 // NewClowderError constructs a new ClowderError object.
 func NewClowderError(msg string) *ClowderError {
 	stackField := zap.String("stack", "")
-
-	if stacksEnabled {
-		stackField = zap.Stack("stack")
-	}
+	stackField = zap.Stack("stack")
 
 	return &ClowderError{
 		Msg:   msg,
