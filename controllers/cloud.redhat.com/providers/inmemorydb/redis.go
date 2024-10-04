@@ -2,6 +2,7 @@ package inmemorydb
 
 import (
 	"fmt"
+
 	providerUtils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
