@@ -119,7 +119,10 @@ var _ = ginkgo.BeforeSuite(func() {
 		if err != nil {
 			return err
 		}
-		conn.Close()
+		err = conn.Close()
+		if err != nil {
+			return err
+		}
 		return nil
 	}).Should(g.Succeed())
 
