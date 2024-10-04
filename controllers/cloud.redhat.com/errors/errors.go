@@ -45,8 +45,7 @@ func (a *ClowderError) Is(target error) bool {
 
 // NewClowderError constructs a new ClowderError object.
 func NewClowderError(msg string) *ClowderError {
-	stackField := zap.String("stack", "")
-	stackField = zap.Stack("stack")
+	stackField := zap.Stack("stack")
 
 	return &ClowderError{
 		Msg:   msg,
