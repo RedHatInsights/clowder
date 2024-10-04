@@ -73,6 +73,9 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, appR
 
 	sni := []string{hostname}
 
+	caPool := caddytls.FileCAPool{
+		TrustedCACertPEMFiles: []string{"/cas/ca.pem"},
+	}
 	appConfig := caddyhttp.App{
 		HTTPPort:  8888,
 		HTTPSPort: 9090,
@@ -93,9 +96,8 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, appR
 					AnyTag: []string{"cert0"},
 				},
 				ClientAuthentication: &caddytls.ClientAuthentication{
-					Mode:                  "verify_if_given",
-					TrustedCACertPEMFiles: []string{"/cas/ca.pem"},
-				},
+					Mode:  "verify_if_given",
+					CARaw: caddyconfig.JSONModuleObject(caPool, "provider", "file", &warnings)},
 			}, {}},
 			Logs: &caddyhttp.ServerLogConfig{
 				LoggerNames: map[string]caddyhttp.StringArray{"localhost.localdomain": {""}},

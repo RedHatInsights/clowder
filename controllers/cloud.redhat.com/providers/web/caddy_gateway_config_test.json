@@ -81,9 +81,12 @@
                 ]
               },
               "client_authentication": {
-                "trusted_ca_certs_pem_files": [
-                  "/cas/ca.pem"
-                ],
+                "ca": {
+                  "pem_files": [
+                    "/cas/ca.pem"
+                  ],
+                  "provider": "file"
+                },
                 "mode": "verify_if_given"
               }
             },
