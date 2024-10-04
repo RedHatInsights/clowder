@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 
 	crccaddy "github.com/RedHatInsights/crc-caddy-plugin"
-	caddy "github.com/caddyserver/caddy/v2"
-	caddyconfig "github.com/caddyserver/caddy/v2/caddyconfig"
-	caddyhttp "github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig"
+	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	caddyreverseproxy "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy"
-	caddytls "github.com/caddyserver/caddy/v2/modules/caddytls"
+	"github.com/caddyserver/caddy/v2/modules/caddytls"
 )
 
 type ProxyRoute struct {
@@ -73,6 +73,9 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, appR
 
 	sni := []string{hostname}
 
+	caPool := caddytls.FileCAPool{
+		TrustedCACertPEMFiles: []string{"/cas/ca.pem"},
+	}
 	appConfig := caddyhttp.App{
 		HTTPPort:  8888,
 		HTTPSPort: 9090,
@@ -93,9 +96,8 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, appR
 					AnyTag: []string{"cert0"},
 				},
 				ClientAuthentication: &caddytls.ClientAuthentication{
-					Mode:                  "verify_if_given",
-					TrustedCACertPEMFiles: []string{"/cas/ca.pem"},
-				},
+					Mode:  "verify_if_given",
+					CARaw: caddyconfig.JSONModuleObject(caPool, "provider", "file", &warnings)},
 			}, {}},
 			Logs: &caddyhttp.ServerLogConfig{
 				LoggerNames: map[string]caddyhttp.StringArray{"localhost.localdomain": {""}},

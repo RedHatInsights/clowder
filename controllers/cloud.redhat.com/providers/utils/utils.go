@@ -33,6 +33,7 @@ var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
 var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-4649c84"
+var DefaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -158,7 +159,7 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 		Name:       "database",
 		Port:       5432,
 		Protocol:   "TCP",
-		TargetPort: intstr.FromInt(5432),
+		TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 5432},
 	}}
 	labels := providers.Labels{"service": "db", "app": baseResource.GetClowdName()}
 	for k, v := range *extraLabels {

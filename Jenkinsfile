@@ -34,6 +34,15 @@ pipeline {
     }
 
     stages {
+
+        stage('Build and Push Base Image') {
+            steps {
+                withVault([configuration: configuration, vaultSecrets: secrets]) {
+                    sh './ci/build_push_base_img.sh'
+                }
+            }
+        }
+
         stage('Did you run pre-push?') {
             environment {
                 TEST_CONTAINER="clowder-ci-prepush-test-${IMAGE_TAG}-${CURR_TIME}"
@@ -46,20 +55,12 @@ pipeline {
                         docker run -i $TEST_CONTAINER \
                             ./githooks/prepush.sh
                     '''
-                    }
-                }
-            
-            post {
-                always {
-                    sh 'docker rm -f $TEST_CONTAINER'
-                    }
                 }
             }
 
-        stage('Build and Push Base Image') {
-            steps {
-                withVault([configuration: configuration, vaultSecrets: secrets]) {
-                    sh './ci/build_push_base_img.sh'
+            post {
+                always {
+                    sh 'docker rm -f $TEST_CONTAINER'
                 }
             }
         }

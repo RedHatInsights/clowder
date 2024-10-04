@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	ginkgo "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2"
 	g "github.com/onsi/gomega"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -119,7 +119,10 @@ var _ = ginkgo.BeforeSuite(func() {
 		if err != nil {
 			return err
 		}
-		conn.Close()
+		err = conn.Close()
+		if err != nil {
+			return err
+		}
 		return nil
 	}).Should(g.Succeed())
 

@@ -8,15 +8,10 @@ import (
 
 	"github.com/go-logr/logr"
 	"go.uber.org/zap"
-	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ClowdKey is a string determining the type of error.
 type ClowdKey string
-
-var stacksEnabled = true
 
 // ClowderError is a Clowder specific error, it has a number of functions attached to it to allow
 // for creation and checking.
@@ -45,16 +40,12 @@ func (a *ClowderError) Is(target error) bool {
 	if !ok {
 		return false
 	}
-	return (a.Msg == b.Msg && a.Cause == b.Cause)
+	return a.Msg == b.Msg && a.Cause == b.Cause
 }
 
 // NewClowderError constructs a new ClowderError object.
 func NewClowderError(msg string) *ClowderError {
-	stackField := zap.String("stack", "")
-
-	if stacksEnabled {
-		stackField = zap.Stack("stack")
-	}
+	stackField := zap.Stack("stack")
 
 	return &ClowderError{
 		Msg:   msg,
@@ -108,18 +99,6 @@ func (e *MissingDependencies) Error() string {
 	return fmt.Sprintf("Missing dependencies: [%s]", body)
 }
 
-// RootCause takes an error an unwraps it, if it is nil, it calls RootCause on the returned err,
-// this will recursively find an error that has an unwrapped value.
-func RootCause(err error) error {
-	cause := errlib.Unwrap(err)
-
-	if cause != nil {
-		return RootCause(cause)
-	}
-
-	return err
-}
-
 // GetRootStack will recurse through an error until it finds one with a stack string set.
 func GetRootStack(err error) string {
 	var stack string
@@ -144,38 +123,4 @@ func GetRootStack(err error) string {
 func LogError(ctx context.Context, err *ClowderError) {
 	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
 	log.Error(err, err.Msg, "stack", GetRootStack(err))
-}
-
-// HandleError handles certain ClowdError types differently than normal errors.
-func HandleError(ctx context.Context, err error) bool {
-	log := *(ctx.Value(ClowdKey("log")).(*logr.Logger))
-	recorder := *(ctx.Value(ClowdKey("recorder")).(*record.EventRecorder))
-	obj := ctx.Value(ClowdKey("obj")).(client.Object)
-
-	if err != nil {
-		var depErr *MissingDependencies
-		var clowderError *ClowderError
-		if errlib.As(err, &depErr) {
-			msg := depErr.Error()
-			recorder.Event(obj, "Warning", "MissingDependencies", msg)
-			log.Info(msg)
-			return true
-		} else if errlib.As(err, &clowderError) {
-			msg := clowderError.Error()
-			recorder.Event(obj, "Warning", "ClowdError", msg)
-			log.Info(msg)
-			if clowderError.Requeue {
-				return true
-			}
-		}
-
-		root := RootCause(err)
-		if k8serr.IsConflict(root) {
-			log.Info("Conflict reported.  Requeuing request.")
-			return true
-		}
-
-		log.Error(err, "Reconciliation failure", "stack", GetRootStack(err))
-	}
-	return false
 }
