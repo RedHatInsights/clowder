@@ -31,7 +31,7 @@ spec:
   - name: dockerfile
     value: /Dockerfile
   - name: prefetch-input
-    value: [{"type": "gomod", "path": "."}, {"type": "gomod", "path": "./deps"}]
+    value: [{"type": "gomod", "path": "."}, {"type": "gomod", "path": "./deps1"}, {"type": "gomod", "path": "./deps2"}]
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
