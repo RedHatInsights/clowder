@@ -207,8 +207,8 @@ spec:
       runAfter:
       - prefetch-dependencies
       workspaces:
-      # - name: output
-      #   workspace: workspace
+      - name: output
+        workspace: workspace
       - name: basic-auth
         workspace: git-auth
       taskSpec:
@@ -231,6 +231,10 @@ spec:
           script: |
             #!/bin/bash
             set -ex
+
+            CLOWDER_PATH="/workspace/output/source"
+            
+            cd ${CLOWDER_PATH}
 
             sh './ci/unit_tests.sh'
     - name: build-container
