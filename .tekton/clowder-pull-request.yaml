@@ -207,8 +207,8 @@ spec:
       runAfter:
       - prefetch-dependencies
       workspaces:
-      - name: output
-        workspace: workspace
+      # - name: output
+      #   workspace: workspace
       - name: basic-auth
         workspace: git-auth
       taskSpec:
