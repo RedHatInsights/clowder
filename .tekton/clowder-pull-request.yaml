@@ -195,6 +195,44 @@ spec:
         workspace: git-auth
       - name: netrc
         workspace: netrc
+    - name: run-unit-tests
+      description: run unit tests
+      params:
+      - name: SNAPSHOT
+        value: $(params.SNAPSHOT)
+      - name: NAMESPACE
+        value: $(params.NAMESPACE)
+      - name: EXPECTED_OUTPUT
+        value: $(params.EXPECTED_OUTPUT)
+      runAfter:
+      - prefetch-dependencies
+      workspaces:
+      - name: output
+        workspace: workspace
+      - name: basic-auth
+        workspace: git-auth
+      taskSpec:
+        params:
+        - name: SNAPSHOT
+        - name: NAMESPACE
+        - name: EXPECTED_OUTPUT
+        results:
+        - name: TEST_OUTPUT
+          description: Test output
+        steps:
+        - image: registry.access.redhat.com/ubi8/go-toolset:1.21.11-1.1720406008
+          env:
+          - name: SNAPSHOT
+            value: $(params.SNAPSHOT)
+          - name: NAMESPACE
+            value: $(params.NAMESPACE)
+          - name: EXPECTED_OUTPUT
+            value: $(params.EXPECTED_OUTPUT)
+          script: |
+            #!/bin/bash
+            set -ex
+
+            sh './ci/unit_tests.sh'
     - name: build-container
       params:
       - name: IMAGE
