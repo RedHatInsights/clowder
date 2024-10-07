@@ -1,6 +1,7 @@
 FROM registry.access.redhat.com/ubi8/go-toolset:1.21.11-8.1724662611 as builder
 USER 0
-RUN dnf install -y openssh-clients git make which jq python3
+#RUN dnf install -y openssh-clients git make which jq python3
+ENV GOSUMDB=off
 
 COPY ci/minikube_e2e_tests_inner.sh .
 RUN chmod 775 minikube_e2e_tests_inner.sh
