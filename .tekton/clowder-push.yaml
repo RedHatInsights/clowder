@@ -229,8 +229,8 @@ spec:
             #!/bin/bash
             set -ex
 
-            ls "/workspace
-            
+            ls /workspace
+
             CLOWDER_PATH="/workspace/output/source"
             
             cd ${CLOWDER_PATH}
