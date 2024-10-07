@@ -202,7 +202,7 @@ spec:
       - name: EXPECTED_OUTPUT
         value: $(params.EXPECTED_OUTPUT)
       runAfter:
-      - prefetch-dependencies
+      - clone-repository
       workspaces:
       # - name: output
       #   workspace: workspace
