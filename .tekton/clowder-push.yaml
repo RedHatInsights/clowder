@@ -164,8 +164,6 @@ spec:
         values:
         - "true"
       workspaces:
-      - name: workspace
-        workspace: workspace
       - name: basic-auth
         workspace: git-auth
     - name: prefetch-dependencies
@@ -190,8 +188,6 @@ spec:
           value: task
         resolver: bundles
       workspaces:
-      - name: workspace
-        workspace: workspace
       - name: git-basic-auth
         workspace: git-auth
       - name: netrc
@@ -208,8 +204,6 @@ spec:
       runAfter:
       - clone-repository
       workspaces:
-      - name: workspace
-        workspace: workspace
       - name: basic-auth
         workspace: git-auth
       taskSpec:
@@ -487,24 +481,12 @@ spec:
           value: task
         resolver: bundles
     workspaces:
-    - name: workspace
     - name: git-auth
       optional: true
     - name: netrc
       optional: true
   taskRunTemplate: {}
   workspaces:
-  - name: workspace
-    volumeClaimTemplate:
-      metadata:
-        creationTimestamp: null
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-      status: {}
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
