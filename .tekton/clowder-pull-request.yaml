@@ -238,6 +238,7 @@ spec:
 
             CLOWDER_PATH="/workspace/output/source"
             cd ${CLOWDER_PATH}
+            ls
 
             sh './ci/unit_tests.sh'
     - name: build-container
