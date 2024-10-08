@@ -190,7 +190,7 @@ spec:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
           - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+            image: registry.access.redhat.com/ubi8/go-toolset:1.21.11-1.1720406008
             workingDir: /var/workdir/source
             script: yum install -y make && make test
         volumes:
