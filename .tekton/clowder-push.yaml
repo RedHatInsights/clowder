@@ -233,9 +233,6 @@ spec:
             #!/bin/bash
             set -ex
 
-            ls /workspace/basic-auth
-            ls /workspace/basic-auth/source
-
             CLOWDER_PATH="/workspace/output/source"
             
             cd ${CLOWDER_PATH}
