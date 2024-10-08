@@ -192,13 +192,7 @@ spec:
           - name: kustomize-build
             image: registry.access.redhat.com/ubi8/go-toolset:1.21.11-1.1720406008
             workingDir: .
-            script: |
-            #!/bin/bash
-
-            set -ex
-
-            yum install -y make
-            make test
+            script: set -ex && yum install -y make && make test
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir
