@@ -208,7 +208,7 @@ spec:
       runAfter:
       - clone-repository
       workspaces:
-      - name: output
+      - name: workspace
         workspace: workspace
       - name: basic-auth
         workspace: git-auth
