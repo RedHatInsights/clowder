@@ -164,7 +164,7 @@ spec:
         values:
         - "true"
       workspaces:
-      - name: output
+      - name: workspace
         workspace: workspace
       - name: basic-auth
         workspace: git-auth
@@ -190,7 +190,7 @@ spec:
           value: task
         resolver: bundles
       workspaces:
-      - name: output
+      - name: workspace
         workspace: workspace
       - name: git-basic-auth
         workspace: git-auth
@@ -208,7 +208,7 @@ spec:
       runAfter:
       - clone-repository
       workspaces:
-      - name: output
+      - name: workspace
         workspace: workspace
       - name: basic-auth
         workspace: git-auth
