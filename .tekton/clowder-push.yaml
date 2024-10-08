@@ -164,6 +164,8 @@ spec:
         values:
         - "true"
       workspaces:
+      - name: workspace
+        workspace: workspace
       - name: basic-auth
         workspace: git-auth
     - name: prefetch-dependencies
@@ -188,6 +190,8 @@ spec:
           value: task
         resolver: bundles
       workspaces:
+      - name: workspace
+        workspace: workspace
       - name: git-basic-auth
         workspace: git-auth
       - name: netrc
@@ -204,6 +208,8 @@ spec:
       runAfter:
       - clone-repository
       workspaces:
+      - name: output
+        workspace: workspace
       - name: basic-auth
         workspace: git-auth
       taskSpec:
@@ -226,8 +232,11 @@ spec:
           script: |
             #!/bin/bash
             set -ex
+            ls
+            ls "/workspace/workspace"
+            ls "/workspace/output/source"
 
-            CLOWDER_PATH="/workspace/output/source"
+            CLOWDER_PATH="/workspace/workspace/source"
             cd ${CLOWDER_PATH}
             ls
 
@@ -481,12 +490,24 @@ spec:
           value: task
         resolver: bundles
     workspaces:
+    - name: workspace
     - name: git-auth
       optional: true
     - name: netrc
       optional: true
   taskRunTemplate: {}
   workspaces:
+  - name: workspace
+    volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+      status: {}
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
