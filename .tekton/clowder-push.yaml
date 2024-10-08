@@ -487,24 +487,24 @@ spec:
           value: task
         resolver: bundles
     workspaces:
+    - name: workspace
     - name: git-auth
       optional: true
     - name: netrc
       optional: true
-    - name: workspace
-      volumeClaimTemplate:
-        metadata:
-          creationTimestamp: null
-        spec:
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-        status: {}
   taskRunTemplate: {}
   workspaces:
   - name: workspace
+    volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+      status: {}
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
