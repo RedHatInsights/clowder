@@ -3,7 +3,7 @@
 set -exv
 
 mkdir -p /container_workspace/bin
-cp /opt/app-root/src/go/bin/* /container_workspace/bin
+# cp /opt/app-root/src/go/bin/* /container_workspace/bin
 
 export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
