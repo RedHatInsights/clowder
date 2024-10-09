@@ -7,19 +7,19 @@ mkdir -p /container_workspace/bin
 
 export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 
-(
-  set -x; cd "$(mktemp -d)" &&
-  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
-  KREW="krew-${OS}_${ARCH}" &&
-  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
-  tar zxvf "${KREW}.tar.gz" &&
-  ./"${KREW}" install krew
-)
+# (
+#   set -x; cd "$(mktemp -d)" &&
+#   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+#   ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+#   KREW="krew-${OS}_${ARCH}" &&
+#   curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+#   tar zxvf "${KREW}.tar.gz" &&
+#   ./"${KREW}" install krew
+# )
 
 source build/template_check.sh
 
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+# export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 export PATH="/bins:$PATH"
 
 chmod 600 minikube-ssh-ident
@@ -86,7 +86,11 @@ $KUBECTL_CMD delete pod -n clowder-system -l operator-name=clowder
 # Wait for operator deployment...
 $KUBECTL_CMD rollout status deployment clowder-controller-manager -n clowder-system
 
-$KUBECTL_CMD krew install kuttl
+# $KUBECTL_CMD krew install kuttl
+
+curl -fsSLO "https://github.com/kudobuilder/kuttl/releases/download/v0.19.0/kubectl-kuttl_0.19.0_linux_x86_64"
+chmod +x kubectl-kuttl_0.19.0_linux_x86_64
+alias kuttl="./kubectl-kuttl_0.19.0_linux_x86_64"
 
 set +e
 
