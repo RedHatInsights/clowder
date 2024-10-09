@@ -22,6 +22,8 @@ source build/template_check.sh
 # export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 export PATH="/bins:$PATH"
 
+echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
+
 chmod 600 minikube-ssh-ident
 
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube delete"
