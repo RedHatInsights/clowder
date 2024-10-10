@@ -20,6 +20,7 @@ export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
 source build/template_check.sh
 
 # export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
 export PATH="/bins:$PATH"
 
 echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
