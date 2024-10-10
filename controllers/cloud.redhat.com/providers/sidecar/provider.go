@@ -1,10 +1,33 @@
 package sidecar
 
 import (
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2023-09-20-f5e3403" // nolint:gosec
+var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2022-10-21-a99ce82"                               // nolint:gosec
+var DefaultImageSideCarOtelCollector = "ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0" // nolint:gosec
+
+func GetTokenRefresherSidecar(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Sidecars.TokenRefresher.Image != "" {
+		return env.Spec.Providers.Sidecars.TokenRefresher.Image
+	}
+	if clowderconfig.LoadedConfig.Images.TokenRefresher != "" {
+		return clowderconfig.LoadedConfig.Images.TokenRefresher
+	}
+	return DefaultImageSideCarTokenRefresher
+}
+
+func GetOtelCollectorSidecar(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Sidecars.OtelCollector.Image != "" {
+		return env.Spec.Providers.Sidecars.OtelCollector.Image
+	}
+	if clowderconfig.LoadedConfig.Images.OtelCollector != "" {
+		return clowderconfig.LoadedConfig.Images.OtelCollector
+	}
+	return DefaultImageSideCarOtelCollector
+}
 
 // ProvName sets the provider name identifier
 var ProvName = "sidecar"

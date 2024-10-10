@@ -135,12 +135,12 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 	for depIndx, deployment := range r.Spec.Deployments {
 		for carIndx, sidecar := range deployment.PodSpec.Sidecars {
-			if sidecar.Name != "token-refresher" {
+			if sidecar.Name != "token-refresher" && sidecar.Name != "otel-collector" {
 				allErrs = append(
 					allErrs,
 					field.Forbidden(
 						field.NewPath(fmt.Sprintf("spec.Deployment[%d].Sidecars[%d]", depIndx, carIndx)),
-						"Sidecar is of unknown type, must be one of [token-refresher]",
+						"Sidecar is of unknown type, must be one of [token-refresher] or [otel-collector]",
 					),
 				)
 			}
@@ -151,12 +151,12 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 			continue
 		}
 		for carIndx, sidecar := range job.PodSpec.Sidecars {
-			if sidecar.Name != "token-refresher" {
+			if sidecar.Name != "token-refresher" && sidecar.Name != "otel-collector" {
 				allErrs = append(
 					allErrs,
 					field.Forbidden(
 						field.NewPath(fmt.Sprintf("spec.Deployment[%d].Sidecars[%d]", jobIndx, carIndx)),
-						"Sidecar is of unknown type, must be one of [token-refresher]",
+						"Sidecar is of unknown type, must be one of [token-refresher] or [otel-collector]",
 					),
 				)
 			}

@@ -26,6 +26,8 @@ spec:
     sidecars:
       tokenRefresher:
         enabled: False
+      otelCollector:
+        enabled: False
   resourceDefaults:
     limits:
       cpu: 400m
@@ -47,6 +49,8 @@ spec:
       image: quay.io/psav/clowder-hello
       sidecars:
         - name: token-refresher
+          enabled: true
+        - name: otel-collector
           enabled: true
 ---
 apiVersion: v1

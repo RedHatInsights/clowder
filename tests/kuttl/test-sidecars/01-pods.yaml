@@ -26,6 +26,8 @@ spec:
     sidecars:
       tokenRefresher:
         enabled: True
+      otelCollector:
+        enabled: True
   resourceDefaults:
     limits:
       cpu: 400m
@@ -48,6 +50,8 @@ spec:
       sidecars:
         - name: token-refresher
           enabled: true
+        - name: otel-collector
+          enabled: true
   jobs:
     - name: cron
       schedule: "*/1 * * * *"
@@ -55,6 +59,8 @@ spec:
         image: quay.io/psav/clowder-hello
         sidecars:
           - name: token-refresher
+            enabled: true
+          - name: otel-collector
             enabled: true
 ---
 apiVersion: v1
