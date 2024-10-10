@@ -106,6 +106,9 @@ spec:
       description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
       name: build-args-file
       type: string
+    - name: MINIKUBE_INFO
+      description: Minikube information.
+      default: minikube-ssh-key
     results:
     - description: ""
       name: IMAGE_URL
@@ -249,6 +252,13 @@ spec:
           - name: kustomize-build
             image: registry.access.redhat.com/ubi8/ubi:latest
             workingDir: /var/workdir/source
+            volumeMounts:
+            - mountPath: /etc/secrets
+              name:  minikube-ssh-key
+              readOnly: true
+            env:
+            - name: MINIKUBE_INFO
+              value: $(params.MINIKUBE_INFO)
             script: set -xe && dnf install -y go make python3 openssh-clients && ./ci/konflux_minikube_e2e_tests.sh
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
