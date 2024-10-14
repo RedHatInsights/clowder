@@ -256,6 +256,13 @@ spec:
               - mountPath: /etc/secrets
                 name: minikube-ssh-key
                 readOnly: true
+            env:
+              - name: MINIKUBE_HOST
+                value: $(params.MINIKUBE_HOST)
+              - name: MINIKUBE_USER
+                value: $(params.MINIKUBE_USER)
+              - name: MINIKUBE_SSH_KEY
+                value: $(params.MINIKUBE_SSH_KEY)
             script: set -xe && dnf install -y go make python3 openssh-clients && ./ci/konflux_minikube_e2e_tests.sh
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
