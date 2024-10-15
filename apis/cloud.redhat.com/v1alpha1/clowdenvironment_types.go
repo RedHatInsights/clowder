@@ -504,11 +504,21 @@ type ClowdEnvironmentSpec struct {
 type TokenRefresherConfig struct {
 	// Enables or disables token refresher sidecars
 	Enabled bool `json:"enabled"`
+	// Configurable image
+	Image string `json:"image,omitempty"`
 }
 
+type OtelCollectorConfig struct {
+	// Enable or disable otel collector sidecar
+	Enabled bool `json:"enabled"`
+	// Configurable image
+	Image string `json:"image,omitempty"`
+}
 type Sidecars struct {
 	// Sets up Token Refresher configuration
 	TokenRefresher TokenRefresherConfig `json:"tokenRefresher,omitempty"`
+	// Sets up OpenTelemetry collector configuration
+	OtelCollector OtelCollectorConfig `json:"otelCollector,omitempty"`
 }
 
 type DeploymentConfig struct {
