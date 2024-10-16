@@ -83,11 +83,11 @@ $KUBECTL_CMD create namespace clowder-system
 
 mkdir artifacts
 
-cat manifest.yaml > artifacts/manifest.yaml
+# cat manifest.yaml > artifacts/manifest.yaml
 
-sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
+# sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
 
-$KUBECTL_CMD apply -f manifest.yaml --validate=false
+# $KUBECTL_CMD apply -f manifest.yaml --validate=false
 
 ## The default generated config isn't quite right for our tests - so we'll create a new one and restart clowder
 $KUBECTL_CMD apply -f clowder-config.yaml -n clowder-system
