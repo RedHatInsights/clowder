@@ -3,7 +3,7 @@
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # cloud.redhat.com/clowder-bundle:$VERSION and cloud.redhat.com/clowder-catalog:$VERSION.
-IMAGE_TAG_BASE ?= quay.io/cloudservices/clowder
+IMAGE_TAG_BASE ?= quay.io/redhat-user-workloads/hcm-eng-prod-tenant/clowder/clowder
 CLOWDER_BUILD_TAG ?= $(shell git rev-parse --short=8 HEAD)
 
 GO_CMD ?= go
