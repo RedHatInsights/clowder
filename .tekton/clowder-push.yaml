@@ -221,8 +221,7 @@ spec:
       - name: CACHI2_ARTIFACT
         value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
-      - run-e2e-tests
-      - run-unit-tests
+      - prefetch-dependencies
       taskRef:
         params:
         - name: name
