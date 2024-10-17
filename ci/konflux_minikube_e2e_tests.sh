@@ -25,7 +25,6 @@ export PATH="/container_workspace/bin:$PATH"
 # )
 
 source build/template_check.sh
-
 # export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 export PATH="/bins:$PATH"
