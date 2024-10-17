@@ -85,6 +85,10 @@ mkdir artifacts
 
 make release
 
+# -- Remove ------------------------------------
+cat manifest.yaml | grep hcm-eng-prod
+# ----------------------------------------------
+
 cat manifest.yaml > artifacts/manifest.yaml
 
 sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
