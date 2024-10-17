@@ -97,7 +97,6 @@ $KUBECTL_CMD delete pod -n clowder-system -l operator-name=clowder
 
 # Wait for operator deployment...
 $KUBECTL_CMD rollout status deployment clowder-controller-manager -n clowder-system
-
 # $KUBECTL_CMD krew install kuttl
 
 curl -fsSLO "https://github.com/kudobuilder/kuttl/releases/download/v0.19.0/kubectl-kuttl_0.19.0_linux_x86_64"
