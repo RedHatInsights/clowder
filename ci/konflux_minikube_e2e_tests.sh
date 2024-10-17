@@ -93,11 +93,11 @@ sed -i "s/clowder:latest/clowder:$IMAGE_TAG/g" manifest.yaml
 $KUBECTL_CMD apply -f manifest.yaml --validate=false
 
 ## The default generated config isn't quite right for our tests - so we'll create a new one and restart clowder
-$KUBECTL_CMD apply -f clowder-config.yaml -n clowder-system
-$KUBECTL_CMD delete pod -n clowder-system -l operator-name=clowder
+$KUBECTL_CMD apply -f clowder-config.yaml -n hcm-eng-prod-tenant
+$KUBECTL_CMD delete pod -n hcm-eng-prod-tenant -l operator-name=clowder
 
 # Wait for operator deployment...
-$KUBECTL_CMD rollout status deployment clowder-controller-manager -n clowder-system
+$KUBECTL_CMD rollout status deployment clowder-controller-manager -n hcm-eng-prod-tenant
 # $KUBECTL_CMD krew install kuttl
 
 curl -fsSLO "https://github.com/kudobuilder/kuttl/releases/download/v0.19.0/kubectl-kuttl_0.19.0_linux_x86_64"
