@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -exv
+set -ev
 
 mkdir -p /container_workspace/bin
 # cp /opt/app-root/src/go/bin/* /container_workspace/bin
@@ -15,7 +15,7 @@ mv kubectl /container_workspace/bin
 export PATH="/container_workspace/bin:$PATH"
 
 (
-  set -x; cd "$(mktemp -d)" &&
+  cd "$(mktemp -d)" &&
   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
   ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
   KREW="krew-${OS}_${ARCH}" &&
