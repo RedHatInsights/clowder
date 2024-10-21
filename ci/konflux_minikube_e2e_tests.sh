@@ -102,6 +102,7 @@ $KUBECTL_CMD krew install kuttl
 # curl -fsSLO "https://github.com/kudobuilder/kuttl/releases/download/v0.19.0/kubectl-kuttl_0.19.0_linux_x86_64"
 # chmod +x kubectl-kuttl_0.19.0_linux_x86_64
 # alias kuttl="./kubectl-kuttl_0.19.0_linux_x86_64"
+
 set +e
 
 $KUBECTL_CMD get env
