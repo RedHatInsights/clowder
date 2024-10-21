@@ -106,7 +106,6 @@ alias kuttl="./kubectl-kuttl_0.19.0_linux_x86_64"
 set +e
 
 $KUBECTL_CMD get env
-$KUBECTL_CMD get env
 
 source build/run_kuttl.sh --report xml
 KUTTL_RESULT=$?

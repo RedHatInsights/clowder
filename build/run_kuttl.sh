@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kubectl kuttl test \
+kuttl test \
     --config tests/kuttl/kuttl-test.yaml \
     --manifest-dir config/crd/bases/ \
     tests/kuttl/ \
