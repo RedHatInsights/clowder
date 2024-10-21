@@ -314,7 +314,7 @@ spec:
                   secretKeyRef:
                     name: minikube-ssh-key
                     key: MINIKUBE_ROOTDIR
-            script: set -xe && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
+            script: set -e && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir
