@@ -158,7 +158,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 		ReadinessProbe: &readinessProbe,
 		VolumeMounts: []core.VolumeMount{{
 			Name:      nn.Name,
-			MountPath: "/var/lib/redis/data",
+			MountPath: "/etc/redis",
 		}},
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
