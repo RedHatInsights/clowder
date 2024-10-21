@@ -71,7 +71,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 	labeler := utils.MakeLabeler(nn, nil, app)
 	labeler(configMap)
 
-	configMap.Data = map[string]string{"redis.conf": "stop-writes-on-bgsave-error no\n"}
+	configMap.Data = map[string]string{"redis.conf": "stop-writes-on-bgsave-error no\nprotected-mode no"}
 
 	err = r.Provider.Cache.Update(RedisConfigMap, configMap)
 
@@ -148,11 +148,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
 		Image: providerUtils.DefaultImageInMemoryDB,
-		Command: []string{
-			"redis-server",
-			"/usr/local/etc/redis/redis.conf",
-		},
-		Env: []core.EnvVar{},
+		Env:   []core.EnvVar{},
 		Ports: []core.ContainerPort{{
 			Name:          "redis",
 			ContainerPort: 6379,
@@ -162,7 +158,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 		ReadinessProbe: &readinessProbe,
 		VolumeMounts: []core.VolumeMount{{
 			Name:      nn.Name,
-			MountPath: "/usr/local/etc/redis/",
+			MountPath: "/var/lib/redis/data",
 		}},
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
