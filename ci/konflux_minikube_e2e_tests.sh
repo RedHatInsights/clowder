@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ev
+set -exv
 
 mkdir -p /container_workspace/bin
 # cp /opt/app-root/src/go/bin/* /container_workspace/bin
@@ -83,6 +83,7 @@ source build/kube_setup.sh
 export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 
 $KUBECTL_CMD create namespace clowder-system
+
 # $KUBECTL_CMD create namespace hcm-eng-prod-tenant
 
 mkdir artifacts
