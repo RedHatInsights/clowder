@@ -122,6 +122,9 @@ spec:
     - description: ""
       name: CHAINS-GIT_COMMIT
       value: $(tasks.clone-repository.results.commit)
+    - name: minikube-ssh-key
+      description: Minikube information.
+      default: minikube-ssh-key
     tasks:
     - name: init
       params:
@@ -167,8 +170,6 @@ spec:
         values:
         - "true"
       workspaces:
-      - name: workspace
-        workspace: workspace
       - name: basic-auth
         workspace: git-auth
     - name: prefetch-dependencies
@@ -193,54 +194,10 @@ spec:
           value: task
         resolver: bundles
       workspaces:
-      - name: workspace
-        workspace: workspace
       - name: git-basic-auth
         workspace: git-auth
       - name: netrc
         workspace: netrc
-    - name: run-unit-tests
-      description: run unit tests
-      params:
-      - name: SNAPSHOT
-        value: $(params.SNAPSHOT)
-      - name: NAMESPACE
-        value: $(params.NAMESPACE)
-      - name: EXPECTED_OUTPUT
-        value: $(params.EXPECTED_OUTPUT)
-      runAfter:
-      - clone-repository
-      workspaces:
-      - name: workspace
-        workspace: workspace
-      - name: basic-auth
-        workspace: git-auth
-      taskSpec:
-        params:
-        - name: SNAPSHOT
-        - name: NAMESPACE
-        - name: EXPECTED_OUTPUT
-        results:
-        - name: TEST_OUTPUT
-          description: Test output
-        steps:
-        - image: registry.access.redhat.com/ubi8/go-toolset:1.21.11-1.1720406008
-          env:
-          - name: SNAPSHOT
-            value: $(params.SNAPSHOT)
-          - name: NAMESPACE
-            value: $(params.NAMESPACE)
-          - name: EXPECTED_OUTPUT
-            value: $(params.EXPECTED_OUTPUT)
-          script: |
-            #!/bin/bash
-            set -ex
-
-            CLOWDER_PATH="/workspace/output/source"
-            cd ${CLOWDER_PATH}
-            ls
-
-            sh './ci/unit_tests.sh'
     - name: build-container
       params:
       - name: IMAGE
@@ -282,6 +239,89 @@ spec:
         operator: in
         values:
         - "true"
+    - name: run-unit-tests
+      params:
+        # New parameter to use the Trusted Artifact from the git-clone Task.
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+        - build-container
+      taskSpec:
+        params:
+          - description: The Trusted Artifact URI pointing to the artifact with the application source code.
+            name: SOURCE_ARTIFACT
+            type: string
+        stepTemplate:
+          volumeMounts:
+            - mountPath: /var/workdir
+              name: workdir
+        steps:
+          # New step to fetch the Trusted Artifact and make it available to the next steps.
+          - name: use-trusted-artifact
+            image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:8391272c4e5011120e9e7fee2c1f339e9405366110bf239dadcbc21e953ce099
+            args:
+              - use
+              - $(params.SOURCE_ARTIFACT)=/var/workdir/source
+          - name: kustomize-build
+            image: registry.access.redhat.com/ubi8/ubi:latest
+            workingDir: /var/workdir/source
+            script: set -xe && dnf install -y go make && make test
+        volumes:
+          # New volume to store a copy of the source code accessible only to this Task.
+          - name: workdir
+            emptyDir: {}
+    - name: run-e2e-tests
+      params:
+        # New parameter to use the Trusted Artifact from the git-clone Task.
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+        - build-container
+      taskSpec:
+        params:
+          - description: The Trusted Artifact URI pointing to the artifact with the application source code.
+            name: SOURCE_ARTIFACT
+            type: string
+        stepTemplate:
+          volumeMounts:
+            - mountPath: /var/workdir
+              name: workdir
+        steps:
+          # New step to fetch the Trusted Artifact and make it available to the next steps.
+          - name: use-trusted-artifact
+            image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:8391272c4e5011120e9e7fee2c1f339e9405366110bf239dadcbc21e953ce099
+            args:
+              - use
+              - $(params.SOURCE_ARTIFACT)=/var/workdir/source
+          - name: kustomize-build
+            image: registry.access.redhat.com/ubi8/ubi:latest
+            workingDir: /var/workdir/source
+            env:
+              - name: MINIKUBE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_HOST
+              - name: MINIKUBE_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_USER 
+              - name: MINIKUBE_SSH_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_SSH_KEY
+              - name: MINIKUBE_ROOTDIR
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_ROOTDIR
+            script: set -e && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
+        volumes:
+          # New volume to store a copy of the source code accessible only to this Task.
+          - name: workdir
+            emptyDir: {}
     - name: build-image-index
       params:
       - name: IMAGE
@@ -296,7 +336,8 @@ spec:
         value:
         - $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
       runAfter:
-      - build-container
+      - run-unit-tests
+      - run-e2e-tests
       taskRef:
         params:
         - name: name
@@ -490,24 +531,12 @@ spec:
           value: task
         resolver: bundles
     workspaces:
-    - name: workspace
     - name: git-auth
       optional: true
     - name: netrc
       optional: true
   taskRunTemplate: {}
   workspaces:
-  - name: workspace
-    volumeClaimTemplate:
-      metadata:
-        creationTimestamp: null
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-      status: {}
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
