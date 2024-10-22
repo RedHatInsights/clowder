@@ -122,6 +122,9 @@ spec:
     - description: ""
       name: CHAINS-GIT_COMMIT
       value: $(tasks.clone-repository.results.commit)
+    - name: minikube-ssh-key
+      description: Minikube information.
+      default: minikube-ssh-key
     tasks:
     - name: init
       params:
