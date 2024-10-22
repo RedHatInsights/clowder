@@ -6,7 +6,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
-var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2022-10-21-a99ce82"                               // nolint:gosec
+var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2023-09-20-f5e3403"                               // nolint:gosec
 var DefaultImageSideCarOtelCollector = "ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0" // nolint:gosec
 
 func GetTokenRefresherSidecar(env *crd.ClowdEnvironment) string {
