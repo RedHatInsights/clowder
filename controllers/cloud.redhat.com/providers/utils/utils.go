@@ -32,7 +32,7 @@ var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
-var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-4649c84"
+var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
 var DefaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
