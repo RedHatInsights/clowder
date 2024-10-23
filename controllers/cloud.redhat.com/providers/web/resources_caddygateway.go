@@ -426,10 +426,9 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:       "gateway",
-		Port:       port,
-		Protocol:   "TCP",
-		TargetPort: intstr.FromInt(int(port)),
+		Name:     "gateway",
+		Port:     port,
+		Protocol: "TCP",
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, false)
