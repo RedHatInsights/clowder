@@ -8,6 +8,7 @@ import (
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
@@ -47,9 +48,20 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector()
+					cont := getOtelCollector(app.Name)
 					if cont != nil {
 						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						innerDeployment.PodSpec.Volumes = append(innerDeployment.PodSpec.Volumes, core.Volume{
+							Name: fmt.Sprintf("%s-otel-config", app.Name),
+							VolumeSource: core.VolumeSource{
+								ConfigMap: &core.ConfigMapVolumeSource{
+									LocalObjectReference: core.LocalObjectReference{
+										Name: fmt.Sprintf("%s-otel-config", app.Name),
+									},
+									Optional: utils.TruePtr(),
+								},
+							},
+						})
 					}
 				}
 			default:
@@ -84,7 +96,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector()
+					cont := getOtelCollector(app.Name)
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
 					}
@@ -145,7 +157,7 @@ func getTokenRefresher(appName string) *core.Container {
 	return &cont
 }
 
-func getOtelCollector() *core.Container {
+func getOtelCollector(appName string) *core.Container {
 	cont := core.Container{}
 
 	cont.Name = "otel-collector"
@@ -164,5 +176,9 @@ func getOtelCollector() *core.Container {
 			"memory": resource.MustParse("1024Mi"),
 		},
 	}
+	cont.VolumeMounts = []core.VolumeMount{{
+		Name:      fmt.Sprintf("%s-otel-config", appName),
+		MountPath: "/etc/otelcol/config.yaml",
+	}}
 	return &cont
 }
