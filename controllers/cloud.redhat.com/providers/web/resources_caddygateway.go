@@ -370,7 +370,7 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 		SuccessThreshold:    1,
 		FailureThreshold:    3,
 	}
-	command := []string{"caddy", "run", "--config", "/etc/caddy/Caddyfile.json", "--adapter", "json"}
+	command := []string{"caddy", "run", "--config", "/etc/caddy/Caddyfile.json"}
 	c := core.Container{
 		Name:           nn.Name,
 		Ports:          ports,
