@@ -370,7 +370,7 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 		SuccessThreshold:    1,
 		FailureThreshold:    3,
 	}
-
+	command := []string{"caddy", "run", "--config", "/etc/caddy/Caddyfile.json"}
 	c := core.Container{
 		Name:           nn.Name,
 		Ports:          ports,
@@ -399,6 +399,7 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 				MountPath: "/certs",
 			},
 		},
+		Command: command,
 	}
 
 	dd.Spec.Template.Spec.Volumes = []core.Volume{
@@ -426,10 +427,9 @@ func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ b
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:       "gateway",
-		Port:       port,
-		Protocol:   "TCP",
-		TargetPort: intstr.FromInt(int(port)),
+		Name:     "gateway",
+		Port:     port,
+		Protocol: "TCP",
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, false)
