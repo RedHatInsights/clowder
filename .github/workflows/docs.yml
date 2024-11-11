@@ -11,13 +11,13 @@ on:
 
 jobs:
   docs_build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with: 
           ref: gh_pages
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
       - name: Install packages and deps
         run: |
           npm install @antora/cli @antora/site-generator-default
