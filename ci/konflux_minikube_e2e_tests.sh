@@ -83,6 +83,7 @@ export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 $KUBECTL_CMD create namespace clowder-system
 
 mkdir artifacts
+
 make release
 
 cat manifest.yaml > artifacts/manifest.yaml
