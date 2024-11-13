@@ -18,8 +18,6 @@ RUN go mod download
 
 COPY Makefile Makefile
 
-WORKDIR /workspace
-
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
 
 # Copy the go source
