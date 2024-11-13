@@ -34,7 +34,7 @@ echo "$MINIKUBE_SSH_KEY" > minikube-ssh-ident
 chmod 600 minikube-ssh-ident
 
 ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube delete"
-ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube start --cpus 6 --disk-size 10GB --memory 16000MB --kubernetes-version=1.26.3 --addons=metrics-server --disable-optimizations"
+ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube start --cpus 6 --disk-size 10GB --memory 16000MB --kubernetes-version=1.28.8 --addons=metrics-server --disable-optimizations"
 
 export MINIKUBE_IP=`ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip"`
 
@@ -87,8 +87,6 @@ mkdir artifacts
 make release
 
 cat manifest.yaml > artifacts/manifest.yaml
-
-sed -i "s/clowder:latest/clowder:on-pr-$IMAGE_TAG/g" manifest.yaml
 
 $KUBECTL_CMD apply -f manifest.yaml --validate=false -n clowder-system
 
