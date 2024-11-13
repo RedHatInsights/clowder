@@ -6,7 +6,7 @@ parameters:
 - name: IMAGE_TAG
   value: latest
 - name: IMAGE
-  value: quay.io/cloudservices/clowder
+  value: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder
 - name: DEBUG_TRIGGERS
   value: "false"
 - name: DEBUG_CACHE_CREATE
