@@ -2,9 +2,6 @@ FROM registry.access.redhat.com/ubi8/go-toolset:1.21.11-8.1724662611 as builder
 USER 0
 ENV GOSUMDB=off
 
-COPY ci/minikube_e2e_tests_inner.sh .
-RUN chmod 775 minikube_e2e_tests_inner.sh
-
 WORKDIR /workspace
 
 # Copy the Go Modules manifests
