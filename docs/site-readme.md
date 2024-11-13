@@ -71,6 +71,13 @@ Our current roadmap looks like this:
 * Istio integration
 * Advanced logging configurations (e.g. logging messages to kafka topics)
 
+## Updating E2E Test Golang Deps
+
+Clowder's E2E tests require a few golang dependecies that are not included in the root `go.mod` file. These will need to be updated regularly as a separate process. You can run the following script to update these:
+```
+./deps/update_e2e_deps.sh
+```
+
 ## Getting Clowder
 
 **Clowder is already running in pre-prod/prod environments.**
@@ -152,3 +159,4 @@ Any questions, please ask one of the Clowder development team
 * [@bsquizz](https://github.com/bsquizz)
 * [@bennyturns](https://github.com/bennyturns)
 * [@adamrdrew](https://github.com/adamrdrew)
+* [@maknop](https://github.com/maknop) 

@@ -104,6 +104,9 @@ spec:
       description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
       name: build-args-file
       type: string
+    - name: minikube-ssh-key
+      description: Minikube information.
+      default: minikube-ssh-key
     results:
     - description: ""
       name: IMAGE_URL
@@ -231,6 +234,89 @@ spec:
         operator: in
         values:
         - "true"
+    - name: run-unit-tests
+      params:
+        # New parameter to use the Trusted Artifact from the git-clone Task.
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+        - build-container
+      taskSpec:
+        params:
+          - description: The Trusted Artifact URI pointing to the artifact with the application source code.
+            name: SOURCE_ARTIFACT
+            type: string
+        stepTemplate:
+          volumeMounts:
+            - mountPath: /var/workdir
+              name: workdir
+        steps:
+          # New step to fetch the Trusted Artifact and make it available to the next steps.
+          - name: use-trusted-artifact
+            image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:81c4864dae6bb11595f657be887e205262e70086a05ed16ada827fd6391926ac
+            args:
+              - use
+              - $(params.SOURCE_ARTIFACT)=/var/workdir/source
+          - name: kustomize-build
+            image: registry.access.redhat.com/ubi8/ubi:latest
+            workingDir: /var/workdir/source
+            script: set -xe && dnf install -y go make && make test
+        volumes:
+          # New volume to store a copy of the source code accessible only to this Task.
+          - name: workdir
+            emptyDir: {}
+    - name: run-e2e-tests
+      params:
+        # New parameter to use the Trusted Artifact from the git-clone Task.
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+        - build-container
+      taskSpec:
+        params:
+          - description: The Trusted Artifact URI pointing to the artifact with the application source code.
+            name: SOURCE_ARTIFACT
+            type: string
+        stepTemplate:
+          volumeMounts:
+            - mountPath: /var/workdir
+              name: workdir
+        steps:
+          # New step to fetch the Trusted Artifact and make it available to the next steps.
+          - name: use-trusted-artifact
+            image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:81c4864dae6bb11595f657be887e205262e70086a05ed16ada827fd6391926ac
+            args:
+              - use
+              - $(params.SOURCE_ARTIFACT)=/var/workdir/source
+          - name: kustomize-build
+            image: registry.access.redhat.com/ubi8/ubi:latest
+            workingDir: /var/workdir/source
+            env:
+              - name: MINIKUBE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_HOST
+              - name: MINIKUBE_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_USER 
+              - name: MINIKUBE_SSH_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_SSH_KEY
+              - name: MINIKUBE_ROOTDIR
+                valueFrom:
+                  secretKeyRef:
+                    name: minikube-ssh-key
+                    key: MINIKUBE_ROOTDIR
+            script: set -e && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
+        volumes:
+          # New volume to store a copy of the source code accessible only to this Task.
+          - name: workdir
+            emptyDir: {}
     - name: build-image-index
       params:
       - name: IMAGE
@@ -245,7 +331,8 @@ spec:
         value:
         - $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
       runAfter:
-      - build-container
+      - run-unit-tests
+      - run-e2e-tests
       taskRef:
         params:
         - name: name
