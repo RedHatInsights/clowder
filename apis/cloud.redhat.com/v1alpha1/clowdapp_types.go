@@ -237,6 +237,10 @@ type Deployment struct {
 	// deployment has no public service enabled
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
+	// If set to true, creates an StatefulSet resource rather than
+	// a standard OpenShift Deployment resource
+	UseStatefulSet bool `json:"useStatefulSet,omitempty"`
+
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
 }
 

@@ -23,18 +23,35 @@ const (
 
 func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
 
-	d := &apps.Deployment{}
-	nn := app.GetDeploymentNamespacedName(&deployment)
+	if deployment.UseStatefulSet {
+		s := &apps.StatefulSet{}
 
-	if err := dp.Cache.Create(CoreDeployment, nn, d); err != nil {
-		return err
+		nn := app.GetDeploymentNamespacedName(&deployment)
+
+		if err := dp.Cache.Create(StatefulSetDeployment, nn, s); err != nil {
+			return err
+		}
+
+		if err := initDeployment(app, dp.Env, s, nn, &deployment); err != nil {
+			return err
+		}
+
+		return dp.Cache.Update(StatefulSetDeployment, s)
+	} else {
+		d := &apps.Deployment{}
+
+		nn := app.GetDeploymentNamespacedName(&deployment)
+
+		if err := dp.Cache.Create(CoreDeployment, nn, d); err != nil {
+			return err
+		}
+
+		if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
+			return err
+		}
+
+		return dp.Cache.Update(CoreDeployment, d)
 	}
-
-	if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
-		return err
-	}
-
-	return dp.Cache.Update(CoreDeployment, d)
 }
 
 func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {

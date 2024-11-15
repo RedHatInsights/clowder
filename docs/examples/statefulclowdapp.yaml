@@ -1,0 +1,30 @@
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: hello-state
+  namespace: jumpstart
+spec:
+  # The name of the ClowdEnvironment providing the services
+  envName: env-jumpstart
+
+
+  # The bulk of your App. This is where your running apps will live
+  deployments:
+  - name: state-app
+    useStatefulSet: true
+    # Give details about your running pod
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      
+
+  # Request kafka topics for your application here
+  kafkaTopics:
+    - replicas: 3
+      partitions: 64
+      topicName: topicOneState
+
+  # Creates a database if local mode, or uses RDS in production
+  database:
+    # Must specify both a name and a major postgres version
+    name: jumpstart-dbState
+    version: 12
