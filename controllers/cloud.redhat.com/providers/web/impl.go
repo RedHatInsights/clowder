@@ -5,6 +5,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	statefulsetProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -33,10 +34,17 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		return err
 	}
 
+	sts := &apps.StatefulSet{}
 	d := &apps.Deployment{}
 
-	if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
-		return err
+	if deployment.UseStatefulSet {
+		if err := cache.Get(statefulsetProvider.CoreStatefulSet, sts, app.GetDeploymentNamespacedName(deployment)); err != nil {
+			return err
+		}
+	} else {
+		if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
+			return err
+		}
 	}
 
 	servicePorts := []core.ServicePort{}
@@ -154,17 +162,29 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
 				return err
 			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			if deployment.UseStatefulSet {
+				populateSideCar(sts, deployment, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			} else {
+				populateSideCar(d, deployment, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			}
 			setServiceTLSAnnotations(s, nn.Name)
 		}
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())
 
-	d.Spec.Template.Spec.Containers[0].Ports = containerPorts
+	if deployment.UseStatefulSet {
+		sts.Spec.Template.Spec.Containers[0].Ports = containerPorts
+	} else {
+		d.Spec.Template.Spec.Containers[0].Ports = containerPorts
+	}
 
 	if err := cache.Update(CoreService, s); err != nil {
 		return err
+	}
+
+	if deployment.UseStatefulSet {
+		return cache.Update(statefulsetProvider.CoreStatefulSet, sts)
 	}
 
 	return cache.Update(deployProvider.CoreDeployment, d)
@@ -197,7 +217,18 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	return cache.Update(CoreCaddyConfigMap, cm)
 }
 
-func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
+func populateSideCar[D *apps.Deployment | *apps.StatefulSet](dOrS D, depl *crd.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
+	sts := &apps.StatefulSet{}
+	d := &apps.Deployment{}
+
+	if depl.UseStatefulSet {
+		// We need this to prove to golang that dOrS is definitely a Statefulset
+		sts, _ = any(dOrS).(*apps.StatefulSet)
+	} else {
+		// As above, but for deployments
+		d, _ = any(dOrS).(*apps.Deployment)
+	}
+
 	ports := []core.ContainerPort{}
 	if pub {
 		ports = append(ports, core.ContainerPort{
@@ -243,18 +274,41 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 			},
 		},
 	}
-	caddyConfigVol := core.Volume{
-		Name: "caddy-config",
-		VolumeSource: core.VolumeSource{
-			ConfigMap: &core.ConfigMapVolumeSource{
-				LocalObjectReference: core.LocalObjectReference{
-					Name: caddyConfigName(d.Name),
+
+	caddyConfigVol := core.Volume{}
+
+	if depl.UseStatefulSet {
+		caddyConfigVol = core.Volume{
+			Name: "caddy-config",
+			VolumeSource: core.VolumeSource{
+				ConfigMap: &core.ConfigMapVolumeSource{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: caddyConfigName(sts.Name),
+					},
 				},
 			},
-		},
+		}
+	} else {
+		caddyConfigVol = core.Volume{
+			Name: "caddy-config",
+			VolumeSource: core.VolumeSource{
+				ConfigMap: &core.ConfigMapVolumeSource{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: caddyConfigName(d.Name),
+					},
+				},
+			},
+		}
 	}
-	d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, container)
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, caddyConfigVol, caddyTLSVol)
+
+	if depl.UseStatefulSet {
+		sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, container)
+		sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, caddyConfigVol, caddyTLSVol)
+	} else {
+
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, container)
+		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, caddyConfigVol, caddyTLSVol)
+	}
 }
 
 func setServiceTLSAnnotations(s *core.Service, name string) {

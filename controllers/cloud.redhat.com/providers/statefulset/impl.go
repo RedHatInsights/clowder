@@ -1,4 +1,4 @@
-package deployment
+package statefulset
 
 import (
 	"fmt"
@@ -21,23 +21,24 @@ const (
 	TerminationLogPath = "/dev/termination-log"
 )
 
-func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
+func (dp *statefulSetProvider) makeStatefulSet(deployment crd.Deployment, app *crd.ClowdApp) error {
+	s := &apps.StatefulSet{}
 
-	d := &apps.Deployment{}
 	nn := app.GetDeploymentNamespacedName(&deployment)
 
-	if err := dp.Cache.Create(CoreDeployment, nn, d); err != nil {
+	if err := dp.Cache.Create(CoreStatefulSet, nn, s); err != nil {
 		return err
 	}
 
-	if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
+	if err := initStatefulSet(app, dp.Env, s, nn, &deployment); err != nil {
 		return err
 	}
 
-	return dp.Cache.Update(CoreDeployment, d)
+	return dp.Cache.Update(CoreStatefulSet, s)
 }
 
-func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {
+func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, s *apps.StatefulSet, app *crd.ClowdApp) {
+
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
 			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
@@ -45,12 +46,14 @@ func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, 
 			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
 			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
 		}
-		utils.UpdateAnnotations(&d.Spec.Template, annotations)
+
+		utils.UpdateAnnotations(&s.Spec.Template, annotations)
 	}
 
 }
 
-func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
+func setMinReplicas(deployment *crd.Deployment, s *apps.StatefulSet) {
+
 	replicaCount := deployment.GetReplicaCount()
 	// If deployment doesn't have minReplicas set, bail
 	if replicaCount == nil {
@@ -59,33 +62,33 @@ func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 
 	// Handle the special case of minReplicas being set to 0 used for manual scale down
 	if *replicaCount == 0 {
-		d.Spec.Replicas = utils.Int32Ptr(0)
+		s.Spec.Replicas = utils.Int32Ptr(0)
 		return
 	}
 
 	// No sense in running all these conditionals if desired state and observed state match
-	if d.Spec.Replicas != nil && (*d.Spec.Replicas >= *replicaCount) {
+	if s.Spec.Replicas != nil && (*s.Spec.Replicas >= *replicaCount) {
 		return
 	}
 
 	// If the spec has nil replicas or the spec replicas are less than the deployment replicas
 	// then set the spec replicas to the deployment replicas
-	if d.Spec.Replicas == nil || (*d.Spec.Replicas < *replicaCount) {
+	if s.Spec.Replicas == nil || (*s.Spec.Replicas < *replicaCount) {
 		// Reset replicas to minReplicas if it somehow falls below minReplicas
-		d.Spec.Replicas = replicaCount
+		s.Spec.Replicas = replicaCount
 	}
-
 }
 
-func setDeploymentStrategy(deployment *crd.Deployment, d *apps.Deployment) {
+func setDeploymentStrategy(deployment *crd.Deployment, s *apps.StatefulSet) {
+
 	if !deployment.WebServices.Public.Enabled {
 		if deployment.DeploymentStrategy != nil && deployment.DeploymentStrategy.PrivateStrategy != "" {
-			d.Spec.Strategy = apps.DeploymentStrategy{
-				Type: deployment.DeploymentStrategy.PrivateStrategy,
+			s.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+				Type: apps.StatefulSetUpdateStrategyType(deployment.DeploymentStrategy.PrivateStrategy),
 			}
 		} else {
-			d.Spec.Strategy = apps.DeploymentStrategy{
-				Type: apps.RollingUpdateDeploymentStrategyType,
+			s.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+				Type: apps.StatefulSetUpdateStrategyType(apps.RollingUpdateDeploymentStrategyType),
 			}
 		}
 	}
@@ -197,35 +200,33 @@ func loadEnvVars(pod crd.PodSpec) []core.EnvVar {
 	return envvars
 }
 
-func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deployment, nn types.NamespacedName, deployment *crd.Deployment) error {
+func initStatefulSet(app *crd.ClowdApp, env *crd.ClowdEnvironment, s *apps.StatefulSet, nn types.NamespacedName, deployment *crd.Deployment) error {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
-	app.SetObjectMeta(d, crd.Name(nn.Name), crd.Labels(labels))
+	app.SetObjectMeta(s, crd.Name(nn.Name), crd.Labels(labels))
 
-	d.Kind = "Deployment"
+	s.Kind = "StatefulSet"
 
 	pod := deployment.PodSpec
 
-	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
+	utils.UpdateAnnotations(s, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
 
-	setLocalAnnotations(env, deployment, d, app)
+	setLocalAnnotations(env, deployment, s, app)
 
-	setMinReplicas(deployment, d)
+	setMinReplicas(deployment, s)
 
-	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	d.Spec.Template.ObjectMeta.Labels = labels
-	d.Spec.Strategy = apps.DeploymentStrategy{
-		Type: apps.RollingUpdateDeploymentStrategyType,
-		RollingUpdate: &apps.RollingUpdateDeployment{
-			MaxSurge:       &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
+	s.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	s.Spec.Template.ObjectMeta.Labels = labels
+	s.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+		Type: apps.RollingUpdateStatefulSetStrategyType,
+		RollingUpdate: &apps.RollingUpdateStatefulSetStrategy{
 			MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: string("25%")},
 		},
 	}
-	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
 
-	utils.UpdateAnnotations(&d.Spec.Template, pod.Metadata.Annotations)
+	utils.UpdateAnnotations(&s.Spec.Template, pod.Metadata.Annotations)
 
-	setDeploymentStrategy(deployment, d)
+	setDeploymentStrategy(deployment, s)
 
 	c := core.Container{
 		Name:                     nn.Name,
@@ -250,7 +251,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		MountPath: "/cdapp/",
 	})
 
-	d.Spec.Template.Spec.Containers = []core.Container{c}
+	s.Spec.Template.Spec.Containers = []core.Container{c}
 
 	ics, err := ProcessInitContainers(nn, &c, pod.InitContainers)
 
@@ -259,22 +260,22 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 
 	if pod.MachinePool != "" {
-		d.Spec.Template.Spec.Tolerations = []core.Toleration{{
+		s.Spec.Template.Spec.Tolerations = []core.Toleration{{
 			Key:      pod.MachinePool,
 			Effect:   core.TaintEffectNoSchedule,
 			Operator: core.TolerationOpEqual,
 			Value:    "true",
 		}}
 	} else {
-		d.Spec.Template.Spec.Tolerations = []core.Toleration{}
+		s.Spec.Template.Spec.Tolerations = []core.Toleration{}
 	}
 
-	d.Spec.Template.Spec.InitContainers = ics
+	s.Spec.Template.Spec.InitContainers = ics
 
-	d.Spec.Template.Spec.TerminationGracePeriodSeconds = pod.TerminationGracePeriodSeconds
+	s.Spec.Template.Spec.TerminationGracePeriodSeconds = pod.TerminationGracePeriodSeconds
 
-	d.Spec.Template.Spec.Volumes = pod.Volumes
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
+	s.Spec.Template.Spec.Volumes = pod.Volumes
+	s.Spec.Template.Spec.Volumes = append(s.Spec.Template.Spec.Volumes, core.Volume{
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
@@ -284,14 +285,13 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		},
 	})
 
-	for _, vol := range d.Spec.Template.Spec.Volumes {
+	for _, vol := range s.Spec.Template.Spec.Volumes {
 		v := vol
-		setRecreateDeploymentStrategyForPVCs(vol, d)
 		setVolumeSourceConfigMapDefaultMode(&v)
 		setVolumeSourceSecretDefaultMode(&v)
 	}
 
-	ApplyPodAntiAffinity(&d.Spec.Template)
+	ApplyPodAntiAffinity(&s.Spec.Template)
 
 	return nil
 }

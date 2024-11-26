@@ -7,6 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	statefulsetProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
@@ -32,9 +33,17 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
 		d := &apps.Deployment{}
+		sts := &apps.StatefulSet{}
 
-		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&innerDeployment)); err != nil {
-			return err
+		if innerDeployment.UseStatefulSet {
+			if err := sc.Cache.Get(statefulsetProvider.CoreStatefulSet, sts, app.GetDeploymentNamespacedName(&innerDeployment)); err != nil {
+				return err
+			}
+		} else {
+
+			if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&innerDeployment)); err != nil {
+				return err
+			}
 		}
 
 		for _, sidecar := range innerDeployment.PodSpec.Sidecars {
@@ -43,15 +52,23 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
 					cont := getTokenRefresher(app.Name)
 					if cont != nil {
-						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						if innerDeployment.UseStatefulSet {
+							sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, *cont)
+						} else {
+							d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						}
 					}
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
-						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
-						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
+						if innerDeployment.UseStatefulSet {
+							sts.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						} else {
+							d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						}
+						innerDeployment.PodSpec.Volumes = append(innerDeployment.PodSpec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
@@ -69,8 +86,14 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			}
 		}
 
-		if err := sc.Cache.Update(deployProvider.CoreDeployment, d); err != nil {
-			return err
+		if innerDeployment.UseStatefulSet {
+			if err := sc.Cache.Update(statefulsetProvider.CoreStatefulSet, sts); err != nil {
+				return err
+			}
+		} else {
+			if err := sc.Cache.Update(deployProvider.CoreDeployment, d); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provCronjob "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provStatefulSet "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
@@ -50,17 +51,33 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 		}
 
 		if web.Env.Spec.Providers.Web.TLS.Enabled {
-			d := &apps.Deployment{}
-			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
+			if deployment.UseStatefulSet {
+				s := &apps.StatefulSet{}
+				dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 
-			if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
-				return errors.Wrap("getting core deployment", err)
-			}
+				if err := web.Cache.Get(provStatefulSet.CoreStatefulSet, s, dnn); err != nil {
+					return errors.Wrap("getting core statefulset", err)
+				}
 
-			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
+				provutils.AddCertVolume(&s.Spec.Template.Spec, dnn.Name)
 
-			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
-				return errors.Wrap("updating core deployment", err)
+				if err := web.Cache.Update(provStatefulSet.CoreStatefulSet, s); err != nil {
+					return errors.Wrap("updating core statefulset", err)
+				}
+			} else {
+
+				d := &apps.Deployment{}
+				dnn := app.GetDeploymentNamespacedName(&innerDeployment)
+
+				if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+					return errors.Wrap("getting core deployment", err)
+				}
+
+				provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
+
+				if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
+					return errors.Wrap("updating core deployment", err)
+				}
 			}
 		}
 	}

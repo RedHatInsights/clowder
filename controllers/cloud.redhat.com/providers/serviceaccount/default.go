@@ -11,6 +11,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/featureflags"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/inmemorydb"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/objectstore"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -115,11 +116,18 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, dep := range app.Spec.Deployments {
 		d := &apps.Deployment{}
+		sts := &apps.StatefulSet{}
 		innerDeployment := dep
 		nn := app.GetDeploymentNamespacedName(&innerDeployment)
 
-		if err := sa.Cache.Get(deployment.CoreDeployment, d, nn); err != nil {
-			return err
+		if innerDeployment.UseStatefulSet {
+			if err := sa.Cache.Get(statefulset.CoreStatefulSet, sts, nn); err != nil {
+				return err
+			}
+		} else {
+			if err := sa.Cache.Get(deployment.CoreDeployment, d, nn); err != nil {
+				return err
+			}
 		}
 
 		labeler := utils.GetCustomLabeler(nil, nn, app)
@@ -128,11 +136,18 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		d.Spec.Template.Spec.ServiceAccountName = nn.Name
-		if err := sa.Cache.Update(deployment.CoreDeployment, d); err != nil {
-			return err
-		}
+		if innerDeployment.UseStatefulSet {
+			sts.Spec.Template.Spec.ServiceAccountName = nn.Name
+			if err := sa.Cache.Update(statefulset.CoreStatefulSet, sts); err != nil {
+				return err
+			}
+		} else {
 
+			d.Spec.Template.Spec.ServiceAccountName = nn.Name
+			if err := sa.Cache.Update(deployment.CoreDeployment, d); err != nil {
+				return err
+			}
+		}
 		if err := CreateRoleBinding(sa.Cache, CoreDeploymentRoleBinding, nn, labeler, innerDeployment.K8sAccessLevel); err != nil {
 			return err
 		}

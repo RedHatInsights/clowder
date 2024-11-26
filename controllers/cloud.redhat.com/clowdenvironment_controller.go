@@ -59,6 +59,7 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"
+	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -232,6 +233,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	watchers := []Watcher{}
 	watchers = append(watchers, Watcher{obj: &apps.Deployment{}, filter: deploymentFilter})
+	watchers = append(watchers, Watcher{obj: &apps.StatefulSet{}, filter: statefulSetFilter})
 	watchers = append(watchers, Watcher{obj: &core.Service{}, filter: alwaysFilter})
 	watchers = append(watchers, Watcher{obj: &core.Secret{}, filter: alwaysFilter})
 

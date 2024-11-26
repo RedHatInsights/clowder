@@ -11,6 +11,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	provStatefulSet "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -148,27 +149,55 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		hash := fmt.Sprintf("%x", h.Sum(nil))
 
 		d := &apps.Deployment{}
+		sts := &apps.StatefulSet{}
+
 		dnn := app.GetDeploymentNamespacedName(&innerDeployment)
-		if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
-			return err
-		}
 
-		if web.Env.Spec.Providers.Web.TLS.Enabled {
-			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
-		}
+		if deployment.UseStatefulSet {
+			if err := web.Cache.Get(provStatefulSet.CoreStatefulSet, sts, dnn); err != nil {
+				return err
+			}
 
-		annotations := map[string]string{
-			"clowder/authsidecar-confighash": hash,
-		}
+			if web.Env.Spec.Providers.Web.TLS.Enabled {
+				provutils.AddCertVolume(&sts.Spec.Template.Spec, dnn.Name)
+			}
 
-		utils.UpdateAnnotations(&d.Spec.Template, annotations)
+			annotations := map[string]string{
+				"clowder/authsidecar-confighash": hash,
+			}
 
-		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
-			return err
-		}
+			utils.UpdateAnnotations(&sts.Spec.Template, annotations)
 
-		if err := web.Cache.Update(WebSecret, sec); err != nil {
-			return err
+			if err := web.Cache.Update(provStatefulSet.CoreStatefulSet, sts); err != nil {
+				return err
+			}
+
+			if err := web.Cache.Update(WebSecret, sec); err != nil {
+				return err
+			}
+		} else {
+
+			if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+				return err
+			}
+
+			if web.Env.Spec.Providers.Web.TLS.Enabled {
+				provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
+			}
+
+			annotations := map[string]string{
+				"clowder/authsidecar-confighash": hash,
+			}
+
+			utils.UpdateAnnotations(&d.Spec.Template, annotations)
+
+			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
+				return err
+			}
+
+			if err := web.Cache.Update(WebSecret, sec); err != nil {
+				return err
+			}
 		}
 
 	}

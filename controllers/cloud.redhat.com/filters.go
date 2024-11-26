@@ -66,6 +66,20 @@ func deploymentUpdateFunc(e event.UpdateEvent) bool {
 	return false
 }
 
+func statefulSetUpdateFunc(e event.UpdateEvent) bool {
+	objOld := e.ObjectOld.(*apps.StatefulSet)
+	objNew := e.ObjectNew.(*apps.StatefulSet)
+	if objNew.GetGeneration() != objOld.GetGeneration() {
+		return true
+	}
+	if (objOld.Status.AvailableReplicas != objNew.Status.AvailableReplicas) && (objNew.Status.AvailableReplicas == objNew.Status.ReadyReplicas) {
+		return true
+	}
+	if (objOld.Status.AvailableReplicas == objOld.Status.ReadyReplicas) && (objNew.Status.AvailableReplicas != objNew.Status.ReadyReplicas) {
+		return true
+	}
+	return false
+}
 func kafkaUpdateFunc(e event.UpdateEvent) bool {
 	objOld := e.ObjectOld.(*strimzi.Kafka)
 	objNew := e.ObjectNew.(*strimzi.Kafka)
@@ -112,6 +126,10 @@ func generationOnlyFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
 
 func deploymentFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
 	return genFilterFunc(deploymentUpdateFunc, logr, ctrlName)
+}
+
+func statefulSetFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return genFilterFunc(statefulSetUpdateFunc, logr, ctrlName)
 }
 
 func kafkaFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
