@@ -21,7 +21,7 @@ spec:
   kafkaTopics:
     - replicas: 3
       partitions: 64
-      topicName: topicOneState
+      topicName: topiconestate
 
   # Creates a database if local mode, or uses RDS in production
   database:
