@@ -177,6 +177,41 @@ spec:
       workspaces:
       - name: basic-auth
         workspace: git-auth
+    - name: update-clowder-version
+      params:
+        # New parameter to use the Trusted Artifact from the git-clone Task.
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      runAfter:
+        - clone-repository
+      taskSpec:
+        params:
+          - description: The Trusted Artifact URI pointing to the artifact with the application source code.
+            name: SOURCE_ARTIFACT
+            type: string
+        stepTemplate:
+          volumeMounts:
+            - mountPath: /var/workdir
+              name: workdir
+          stepTemplate:
+            volumeMounts:
+              - mountPath: /var/workdir
+                name: workdir
+        steps:
+          # New step to fetch the Trusted Artifact and make it available to the next steps.
+          - name: use-trusted-artifact
+            image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:81c4864dae6bb11595f657be887e205262e70086a05ed16ada827fd6391926ac
+            args:
+              - use
+              - $(params.SOURCE_ARTIFACT)=/var/workdir/source
+          - name: kustomize-build
+            image: registry.access.redhat.com/ubi8/ubi:latest
+            workingDir: /var/workdir/source
+            script: set -xe && dnf install -y make && make update-version
+        volumes:
+          # New volume to store a copy of the source code accessible only to this Task.
+          - name: workdir
+            emptyDir: {}
     - name: prefetch-dependencies
       params:
       - name: input
@@ -188,7 +223,7 @@ spec:
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
       runAfter:
-      - clone-repository
+      - update-clowder-version
       taskRef:
         params:
         - name: name
