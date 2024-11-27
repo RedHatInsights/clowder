@@ -34,11 +34,3 @@ jobs:
     ## the defaults of root '.' for the path and 'Dockerfile' for the Dockerfile name.
     ## Additionally, if you have a Dockerfile you use as your BASE_IMG or you need to
     ## use '--build-arg', those can be define below as well.
-
-    with:
-    #   dockerfile_path: './test'
-    #   dockerfile_name: 'Dockerfile.main'
-      base_image_build: true
-    #   base_dockerfile_path: './test'
-      base_dockerfile_name: 'Dockerfile.base'
-      build_arg: '--build-arg BASE_IMAGE="localbuild/baseimage:latest"'
