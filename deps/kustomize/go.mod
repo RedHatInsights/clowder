@@ -1,4 +1,4 @@
-module sigs.k8s.io/kustomize/kustomize/v5
+module example.com/kustomize
 
 go 1.22.7
 
