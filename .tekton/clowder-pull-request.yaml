@@ -193,10 +193,6 @@ spec:
           volumeMounts:
             - mountPath: /var/workdir
               name: workdir
-          stepTemplate:
-            volumeMounts:
-              - mountPath: /var/workdir
-                name: workdir
         steps:
           # New step to fetch the Trusted Artifact and make it available to the next steps.
           - name: use-trusted-artifact
@@ -207,7 +203,7 @@ spec:
           - name: kustomize-build
             image: registry.access.redhat.com/ubi8/ubi:latest
             workingDir: /var/workdir/source
-            script: set -xe && dnf install -y git go make && make update-version
+            script: set -e && dnf install -y git go make && make update-version
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir
