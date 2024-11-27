@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.21.9
+go 1.22.7
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.4.0
@@ -21,12 +21,12 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.29.3
-	k8s.io/apiextensions-apiserver v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/client-go v0.29.3
+	k8s.io/api v0.30.6
+	k8s.io/apiextensions-apiserver v0.30.6
+	k8s.io/apimachinery v0.30.6
+	k8s.io/client-go v0.30.6
 	sigs.k8s.io/cluster-api v1.7.2
-	sigs.k8s.io/controller-runtime v0.17.3
+	sigs.k8s.io/controller-runtime v0.18.5
 )
 
 require (
@@ -169,9 +169,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	howett.net/plist v1.0.0 // indirect
-	k8s.io/component-base v0.29.3 // indirect
-	k8s.io/klog/v2 v2.110.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
+	k8s.io/klog/v2 v2.120.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661 // indirect
 	knative.dev/pkg v0.0.0-20220826162920-93b66e6a8700 // indirect
 	sigs.k8s.io/gateway-api v0.7.0 // indirect

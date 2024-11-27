@@ -219,36 +219,6 @@ function install_cyndi_operator {
     cd "$ROOT_DIR"
 }
 
-function install_xjoin_operator {
-    OPERATOR_NS=xjoin-operator-system
-    DEPLOYMENT=xjoin-operator-controller-manager
-
-    if [ $REINSTALL -ne 1 ]; then
-        OPERATOR_DEPLOYMENT=$(${KUBECTL_CMD} get deployment $DEPLOYMENT -n $OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
-        if [ ! -z "$OPERATOR_DEPLOYMENT" ]; then
-            echo "*** xjoin-operator deployment found, skipping install ..."
-            return 0
-        fi
-    fi
-
-    echo "*** Installing xjoin-operator ..."
-    cd "$DOWNLOAD_DIR"
-
-    echo "*** Looking up latest release ..."
-    LATEST_MANIFEST=$(curl -sL https://api.github.com/repos/RedHatInsights/xjoin-operator/releases/latest | jq -r '.assets[].browser_download_url')
-    echo "*** Downloading $LATEST_MANIFEST ..."
-    curl -LsS $LATEST_MANIFEST -o xjoin-operator-manifest.yaml
-
-    echo "*** Applying xjoin-operator manifest ..."
-    ${KUBECTL_CMD} apply --validate=false -f xjoin-operator-manifest.yaml
-
-    echo "*** Will wait for xjoin-operator to come up in background"
-    ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[xjoin-operator] /" &
-    BG_PIDS+=($!)
-
-    cd "$ROOT_DIR"
-}
-
 function install_elasticsearch_operator {
     OPERATOR_NS=elastic-system
     POD=elastic-operator-0
@@ -313,7 +283,6 @@ install_strimzi_operator
 install_cert_manager
 install_prometheus_operator
 install_cyndi_operator
-install_xjoin_operator
 install_elasticsearch_operator
 install_keda_operator
 install_subscription_crd
