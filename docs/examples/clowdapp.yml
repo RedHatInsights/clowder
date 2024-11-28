@@ -28,4 +28,4 @@ spec:
   database:
     # Must specify both a name and a major postgres version
     name: jumpstart-db
-    version: 12
+    version: 16
