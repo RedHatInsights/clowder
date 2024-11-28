@@ -10,16 +10,13 @@ spec:
   # The bulk of your App. This is where your running apps will live
   deployments:
   - name: app
+    # Creates a Service on port 8000
+    webServices:
+      public:
+        enabled: true
     # Give details about your running pod
     podSpec:
       image: quay.io/psav/clowder-hello
-      
-      # Creates a Service on port 8000
-      webServices:
-        public: 
-          enabled: true
-        metrics: 
-          enabled: true
 
   # Request kafka topics for your application here
   kafkaTopics:

@@ -38,7 +38,6 @@ spec:
     # Deploys a local minio pod for object storage
     objectStore:
       mode: minio
-      port: 9000
 
     # Deploys a local redis pod
     inMemoryDb:
