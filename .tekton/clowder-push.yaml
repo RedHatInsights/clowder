@@ -169,6 +169,8 @@ spec:
         workspace: git-auth
     - name: prefetch-dependencies
       params:
+      - name: log-level
+        value: debug
       - name: input
         value: $(params.prefetch-input)
       - name: SOURCE_ARTIFACT
