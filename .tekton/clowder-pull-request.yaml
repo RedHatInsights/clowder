@@ -219,7 +219,7 @@ spec:
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
       runAfter:
-      - update-clowder-version
+      - update-clowder-version 
       taskRef:
         params:
         - name: name
