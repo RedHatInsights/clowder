@@ -103,7 +103,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	if err != nil {
 		return nil, errors.Wrap("couldn't convert to int", err)
 	}
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 	dbCfg.SslMode = "disable"
 
 	var image string
@@ -243,7 +243,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 	dbCfg.AdminPassword = string(vSec.Data["pgPass"])
 	dbCfg.Hostname = string(vSec.Data["hostname"])
 	dbCfg.Name = app.Spec.Database.Name
@@ -369,7 +369,7 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	if err != nil {
 		return errors.Wrap("couldn't convert to int", err)
 	}
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 
 	db.Config.Database = &dbCfg
 
