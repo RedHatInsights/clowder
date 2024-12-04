@@ -88,7 +88,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 	dataInit := func() map[string]string {
 
 		hostname := fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace)
-		port := "5432"
+		port := provutils.DefaultPGPort
 		username := utils.RandString(16)
 		name := app.Spec.Database.Name
 

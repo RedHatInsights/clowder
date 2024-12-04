@@ -86,7 +86,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	dataInit := func() map[string]string {
 		return map[string]string{
 			"hostname": fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-			"port":     "5432",
+			"port":     provutils.DefaultPGPort,
 			"username": utils.RandString(16),
 			"password": password,
 			"pgPass":   pgPassword,
@@ -308,7 +308,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 
 	secret.StringData = map[string]string{
 		"hostname": host,
-		"port":     "5432",
+		"port":     provutils.DefaultPGPort,
 		"username": dbCfg.Username,
 		"password": dbCfg.Password,
 		"pgPass":   dbCfg.AdminPassword,

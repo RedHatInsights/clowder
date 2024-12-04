@@ -115,7 +115,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 		return map[string]string{
 			"hostname":      hostname,
-			"port":          "5432",
+			"port":          provutils.DefaultPGPort,
 			"username":      username,
 			"password":      password,
 			"pgPass":        pgPassword,
