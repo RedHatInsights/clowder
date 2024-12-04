@@ -116,7 +116,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 	if err != nil {
 		return errors.Wrap("couldn't convert to int", err)
 	}
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 	dbCfg.SslMode = "disable"
 
 	var image string
@@ -215,7 +215,7 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	if err != nil {
 		return errors.Wrap("couldn't convert to int", err)
 	}
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 
 	db.Config.Database = &dbCfg
 
