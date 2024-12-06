@@ -51,7 +51,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
 						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
-						innerDeployment.PodSpec.Volumes = append(innerDeployment.PodSpec.Volumes, core.Volume{
+						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
