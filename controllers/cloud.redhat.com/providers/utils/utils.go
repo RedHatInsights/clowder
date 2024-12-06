@@ -11,6 +11,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	"github.com/go-logr/logr"
+	"github.com/lib/pq"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -173,6 +174,18 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
 func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, capacity string) {
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
+}
+
+func PGAdminConnectionStr(cfg *config.DatabaseConfig, dbname string) string {
+	return fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		pq.QuoteLiteral(cfg.Hostname),
+		cfg.Port,
+		pq.QuoteLiteral(cfg.AdminUsername),
+		pq.QuoteLiteral(cfg.AdminPassword),
+		pq.QuoteLiteral(dbname),
+		pq.QuoteLiteral(cfg.SslMode),
+	)
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
