@@ -36,6 +36,7 @@ var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
 var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
+var DefaultImageDatabasePG = DefaultImageDatabasePG16
 var DefaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
 var DefaultPGPort = "5432"
 var DefaultPGAdminUsername = "postgres"

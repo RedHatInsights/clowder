@@ -22,7 +22,7 @@ spec:
 
 ### Using a Shared Database across multiple ClowdApps
 
-To share a database from one ClowdApp to another Clowder supports sharing a database 
+To share a database from one ClowdApp to another Clowder supports sharing a database
 declared in one ClowdApp with many others.
 
 Request a database like above, but then in your dependent ClowdApp resource set up
@@ -63,6 +63,17 @@ normal user and an admin user.
 ClowdEnv Config options available:
 
 - `pvc`
+
+#### single
+
+(*EXPERIMENTAL*)
+
+In the single mode, the the **Database Provider** will provision a single node
+PostgreSQL instance, of latest supported version, for the whole ClowdEnvironment.
+Each ClowdApp requesting a database would get a separate user and
+a [PostgreSQL schema](https://www.postgresql.org/docs/current/ddl-schemas.html)
+with the same name as the user. The user has only access to create objects
+only within its schema. Admin credentials are (currently) not provided.
 
 #### shared
 

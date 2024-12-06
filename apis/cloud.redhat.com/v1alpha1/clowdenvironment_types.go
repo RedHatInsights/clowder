@@ -284,7 +284,7 @@ type KafkaConfig struct {
 }
 
 // DatabaseMode details the mode of operation of the Clowder Database Provider
-// +kubebuilder:validation:Enum=shared;app-interface;local;none
+// +kubebuilder:validation:Enum=single;shared;app-interface;local;none
 type DatabaseMode string
 
 // DatabaseConfig configures the Clowder provider controlling the creation of
@@ -292,8 +292,11 @@ type DatabaseMode string
 type DatabaseConfig struct {
 	// The mode of operation of the Clowder Database Provider. Valid options are:
 	// (*_app-interface_*) where the provider will pass through database credentials
-	// found in the secret defined by the database name in the ClowdApp, and (*_local_*)
-	// where the provider will spin up a local instance of the database.
+	// found in the secret defined by the database name in the ClowdApp, (*_local_*)
+	// where the provider will spin up a local instance of the database, (*_shared_*)
+	// where the provider will spin up only one shared instance per requested
+	// PostgreSQL version, and (*_single_*) that is similar to local and shared modes
+	// but keeps only one database deployment and isolates apps by PG schemas.
 	Mode DatabaseMode `json:"mode"`
 
 	// Indicates where Clowder will fetch the database CA certificate bundle from. Currently only used in
