@@ -17,7 +17,7 @@ levels = {
 cancel_colour = '\033[0m'
 
 def col_wrap(stri, collev):
-    return levels["key"] + stri + collev
+    return levels.get("key","") + stri + collev
 
 filters = {sp[0]: sp[1] for sp in [arg.split(":", 1) for arg in sys.argv[1:]]}
 
@@ -26,9 +26,9 @@ def print_message(line):
 
     string = ""
     if 'level' in js:
-        collev = levels[js['level']]
+        collev = levels.get(js['level'], "")
     elif js.get('diff') != None:
-        collev = levels['diff']
+        collev = levels.get('diff', "")
     else:
         collev = cancel_colour
 
