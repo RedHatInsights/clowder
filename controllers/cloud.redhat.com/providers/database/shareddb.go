@@ -252,12 +252,8 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	dbCfg.Port = int(port)
 	dbCfg.SslMode = "disable"
 
-	host := dbCfg.Hostname
-	user := dbCfg.AdminUsername
-	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
-
-	appSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	appSQLConnectionString := provutils.PGAdminConnectionStr(&dbCfg, dbname)
 
 	ctx, cancel := context.WithTimeout(db.Ctx, 5*time.Second)
 	defer cancel()
@@ -273,8 +269,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	if pErr != nil {
 		if strings.Contains(pErr.Error(), fmt.Sprintf("database \"%s\" does not exist", app.Spec.Database.Name)) {
 
-			envSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, db.Env.Name)
-
+			envSQLConnectionString := provutils.PGAdminConnectionStr(&dbCfg, db.Env.Name)
 			envDbClient, envErr := sql.Open("postgres", envSQLConnectionString)
 			if envErr != nil {
 				return envErr
@@ -307,7 +302,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	secret.StringData = map[string]string{
-		"hostname": host,
+		"hostname": dbCfg.Hostname,
 		"port":     provutils.DefaultPGPort,
 		"username": dbCfg.Username,
 		"password": dbCfg.Password,
