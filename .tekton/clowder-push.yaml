@@ -257,10 +257,10 @@ spec:
             args:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+          - name: unit-tests
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1731464728
             workingDir: /var/workdir/source
-            script: set -xe && dnf install -y go make && make test
+            script: set -xe &&  make test
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir
@@ -288,8 +288,8 @@ spec:
             args:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+          - name: e2e-tests
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1731464728
             workingDir: /var/workdir/source
             env:
               - name: MINIKUBE_HOST
@@ -312,7 +312,7 @@ spec:
                   secretKeyRef:
                     name: minikube-ssh-key
                     key: MINIKUBE_ROOTDIR
-            script: set -e && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
+            script: set -e && ./ci/konflux_minikube_e2e_tests.sh
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir

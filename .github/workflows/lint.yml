@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-go@v4
         name: Set up Go 1.x
         with:
-          go-version: "1.21.9"
+          go-version: "1.22.7"
         env:
           GO111MODULE: off
 
