@@ -2,17 +2,18 @@
 
 set -exv
 
-mkdir -p /container_workspace/bin
+mkdir -p /var/workdir/bin
+cd /var/workdir/bin
 
-export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
+export KUBEBUILDER_ASSETS=/var/workdir/testbin/bin
 
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 echo "$(cat kubectl.sha256)  ./kubectl" | sha256sum --check
 chmod +x kubectl
-mv kubectl /container_workspace/bin
-export PATH="/container_workspace/bin:$PATH"
 
+export PATH="/var/workdir/bin:$PATH"
+cd /var/workdir/source
 (
   cd "$(mktemp -d)" &&
   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -69,7 +70,7 @@ preferences: {}
 EOM
 
 export PATH="$KUBEBUILDER_ASSETS:$PATH"
-export PATH="/root/go/bin:$PATH"
+#export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
 export KUBECTL_CMD="kubectl "
@@ -82,11 +83,11 @@ export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 
 $KUBECTL_CMD create namespace clowder-system
 
-mkdir artifacts
+#mkdir artifacts
+#
+#make release
 
-make release
-
-cat manifest.yaml > artifacts/manifest.yaml
+#cat manifest.yaml > artifacts/manifest.yaml
 
 $KUBECTL_CMD apply -f manifest.yaml --validate=false -n clowder-system
 

@@ -1,10 +1,8 @@
-resources:
 # - clowder_config.yaml
+resources:
 - manager.yaml
 - metrics_service.yaml
 
-patchesStrategicMerge:
-- deployment_label.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -19,3 +17,5 @@ images:
 - name: controller
   newName: 127.0.0.1:5000/clowder
   newTag: b7db066
+patches:
+- path: deployment_label.yaml
