@@ -183,39 +183,23 @@ func (db *localDbProvider) processSharedDB(app *crd.ClowdApp) error {
 		return err
 	}
 
-	dbCfg := config.DatabaseConfig{}
-	dbCfg.SslMode = "disable"
-
 	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app)
-
 	if err != nil {
 		return err
 	}
 
-	secret := core.Secret{}
-
+	dbCfg := config.DatabaseConfig{}
 	inn := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-db", refApp.Name),
 		Namespace: refApp.Namespace,
 	}
 
 	// This is a REAL call here, not a cached call as the reconciliation must have been processed
-	// for the app we depend on.
-	if err = db.Client.Get(db.Ctx, inn, &secret); err != nil {
-		return errors.Wrap("Couldn't set/get secret", err)
-	}
-
-	secMap := make(map[string]string)
-
-	for k, v := range secret.Data {
-		(secMap)[k] = string(v)
-	}
-
-	err = dbCfg.Populate(&secMap)
+	// for the app we depend on, hence the nil for the ident.
+	err = provutils.ReadDbConfigFromSecret(db.Provider, nil, &dbCfg, inn)
 	if err != nil {
-		return errors.Wrap("couldn't convert to int", err)
+		return err
 	}
-	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 
 	db.Config.Database = &dbCfg
 
