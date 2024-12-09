@@ -7,6 +7,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
@@ -19,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
@@ -186,6 +188,35 @@ func PGAdminConnectionStr(cfg *config.DatabaseConfig, dbname string) string {
 		pq.QuoteLiteral(dbname),
 		pq.QuoteLiteral(cfg.SslMode),
 	)
+}
+
+func ReadDbConfigFromSecret(p providers.Provider, resourceIdent rc.ResourceIdent, dbCfg *config.DatabaseConfig, nn types.NamespacedName) error {
+	secret := &core.Secret{}
+
+	var err error
+	if resourceIdent != nil {
+		err = p.Cache.Get(resourceIdent, secret, nn)
+	} else {
+		err = fmt.Errorf("no cache")
+	}
+	if err != nil {
+		if err := p.Client.Get(p.Ctx, nn, secret); err != nil {
+			return errors.Wrap("couldn't get db secret", err)
+		}
+	}
+
+	secMap := make(map[string]string)
+	for k, v := range secret.Data {
+		(secMap)[k] = string(v)
+	}
+
+	if err := dbCfg.Populate(&secMap); err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
+	dbCfg.AdminUsername = DefaultPGAdminUsername
+	dbCfg.SslMode = "disable"
+
+	return nil
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
