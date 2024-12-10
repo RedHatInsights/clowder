@@ -461,7 +461,7 @@ Must be one of:
 | - [securityProtocol](#kafka_brokers_items_sasl_securityProtocol ) | No      | string | No         | -          | Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead |
 | - [saslMechanism](#kafka_brokers_items_sasl_saslMechanism )       | No      | string | No         | -          | Broker SASL mechanism, expect: SCRAM-SHA-512                                                                                |
 
-##### <a name="kafka_brokers_items_sasl_username"></a>9.1.1.5.1. Property `root > kafka > brokers > brokers items > sasl > username`
+###### <a name="kafka_brokers_items_sasl_username"></a>9.1.1.5.1. Property `root > kafka > brokers > brokers items > sasl > username`
 
 |              |          |
 | ------------ | -------- |
@@ -470,7 +470,7 @@ Must be one of:
 
 **Description:** Broker SASL username
 
-##### <a name="kafka_brokers_items_sasl_password"></a>9.1.1.5.2. Property `root > kafka > brokers > brokers items > sasl > password`
+###### <a name="kafka_brokers_items_sasl_password"></a>9.1.1.5.2. Property `root > kafka > brokers > brokers items > sasl > password`
 
 |              |          |
 | ------------ | -------- |
@@ -479,7 +479,7 @@ Must be one of:
 
 **Description:** Broker SASL password
 
-##### <a name="kafka_brokers_items_sasl_securityProtocol"></a>9.1.1.5.3. Property `root > kafka > brokers > brokers items > sasl > securityProtocol`
+###### <a name="kafka_brokers_items_sasl_securityProtocol"></a>9.1.1.5.3. Property `root > kafka > brokers > brokers items > sasl > securityProtocol`
 
 |              |          |
 | ------------ | -------- |
@@ -488,7 +488,7 @@ Must be one of:
 
 **Description:** Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead
 
-##### <a name="kafka_brokers_items_sasl_saslMechanism"></a>9.1.1.5.4. Property `root > kafka > brokers > brokers items > sasl > saslMechanism`
+###### <a name="kafka_brokers_items_sasl_saslMechanism"></a>9.1.1.5.4. Property `root > kafka > brokers > brokers items > sasl > saslMechanism`
 
 |              |          |
 | ------------ | -------- |

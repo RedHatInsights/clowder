@@ -2,7 +2,7 @@
 
 set -e
 
-python -m venv docs/build/venv
+python3.12 -m venv docs/build/venv
 source docs/build/venv/bin/activate
-pip install json-schema-for-humans==0.47
+pip install json-schema-for-humans==v1.0.2
 generate-schema-doc --config with_footer=false --config template_name=md controllers/cloud.redhat.com/config/schema.json docs/api_ref.md

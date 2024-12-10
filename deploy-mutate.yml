@@ -8096,7 +8096,6 @@ objects:
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: ClusterRole
   metadata:
-    creationTimestamp: null
     name: clowder-manager-role
   rules:
   - apiGroups:
@@ -8116,19 +8115,6 @@ objects:
     - list
     - patch
     - update
-    - watch
-  - apiGroups:
-    - ''
-    resources:
-    - configmaps
-    - events
-    - namespaces
-    - persistentvolumeclaims
-    - secrets
-    - services
-    verbs:
-    - get
-    - list
     - watch
   - apiGroups:
     - ''
@@ -8180,45 +8166,7 @@ objects:
     - cloud.redhat.com
     resources:
     - clowdapps
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  - apiGroups:
-    - cloud.redhat.com
-    resources:
-    - clowdapps/status
-    verbs:
-    - get
-    - patch
-    - update
-  - apiGroups:
-    - cloud.redhat.com
-    resources:
     - clowdenvironments
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  - apiGroups:
-    - cloud.redhat.com
-    resources:
-    - clowdenvironments/status
-    verbs:
-    - get
-    - patch
-    - update
-  - apiGroups:
-    - cloud.redhat.com
-    resources:
     - clowdjobinvocations
     verbs:
     - create
@@ -8231,6 +8179,8 @@ objects:
   - apiGroups:
     - cloud.redhat.com
     resources:
+    - clowdapps/status
+    - clowdenvironments/status
     - clowdjobinvocations/status
     verbs:
     - get
@@ -8267,41 +8217,8 @@ objects:
     - kafka.strimzi.io
     resources:
     - kafkaconnects
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  - apiGroups:
-    - kafka.strimzi.io
-    resources:
     - kafkas
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  - apiGroups:
-    - kafka.strimzi.io
-    resources:
     - kafkatopics
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  - apiGroups:
-    - kafka.strimzi.io
-    resources:
     - kafkausers
     verbs:
     - create
@@ -8673,6 +8590,7 @@ objects:
   metadata:
     annotations:
       service.beta.openshift.io/inject-cabundle: 'true'
+    creationTimestamp: null
     name: clowder-mutating-webhook-configuration
   webhooks:
   - admissionReviewVersions:
@@ -8700,6 +8618,7 @@ objects:
   metadata:
     annotations:
       service.beta.openshift.io/inject-cabundle: 'true'
+    creationTimestamp: null
     name: clowder-validating-webhook-configuration
   webhooks:
   - admissionReviewVersions:

@@ -257,10 +257,10 @@ spec:
             args:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+          - name: unit-tests
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1731464728
             workingDir: /var/workdir/source
-            script: set -xe && dnf install -y go make && make test
+            script: set -xe && git config --global --add safe.directory /var/workdir/source && make -dn test
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir
@@ -288,8 +288,8 @@ spec:
             args:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+          - name: e2e-tests
+            image: registry.access.redhat.com/ubi8/ubi:8.10-1132.1732635159
             workingDir: /var/workdir/source
             env:
               - name: MINIKUBE_HOST
@@ -301,7 +301,7 @@ spec:
                 valueFrom:
                   secretKeyRef:
                     name: minikube-ssh-key
-                    key: MINIKUBE_USER 
+                    key: MINIKUBE_USER
               - name: MINIKUBE_SSH_KEY
                 valueFrom:
                   secretKeyRef:
@@ -312,7 +312,8 @@ spec:
                   secretKeyRef:
                     name: minikube-ssh-key
                     key: MINIKUBE_ROOTDIR
-            script: set -e && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
+            # FIXME: this should be handled from the script itself
+            script: set -ex && dnf install -y git openssh-clients python3.12 make && ci/konflux_minikube_e2e_tests.sh
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir

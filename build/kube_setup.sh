@@ -26,14 +26,14 @@ if ! command -v jq; then
     exit 1
 fi
 
-# GO is required for yq, check if go is installed
-echo "*** Checking for 'go' ..."
-if ! command -v go; then
-    echo "*** 'go' not found in path. Please install go with:"
-    [[ $PLATFORM == "Darwin" ]] && echo "  'brew install golang' or the instructions at https://golang.org/doc/install" \
-        || echo "  sudo dnf install golang"
-    exit 1
-fi
+## GO is required for yq, check if go is installed
+#echo "*** Checking for 'go' ..."
+#if ! command -v go; then
+#    echo "*** 'go' not found in path. Please install go with:"
+#    [[ $PLATFORM == "Darwin" ]] && echo "  'brew install golang' or the instructions at https://golang.org/doc/install" \
+#        || echo "  sudo dnf install golang"
+#    exit 1
+#fi
 
 # kubectl is required for interactions with the cluster.
 if [ -n "${KUBECTL_CMD}" ]; then
@@ -52,11 +52,11 @@ source build/.build_venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install pyyaml
 
-GO_BIN_PATH="$(go env GOPATH)/bin"
+#GO_BIN_PATH="$(go env GOPATH)/bin"
+#
+#export PATH="$PATH:$GO_BIN_PATH"
 
-export PATH="$PATH:$GO_BIN_PATH"
-
-declare -a array BG_PIDS=()
+declare -a BG_PIDS=()
 
 ROOT_DIR=$(pwd)
 DOWNLOAD_DIR="build/operator_bundles"
@@ -188,7 +188,6 @@ function install_prometheus_operator {
     cd "$ROOT_DIR"
 }
 
-
 function install_cyndi_operator {
     OPERATOR_NS=cyndi-operator-system
     DEPLOYMENT=cyndi-operator-controller-manager
@@ -214,36 +213,6 @@ function install_cyndi_operator {
 
     echo "*** Will wait for cyndi-operator to come up in background"
     ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[cyndi-operator] /" &
-    BG_PIDS+=($!)
-
-    cd "$ROOT_DIR"
-}
-
-function install_xjoin_operator {
-    OPERATOR_NS=xjoin-operator-system
-    DEPLOYMENT=xjoin-operator-controller-manager
-
-    if [ $REINSTALL -ne 1 ]; then
-        OPERATOR_DEPLOYMENT=$(${KUBECTL_CMD} get deployment $DEPLOYMENT -n $OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
-        if [ ! -z "$OPERATOR_DEPLOYMENT" ]; then
-            echo "*** xjoin-operator deployment found, skipping install ..."
-            return 0
-        fi
-    fi
-
-    echo "*** Installing xjoin-operator ..."
-    cd "$DOWNLOAD_DIR"
-
-    echo "*** Looking up latest release ..."
-    LATEST_MANIFEST=$(curl -sL https://api.github.com/repos/RedHatInsights/xjoin-operator/releases/latest | jq -r '.assets[].browser_download_url')
-    echo "*** Downloading $LATEST_MANIFEST ..."
-    curl -LsS $LATEST_MANIFEST -o xjoin-operator-manifest.yaml
-
-    echo "*** Applying xjoin-operator manifest ..."
-    ${KUBECTL_CMD} apply --validate=false -f xjoin-operator-manifest.yaml
-
-    echo "*** Will wait for xjoin-operator to come up in background"
-    ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[xjoin-operator] /" &
     BG_PIDS+=($!)
 
     cd "$ROOT_DIR"
@@ -313,7 +282,6 @@ install_strimzi_operator
 install_cert_manager
 install_prometheus_operator
 install_cyndi_operator
-install_xjoin_operator
 install_elasticsearch_operator
 install_keda_operator
 install_subscription_crd
