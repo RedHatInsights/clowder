@@ -5,7 +5,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	apps "k8s.io/api/apps/v1"
-	"fmt"
 )
 
 type statefulSetProvider struct {
@@ -27,9 +26,7 @@ func (dp *statefulSetProvider) EnvProvide() error {
 func (dp *statefulSetProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, deployment := range app.Spec.Deployments {
-		fmt.Printf("statefulset provider checking deployment %s", deployment.Name)	
 		if deployment.UseStatefulSet {
-			fmt.Printf("statefulset provider processing deployment %s", deployment.Name)
 			if err := dp.makeStatefulSet(deployment, app); err != nil {
 				return err
 			}
