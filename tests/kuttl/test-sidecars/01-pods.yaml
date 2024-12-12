@@ -46,14 +46,6 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      volumeMounts:
-      - name: puptoo-otel-config
-        mountPath: "/etc/otelcol/config.yaml"
-        readOnly: true
-      volumes:
-      - name: puptoo-otel-config
-        configMap:
-          name: puptoo-otel-config
       image: quay.io/psav/clowder-hello
       sidecars:
         - name: token-refresher
