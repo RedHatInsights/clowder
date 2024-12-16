@@ -23,3 +23,11 @@ spec:
       serviceAccountName: puptoo-processor
       containers:
       - name: puptoo-processor
+      volumeMounts:
+      - name: puptoo-otel-config
+        mountPath: "/etc/otelcol/config.yaml"
+        readOnly: true
+      volumes:
+      - name: puptoo-otel-config
+        configMap:
+          name: puptoo-otel-config
