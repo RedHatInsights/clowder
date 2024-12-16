@@ -296,15 +296,6 @@ func initStatefulSet(app *crd.ClowdApp, env *crd.ClowdEnvironment, s *apps.State
 	return nil
 }
 
-func setRecreateDeploymentStrategyForPVCs(vol core.Volume, d *apps.Deployment) {
-	if vol.VolumeSource.PersistentVolumeClaim == nil {
-		return
-	}
-	d.Spec.Strategy = apps.DeploymentStrategy{
-		Type: apps.RecreateDeploymentStrategyType,
-	}
-}
-
 func setVolumeSourceConfigMapDefaultMode(vol *core.Volume) {
 	if vol.VolumeSource.PersistentVolumeClaim != nil {
 		return

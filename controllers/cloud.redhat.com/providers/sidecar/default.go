@@ -64,7 +64,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
 						if innerDeployment.UseStatefulSet {
-							sts.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+							sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, *cont)
 						} else {
 							d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
 						}

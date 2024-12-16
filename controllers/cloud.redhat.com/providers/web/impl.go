@@ -275,7 +275,7 @@ func populateSideCar[D *apps.Deployment | *apps.StatefulSet](dOrS D, depl *crd.D
 		},
 	}
 
-	caddyConfigVol := core.Volume{}
+	var caddyConfigVol core.Volume
 
 	if depl.UseStatefulSet {
 		caddyConfigVol = core.Volume{
