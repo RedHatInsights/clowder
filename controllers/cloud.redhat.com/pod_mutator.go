@@ -20,7 +20,7 @@ import (
 type mutantPod struct {
 	Client   client.Client
 	Recorder record.EventRecorder
-	Decoder  *admission.Decoder
+	Decoder  admission.Decoder
 }
 
 func (p *mutantPod) Handle(_ context.Context, req admission.Request) admission.Response {
@@ -134,7 +134,7 @@ func (p *mutantPod) Handle(_ context.Context, req admission.Request) admission.R
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledObj)
 }
 
-func (p *mutantPod) InjectDecoder(d *admission.Decoder) error {
+func (p *mutantPod) InjectDecoder(d admission.Decoder) error {
 	p.Decoder = d
 	return nil
 }

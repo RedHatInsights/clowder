@@ -2,7 +2,6 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: manager-role
 rules:
 - apiGroups:
@@ -22,19 +21,6 @@ rules:
   - list
   - patch
   - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - events
-  - namespaces
-  - persistentvolumeclaims
-  - secrets
-  - services
-  verbs:
-  - get
-  - list
   - watch
 - apiGroups:
   - ""
@@ -86,45 +72,7 @@ rules:
   - cloud.redhat.com
   resources:
   - clowdapps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - cloud.redhat.com
-  resources:
-  - clowdapps/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - cloud.redhat.com
-  resources:
   - clowdenvironments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - cloud.redhat.com
-  resources:
-  - clowdenvironments/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - cloud.redhat.com
-  resources:
   - clowdjobinvocations
   verbs:
   - create
@@ -137,6 +85,8 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
+  - clowdapps/status
+  - clowdenvironments/status
   - clowdjobinvocations/status
   verbs:
   - get
@@ -173,41 +123,8 @@ rules:
   - kafka.strimzi.io
   resources:
   - kafkaconnects
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - kafka.strimzi.io
-  resources:
   - kafkas
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - kafka.strimzi.io
-  resources:
   - kafkatopics
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - kafka.strimzi.io
-  resources:
   - kafkausers
   verbs:
   - create

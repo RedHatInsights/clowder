@@ -12,23 +12,23 @@ namePrefix: clowder-
 #commonLabels:
 #  someName: someValue
 
-bases:
-- ../crd
-- ../rbac
-- ../manager
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
 # crd/kustomization.yaml
-- ../webhook
 
-patchesStrategicMerge:
-- manager_webhook_patch.yaml
-- manager.yaml # Put template param refs into image field
 # - clowder_config.yaml
-- webhook_cert_annotation.yaml
-- webhook_cert.yaml
-- mutate_webhook_cert.yaml
 
-vars: []
 
 resources:
 - legacy_service.yaml
+- ../crd
+- ../rbac
+- ../manager
+- ../webhook
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+- path: manager_webhook_patch.yaml
+- path: manager.yaml
+- path: webhook_cert_annotation.yaml
+- path: webhook_cert.yaml
+- path: mutate_webhook_cert.yaml

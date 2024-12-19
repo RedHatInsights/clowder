@@ -119,7 +119,7 @@ func getNamespacedName(obj client.Object) *types.NamespacedName {
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Create(ctx context.Context, evt event.CreateEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Create(ctx context.Context, evt event.CreateEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.Object)
 	if err != nil {
 		e.logMessage(evt.Object, err.Error(), "", getNamespacedName(evt.Object))
@@ -138,7 +138,7 @@ func (e *enqueueRequestForObjectCustom) Create(ctx context.Context, evt event.Cr
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q workqueue.RateLimitingInterface) error {
+func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q workqueue.TypedRateLimitingInterface[reconcile.Request]) error {
 	e.logMessage(obj, "update needed because changed", "", getNamespacedName(obj))
 	hashObj, err := e.hashCache.Read(obj)
 	if err != nil {
@@ -160,7 +160,7 @@ func (e *enqueueRequestForObjectCustom) doUpdateToHash(obj client.Object, q work
 	return nil
 }
 
-func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(ctx context.Context, obj client.Object, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(ctx context.Context, obj client.Object, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	capps := &crd.ClowdAppList{}
 	namespace := client.InNamespace(obj.GetNamespace())
 	if err := e.client.List(ctx, capps, namespace); err != nil {
@@ -171,7 +171,7 @@ func (e *enqueueRequestForObjectCustom) reconcileAllAppsUsingObject(ctx context.
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Update(ctx context.Context, evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Update(ctx context.Context, evt event.UpdateEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	if evt.ObjectNew.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] == "true" {
 		shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.ObjectNew)
 		e.logMessage(evt.ObjectNew, "debug", fmt.Sprintf("shouldUpdate %s %v", e.ctrlName, shouldUpdate), getNamespacedName(evt.ObjectNew))
@@ -209,7 +209,7 @@ func (e *enqueueRequestForObjectCustom) Update(ctx context.Context, evt event.Up
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Delete(_ context.Context, evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Delete(_ context.Context, evt event.DeleteEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	e.hashCache.Delete(evt.Object)
 
 	if own, toKind := e.getOwner(evt.Object); own != nil {
@@ -220,7 +220,7 @@ func (e *enqueueRequestForObjectCustom) Delete(_ context.Context, evt event.Dele
 	}
 }
 
-func (e *enqueueRequestForObjectCustom) Generic(_ context.Context, evt event.GenericEvent, q workqueue.RateLimitingInterface) {
+func (e *enqueueRequestForObjectCustom) Generic(_ context.Context, evt event.GenericEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
 	if own, toKind := e.getOwner(evt.Object); own != nil {
 		if doRequest, msg := e.HandlerFuncs.GenericFunc(evt); doRequest {
 			e.logMessage(evt.Object, msg, toKind, own)
