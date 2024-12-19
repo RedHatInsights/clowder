@@ -17,6 +17,8 @@ metadata:
   namespace: hcm-eng-prod-tenant
 spec:
   params:
+  - name: hermetic
+    value: "true"
   - name: git-url
     value: '{{source_url}}'
   - name: revision
@@ -27,6 +29,11 @@ spec:
     value: Dockerfile
   - name: path-context
     value: .
+  - name: prefetch-input
+    value:
+    - {"type": "gomod", "path": "."}
+    - {"type": "gomod", "path": "./deps/controller-gen"}
+    - {"type": "gomod", "path": "./deps/kustomize"}
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -257,10 +264,10 @@ spec:
             args:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+          - name: unit-tests
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1733303300
             workingDir: /var/workdir/source
-            script: set -xe && dnf install -y go make && make test
+            script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir
@@ -288,8 +295,26 @@ spec:
             args:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          - name: kustomize-build
-            image: registry.access.redhat.com/ubi8/ubi:latest
+          - name: make-template
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1733303300
+            workingDir: /opt/app-root/src
+            env:
+              - name: LOCALBIN
+                value: /tmp/bin
+              - name: IMG
+                value: $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
+            script: |
+              set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && make release && make build-template-kustomize && cp manifest.yaml /var/workdir/ && cp deploy-kustomize.yaml /var/workdir/
+          - name: test-template
+            image: registry.access.redhat.com/ubi8/ubi:8.10-1161
+            workingDir: /opt/app-root/src
+            env:
+              - name: LOCALBIN
+                value: /tmp/bin
+            script: |
+              set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && cp /var/workdir/manifest.yaml . && cp /var/workdir/deploy-kustomize.yaml . && dnf install make python3.12 diffutils -y && make build-template && make test-template
+          - name: e2e-tests
+            image: registry.access.redhat.com/ubi8/ubi:8.10-1161
             workingDir: /var/workdir/source
             env:
               - name: MINIKUBE_HOST
@@ -301,7 +326,7 @@ spec:
                 valueFrom:
                   secretKeyRef:
                     name: minikube-ssh-key
-                    key: MINIKUBE_USER 
+                    key: MINIKUBE_USER
               - name: MINIKUBE_SSH_KEY
                 valueFrom:
                   secretKeyRef:
@@ -312,7 +337,8 @@ spec:
                   secretKeyRef:
                     name: minikube-ssh-key
                     key: MINIKUBE_ROOTDIR
-            script: set -e && dnf install -y git go jq make openssh-clients python3 && ./ci/konflux_minikube_e2e_tests.sh
+            # FIXME: this should be handled from the script itself
+            script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests.sh
         volumes:
           # New volume to store a copy of the source code accessible only to this Task.
           - name: workdir

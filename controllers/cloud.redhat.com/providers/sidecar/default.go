@@ -99,6 +99,17 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
+						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
+							Name: fmt.Sprintf("%s-otel-config", app.Name),
+							VolumeSource: core.VolumeSource{
+								ConfigMap: &core.ConfigMapVolumeSource{
+									LocalObjectReference: core.LocalObjectReference{
+										Name: fmt.Sprintf("%s-otel-config", app.Name),
+									},
+									Optional: utils.TruePtr(),
+								},
+							},
+						})
 					}
 				}
 			default:
