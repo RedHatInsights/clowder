@@ -86,7 +86,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	dataInit := func() map[string]string {
 		return map[string]string{
 			"hostname": fmt.Sprintf("%v.%v.svc", nn.Name, nn.Namespace),
-			"port":     "5432",
+			"port":     provutils.DefaultPGPort,
 			"username": utils.RandString(16),
 			"password": password,
 			"pgPass":   pgPassword,
@@ -103,7 +103,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 	if err != nil {
 		return nil, errors.Wrap("couldn't convert to int", err)
 	}
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 	dbCfg.SslMode = "disable"
 
 	var image string
@@ -243,7 +243,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	dbCfg.AdminUsername = "postgres"
+	dbCfg.AdminUsername = provutils.DefaultPGAdminUsername
 	dbCfg.AdminPassword = string(vSec.Data["pgPass"])
 	dbCfg.Hostname = string(vSec.Data["hostname"])
 	dbCfg.Name = app.Spec.Database.Name
@@ -252,12 +252,8 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	dbCfg.Port = int(port)
 	dbCfg.SslMode = "disable"
 
-	host := dbCfg.Hostname
-	user := dbCfg.AdminUsername
-	password := dbCfg.AdminPassword
 	dbname := app.Spec.Database.Name
-
-	appSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	appSQLConnectionString := provutils.PGAdminConnectionStr(&dbCfg, dbname)
 
 	ctx, cancel := context.WithTimeout(db.Ctx, 5*time.Second)
 	defer cancel()
@@ -273,8 +269,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	if pErr != nil {
 		if strings.Contains(pErr.Error(), fmt.Sprintf("database \"%s\" does not exist", app.Spec.Database.Name)) {
 
-			envSQLConnectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, db.Env.Name)
-
+			envSQLConnectionString := provutils.PGAdminConnectionStr(&dbCfg, db.Env.Name)
 			envDbClient, envErr := sql.Open("postgres", envSQLConnectionString)
 			if envErr != nil {
 				return envErr
@@ -307,8 +302,8 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	secret.StringData = map[string]string{
-		"hostname": host,
-		"port":     "5432",
+		"hostname": dbCfg.Hostname,
+		"port":     provutils.DefaultPGPort,
 		"username": dbCfg.Username,
 		"password": dbCfg.Password,
 		"pgPass":   dbCfg.AdminPassword,
@@ -337,39 +332,24 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 		return err
 	}
 
-	dbCfg := config.DatabaseConfig{}
-	dbCfg.SslMode = "disable"
-
 	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app)
 
 	if err != nil {
 		return err
 	}
 
-	secret := core.Secret{}
-
+	dbCfg := config.DatabaseConfig{}
 	inn := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-db", refApp.Name),
 		Namespace: refApp.Namespace,
 	}
 
 	// This is a REAL call here, not a cached call as the reconciliation must have been processed
-	// for the app we depend on.
-	if err = db.Client.Get(db.Ctx, inn, &secret); err != nil {
-		return errors.Wrap("Couldn't set/get secret", err)
-	}
-
-	secMap := make(map[string]string)
-
-	for k, v := range secret.Data {
-		(secMap)[k] = string(v)
-	}
-
-	err = dbCfg.Populate(&secMap)
+	// for the app we depend on, hence the nil for the ident.
+	err = provutils.ReadDbConfigFromSecret(db.Provider, nil, &dbCfg, inn)
 	if err != nil {
-		return errors.Wrap("couldn't convert to int", err)
+		return err
 	}
-	dbCfg.AdminUsername = "postgres"
 
 	db.Config.Database = &dbCfg
 
