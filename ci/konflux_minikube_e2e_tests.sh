@@ -2,17 +2,21 @@
 
 set -exv
 
-mkdir -p /container_workspace/bin
+mkdir -p /var/workdir/bin
+cd /var/workdir/bin
 
-export KUBEBUILDER_ASSETS=/container_workspace/testbin/bin
+export KUBEBUILDER_ASSETS=/var/workdir/testbin/bin
 
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 echo "$(cat kubectl.sha256)  ./kubectl" | sha256sum --check
 chmod +x kubectl
-mv kubectl /container_workspace/bin
-export PATH="/container_workspace/bin:$PATH"
 
+export ARTIFACT_PATH=/var/workdir/artifacts
+mkdir -p $ARTIFACT_PATH
+
+export PATH="/var/workdir/bin:$PATH"
+cd /var/workdir/source
 (
   cd "$(mktemp -d)" &&
   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -23,7 +27,6 @@ export PATH="/container_workspace/bin:$PATH"
   ./"${KREW}" install krew
 )
 
-source build/template_check.sh
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 export PATH="/bins:$PATH"
@@ -69,7 +72,7 @@ preferences: {}
 EOM
 
 export PATH="$KUBEBUILDER_ASSETS:$PATH"
-export PATH="/root/go/bin:$PATH"
+#export PATH="/root/go/bin:$PATH"
 
 export KUBECONFIG=$PWD/kube-config
 export KUBECTL_CMD="kubectl "
@@ -82,13 +85,13 @@ export IMAGE_TAG=`git rev-parse --short=8 HEAD`
 
 $KUBECTL_CMD create namespace clowder-system
 
-mkdir artifacts
+#mkdir artifacts
+#
+#make release
 
-make release
+#cat manifest.yaml > artifacts/manifest.yaml
 
-cat manifest.yaml > artifacts/manifest.yaml
-
-$KUBECTL_CMD apply -f manifest.yaml --validate=false -n clowder-system
+$KUBECTL_CMD apply -f ../manifest.yaml --validate=false -n clowder-system
 
 ## The default generated config isn't quite right for our tests - so we'll create a new one and restart clowder
 $KUBECTL_CMD apply -f clowder-config.yaml -n clowder-system
@@ -104,22 +107,22 @@ $KUBECTL_CMD get env
 
 source build/run_kuttl.sh --report xml
 KUTTL_RESULT=$?
-mv kuttl-report.xml artifacts/junit-kuttl.xml
+mv kuttl-report.xml $ARTIFACT_PATH/junit-kuttl.xml
 
 CLOWDER_PODS=$($KUBECTL_CMD get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}')
 for pod in $CLOWDER_PODS; do
-    $KUBECTL_CMD logs $pod -n clowder-system > artifacts/$pod.log
-    $KUBECTL_CMD logs $pod -n clowder-system | ./parse-controller-logs > artifacts/$pod-parsed-controller-logs.log
+    $KUBECTL_CMD logs $pod -n clowder-system > $ARTIFACT_PATH/$pod.log
+    $KUBECTL_CMD logs $pod -n clowder-system | ./parse-controller-logs > $ARTIFACT_PATH/$pod-parsed-controller-logs.log
 done
 
 # Grab the metrics
 $KUBECTL_CMD port-forward svc/clowder-controller-manager-metrics-service-non-auth -n clowder-system 8080 &
 sleep 5
-curl 127.0.0.1:8080/metrics > artifacts/clowder-metrics
+curl 127.0.0.1:8080/metrics > $ARTIFACT_PATH/clowder-metrics
 
 STRIMZI_PODS=$($KUBECTL_CMD get pod -n strimzi -o jsonpath='{.items[*].metadata.name}')
 for pod in $STRIMZI_PODS; do
-    $KUBECTL_CMD logs $pod -n strimzi > artifacts/$pod.log
+    $KUBECTL_CMD logs $pod -n strimzi > $ARTIFACT_PATH/$pod.log
 done
 set -e
 

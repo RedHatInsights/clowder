@@ -2,6 +2,8 @@ CLOWDER_BUILD_TAG ?= $(shell git rev-parse HEAD)
 
 GO_CMD ?= go
 
+TEMPLATE_KUSTOMIZE ?= "deploy-kustomize.yaml"
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.28
 
@@ -70,9 +72,18 @@ api-docs:
 	./build/build_api_docs.sh
 	./build/build_config_docs.sh
 
-build-template: manifests kustomize controller-gen
-	$(KUSTOMIZE) build config/deployment-template | ./manifest2template.py --config config/deployment-template/clowder_config.yaml --mutate > deploy-mutate.yml
-	$(KUSTOMIZE) build config/deployment-template | ./manifest2template.py --config config/deployment-template/clowder_config.yaml > deploy.yml
+build-template: 
+	@echo "Checking for $(TEMPLATE_KUSTOMIZE)"
+	@if [ ! -f $(TEMPLATE_KUSTOMIZE) ]; then \
+		$(MAKE) build-template-kustomize; \
+	fi
+	TEMPLATE_KUSTOMIZE=$(TEMPLATE_KUSTOMIZE) ./build/build_template.sh
+
+build-template-kustomize: manifests kustomize controller-gen
+	$(KUSTOMIZE) build config/deployment-template > $(TEMPLATE_KUSTOMIZE)
+
+test-template: build-template
+	source ./build/template_check.sh
 
 release: manifests kustomize controller-gen
 	echo "---" > manifest.yaml
@@ -83,10 +94,10 @@ release: manifests kustomize controller-gen
 	$(KUSTOMIZE) build config/release-manifest >> manifest.yaml
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./controllers/..." output:crd:artifacts:config=config/crd/bases
 
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./controllers/..."
 
 fmt: ## Run go fmt against code.
 	$(GO_CMD) fmt ./...
@@ -172,28 +183,36 @@ update-version: ## Updates the version in the image
 	$(shell echo -n $(CLOWDER_VERSION) > controllers/cloud.redhat.com/version.txt)
 	echo "Building version: $(CLOWDER_VERSION)"
 
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
+##@ Build Dependencies
 
-KUSTOMIZE = $(shell pwd)/bin/kustomize
-kustomize: ## Download kustomize locally if necessary.
-	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.5.2)
+## Location to install dependencies to
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
 
-ENVTEST = $(shell pwd)/bin/setup-envtest
-envtest: ## Download envtest-setup locally if necessary.
-	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@d0396a3d6f9fb554ef2da382a3d0bf05f7565e65)
+## Tool Binaries
+KUSTOMIZE ?= $(LOCALBIN)/kustomize
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+ENVTEST ?= $(LOCALBIN)/setup-envtest
 
-# go-install-tool will 'go install' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-install-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-$(GO_CMD) mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin $(GO_CMD) install $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
+## Tool Versions
+KUSTOMIZE_VERSION ?= v5.5.0
+CONTROLLER_TOOLS_VERSION ?= v0.16.4
+
+update-deps:
+	KUSTOMIZE_VERSION=$(KUSTOMIZE_VERSION) CONTROLLER_TOOLS_VERSION=$(CONTROLLER_TOOLS_VERSION) ./deps/update_e2e_deps.sh
+
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+
+.PHONY: kustomize
+kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
+$(KUSTOMIZE): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
+
+.PHONY: envtest
+envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
+$(ENVTEST): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
