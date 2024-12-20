@@ -174,8 +174,11 @@ func GetDbConfig(
 	if rdsCaBundleURL == "" {
 		rdsCaBundleURL = defaultCaBundleURL
 	}
-	bundle := rdsCaBundles[rdsCaBundleURL]
-	matched.Config.RdsCa = &bundle
+
+	if matched.Config.RdsCa == nil {
+		bundle := rdsCaBundles[rdsCaBundleURL]
+		matched.Config.RdsCa = &bundle
+	}
 
 	return &matched, nil
 }
@@ -214,6 +217,15 @@ func genDbConfigs(secrets []core.Secret, verify bool) ([]config.DatabaseConfigCo
 			return
 		}
 
+		// db.ca_cert is optional
+		var rdsCa *string
+		if val, ok := secret.Data["db.ca_cert"]; ok {
+			strVal := string(val)
+			if strVal != "" {
+				rdsCa = &strVal
+			}
+		}
+
 		dbConfig := config.DatabaseConfigContainer{
 			Config: config.DatabaseConfig{
 				Hostname: string(secret.Data["db.host"]),
@@ -222,6 +234,7 @@ func genDbConfigs(secrets []core.Secret, verify bool) ([]config.DatabaseConfigCo
 				Password: string(secret.Data["db.password"]),
 				Name:     string(secret.Data["db.name"]),
 				SslMode:  "verify-full",
+				RdsCa:    rdsCa,
 			},
 			Ref: types.NamespacedName{
 				Name:      secret.Name,
