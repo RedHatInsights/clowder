@@ -251,6 +251,10 @@ func (d *Deployment) GetReplicaCount() *int32 {
 	return &retVal
 }
 
+func (d *Deployment) HasAutoScaler() bool {
+	return d.AutoScaler != nil || d.AutoScalerSimple != nil
+}
+
 type DeploymentStrategy struct {
 	// PrivateStrategy allows a deployment that only uses a private port to set
 	// the deployment strategy one of Recreate or Rolling, default for a
