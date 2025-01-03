@@ -23,11 +23,20 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+const featureFlagsPort = 4242
+const featureFlagsEdgePort = 3063
+
 // LocalFFDeployment is the ident referring to the local Feature Flags deployment object.
 var LocalFFDeployment = rc.NewSingleResourceIdent(ProvName, "ff_deployment", &apps.Deployment{})
 
 // LocalFFService is the ident referring to the local Feature Flags service object.
 var LocalFFService = rc.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
+
+// LocalFFEdgeDeployment is the ident referring to the local Unleash edge deployment object.
+var LocalFFEdgeDeployment = rc.NewSingleResourceIdent(ProvName, "ff_edge_deployment", &apps.Deployment{})
+
+// LocalFFEdgeService is the ident referring to the local Unleash edge service object.
+var LocalFFEdgeService = rc.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
 
 // LocalFFSecret is the ident referring to the local Feature Flags secret object.
 var LocalFFSecret = rc.NewSingleResourceIdent(ProvName, "ff_secret", &core.Secret{})
@@ -53,6 +62,8 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 	p.Cache.AddPossibleGVKFromIdent(
 		LocalFFDeployment,
 		LocalFFService,
+		LocalFFEdgeDeployment,
+		LocalFFEdgeService,
 		LocalFFSecret,
 		LocalFFDBDeployment,
 		LocalFFDBService,
@@ -81,6 +92,15 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 	}
 
 	if err := providers.CachedMakeComponent(ff.Cache, objList, ff.Env, "featureflags", makeLocalFeatureFlags, false, ff.Env.IsNodePort()); err != nil {
+		return err
+	}
+
+	objList2 := []rc.ResourceIdent{
+		LocalFFEdgeDeployment,
+		LocalFFEdgeService,
+	}
+
+	if err := providers.CachedMakeComponent(ff.Cache, objList2, ff.Env, "featureflags-edge", makeLocalFeatureFlagsEdge, false, ff.Env.IsNodePort()); err != nil {
 		return err
 	}
 
@@ -229,7 +249,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 
 	dd.Spec.Template.ObjectMeta.Labels = labels
 
-	port := int32(4242)
+	port := int32(featureFlagsPort)
 
 	envVars := []core.EnvVar{
 		{
@@ -257,7 +277,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 			Path: "/health",
 			Port: intstr.IntOrString{
 				Type:   intstr.Int,
-				IntVal: 4242,
+				IntVal: featureFlagsPort,
 			},
 		},
 	}
@@ -317,5 +337,108 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
+	return nil
+}
+
+func makeLocalFeatureFlagsEdge(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+
+	nnFF := providers.GetNamespacedName(o, "featureflags")
+	nn := providers.GetNamespacedName(o, "featureflags-edge")
+
+	dd := objMap[LocalFFEdgeDeployment].(*apps.Deployment)
+	svc := objMap[LocalFFEdgeService].(*core.Service)
+
+	labels := o.GetLabels()
+	labels["env-app"] = nn.Name
+	labels["service"] = "featureflags-edge"
+	labeler := utils.MakeLabeler(nn, labels, o)
+
+	labeler(dd)
+
+	replicas := int32(1)
+
+	dd.Spec.Replicas = &replicas
+	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+
+	dd.Spec.Template.ObjectMeta.Labels = labels
+
+	portEdge := int32(featureFlagsEdgePort)
+
+	envVarsEdge := []core.EnvVar{
+		{
+			// communication with the main featureflags service on localhost
+			Name:  "UPSTREAM_URL",
+			Value: fmt.Sprintf("http://%s:%d", nnFF.Name, featureFlagsPort),
+		},
+	}
+	envVarsEdge = provutils.AppendEnvVarsFromSecret(envVarsEdge, nnFF.Name,
+		provutils.NewSecretEnvVar("TOKENS", "clientAccessToken"))
+
+	portsEdge := []core.ContainerPort{{
+		Name:          "service",
+		ContainerPort: portEdge,
+		Protocol:      "TCP",
+	}}
+
+	readinessProbeEdge := core.Probe{
+		ProbeHandler: core.ProbeHandler{
+			Exec: &core.ExecAction{
+				Command: []string{"/unleash-edge", "ready"},
+			},
+		},
+		InitialDelaySeconds: 1,
+		TimeoutSeconds:      5,
+		PeriodSeconds:       30,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
+	}
+
+	livenessProbeEdge := core.Probe{
+		ProbeHandler: core.ProbeHandler{
+			Exec: &core.ExecAction{
+				Command: []string{"/unleash-edge", "health"},
+			},
+		},
+		InitialDelaySeconds: 30,
+		TimeoutSeconds:      5,
+		PeriodSeconds:       30,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
+	}
+
+	env, ok := o.(*crd.ClowdEnvironment)
+	if !ok {
+		return fmt.Errorf("could not get env")
+	}
+
+	ce := core.Container{
+		Name:            nn.Name,
+		Image:           GetFeatureFlagsUnleashEdgeImage(env),
+		Env:             envVarsEdge,
+		Ports:           portsEdge,
+		Args:            []string{"edge"},
+		ReadinessProbe:  &readinessProbeEdge,
+		LivenessProbe:   &livenessProbeEdge,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Resources: core.ResourceRequirements{
+			Requests: core.ResourceList{
+				"memory": resource.MustParse("100Mi"),
+				"cpu":    resource.MustParse("100m"),
+			},
+		},
+	}
+
+	dd.Spec.Template.Spec.Containers = []core.Container{ce}
+	dd.Spec.Template.SetLabels(labels)
+
+	servicePorts := []core.ServicePort{{
+		Name:       "featureflags-edge",
+		Port:       portEdge,
+		Protocol:   "TCP",
+		TargetPort: intstr.FromInt(int(portEdge)),
+	}}
+
+	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
+
 	return nil
 }
