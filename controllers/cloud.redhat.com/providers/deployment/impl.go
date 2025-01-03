@@ -65,7 +65,14 @@ func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 
 	// No sense in running all these conditionals if desired state and observed state match
 	if d.Spec.Replicas != nil && (*d.Spec.Replicas >= *replicaCount) {
-		return
+		// if deployment has an autoscaler, just keep the replica count the same it currently is
+		// since it has at least the desired count
+		if deployment.HasAutoScaler() {
+			return
+		}
+		// reset the replica count when there is no autoscaler. this will scale down a deployment that
+		// has more than desired count
+		d.Spec.Replicas = replicaCount
 	}
 
 	// If the spec has nil replicas or the spec replicas are less than the deployment replicas
