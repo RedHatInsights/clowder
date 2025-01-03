@@ -8,16 +8,17 @@ import (
 
 type ClowderConfig struct {
 	Images struct {
-		MBOP                string `json:"mbop"`
-		Caddy               string `json:"caddy"`
-		CaddyGateway        string `json:"caddyGateway"`
-		Keycloak            string `json:"Keycloak"`
-		Mocktitlements      string `json:"mocktitlements"`
-		CaddyReverseProxy   string `json:"caddyReverseProxy"`
-		ObjectStoreMinio    string `json:"objectStoreMinio"`
-		FeatureFlagsUnleash string `json:"featureFlagsUnleash"`
-		TokenRefresher      string `json:"tokenRefresher"`
-		OtelCollector       string `json:"otelCollector"`
+		MBOP                    string `json:"mbop"`
+		Caddy                   string `json:"caddy"`
+		CaddyGateway            string `json:"caddyGateway"`
+		Keycloak                string `json:"Keycloak"`
+		Mocktitlements          string `json:"mocktitlements"`
+		CaddyReverseProxy       string `json:"caddyReverseProxy"`
+		ObjectStoreMinio        string `json:"objectStoreMinio"`
+		FeatureFlagsUnleash     string `json:"featureFlagsUnleash"`
+		FeatureFlagsUnleashEdge string `json:"featureFlagsUnleashEdge"`
+		TokenRefresher          string `json:"tokenRefresher"`
+		OtelCollector           string `json:"otelCollector"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {

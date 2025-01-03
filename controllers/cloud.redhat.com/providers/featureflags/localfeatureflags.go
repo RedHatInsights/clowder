@@ -306,15 +306,83 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 		},
 	}
 
-	dd.Spec.Template.Spec.Containers = []core.Container{c}
+	portEdge := int32(3063)
+
+	envVarsEdge := []core.EnvVar{
+		{
+			// communication with the main featureflags service on localhost
+			Name:  "UPSTREAM_URL",
+			Value: fmt.Sprintf("http://127.0.0.1:%d", port),
+		},
+	}
+	envVarsEdge = provutils.AppendEnvVarsFromSecret(envVarsEdge, nn.Name,
+		provutils.NewSecretEnvVar("TOKENS", "clientAccessToken"))
+
+	portsEdge := []core.ContainerPort{{
+		Name:          "service",
+		ContainerPort: portEdge,
+		Protocol:      "TCP",
+	}}
+
+	readinessProbeEdge := core.Probe{
+		ProbeHandler: core.ProbeHandler{
+			Exec: &core.ExecAction{
+				Command: []string{"/unleash-edge", "ready"},
+			},
+		},
+		InitialDelaySeconds: 1,
+		TimeoutSeconds:      5,
+		PeriodSeconds:       30,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
+	}
+
+	livenessProbeEdge := core.Probe{
+		ProbeHandler: core.ProbeHandler{
+			Exec: &core.ExecAction{
+				Command: []string{"/unleash-edge", "health"},
+			},
+		},
+		InitialDelaySeconds: 30,
+		TimeoutSeconds:      5,
+		PeriodSeconds:       30,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
+	}
+
+	ce := core.Container{
+		Name:            fmt.Sprint(nn.Name, "-edge"),
+		Image:           GetFeatureFlagsUnleashEdgeImage(env),
+		Env:             envVarsEdge,
+		Ports:           portsEdge,
+		ReadinessProbe:  &readinessProbeEdge,
+		LivenessProbe:   &livenessProbeEdge,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Resources: core.ResourceRequirements{
+			Requests: core.ResourceList{
+				"memory": resource.MustParse("50Mi"),
+				"cpu":    resource.MustParse("40m"),
+			},
+		},
+	}
+
+	dd.Spec.Template.Spec.Containers = []core.Container{c, ce}
 	dd.Spec.Template.SetLabels(labels)
 
-	servicePorts := []core.ServicePort{{
-		Name:       "featureflags",
-		Port:       port,
-		Protocol:   "TCP",
-		TargetPort: intstr.FromInt(int(port)),
-	}}
+	servicePorts := []core.ServicePort{
+		{
+			Name:       "featureflags",
+			Port:       port,
+			Protocol:   "TCP",
+			TargetPort: intstr.FromInt(int(port)),
+		},
+		{
+			Name:       "featureflags-edge",
+			Port:       portEdge,
+			Protocol:   "TCP",
+			TargetPort: intstr.FromInt(int(portEdge)),
+		},
+	}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
 	return nil
