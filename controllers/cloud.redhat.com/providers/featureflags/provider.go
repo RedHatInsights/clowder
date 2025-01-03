@@ -10,6 +10,7 @@ import (
 )
 
 var DefaultImageFeatureFlagsUnleash = "unleashorg/unleash-server:5.6.9"
+var DefaultImageFeatureFlagsUnleashEdge = "unleashorg/unleash-edge:v19.6.3"
 
 func GetFeatureFlagsUnleashImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.FeatureFlags.Images.Unleash != "" {
@@ -19,6 +20,16 @@ func GetFeatureFlagsUnleashImage(env *crd.ClowdEnvironment) string {
 		return clowderconfig.LoadedConfig.Images.FeatureFlagsUnleash
 	}
 	return DefaultImageFeatureFlagsUnleash
+}
+
+func GetFeatureFlagsUnleashEdgeImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.FeatureFlags.Images.UnleashEdge != "" {
+		return env.Spec.Providers.FeatureFlags.Images.UnleashEdge
+	}
+	if clowderconfig.LoadedConfig.Images.FeatureFlagsUnleashEdge != "" {
+		return clowderconfig.LoadedConfig.Images.FeatureFlagsUnleashEdge
+	}
+	return DefaultImageFeatureFlagsUnleashEdge
 }
 
 // ProvName identifies the featureflags provider.
