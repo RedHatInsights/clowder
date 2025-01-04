@@ -268,7 +268,7 @@ spec:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
           - name: unit-tests
-            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1733303300
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.9-1.1734311333
             workingDir: /var/workdir/source
             script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
         volumes:
@@ -299,7 +299,7 @@ spec:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
           - name: make-template
-            image: registry.access.redhat.com/ubi8/go-toolset:1.22.7-5.1733303300
+            image: registry.access.redhat.com/ubi8/go-toolset:1.22.9-1.1734311333
             workingDir: /opt/app-root/src
             env:
               - name: LOCALBIN
