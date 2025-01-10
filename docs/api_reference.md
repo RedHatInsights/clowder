@@ -451,6 +451,7 @@ _Appears in:_
 | `autoScalerSimple` _[AutoScalerSimple](#autoscalersimple)_ |  |  |  |
 | `deploymentStrategy` _[DeploymentStrategy](#deploymentstrategy)_ | DeploymentStrategy allows the deployment strategy to be set only if the<br />deployment has no public service enabled |  |  |
 | `metadata` _[DeploymentMetadata](#deploymentmetadata)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `statefulSpec` _[StatefulSpec](#statefulspec)_ |  |  |  |
 
 
 #### DeploymentConfig
@@ -1421,6 +1422,22 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `min` _integer_ |  |  |  |
 | `max` _integer_ |  |  |  |
+
+
+#### StatefulSpec
+
+
+
+
+
+
+
+_Appears in:_
+- [Deployment](#deployment)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `enabled` _boolean_ |  |  |  |
 
 
 #### TLS
