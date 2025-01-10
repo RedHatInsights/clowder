@@ -7,7 +7,6 @@ import (
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,9 +32,8 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		return err
 	}
 
-	d := &apps.Deployment{}
-
-	if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
+	pt, err := deployProvider.GetPodTemplateFromObject(deployment, cache, app.GetDeploymentNamespacedName(deployment))
+	if err != nil {
 		return err
 	}
 
@@ -154,20 +152,20 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
 				return err
 			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			populateSideCar(pt, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
 			setServiceTLSAnnotations(s, nn.Name)
 		}
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())
 
-	d.Spec.Template.Spec.Containers[0].Ports = containerPorts
+	pt.Spec.Containers[0].Ports = containerPorts
 
 	if err := cache.Update(CoreService, s); err != nil {
 		return err
 	}
 
-	return cache.Update(deployProvider.CoreDeployment, d)
+	return deployProvider.UpdatePodTemplate(deployment, pt, cache, nn)
 }
 
 func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort int32, privPort int32, env *crd.ClowdEnvironment) error {
@@ -197,7 +195,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	return cache.Update(CoreCaddyConfigMap, cm)
 }
 
-func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
+func populateSideCar(pt *core.PodTemplateSpec, name string, port int32, privatePort int32, pub bool, priv bool) {
 	ports := []core.ContainerPort{}
 	if pub {
 		ports = append(ports, core.ContainerPort{
@@ -248,13 +246,13 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 		VolumeSource: core.VolumeSource{
 			ConfigMap: &core.ConfigMapVolumeSource{
 				LocalObjectReference: core.LocalObjectReference{
-					Name: caddyConfigName(d.Name),
+					Name: caddyConfigName(name),
 				},
 			},
 		},
 	}
-	d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, container)
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, caddyConfigVol, caddyTLSVol)
+	pt.Spec.Containers = append(pt.Spec.Containers, container)
+	pt.Spec.Volumes = append(pt.Spec.Volumes, caddyConfigVol, caddyTLSVol)
 }
 
 func setServiceTLSAnnotations(s *core.Service, name string) {

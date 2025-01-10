@@ -10,7 +10,6 @@ import (
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
-	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -31,9 +30,9 @@ func (sc *sidecarProvider) EnvProvide() error {
 func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
-		d := &apps.Deployment{}
-
-		if err := sc.Cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(&innerDeployment)); err != nil {
+		nn := app.GetDeploymentNamespacedName(&deployment)
+		pt, err := deployProvider.GetPodTemplateFromObject(&innerDeployment, sc.Cache, nn)
+		if err != nil {
 			return err
 		}
 
@@ -43,15 +42,15 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
 					cont := getTokenRefresher(app.Name)
 					if cont != nil {
-						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						pt.Spec.Containers = append(pt.Spec.Containers, *cont)
 					}
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
-						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
-						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
+						pt.Spec.Containers = append(pt.Spec.Containers, *cont)
+						pt.Spec.Volumes = append(pt.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
@@ -69,7 +68,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			}
 		}
 
-		if err := sc.Cache.Update(deployProvider.CoreDeployment, d); err != nil {
+		if err := deployProvider.UpdatePodTemplate(&deployment, pt, sc.Cache, nn); err != nil {
 			return err
 		}
 	}

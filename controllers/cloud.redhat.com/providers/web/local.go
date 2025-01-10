@@ -13,7 +13,6 @@ import (
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -147,23 +146,23 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		h.Write([]byte(jsonData))
 		hash := fmt.Sprintf("%x", h.Sum(nil))
 
-		d := &apps.Deployment{}
 		dnn := app.GetDeploymentNamespacedName(&innerDeployment)
-		if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+		pt, err := provDeploy.GetPodTemplateFromObject(&innerDeployment, web.Cache, dnn)
+		if err != nil {
 			return err
 		}
 
 		if web.Env.Spec.Providers.Web.TLS.Enabled {
-			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
+			provutils.AddCertVolume(&pt.Spec, dnn.Name)
 		}
 
 		annotations := map[string]string{
 			"clowder/authsidecar-confighash": hash,
 		}
 
-		utils.UpdateAnnotations(&d.Spec.Template, annotations)
+		utils.UpdateAnnotations(pt, annotations)
 
-		if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
+		if err := provDeploy.UpdatePodTemplate(&innerDeployment, pt, web.Cache, dnn); err != nil {
 			return err
 		}
 

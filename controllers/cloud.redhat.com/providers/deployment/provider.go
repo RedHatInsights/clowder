@@ -7,7 +7,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	apps "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -24,7 +24,7 @@ func init() {
 	providers.ProvidersRegistration.Register(GetDeployment, 0, ProvName)
 }
 
-func GetPodTemplateFromObject(deployment *crd.Deployment, rc *rc.ObjectCache, nn types.NamespacedName) (*v1.PodTemplateSpec, error) {
+func GetPodTemplateFromObject(deployment *crd.Deployment, rc *rc.ObjectCache, nn types.NamespacedName) (*core.PodTemplateSpec, error) {
 	obj, err := GetClientObject(deployment, rc, nn)
 	if err != nil {
 		return nil, err
@@ -55,10 +55,10 @@ func GetClientObject(deployment *crd.Deployment, rc *rc.ObjectCache, nn types.Na
 	return d, nil
 }
 
-func UpdatePodTemplate(deployment *crd.Deployment, podTemplate *v1.PodTemplateSpec, rc *rc.ObjectCache, nn types.NamespacedName) error {
+func UpdatePodTemplate(deployment *crd.Deployment, podTemplate *core.PodTemplateSpec, rc *rc.ObjectCache, nn types.NamespacedName) error {
 
 	if deployment.Stateful.Enabled {
-		ss := &apps.Deployment{}
+		ss := &apps.StatefulSet{}
 		if err := rc.Get(CoreStatefulSet, ss, nn); err != nil {
 			return err
 		}

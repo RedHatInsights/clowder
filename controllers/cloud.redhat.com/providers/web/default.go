@@ -7,7 +7,6 @@ import (
 	provCronjob "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -50,16 +49,16 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 		}
 
 		if web.Env.Spec.Providers.Web.TLS.Enabled {
-			d := &apps.Deployment{}
 			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 
-			if err := web.Cache.Get(provDeploy.CoreDeployment, d, dnn); err != nil {
+			pt, err := provDeploy.GetPodTemplateFromObject(&innerDeployment, web.Cache, dnn)
+			if err != nil {
 				return errors.Wrap("getting core deployment", err)
 			}
 
-			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
+			provutils.AddCertVolume(&pt.Spec, dnn.Name)
 
-			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
+			if err := provDeploy.UpdatePodTemplate(&innerDeployment, pt, web.Cache, dnn); err != nil {
 				return errors.Wrap("updating core deployment", err)
 			}
 		}
