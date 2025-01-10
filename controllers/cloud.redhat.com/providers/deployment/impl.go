@@ -277,19 +277,18 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
 
 	setDeploymentStrategy(deployment, d)
-	podTemplateSpec, err := renderPodSpec(app, env, nn, deployment)
+	err := renderPodSpec(app, env, nn, deployment, &d.Spec.Template)
 	if err != nil {
 		return err
 	}
 
-	for _, vol := range podTemplateSpec.Spec.Volumes {
+	for _, vol := range d.Spec.Template.Spec.Volumes {
 		v := vol
 		setRecreateDeploymentStrategyForPVCs(vol, d)
 		setVolumeSourceConfigMapDefaultMode(&v)
 		setVolumeSourceSecretDefaultMode(&v)
 	}
 
-	d.Spec.Template = *podTemplateSpec
 	return nil
 }
 
@@ -309,21 +308,18 @@ func initStatefulSet(app *crd.ClowdApp, env *crd.ClowdEnvironment, s *apps.State
 	s.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	s.Spec.Template.ObjectMeta.Labels = labels
 
-	podTemplateSpec, err := renderPodSpec(app, env, nn, deployment)
+	err := renderPodSpec(app, env, nn, deployment, &s.Spec.Template)
 	if err != nil {
 		return err
 	}
 
-	s.Spec.Template = *podTemplateSpec
-
 	return nil
 }
 
-func renderPodSpec(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, deployment *crd.Deployment) (*core.PodTemplateSpec, error) {
+func renderPodSpec(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, deployment *crd.Deployment, podSpec *core.PodTemplateSpec) error {
 	// Everything from here is for the podspec and shoulr be ripped out
 	pod := deployment.PodSpec
-	podSpec := core.PodTemplateSpec{}
-	utils.UpdateAnnotations(&podSpec, pod.Metadata.Annotations)
+	utils.UpdateAnnotations(podSpec, pod.Metadata.Annotations)
 
 	c := core.Container{
 		Name:                     nn.Name,
@@ -353,7 +349,7 @@ func renderPodSpec(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.Namesp
 	ics, err := ProcessInitContainers(nn, &c, pod.InitContainers)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if pod.MachinePool != "" {
@@ -382,9 +378,9 @@ func renderPodSpec(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.Namesp
 		},
 	})
 
-	ApplyPodAntiAffinity(&podSpec)
+	ApplyPodAntiAffinity(podSpec)
 
-	return &podSpec, nil
+	return nil
 }
 
 func setRecreateDeploymentStrategyForPVCs(vol core.Volume, d *apps.Deployment) {
