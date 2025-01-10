@@ -105,8 +105,8 @@ func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) e
 	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
 
-func (ch *confighashProvider) iterateEnvVars(app *crd.ClowdApp, deployment apps.Deployment) error {
-	for _, cont := range deployment.Spec.Template.Spec.Containers {
+func (ch *confighashProvider) iterateEnvVars(app *crd.ClowdApp, podTemplate core.PodTemplateSpec) error {
+	for _, cont := range podTemplate.Spec.Containers {
 		for _, env := range cont.Env {
 			if err := ch.envConfigMap(app, env); err != nil {
 				return err
@@ -120,8 +120,8 @@ func (ch *confighashProvider) iterateEnvVars(app *crd.ClowdApp, deployment apps.
 	return nil
 }
 
-func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, deployment apps.Deployment) error {
-	for _, volume := range deployment.Spec.Template.Spec.Volumes {
+func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, podTemplate core.PodTemplateSpec) error {
+	for _, volume := range podTemplate.Spec.Volumes {
 		if err := ch.volConfigMap(app, volume); err != nil {
 			return err
 		}
@@ -133,13 +133,13 @@ func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, deployment apps.
 	return nil
 }
 
-func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *crd.ClowdApp) error {
-	for _, deployment := range dList.Items {
-		deploy := deployment
-		if err := ch.iterateEnvVars(app, deploy); err != nil {
+func (ch *confighashProvider) updateHashCache(podTemplateSpecList *[]core.PodTemplateSpec, app *crd.ClowdApp) error {
+	for _, podTemplate := range *podTemplateSpecList {
+		pt := podTemplate
+		if err := ch.iterateEnvVars(app, pt); err != nil {
 			return err
 		}
-		if err := ch.iterateVolumes(app, deploy); err != nil {
+		if err := ch.iterateVolumes(app, pt); err != nil {
 			return err
 		}
 	}
@@ -161,7 +161,21 @@ func (ch *confighashProvider) persistConfig(app *crd.ClowdApp) (string, error) {
 		return "", err
 	}
 
-	if err := ch.updateHashCache(&dList, app); err != nil {
+	ssList := apps.StatefulSetList{}
+	if err := ch.Cache.List(deployProvider.CoreStatefulSet, &ssList); err != nil {
+		return "", err
+	}
+
+	podTemplateList := []core.PodTemplateSpec{}
+	for _, item := range dList.Items {
+		podTemplateList = append(podTemplateList, item.Spec.Template)
+	}
+
+	for _, item := range ssList.Items {
+		podTemplateList = append(podTemplateList, item.Spec.Template)
+	}
+
+	if err := ch.updateHashCache(&podTemplateList, app); err != nil {
 		return "", err
 	}
 
