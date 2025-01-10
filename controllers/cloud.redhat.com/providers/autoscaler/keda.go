@@ -8,8 +8,8 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
-	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider) error {
@@ -19,12 +19,13 @@ func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.Ap
 		return err
 	}
 
-	d := &apps.Deployment{}
-	if err := asp.Cache.Get(deployProvider.CoreDeployment, d, nn); err != nil {
+	obj, err := deployProvider.GetClientObject(deployment, asp.Cache, nn)
+
+	if err != nil {
 		return err
 	}
 
-	initAutoScaler(asp.Env, app, d, s, nn, deployment, c)
+	initAutoScaler(asp.Env, app, obj, s, nn, deployment, c)
 
 	return asp.Cache.Update(CoreAutoScaler, s)
 }
@@ -34,14 +35,14 @@ func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *provider
 	return err
 }
 
-func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject, nn types.NamespacedName, deployment *crd.Deployment, c *config.AppConfig) {
+func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, obj client.Object, s *keda.ScaledObject, nn types.NamespacedName, deployment *crd.Deployment, c *config.AppConfig) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(s, crd.Name(nn.Name), crd.Labels(labels))
 
 	// Set up the watcher to watch the Deployment we created earlier.
 	scalerSpec := keda.ScaledObjectSpec{
-		ScaleTargetRef:  &keda.ScaleTarget{Name: d.Name, Kind: d.Kind, APIVersion: d.APIVersion},
+		ScaleTargetRef:  &keda.ScaleTarget{Name: obj.GetName(), Kind: obj.GetObjectKind().GroupVersionKind().Kind, APIVersion: obj.GetObjectKind().GroupVersionKind().Version},
 		PollingInterval: deployment.AutoScaler.PollingInterval,
 		CooldownPeriod:  deployment.AutoScaler.CooldownPeriod,
 		Advanced:        deployment.AutoScaler.Advanced,

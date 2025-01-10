@@ -14,8 +14,11 @@ type deploymentProvider struct {
 // CoreDeployment is the deployment for the apps deployments.
 var CoreDeployment = rc.NewMultiResourceIdent(ProvName, "core_deployment", &apps.Deployment{})
 
+var CoreStatefulSet = rc.NewMultiResourceIdent(ProvName, "core_statefulset", &apps.StatefulSet{})
+
 func NewDeploymentProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(CoreDeployment)
+	p.Cache.AddPossibleGVKFromIdent(CoreStatefulSet)
 	return &deploymentProvider{Provider: *p}, nil
 }
 

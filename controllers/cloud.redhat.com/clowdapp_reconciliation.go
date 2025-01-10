@@ -288,6 +288,7 @@ var applyOrder = []string{
 	"Service",
 	"Secret",
 	"Deployment",
+	"StatefulSet",
 	"Job",
 	"CronJob",
 	"ScaledObject",
