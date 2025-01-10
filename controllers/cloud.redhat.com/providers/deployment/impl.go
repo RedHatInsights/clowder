@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -37,7 +38,23 @@ func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd
 	return dp.Cache.Update(CoreDeployment, d)
 }
 
-func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d *apps.Deployment, app *crd.ClowdApp) {
+func (dp *deploymentProvider) makeStatefulSet(deployment crd.Deployment, app *crd.ClowdApp) error {
+
+	s := &apps.StatefulSet{}
+	nn := app.GetDeploymentNamespacedName(&deployment)
+
+	if err := dp.Cache.Create(CoreStatefulSet, nn, s); err != nil {
+		return err
+	}
+
+	if err := initStatefulSet(app, dp.Env, s, nn, &deployment); err != nil {
+		return err
+	}
+
+	return dp.Cache.Update(CoreStatefulSet, s)
+}
+
+func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d client.Object, app *crd.ClowdApp) {
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
 			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
@@ -45,12 +62,11 @@ func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, 
 			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
 			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
 		}
-		utils.UpdateAnnotations(&d.Spec.Template, annotations)
+		utils.UpdateAnnotations(d, annotations)
 	}
-
 }
 
-func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
+func setMinReplicasOnDeployment(deployment *crd.Deployment, d *apps.Deployment) {
 	replicaCount := deployment.GetReplicaCount()
 	// If deployment doesn't have minReplicas set, bail
 	if replicaCount == nil {
@@ -81,7 +97,39 @@ func setMinReplicas(deployment *crd.Deployment, d *apps.Deployment) {
 		// Reset replicas to minReplicas if it somehow falls below minReplicas
 		d.Spec.Replicas = replicaCount
 	}
+}
 
+func setMinReplicasOnStatefulSet(deployment *crd.Deployment, d *apps.StatefulSet) {
+	replicaCount := deployment.GetReplicaCount()
+	// If deployment doesn't have minReplicas set, bail
+	if replicaCount == nil {
+		return
+	}
+
+	// Handle the special case of minReplicas being set to 0 used for manual scale down
+	if *replicaCount == 0 {
+		d.Spec.Replicas = utils.Int32Ptr(0)
+		return
+	}
+
+	// No sense in running all these conditionals if desired state and observed state match
+	if d.Spec.Replicas != nil && (*d.Spec.Replicas >= *replicaCount) {
+		// if deployment has an autoscaler, just keep the replica count the same it currently is
+		// since it has at least the desired count
+		if deployment.HasAutoScaler() {
+			return
+		}
+		// reset the replica count when there is no autoscaler. this will scale down a deployment that
+		// has more than desired count
+		d.Spec.Replicas = replicaCount
+	}
+
+	// If the spec has nil replicas or the spec replicas are less than the deployment replicas
+	// then set the spec replicas to the deployment replicas
+	if d.Spec.Replicas == nil || (*d.Spec.Replicas < *replicaCount) {
+		// Reset replicas to minReplicas if it somehow falls below minReplicas
+		d.Spec.Replicas = replicaCount
+	}
 }
 
 func setDeploymentStrategy(deployment *crd.Deployment, d *apps.Deployment) {
@@ -211,13 +259,11 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	d.Kind = "Deployment"
 
-	pod := deployment.PodSpec
-
 	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
 
 	setLocalAnnotations(env, deployment, d, app)
 
-	setMinReplicas(deployment, d)
+	setMinReplicasOnDeployment(deployment, d)
 
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 	d.Spec.Template.ObjectMeta.Labels = labels
@@ -230,9 +276,54 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 	}
 	d.Spec.ProgressDeadlineSeconds = utils.Int32Ptr(600)
 
-	utils.UpdateAnnotations(&d.Spec.Template, pod.Metadata.Annotations)
-
 	setDeploymentStrategy(deployment, d)
+	podTemplateSpec, err := renderPodSpec(app, env, nn, deployment)
+	if err != nil {
+		return err
+	}
+
+	for _, vol := range podTemplateSpec.Spec.Volumes {
+		v := vol
+		setRecreateDeploymentStrategyForPVCs(vol, d)
+		setVolumeSourceConfigMapDefaultMode(&v)
+		setVolumeSourceSecretDefaultMode(&v)
+	}
+
+	d.Spec.Template = *podTemplateSpec
+	return nil
+}
+
+func initStatefulSet(app *crd.ClowdApp, env *crd.ClowdEnvironment, s *apps.StatefulSet, nn types.NamespacedName, deployment *crd.Deployment) error {
+	labels := app.GetLabels()
+	labels["pod"] = nn.Name
+	app.SetObjectMeta(s, crd.Name(nn.Name), crd.Labels(labels))
+
+	s.Kind = "Deployment"
+
+	utils.UpdateAnnotations(s, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
+
+	setLocalAnnotations(env, deployment, s, app)
+
+	setMinReplicasOnStatefulSet(deployment, s)
+
+	s.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
+	s.Spec.Template.ObjectMeta.Labels = labels
+
+	podTemplateSpec, err := renderPodSpec(app, env, nn, deployment)
+	if err != nil {
+		return err
+	}
+
+	s.Spec.Template = *podTemplateSpec
+
+	return nil
+}
+
+func renderPodSpec(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.NamespacedName, deployment *crd.Deployment) (*core.PodTemplateSpec, error) {
+	// Everything from here is for the podspec and shoulr be ripped out
+	pod := deployment.PodSpec
+	podSpec := core.PodTemplateSpec{}
+	utils.UpdateAnnotations(&podSpec, pod.Metadata.Annotations)
 
 	c := core.Container{
 		Name:                     nn.Name,
@@ -257,31 +348,31 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		MountPath: "/cdapp/",
 	})
 
-	d.Spec.Template.Spec.Containers = []core.Container{c}
+	podSpec.Spec.Containers = []core.Container{c}
 
 	ics, err := ProcessInitContainers(nn, &c, pod.InitContainers)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if pod.MachinePool != "" {
-		d.Spec.Template.Spec.Tolerations = []core.Toleration{{
+		podSpec.Spec.Tolerations = []core.Toleration{{
 			Key:      pod.MachinePool,
 			Effect:   core.TaintEffectNoSchedule,
 			Operator: core.TolerationOpEqual,
 			Value:    "true",
 		}}
 	} else {
-		d.Spec.Template.Spec.Tolerations = []core.Toleration{}
+		podSpec.Spec.Tolerations = []core.Toleration{}
 	}
 
-	d.Spec.Template.Spec.InitContainers = ics
+	podSpec.Spec.InitContainers = ics
 
-	d.Spec.Template.Spec.TerminationGracePeriodSeconds = pod.TerminationGracePeriodSeconds
+	podSpec.Spec.TerminationGracePeriodSeconds = pod.TerminationGracePeriodSeconds
 
-	d.Spec.Template.Spec.Volumes = pod.Volumes
-	d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
+	podSpec.Spec.Volumes = pod.Volumes
+	podSpec.Spec.Volumes = append(podSpec.Spec.Volumes, core.Volume{
 		Name: "config-secret",
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
@@ -291,16 +382,9 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		},
 	})
 
-	for _, vol := range d.Spec.Template.Spec.Volumes {
-		v := vol
-		setRecreateDeploymentStrategyForPVCs(vol, d)
-		setVolumeSourceConfigMapDefaultMode(&v)
-		setVolumeSourceSecretDefaultMode(&v)
-	}
+	ApplyPodAntiAffinity(&podSpec)
 
-	ApplyPodAntiAffinity(&d.Spec.Template)
-
-	return nil
+	return &podSpec, nil
 }
 
 func setRecreateDeploymentStrategyForPVCs(vol core.Volume, d *apps.Deployment) {
