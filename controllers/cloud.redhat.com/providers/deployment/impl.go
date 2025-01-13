@@ -12,7 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -54,7 +53,7 @@ func (dp *deploymentProvider) makeStatefulSet(deployment crd.Deployment, app *cr
 	return dp.Cache.Update(CoreStatefulSet, s)
 }
 
-func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, d client.Object, app *crd.ClowdApp) {
+func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, pt *core.PodTemplateSpec, app *crd.ClowdApp) {
 	if env.Spec.Providers.Web.Mode == "local" && (deployment.WebServices.Public.Enabled || bool(deployment.Web)) {
 		annotations := map[string]string{
 			"clowder/authsidecar-image":   provutils.GetCaddyImage(env),
@@ -62,7 +61,7 @@ func setLocalAnnotations(env *crd.ClowdEnvironment, deployment *crd.Deployment, 
 			"clowder/authsidecar-port":    strconv.Itoa(int(env.Spec.Providers.Web.Port)),
 			"clowder/authsidecar-config":  fmt.Sprintf("caddy-config-%s-%s", app.Name, deployment.Name),
 		}
-		utils.UpdateAnnotations(d, annotations)
+		utils.UpdateAnnotations(pt, annotations)
 	}
 }
 
@@ -261,8 +260,6 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
 
-	setLocalAnnotations(env, deployment, d, app)
-
 	setMinReplicasOnDeployment(deployment, d)
 
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -301,8 +298,6 @@ func initStatefulSet(app *crd.ClowdApp, env *crd.ClowdEnvironment, s *apps.State
 
 	utils.UpdateAnnotations(s, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
 
-	setLocalAnnotations(env, deployment, s, app)
-
 	setMinReplicasOnStatefulSet(deployment, s)
 
 	s.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
@@ -320,6 +315,7 @@ func renderPodSpec(app *crd.ClowdApp, env *crd.ClowdEnvironment, nn types.Namesp
 	// Everything from here is for the podspec and shoulr be ripped out
 	pod := deployment.PodSpec
 	utils.UpdateAnnotations(podSpec, pod.Metadata.Annotations)
+	setLocalAnnotations(env, deployment, podSpec, app)
 
 	c := core.Container{
 		Name:                     nn.Name,
