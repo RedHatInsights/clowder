@@ -24,7 +24,7 @@ Bonfire is a cli tool used to deploy apps with Clowder. Bonfire comes with
 a local config option that we'll use to drop our ClowdApp into our minikube
 cluster. Read about getting started with bonfire on ephemeral environments [here](https://clouddot.pages.redhat.com/docs/dev/getting-started/ephemeral/index.html)
 
-We'll use our examples from [Getting Started](https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.rst) again. First, let's make a custom config for our ClowdApp so that bonfire can deploy it without
+We'll use our examples from [Getting Started](https://github.com/RedHatInsights/clowder/blob/master/docs/usage/getting-started.md) again. First, let's make a custom config for our ClowdApp so that bonfire can deploy it without
 us needing to push any configuration into app-interface.
 
 Type `bonfire config edit` and add the following to the 'apps' section:

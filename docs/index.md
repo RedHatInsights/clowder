@@ -111,7 +111,7 @@ relied on for production usage.
 ### Integration Tests in PR Check
 
 The PR check script uses the operator to deploy a temporary platform
-environment to run tests.  Once the tests complete, the the PR check script
+environment to run tests.  Once the tests complete, the PR check script
 will remove the CRs, triggering the operator to tear down the temporary
 environment.  Thus the operator needs to *quickly* set up and tear down
 environments.  This should also be contained in one namespace, as opposed to
@@ -188,7 +188,7 @@ Configuration:
 * Prometheus config
 * Prometheus push gateway config
 * Entitlements service config
-* publicly exposed?
+* Publicly exposed?
 
 ``ClowdApp`` resources will always depend on one ``ClowdEnvironment``, referenced
 by name in its ``base`` attribute.
@@ -216,7 +216,7 @@ Service hostnames for dependent apps will be added to the JSON configuration
 mounted into an app's container; hostnames for apps that are not listed as
 dependencies will not be added to the configuration.
 
-### OptionalDependencies
+### Optional Dependencies
 
 As well as mandatory dependencies, Clowder also supports the concept of optional
 dependencies. These will not prevent an app from being deployed and starting up
@@ -227,7 +227,7 @@ so that it can pick up the new configuration.
 ## Gateway
 
 At this time the operator will intend to use the new gateway configuration base
-on the https://github.com/RedHatInsights/turnpike[Turnpike] project.  This will enable the operator to dyanmically update
+on the [Turnpike](https://github.com/RedHatInsights/turnpike) project.  This will enable the operator to dynamically update
 the routing configuration of the gateway as apps are deployed or removed.
 
 A new CRD will be introduced to persist routing configuration:
@@ -345,7 +345,7 @@ most pods are idle.
 ## One Operator vs Many
 
 While each app team should be responsible for the operation of their own apps,
-the cost of building and maintaining many operators significantly outweights
+the cost of building and maintaining many operators significantly outweighs
 the benefit of placing greater operational responsibility on app teams.  Having
 to create an operator -- even using the Operator SDK using a shared library
 with examples -- is a high barrier to entry for any app team looking to build

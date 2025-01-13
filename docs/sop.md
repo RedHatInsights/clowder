@@ -5,7 +5,7 @@ Clowder itself.
 
 Clowder utilizes a common configuration format that is presented to each application, no matter
 the environment it is running in, enabling a far easier development experience. It governs many
-different aspects of an applications configuration from defining the port it should listen to for
+different aspects of an application's configuration from defining the port it should listen to for
 its main web service, to metrics, kafka and others. When using Clowder, the burden of identifying
 and defining dependency and core service credentials and connection information is removed.
 
@@ -39,7 +39,7 @@ providers and their modes, please see the relevant pages.
 
 #### Target Namespace
 
-Environmental resources, such as the Kafka/Zookeeper from the exmaple in the *Modes* section, will
+Environmental resources, such as the Kafka/Zookeeper from the example in the *Modes* section, will
 be placed in the ``ClowdEnvironment``'s target namespace. This is configured by setting the
 ``targetNamespace`` attribute of the ``ClowdEnvironment``. If it is omitted, a random target
 namespace is generated instead. The name of this resource can be found by inspecting the
@@ -82,7 +82,7 @@ exposed to the requesting app.  A ``ClowdApp`` will not be deployed if any of it
 dependencies do not exist within the coupled ``ClowdEnvironment``.
 
 Infrastructure dependencies, such as Kafka topics and object bucket storage, are defined in the
-``ClowdApp`` spec. More information on each of them is defined in the [API specification](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-clowdappspec).
+``ClowdApp`` spec. More information on each of them is defined in the [API specification](https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdappspec).
 
 #### Created Resources
 

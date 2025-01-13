@@ -41,12 +41,12 @@ func init() {
 ```
 
 The `ProvName` is an identifier that defines the name of the provider. Notice that the Golang
-pacakge name is the same as this identifier. This is a nice convention and one which should be
+package name is the same as this identifier. This is a nice convention and one which should be
 maintained when new providers are added. The next declaration is a MultiResourceIdent. These will be
-discussed in a little mroe detail below, but in short, this is a declaration of the resources that
+discussed in a little more detail below, but in short, this is a declaration of the resources that
 this particular provider will create.
 
-After that there is the `GetDeployment()` function. Every provider has some kind of `Get*()`
+After that, there is the `GetDeployment()` function. Every provider has some kind of `Get*()`
 function, which is responsible for creating deciding which mode to run the provider in. Depending on
 the environmental settings, providers can be run in different modes. The `deployment` provider is
 a core provider and as such as no modal configuration, i.e. there is only one mode. Providers with
@@ -113,7 +113,7 @@ _environment_ controller and will be reconciled whenever the `ClowdEnvironment` 
 
 By contrast, `ClowdApp` modifications trigger the _application_ reconciliation, which first runs
 the _environment_ function, in this case `NewDeploymentProvider()` before then running the
-`Provide()` function. This may seem odd and indeed is a design quirk of Clowder that iwill
+`Provide()` function. This may seem odd and indeed is a design quirk of Clowder that will
 hopefully be resolved in a later release. Its reasoning is that the environmental resources often
 need to provide information to the application level reconciliation, for instance to furnish the
 `cdappconfig` with the Kafka broker address. Since this information is calculated by the
@@ -131,7 +131,7 @@ providers that need to modify the resources of other providers result not only i
 update the same resources, but also can potentially trigger multiple reconciliations as updates to
 Clowder owned resources can trigger these.
 
-To reduce this burden, the Clowder system will onyl apply resources at the very end of the
+To reduce this burden, the Clowder system will only apply resources at the very end of the
 reconciliation. Until that time, resources are stored in the resource cache and providers are able
 to retrieve objects from this cache, update them, and then placed the updated versions back in the
 cache, so that their changes will be applied at the end of the reconciliation. This is where the
@@ -178,7 +178,7 @@ if err := dp.Cache.Update(CoreDeployment, d); err != nil {
 
 This call sends the object back to the cache where it is copied.
 
-When another provider wishes to apply updates to this resource, it first needs to retrieve it from the cache. A very simliar example may be seen in the
+When another provider wishes to apply updates to this resource, it first needs to retrieve it from the cache. A very similar example may be seen in the
 `serviceaccount` provider:
 
 ```golang
@@ -238,7 +238,7 @@ Please refer to the [Conventional Commits](https://www.conventionalcommits.org) 
 * ``perf``: For performance enhancements to code flow
 * ``test``: For any changes to tests
 
-Using a `!` after the `purpose/scope` denotes a breaking change in the context of Clowder, this should be used whenever the API for either the Clowd* CRD resources, as well as any change to the `cdappconfig.json` spec. An example of a breaing change is shown below:
+Using a `!` after the `purpose/scope` denotes a breaking change in the context of Clowder, this should be used whenever the API for either the Clowd* CRD resources, as well as any change to the `cdappconfig.json` spec. An example of a breaking change is shown below:
 
 ```
 chore(crd)!: Removes old web field value

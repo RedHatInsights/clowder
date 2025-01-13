@@ -95,7 +95,7 @@ first.
 
 ### How do I set up an internal port for inter-app communication?
 
-Two allow two apps to talk together internally without exposing a port to the public use the
+To allow two apps to talk together internally without exposing a port to the public, use the
 [`spec.deployments.webServices.private`](https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-privatewebservice)
 configuration stanza.
 

@@ -21,8 +21,8 @@ and setup backwards compatability
 * [ ] ``Dockerfile`` is up to date
 * [ ] ``build_deploy.sh`` is pushing to quay
 * [ ] ``pr_check.sh`` is building in ephemeral env and passing local tests
-* [ ] App interface entries for [Jenkins jobs are running](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-pr-check-and-build-master-jenkins-jobs-in-app-interface)
-* [ ] saas-deploy file [for Bonfire is enabled](https://github.com/RedHatInsights/clowder/tree/master/docs/migration#create-new-saas-deploy-file)
+* [ ] App interface entries for [Jenkins jobs are running](https://github.com/RedHatInsights/clowder/blob/master/docs/migration/migration.md#create-pr-check-and-build-master-jenkins-jobs-in-app-interface)
+* [ ] saas-deploy file [for Bonfire is enabled](https://github.com/RedHatInsights/clowder/blob/master/docs/migration/migration.md#create-new-saas-deploy-file)
 
 ## Backwards Compatibility
 * [ ] e2e builds are disabled

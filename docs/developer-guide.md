@@ -18,10 +18,10 @@
     NOTE: If you choose to place the kubebuilder executables in a different path, make sure to
     use the ``KUBEBUILDER_ASSETS`` env var when running tests (mentioned in ``Unit Tests`` section below)
 
-* Install https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/[kustomize]
+* Install [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/)
 ** The install script places a ``kustomize`` binary in whatever directory you ran the above script in. Move this binary to a folder that is on your ``PATH`` or make sure the directory is appended to your ``PATH``
 
-* Install https://minikube.sigs.k8s.io/docs/start/[minikube]. The latest release we have tested with is https://github.com/kubernetes/minikube/releases/tag/v1.20.0[v1.20.0].
+* Install [minikube](https://minikube.sigs.k8s.io/docs/start/). The latest release we have tested with is [v1.20.0](https://github.com/kubernetes/minikube/releases/tag/v1.20.0).
 
 NOTE: If you want/need to use OpenShift, you can install [Code Ready Containers](https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md), just be aware that it consumes a much larger amount of resources and our test helper scripts are designed to work with minikube.
 
@@ -30,9 +30,9 @@ We haven't had much success using the docker/podman drivers, and would recommend
 ### **KVM2-specific notes**
 
 * If you don't have virtualization enabled, follow the guide
-  on https://docs.fedoraproject.org/en-US/quick-docs/getting-started-with-virtualization/[the minikube docs]
+  on [the minikube docs](https://docs.fedoraproject.org/en-US/quick-docs/getting-started-with-virtualization/)
 
-* Note that ``virt-host-validate`` may throw errors related to cgroups on Fedora 33 -- which you can https://gitlab.com/libvirt/libvirt/-/issues/94[ignore]
+* Note that ``virt-host-validate`` may throw errors related to cgroups on Fedora 33 -- which you can [ignore](https://gitlab.com/libvirt/libvirt/-/issues/94)
 
 * If you don't want to enter a root password when minikube needs to modify its VM, add your user to the ``libvirt`` group:
 
@@ -113,8 +113,8 @@ Delve is a Go debugger. It allows you to run your app, set breakpoints, etc from
 VS Code an open source IDE that is popular with many of the Clowder developers. Setting up a debugger with VS Code is easy and provides a GUI for setting breakpoints, stepping through code, etc.
 
 * Run the through the Pre-requisites section above and make sure you have minikube running and the CRDs installed.
-* Install https://code.visualstudio.com/[VS Code]
-* Install the https://marketplace.visualstudio.com/items?itemName=golang.Go[Go extension] for VS Code
+* Install [VS Code](https://code.visualstudio.com/)
+* Install the [Go extension](https://marketplace.visualstudio.com/items?itemName=golang.Go) for VS Code
 * Open the Clowder code in VS Code
 * Create a launch.json file in the .vscode directory. Here's an example launch.json file:
 
@@ -172,7 +172,7 @@ We include a special make target that will launch a special debug instance of VS
   - You will see the green play button next to each test as well as the `run test` and `debug test` buttons above each test
   - You can use the run or debug test buttons to run and debug the tests from within VS Code
 
-  NOTE: Some features of VS Code may not work correctly when launched this way. We reccomend only launching code this way when you want to write and debug unit tests.
+  NOTE: Some features of VS Code may not work correctly when launched this way. We recommend only launching code this way when you want to write and debug unit tests.
 
 ### E2E Testing
 
@@ -181,7 +181,7 @@ There are two e2e testing scripts which:
 * build your code changes into a docker image (both ``podman`` or ``docker`` supported)
 * push the image into a registry
 * deploy the operator onto a kubernetes cluster
-* run `kuttl`` tests
+* run `kuttl` tests
 
 The scripts are:
 
@@ -253,7 +253,7 @@ Then be sure to add doc changes before committing, e.g.:
 ## Clowder configuration
 
 Clowder can read a configuration file in order to turn on certain debug options, toggle feature
-flags and perform profiling. By default clowder will read from the file
+flags and performs profiling. By default clowder will read from the file
 ``/config/clowder_config.json`` to configure itself. When deployed as a pod, it an optional volume
 is configured to look for a ``ConfigMap`` in the same namespace, called ``clowder-config`` which
 looks similar to the following.

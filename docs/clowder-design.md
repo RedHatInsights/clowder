@@ -42,11 +42,11 @@ applications have.  These use cases will be encoded into the API of the
 operator, which is of course CRDs.  There will be two CRDs:
 
 * ``ClowdEnvironment``
-This CR represents an instance of the entire cloud.redhat.com environment,
+This CRD represents an instance of the entire cloud.redhat.com environment,
 e.g. stage or prod.  It contains configuration for various aspects of the
 environment, implemented by *providers*.
 
-* ``ClowdApp`` This CR represents a all the configuration an app needs to be deployed into
+* ``ClowdApp`` This CRD represents all the configuration an app needs to be deployed into
 the cloud.redhat.com environment, including:
 
    * One or more deployment specs
@@ -63,7 +63,7 @@ How these CRs will be translated into lower level resource types:
 ![Clowder Flow](img/clowder-flow.svg)
 
 Apps will consume their environmental configuration from a JSON document mounted
-in their app container.  This JSON document contains the various configuration
+in their app container.  This JSON document contains various configurations
 that could be considered common across the platform or common kinds of resources
 that would be requested by an app on the platform, including:
 
