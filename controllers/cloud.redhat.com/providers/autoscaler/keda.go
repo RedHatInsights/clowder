@@ -42,7 +42,7 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, obj client.Obj
 
 	// Set up the watcher to watch the Deployment we created earlier.
 	scalerSpec := keda.ScaledObjectSpec{
-		ScaleTargetRef:  &keda.ScaleTarget{Name: obj.GetName(), Kind: obj.GetObjectKind().GroupVersionKind().Kind, APIVersion: obj.GetObjectKind().GroupVersionKind().Version},
+		ScaleTargetRef:  &keda.ScaleTarget{Name: obj.GetName(), Kind: obj.GetObjectKind().GroupVersionKind().Kind, APIVersion: obj.GetObjectKind().GroupVersionKind().GroupVersion().String()},
 		PollingInterval: deployment.AutoScaler.PollingInterval,
 		CooldownPeriod:  deployment.AutoScaler.CooldownPeriod,
 		Advanced:        deployment.AutoScaler.Advanced,
