@@ -51,6 +51,9 @@ func (a *appInterface) setKafkaCA(broker *config.BrokerConfig) error {
 			return err
 		}
 
+		a.HashCache.CreateOrUpdateObject(&kafkaCASecret, true)
+		a.HashCache.AddClowdObjectToObject(a.Env, &kafkaCASecret)
+
 		broker.Cacert = utils.StringPtr(string(kafkaCASecret.Data["ca.crt"]))
 		broker.Port = utils.IntPtr(9093)
 		broker.SecurityProtocol = utils.StringPtr("SSL")

@@ -32,6 +32,7 @@ type HashObject struct {
 	Hash      string
 	ClowdApps map[types.NamespacedName]bool
 	ClowdEnvs map[types.NamespacedName]bool
+	Always    bool
 }
 
 type HashCache struct {
@@ -46,11 +47,12 @@ func NewHashCache() HashCache {
 	}
 }
 
-func NewHashObject(hash string) HashObject {
+func NewHashObject(hash string, always bool) HashObject {
 	return HashObject{
 		Hash:      hash,
 		ClowdApps: map[types.NamespacedName]bool{},
 		ClowdEnvs: map[types.NamespacedName]bool{},
+		Always:    always,
 	}
 }
 
@@ -101,7 +103,7 @@ func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	}
 }
 
-func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
+func (hc *HashCache) CreateOrUpdateObject(obj client.Object, always bool) (bool, error) {
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
 
@@ -129,7 +131,7 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 	hashObject, ok := hc.data[id]
 
 	if !ok {
-		hashObj := NewHashObject(hash)
+		hashObj := NewHashObject(hash, always)
 		hc.data[id] = &hashObj
 		return true, nil
 	}
@@ -178,10 +180,6 @@ func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) str
 
 func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
 
-	if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != "true" {
-		return nil
-	}
-
 	var oType string
 
 	switch obj.(type) {
@@ -198,6 +196,11 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 	if !ok {
 		return ItemNotFoundError{item: fmt.Sprintf("%s/%s", id.NN.Name, id.NN.Namespace)}
 	}
+
+	if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != "true" && !hc.data[id].Always {
+		return nil
+	}
+
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
 
