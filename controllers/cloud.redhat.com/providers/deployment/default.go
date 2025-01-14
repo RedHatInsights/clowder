@@ -24,11 +24,11 @@ func (dp *deploymentProvider) EnvProvide() error {
 }
 
 func (dp *deploymentProvider) Provide(app *crd.ClowdApp) error {
-
 	for _, deployment := range app.Spec.Deployments {
-
-		if err := dp.makeDeployment(deployment, app); err != nil {
-			return err
+		if !deployment.UseStatefulSet {
+			if err := dp.makeDeployment(deployment, app); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

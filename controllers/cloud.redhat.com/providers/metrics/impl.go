@@ -6,6 +6,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
+	statefulsetProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/statefulset"
 	webProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -28,9 +29,16 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	}
 
 	d := &apps.Deployment{}
+	sts := &apps.StatefulSet{}
 
-	if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
-		return err
+	if deployment.UseStatefulSet {
+		if err := cache.Get(statefulsetProvider.CoreStatefulSet, sts, app.GetDeploymentNamespacedName(deployment)); err != nil {
+			return err
+		}
+	} else {
+		if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
+			return err
+		}
 	}
 
 	appProtocol := "http"
@@ -44,16 +52,30 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	s.Spec.Ports = append(s.Spec.Ports, metricsPort)
 
-	d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports,
-		core.ContainerPort{
-			Name:          "metrics",
-			ContainerPort: port,
-			Protocol:      core.ProtocolTCP,
-		},
-	)
+	if deployment.UseStatefulSet {
+		sts.Spec.Template.Spec.Containers[0].Ports = append(sts.Spec.Template.Spec.Containers[0].Ports,
+			core.ContainerPort{
+				Name:          "metrics",
+				ContainerPort: port,
+				Protocol:      core.ProtocolTCP,
+			},
+		)
+	} else {
+		d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports,
+			core.ContainerPort{
+				Name:          "metrics",
+				ContainerPort: port,
+				Protocol:      core.ProtocolTCP,
+			},
+		)
+	}
 
 	if err := cache.Update(webProvider.CoreService, s); err != nil {
 		return err
+	}
+
+	if deployment.UseStatefulSet {
+		return cache.Update(statefulsetProvider.CoreStatefulSet, sts)
 	}
 
 	return cache.Update(deployProvider.CoreDeployment, d)
