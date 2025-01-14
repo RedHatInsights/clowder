@@ -43,7 +43,7 @@ You can apply the environment's config and wait for it to become "ready" using:
 bonfire deploy-env -n jumpstart
 ```
 
-This will cause bonfire to apply the [default ephemeral template](https://github.com/RedHatInsights/bonfire/blob/master/bonfire/resources/ephemeral-cluster-clowdenvironment.yaml) and set the ``targetNamespace`` to ``jumpstart```
+This will cause bonfire to apply the [default ephemeral template](https://github.com/RedHatInsights/bonfire/blob/master/bonfire/resources/ephemeral-cluster-clowdenvironment.yaml) and set the ``targetNamespace`` to ``jumpstart``
 
 NOTE: You will only create a ClowdEnvironment in your local minikube. Stage
 and Production will have one ClowdEnv, respectively, shared by all apps in
@@ -55,7 +55,7 @@ Let's see what the ClowdEnv does.
 kubectl get env env-jumpstart -o yaml
 ```
 
-As you can see in the output, we have ``providers``_ for the different services. Some of these providers have caused certain deployments to appear in the environment's ``targetNamespace`` such as kafka, minio, featureflags service, etc.
+As you can see in the output, we have ``providers`` for the different services. Some of these providers have caused certain deployments to appear in the environment's ``targetNamespace`` such as kafka, minio, featureflags service, etc.
 These will be used by ClowdApps associated with this environment.
 
 ### Accessing services running inside your namespace

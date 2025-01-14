@@ -28,9 +28,9 @@ Github or Gitlab, then the migration can proceed.
 If it is decided to keep the project on Github, it must be open sourced.  This usually entails
 several things:
 
-. Adding a license file to the root of your repository
-. Adding a reference to the license at the top of each source file
-. Reviewing the repo's commit history for sensitive information
+* Adding a license file to the root of your repository
+* Adding a reference to the license at the top of each source file
+* Reviewing the repo's commit history for sensitive information
 
 ## Moving a Project from Github to Gitlab
 

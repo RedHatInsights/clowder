@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Download the [crc binary](https://developers.redhat.com/products/codeready-containers/overview) and follow the instructions to get crc running.
+* Download the [crc binary](https://crc.dev/docs/installing/#installing) and follow the instructions to get crc running.
 * Fork or clone the [Clowder repo](https://github.com/RedHatInsights/clowder)
 * Install [the Clowder dependencies](https://github.com/RedHatInsights/clowder#dependencies)
 * Run `make install`

@@ -2,7 +2,7 @@
 
 Jobs and CronJobs are currently enabled as part of the ClowdApp spec. The
 ``jobs`` field contains a list of all currently defined jobs. The spec for a 
-job is documented in the [Clowder API reference](https://redhatinsights.github.io/clowder/api_reference.html#k8s-api-cloud-redhat-com-clowder-v2-apis-cloud-redhat-com-v1alpha1-job).
+job is documented in the [Clowder API reference](https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-clowdjobinvocation).
 
 Jobs and CronJobs are split by a ``schedule`` field inside your job. If the job
 has a ``schedule``, it is assumed to be a CronJob. If not, Clowder runs your 
