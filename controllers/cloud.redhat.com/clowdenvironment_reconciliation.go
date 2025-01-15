@@ -7,6 +7,7 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/go-logr/logr"
@@ -57,6 +58,7 @@ type ClowdEnvironmentReconciliation struct {
 	env       *crd.ClowdEnvironment
 	log       *logr.Logger
 	oldStatus *crd.ClowdEnvironmentStatus
+	hashCache *hashcache.HashCache
 }
 
 // Returns a list of step methods that should be run during reconciliation
@@ -285,6 +287,8 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 }
 
 func (r *ClowdEnvironmentReconciliation) runProviders() (ctrl.Result, error) {
+	r.hashCache.RemoveClowdObjectFromObjects(r.env)
+
 	provider := providers.Provider{
 		Ctx:    r.ctx,
 		Client: r.client,
