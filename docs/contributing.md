@@ -200,6 +200,110 @@ resource is one which is expected to hold multiple resources of the same type, b
 different names. If these resources are required to be updated, then an `Update()` call is
 necessary on each one as can be seen above.
 
+### Handlers and Watching
+This file contains the entrypoints into the watch functions that are used in Clowder. Watches are
+used to get Clowder to reconcile when another resource changes. Clowder creates a number of
+resources, and example of which is a `Deployment`. When a Deployment that Clowder creates changes,
+Clowder needs to know about it so that it can reconcile again and replace the changes if necessary.
+Below is an example of multiple watches being set up in the controller.
+
+```golang
+watchers := []Watcher{
+    {obj: &apps.Deployment{}, filter: deploymentFilter},
+    {obj: &core.Service{}, filter: generationOnlyFilter},
+    {obj: &core.ConfigMap{}, filter: generationOnlyFilter},
+    {obj: &core.Secret{}, filter: alwaysFilter},
+}
+
+for _, watcher := range watchers {
+    err := r.setupWatch(ctrlr, mgr, watcher.obj, watcher.filter)
+    if err != nil {
+        return err
+    }
+}
+```
+
+This example sets up four watcher objects with various different filters. There are multiple levels
+of filtering that happens to ensure Clowder only reconciles when necessary is to employ the use of
+filters. An example of over reconciling would be when a deployment with multiple pods is started, or
+redeploys. Every time a pod becomes available, it will change the Deployment resources. This would
+ordinarily trigger a reconciliation of ClowdApp, or ClowdEnvironment that owns it. With the correct
+filtering in place that doesn't happen.
+
+The `generationOnlyFilter` looks like this:
+
+```golang
+func deploymentFilter(logr logr.Logger, ctrlName string) HandlerFuncs {
+	return genFilterFunc(deploymentUpdateFunc, logr, ctrlName)
+}
+```
+
+This creates a new `HandlerFuncs` object that has been configured with the `deploymentUpdateFunc`
+object.
+
+```golang
+func deploymentUpdateFunc(e event.UpdateEvent) bool {
+	objOld := e.ObjectOld.(*apps.Deployment)
+	objNew := e.ObjectNew.(*apps.Deployment)
+	if objNew.GetGeneration() != objOld.GetGeneration() {
+		return true
+	}
+	if (objOld.Status.AvailableReplicas != objNew.Status.AvailableReplicas) && (objNew.Status.AvailableReplicas == objNew.Status.ReadyReplicas) {
+		return true
+	}
+	if (objOld.Status.AvailableReplicas == objOld.Status.ReadyReplicas) && (objNew.Status.AvailableReplicas != objNew.Status.ReadyReplicas) {
+		return true
+	}
+	return false
+}
+```
+
+The `genFilterFunc` will take this `deploymentUpdateFunc` and apply it to the `Update` function of
+the `HandlerFuncs` object. In this example there are several checks made against the spec and in
+certain circumstances, a `true` will be returned. The `true` is an instruction to Clowder to
+reconcile objects that are owned by one of Clowder's resources.
+
+There are 4 events that can be triggered when resources change:
+* Create
+* Update
+* Delete
+* Generic
+
+The `genFilterFunc` returns an object that contains one of each of these functions.
+
+The functions are then tied to the watcher for a particular type and bound to the
+`enqueueRequestForObjectCustom` object in the handlers file. This handler is used for every request
+that comes into Clowder. When an Event arrives, the following code will be executed in the example
+of a `Create` event.
+
+```golang
+func (e *enqueueRequestForObjectCustom) Create(ctx context.Context, evt event.CreateEvent, q workqueue.TypedRateLimitingInterface[reconcile.Request]) {
+	shouldUpdate, err := e.updateHashCacheForConfigMapAndSecret(evt.Object)
+	if err != nil {
+		e.logMessage(evt.Object, err.Error(), "", getNamespacedName(evt.Object))
+	}
+
+	if shouldUpdate {
+		_ = e.doUpdateToHash(evt.Object, q)
+		e.reconcileAllAppsUsingObject(ctx, evt.Object, q)
+	}
+
+	if own, toKind := e.getOwner(evt.Object); own != nil {
+		if doRequest, msg := e.HandlerFuncs.CreateFunc(evt); doRequest {
+			e.logMessage(evt.Object, msg, toKind, own)
+			q.Add(reconcile.Request{NamespacedName: *own})
+		}
+	}
+}
+```
+
+This runs through some special routines that create a hashCache for for serets/configmaps, but
+ultimately ends up checking the ownership of the resource to ensure it's owned by the controller
+type `ClowdApp` for example. If it is owned by a ClowdApp, the `Create` function that was associated
+with the `HandlerFunc` object. If `doRequest` comes back as `true` then the owning Clowder resource
+is triggered for reconciliation.
+
+
 ## Commits
 We are currently testing [Conventional Commits](https://www.conventionalcommits.org) as a mandatory
 step in the pipeline. This requires that each commit to the repo be formatted in the following way:

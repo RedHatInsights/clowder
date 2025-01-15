@@ -230,10 +230,11 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
-	watchers := []Watcher{}
-	watchers = append(watchers, Watcher{obj: &apps.Deployment{}, filter: deploymentFilter})
-	watchers = append(watchers, Watcher{obj: &core.Service{}, filter: alwaysFilter})
-	watchers = append(watchers, Watcher{obj: &core.Secret{}, filter: alwaysFilter})
+	watchers := []Watcher{
+		{obj: &apps.Deployment{}, filter: deploymentFilter},
+		{obj: &core.Service{}, filter: alwaysFilter},
+		{obj: &core.Secret{}, filter: alwaysFilter},
+	}
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
 		watchers = append(watchers, Watcher{obj: &strimzi.Kafka{}, filter: kafkaFilter})
