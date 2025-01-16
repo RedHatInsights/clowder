@@ -1,0 +1,8 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-app-interface-ca puptoo -o json > /tmp/test-clowdapp-watcher-kafka-app-interface-ca
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-app-interface-ca | base64 -d > /tmp/test-clowdapp-watcher-kafka-app-interface-ca-json
+
+- script: jq -r '.kafka.brokers[0].cacert == "cacert"' -e < /tmp/test-clowdapp-watcher-kafka-app-interface-ca-json
