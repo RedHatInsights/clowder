@@ -2,7 +2,6 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 5
 - script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-managed-secret puptoo -o json > /tmp/test-clowdapp-watcher-kafka-managed-secret2
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-managed-secret2 | base64 -d > /tmp/test-clowdapp-watcher-kafka-managed-secret2-json
 
