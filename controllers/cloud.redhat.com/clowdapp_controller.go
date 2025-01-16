@@ -200,11 +200,12 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder.WithPredicates(environmentPredicate(r.Log, "app")),
 	)
 
-	watchers := []Watcher{}
-	watchers = append(watchers, Watcher{obj: &apps.Deployment{}, filter: deploymentFilter})
-	watchers = append(watchers, Watcher{obj: &core.Service{}, filter: generationOnlyFilter})
-	watchers = append(watchers, Watcher{obj: &core.ConfigMap{}, filter: generationOnlyFilter})
-	watchers = append(watchers, Watcher{obj: &core.Secret{}, filter: alwaysFilter})
+	watchers := []Watcher{
+		{obj: &apps.Deployment{}, filter: deploymentFilter},
+		{obj: &core.Service{}, filter: generationOnlyFilter},
+		{obj: &core.ConfigMap{}, filter: generationOnlyFilter},
+		{obj: &core.Secret{}, filter: alwaysFilter},
+	}
 
 	for _, watcher := range watchers {
 		err := r.setupWatch(ctrlr, mgr, watcher.obj, watcher.filter)
