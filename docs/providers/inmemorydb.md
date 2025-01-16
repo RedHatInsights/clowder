@@ -39,7 +39,7 @@ ClowdEnv Config options available:
 In elasticache mode, the *In-Memory DB Provider* will search for a secret named
 `in-memory-db` inside the same namespace as the `ClowdApp` that requested it.
 The hostname and port will then be passed to the `cdappconfig.json` for use by
-the app.
+the app. If a password is provided, it is known that in-transit encryption is enabled, as per [ElastiCache requirements](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth.html#auth-using).
 
 ## Generated App Configuration
 
