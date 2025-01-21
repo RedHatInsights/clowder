@@ -53,6 +53,8 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 				)
 			}
 
+			// ElastiCache and Terraform resources, via qontract-reconcile, guarantee that `db.auth_token` is provided
+			// only if in-transit encryption is enabled.
 			passwd := string(secret.Data["db.auth_token"])
 			if passwd != "" {
 				creds.Password = &passwd
