@@ -8662,7 +8662,7 @@ parameters:
 - name: ENABLE_KEDA_RESOURCES
   value: 'false'
 - name: OBJECTSTORE_IMAGE
-  value: quay.io/cloudservices/minio:RELEASE.2020-11-19T23-48-16Z-amd64
+  value: quay.io/cloudservices/minio:RELEASE.2025-01-20T14-49-07Z
 - name: FEATUREFLAGS_IMAGE
   value: quay.io/cloudservices/unleash-docker:5.6.9
 - name: DISABLE_STRIMZI_FINALIZER
