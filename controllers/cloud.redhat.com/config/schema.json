@@ -223,6 +223,30 @@
             },
             "required": []
         },
+        "KafkaMTLSConfig":{
+            "id": "kafkaMTLSConfig",
+            "type": "object",
+            "description": "MTLS Configuration for Kafka",
+            "properties": {
+                "cacert": {
+                    "description": "CA certificate trust list for validating client certs in PEM format (clients-ca)",
+                    "type": "string"
+                },
+                "cert": {
+                    "description": "Client certificate in PEM format",
+                    "type": "string"
+                },
+                "key": {
+                    "description": "Client private key in PEM format",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Password for client private key",
+                    "type": "string"
+                }
+            },
+            "required": []
+        },
         "BrokerConfig": {
             "id": "brokerConfig",
             "type": "object",
@@ -237,15 +261,18 @@
                     "type": "integer"
                 },
                 "cacert": {
-                    "description": "CA certificate trust list for broker in PEM format. If absent, client should use OS default trust list",
+                    "description": "CA certificate trust list for broker in PEM format (cluster-ca). If absent, client should use OS default trust list",
                     "type": "string"
                 },
                 "authtype": {
                     "type": "string",
-                    "enum": ["sasl"]
+                    "enum": ["sasl", "mtls"]
                 },
                 "sasl": {
                     "$ref": "#/definitions/KafkaSASLConfig"
+                },
+                "mtls": {
+                    "$ref": "#/definitions/KafkaMTLSConfig"
                 },
                 "securityProtocol": {
                     "description": "Broker security procotol, expect one of either: SASL_SSL, SSL",
