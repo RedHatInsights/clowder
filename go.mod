@@ -7,7 +7,7 @@ require (
 	github.com/RedHatInsights/cyndi-operator v0.1.12
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.12.0
-	github.com/RedHatInsights/strimzi-client-go v0.34.2
+	github.com/RedHatInsights/strimzi-client-go v0.38.0
 	github.com/caddyserver/caddy/v2 v2.8.4
 	github.com/cert-manager/cert-manager v1.12.14
 	github.com/go-logr/logr v1.4.2

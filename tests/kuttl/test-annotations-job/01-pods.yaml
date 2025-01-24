@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-clowder-jobs
+  name: test-annotations-job
 spec:
-  targetNamespace: test-clowder-jobs
+  targetNamespace: test-annotations-job
   providers:
     web:
       port: 8000
@@ -37,11 +37,11 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
   annotations:
     CustomAnnotation: "Much Annotate. Very inform."
 spec:
-  envName: test-clowder-jobs
+  envName: test-annotations-job
   deployments:
     - name: processor
       podSpec:
@@ -49,7 +49,7 @@ spec:
   jobs:
     - name: standard-cron
       schedule: "*/1 * * * *"
-      suspend: false 
+      suspend: false
       successfulJobsHistoryLimit: 2
       failedJobsHistoryLimit: 2
       activeDeadlineSeconds: 6000
@@ -69,7 +69,7 @@ spec:
         args:
           - ./clowder-hello
           - boo
-    - name: restart-on-failure 
+    - name: restart-on-failure
       schedule: "*/1 * * * *"
       restartPolicy: OnFailure
       podSpec:
@@ -95,7 +95,7 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
 metadata:
   name: runner
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
 spec:
   appName: puptoo
   jobs:

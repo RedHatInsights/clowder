@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: puptoo
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
   labels:
     app: puptoo
   ownerReferences:
@@ -16,13 +16,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: puptoo-processor
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
 ---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: puptoo-standard-cron
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
   annotations:
     CustomAnnotation: "Much Annotate. Very inform."
 spec:
@@ -55,7 +55,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: puptoo-suspend-cron
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
   annotations:
     CustomAnnotation: "Much Annotate. Very inform."
 spec:
@@ -82,7 +82,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: puptoo-restart-on-failure
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
   annotations:
     CustomAnnotation: "Much Annotate. Very inform."
 spec:
@@ -105,7 +105,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  namespace: test-clowder-jobs
+  namespace: test-annotations-job
   labels:
     job: puptoo-hello-cji
   annotations:
