@@ -84,6 +84,10 @@ func getKafkaUsername(env *crd.ClowdEnvironment, app *crd.ClowdApp) string {
 	return fmt.Sprintf("%s-%s", env.Name, app.Name)
 }
 
+func getKafkaMTLSUsername(env *crd.ClowdEnvironment, app *crd.ClowdApp) string {
+	return fmt.Sprintf("%s-%s-mtls", env.Name, app.Name)
+}
+
 func getKafkaName(e *crd.ClowdEnvironment) string {
 	if e.Spec.Providers.Kafka.Cluster.Name == "" {
 		// generate a unique name based on the ClowdEnvironment's UID

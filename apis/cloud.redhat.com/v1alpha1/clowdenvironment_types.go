@@ -224,6 +224,10 @@ type NamespacedName struct {
 	Namespace string `json:"namespace"`
 }
 
+// KafkaAuthType specifies valid broker authentication modes
+// +kubebuilder:validation:Enum=sasl,mtls,none
+type KafkaAuthType string
+
 // KafkaConfig configures the Clowder provider controlling the creation of
 // Kafka instances.
 type KafkaConfig struct {
@@ -236,7 +240,10 @@ type KafkaConfig struct {
 	// and configured to auto-create topics.
 	Mode KafkaMode `json:"mode"`
 
-	// EnableLegacyStrimzi disables TLS + user auth
+	// AuthTypes indicates which authentication types the cluster advertises (default: [sasl])
+	AuthTypes []KafkaAuthType `json:"authTypes,omitempty"`
+
+	// EnableLegacyStrimzi disables TLS and sets authTypes to 'none'
 	EnableLegacyStrimzi bool `json:"enableLegacyStrimzi,omitempty"`
 
 	// If using the (*_local_*) or (*_operator_*) mode and PVC is set to true, this sets the provisioned
