@@ -192,6 +192,12 @@
                     "items": {
                         "$ref": "#/definitions/TopicConfig"
                     }
+                },
+                "mtls": {
+                    "$ref": "#/definitions/KafkaMTLSConfig"
+                },
+                "sasl": {
+                    "$ref": "#/definitions/KafkaSASLConfig"
                 }
             },
             "required": [
@@ -202,7 +208,7 @@
         "KafkaSASLConfig":{
             "id": "kafkaSASLConfig",
             "type": "object",
-            "description": "SASL Configuration for Kafka",
+            "description": "Configuration to use for brokers using SASL auth type",
             "properties": {
                 "username": {
                     "description": "Broker SASL username",
@@ -213,7 +219,7 @@
                     "type": "string"
                 },
                 "securityProtocol": {
-                    "description": "Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead",
+                    "description": "Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, refer to securityProtocol field in brokerConfig instead",
                     "type": "string"
                 },
                 "saslMechanism": {
@@ -226,22 +232,26 @@
         "KafkaMTLSConfig":{
             "id": "kafkaMTLSConfig",
             "type": "object",
-            "description": "MTLS Configuration for Kafka",
+            "description": "Configuration to use for brokers using MTLS auth type",
             "properties": {
                 "cacert": {
-                    "description": "CA certificate trust list for validating client certs in PEM format (clients-ca)",
+                    "description": "CA certificate trust list for validating user certs in PEM format (clients-ca)",
                     "type": "string"
                 },
-                "cert": {
-                    "description": "Client certificate in PEM format",
+                "userCert": {
+                    "description": "User certificate in PEM format",
                     "type": "string"
                 },
-                "key": {
-                    "description": "Client private key in PEM format",
+                "userKey": {
+                    "description": "User private key in PEM format",
                     "type": "string"
                 },
-                "password": {
-                    "description": "Password for client private key",
+                "userPassword": {
+                    "description": "Password for private key",
+                    "type": "string"
+                },
+                "userPkcs12": {
+                    "description": "User certificate and key in .p12 format",
                     "type": "string"
                 }
             },
@@ -250,7 +260,7 @@
         "BrokerConfig": {
             "id": "brokerConfig",
             "type": "object",
-            "description": "Broker Configuration",
+            "description": "Kafka broker connection information",
             "properties": {
                 "hostname": {
                     "description": "Hostname of kafka broker",
@@ -265,14 +275,13 @@
                     "type": "string"
                 },
                 "authtype": {
+                    "description": "Authentication method used by the broker",
                     "type": "string",
                     "enum": ["sasl", "mtls"]
                 },
                 "sasl": {
-                    "$ref": "#/definitions/KafkaSASLConfig"
-                },
-                "mtls": {
-                    "$ref": "#/definitions/KafkaMTLSConfig"
+                    "$ref": "#/definitions/KafkaSASLConfig",
+                    "description": "Configuration to use for brokers using SASL auth type. DEPRECATED, refer to 'sasl' field under kafkaConfig instead"
                 },
                 "securityProtocol": {
                     "description": "Broker security procotol, expect one of either: SASL_SSL, SSL",
