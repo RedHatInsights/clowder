@@ -130,11 +130,12 @@ func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error
 func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() error {
 
 	provider := providers.Provider{
-		Ctx:    r.ctx,
-		Client: r.client,
-		Env:    r.env,
-		Cache:  r.cache,
-		Log:    *r.log,
+		Ctx:       r.ctx,
+		Client:    r.client,
+		Env:       r.env,
+		Cache:     r.cache,
+		Log:       *r.log,
+		HashCache: r.hashCache,
 	}
 
 	err := runProvidersForEnvFinalize(*r.log, provider)
@@ -290,11 +291,12 @@ func (r *ClowdEnvironmentReconciliation) runProviders() (ctrl.Result, error) {
 	r.hashCache.RemoveClowdObjectFromObjects(r.env)
 
 	provider := providers.Provider{
-		Ctx:    r.ctx,
-		Client: r.client,
-		Env:    r.env,
-		Cache:  r.cache,
-		Log:    *r.log,
+		Ctx:       r.ctx,
+		Client:    r.client,
+		Env:       r.env,
+		Cache:     r.cache,
+		Log:       *r.log,
+		HashCache: r.hashCache,
 	}
 	provErr := runProvidersForEnv(*r.log, provider)
 
