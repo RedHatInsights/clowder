@@ -1,0 +1,25 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-clowdapp-watcher-kafka-msk
+- apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaTopic
+  name: test-clowdapp-watcher-kafka-msk
+- apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaTopic
+  name: test-clowdapp-watcher-kafka-msk-topic-one
+- apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaTopic
+  name: test-clowdapp-watcher-kafka-msk-topic-two
+- apiVersion: v1
+  kind: Namespace
+  name: test-clowdapp-watcher-kafka-msk-env
+- apiVersion: v1
+  kind: Namespace
+  name: test-clowdapp-watcher-kafka-msk-sec-source
+- apiVersion: v1
+  kind: Namespace
+  name: test-clowdapp-watcher-kafka-msk
