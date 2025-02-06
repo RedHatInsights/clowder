@@ -53,6 +53,21 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
+	ssList := apps.StatefulSetList{}
+	if err := ch.Cache.List(deployProvider.CoreStatefulSet, &ssList); err != nil {
+		return err
+	}
+
+	for _, statefulset := range ssList.Items {
+		ssInner := statefulset
+		annotations := map[string]string{"configHash": hash}
+		utils.UpdateAnnotations(&ssInner.Spec.Template, annotations)
+
+		if err := ch.Cache.Update(deployProvider.CoreStatefulSet, &ssInner); err != nil {
+			return err
+		}
+	}
+
 	jList := batch.CronJobList{}
 	if err := ch.Cache.List(cronjobProvider.CoreCronJob, &jList); err != nil {
 		return err

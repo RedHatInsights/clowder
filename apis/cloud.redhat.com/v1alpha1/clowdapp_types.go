@@ -238,6 +238,12 @@ type Deployment struct {
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
+
+	Stateful StatefulSpec `json:"statefulSpec,omitempty"`
+}
+
+type StatefulSpec struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 func (d *Deployment) GetReplicaCount() *int32 {

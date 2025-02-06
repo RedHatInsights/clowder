@@ -48,5 +48,24 @@ func (ch *servicemeshProvider) Provide(_ *crd.ClowdApp) error {
 		}
 	}
 
+	ssList := apps.StatefulSetList{}
+	if err := ch.Cache.List(deployProvider.CoreStatefulSet, &ssList); err != nil {
+		return err
+	}
+
+	for _, statefulset := range ssList.Items {
+		innerStatefulSet := statefulset
+		annotations := map[string]string{
+			"sidecar.istio.io/inject":                       "true",
+			"traffic.sidecar.istio.io/excludeOutboundPorts": "443,9093,5432,10000",
+		}
+		utils.UpdateAnnotations(&innerStatefulSet.Spec.Template, annotations)
+
+		err := ch.Cache.Update(deployProvider.CoreStatefulSet, &innerStatefulSet)
+		if err != nil {
+			return fmt.Errorf("could not update annotations: %w", err)
+		}
+	}
+
 	return nil
 }
