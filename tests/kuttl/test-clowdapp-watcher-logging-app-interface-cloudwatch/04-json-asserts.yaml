@@ -1,0 +1,16 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: kubectl get secret --namespace=test-clowdapp-watcher-logging-app-interface-clowdwatch puptoo -o json > /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch2
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch2 | base64 -d > /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json
+
+- script: cat /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
+- script: cat /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json
+
+- script: jq -r '.logging.cloudwatch.secretAccessKey == "strong-top-secret"' -e < /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json
+
+- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-json > /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache
+- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json > /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache2
+
+- script: diff /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache2 > /dev/null || exit 0 && exit 1
