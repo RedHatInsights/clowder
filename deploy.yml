@@ -6592,9 +6592,12 @@ objects:
                             Provider. Valid options are: (*_app-interface_*) where
                             the provider will pass through database credentials found
                             in the secret defined by the database name in the ClowdApp,
-                            and (*_local_*) where the provider will spin up a local
-                            instance of the database.'
+                            (*_local_*) where the provider will spin up a local instance
+                            of the database, and (*_single_*) that is similar to local
+                            but keeps only one database deployment and isolates apps
+                            by PG schemas.'
                           enum:
+                          - single
                           - shared
                           - app-interface
                           - local
