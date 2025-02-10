@@ -359,7 +359,8 @@ type ObjectStoreConfig struct {
 }
 
 type FeatureFlagsImages struct {
-	Unleash string `json:"unleash,omitempty"`
+	Unleash     string `json:"unleash,omitempty"`
+	UnleashEdge string `json:"unleashEdge,omitempty"`
 }
 
 // FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags
