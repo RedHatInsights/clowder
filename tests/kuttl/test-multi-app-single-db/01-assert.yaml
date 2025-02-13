@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-single-db-db-single
+  namespace: test-single-db
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:16-759c25d
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-single-db-db-single
+  namespace: test-single-db
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-a-db
+  namespace: test-single-db
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-b-db
+  namespace: test-single-db
