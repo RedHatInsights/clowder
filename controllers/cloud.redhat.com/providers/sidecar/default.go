@@ -189,7 +189,7 @@ func getOtelCollector(appName string) *core.Container {
 	}
 	cont.VolumeMounts = []core.VolumeMount{{
 		Name:      fmt.Sprintf("%s-otel-config", appName),
-		MountPath: "/etc/otelcol/config.yaml",
+		MountPath: "/etc/otelcol/",
 	}}
 	return &cont
 }
