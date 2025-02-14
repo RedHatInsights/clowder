@@ -1,0 +1,23 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+
+- script: kubectl get secret --namespace=test-single-db app-a -o json > /tmp/secret-app-a.json
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/secret-app-a.json | base64 -d > /tmp/clowdcfg-app-a.json
+- script: jq -r '.database.hostname == "test-single-db-db-single.test-single-db.svc"' -e < /tmp/clowdcfg-app-a.json
+- script: jq -r '.database.name == "test-single-db"' -e < /tmp/clowdcfg-app-a.json
+- script: jq -r '.database.username == "app-a"' -e < /tmp/clowdcfg-app-a.json
+
+- script: kubectl get secret --namespace=test-single-db app-b -o json > /tmp/secret-app-b.json
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/secret-app-b.json | base64 -d > /tmp/clowdcfg-app-b.json
+- script: jq -r '.database.hostname == "test-single-db-db-single.test-single-db.svc"' -e < /tmp/clowdcfg-app-b.json
+- script: jq -r '.database.name == "test-single-db"' -e < /tmp/clowdcfg-app-b.json
+- script: jq -r '.database.username == "app-b"' -e < /tmp/clowdcfg-app-b.json
+
+- script: kubectl get secret --namespace=test-single-db app-c -o json > /tmp/secret-app-c.json
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/secret-app-c.json | base64 -d > /tmp/clowdcfg-app-c.json
+- script: jq -r '.database.hostname == "test-single-db-db-single.test-single-db.svc"' -e < /tmp/clowdcfg-app-c.json
+- script: jq -r '.database.name == "test-single-db"' -e < /tmp/clowdcfg-app-c.json
+- script: jq -r '.database.username == "app-a"' -e < /tmp/clowdcfg-app-c.json

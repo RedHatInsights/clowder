@@ -387,7 +387,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[DatabaseMode](#databasemode)_ | The mode of operation of the Clowder Database Provider. Valid options are:<br />(*_app-interface_*) where the provider will pass through database credentials<br />found in the secret defined by the database name in the ClowdApp, and (*_local_*)<br />where the provider will spin up a local instance of the database. |  | Enum: [shared app-interface local none] <br /> |
+| `mode` _[DatabaseMode](#databasemode)_ | The mode of operation of the Clowder Database Provider. Valid options are:<br />(*_app-interface_*) where the provider will pass through database credentials<br />found in the secret defined by the database name in the ClowdApp, (*_local_*)<br />where the provider will spin up a local instance of the database, (*_shared_*)<br />where the provider will spin up only one shared instance per requested<br />PostgreSQL version, and (*_single_*) that is similar to local and shared modes<br />but keeps only one database deployment and isolates apps by PG schemas. |  | Enum: [single shared app-interface local none] <br /> |
 | `caBundleURL` _string_ | Indicates where Clowder will fetch the database CA certificate bundle from. Currently only used in<br />(*_app-interface_*) mode. If none is specified, the AWS RDS combined CA bundle is used. |  | Pattern: `^https?:\/\/.+$` <br /> |
 | `pvc` _boolean_ | If using the (*_local_*) mode and PVC is set to true, this instructs the local<br />Database instance to use a PVC instead of emptyDir for its volumes. |  |  |
 
@@ -399,7 +399,7 @@ _Underlying type:_ _string_
 DatabaseMode details the mode of operation of the Clowder Database Provider
 
 _Validation:_
-- Enum: [shared app-interface local none]
+- Enum: [single shared app-interface local none]
 
 _Appears in:_
 - [DatabaseConfig](#databaseconfig)

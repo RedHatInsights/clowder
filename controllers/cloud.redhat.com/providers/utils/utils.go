@@ -7,10 +7,12 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	"github.com/go-logr/logr"
+	"github.com/lib/pq"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -18,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
@@ -33,7 +36,10 @@ var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
 var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
+var DefaultImageDatabasePG = DefaultImageDatabasePG16
 var DefaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var DefaultPGPort = "5432"
+var DefaultPGAdminUsername = "postgres"
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -171,6 +177,47 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
 func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, capacity string) {
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
+}
+
+func PGAdminConnectionStr(cfg *config.DatabaseConfig, dbname string) string {
+	return fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		pq.QuoteLiteral(cfg.Hostname),
+		cfg.Port,
+		pq.QuoteLiteral(cfg.AdminUsername),
+		pq.QuoteLiteral(cfg.AdminPassword),
+		pq.QuoteLiteral(dbname),
+		pq.QuoteLiteral(cfg.SslMode),
+	)
+}
+
+func ReadDbConfigFromSecret(p providers.Provider, resourceIdent rc.ResourceIdent, dbCfg *config.DatabaseConfig, nn types.NamespacedName) error {
+	secret := &core.Secret{}
+
+	var err error
+	if resourceIdent != nil {
+		err = p.Cache.Get(resourceIdent, secret, nn)
+	} else {
+		err = fmt.Errorf("no cache")
+	}
+	if err != nil {
+		if err := p.Client.Get(p.Ctx, nn, secret); err != nil {
+			return errors.Wrap("couldn't get db secret", err)
+		}
+	}
+
+	secMap := make(map[string]string)
+	for k, v := range secret.Data {
+		(secMap)[k] = string(v)
+	}
+
+	if err := dbCfg.Populate(&secMap); err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
+	dbCfg.AdminUsername = DefaultPGAdminUsername
+	dbCfg.SslMode = "disable"
+
+	return nil
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment

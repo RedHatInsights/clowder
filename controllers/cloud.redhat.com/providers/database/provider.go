@@ -18,6 +18,8 @@ var imageList map[int32]string
 func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 	dbMode := c.Env.Spec.Providers.Database.Mode
 	switch dbMode {
+	case "single":
+		return NewSingleDBProvider(c)
 	case "shared":
 		return NewSharedDBProvider(c)
 	case "local":

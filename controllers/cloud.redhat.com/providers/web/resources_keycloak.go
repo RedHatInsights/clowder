@@ -82,7 +82,7 @@ func configureKeycloakDB(web *localWebProvider) error {
 
 		return map[string]string{
 			"hostname": hostname,
-			"port":     "5432",
+			"port":     provutils.DefaultPGPort,
 			"username": username,
 			"password": password,
 			"pgPass":   pgPassword,
@@ -273,7 +273,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePor
 		},
 		{
 			Name:  "KC_DB_URL_PORT",
-			Value: "5432",
+			Value: provutils.DefaultPGPort,
 		},
 		{
 			Name:  "PROXY_ADDRESS_FORWARDING",
