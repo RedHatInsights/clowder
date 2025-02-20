@@ -114,11 +114,11 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 	}
 
 	for _, dep := range app.Spec.Deployments {
-		d := &apps.Deployment{}
 		innerDeployment := dep
 		nn := app.GetDeploymentNamespacedName(&innerDeployment)
 
-		if err := sa.Cache.Get(deployment.CoreDeployment, d, nn); err != nil {
+		podTemplate, err := deployment.GetPodTemplateFromObject(&innerDeployment, sa.Cache, nn)
+		if err != nil {
 			return err
 		}
 
@@ -128,8 +128,8 @@ func (sa *serviceaccountProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		d.Spec.Template.Spec.ServiceAccountName = nn.Name
-		if err := sa.Cache.Update(deployment.CoreDeployment, d); err != nil {
+		podTemplate.Spec.ServiceAccountName = nn.Name
+		if err := deployment.UpdatePodTemplate(&innerDeployment, podTemplate, sa.Cache, nn); err != nil {
 			return err
 		}
 

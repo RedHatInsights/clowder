@@ -9,7 +9,6 @@ import (
 	webProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -27,9 +26,9 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		return err
 	}
 
-	d := &apps.Deployment{}
-
-	if err := cache.Get(deployProvider.CoreDeployment, d, app.GetDeploymentNamespacedName(deployment)); err != nil {
+	nn := app.GetDeploymentNamespacedName(deployment)
+	pt, err := deployProvider.GetPodTemplateFromObject(deployment, cache, nn)
+	if err != nil {
 		return err
 	}
 
@@ -44,7 +43,7 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	s.Spec.Ports = append(s.Spec.Ports, metricsPort)
 
-	d.Spec.Template.Spec.Containers[0].Ports = append(d.Spec.Template.Spec.Containers[0].Ports,
+	pt.Spec.Containers[0].Ports = append(pt.Spec.Containers[0].Ports,
 		core.ContainerPort{
 			Name:          "metrics",
 			ContainerPort: port,
@@ -56,7 +55,7 @@ func makeMetrics(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		return err
 	}
 
-	return cache.Update(deployProvider.CoreDeployment, d)
+	return deployProvider.UpdatePodTemplate(deployment, pt, cache, nn)
 }
 
 func createMetricsOnDeployments(cache *rc.ObjectCache, env *crd.ClowdEnvironment, app *crd.ClowdApp, c *config.AppConfig) error {
