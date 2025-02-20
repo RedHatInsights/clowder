@@ -173,6 +173,18 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
 }
 
+func GetInMemoryDBImage(o obj.ClowdObject) string {
+	if env, ok := o.(*crd.ClowdEnvironment); ok {
+		if env.Spec.Providers.InMemoryDB.Image != "" {
+			return env.Spec.Providers.InMemoryDB.Image
+		}
+	}
+	if clowderconfig.LoadedConfig.Images.InMemoryDB != "" {
+		return clowderconfig.LoadedConfig.Images.InMemoryDB
+	}
+	return DefaultImageInMemoryDB
+}
+
 // GetCaddyImage returns the caddy image to use in a given environment
 func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.Images.CaddyGateway != "" {

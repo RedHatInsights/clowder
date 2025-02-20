@@ -574,6 +574,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `unleash` _string_ |  |  |  |
+| `unleashEdge` _string_ |  |  |  |
 
 
 #### FeatureFlagsMode
@@ -640,6 +641,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `mode` _[InMemoryMode](#inmemorymode)_ | The mode of operation of the Clowder InMemory Provider. Valid options are:<br />(*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)<br />which will search the namespace of the ClowdApp for a secret called 'elasticache' |  | Enum: [redis app-interface elasticache none] <br /> |
 | `pvc` _boolean_ | If using the (*_local_*) mode and PVC is set to true, this instructs the local<br />Database instance to use a PVC instead of emptyDir for its volumes. |  |  |
+| `image` _string_ | This image is only used in the (*_redis_*) mode, as elsewhere it will try to<br />inspect for a secret for a hostname and credentials. |  |  |
 
 
 #### InMemoryMode
