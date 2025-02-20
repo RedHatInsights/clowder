@@ -19,6 +19,7 @@ type ClowderConfig struct {
 		FeatureFlagsUnleashEdge string `json:"featureFlagsUnleashEdge"`
 		TokenRefresher          string `json:"tokenRefresher"`
 		OtelCollector           string `json:"otelCollector"`
+		InMemoryDB              string `json:"inMemoryDB"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {

@@ -412,6 +412,10 @@ type InMemoryDBConfig struct {
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
+
+	// This image is only used in the (*_redis_*) mode, as elsewhere it will try to
+	// inspect for a secret for a hostname and credentials.
+	Image string `json:"image,omitempty"`
 }
 
 // AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility

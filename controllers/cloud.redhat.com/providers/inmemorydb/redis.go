@@ -147,7 +147,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
-		Image: providerUtils.DefaultImageInMemoryDB,
+		Image: providerUtils.GetInMemoryDBImage(o),
 		Env:   []core.EnvVar{},
 		Ports: []core.ContainerPort{{
 			Name:          "redis",
