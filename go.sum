@@ -31,8 +31,8 @@ github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/RedHatInsights/crc-caddy-plugin v0.4.0 h1:lFt3GtOydQrHfY4DLJRPU5z7gF4/HxOXERmybrUBVaM=
 github.com/RedHatInsights/crc-caddy-plugin v0.4.0/go.mod h1:Kbv83jRxToigD6zJnCG+asfwXtbJUPA7L14EQUfpJKY=
-github.com/RedHatInsights/cyndi-operator v0.1.12 h1:ZfFLkAuE1Y5gzoZUJxQroBP3qa3fkkY91nm5VeaZXa8=
-github.com/RedHatInsights/cyndi-operator v0.1.12/go.mod h1:+14znST9XtWHg5iWPdUjcM2cfO/jIZ9344OxiWyLyWA=
+github.com/RedHatInsights/cyndi-operator v0.1.13 h1:8xn6z04Bl8A6DG9v8xnb5RGOobZIY911D63+mABkYRk=
+github.com/RedHatInsights/cyndi-operator v0.1.13/go.mod h1:+14znST9XtWHg5iWPdUjcM2cfO/jIZ9344OxiWyLyWA=
 github.com/RedHatInsights/go-difflib v1.0.0 h1:BoruyjZfxO81sEynhkG6c4SMAQOjuBWezcJxtGK8dyw=
 github.com/RedHatInsights/go-difflib v1.0.0/go.mod h1:UMKOFdypYfrKT1B1nbGodM09nhOiAmcjes8qWP7Myrs=
 github.com/RedHatInsights/rhc-osdk-utils v0.12.0 h1:hjJ+U7a+/BCXQb7Y/CIpERv5Cm9wIY1VaPkQkBATWW8=
