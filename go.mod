@@ -4,7 +4,7 @@ go 1.22.7
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.4.0
-	github.com/RedHatInsights/cyndi-operator v0.1.12
+	github.com/RedHatInsights/cyndi-operator v0.1.13
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.12.0
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
