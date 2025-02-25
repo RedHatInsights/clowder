@@ -94,7 +94,8 @@ release: manifests kustomize controller-gen
 	$(KUSTOMIZE) build config/release-manifest >> manifest.yaml
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./controllers/..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) crd webhook paths="./apis/..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./controllers/..."
 
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./controllers/..."
