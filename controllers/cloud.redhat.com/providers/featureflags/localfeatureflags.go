@@ -425,6 +425,10 @@ func makeLocalFeatureFlagsEdge(o obj.ClowdObject, objMap providers.ObjectMap, _ 
 				"memory": resource.MustParse("100Mi"),
 				"cpu":    resource.MustParse("100m"),
 			},
+			Limits: core.ResourceList{
+				"memory": resource.MustParse("400Mi"),
+				"cpu":    resource.MustParse("200m"),
+			},
 		},
 	}
 
