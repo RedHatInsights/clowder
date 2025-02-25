@@ -422,7 +422,7 @@ func makeLocalFeatureFlagsEdge(o obj.ClowdObject, objMap providers.ObjectMap, _ 
 		ImagePullPolicy: core.PullIfNotPresent,
 		Resources: core.ResourceRequirements{
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("100Mi"),
+				"memory": resource.MustParse("200Mi"),
 				"cpu":    resource.MustParse("100m"),
 			},
 			Limits: core.ResourceList{
