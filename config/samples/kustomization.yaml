@@ -3,4 +3,6 @@ resources:
 - cloud.redhat.com_v1alpha1_clowdenvironment.yaml
 - cloud.redhat.com_v1alpha1_clowdjobinvocation.yaml
 - cloud.redhat.com_v1alpha1_clowdapp.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 #+kubebuilder:scaffold:manifestskustomizesamples
