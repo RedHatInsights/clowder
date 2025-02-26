@@ -39,7 +39,7 @@ func configureMocktitlements(web *localWebProvider) error {
 		WebMocktitlementsService,
 	}
 
-	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "mocktitlements", makeMocktitlements, false, web.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(web, objList, web.Env, "mocktitlements", makeMocktitlements, false); err != nil {
 		return err
 	}
 
@@ -158,7 +158,7 @@ func makeMocktitlementsIngress(p *providers.Provider) error {
 	return p.Cache.Update(WebMocktitlementsIngress, netobj)
 }
 
-func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+func makeMocktitlements(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mocktitlements")
 

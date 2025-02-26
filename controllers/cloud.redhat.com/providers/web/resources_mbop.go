@@ -39,7 +39,7 @@ func configureMBOP(web *localWebProvider) error {
 		WebBOPService,
 	}
 
-	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "mbop", makeBOP, false, web.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(web, objList, web.Env, "mbop", makeBOP, false); err != nil {
 		return err
 	}
 
@@ -171,7 +171,7 @@ func makeBOPIngress(p *providers.Provider) error {
 	return p.Cache.Update(WebBOPIngress, netobj)
 }
 
-func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+func makeBOP(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	snn := providers.GetNamespacedName(o, "keycloak")
 	nn := providers.GetNamespacedName(o, "mbop")
 
