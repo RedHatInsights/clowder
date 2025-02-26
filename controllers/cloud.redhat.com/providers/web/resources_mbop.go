@@ -39,7 +39,7 @@ func configureMBOP(web *localWebProvider) error {
 		WebBOPService,
 	}
 
-	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, web.Env, "mbop", makeBOP, false, web.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(web, objList, web.Env, "mbop", makeBOP, false); err != nil {
 		return err
 	}
 

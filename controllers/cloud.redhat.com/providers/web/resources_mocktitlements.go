@@ -39,7 +39,7 @@ func configureMocktitlements(web *localWebProvider) error {
 		WebMocktitlementsService,
 	}
 
-	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, web.Env, "mocktitlements", makeMocktitlements, false, web.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(web, objList, web.Env, "mocktitlements", makeMocktitlements, false); err != nil {
 		return err
 	}
 

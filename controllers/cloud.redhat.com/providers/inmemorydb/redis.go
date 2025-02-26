@@ -86,7 +86,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		RedisService,
 	}
 
-	return providers.CachedMakeComponent(r.Provider.Cache, objList, r.Env, app, "redis", makeLocalRedis, false, r.Env.IsNodePort())
+	return providers.CachedMakeComponent(r, objList, app, "redis", makeLocalRedis, false)
 }
 
 func makeLocalRedis(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {

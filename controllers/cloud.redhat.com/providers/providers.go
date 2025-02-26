@@ -184,13 +184,13 @@ type ObjectMap map[rc.ResourceIdent]client.Object
 
 // CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
-func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, env *crd.ClowdEnvironment, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
+func CachedMakeComponent(prov RootProvider, objList []rc.ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool) error {
 	nn := GetNamespacedName(o, suffix)
 
 	makeFnMap := make(map[rc.ResourceIdent]client.Object)
 
 	for _, v := range objList {
-		obj, err := createResource(cache, v, nn)
+		obj, err := createResource(prov.GetCache(), v, nn)
 
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
@@ -200,13 +200,13 @@ func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, env 
 
 	}
 
-	err := fn(env, o, makeFnMap, usePVC, nodePort)
+	err := fn(prov.GetEnv(), o, makeFnMap, usePVC, prov.GetEnv().IsNodePort())
 	if err != nil {
 		return fmt.Errorf("could not make component: %w", err)
 	}
 
 	for k, v := range makeFnMap {
-		err := updateResource(cache, k, v)
+		err := updateResource(prov.GetCache(), k, v)
 
 		if err != nil {
 			return errors.Wrap(fmt.Sprintf("make-%s: get", suffix), err)
