@@ -91,7 +91,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		LocalFFService,
 	}
 
-	if err := providers.CachedMakeComponent(ff.Cache, objList, ff.Env, "featureflags", makeLocalFeatureFlags, false, ff.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(ff.Cache, objList, ff.Env, ff.Env, "featureflags", makeLocalFeatureFlags, false, ff.Env.IsNodePort()); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		LocalFFEdgeService,
 	}
 
-	if err := providers.CachedMakeComponent(ff.Cache, objList2, ff.Env, "featureflags-edge", makeLocalFeatureFlagsEdge, false, ff.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(ff.Cache, objList2, ff.Env, ff.Env, "featureflags-edge", makeLocalFeatureFlagsEdge, false, ff.Env.IsNodePort()); err != nil {
 		return err
 	}
 
@@ -229,7 +229,7 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 	return nil
 }
 
-func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+func makeLocalFeatureFlags(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "featureflags")
 
 	dd := objMap[LocalFFDeployment].(*apps.Deployment)
@@ -340,7 +340,7 @@ func makeLocalFeatureFlags(o obj.ClowdObject, objMap providers.ObjectMap, _ bool
 	return nil
 }
 
-func makeLocalFeatureFlagsEdge(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+func makeLocalFeatureFlagsEdge(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 
 	nnFF := providers.GetNamespacedName(o, "featureflags")
 	nn := providers.GetNamespacedName(o, "featureflags-edge")

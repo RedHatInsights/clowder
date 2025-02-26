@@ -37,7 +37,7 @@ func TestLocalRedis(t *testing.T) {
 		RedisDeployment: &dd,
 		RedisService:    &svc,
 	}
-	_ = makeLocalRedis(&env, objMap, true, false)
+	_ = makeLocalRedis(&env, &env, objMap, true, false)
 
 	assert.Equal(t, "env-redis", dd.GetName(), "name was not set correctly")
 	assert.Len(t, svc.Spec.Ports, 1, "number of ports specified is wrong")
@@ -53,7 +53,7 @@ func TestLocalRedisImageOverride(t *testing.T) {
 		RedisDeployment: &dd,
 		RedisService:    &svc,
 	}
-	_ = makeLocalRedis(&env, objMap, true, false)
+	_ = makeLocalRedis(&env, &env, objMap, true, false)
 
 	assert.Equal(t, "env-redis", dd.GetName(), "name was not set correctly")
 	assert.Len(t, svc.Spec.Ports, 1, "number of ports specified is wrong")

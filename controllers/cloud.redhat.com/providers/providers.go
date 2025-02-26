@@ -128,7 +128,7 @@ type ClowderProvider interface {
 	GetConfig() *config.AppConfig
 }
 
-type makeFnCache func(o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool) error
+type makeFnCache func(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap ObjectMap, usePVC bool, nodePort bool) error
 
 func createResource(cache *rc.ObjectCache, resourceIdent rc.ResourceIdent, nn types.NamespacedName) (client.Object, error) {
 	gvks, nok, err := cache.GetScheme().ObjectKinds(resourceIdent.GetType())
@@ -184,7 +184,7 @@ type ObjectMap map[rc.ResourceIdent]client.Object
 
 // CachedMakeComponent is a generalised function that, given a ClowdObject will make the given service,
 // deployment and PVC, based on the makeFn that is passed in.
-func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
+func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, env *crd.ClowdEnvironment, o obj.ClowdObject, suffix string, fn makeFnCache, usePVC bool, nodePort bool) error {
 	nn := GetNamespacedName(o, suffix)
 
 	makeFnMap := make(map[rc.ResourceIdent]client.Object)
@@ -200,7 +200,7 @@ func CachedMakeComponent(cache *rc.ObjectCache, objList []rc.ResourceIdent, o ob
 
 	}
 
-	err := fn(o, makeFnMap, usePVC, nodePort)
+	err := fn(env, o, makeFnMap, usePVC, nodePort)
 	if err != nil {
 		return fmt.Errorf("could not make component: %w", err)
 	}
