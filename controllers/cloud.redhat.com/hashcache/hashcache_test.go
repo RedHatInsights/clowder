@@ -21,7 +21,7 @@ func TestHashCacheAddItemAndRetrieve(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	update, err := hc.CreateOrUpdateObject(sec)
+	update, err := hc.CreateOrUpdateObject(sec, false)
 	assert.NoError(t, err)
 	assert.True(t, update)
 	obj, err := hc.Read(sec)
@@ -39,7 +39,7 @@ func TestHashCacheDeleteItem(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	shouldUpdate, err := hc.CreateOrUpdateObject(sec)
+	shouldUpdate, err := hc.CreateOrUpdateObject(sec, false)
 	assert.True(t, shouldUpdate)
 	assert.NoError(t, err)
 	obj, err := hc.Read(sec)
@@ -63,7 +63,7 @@ func TestHashCacheUpdateItem(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	_, err := hc.CreateOrUpdateObject(sec)
+	_, err := hc.CreateOrUpdateObject(sec, false)
 	assert.NoError(t, err)
 
 	obj, err := hc.Read(sec)
@@ -75,7 +75,7 @@ func TestHashCacheUpdateItem(t *testing.T) {
 		"test2": []byte("test2"),
 	}
 
-	update, err := hc.CreateOrUpdateObject(sec)
+	update, err := hc.CreateOrUpdateObject(sec, false)
 	assert.NoError(t, err)
 	assert.True(t, update)
 	obj, err = hc.Read(sec)
@@ -120,7 +120,7 @@ func TestHashCacheAddClowdObj(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	_, err := hc.CreateOrUpdateObject(sec)
+	_, err := hc.CreateOrUpdateObject(sec, false)
 	assert.NoError(t, err)
 
 	err = hc.AddClowdObjectToObject(capp, sec)
@@ -152,7 +152,7 @@ func TestHashCacheDeleteClowdObj(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	_, err := hc.CreateOrUpdateObject(sec)
+	_, err := hc.CreateOrUpdateObject(sec, false)
 	assert.NoError(t, err)
 
 	err = hc.AddClowdObjectToObject(capp, sec)
@@ -196,7 +196,7 @@ func TestHashCacheSuperCache(t *testing.T) {
 	}
 
 	hc := NewHashCache()
-	_, err := hc.CreateOrUpdateObject(sec)
+	_, err := hc.CreateOrUpdateObject(sec, false)
 	assert.NoError(t, err)
 	err = hc.AddClowdObjectToObject(capp, sec)
 	assert.NoError(t, err)
@@ -204,7 +204,7 @@ func TestHashCacheSuperCache(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, obj.ClowdApps, clowdObjNamespaceName)
 
-	_, err = hc.CreateOrUpdateObject(sec2)
+	_, err = hc.CreateOrUpdateObject(sec2, false)
 	assert.NoError(t, err)
 	err = hc.AddClowdObjectToObject(capp, sec2)
 	assert.NoError(t, err)
