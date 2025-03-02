@@ -9,7 +9,7 @@ require (
 	github.com/RedHatInsights/rhc-osdk-utils v0.12.0
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
 	github.com/caddyserver/caddy/v2 v2.8.4
-	github.com/cert-manager/cert-manager v1.12.14
+	github.com/cert-manager/cert-manager v1.17.1
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.8.1
