@@ -11,6 +11,7 @@ type ClowderConfig struct {
 		MBOP                    string `json:"mbop"`
 		Caddy                   string `json:"caddy"`
 		CaddyGateway            string `json:"caddyGateway"`
+		CaddyProxy              string `json:"caddyProxy"`
 		Keycloak                string `json:"Keycloak"`
 		Mocktitlements          string `json:"mocktitlements"`
 		CaddyReverseProxy       string `json:"caddyReverseProxy"`
