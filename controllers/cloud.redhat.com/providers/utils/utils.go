@@ -26,7 +26,7 @@ var DefaultImageCaddyGateway = DefaultImageCaddySideCar
 var DefaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
 var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:745c249"
 var DefaultKeyCloakVersion = "23.0.1"
-var DefaultImageCaddyProxy = "quay.io/cloudservices/caddy-ubi:ec1577c"
+var DefaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:3fa1746"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
 var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
@@ -203,6 +203,17 @@ func GetCaddyImage(env *crd.ClowdEnvironment) string {
 		return clowderconfig.LoadedConfig.Images.Caddy
 	}
 	return DefaultImageCaddySideCar
+}
+
+// GetCaddyProxyImage returns the caddy image to use in a given environment
+func GetCaddyProxyImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.Images.CaddyProxy != "" {
+		return env.Spec.Providers.Web.Images.CaddyProxy
+	}
+	if clowderconfig.LoadedConfig.Images.Caddy != "" {
+		return clowderconfig.LoadedConfig.Images.CaddyProxy
+	}
+	return DefaultImageCaddyProxy
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
