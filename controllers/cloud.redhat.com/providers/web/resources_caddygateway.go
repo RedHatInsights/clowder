@@ -280,19 +280,30 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 				continue
 			}
 
-			apiPath := innerDeployment.WebServices.Public.APIPath
-
-			if apiPath == "" {
-				apiPath = innerDeployment.Name
-			}
-
 			name := innerApp.GetDeploymentNamespacedName(&innerDeployment).Name
 			hostname := fmt.Sprintf("%s.%s.svc", name, innerApp.Namespace)
 
-			upstreamList = append(upstreamList, ProxyRoute{
-				Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
-				Path:     fmt.Sprintf("/api/%s/*", apiPath),
-			})
+			if innerDeployment.WebServices.Public.APIPaths != nil {
+				// apiPaths was defined, use it and ignore 'apiPath'
+				for _, apiPath := range innerDeployment.WebServices.Public.APIPaths {
+					upstreamList = append(upstreamList, ProxyRoute{
+						Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
+						Path:     string(apiPath),
+					})
+				}
+			} else {
+				apiPath := innerDeployment.WebServices.Public.APIPath
+
+				if apiPath == "" {
+					apiPath = innerDeployment.Name
+				}
+
+				upstreamList = append(upstreamList, ProxyRoute{
+					Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
+					Path:     fmt.Sprintf("/api/%s/*", apiPath),
+				})
+
+			}
 		}
 	}
 
