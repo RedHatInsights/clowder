@@ -106,7 +106,14 @@ func (e *enqueueRequestForObjectCustom) updateHashCacheForConfigMapAndSecret(obj
 	switch obj.(type) {
 	case *core.ConfigMap, *core.Secret:
 		if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] == "true" {
-			return e.hashCache.CreateOrUpdateObject(obj)
+			return e.hashCache.CreateOrUpdateObject(obj, false)
+		}
+		hcOjb, err := e.hashCache.Read(obj)
+		if err != nil {
+			return false, err
+		}
+		if hcOjb.Always {
+			return e.hashCache.CreateOrUpdateObject(obj, false)
 		}
 	}
 	return false, nil
