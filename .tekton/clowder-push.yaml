@@ -306,7 +306,7 @@ spec:
             script: |
               set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && make release && make build-template-kustomize && cp manifest.yaml /var/workdir/ && cp deploy-kustomize.yaml /var/workdir/
           - name: test-template
-            image: registry.access.redhat.com/ubi8/ubi:8.10-1184
+            image: registry.access.redhat.com/ubi8/ubi:8.10-1184.1739756802
             workingDir: /opt/app-root/src
             env:
               - name: LOCALBIN
@@ -314,7 +314,7 @@ spec:
             script: |
               set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && cp /var/workdir/manifest.yaml . && cp /var/workdir/deploy-kustomize.yaml . && dnf install make python3.12 diffutils -y && make build-template && make test-template
           - name: e2e-tests
-            image: registry.access.redhat.com/ubi8/ubi:8.10-1184
+            image: registry.access.redhat.com/ubi8/ubi:8.10-1184.1739756802
             workingDir: /var/workdir/source
             env:
               - name: MINIKUBE_HOST
