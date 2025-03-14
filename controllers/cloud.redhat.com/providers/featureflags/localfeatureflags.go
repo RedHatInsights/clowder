@@ -14,6 +14,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,7 +37,10 @@ var LocalFFService = rc.NewSingleResourceIdent(ProvName, "ff_service", &core.Ser
 var LocalFFEdgeDeployment = rc.NewSingleResourceIdent(ProvName, "ff_edge_deployment", &apps.Deployment{})
 
 // LocalFFEdgeService is the ident referring to the local Unleash edge service object.
-var LocalFFEdgeService = rc.NewSingleResourceIdent(ProvName, "ff_service", &core.Service{})
+var LocalFFEdgeService = rc.NewSingleResourceIdent(ProvName, "ff_edge_service", &core.Service{})
+
+// LocalFFEdgeIngress is the ident referring to the local Unleash edge ingress object.
+var LocalFFEdgeIngress = rc.NewSingleResourceIdent(ProvName, "ff_edge_ingress", &networking.Ingress{})
 
 // LocalFFSecret is the ident referring to the local Feature Flags secret object.
 var LocalFFSecret = rc.NewSingleResourceIdent(ProvName, "ff_secret", &core.Secret{})
@@ -64,6 +68,7 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 		LocalFFService,
 		LocalFFEdgeDeployment,
 		LocalFFEdgeService,
+		LocalFFEdgeIngress,
 		LocalFFSecret,
 		LocalFFDBDeployment,
 		LocalFFDBService,
@@ -92,15 +97,6 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 	}
 
 	if err := providers.CachedMakeComponent(ff, objList, ff.Env, "featureflags", makeLocalFeatureFlags, false); err != nil {
-		return err
-	}
-
-	objList2 := []rc.ResourceIdent{
-		LocalFFEdgeDeployment,
-		LocalFFEdgeService,
-	}
-
-	if err := providers.CachedMakeComponent(ff, objList2, ff.Env, "featureflags-edge", makeLocalFeatureFlagsEdge, false); err != nil {
 		return err
 	}
 
@@ -198,6 +194,19 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		}
 	}
 
+	objList2 := []rc.ResourceIdent{
+		LocalFFEdgeDeployment,
+		LocalFFEdgeService,
+	}
+
+	if err := providers.CachedMakeComponent(ff, objList2, ff.Env, "featureflags-edge", makeLocalFeatureFlagsEdge, false); err != nil {
+		return err
+	}
+
+	if err := makeLocalFFEdgeIngress(ff); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -226,6 +235,53 @@ func (ff *localFeatureFlagsProvider) Provide(_ *crd.ClowdApp) error {
 		ClientAccessToken: utils.StringPtr(string(secret.Data["clientAccessToken"])),
 	}
 
+	return nil
+}
+
+func makeLocalFFEdgeIngress(ff *localFeatureFlagsProvider) error {
+	nn := providers.GetNamespacedName(ff.Env, "featureflags")
+	nnEdge := providers.GetNamespacedName(ff.Env, "featureflags-edge")
+
+	ingress := &networking.Ingress{}
+	if err := ff.Cache.Create(LocalFFEdgeIngress, nn, ingress); err != nil {
+		return err
+	}
+
+	labels := ff.Env.GetLabels()
+	labeler := utils.MakeLabeler(nn, labels, ff.Env)
+	labeler(ingress)
+
+	ingressClass := ff.Env.Spec.Providers.Web.IngressClass
+	if ingressClass == "" {
+		ingressClass = "nginx"
+	}
+
+	prefixPathType := networking.PathTypePrefix
+	ingress.Spec = networking.IngressSpec{
+		IngressClassName: &ingressClass,
+		Rules: []networking.IngressRule{{
+			IngressRuleValue: networking.IngressRuleValue{
+				HTTP: &networking.HTTPIngressRuleValue{
+					Paths: []networking.HTTPIngressPath{{
+						Path:     "/api/client/features",
+						PathType: &prefixPathType,
+						Backend: networking.IngressBackend{
+							Service: &networking.IngressServiceBackend{
+								Name: nnEdge.Name,
+								Port: networking.ServiceBackendPort{
+									Name: "unleash-edge",
+								},
+							},
+						},
+					}},
+				},
+			},
+		}},
+	}
+
+	if err := ff.Cache.Update(LocalFFEdgeIngress, ingress); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -349,8 +405,8 @@ func makeLocalFeatureFlagsEdge(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMa
 	svc := objMap[LocalFFEdgeService].(*core.Service)
 
 	labels := o.GetLabels()
-	labels["env-app"] = nn.Name
-	labels["service"] = "featureflags-edge"
+	labels["env-app"] = nnFF.Name
+	labels["service"] = "unleash-edge"
 	labeler := utils.MakeLabeler(nn, labels, o)
 
 	labeler(dd)
@@ -436,7 +492,7 @@ func makeLocalFeatureFlagsEdge(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMa
 	dd.Spec.Template.SetLabels(labels)
 
 	servicePorts := []core.ServicePort{{
-		Name:       "featureflags-edge",
+		Name:       "unleash-edge",
 		Port:       portEdge,
 		Protocol:   "TCP",
 		TargetPort: intstr.FromInt(int(portEdge)),
