@@ -1,9 +1,18 @@
 #!/bin/bash
 
-FEATURE_FLAGS_POD=$(kubectl -n test-ff-local get pod -l env-app=test-ff-local-featureflags --output=jsonpath={.items..metadata.name})
+FEATURE_FLAGS_POD=$(kubectl -n test-ff-local get pod -l env-app=test-ff-local-featureflags -l service=featureflags --output=jsonpath={.items..metadata.name})
 ADMIN_TOKEN=$(kubectl -n test-ff-local get secret test-ff-local-featureflags  -o json | jq -r '.data.adminAccessToken | @base64d')
 CLIENT_TOKEN=$(kubectl -n test-ff-local get secret test-ff-local-featureflags  -o json | jq -r '.data.clientAccessToken | @base64d')
 FEATURE_TOGGLE_NAME='my-feature-toggle-1'
+
+get_request_ingress() {
+
+    local TOKEN="$1"
+    local ENDPOINT="$2"
+
+    curl -s -H "Authorization: $TOKEN" "http://${INGRESS_HOST}${ENDPOINT}"
+
+}
 
 get_request_edge() {
 
