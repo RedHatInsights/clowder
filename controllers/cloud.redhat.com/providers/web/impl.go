@@ -154,7 +154,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
 				return err
 			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv)
+			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv, env)
 			setServiceTLSAnnotations(s, nn.Name)
 		}
 	}
@@ -197,7 +197,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	return cache.Update(CoreCaddyConfigMap, cm)
 }
 
-func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool) {
+func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool, env *crd.ClowdEnvironment) {
 	ports := []core.ContainerPort{}
 	if pub {
 		ports = append(ports, core.ContainerPort{
@@ -216,7 +216,7 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 
 	container := core.Container{
 		Name:    "caddy-tls",
-		Image:   provutils.DefaultImageCaddyProxy,
+		Image:   provutils.GetCaddyProxyImage(env),
 		Command: []string{"/usr/bin/caddy"},
 		Args: []string{
 			"run", "--config", "/etc/caddy/caddy.json",
