@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.22.7
+go 1.22.9
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.4.0
