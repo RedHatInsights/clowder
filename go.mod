@@ -14,7 +14,7 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.8.1
 	github.com/lib/pq v1.10.9
-	github.com/minio/minio-go/v7 v7.0.87
+	github.com/minio/minio-go/v7 v7.0.88
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.56.3
