@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+data:
+  test_data: bmV3X3NlY3JldA== #new_secret
+kind: Secret
+metadata:
+  name: test-clowdapp-watcher-pullsecrets
+  namespace: test-clowdapp-watcher-pullsecrets-secret
+type: Opaque
