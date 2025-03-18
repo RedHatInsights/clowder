@@ -203,6 +203,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	watchers := []Watcher{
 		{obj: &apps.Deployment{}, filter: deploymentFilter},
 		{obj: &core.Service{}, filter: generationOnlyFilter},
+		{obj: &apps.StatefulSet{}, filter: statefulSetFilter},
 		{obj: &core.ConfigMap{}, filter: generationOnlyFilter},
 		{obj: &core.Secret{}, filter: alwaysFilter},
 	}

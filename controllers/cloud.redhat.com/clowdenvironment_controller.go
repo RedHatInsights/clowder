@@ -234,6 +234,7 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		{obj: &apps.Deployment{}, filter: deploymentFilter},
 		{obj: &core.Service{}, filter: alwaysFilter},
 		{obj: &core.Secret{}, filter: alwaysFilter},
+		{obj: &apps.StatefulSet{}, filter: statefulSetFilter},
 	}
 
 	if clowderconfig.LoadedConfig.Features.WatchStrimziResources {
