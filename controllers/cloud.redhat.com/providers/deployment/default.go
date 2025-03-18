@@ -14,8 +14,12 @@ type deploymentProvider struct {
 // CoreDeployment is the deployment for the apps deployments.
 var CoreDeployment = rc.NewMultiResourceIdent(ProvName, "core_deployment", &apps.Deployment{})
 
+// CoreStatefulSet is the statefulSet for the apps deployments.
+var CoreStatefulSet = rc.NewMultiResourceIdent(ProvName, "core_statefulset", &apps.StatefulSet{})
+
 func NewDeploymentProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(CoreDeployment)
+	p.Cache.AddPossibleGVKFromIdent(CoreStatefulSet)
 	return &deploymentProvider{Provider: *p}, nil
 }
 
@@ -26,9 +30,14 @@ func (dp *deploymentProvider) EnvProvide() error {
 func (dp *deploymentProvider) Provide(app *crd.ClowdApp) error {
 
 	for _, deployment := range app.Spec.Deployments {
-
-		if err := dp.makeDeployment(deployment, app); err != nil {
-			return err
+		if deployment.Stateful.Enabled {
+			if err := dp.makeStatefulSet(deployment, app); err != nil {
+				return err
+			}
+		} else {
+			if err := dp.makeDeployment(deployment, app); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

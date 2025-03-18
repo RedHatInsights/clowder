@@ -3239,6 +3239,11 @@ spec:
                       description: Defines the desired replica count for the pod
                       format: int32
                       type: integer
+                    statefulSpec:
+                      properties:
+                        enabled:
+                          type: boolean
+                      type: object
                     web:
                       description: |-
                         If set to true, creates a service on the webPort defined in
