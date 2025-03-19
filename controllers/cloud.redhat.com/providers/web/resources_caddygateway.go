@@ -250,6 +250,30 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 	}
 	bopHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
 
+	upstreamList, whitelistStrings := buildUpstreamAndWhiteLists(bopHostname, appList)
+
+	cmData, err := GenerateConfig(
+		getCertHostname(p.Env.Status.Hostname),
+		fmt.Sprintf("http://%s", bopHostname),
+		whitelistStrings,
+		upstreamList,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	cm.Data = map[string]string{
+		"Caddyfile.json": cmData,
+	}
+
+	h := sha256.New()
+	h.Write([]byte(cmData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
+}
+
+func buildUpstreamAndWhiteLists(bopHostname string, appList *crd.ClowdAppList) ([]ProxyRoute, []string) {
 	whitelistStrings := []string{}
 	upstreamList := []ProxyRoute{{
 		Upstream: bopHostname,
@@ -307,25 +331,7 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 		}
 	}
 
-	cmData, err := GenerateConfig(
-		getCertHostname(p.Env.Status.Hostname),
-		fmt.Sprintf("http://%s", bopHostname),
-		whitelistStrings,
-		upstreamList,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	cm.Data = map[string]string{
-		"Caddyfile.json": cmData,
-	}
-
-	h := sha256.New()
-	h.Write([]byte(cmData))
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-
-	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
+	return upstreamList, whitelistStrings
 }
 
 func makeWebGatewayDeployment(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) error {
