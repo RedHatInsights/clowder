@@ -55,6 +55,9 @@ type WebImages struct {
 	// Caddy Gateway image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	CaddyGateway string `json:"caddyGateway,omitempty"`
 
+	// Caddy Reverse Proxy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	CaddyProxy string `json:"caddyProxy,omitempty"`
+
 	// Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	MockBOP string `json:"mockBop,omitempty"`
 }
