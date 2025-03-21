@@ -287,7 +287,6 @@ spec:
         - $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
       runAfter:
       - run-unit-tests
-      - run-e2e-tests
       taskRef:
         params:
         - name: name
