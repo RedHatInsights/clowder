@@ -14,6 +14,7 @@ import (
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 type sidecarProvider struct {
@@ -50,7 +51,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
-						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
+						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
 						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
@@ -98,7 +99,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
-						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
+						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
 						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
@@ -169,27 +170,60 @@ func getTokenRefresher(appName string) *core.Container {
 }
 
 func getOtelCollector(appName string) *core.Container {
+	port := int32(13133)
+	probeHandler := core.ProbeHandler{
+		HTTPGet: &core.HTTPGetAction{
+			Path: "/",
+			Port: intstr.IntOrString{
+				Type:   intstr.Int,
+				IntVal: port,
+			},
+		},
+	}
+
+	livenessProbe := core.Probe{
+		ProbeHandler:        probeHandler,
+		InitialDelaySeconds: 20,
+		TimeoutSeconds:      4,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
+	}
+	readinessProbe := core.Probe{
+		ProbeHandler:        probeHandler,
+		InitialDelaySeconds: 40,
+		TimeoutSeconds:      4,
+		PeriodSeconds:       10,
+		SuccessThreshold:    1,
+		FailureThreshold:    3,
+	}
+
 	cont := core.Container{}
 
+	restartPolicy := core.ContainerRestartPolicyAlways
 	cont.Name = "otel-collector"
 	cont.Image = DefaultImageSideCarOtelCollector
 	cont.Args = []string{}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
 	cont.ImagePullPolicy = core.PullIfNotPresent
+	cont.RestartPolicy = &restartPolicy
 	cont.Resources = core.ResourceRequirements{
 		Limits: core.ResourceList{
 			"cpu":    resource.MustParse("500m"),
-			"memory": resource.MustParse("2048Mi"),
+			"memory": resource.MustParse("1024Mi"),
 		},
 		Requests: core.ResourceList{
 			"cpu":    resource.MustParse("250m"),
-			"memory": resource.MustParse("1024Mi"),
+			"memory": resource.MustParse("512Mi"),
 		},
 	}
 	cont.VolumeMounts = []core.VolumeMount{{
 		Name:      fmt.Sprintf("%s-otel-config", appName),
 		MountPath: "/etc/otelcol/",
 	}}
+	cont.LivenessProbe = &livenessProbe
+	cont.ReadinessProbe = &readinessProbe
+
 	return &cont
 }

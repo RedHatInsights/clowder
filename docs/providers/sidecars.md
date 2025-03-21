@@ -41,34 +41,6 @@ spec:
 
 ## Sidecar configuration
 
-### Splunk
-The Splunk sidecar requires two resources to be created and added to the k8s cluster.
-
-* ``Secret/<appName>-splunk`` - This secret must contain the field called ``splunk.pem`` and contain the cert to connect to splunk.
-* ``ConfigMap/<appName>-splunk`` - This ConfigMap contains the ``inputs.conf`` file using the format similar to that shown below
-
-```
-[default]
-_meta = namespace::rhsm-ci
-host = $decideOnStartup
-
-[monitor:///var/log/app/access.log]
-index = rh_rhsm
-sourcetype = springboot_access
-ignoreOlderThan = 5d
-recursive = false
-disabled = false
-
-[monitor:///var/log/app/server.log]
-index = rh_rhsm
-sourcetype = springboot_server
-ignoreOlderThan = 5d
-recursive = false
-disabled = false
-```
-
-The namespace will be filled in automatically from an environment variable
-
 ### Token Refresher
 The token refreser sidecar requires a secret to be created with the following variables:
 
@@ -76,3 +48,16 @@ The token refreser sidecar requires a secret to be created with the following va
 * ``CLIENT_SECRET``
 * ``ISSUER_URL``
 * ``URL``
+
+### Otel Collector
+The Otel Collector sidecar requires a configmap to be present in the namespace of the app,
+called `<app-name>-otel-config`. This will bind to a volume on the side and should contain the
+following configuration to allow the health checks to work:
+
+```yaml
+extensions:
+  health_check:
+  health_check/1:
+    endpoint: "localhost:13133"
+    path: "/"
+```
