@@ -86,10 +86,10 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		RedisService,
 	}
 
-	return providers.CachedMakeComponent(r.Provider.Cache, objList, app, "redis", makeLocalRedis, false, r.Env.IsNodePort())
+	return providers.CachedMakeComponent(r, objList, app, "redis", makeLocalRedis, false)
 }
 
-func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+func makeLocalRedis(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "redis")
 
 	dd := objMap[RedisDeployment].(*apps.Deployment)
@@ -147,7 +147,7 @@ func makeLocalRedis(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodeP
 
 	dd.Spec.Template.Spec.Containers = []core.Container{{
 		Name:  nn.Name,
-		Image: providerUtils.DefaultImageInMemoryDB,
+		Image: providerUtils.GetInMemoryDBImage(env),
 		Env:   []core.EnvVar{},
 		Ports: []core.ContainerPort{{
 			Name:          "redis",

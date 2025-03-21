@@ -187,7 +187,7 @@ func configureKeycloak(web *localWebProvider) error {
 		WebKeycloakService,
 	}
 
-	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "keycloak", makeKeycloak, false, web.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(web, objList, web.Env, "keycloak", makeKeycloak, false); err != nil {
 		return err
 	}
 
@@ -246,7 +246,7 @@ func baseProbeHandler(port int32, path string) core.ProbeHandler {
 	}
 }
 
-func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
+func makeKeycloak(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "keycloak")
 
 	dd := objMap[WebKeycloakDeployment].(*apps.Deployment)

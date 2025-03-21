@@ -26,7 +26,7 @@ var DefaultImageCaddyGateway = DefaultImageCaddySideCar
 var DefaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
 var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:745c249"
 var DefaultKeyCloakVersion = "23.0.1"
-var DefaultImageCaddyProxy = "quay.io/cloudservices/caddy-ubi:ec1577c"
+var DefaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:5519eba"
 var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
 var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
@@ -173,6 +173,16 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
 }
 
+func GetInMemoryDBImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.InMemoryDB.Image != "" {
+		return env.Spec.Providers.InMemoryDB.Image
+	}
+	if clowderconfig.LoadedConfig.Images.InMemoryDB != "" {
+		return clowderconfig.LoadedConfig.Images.InMemoryDB
+	}
+	return DefaultImageInMemoryDB
+}
+
 // GetCaddyImage returns the caddy image to use in a given environment
 func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.Images.CaddyGateway != "" {
@@ -193,6 +203,17 @@ func GetCaddyImage(env *crd.ClowdEnvironment) string {
 		return clowderconfig.LoadedConfig.Images.Caddy
 	}
 	return DefaultImageCaddySideCar
+}
+
+// GetCaddyProxyImage returns the caddy image to use in a given environment
+func GetCaddyProxyImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Web.Images.CaddyProxy != "" {
+		return env.Spec.Providers.Web.Images.CaddyProxy
+	}
+	if clowderconfig.LoadedConfig.Images.Caddy != "" {
+		return clowderconfig.LoadedConfig.Images.CaddyProxy
+	}
+	return DefaultImageCaddyProxy
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment

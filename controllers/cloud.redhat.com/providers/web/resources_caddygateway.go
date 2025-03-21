@@ -72,7 +72,7 @@ func configureWebGateway(web *localWebProvider) error {
 		WebGatewayService,
 	}
 
-	if err := providers.CachedMakeComponent(web.Cache, objList, web.Env, "caddy-gateway", makeWebGatewayDeployment, false, web.Env.IsNodePort()); err != nil {
+	if err := providers.CachedMakeComponent(web, objList, web.Env, "caddy-gateway", makeWebGatewayDeployment, false); err != nil {
 		return err
 	}
 
@@ -317,7 +317,7 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
 }
 
-func makeWebGatewayDeployment(o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) error {
+func makeWebGatewayDeployment(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) error {
 	nn := providers.GetNamespacedName(o, "caddy-gateway")
 
 	dd := objMap[WebGatewayDeployment].(*apps.Deployment)

@@ -83,7 +83,7 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		minioCacheMap = append(minioCacheMap, MinioPVC)
 	}
 
-	err = providers.CachedMakeComponent(p.Cache, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC, p.Env.IsNodePort())
+	err = providers.CachedMakeComponent(p, minioCacheMap, p.Env, "minio", makeLocalMinIO, p.Env.Spec.Providers.ObjectStore.PVC)
 
 	if err != nil {
 		raisedErr := errors.Wrap("Couldn't make component", err)
@@ -278,7 +278,7 @@ func createNetworkPolicy(p *providers.Provider) error {
 	return p.Cache.Update(MinioNetworkPolicy, np)
 }
 
-func makeLocalMinIO(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) error {
+func makeLocalMinIO(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePort bool) error {
 	nn := providers.GetNamespacedName(o, "minio")
 
 	dd := objMap[MinioDeployment].(*apps.Deployment)

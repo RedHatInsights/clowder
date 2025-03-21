@@ -55,6 +55,9 @@ type WebImages struct {
 	// Caddy Gateway image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	CaddyGateway string `json:"caddyGateway,omitempty"`
 
+	// Caddy Reverse Proxy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
+	CaddyProxy string `json:"caddyProxy,omitempty"`
+
 	// Mock BOP image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used.
 	MockBOP string `json:"mockBop,omitempty"`
 }
@@ -359,7 +362,8 @@ type ObjectStoreConfig struct {
 }
 
 type FeatureFlagsImages struct {
-	Unleash string `json:"unleash,omitempty"`
+	Unleash     string `json:"unleash,omitempty"`
+	UnleashEdge string `json:"unleashEdge,omitempty"`
 }
 
 // FeatureFlagsMode details the mode of operation of the Clowder FeatureFlags
@@ -411,6 +415,10 @@ type InMemoryDBConfig struct {
 	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
 	// Database instance to use a PVC instead of emptyDir for its volumes.
 	PVC bool `json:"pvc,omitempty"`
+
+	// This image is only used in the (*_redis_*) mode, as elsewhere it will try to
+	// inspect for a secret for a hostname and credentials.
+	Image string `json:"image,omitempty"`
 }
 
 // AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
