@@ -200,13 +200,14 @@ func getOtelCollector(appName string) *core.Container {
 
 	cont := core.Container{}
 
+	restartPolicy := core.ContainerRestartPolicyAlways
 	cont.Name = "otel-collector"
 	cont.Image = DefaultImageSideCarOtelCollector
 	cont.Args = []string{}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
 	cont.ImagePullPolicy = core.PullIfNotPresent
-	cont.RestartPolicy = (*core.ContainerRestartPolicy)(utils.StringPtr(string(core.ContainerRestartPolicyAlways)))
+	cont.RestartPolicy = &restartPolicy
 	cont.Resources = core.ResourceRequirements{
 		Limits: core.ResourceList{
 			"cpu":    resource.MustParse("500m"),
