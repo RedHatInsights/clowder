@@ -1,0 +1,148 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-minio
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-minio
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-clowdapp-watcher-minio
+    env-app: test-clowdapp-watcher-minio-minio
+  name: test-clowdapp-watcher-minio-minio
+  namespace: test-clowdapp-watcher-minio
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-clowdapp-watcher-minio
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: test-clowdapp-watcher-minio
+      env-app: test-clowdapp-watcher-minio-minio
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-clowdapp-watcher-minio
+        env-app: test-clowdapp-watcher-minio-minio
+    spec:
+      containers:
+      - args:
+        - server
+        - /storage
+        env:
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: accessKey
+              name: test-clowdapp-watcher-minio-minio
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secretKey
+              name: test-clowdapp-watcher-minio-minio
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 2
+        name: test-clowdapp-watcher-minio-minio
+        ports:
+        - containerPort: 9000
+          name: minio
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 2
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /storage
+          name: test-clowdapp-watcher-minio-minio
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: test-clowdapp-watcher-minio-minio
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-clowdapp-watcher-minio
+    env-app: test-clowdapp-watcher-minio-minio
+  name: test-clowdapp-watcher-minio-minio
+  namespace: test-clowdapp-watcher-minio
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-clowdapp-watcher-minio
+spec:
+  ports:
+  - name: minio
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app: test-clowdapp-watcher-minio
+    env-app: test-clowdapp-watcher-minio-minio
+  sessionAffinity: None
+  type: ClusterIP
+--- 
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app: test-clowdapp-watcher-minio
+  name: allow-from-clowder-system-namespace
+  namespace: test-clowdapp-watcher-minio
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-clowdapp-watcher-minio
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: clowder-system
+  podSelector: {}
+  policyTypes:
+  - Ingress
