@@ -111,6 +111,14 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
+	if _, err := m.HashCache.CreateOrUpdateObject(secret, true); err != nil {
+		return err
+	}
+
+	if err := m.HashCache.AddClowdObjectToObject(m.Env, secret); err != nil {
+		return err
+	}
+
 	port, err := strconv.Atoi(string(secret.Data["port"]))
 	if err != nil {
 		return err
