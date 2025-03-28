@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-managed-secret
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+data:
+  cdappconfig.json: eyJoYXNoQ2FjaGUiOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1OTRiNzlkNjczZjdlZTI1MjNmMzI2YjdjMTBmYTQyYTU2Y2EyNWY2YzEwM2NmZWM1NGRlY2MxODYxNDRlYzE3ZSIsImthZmthIjp7ImJyb2tlcnMiOlt7ImF1dGh0eXBlIjoic2FzbCIsImNhY2VydCI6InNvbWUtcGVtIiwiaG9zdG5hbWUiOiJrYWZrYS1ob3N0LW5hbWUiLCJwb3J0IjoyNzAxNSwic2FzbCI6eyJwYXNzd29yZCI6ImthZmthLXBhc3N3b3JkIiwic2FzbE1lY2hhbmlzbSI6IlBMQUlOIiwic2VjdXJpdHlQcm90b2NvbCI6IlNBU0xfU1NMIiwidXNlcm5hbWUiOiJrYWZrYS11c2VybmFtZSJ9LCJzZWN1cml0eVByb3RvY29sIjoiU0FTTF9TU0wifV0sInRvcGljcyI6W3sibmFtZSI6InRvcGljT25lIiwicmVxdWVzdGVkTmFtZSI6InRvcGljT25lIn0seyJuYW1lIjoidG9waWNUd28iLCJyZXF1ZXN0ZWROYW1lIjoidG9waWNUd28ifV19LCJsb2dnaW5nIjp7ImNsb3Vkd2F0Y2giOnsiYWNjZXNzS2V5SWQiOiIiLCJsb2dHcm91cCI6IiIsInJlZ2lvbiI6IiIsInNlY3JldEFjY2Vzc0tleSI6IiJ9LCJ0eXBlIjoibnVsbCJ9LCJtZXRhZGF0YSI6eyJkZXBsb3ltZW50cyI6W3siaW1hZ2UiOiJxdWF5LmlvL3BzYXYvY2xvd2Rlci1oZWxsbyIsIm5hbWUiOiJwcm9jZXNzb3IifV0sImVudk5hbWUiOiJ0ZXN0LWNsb3dkYXBwLXdhdGNoZXIta2Fma2EtbWFuYWdlZC1zZWNyZXQiLCJuYW1lIjoicHVwdG9vIn0sIm1ldHJpY3NQYXRoIjoiL21ldHJpY3MiLCJtZXRyaWNzUG9ydCI6OTAwMCwicHJpdmF0ZVBvcnQiOjEwMDAwLCJwdWJsaWNQb3J0Ijo4MDAwLCJ3ZWJQb3J0Ijo4MDAwfQ==
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-kafka-managed-secret
+spec:
+  strategy:
+    type: RollingUpdate
+  template:
+    spec:
+      serviceAccountName: puptoo-processor
+      containers:
+      - env:
+        - name: ENV_VAR_1
+          value: "env_var_1"
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdapp-watcher-kafka-managed-secret
+status:
+  apps:
+    - name: puptoo
+      deployments:
+      - name: puptoo-processor
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-kafka-managed-secret
+  labels:
+    kubernetes.io/metadata.name: test-clowdapp-watcher-kafka-managed-secret

@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+data:
+  hostname: a2Fma2EtaG9zdC1uYW1l # kafka-host-name
+  port: MjcwMTU= # 27015
+  username: a2Fma2EtdXNlcm5hbWU= # kafka-username
+  password: a2Fma2EtbmV3LXBhc3N3b3Jk # kafka-new-password
+  cacert: c29tZS1wZW0=
+kind: Secret
+metadata:
+  name: managed-secret
+  namespace: test-clowdapp-watcher-kafka-managed-secret
+type: Opaque
