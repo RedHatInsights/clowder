@@ -323,20 +323,20 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 
 func UpdateInvokedJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
 
-	for j := range cji.Status.JobMap {
-		for _, s := range jobs.Items {
-			jobName := s.ObjectMeta.Name
-			if j == jobName {
-				if len(s.Status.Conditions) > 0 {
-					condition := s.Status.Conditions[0].Type
-					switch condition {
-					case "Complete":
-						cji.Status.JobMap[jobName] = crd.JobComplete
-					case "Failed":
-						cji.Status.JobMap[jobName] = crd.JobFailed
-					default:
+	for _, s := range jobs.Items {
+		jobName := s.ObjectMeta.Name
+		if _, ok := cji.Status.JobMap[jobName]; ok {
+			for _, c := range s.Status.Conditions {
+				condition := c.Type
+				switch condition {
+				case batchv1.JobComplete:
+					cji.Status.JobMap[jobName] = crd.JobComplete
+				case batchv1.JobFailed:
+					cji.Status.JobMap[jobName] = crd.JobFailed
+				default:
+					curr := cji.Status.JobMap[jobName]
+					if curr != crd.JobComplete && curr != crd.JobFailed {
 						cji.Status.JobMap[jobName] = crd.JobInvoked
-
 					}
 				}
 			}
@@ -363,17 +363,15 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 	// A job either completes successfully, or fails to succeed within the
 	// backoffLimit threshold. The Condition status is only populated when
 	// the jobs have succeeded or passed the backoff limit
-	for _, j := range jobs.Items {
-		for s := range cji.Status.JobMap {
-			if s == j.ObjectMeta.Name {
-				if len(j.Status.Conditions) > 0 {
-					condition := j.Status.Conditions[0].Type
-					if condition == "Complete" || condition == "Failed" {
-						jobsCompleted++
-					}
+	for _, s := range jobs.Items {
+		jobName := s.ObjectMeta.Name
+		if _, ok := cji.Status.JobMap[jobName]; ok {
+			for _, c := range s.Status.Conditions {
+				condition := c.Type
+				if condition == batchv1.JobComplete || condition == batchv1.JobFailed {
+					jobsCompleted++
 				}
 			}
-
 		}
 	}
 	return jobsCompleted
