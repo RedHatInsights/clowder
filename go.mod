@@ -122,7 +122,7 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.48.2 // indirect
 	github.com/redhatinsights/crcauthlib v0.3.1 // indirect
-	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
+	github.com/redhatinsights/platform-go-middlewares v1.0.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0-beta.2 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
