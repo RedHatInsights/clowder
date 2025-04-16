@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
@@ -79,6 +80,13 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 }
 
 func (ff *localFeatureFlagsProvider) EnvProvide() error {
+	if ff.Env.Status.Hostname == "" {
+		ff.Env.Status.Hostname = ff.Env.GenerateHostname(ff.Ctx, ff.Client, ff.Log, !clowderconfig.LoadedConfig.Features.DisableRandomRoutes)
+		err := ff.Client.Status().Update(ff.Ctx, ff.Env)
+		if err != nil {
+			return err
+		}
+	}
 
 	dataInit := createDefaultFFSecMap
 
@@ -260,6 +268,7 @@ func makeLocalFFEdgeIngress(ff *localFeatureFlagsProvider) error {
 	ingress.Spec = networking.IngressSpec{
 		IngressClassName: &ingressClass,
 		Rules: []networking.IngressRule{{
+			Host: ff.Env.Status.Hostname,
 			IngressRuleValue: networking.IngressRuleValue{
 				HTTP: &networking.HTTPIngressRuleValue{
 					Paths: []networking.HTTPIngressPath{{
