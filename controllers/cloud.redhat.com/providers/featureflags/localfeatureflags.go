@@ -5,7 +5,6 @@ import (
 	"net/url"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
@@ -80,14 +79,6 @@ func NewLocalFeatureFlagsProvider(p *providers.Provider) (providers.ClowderProvi
 }
 
 func (ff *localFeatureFlagsProvider) EnvProvide() error {
-	if ff.Env.Status.Hostname == "" {
-		ff.Env.Status.Hostname = ff.Env.GenerateHostname(ff.Ctx, ff.Client, ff.Log, !clowderconfig.LoadedConfig.Features.DisableRandomRoutes)
-		err := ff.Client.Status().Update(ff.Ctx, ff.Env)
-		if err != nil {
-			return err
-		}
-	}
-
 	dataInit := createDefaultFFSecMap
 
 	namespacedName := providers.GetNamespacedName(ff.Env, "featureflags")
@@ -220,8 +211,9 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 func createDefaultFFSecMap() map[string]string {
 	return map[string]string{
-		"adminAccessToken":  "*:*." + utils.RandHexString(32),
-		"clientAccessToken": "default:development." + utils.RandHexString(32),
+		"adminAccessToken":    "*:*." + utils.RandHexString(32),
+		"clientAccessToken":   "default:development." + utils.RandHexString(32),
+		"frontendAccessToken": "default:*.proxy-123",
 	}
 }
 
@@ -272,7 +264,7 @@ func makeLocalFFEdgeIngress(ff *localFeatureFlagsProvider) error {
 			IngressRuleValue: networking.IngressRuleValue{
 				HTTP: &networking.HTTPIngressRuleValue{
 					Paths: []networking.HTTPIngressPath{{
-						Path:     "/api/client/features",
+						Path:     "/api/frontend",
 						PathType: &prefixPathType,
 						Backend: networking.IngressBackend{
 							Service: &networking.IngressServiceBackend{
@@ -329,6 +321,7 @@ func makeLocalFeatureFlags(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap pr
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
 		provutils.NewSecretEnvVar("INIT_CLIENT_API_TOKENS", "clientAccessToken"),
 		provutils.NewSecretEnvVar("INIT_ADMIN_API_TOKENS", "adminAccessToken"),
+		provutils.NewSecretEnvVar("INIT_FRONTEND_API_TOKENS", "frontendAccessToken"),
 	)
 
 	ports := []core.ContainerPort{{
