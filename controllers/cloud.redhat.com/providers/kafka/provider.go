@@ -338,7 +338,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	version := s.GetEnv().Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "3.4.0"
+		version = "3.8.0"
 	}
 
 	image := s.GetEnv().Spec.Providers.Kafka.Connect.Image
