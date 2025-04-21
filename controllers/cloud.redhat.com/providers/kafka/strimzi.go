@@ -504,7 +504,9 @@ func (s strimziProvider) connectConfig(config *apiextensions.JSON) error {
 		"offset.storage.replication.factor":       "1",
 		"offset.storage.topic":                    "connect-cluster-offsets",
 		"status.storage.replication.factor":       "1",
-		"status.storage.topic":                    "connect-cluster-status"
+		"status.storage.topic":                    "connect-cluster-status",
+		"config.providers":                        "secrets",
+		"config.providers.secrets.class":          "io.strimzi.kafka.KubernetesSecretConfigProvider"
 	}`)
 
 	return config.UnmarshalJSON(rawConfig)
