@@ -282,14 +282,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		kafLimits = *s.Env.Spec.Providers.Kafka.Cluster.Resources.Limits
 	}
 
-	var klabels apiextensions.JSON
-
-	err = klabels.UnmarshalJSON([]byte(`{
-        "service" : "strimziKafka"
-	}`))
-	if err != nil {
-		return fmt.Errorf("could not unmarshal klabels: %w", err)
-	}
+	var klabels map[string]string
 
 	var useFinalizersEnv []strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainerEnvElem
 
@@ -313,7 +306,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 		Kafka: strimzi.KafkaSpecKafka{
 			Config:   &kafConfig,
 			Version:  &version,
-			Replicas: replicas,
+			Replicas: &replicas,
 			Resources: &strimzi.KafkaSpecKafkaResources{
 				Requests: &kafRequests,
 				Limits:   &kafLimits,
@@ -321,17 +314,17 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Template: &strimzi.KafkaSpecKafkaTemplate{
 				PerPodService: &strimzi.KafkaSpecKafkaTemplatePerPodService{
 					Metadata: &strimzi.KafkaSpecKafkaTemplatePerPodServiceMetadata{
-						Labels: &klabels,
+						Labels: klabels,
 					},
 				},
 				Pod: &strimzi.KafkaSpecKafkaTemplatePod{
 					Metadata: &strimzi.KafkaSpecKafkaTemplatePodMetadata{
-						Labels: &klabels,
+						Labels: klabels,
 					},
 				},
 			},
 		},
-		Zookeeper: strimzi.KafkaSpecZookeeper{
+		Zookeeper: &strimzi.KafkaSpecZookeeper{
 			Replicas: replicas,
 			Resources: &strimzi.KafkaSpecZookeeperResources{
 				Requests: &zRequests,
@@ -340,12 +333,12 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Template: &strimzi.KafkaSpecZookeeperTemplate{
 				NodesService: &strimzi.KafkaSpecZookeeperTemplateNodesService{
 					Metadata: &strimzi.KafkaSpecZookeeperTemplateNodesServiceMetadata{
-						Labels: &klabels,
+						Labels: klabels,
 					},
 				},
 				Pod: &strimzi.KafkaSpecZookeeperTemplatePod{
 					Metadata: &strimzi.KafkaSpecZookeeperTemplatePodMetadata{
-						Labels: &klabels,
+						Labels: klabels,
 					},
 				},
 			},
@@ -354,7 +347,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			Template: &strimzi.KafkaSpecEntityOperatorTemplate{
 				Pod: &strimzi.KafkaSpecEntityOperatorTemplatePod{
 					Metadata: &strimzi.KafkaSpecEntityOperatorTemplatePodMetadata{
-						Labels: &klabels,
+						Labels: klabels,
 					},
 				},
 				TopicOperatorContainer: &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
@@ -453,7 +446,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 
 	if s.Env.Spec.Providers.Kafka.PVC {
-		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
+		k.Spec.Kafka.Storage = &strimzi.KafkaSpecKafkaStorage{
 			Type:        strimzi.KafkaSpecKafkaStorageTypePersistentClaim,
 			Size:        &storageSize,
 			DeleteClaim: &deleteClaim,
@@ -478,7 +471,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 			DeleteClaim: &deleteClaim,
 		}
 	} else {
-		k.Spec.Kafka.Storage = strimzi.KafkaSpecKafkaStorage{
+		k.Spec.Kafka.Storage = &strimzi.KafkaSpecKafkaStorage{
 			Type: strimzi.KafkaSpecKafkaStorageTypeEphemeral,
 		}
 		k.Spec.Zookeeper.Storage = strimzi.KafkaSpecZookeeperStorage{
