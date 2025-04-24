@@ -338,7 +338,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	version := s.GetEnv().Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "3.4.0"
+		version = "3.8.0"
 	}
 
 	image := s.GetEnv().Spec.Providers.Kafka.Connect.Image
@@ -375,7 +375,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	if !s.GetEnv().Spec.Providers.Kafka.EnableLegacyStrimzi {
 		k.Spec.Tls = &strimzi.KafkaConnectSpecTls{
 			TrustedCertificates: []strimzi.KafkaConnectSpecTlsTrustedCertificatesElem{{
-				Certificate: "ca.crt",
+				Certificate: utils.StringPtr("ca.crt"),
 				SecretName:  secName,
 			}},
 		}
