@@ -265,7 +265,7 @@ spec:
               - use
               - $(params.SOURCE_ARTIFACT)=/var/workdir/source
           - name: unit-tests
-            image: registry.access.redhat.com/ubi8/go-toolset:1.22.9-3.1741575697
+            image: registry.access.redhat.com/ubi8/go-toolset:1.23.6-2
             workingDir: /var/workdir/source
             script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
         volumes:
