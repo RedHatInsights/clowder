@@ -176,7 +176,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Cluster.Version
 	if version == "" {
-		version = "3.4.0"
+		version = "3.8.0"
 	}
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
