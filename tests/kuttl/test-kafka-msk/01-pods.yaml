@@ -6,14 +6,6 @@ metadata:
   namespace: test-kafka-msk
 spec:
   entityOperator:
-    tlsSidecar:
-      resources:
-        limits:
-          cpu: 100m
-          memory: 100Mi
-        requests:
-          cpu: 50m
-          memory: 50Mi
     userOperator:
       resources:
         limits:

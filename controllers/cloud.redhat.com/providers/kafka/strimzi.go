@@ -373,12 +373,6 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					Limits:   &entityUserLimits,
 				},
 			},
-			TlsSidecar: &strimzi.KafkaSpecEntityOperatorTlsSidecar{
-				Resources: &strimzi.KafkaSpecEntityOperatorTlsSidecarResources{
-					Requests: &entityTLSRequests,
-					Limits:   &entityTLSLimits,
-				},
-			},
 		},
 	}
 
