@@ -72,7 +72,7 @@ spec:
   resources:  # assert default resource settings are used
     limits:
       cpu: 600m
-      memory: 800Mi
+      memory: 1GiMi
     requests:
-      cpu: 300m
-      memory: 500Mi
+      cpu: 500m
+      memory: 750Mi
