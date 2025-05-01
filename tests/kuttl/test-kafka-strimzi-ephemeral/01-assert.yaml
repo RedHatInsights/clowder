@@ -17,15 +17,6 @@ spec:
         port: 9092
         type: internal
         tls: false
-      - name: ext
-        port: 9094
-        tls: false
-        type: nodeport
-        configuration:
-          brokers:
-            - broker: 0
-              advertisedHost: localhost
-              advertisedPort: 9094
     storage:
       type: ephemeral
     resources:  # assert resource settings from ClowdEnvironment are used
