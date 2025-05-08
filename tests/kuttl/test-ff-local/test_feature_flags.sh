@@ -16,8 +16,8 @@ get_request_ingress() {
 
 get_request_edge() {
 
-    local TOKEN="$1"
-    local ENDPOINT="$2"
+    local TOKEN="default:*.proxy-123"
+    local ENDPOINT="$1"
 
     kubectl exec -n test-ff-local "$FEATURE_FLAGS_POD" -- wget -q -O- \
         --header "Authorization: $TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"
@@ -84,7 +84,7 @@ fi
 echo "Waiting for edge to sync"
 sleep 6
 
-if ! get_request_edge "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
+if ! get_request_edge "/api/frontend/$FEATURE_TOGGLE_NAME"; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be available through edge"
     exit 1
 fi
