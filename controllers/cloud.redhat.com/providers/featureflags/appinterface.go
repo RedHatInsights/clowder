@@ -45,6 +45,14 @@ func (ff *appInterfaceFeatureFlagProvider) Provide(_ *crd.ClowdApp) error {
 		return err
 	}
 
+	if _, err := ff.HashCache.CreateOrUpdateObject(sec, true); err != nil {
+		return err
+	}
+
+	if err := ff.HashCache.AddClowdObjectToObject(ff.Env, sec); err != nil {
+		return err
+	}
+
 	accessToken, ok := sec.Data["CLIENT_ACCESS_TOKEN"]
 	if !ok {
 		return errors.NewClowderError("Missing data")

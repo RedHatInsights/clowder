@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+data:
+  aws_access_key_id: YWNjZXNzLWtleS1pZA== # access-key-id
+  aws_secret_access_key: c3Ryb25nLXRvcC1zZWNyZXQ= # strong-top-secret
+  aws_region: ZXUtY2VudHJhbC0x # eu-central-1
+  log_group_name: TG9nc19TdGFnZQ== # Logs_Stage
+kind: Secret
+metadata:
+  name: cloudwatch
+  namespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+type: Opaque
