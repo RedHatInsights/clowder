@@ -176,7 +176,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 
 	version := s.Env.Spec.Providers.Kafka.Cluster.Version
 	if version == "" {
-		version = "3.4.0"
+		version = "3.8.0"
 	}
 
 	deleteClaim := s.Env.Spec.Providers.Kafka.Cluster.DeleteClaim
@@ -373,12 +373,6 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					Limits:   &entityUserLimits,
 				},
 			},
-			TlsSidecar: &strimzi.KafkaSpecEntityOperatorTlsSidecar{
-				Resources: &strimzi.KafkaSpecEntityOperatorTlsSidecarResources{
-					Requests: &entityTLSRequests,
-					Limits:   &entityTLSLimits,
-				},
-			},
 		},
 	}
 
@@ -504,7 +498,9 @@ func (s strimziProvider) connectConfig(config *apiextensions.JSON) error {
 		"offset.storage.replication.factor":       "1",
 		"offset.storage.topic":                    "connect-cluster-offsets",
 		"status.storage.replication.factor":       "1",
-		"status.storage.topic":                    "connect-cluster-status"
+		"status.storage.topic":                    "connect-cluster-status",
+		"config.providers":                        "secrets",
+		"config.providers.secrets.class":          "io.strimzi.kafka.KubernetesSecretConfigProvider"
 	}`)
 
 	return config.UnmarshalJSON(rawConfig)
