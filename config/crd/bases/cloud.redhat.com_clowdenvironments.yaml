@@ -300,7 +300,7 @@ spec:
                           cluster for this environment. Ignored for (*_local_*) mode.
                         properties:
                           image:
-                            description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+                            description: Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
                             type: string
                           name:
                             description: 'Defines the kafka connect cluster name (default:
@@ -341,7 +341,7 @@ spec:
                                 x-kubernetes-preserve-unknown-fields: true
                             type: object
                           version:
-                            description: Version. If unset, default is '2.5.0'
+                            description: Version. If unset, default is '3.6.0'
                             type: string
                         type: object
                       connectClusterName:

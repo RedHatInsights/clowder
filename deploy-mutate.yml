@@ -9688,6 +9688,11 @@ objects:
                                 value from operator config is used if set, otherwise
                                 a hard-coded default is used.
                               type: string
+                            caddyProxy:
+                              description: Caddy Reverse Proxy image -- if not defined,
+                                value from operator config is used if set, otherwise
+                                a hard-coded default is used.
+                              type: string
                             keycloak:
                               description: Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}'
                                 unless overridden here
