@@ -11,7 +11,7 @@ Clowder is a kubernetes operator designed to make it easy to deploy applications
 running on the cloud.redhat.com platform in production, testing and local
 development environments.
 
-[Learn More](docs/learn-more.md)
+Learn more about Clowder [here](docs/learn-more.md)
 
 ## See Clowder in Action
 
