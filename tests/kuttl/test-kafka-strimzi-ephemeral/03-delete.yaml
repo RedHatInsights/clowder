@@ -2,6 +2,8 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 delete:
+- apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaTopic
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
   name: env-test-kafka-strimzi-ephemeral

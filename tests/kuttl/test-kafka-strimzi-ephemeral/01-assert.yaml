@@ -10,7 +10,7 @@ metadata:
     name: env-test-kafka-strimzi-ephemeral
 spec:
   kafka:
-    version: "3.4.0"
+    version: "3.8.0"
     replicas: 1
     listeners:
       - name: tcp
@@ -73,8 +73,8 @@ metadata:
   annotations:
     strimzi.io/use-connector-resources: 'true'
 spec:
-  version: "3.4.0"
-  image: "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+  version: "3.8.0"
+  image: "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
   # bootstrapServers is asserted in json asserts
   config:
     group.id: connect-cluster
