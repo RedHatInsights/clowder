@@ -17,6 +17,8 @@ data:
         },
         "features": {
             "createServiceMonitor": true,
-            "watchStrimziResources": true
+            "watchStrimziResources": true,
+            "enableExternalStrimzi": true,
+            "disableStrimziFinalizer": true
         }
     }

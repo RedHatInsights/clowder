@@ -36,7 +36,7 @@ type rootKafkaProvider struct {
 	providers.Provider
 }
 
-var DefaultImageKafkaXjoin = "quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest"
+var DefaultImageKafkaConnect = "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
 
 // ProvName is the name/ident of the provider
 var ProvName = "kafka"
@@ -287,8 +287,8 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	// default values for config/requests/limits in Strimzi resource specs
 	err := kcRequests.UnmarshalJSON([]byte(`{
-        "cpu": "300m",
-        "memory": "500Mi"
+        "cpu": "500m",
+        "memory": "750Mi"
 	}`))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kcRequests: %w", err)
@@ -296,7 +296,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	err = kcLimits.UnmarshalJSON([]byte(`{
         "cpu": "600m",
-        "memory": "800Mi"
+        "memory": "1Gi"
 	}`))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kcLimits: %w", err)
@@ -338,12 +338,12 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	version := s.GetEnv().Spec.Providers.Kafka.Connect.Version
 	if version == "" {
-		version = "3.4.0"
+		version = "3.8.0"
 	}
 
 	image := s.GetEnv().Spec.Providers.Kafka.Connect.Image
 	if image == "" {
-		image = DefaultImageKafkaXjoin
+		image = DefaultImageKafkaConnect
 	}
 
 	var config apiextensions.JSON

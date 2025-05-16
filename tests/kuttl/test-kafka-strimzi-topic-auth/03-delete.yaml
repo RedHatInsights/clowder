@@ -2,6 +2,8 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 delete:
+- apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaTopic
 - apiVersion: v1
   kind: Namespace
   name: test-kafka-strimzi-topic-auth

@@ -3,5 +3,4 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: sleep 10
-- script: kubectl get clowdenvironment test-target-namespace -o json > /tmp/target_namespace
-- script: cat /tmp/target_namespace | jq -r '.status.targetNamespace != ""' -e > /tmp/target_namespace
+- script: kubectl get clowdenvironment test-target-namespace -o json | jq -r '.status.targetNamespace != ""' -e
