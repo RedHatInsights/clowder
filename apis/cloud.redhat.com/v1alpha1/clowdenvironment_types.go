@@ -208,10 +208,10 @@ type KafkaConnectClusterConfig struct {
 	// +kubebuilder:validation:Minimum:=1
 	Replicas int32 `json:"replicas,omitempty"`
 
-	// Version. If unset, default is '2.5.0'
+	// Version. If unset, default is '3.6.0'
 	Version string `json:"version,omitempty"`
 
-	// Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+	// Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
 	Image string `json:"image,omitempty"`
 
 	// Resource Limits
