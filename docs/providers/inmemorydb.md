@@ -30,9 +30,6 @@ configuration is at the bottom of this page.
 In redis mode, the **In-Memory DB Provider** will provision a single node redis instance
 in the same namespace as the ``ClowdApp`` that requested it.
 
-ClowdEnv Config options available:
-
-- `pvc`
 
 ### elasticache
 
@@ -90,5 +87,4 @@ spec:
   providers:
     inMemoryDb:
       mode: redis
-      pvc: false
 ```
