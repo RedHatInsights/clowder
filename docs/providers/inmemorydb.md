@@ -33,10 +33,15 @@ in the same namespace as the ``ClowdApp`` that requested it.
 
 ### elasticache
 
-In elasticache mode, the *In-Memory DB Provider* will search for a secret named
+In elasticache mode, the **In-Memory DB Provider** will search for a secret named
 `in-memory-db` inside the same namespace as the `ClowdApp` that requested it.
 The hostname and port will then be passed to the `cdappconfig.json` for use by
 the app. If a password is provided, it is known that in-transit encryption is enabled, as per [ElastiCache requirements](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth.html#auth-using).
+
+## shared
+
+In shared mode, the **In-Memory DB Provider** will use the **redis** instance defined
+in the `ClowdApp` referenced by the `SharedInMemoryDbAppName` configuration option.
 
 ## Generated App Configuration
 
@@ -74,7 +79,7 @@ attribute names.
 Configuring the **In-Memory DB Provider** is done by providing the follow JSON
 structure to the ``ClowdEnv`` resource. Further details of the options
 available can be found in the API reference. A minimal example is shown below
-for the ``operator`` mode. Different modes can use different configuration
+for the ``redis`` mode. Different modes can use different configuration
 options, more information can be found in the API reference.
 
 ```yaml
