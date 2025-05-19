@@ -29,14 +29,15 @@ func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 	}
 }
 
+// Checks this app's list of dependencies to ensure shared app is included
 func checkDependency(app *crd.ClowdApp) error {
 	for _, appName := range app.Spec.Dependencies {
-		if app.Spec.Database.SharedDBAppName == appName {
+		if app.Spec.SharedInMemoryDbAppName == appName {
 			return nil
 		}
 	}
 
-	return errors.NewClowderError("The requested app's db was not found in the dependencies")
+	return errors.NewClowderError("The requested app's in memory db was not found in the dependencies")
 }
 
 func init() {
