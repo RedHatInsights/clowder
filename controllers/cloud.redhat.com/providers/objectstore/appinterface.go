@@ -62,7 +62,7 @@ func resolveBucketDeps(requestedBuckets []string, c *config.ObjectStoreConfig) e
 	for _, requestedBucket := range requestedBuckets {
 		found := false
 		for _, bucket := range c.Buckets {
-			if strings.HasPrefix(bucket.Name, requestedBucket) {
+			if strings.EqualFold(bucket.Name, requestedBucket) {
 				found = true
 				bucket.RequestedName = requestedBucket
 				buckets = append(buckets, bucket)
