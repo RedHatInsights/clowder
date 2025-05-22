@@ -401,7 +401,7 @@ type FeatureFlagsConfig struct {
 
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB
 // Provider
-// +kubebuilder:validation:Enum=shared;redis;elasticache;none
+// +kubebuilder:validation:Enum=redis;elasticache;none
 type InMemoryMode string
 
 // InMemoryDBConfig configures the Clowder provider controlling the creation of

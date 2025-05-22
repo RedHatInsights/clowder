@@ -19,8 +19,6 @@ func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 		return NewLocalRedis(c)
 	case "elasticache":
 		return NewElasticache(c)
-	case "shared":
-		return NewSharedInMemoryDb(c)
 	case "none", "":
 		return NewNoneInMemoryDb(c)
 	default:
