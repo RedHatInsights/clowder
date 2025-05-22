@@ -22,16 +22,16 @@ Learn more about Clowder [here](docs/learn-more.md)
 In addition to reducing the effort to maintain a deployment template, Clowder
 provides a number of other benefits:
 
-* **Consistent deployment** Whether you're deploying to production, running smoke
+- **Consistent deployment** Whether you're deploying to production, running smoke
   tests on a PR, or developing your application locally, Clowder will use the
   same app definition for all three. No more endlessly tweaking environment variables!
-* **Focus on development** Clowder has the best practices of running an app in
+- **Focus on development** Clowder has the best practices of running an app in
   a microservices environment as well as specific requirements from the app-sre
   team, such as pod affinity, rollout parameters etc built-in. Spend less time
   worrying about configuring deployment templates and more time writing your app.
-* **Assisting Ops** Any dev or SRE that learns how Clowder deploys apps will
+- **Assisting Ops** Any dev or SRE that learns how Clowder deploys apps will
   implicitly understand the deployment of any other app utilizing Clowder.
-* **Deploy a full environment locally** Gone are the days of hacking together
+- **Deploy a full environment locally** Gone are the days of hacking together
   scripts that just about get you mocked or partially working dependant services.
   With  Clowder, you can deploy an instance of the cloud.redhat.com platform on your
   local laptop, or in a dev cluster to use as you wish.
