@@ -3,6 +3,7 @@ package inmemorydb
 import (
 	"fmt"
 
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	providerUtils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
@@ -13,6 +14,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
@@ -28,6 +30,10 @@ var RedisService = rc.NewSingleResourceIdent(ProvName, "redis_service", &core.Se
 // RedisConfigMap identifies the main redis configmap
 var RedisConfigMap = rc.NewSingleResourceIdent(ProvName, "redis_config_map", &core.ConfigMap{})
 
+// RedisSecret is the ident referring to the redis creds secret object.
+// This is needed for allowing shared redis/inmemorydb instances
+var RedisSecret = rc.NewSingleResourceIdent(ProvName, "redis_secret", &core.Secret{})
+
 type localRedis struct {
 	providers.Provider
 }
@@ -38,6 +44,7 @@ func NewLocalRedis(p *providers.Provider) (providers.ClowderProvider, error) {
 		RedisDeployment,
 		RedisService,
 		RedisConfigMap,
+		RedisSecret,
 	)
 	return &localRedis{Provider: *p}, nil
 }
@@ -51,18 +58,39 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
+	if app.Spec.SharedInMemoryDbAppName != "" {
+		return r.processSharedInMemoryDb(app)
+	}
+
 	sslmode := false
 
 	creds := config.InMemoryDBConfig{}
 
-	creds.Hostname = fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
-	creds.Port = 6379
-	creds.SslMode = &sslmode
 	nn := providers.GetNamespacedName(app, "redis")
+
+	dataInit := func() map[string]string {
+
+		hostname := fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
+		port := "6379"
+		sslmode := fmt.Sprintf("%t", &sslmode)
+
+		return map[string]string{
+			"hostname": hostname,
+			"port":     port,
+			"sslmode":  sslmode,
+		}
+	}
+
+	secMap, err := providers.MakeOrGetSecret(app, r.Provider.Cache, RedisSecret, nn, dataInit)
+	if err != nil {
+		return errors.Wrap("Couldn't set/get secret", err)
+	}
+
+	err = creds.Populate(secMap)
 
 	configMap := &core.ConfigMap{}
 
-	err := r.Provider.Cache.Create(RedisConfigMap, nn, configMap)
+	err = r.Provider.Cache.Create(RedisConfigMap, nn, configMap)
 
 	if err != nil {
 		return err
@@ -79,7 +107,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	r.Config.InMemoryDb = &creds
+	r.Provider.Config.InMemoryDb = &creds
 
 	objList := []rc.ResourceIdent{
 		RedisDeployment,
@@ -173,5 +201,49 @@ func makeLocalRedis(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap provide
 	}}
 
 	utils.MakeService(svc, nn, labels, servicePorts, o, nodePort)
+	return nil
+}
+
+func (r *localRedis) processSharedInMemoryDb(app *crd.ClowdApp) error {
+	err := checkDependency(app)
+
+	if err != nil {
+		return err
+	}
+
+	shimdbCfg := config.InMemoryDBConfig{}
+
+	refApp, err := crd.GetAppForDBInSameEnv(r.Provider.Ctx, r.Provider.Client, app, true)
+
+	if err != nil {
+		return err
+	}
+
+	secret := core.Secret{}
+
+	inn := types.NamespacedName{
+		Name:      fmt.Sprintf("%s-redis", refApp.Name),
+		Namespace: refApp.Namespace,
+	}
+
+	// This is a REAL call here, not a cached call as the reconciliation must have been processed
+	// for the app we depend on.
+	if err = r.Provider.Client.Get(r.Provider.Ctx, inn, &secret); err != nil {
+		return errors.Wrap("Couldn't set/get secret", err)
+	}
+
+	secMap := make(map[string]string)
+
+	for k, v := range secret.Data {
+		(secMap)[k] = string(v)
+	}
+
+	err = shimdbCfg.Populate(&secMap)
+	if err != nil {
+		return errors.Wrap("couldn't convert to int", err)
+	}
+
+	r.Provider.Config.InMemoryDb = &shimdbCfg
+
 	return nil
 }
