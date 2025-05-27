@@ -466,7 +466,7 @@ type ClowdAppSpec struct {
 	InMemoryDB bool `json:"inMemoryDb,omitempty"`
 
 	// In (*_shared_*) mode, the application name that should create the in memory
-	// DB instance this applicaiton should use
+	// DB instance this application should use
 	SharedInMemoryDbAppName string `json:"SharedInMemoryDbAppName,omitempty"`
 
 	// If featureFlags is set to true, Clowder will pass configuration of a

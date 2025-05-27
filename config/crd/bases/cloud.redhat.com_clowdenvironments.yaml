@@ -177,15 +177,9 @@ spec:
                           which will search the namespace of the ClowdApp for a secret called 'elasticache'
                         enum:
                         - redis
-                        - app-interface
                         - elasticache
                         - none
                         type: string
-                      pvc:
-                        description: |-
-                          If using the (*_local_*) mode and PVC is set to true, this instructs the local
-                          Database instance to use a PVC instead of emptyDir for its volumes.
-                        type: boolean
                     required:
                     - mode
                     type: object
