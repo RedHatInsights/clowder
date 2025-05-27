@@ -72,7 +72,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 
 		hostname := fmt.Sprintf("%v-redis.%v.svc", app.Name, app.Namespace)
 		port := "6379"
-		sslmode := fmt.Sprintf("%t", &sslmode)
+		sslmode := fmt.Sprintf("%t", sslmode)
 
 		return map[string]string{
 			"hostname": hostname,
