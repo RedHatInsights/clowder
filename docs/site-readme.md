@@ -46,15 +46,15 @@ for Python, Go, Javascript and Ruby.
 
 ## Feature List
 
-Clowder currently features support for:
+Clowder currently supports the following features:
 
-* Kafka Topics
-* Object Storage
-* PostgreSQL Database
-* In-Memory DB
-* Feature Flags (development only)
-* CronJob support
-* Jobs Support
+- Kafka Topics
+- Object Storage
+- PostgreSQL Database
+- In-Memory DB
+- Feature Flags (development only)
+- CronJob support
+- Jobs Support
 
 ## Roadmap
 
