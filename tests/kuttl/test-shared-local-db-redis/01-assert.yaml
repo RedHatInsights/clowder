@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-a-redis-shared
+  name: app-a-redis
   namespace: test-local-db-redis-shared
 spec:
   template:

@@ -5,7 +5,7 @@ commands:
 - script: sleep 5
 
 - script: kubectl get secret --namespace=test-local-db-redis-shared app-b -o json > /tmp/test-local-db-redis-shared-json-b
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-local-db-redis-shared-json-b base64 -d > /tmp/test-local-db-redis-shared-json-b
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-local-db-redis-shared-json-b | base64 -d > /tmp/app-b-cdappconfig-json
 
-- script: jq -r 'inMemoryDb.hostname == "app-a-redis.test-local-db-redis-a-shared.svc"' -e < /tmp/test-local-db-redis-shared-json-b
-- script: jq -r 'inMemoryDb.port == 6379' -e < /tmp/test-local-db-redis-shared-json-b
+- script: jq -r '.inMemoryDb.hostname == "app-a-redis.test-local-db-redis-shared.svc"' -e < /tmp/app-b-cdappconfig-json
+- script: jq -r '.inMemoryDb.port == 6379' -e < /tmp/app-b-cdappconfig-json
