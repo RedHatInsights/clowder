@@ -1,0 +1,172 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdapp-watcher-kafka-msk
+spec:
+  targetNamespace: test-clowdapp-watcher-kafka-msk-env
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: ephem-msk
+      managedSecretRef:
+        name: managed-secret
+        namespace: test-clowdapp-watcher-kafka-msk-sec-source
+      clusterAnnotation: test-clowdapp-watcher-kafka-msk
+      topicNamespace: test-clowdapp-watcher-kafka-msk-sec-source
+      kafkaConnectReplicaCount: 1
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-msk-env
+spec:
+  envName: test-clowdapp-watcher-kafka-msk
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  kafkaTopics:
+    - replicas: 3
+      partitions: 64
+      topicName: topic-one
+    - replicas: 5
+      partitions: 32
+      topicName: topic-two
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: strimzi-topic-operator
+  namespace: test-clowdapp-watcher-kafka-msk-sec-source
+  labels:
+    app: strimzi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: strimzi-topic-operator
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: strimzi-topic-operator
+    spec:
+      serviceAccountName: strimzi-topic-operator
+      serviceAccount: strimzi-topic-operator
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: strimzi-topic-operator
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: STRIMZI_NAMESPACE
+              value: test-clowdapp-watcher-kafka-msk-sec-source
+            - name: STRIMZI_RESOURCE_LABELS
+              value: strimzi.io/cluster=test-clowdapp-watcher-kafka-msk
+            - name: STRIMZI_KAFKA_BOOTSTRAP_SERVERS
+              value: test-clowdapp-watcher-kafka-msk-kafka-bootstrap.test-clowdapp-watcher-kafka-msk.svc:9093
+            - name: STRIMZI_FULL_RECONCILIATION_INTERVAL_MS
+              value: '120000'
+            - name: STRIMZI_LOG_LEVEL
+              value: INFO
+            - name: STRIMZI_TLS_ENABLED
+              value: 'false'
+            - name: STRIMZI_TLS_AUTH_ENABLED
+              value: 'false'
+            - name: STRIMZI_JAVA_OPTS
+              value: '-Xmx512M -Xms256M'
+            - name: STRIMZI_PUBLIC_CA
+              value: 'false'
+            - name: STRIMZI_SASL_ENABLED
+              value: 'true'
+            - name: STRIMZI_SASL_USERNAME
+              value: test-clowdapp-watcher-kafka-msk-connect
+            - name: STRIMZI_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-clowdapp-watcher-kafka-msk-connect
+                  key: password
+            - name: STRIMZI_SASL_MECHANISM
+              value: scram-sha-512
+            - name: STRIMZI_SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: STRIMZI_USE_FINALIZERS
+              value: 'false'
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: strimzi-tmp
+              mountPath: /tmp
+            - name: ca
+              mountPath: /etc/tls-sidecar/cluster-ca-certs
+          terminationMessagePolicy: File
+          image: >-
+            quay.io/strimzi/operator:0.37.0
+          args:
+            - /opt/strimzi/bin/topic_operator_run.sh
+      volumes:
+        - name: strimzi-tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 5Mi
+        - name: ca
+          secret:
+            secretName: test-clowdapp-watcher-kafka-msk-cluster-ca-cert
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

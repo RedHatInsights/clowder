@@ -1,0 +1,14 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: test-clowdapp-watcher-kafka-strimzi-puptoo
+  namespace: test-clowdapp-watcher-kafka-strimzi-kafka
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-strimzi
+  labels:
+    app: puptoo
+type: Opaque

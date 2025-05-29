@@ -1,0 +1,26 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: test-clowdapp-watcher-kafka-msk
+  namespace: test-clowdapp-watcher-kafka-msk
+status:
+  conditions:
+  - reason: ZooKeeperStorage
+    status: "True"
+    type: Warning
+  - reason: KafkaStorage
+    status: "True"
+    type: Warning
+  - status: "True"
+    type: Ready
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  labels:
+    strimzi.io/cluster: test-clowdapp-watcher-kafka-msk
+  name: test-clowdapp-watcher-kafka-msk-connect
+  namespace: test-clowdapp-watcher-kafka-msk
+status:
+  username: test-clowdapp-watcher-kafka-msk-connect

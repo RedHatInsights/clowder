@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-ff-app-interface
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-ff-app-interface-ff-location
+spec:
+  finalizers:
+  - kubernetes
