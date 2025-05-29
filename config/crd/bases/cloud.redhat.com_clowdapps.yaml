@@ -54,6 +54,11 @@ spec:
           spec:
             description: A ClowdApp specification.
             properties:
+              SharedInMemoryDbAppName:
+                description: |-
+                  In (*_shared_*) mode, the application name that should create the in memory
+                  DB instance this application should use
+                type: string
               cyndi:
                 description: |-
                   Configures 'cyndi' database syndication for this app. When the app's ClowdEnvironment has

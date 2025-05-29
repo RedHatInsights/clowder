@@ -1,0 +1,15 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-redis
+  namespace: test-local-db-redis-shared
+spec:
+  template:
+    metadata:
+      labels:
+        service: redis
+    spec:    
+      containers:
+        - image: registry.redhat.io/rhel9/redis-6:1-199.1726663404
+          resources: {}
