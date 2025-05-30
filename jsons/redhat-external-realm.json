@@ -870,6 +870,22 @@
             "claim.name": "is_org_admin",
             "jsonType.label": "boolean"
           }
+        },
+        {
+          "id": "fc187ec5-d723-4d1a-9ebb-e0db2256f40e",
+          "name": "user_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "user_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "user_id",
+            "jsonType.label": "String"
+          }
         }
       ],
       "defaultClientScopes": [
@@ -2392,6 +2408,9 @@
           "12345"
         ],
         "org_id": [
+          "12345"
+        ],
+        "user_id": [
           "12345"
         ],
         "newEntitlements": [
