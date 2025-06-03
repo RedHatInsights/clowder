@@ -243,7 +243,7 @@ spec:
                             type: object
                           name:
                             description: 'Defines the kafka cluster name (default:
-                              <ClowdEnvironment Name>-<UID>)'
+                              <ClowdEnvironment Name>)'
                             type: string
                           namespace:
                             description: 'The namespace the kafka cluster is expected
