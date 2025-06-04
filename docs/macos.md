@@ -9,7 +9,7 @@ If you do not use ``brew``, you can follow [this guide](https://v1-18.docs.kuber
 
 ## Install Podman
 
-Virtualbox or HyperKit were previously recommended, but Podman is becoming a popular option. Hyperkit has been deprecated due to lack of upstream maintenance. Once you have Podman installed, you can establish it as the driver with something like this (adjust your parameters accordingly):
+Virtualbox or HyperKit were previously recommended, but Podman is becoming a popular option. Hyperkit has been deprecated due to lack of upstream maintenance. Podman support is "experimental" at this time, but works reliably enough for locally reproducing issues. Once you have Podman installed, you can establish it as the driver with something like this (adjust your parameters accordingly):
 
 ``minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=podman --addons registry --addons ingress  --addons=metrics-server --disable-optimizations``
 
