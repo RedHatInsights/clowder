@@ -101,7 +101,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		refApp, err := crd.GetAppForDBInSameEnv(a.Ctx, a.Client, app)
+		refApp, err := crd.GetAppForDBInSameEnv(a.Ctx, a.Client, app, false)
 
 		if err != nil {
 			return err
