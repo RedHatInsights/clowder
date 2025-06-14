@@ -1,0 +1,13 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+- apiVersion: v1
+  kind: Namespace
+  name: test-clowdapp-watcher-ff-app-interface
+- apiVersion: v1
+  kind: Namespace
+  name: test-clowdapp-watcher-ff-app-interface-ff-location
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-clowdapp-watcher-ff-app-interface

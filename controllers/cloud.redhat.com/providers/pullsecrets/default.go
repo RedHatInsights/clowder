@@ -108,6 +108,15 @@ func copyPullSecrets(prov *providers.Provider, namespace string, obj object.Clow
 			return nil, err
 		}
 
+		_, err := prov.HashCache.CreateOrUpdateObject(sourcePullSecObj, true)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = prov.HashCache.AddClowdObjectToObject(obj, sourcePullSecObj); err != nil {
+			return nil, err
+		}
+
 		secName := fmt.Sprintf("%s-%s-clowder-copy", prov.Env.Name, pullSecretName.Name)
 		secList = append(secList, secName)
 
