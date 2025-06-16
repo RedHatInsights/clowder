@@ -162,7 +162,7 @@ type KafkaMode string
 
 // KafkaClusterConfig defines options related to the Kafka cluster managed/monitored by Clowder
 type KafkaClusterConfig struct {
-	// Defines the kafka cluster name (default: <ClowdEnvironment Name>-<UID>)
+	// Defines the kafka cluster name (default: <ClowdEnvironment Name>)
 	Name string `json:"name,omitempty"`
 
 	// The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace)

@@ -893,7 +893,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _string_ | Defines the kafka cluster name (default: <ClowdEnvironment Name>-<UID>) |  |  |
+| `name` _string_ | Defines the kafka cluster name (default: <ClowdEnvironment Name>) |  |  |
 | `namespace` _string_ | The namespace the kafka cluster is expected to reside in (default: the environment's targetNamespace) |  |  |
 | `forceTLS` _boolean_ | Force TLS |  |  |
 | `replicas` _integer_ | The requested number of replicas for kafka/zookeeper. If unset, default is '1' |  | Minimum: 1 <br /> |
