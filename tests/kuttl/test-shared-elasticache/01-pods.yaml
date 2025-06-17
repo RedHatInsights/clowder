@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-local-db-redis
+  name: test-shared-elasticache
 spec:
-  targetNamespace: test-local-db-redis
+  targetNamespace: test-shared-elasticache
   providers:
     web:
       port: 8000
@@ -22,7 +22,7 @@ spec:
     objectStore:
       mode: none
     inMemoryDb:
-      mode: redis
+      mode: elasticache
     featureFlags:
       mode: none
   resourceDefaults:
@@ -36,12 +36,22 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: app-a
-  namespace: test-local-db-redis
+  name: puptoo
+  namespace: test-shared-elasticache
 spec:
-  envName: test-local-db-redis
+  envName: test-shared-elasticache
   deployments:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
   inMemoryDb: true
+---
+apiVersion: v1
+data:
+  db.endpoint: bG92ZWx5
+  db.port: Njc2Nw==
+kind: Secret
+metadata:
+  name: in-memory-db
+  namespace: test-shared-elasticache
+type: Opaque
