@@ -34,5 +34,5 @@ type: Opaque
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: another-app
+  name: another-app-processor
   namespace: test-shared-elasticache-ns2
