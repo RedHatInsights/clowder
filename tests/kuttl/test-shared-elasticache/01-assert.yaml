@@ -17,3 +17,22 @@ kind: Deployment
 metadata:
   name: puptoo-processor
   namespace: test-shared-elasticache
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: anotherApp
+  namespace: test-shared-elasticache-ns2
+  labels:
+    app: anotherApp
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: anotherApp
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anotherApp
+  namespace: test-shared-elasticache-ns2

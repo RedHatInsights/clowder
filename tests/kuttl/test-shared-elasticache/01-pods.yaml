@@ -55,3 +55,19 @@ metadata:
   name: in-memory-db
   namespace: test-shared-elasticache
 type: Opaque
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: anotherApp
+  namespace: test-shared-elasticache-ns2
+spec:
+  envName: test-shared-elasticache
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  inMemoryDb: true
+  sharedInMemoryDbAppName: puptoo
+  dependencies:
+  - puptoo
