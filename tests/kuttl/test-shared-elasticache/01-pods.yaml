@@ -59,7 +59,7 @@ type: Opaque
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: anotherApp
+  name: another-app
   namespace: test-shared-elasticache-ns2
 spec:
   envName: test-shared-elasticache

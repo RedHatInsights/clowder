@@ -21,18 +21,18 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: anotherApp
+  name: another-app
   namespace: test-shared-elasticache-ns2
   labels:
-    app: anotherApp
+    app: another-app
   ownerReferences:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdApp
-    name: anotherApp
+    name: another-app
 type: Opaque
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: anotherApp
+  name: another-app
   namespace: test-shared-elasticache-ns2
