@@ -58,6 +58,8 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
+	r.Log.Info("**** sharedinMemoryDbAppName", "app", app.Name, "sharedInMemoryDbAppName", app.Spec.SharedInMemoryDbAppName)
+
 	if app.Spec.SharedInMemoryDbAppName != "" {
 		return r.processSharedInMemoryDb(app)
 	}
@@ -207,6 +209,8 @@ func makeLocalRedis(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap provide
 }
 
 func (r *localRedis) processSharedInMemoryDb(app *crd.ClowdApp) error {
+	r.Log.Info("**** calling processSharedInMemoryDb", "app", app.Name)
+
 	err := checkDependency(app)
 
 	if err != nil {
@@ -222,6 +226,8 @@ func (r *localRedis) processSharedInMemoryDb(app *crd.ClowdApp) error {
 	}
 
 	secret := core.Secret{}
+
+	r.Log.Info("**** ref app", "refApp", refApp.Name)
 
 	inn := types.NamespacedName{
 		Name:      fmt.Sprintf("%s-redis", refApp.Name),
