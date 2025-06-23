@@ -468,7 +468,7 @@ type ClowdAppSpec struct {
 
 	// In (*_shared_*) mode, the application name that should create the in memory
 	// DB instance this application should use
-	SharedInMemoryDbAppName string `json:"SharedInMemoryDbAppName,omitempty"`
+	SharedInMemoryDbAppName string `json:"sharedInMemoryDbAppName,omitempty"`
 
 	// If featureFlags is set to true, Clowder will pass configuration of a
 	// FeatureFlags instance to the pods in the ClowdApp. This single
