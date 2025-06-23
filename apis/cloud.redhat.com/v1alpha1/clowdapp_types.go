@@ -14,6 +14,7 @@ package v1alpha1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -743,7 +744,7 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 			return &refApp, nil
 		}
 	}
-	return nil, fmt.Errorf(errorOut)
+	return nil, errors.New(errorOut)
 }
 
 func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *ClowdEnvironment) error {
