@@ -21,6 +21,23 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) error {
 	return nil
 }
 
+func (r *InMemoryDBConfig) Populate(data *map[string]string) error {
+	port, err := strconv.Atoi((*data)["port"])
+
+	if err != nil {
+		return err
+	}
+
+	username := (*data)["username"]
+	password := (*data)["password"]
+
+	r.Hostname = (*data)["hostname"]
+	r.Password = &password
+	r.Port = int(port)
+	r.Username = &username
+	return nil
+}
+
 type DatabaseConfigContainer struct {
 	Config DatabaseConfig       `json:"config"`
 	Ref    types.NamespacedName `json:"ref"`

@@ -401,7 +401,7 @@ type FeatureFlagsConfig struct {
 
 // InMemoryMode details the mode of operation of the Clowder InMemoryDB
 // Provider
-// +kubebuilder:validation:Enum=redis;app-interface;elasticache;none
+// +kubebuilder:validation:Enum=redis;elasticache;none
 type InMemoryMode string
 
 // InMemoryDBConfig configures the Clowder provider controlling the creation of
@@ -411,10 +411,6 @@ type InMemoryDBConfig struct {
 	// (*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)
 	// which will search the namespace of the ClowdApp for a secret called 'elasticache'
 	Mode InMemoryMode `json:"mode"`
-
-	// If using the (*_local_*) mode and PVC is set to true, this instructs the local
-	// Database instance to use a PVC instead of emptyDir for its volumes.
-	PVC bool `json:"pvc,omitempty"`
 
 	// This image is only used in the (*_redis_*) mode, as elsewhere it will try to
 	// inspect for a secret for a hostname and credentials.

@@ -211,6 +211,7 @@ _Appears in:_
 | `database` _[DatabaseSpec](#databasespec)_ | The database specification defines a single database, the configuration<br />of which will be made available to all the pods in the ClowdApp. |  |  |
 | `objectStore` _string array_ | A list of string names defining storage buckets. In certain modes,<br />defined by the ClowdEnvironment, Clowder will create those buckets. |  |  |
 | `inMemoryDb` _boolean_ | If inMemoryDb is set to true, Clowder will pass configuration<br />of an In Memory Database to the pods in the ClowdApp. This single<br />instance will be shared between all apps. |  |  |
+| `sharedInMemoryDbAppName` _string_ | In (*_shared_*) mode, the application name that should create the in memory<br />DB instance this application should use |  |  |
 | `featureFlags` _boolean_ | If featureFlags is set to true, Clowder will pass configuration of a<br />FeatureFlags instance to the pods in the ClowdApp. This single<br />instance will be shared between all apps. |  |  |
 | `dependencies` _string array_ | A list of dependencies in the form of the name of the ClowdApps that are<br />required to be present for this ClowdApp to function. |  |  |
 | `optionalDependencies` _string array_ | A list of optional dependencies in the form of the name of the ClowdApps that<br />will be added to the configuration when present. |  |  |
@@ -639,8 +640,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[InMemoryMode](#inmemorymode)_ | The mode of operation of the Clowder InMemory Provider. Valid options are:<br />(*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)<br />which will search the namespace of the ClowdApp for a secret called 'elasticache' |  | Enum: [redis app-interface elasticache none] <br /> |
-| `pvc` _boolean_ | If using the (*_local_*) mode and PVC is set to true, this instructs the local<br />Database instance to use a PVC instead of emptyDir for its volumes. |  |  |
+| `mode` _[InMemoryMode](#inmemorymode)_ | The mode of operation of the Clowder InMemory Provider. Valid options are:<br />(*_redis_*) where a local Minio instance will be created, and (*_elasticache_*)<br />which will search the namespace of the ClowdApp for a secret called 'elasticache' |  | Enum: [redis elasticache none] <br /> |
 | `image` _string_ | This image is only used in the (*_redis_*) mode, as elsewhere it will try to<br />inspect for a secret for a hostname and credentials. |  |  |
 
 
@@ -652,7 +652,7 @@ InMemoryMode details the mode of operation of the Clowder InMemoryDB
 Provider
 
 _Validation:_
-- Enum: [redis app-interface elasticache none]
+- Enum: [redis elasticache none]
 
 _Appears in:_
 - [InMemoryDBConfig](#inmemorydbconfig)

@@ -6269,6 +6269,11 @@ spec:
                 items:
                   type: string
                 type: array
+              sharedInMemoryDbAppName:
+                description: |-
+                  In (*_shared_*) mode, the application name that should create the in memory
+                  DB instance this application should use
+                type: string
               testing:
                 description: Iqe plugin and other specifics
                 properties:

@@ -1,0 +1,11 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: for i in {1..10}; do kubectl get secret --namespace=test-local-db-redis-shared app-b && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+
+- script: kubectl get secret --namespace=test-local-db-redis-shared app-b -o json > /tmp/test-local-db-redis-shared-json-b
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-local-db-redis-shared-json-b | base64 -d > /tmp/app-b-cdappconfig-json
+
+- script: jq -r '.inMemoryDb.hostname == "app-a-redis.test-local-db-redis-shared.svc"' -e < /tmp/app-b-cdappconfig-json
+- script: jq -r '.inMemoryDb.port == 6379' -e < /tmp/app-b-cdappconfig-json

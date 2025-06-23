@@ -21,17 +21,38 @@ func (e *elasticache) EnvProvide() error {
 }
 
 func (e *elasticache) Provide(app *crd.ClowdApp) error {
-	secretName := "in-memory-db"
+	var refApp *crd.ClowdApp
+	var ecNameSpace string
 
 	if !app.Spec.InMemoryDB {
 		return nil
 	}
 
+	secretName := "in-memory-db"
 	secrets := core.SecretList{}
-	err := e.Client.List(e.Ctx, &secrets, client.InNamespace(app.Namespace))
+
+	if app.Spec.SharedInMemoryDbAppName != "" {
+		err := checkDependency(app)
+
+		if err != nil {
+			return err
+		}
+
+		refApp, err = crd.GetAppForDBInSameEnv(e.Provider.Ctx, e.Provider.Client, app, true)
+
+		if err != nil {
+			return err
+		}
+
+		ecNameSpace = refApp.Namespace
+	} else {
+		ecNameSpace = app.Namespace
+	}
+
+	err := e.Provider.Client.List(e.Provider.Ctx, &secrets, client.InNamespace(ecNameSpace))
 
 	if err != nil {
-		msg := fmt.Sprintf("Failed to list secrets in %s", app.Namespace)
+		msg := fmt.Sprintf("Failed to list secrets in %s", ecNameSpace)
 		return errors.Wrap(msg, err)
 	}
 
@@ -48,7 +69,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 
 			if err != nil {
 				return errors.Wrap(
-					fmt.Sprintf("failed to parse port from secret '%s' in namespace '%s'", secretName, app.Namespace),
+					fmt.Sprintf("failed to parse port from secret '%s' in namespace '%s'", secretName, ecNameSpace),
 					err,
 				)
 			}
@@ -70,12 +91,12 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 	if !found {
 		missingDeps := errors.MakeMissingDependencies(errors.MissingDependency{
 			Source:  "inmemorydb",
-			Details: fmt.Sprintf("No inmemorydb secret named '%s' found in namespace '%s'", secretName, app.Namespace),
+			Details: fmt.Sprintf("No inmemorydb secret named '%s' found in namespace '%s'", secretName, ecNameSpace),
 		})
 		return &missingDeps
 	}
 
-	e.Config.InMemoryDb = &creds
+	e.Provider.Config.InMemoryDb = &creds
 
 	return nil
 }
