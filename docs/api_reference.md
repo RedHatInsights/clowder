@@ -211,7 +211,7 @@ _Appears in:_
 | `database` _[DatabaseSpec](#databasespec)_ | The database specification defines a single database, the configuration<br />of which will be made available to all the pods in the ClowdApp. |  |  |
 | `objectStore` _string array_ | A list of string names defining storage buckets. In certain modes,<br />defined by the ClowdEnvironment, Clowder will create those buckets. |  |  |
 | `inMemoryDb` _boolean_ | If inMemoryDb is set to true, Clowder will pass configuration<br />of an In Memory Database to the pods in the ClowdApp. This single<br />instance will be shared between all apps. |  |  |
-| `SharedInMemoryDbAppName` _string_ | In (*_shared_*) mode, the application name that should create the in memory<br />DB instance this application should use |  |  |
+| `sharedInMemoryDbAppName` _string_ | In (*_shared_*) mode, the application name that should create the in memory<br />DB instance this application should use |  |  |
 | `featureFlags` _boolean_ | If featureFlags is set to true, Clowder will pass configuration of a<br />FeatureFlags instance to the pods in the ClowdApp. This single<br />instance will be shared between all apps. |  |  |
 | `dependencies` _string array_ | A list of dependencies in the form of the name of the ClowdApps that are<br />required to be present for this ClowdApp to function. |  |  |
 | `optionalDependencies` _string array_ | A list of optional dependencies in the form of the name of the ClowdApps that<br />will be added to the configuration when present. |  |  |
