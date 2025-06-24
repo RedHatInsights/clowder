@@ -8,7 +8,7 @@ commands:
     jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed-multibroker | base64 -d > /tmp/test-kafka-managed-multibroker-json &&
     jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < /tmp/test-kafka-managed-multibroker-json &&
     jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"' -e < /tmp/test-kafka-managed-multibroker-json &&
-    exit 0 || sleep 1
+    exit 0 || sleep 1;
     done;
     echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
 - script: jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < /tmp/test-kafka-managed-multibroker-json
