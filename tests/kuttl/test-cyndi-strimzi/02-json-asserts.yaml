@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 5
+- script: for i in {1..10}; do kubectl get secret --namespace=test-cyndi-strimzi puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret
 - script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret
 - script: kubectl get secret -n test-cyndi-strimzi host-inventory-db -o json > /tmp/host-inventory-db-secret

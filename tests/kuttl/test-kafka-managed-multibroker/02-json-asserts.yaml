@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 10
+- script: for i in {1..15}; do kubectl get secret --namespace=test-kafka-managed-multibroker puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > /tmp/test-kafka-managed-multibroker
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed-multibroker | base64 -d > /tmp/test-kafka-managed-multibroker-json
 

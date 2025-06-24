@@ -2,6 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 1
+- script: for i in {1..5}; do kubectl get namespace test-validator && exit 0 || sleep 1; done; echo "Namespace not found"; exit 1
 - script: kubectl apply -f pods.yaml --namespace=test-validator 2>&1 | grep "Forbidden"
-- script: sleep 20
