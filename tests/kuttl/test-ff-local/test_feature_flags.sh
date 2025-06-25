@@ -15,8 +15,8 @@ http_retry() {
     local delay=2
     local attempt=1
 
-    # note: whenever the version of wget running in the container is >=1.18, we can use the --retry-status flag
-    # and avoid this complicated retry logic
+    # note: whenever the version of wget running in the container is >=1.18, we can use
+    # the --retry-status flag and avoid this complicated retry logic
     while [ $attempt -le $max_attempts ]; do
         local cmd="kubectl exec -n test-ff-local \"$FEATURE_FLAGS_POD\" -- wget -q -O-"
 
