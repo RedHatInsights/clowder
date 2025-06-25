@@ -15,12 +15,32 @@ get_request_ingress() {
 }
 
 get_request_edge() {
+    # Unleash seems to refresh the cache every 5 seconds, didn't find a way to force it
+    # see https://github.com/Unleash/unleash-edge/blob/12cf9e3f87099d3c0dce1884bcd305604c1e68ff/server/src/http/refresher/feature_refresher.rs#L443
+    # So we will implement retry logic here since sometimes a 404 is returned initially
 
     local TOKEN="$1"
     local ENDPOINT="$2"
+    local max_attempts=5
+    local delay=2
+    local attempt=1
 
-    kubectl exec -n test-ff-local "$FEATURE_FLAGS_POD" -- wget -q -O- \
-        --header "Authorization: $TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"
+    while [ $attempt -le $max_attempts ]; do
+        if kubectl exec -n test-ff-local "$FEATURE_FLAGS_POD" -- wget -q -O- \
+            --header "Authorization: $TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"; then
+            return 0
+        fi
+
+        if [ $attempt -lt $max_attempts ]; then
+            echo "Attempt $attempt failed, retrying in $delay seconds..." >&2
+            sleep $delay
+        fi
+
+        attempt=$((attempt + 1))
+    done
+
+    echo "All $max_attempts attempts failed" >&2
+    return 1
 }
 
 get_request() {
@@ -79,10 +99,6 @@ if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOG
     exit 1
 fi
 
-# Unleash seems to refresh the cache every 5 seconds, didn't find a way to force it
-# see https://github.com/Unleash/unleash-edge/blob/12cf9e3f87099d3c0dce1884bcd305604c1e68ff/server/src/http/refresher/feature_refresher.rs#L443
-echo "Waiting for edge to sync"
-sleep 6
 
 if ! get_request_edge "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be available through edge"
