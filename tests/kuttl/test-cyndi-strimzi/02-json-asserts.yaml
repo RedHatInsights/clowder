@@ -2,16 +2,15 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: >
-    for i in {1..10}; do
-    kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret &&
-    kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret &&
-    kubectl get secret -n test-cyndi-strimzi host-inventory-db -o json > /tmp/host-inventory-db-secret &&
-    kubectl get secret -n test-cyndi-strimzi myapp-db -o json > /tmp/myapp-db-secret &&
-    kubectl get cyndipipeline -n test-cyndi-strimzi -o json > /tmp/cyndipipeline &&
-    exit 0 || sleep 1;
-    done;
-    echo "Expected secrets/cyndipipeline not found"; exit 1
+# TODO: figure out how to wait for proper reconciliations without using 'sleep' here...
+- script: sleep 5
+- script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret
+- script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret
+- script: kubectl get secret -n test-cyndi-strimzi host-inventory-db -o json > /tmp/host-inventory-db-secret
+- script: kubectl get secret -n test-cyndi-strimzi myapp-db -o json > /tmp/myapp-db-secret
+- script: kubectl get cyndipipeline -n test-cyndi-strimzi -o json > /tmp/cyndipipeline
+- script: jq '.data' /tmp/host-inventory-db-secret > /tmp/host-inventory-db-secret-data
+- script: jq '.data' /tmp/host-inventory-db-cyndi-secret > /tmp/host-inventory-db-cyndi-secret-data
 - script: EXPECTED=$(jq '.data["hostname"]' /tmp/host-inventory-db-secret); jq -e '.data["db.host"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
 - script: EXPECTED=$(jq '.data["port"]' /tmp/host-inventory-db-secret); jq -e '.data["db.port"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
 - script: EXPECTED=$(jq '.data["name"]' /tmp/host-inventory-db-secret); jq -e '.data["db.name"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
