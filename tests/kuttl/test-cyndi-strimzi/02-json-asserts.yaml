@@ -12,8 +12,6 @@ commands:
     exit 0 || sleep 1;
     done;
     echo "Expected secrets/cyndipipeline not found"; exit 1
-- script: jq '.data' /tmp/host-inventory-db-secret > /tmp/host-inventory-db-secret-data
-- script: jq '.data' /tmp/host-inventory-db-cyndi-secret > /tmp/host-inventory-db-cyndi-secret-data
 - script: EXPECTED=$(jq '.data["hostname"]' /tmp/host-inventory-db-secret); jq -e '.data["db.host"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
 - script: EXPECTED=$(jq '.data["port"]' /tmp/host-inventory-db-secret); jq -e '.data["db.port"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
 - script: EXPECTED=$(jq '.data["name"]' /tmp/host-inventory-db-secret); jq -e '.data["db.name"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
