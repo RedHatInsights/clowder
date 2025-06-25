@@ -5,29 +5,50 @@ ADMIN_TOKEN=$(kubectl -n test-ff-local get secret test-ff-local-featureflags  -o
 CLIENT_TOKEN=$(kubectl -n test-ff-local get secret test-ff-local-featureflags  -o json | jq -r '.data.clientAccessToken | @base64d')
 FEATURE_TOGGLE_NAME='my-feature-toggle-1'
 
-get_request_ingress() {
-
-    local TOKEN="$1"
-    local ENDPOINT="$2"
-
-    curl -s -H "Authorization: $TOKEN" "http://${INGRESS_HOST}${ENDPOINT}"
-
-}
-
-get_request_edge() {
-    # Unleash seems to refresh the cache every 5 seconds, didn't find a way to force it
-    # see https://github.com/Unleash/unleash-edge/blob/12cf9e3f87099d3c0dce1884bcd305604c1e68ff/server/src/http/refresher/feature_refresher.rs#L443
-    # So we will implement retry logic here since sometimes a 404 is returned initially
-
-    local TOKEN="$1"
-    local ENDPOINT="$2"
-    local max_attempts=5
+# Common HTTP retry function that handles both direct and kubectl exec requests
+http_retry() {
+    local max_attempts="$1"
+    local method="$2"
+    local auth_token="$3"
+    local url="$4"
+    local post_data="$5"
+    local use_kubectl="${6:-true}"  # Default to true if not provided
     local delay=2
     local attempt=1
 
+    # note: whenever the version of wget running in the container is >=1.18, we can use the --retry-status flag
+    # and avoid this complicated retry logic
     while [ $attempt -le $max_attempts ]; do
-        if kubectl exec -n test-ff-local "$FEATURE_FLAGS_POD" -- wget -q -O- \
-            --header "Authorization: $TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"; then
+        local cmd=""
+
+        if [ "$use_kubectl" = "true" ]; then
+            cmd="kubectl exec -n test-ff-local \"$FEATURE_FLAGS_POD\" -- wget -q -O-"
+        else
+            cmd="wget -q -O-"
+        fi
+
+        # Add authorization header
+        if [ -n "$auth_token" ]; then
+            cmd="$cmd --header \"Authorization: $auth_token\""
+        fi
+
+        # Check if this is a POST request
+        if [ "$method" = "POST" ]; then
+            # Always add Content-Type header for POST requests
+            cmd="$cmd --header \"Content-Type: application/json\""
+
+            # Add POST data if provided - use single quotes to prevent shell interpretation of JSON quotes
+            if [ -n "$post_data" ]; then
+                cmd="$cmd --post-data '$post_data'"
+            else
+                # Empty POST body
+                cmd="$cmd --post-data ''"
+            fi
+        fi
+
+        cmd="$cmd \"$url\""
+
+        if eval "$cmd"; then
             return 0
         fi
 
@@ -43,34 +64,38 @@ get_request_edge() {
     return 1
 }
 
-get_request() {
-
+get_request_ingress() {
     local TOKEN="$1"
     local ENDPOINT="$2"
+    http_retry 3 "GET" "$TOKEN" "http://${INGRESS_HOST}${ENDPOINT}" "" false
+}
 
-    kubectl exec -n test-ff-local "$FEATURE_FLAGS_POD" -- wget -q -O- \
-        --header "Authorization: $TOKEN" "localhost:4242${ENDPOINT}"
+get_request_edge() {
+    local TOKEN="$1"
+    local ENDPOINT="$2"
+    http_retry 10 "GET" "$TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}" ""
+}
+
+get_request() {
+    local TOKEN="$1"
+    local ENDPOINT="$2"
+    http_retry 3 "GET" "$TOKEN" "localhost:4242${ENDPOINT}" ""
 }
 
 post_request() {
-
     local TOKEN="$1"
     local ENDPOINT="$2"
     local DATA="$3"
-
-    kubectl exec -n test-ff-local "$FEATURE_FLAGS_POD" -- wget -q -O- \
-        --post-data "$DATA" \
-        --header "Content-Type: application/json" \
-        --header "Authorization: $TOKEN" \
-        "localhost:4242${ENDPOINT}"
+    http_retry 3 "POST" "$TOKEN" "localhost:4242${ENDPOINT}" "$DATA"
 }
 
+echo "Testing that feature toggle '$FEATURE_TOGGLE_NAME' does not exist initially..."
 if get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should not exist"
     exit 1
 fi
 
-
+echo "Creating feature toggle '$FEATURE_TOGGLE_NAME'..."
 if ! post_request "$ADMIN_TOKEN" \
     "/api/admin/projects/default/features" \
     "{ \"name\": \"$FEATURE_TOGGLE_NAME\" }"; then
@@ -78,28 +103,32 @@ if ! post_request "$ADMIN_TOKEN" \
     exit 1
 fi
 
+echo "Verifying that feature toggle '$FEATURE_TOGGLE_NAME' exists after creation..."
 if ! get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should exist"
     exit 1
 fi
 
+echo "Verifying that feature toggle '$FEATURE_TOGGLE_NAME' is disabled by default..."
 if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" | jq '.enabled==false')" ]; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be disabled"
     exit 1
 fi
 
+echo "Enabling feature toggle '$FEATURE_TOGGLE_NAME'..."
 if ! post_request "$ADMIN_TOKEN" \
     "/api/admin/projects/default/features/$FEATURE_TOGGLE_NAME/environments/development/on" ; then
     echo "Error enabling feature toggle '$FEATURE_TOGGLE_NAME'"
     exit 1
 fi
 
+echo "Verifying that feature toggle '$FEATURE_TOGGLE_NAME' is enabled..."
 if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" | jq '.enabled==true')" ]; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be enabled"
     exit 1
 fi
 
-
+echo "Testing that feature toggle '$FEATURE_TOGGLE_NAME' is available through edge service..."
 if ! get_request_edge "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be available through edge"
     exit 1
