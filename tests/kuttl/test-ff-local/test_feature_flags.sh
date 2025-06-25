@@ -5,27 +5,20 @@ ADMIN_TOKEN=$(kubectl -n test-ff-local get secret test-ff-local-featureflags  -o
 CLIENT_TOKEN=$(kubectl -n test-ff-local get secret test-ff-local-featureflags  -o json | jq -r '.data.clientAccessToken | @base64d')
 FEATURE_TOGGLE_NAME='my-feature-toggle-1'
 
-# Common HTTP retry function that handles both direct and kubectl exec requests
+# Common HTTP retry function using kubectl exec
 http_retry() {
     local max_attempts="$1"
     local method="$2"
     local auth_token="$3"
     local url="$4"
-    local post_data="$5"
-    local use_kubectl="${6:-true}"  # Default to true if not provided
+    local post_data="${5:-}"  # Default to empty string if not provided
     local delay=2
     local attempt=1
 
     # note: whenever the version of wget running in the container is >=1.18, we can use the --retry-status flag
     # and avoid this complicated retry logic
     while [ $attempt -le $max_attempts ]; do
-        local cmd=""
-
-        if [ "$use_kubectl" = "true" ]; then
-            cmd="kubectl exec -n test-ff-local \"$FEATURE_FLAGS_POD\" -- wget -q -O-"
-        else
-            cmd="wget -q -O-"
-        fi
+        local cmd="kubectl exec -n test-ff-local \"$FEATURE_FLAGS_POD\" -- wget -q -O-"
 
         # Add authorization header
         if [ -n "$auth_token" ]; then
@@ -36,14 +29,8 @@ http_retry() {
         if [ "$method" = "POST" ]; then
             # Always add Content-Type header for POST requests
             cmd="$cmd --header \"Content-Type: application/json\""
-
-            # Add POST data if provided - use single quotes to prevent shell interpretation of JSON quotes
-            if [ -n "$post_data" ]; then
-                cmd="$cmd --post-data '$post_data'"
-            else
-                # Empty POST body
-                cmd="$cmd --post-data ''"
-            fi
+            # Add POST data - use single quotes to prevent shell interpretation of JSON quotes
+            cmd="$cmd --post-data '$post_data'"
         fi
 
         cmd="$cmd \"$url\""
@@ -64,22 +51,16 @@ http_retry() {
     return 1
 }
 
-get_request_ingress() {
-    local TOKEN="$1"
-    local ENDPOINT="$2"
-    http_retry 3 "GET" "$TOKEN" "http://${INGRESS_HOST}${ENDPOINT}" "" false
-}
-
 get_request_edge() {
     local TOKEN="$1"
     local ENDPOINT="$2"
-    http_retry 10 "GET" "$TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}" ""
+    http_retry 10 "GET" "$TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"
 }
 
 get_request() {
     local TOKEN="$1"
     local ENDPOINT="$2"
-    http_retry 3 "GET" "$TOKEN" "localhost:4242${ENDPOINT}" ""
+    http_retry 3 "GET" "$TOKEN" "localhost:4242${ENDPOINT}"
 }
 
 post_request() {
