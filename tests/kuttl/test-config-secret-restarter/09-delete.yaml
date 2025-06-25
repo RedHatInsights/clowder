@@ -1,3 +1,4 @@
+# Remove the secrets, this causes no immediate change to the ClowdApp deployments
 ---
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep

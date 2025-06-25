@@ -1,7 +1,9 @@
+# Update both the secret and configmap at the same time
 ---
 apiVersion: v1
 data:
   secretkey1: dGVzdGluZw==
+  secretkey2: dGVzdGluZw==
 kind: Secret
 metadata:
   name: test-config-secret-restarter-secret1
@@ -13,6 +15,7 @@ type: Opaque
 apiVersion: v1
 data:
   configmapkey1: testing
+  configmapkey2: testing
 kind: ConfigMap
 metadata:
   name: test-config-secret-restarter-configmap1
