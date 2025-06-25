@@ -54,24 +54,33 @@ http_retry() {
 get_request_edge() {
     local TOKEN="$1"
     local ENDPOINT="$2"
-    http_retry 10 "GET" "$TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"
+    local RETRIES="$3"
+    http_retry "$RETRIES" "GET" "$TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"
 }
 
 get_request() {
     local TOKEN="$1"
     local ENDPOINT="$2"
-    http_retry 3 "GET" "$TOKEN" "localhost:4242${ENDPOINT}"
+    local RETRIES="$3"
+    http_retry "$RETRIES" "GET" "$TOKEN" "localhost:4242${ENDPOINT}"
 }
 
 post_request() {
     local TOKEN="$1"
     local ENDPOINT="$2"
     local DATA="$3"
-    http_retry 3 "POST" "$TOKEN" "localhost:4242${ENDPOINT}" "$DATA"
+    local RETRIES="$4"
+    http_retry "$RETRIES" "POST" "$TOKEN" "localhost:4242${ENDPOINT}" "$DATA"
 }
 
+echo "Testing that feature flags service is ready..."
+if ! get_request "$CLIENT_TOKEN" "/api/client/features" 15; then
+    echo "Feature flags service not ready"
+    exit 1
+fi
+
 echo "Testing that feature toggle '$FEATURE_TOGGLE_NAME' does not exist initially..."
-if get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
+if get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" 3; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should not exist"
     exit 1
 fi
@@ -79,38 +88,38 @@ fi
 echo "Creating feature toggle '$FEATURE_TOGGLE_NAME'..."
 if ! post_request "$ADMIN_TOKEN" \
     "/api/admin/projects/default/features" \
-    "{ \"name\": \"$FEATURE_TOGGLE_NAME\" }"; then
+    "{ \"name\": \"$FEATURE_TOGGLE_NAME\" }" 3; then
     echo "Error creating feature flag!"
     exit 1
 fi
 
 echo "Verifying that feature toggle '$FEATURE_TOGGLE_NAME' exists after creation..."
-if ! get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
+if ! get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" 3; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should exist"
     exit 1
 fi
 
 echo "Verifying that feature toggle '$FEATURE_TOGGLE_NAME' is disabled by default..."
-if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" | jq '.enabled==false')" ]; then
+if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" 3 | jq '.enabled==false')" ]; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be disabled"
     exit 1
 fi
 
 echo "Enabling feature toggle '$FEATURE_TOGGLE_NAME'..."
 if ! post_request "$ADMIN_TOKEN" \
-    "/api/admin/projects/default/features/$FEATURE_TOGGLE_NAME/environments/development/on" ; then
+    "/api/admin/projects/default/features/$FEATURE_TOGGLE_NAME/environments/development/on" "" 3; then
     echo "Error enabling feature toggle '$FEATURE_TOGGLE_NAME'"
     exit 1
 fi
 
 echo "Verifying that feature toggle '$FEATURE_TOGGLE_NAME' is enabled..."
-if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" | jq '.enabled==true')" ]; then
+if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" 3 | jq '.enabled==true')" ]; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be enabled"
     exit 1
 fi
 
 echo "Testing that feature toggle '$FEATURE_TOGGLE_NAME' is available through edge service..."
-if ! get_request_edge "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME"; then
+if ! get_request_edge "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" 15; then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be available through edge"
     exit 1
 fi
