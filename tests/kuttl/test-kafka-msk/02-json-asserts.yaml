@@ -2,7 +2,13 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 5
+- script: >
+    for i in {1..10}; do
+    kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect &&
+    kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert &&
+    exit 0 || sleep 1;
+    done;
+    echo "Expected secrets not found"; exit 1
 - script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect -o json > /tmp/test-kafka-msk-user
 - script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert -o json > /tmp/test-kafka-msk-cluster-ca-cert
 
