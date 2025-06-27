@@ -340,7 +340,7 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	dbCfg := config.DatabaseConfig{}
 	dbCfg.SslMode = "disable"
 
-	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app)
+	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app, false)
 
 	if err != nil {
 		return err

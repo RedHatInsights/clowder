@@ -2,9 +2,9 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-local-db-redis
+  name: test-local-db-redis-shared
 spec:
-  targetNamespace: test-local-db-redis
+  targetNamespace: test-local-db-redis-shared
   providers:
     web:
       port: 8000
@@ -37,11 +37,27 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: app-a
-  namespace: test-local-db-redis
+  namespace: test-local-db-redis-shared
 spec:
-  envName: test-local-db-redis
+  envName: test-local-db-redis-shared
   deployments:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
   inMemoryDb: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-b
+  namespace: test-local-db-redis-shared
+spec:
+  envName: test-local-db-redis-shared
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  inMemoryDb: true
+  sharedInMemoryDbAppName: app-a
+  dependencies:
+  - app-a

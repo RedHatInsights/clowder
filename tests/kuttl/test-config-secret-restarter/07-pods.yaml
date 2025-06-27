@@ -1,15 +1,4 @@
----
-apiVersion: v1
-data:
-  secretkey1: dGVzdGluZw==
-  secretkey2: dGVzdGluZw==
-kind: Secret
-metadata:
-  name: test-config-secret-restarter-secret1
-  namespace: test-config-secret-restarter
-  annotations:
-    qontract.recycle: "true"
-type: Opaque
+# Begin tracking the configmap, and add a new key to the configmap
 ---
 apiVersion: v1
 data:

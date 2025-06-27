@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-shared-elasticache
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-shared-elasticache
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: another-app
+  namespace: test-shared-elasticache-ns2
+  labels:
+    app: another-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: another-app
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: another-app-processor
+  namespace: test-shared-elasticache-ns2

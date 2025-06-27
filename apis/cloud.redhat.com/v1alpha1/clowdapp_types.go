@@ -14,6 +14,7 @@ package v1alpha1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -465,6 +466,10 @@ type ClowdAppSpec struct {
 	// instance will be shared between all apps.
 	InMemoryDB bool `json:"inMemoryDb,omitempty"`
 
+	// In (*_shared_*) mode, the application name that should create the in memory
+	// DB instance this application should use
+	SharedInMemoryDbAppName string `json:"sharedInMemoryDbAppName,omitempty"`
+
 	// If featureFlags is set to true, Clowder will pass configuration of a
 	// FeatureFlags instance to the pods in the ClowdApp. This single
 	// instance will be shared between all apps.
@@ -714,9 +719,10 @@ func GetAppInSameEnv(ctx context.Context, pClient client.Client, app *ClowdApp, 
 
 // GetAppForDBInSameEnv returns a point to a ClowdApp that has the sharedDB referenced by the given
 // ClowdApp.
-func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *ClowdApp) (*ClowdApp, error) {
+func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *ClowdApp, inMem bool) (*ClowdApp, error) {
 	appList := &ClowdAppList{}
 	var refApp ClowdApp
+	var sharedName, errorOut string
 
 	err := GetAppInSameEnv(ctx, pClient, app, appList)
 
@@ -724,13 +730,21 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 		return nil, err
 	}
 
+	if inMem {
+		sharedName = app.Spec.SharedInMemoryDbAppName
+		errorOut = "could not get app for in memory db in env"
+	} else {
+		sharedName = app.Spec.Database.SharedDBAppName
+		errorOut = "could not get app for db in env"
+	}
+
 	for _, iapp := range appList.Items {
-		if iapp.Name == app.Spec.Database.SharedDBAppName {
+		if iapp.Name == sharedName {
 			refApp = iapp
 			return &refApp, nil
 		}
 	}
-	return nil, fmt.Errorf("could not get app for db in env")
+	return nil, errors.New(errorOut)
 }
 
 func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *ClowdEnvironment) error {
