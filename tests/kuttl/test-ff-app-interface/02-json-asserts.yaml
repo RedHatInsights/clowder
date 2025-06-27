@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 1
+- script: for i in {1..5}; do kubectl get secret --namespace=test-ff-app-interface puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret --namespace=test-ff-app-interface puptoo -o json > /tmp/test-ff-app-interface
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-ff-app-interface | base64 -d > /tmp/test-ff-app-interface-json
 

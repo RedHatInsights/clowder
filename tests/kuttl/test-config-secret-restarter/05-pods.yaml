@@ -1,3 +1,4 @@
+# Add a new key to the secret
 ---
 apiVersion: v1
 data:
@@ -10,13 +11,3 @@ metadata:
   annotations:
     qontract.recycle: "true"
 type: Opaque
----
-apiVersion: v1
-data:
-  configmapkey1: testing
-kind: ConfigMap
-metadata:
-  name: test-config-secret-restarter-configmap1
-  namespace: test-config-secret-restarter
-  annotations:
-    qontract.recycle: "true"
