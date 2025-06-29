@@ -102,7 +102,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
-	github.com/mholt/acmez/v2 v2.0.3 // indirect
 	github.com/mholt/acmez/v3 v3.1.2 // indirect
 	github.com/miekg/dns v1.1.66 // indirect
 	github.com/minio/crc64nvme v1.0.1 // indirect
@@ -120,7 +119,7 @@ require (
 	github.com/prometheus/common v0.64.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
-	github.com/quic-go/quic-go v0.52.0 // indirect
+	github.com/quic-go/quic-go v0.53.0 // indirect
 	github.com/redhatinsights/crcauthlib v0.4.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0-beta.2 // indirect
