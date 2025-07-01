@@ -88,8 +88,6 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
 
-	r.Log.Info("****************************************sharedinMemoryDbAppName", "app", app.Name, "secMap", secMap)
-
 	if err = creds.Populate(secMap); err != nil {
 		return errors.Wrap("couldn't populate creds", err)
 	}
