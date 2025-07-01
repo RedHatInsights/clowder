@@ -1,0 +1,205 @@
+---
+# ClowdEnvironment - defines the target environment
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: my-app-environment
+spec:
+  targetNamespace: my-app-namespace
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: local
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+---
+# ClowdAppRef - references external services from another cluster
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: external-services
+  namespace: my-app-namespace
+spec:
+  envName: my-app-environment
+  deployments:
+  # External user management service
+  - name: user-management
+    hostname: users.production-cluster.company.com
+    port: 8080
+    tlsPort: 8443
+    privatePort: 10000
+    tlsPrivatePort: 10443
+    web: true
+    webServices:
+      public:
+        enabled: true
+      private:
+        enabled: true
+    apiPath: "/api/users/"
+    apiPaths:
+    - "/api/users/v1/"
+    - "/api/users/v2/"
+  
+  # External payment processing service
+  - name: payment-processor
+    hostname: payments.production-cluster.company.com
+    port: 8080
+    tlsPort: 8443
+    privatePort: 10000
+    tlsPrivatePort: 10443
+    web: true
+    webServices:
+      public:
+        enabled: true
+      private:
+        enabled: true
+    apiPath: "/api/payments/"
+    apiPaths:
+    - "/api/payments/v1/"
+  
+  # External notification service (internal only)
+  - name: notification-service
+    hostname: notifications.internal-cluster.company.com
+    port: 8080
+    privatePort: 10000
+    tlsPrivatePort: 10443
+    web: false
+    webServices:
+      private:
+        enabled: true
+    apiPath: "/api/notifications/"
+  
+  # External analytics service
+  - name: analytics-service
+    hostname: analytics.data-cluster.company.com
+    port: 8080
+    tlsPort: 8443
+    web: true
+    webServices:
+      public:
+        enabled: true
+    apiPath: "/api/analytics/"
+  
+  remoteCluster:
+    name: production-cluster
+    region: us-east-1
+    environment: production
+---
+# ClowdApp that consumes external services
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: e-commerce-frontend
+  namespace: my-app-namespace
+spec:
+  envName: my-app-environment
+  deployments:
+  - name: frontend
+    podSpec:
+      image: quay.io/my-org/e-commerce-frontend:latest
+      env:
+      - name: NODE_ENV
+        value: "production"
+    web: true
+    webServices:
+      public:
+        enabled: true
+    replicas: 3
+  
+  # Depend on external services via ClowdAppRef
+  dependencies:
+    - external-services
+---
+# Another ClowdApp that processes orders
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: order-processor
+  namespace: my-app-namespace
+spec:
+  envName: my-app-environment
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/my-org/order-processor:latest
+      env:
+      - name: WORKER_CONCURRENCY
+        value: "10"
+    replicas: 2
+  
+  jobs:
+  - name: order-cleanup
+    podSpec:
+      image: quay.io/my-org/order-processor:latest
+      command: ["python", "cleanup_orders.py"]
+    schedule: "0 2 * * *"  # Run daily at 2 AM
+  
+  # Database for storing order data
+  database:
+    name: orders
+    version: 13
+  
+  # Depend on both external services and the frontend app
+  dependencies:
+    - external-services
+    - e-commerce-frontend
+---
+# ClowdApp with mixed dependencies (both local and external)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: reporting-service
+  namespace: my-app-namespace
+spec:
+  envName: my-app-environment
+  deployments:
+  - name: reporter
+    podSpec:
+      image: quay.io/my-org/reporting-service:latest
+    web: true
+    webServices:
+      private:
+        enabled: true
+  
+  # Database for reporting data
+  database:
+    name: reports
+    version: 13
+  
+  # Kafka topics for streaming analytics
+  kafkaTopics:
+  - replicas: 3
+    partitions: 10
+    topicName: order-events
+  - replicas: 3
+    partitions: 5
+    topicName: user-activity
+  
+  # Mix of local ClowdApp dependencies and external services
+  dependencies:
+    - external-services    # External services from ClowdAppRef
+    - order-processor      # Local ClowdApp
+  
+  optionalDependencies:
+    - e-commerce-frontend  # Optional dependency on frontend 

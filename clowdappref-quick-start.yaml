@@ -1,0 +1,94 @@
+# Quick Start: Using ClowdAppRef to Reference External Services
+#
+# This example shows how to reference an external authentication service
+# running in another cluster and consume it from a local ClowdApp.
+
+---
+# 1. Create a ClowdEnvironment
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: my-environment
+spec:
+  targetNamespace: my-apps
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    db:
+      mode: local
+    kafka:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 300m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+---
+# 2. Define external services using ClowdAppRef
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: shared-auth
+  namespace: my-apps
+spec:
+  envName: my-environment
+  deployments:
+  - name: auth-service
+    hostname: auth.shared-cluster.example.com
+    port: 8080
+    tlsPort: 8443
+    apiPath: "/api/auth/"
+
+---
+# 3. Create a ClowdApp that depends on the external service
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: my-web-app
+  namespace: my-apps
+spec:
+  envName: my-environment
+  deployments:
+  - name: frontend
+    podSpec:
+      image: quay.io/my-org/web-app:latest
+    web: true
+    webServices:
+      public:
+        enabled: true
+  
+  # Reference the external auth service
+  dependencies:
+    - shared-auth
+
+---
+# The result: my-web-app will receive configuration like this in its secret:
+# {
+#   "endpoints": [
+#     {
+#       "app": "shared-auth",
+#       "name": "auth-service", 
+#       "hostname": "auth.shared-cluster.example.com",
+#       "port": 8080,
+#       "tlsPort": 8443
+#     }
+#   ]
+# }
+#
+# To deploy:
+# kubectl apply -f clowdappref-quick-start.yaml
+#
+# To verify:
+# kubectl get secret my-web-app -n my-apps -o jsonpath='{.data.cdappconfig\.json}' | base64 -d | jq 
