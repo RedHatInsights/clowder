@@ -2,6 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
+# TODO: figure out how to wait for proper reconciliations without using 'sleep' here...
 - script: sleep 5
 - script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret
 - script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret

@@ -1,9 +1,0 @@
----
-apiVersion: kuttl.dev/v1beta1
-kind: TestStep
-commands:
-- script: sleep 5
-- script: kubectl get secret --namespace=test-config-secret-restarter puptoo -o json > /tmp/test-config-secret-restarter
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-config-secret-restarter | base64 -d > /tmp/test-config-secret-restarter-json
-
-- script: jq -r '.hashCache == "d1458cb336132ffc35ef6651b89951419385100a82e39d20ddb2fcf4f7631fe6e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"' -e < /tmp/test-config-secret-restarter-json

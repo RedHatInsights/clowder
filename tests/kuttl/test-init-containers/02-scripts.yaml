@@ -2,6 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 1
 - script: kubectl apply -f pods.yaml --namespace=test-init-containers 2>&1 | grep "Forbidden"
-- script: sleep 20

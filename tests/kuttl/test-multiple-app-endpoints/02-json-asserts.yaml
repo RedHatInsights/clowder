@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 20
+- script: for i in {1..25}; do kubectl get secret --namespace=test-multiple-app-endpoints puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret puptoo -o json -n test-multiple-app-endpoints > /tmp/test-multiple-app-endpoints
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints | base64 -d > /tmp/test-multiple-app-endpoints-json
 
