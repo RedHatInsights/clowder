@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	providerUtils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
