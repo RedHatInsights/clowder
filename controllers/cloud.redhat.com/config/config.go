@@ -23,18 +23,29 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) error {
 
 func (r *InMemoryDBConfig) Populate(data *map[string]string) error {
 	port, err := strconv.Atoi((*data)["port"])
-
 	if err != nil {
 		return err
 	}
+	r.Port = int(port)
 
-	username := (*data)["username"]
-	password := (*data)["password"]
+	username, exists := (*data)["username"]
+	if exists && username != "" {
+		r.Username = &username
+	}
+
+	password, exists := (*data)["password"]
+	if exists && password != "" {
+		r.Password = &password
+	}
+
+	sslMode, err := strconv.ParseBool((*data)["sslmode"])
+	if err != nil {
+		return err
+	}
+	r.SslMode = &sslMode
 
 	r.Hostname = (*data)["hostname"]
-	r.Password = &password
-	r.Port = int(port)
-	r.Username = &username
+
 	return nil
 }
 
