@@ -51,7 +51,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
-						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
+						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
 						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
@@ -99,7 +99,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name)
 					if cont != nil {
-						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
+						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
 						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
@@ -200,14 +200,12 @@ func getOtelCollector(appName string) *core.Container {
 
 	cont := core.Container{}
 
-	restartPolicy := core.ContainerRestartPolicyAlways
 	cont.Name = "otel-collector"
 	cont.Image = DefaultImageSideCarOtelCollector
 	cont.Args = []string{}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
 	cont.ImagePullPolicy = core.PullIfNotPresent
-	cont.RestartPolicy = &restartPolicy
 	cont.Resources = core.ResourceRequirements{
 		Limits: core.ResourceList{
 			"cpu":    resource.MustParse("500m"),

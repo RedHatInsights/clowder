@@ -24,10 +24,8 @@ spec:
       containers:
       - name: puptoo-processor
       - name: token-refresher
-      initContainers:
       - name: otel-collector
         image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
-        restartPolicy: Always
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -42,13 +40,11 @@ spec:
           containers:
           - name: puptoo-cron
           - name: token-refresher
-          initContainers:
           - name: otel-collector
             image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
             volumeMounts:
             - mountPath: /etc/otelcol/
               name: puptoo-otel-config
-            restartPolicy: Always
           volumes:
           - name: config-secret
             secret:
