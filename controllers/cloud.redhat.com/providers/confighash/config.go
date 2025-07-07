@@ -36,6 +36,11 @@ func (ch *confighashProvider) envConfigMap(app *crd.ClowdApp, env core.EnvVar) e
 		}
 		return fmt.Errorf("could not get env configmap: %w", err)
 	}
+	_, err := ch.HashCache.CreateOrUpdateObject(cf, false)
+	if err != nil {
+		return nil
+	}
+
 	return ch.HashCache.AddClowdObjectToObject(app, cf)
 }
 
@@ -60,6 +65,10 @@ func (ch *confighashProvider) envSecret(app *crd.ClowdApp, env core.EnvVar) erro
 		}
 		return fmt.Errorf("could not get env secret: %w", err)
 	}
+	_, err := ch.HashCache.CreateOrUpdateObject(sec, false)
+	if err != nil {
+		return nil
+	}
 	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
 
@@ -81,6 +90,10 @@ func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume
 		}
 		return fmt.Errorf("could not get vol configmap: %w", err)
 	}
+	_, err := ch.HashCache.CreateOrUpdateObject(cf, false)
+	if err != nil {
+		return nil
+	}
 	return ch.HashCache.AddClowdObjectToObject(app, cf)
 }
 
@@ -101,6 +114,10 @@ func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) e
 			return nil
 		}
 		return fmt.Errorf("could not get vol secret: %w", err)
+	}
+	_, err := ch.HashCache.CreateOrUpdateObject(sec, false)
+	if err != nil {
+		return nil
 	}
 	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
