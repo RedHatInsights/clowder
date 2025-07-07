@@ -1,6 +1,8 @@
 package sidecar
 
 import (
+	"fmt"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
@@ -27,6 +29,13 @@ func GetOtelCollectorSidecar(env *crd.ClowdEnvironment) string {
 		return clowderconfig.LoadedConfig.Images.OtelCollector
 	}
 	return DefaultImageSideCarOtelCollector
+}
+
+func GetOtelCollectorConfigMap(env *crd.ClowdEnvironment, appName string) string {
+	if env.Spec.Providers.Sidecars.OtelCollector.ConfigMap != "" {
+		return env.Spec.Providers.Sidecars.OtelCollector.ConfigMap
+	}
+	return fmt.Sprintf("%s-otel-config", appName)
 }
 
 // ProvName sets the provider name identifier

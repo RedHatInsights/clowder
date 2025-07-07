@@ -9364,6 +9364,9 @@ objects:
                         otelCollector:
                           description: Sets up OpenTelemetry collector configuration
                           properties:
+                            configMap:
+                              description: Configurable shared ConfigMap name (optional)
+                              type: string
                             enabled:
                               description: Enable or disable otel collector sidecar
                               type: boolean

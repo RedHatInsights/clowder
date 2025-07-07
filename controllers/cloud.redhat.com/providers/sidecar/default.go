@@ -51,13 +51,14 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name, sc.Env)
 					if cont != nil {
+						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name)
 						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
 						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
 									LocalObjectReference: core.LocalObjectReference{
-										Name: fmt.Sprintf("%s-otel-config", app.Name),
+										Name: configMapName,
 									},
 									Optional: utils.TruePtr(),
 								},
@@ -99,13 +100,14 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
 					cont := getOtelCollector(app.Name, sc.Env)
 					if cont != nil {
+						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name)
 						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
 						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
 									LocalObjectReference: core.LocalObjectReference{
-										Name: fmt.Sprintf("%s-otel-config", app.Name),
+										Name: configMapName,
 									},
 									Optional: utils.TruePtr(),
 								},

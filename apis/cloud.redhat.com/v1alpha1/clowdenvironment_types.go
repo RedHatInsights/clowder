@@ -517,6 +517,8 @@ type OtelCollectorConfig struct {
 	Enabled bool `json:"enabled"`
 	// Configurable image
 	Image string `json:"image,omitempty"`
+	// Configurable shared ConfigMap name (optional)
+	ConfigMap string `json:"configMap,omitempty"`
 }
 type Sidecars struct {
 	// Sets up Token Refresher configuration
