@@ -14,7 +14,7 @@ spec:
       mode: app-interface
       path: "/metrics"
       prometheus:
-        appInterfaceHostname: https://app-interface.unmodified.route.to.prometheus:1111
+        appInterfaceInternalURL: https://app-interface.unmodified.route.to.prometheus:1111
     kafka:
       mode: none
     db:

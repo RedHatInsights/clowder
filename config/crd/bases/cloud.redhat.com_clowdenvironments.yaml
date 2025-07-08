@@ -454,8 +454,8 @@ spec:
                       prometheus:
                         description: Prometheus specific configuration
                         properties:
-                          appInterfaceHostname:
-                            description: Specify prometheus hostname when in app-interface
+                          appInterfaceInternalURL:
+                            description: Specify prometheus internal URL when in app-interface
                               mode
                             type: string
                           deploy:
@@ -1066,10 +1066,10 @@ spec:
               prometheus:
                 description: PrometheusStatus provides info on how to connect to Prometheus
                 properties:
-                  hostname:
+                  serverAddress:
                     type: string
                 required:
-                - hostname
+                - serverAddress
                 type: object
               ready:
                 type: boolean

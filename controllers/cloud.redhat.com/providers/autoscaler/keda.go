@@ -82,7 +82,7 @@ func getTriggerRoute(triggerType string, c *config.AppConfig, env *crd.ClowdEnvi
 	case "kafka":
 		result["bootstrapServers"] = fmt.Sprintf("%s:%d", c.Kafka.Brokers[0].Hostname, *c.Kafka.Brokers[0].Port)
 	case "prometheus":
-		result["serverAddress"] = env.Status.Prometheus.Hostname
+		result["serverAddress"] = env.Status.Prometheus.ServerAddress
 
 	// The following are the possible triggers for the keda autoscaler.
 	// See https://github.com/kedacore/keda/blob/main/pkg/scaling/scale_handler.go#L313.
