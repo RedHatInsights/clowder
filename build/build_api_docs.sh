@@ -8,6 +8,7 @@ if [ ! -d docs/build/crd-ref-docs ]; then
 	mkdir -p docs/build/crd-ref-docs
 	git clone https://github.com/elastic/crd-ref-docs.git docs/build/crd-ref-docs
 	cd docs/build/crd-ref-docs
+	git checkout v0.0.12
 	go build -o crd-ref-docs main.go
 	cd -
 fi
