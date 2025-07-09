@@ -1256,6 +1256,25 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `hostname` _string_ |  |  |  |
+| `port` _integer_ |  |  |  |
+| `scheme` _[ProtocolScheme](#protocolscheme)_ |  |  |  |
+
+
+#### ProtocolScheme
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [PrometheusStatus](#prometheusstatus)
+
+| Field | Description |
+| --- | --- |
+| `http` |  |
+| `https` |  |
 
 
 #### ProvidersConfig
