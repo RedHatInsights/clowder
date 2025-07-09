@@ -162,6 +162,14 @@ func addControllersToManager(mgr manager.Manager) error {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdJobInvocation")
 		return err
 	}
+	if err := (&ClowdAppReferenceReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ClowdAppReference"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClowdAppReference")
+		return err
+	}
 	return nil
 }
 
