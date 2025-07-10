@@ -1068,8 +1068,15 @@ spec:
                 properties:
                   hostname:
                     type: string
+                  port:
+                    format: int32
+                    type: integer
+                  scheme:
+                    type: string
                 required:
                 - hostname
+                - port
+                - scheme
                 type: object
               ready:
                 type: boolean
