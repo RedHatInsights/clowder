@@ -49,7 +49,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector(app.Name)
+					cont := getOtelCollector(app.Name, sc.Env)
 					if cont != nil {
 						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
 						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
@@ -97,7 +97,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector(app.Name)
+					cont := getOtelCollector(app.Name, sc.Env)
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
 						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
@@ -169,7 +169,7 @@ func getTokenRefresher(appName string) *core.Container {
 	return &cont
 }
 
-func getOtelCollector(appName string) *core.Container {
+func getOtelCollector(appName string, env *crd.ClowdEnvironment) *core.Container {
 	port := int32(13133)
 	probeHandler := core.ProbeHandler{
 		HTTPGet: &core.HTTPGetAction{
@@ -202,7 +202,7 @@ func getOtelCollector(appName string) *core.Container {
 
 	restartPolicy := core.ContainerRestartPolicyAlways
 	cont.Name = "otel-collector"
-	cont.Image = DefaultImageSideCarOtelCollector
+	cont.Image = GetOtelCollectorSidecar(env)
 	cont.Args = []string{}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
