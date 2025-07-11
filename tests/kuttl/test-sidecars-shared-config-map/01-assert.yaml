@@ -1,0 +1,121 @@
+---
+# Verify that the shared ConfigMap exists
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-otel-config
+  namespace: test-sidecars-shared-config-map
+---
+# Verify that app-one uses the shared ConfigMap
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-one-processor
+  namespace: test-sidecars-shared-config-map
+spec:
+  template:
+    spec:
+      containers:
+      - name: app-one-processor
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: app-one-otel-config
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: app-one
+      - configMap:
+          defaultMode: 420
+          name: shared-otel-config
+        name: app-one-otel-config
+---
+# Verify that app-two deployment uses the shared ConfigMap
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-two-worker
+  namespace: test-sidecars-shared-config-map
+spec:
+  template:
+    spec:
+      containers:
+      - name: app-two-worker
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: app-two-otel-config
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: app-two
+      - configMap:
+          defaultMode: 420
+          name: shared-otel-config
+        name: app-two-otel-config
+---
+# Verify that app-two cronjob uses the shared ConfigMap
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: app-two-batch-job
+  namespace: test-sidecars-shared-config-map
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: app-two-batch-job
+          initContainers:
+          - name: otel-collector
+            image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+            restartPolicy: Always
+            volumeMounts:
+            - mountPath: /etc/otelcol/
+              name: app-two-otel-config
+          volumes:
+          - name: config-secret
+            secret:
+              defaultMode: 420
+              secretName: app-two
+          - name: app-two-otel-config
+            configMap:
+              defaultMode: 420
+              name: shared-otel-config
+---
+# Verify that app-three uses the shared ConfigMap
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-three-api
+  namespace: test-sidecars-shared-config-map
+spec:
+  template:
+    spec:
+      containers:
+      - name: app-three-api
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: app-three-otel-config
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: app-three
+      - configMap:
+          defaultMode: 420
+          name: shared-otel-config
+        name: app-three-otel-config 

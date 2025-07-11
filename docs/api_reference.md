@@ -1158,6 +1158,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enable or disable otel collector sidecar |  |  |
 | `image` _string_ | Configurable image |  |  |
+| `configMap` _string_ | Configurable shared ConfigMap name (optional) |  |  |
 
 
 #### PodSpec
@@ -1256,6 +1257,25 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `hostname` _string_ |  |  |  |
+| `port` _integer_ |  |  |  |
+| `scheme` _[ProtocolScheme](#protocolscheme)_ |  |  |  |
+
+
+#### ProtocolScheme
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [PrometheusStatus](#prometheusstatus)
+
+| Field | Description |
+| --- | --- |
+| `http` |  |
+| `https` |  |
 
 
 #### ProvidersConfig

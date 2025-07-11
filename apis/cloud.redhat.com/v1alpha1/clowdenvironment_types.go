@@ -517,6 +517,8 @@ type OtelCollectorConfig struct {
 	Enabled bool `json:"enabled"`
 	// Configurable image
 	Image string `json:"image,omitempty"`
+	// Configurable shared ConfigMap name (optional)
+	ConfigMap string `json:"configMap,omitempty"`
 }
 type Sidecars struct {
 	// Sets up Token Refresher configuration
@@ -607,9 +609,16 @@ type EnvResourceStatus struct {
 	ReadyTopics        int32 `json:"readyTopics"`
 }
 
+type ProtocolScheme string
+
+const ProtocolSchemeHTTP ProtocolScheme = "http"
+const ProtocolSchemeHTTPS ProtocolScheme = "https"
+
 // PrometheusStatus provides info on how to connect to Prometheus
 type PrometheusStatus struct {
-	Hostname string `json:"hostname"`
+	Hostname string         `json:"hostname"`
+	Port     int32          `json:"port"`
+	Scheme   ProtocolScheme `json:"scheme"`
 }
 
 // AppInfo details information about a specific app.
