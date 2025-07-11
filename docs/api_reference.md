@@ -1158,6 +1158,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enable or disable otel collector sidecar |  |  |
 | `image` _string_ | Configurable image |  |  |
+| `configMap` _string_ | Configurable shared ConfigMap name (optional) |  |  |
 
 
 #### PodSpec
