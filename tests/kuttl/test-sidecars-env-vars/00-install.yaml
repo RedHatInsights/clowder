@@ -1,0 +1,136 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-sidecars-env-vars
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: otel-auth
+  namespace: test-sidecars-env-vars
+type: Opaque
+data:
+  headers: "QXV0aG9yaXphdGlvbjogQmVhcmVyIHRlc3QtdG9rZW4="
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-env-vars-otel-config
+  namespace: test-sidecars-env-vars
+data:
+  otel-collector.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      batch:
+    exporters:
+      logging:
+        loglevel: debug
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-env-override-otel-config
+  namespace: test-sidecars-env-vars
+data:
+  otel-collector.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      batch:
+    exporters:
+      logging:
+        loglevel: debug
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-env-secret-otel-config
+  namespace: test-sidecars-env-vars
+data:
+  otel-collector.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      batch:
+    exporters:
+      logging:
+        loglevel: debug
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging]
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-env-vars
+spec:
+  targetNamespace: test-sidecars-env-vars
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    sidecars:
+      otelCollector:
+        enabled: true
+        envVars:
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: "https://otel-collector.test.example.com:4317"
+          - name: OTEL_EXPORTER_OTLP_HEADERS
+            valueFrom:
+              secretKeyRef:
+                name: otel-auth
+                key: headers
+          - name: OTEL_SERVICE_NAME
+            value: "rhsm-subscriptions"
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: "environment=test,region=us-east-1"
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi

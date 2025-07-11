@@ -1,0 +1,123 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-env-vars-api
+  namespace: test-sidecars-env-vars
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: otel-collector
+          image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "https://otel-collector.test.example.com:4317"
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: otel-auth
+                  key: headers
+            - name: OTEL_SERVICE_NAME
+              value: "rhsm-subscriptions"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "environment=test,region=us-east-1"
+          volumeMounts:
+            - name: test-app-env-vars-otel-config
+              mountPath: /etc/otelcol/
+          restartPolicy: Always
+      volumes:
+        - name: config-secret
+          secret:
+            defaultMode: 420
+            secretName: test-app-env-vars
+        - name: test-app-env-vars-otel-config
+          configMap:
+            name: test-app-env-vars-otel-config
+            optional: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-env-override-api
+  namespace: test-sidecars-env-vars
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: otel-collector
+          image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "https://otel-collector.test.example.com:4317"
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: otel-auth
+                  key: headers
+            - name: OTEL_SERVICE_NAME
+              value: "test-app-env-override"  # Overridden by app
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "environment=test,region=us-east-1,service=override"  # Overridden by app
+            - name: OTEL_CUSTOM_VAR
+              value: "app-specific-value"  # App-specific
+          volumeMounts:
+            - name: test-app-env-override-otel-config
+              mountPath: /etc/otelcol/
+          restartPolicy: Always
+      volumes:
+        - name: config-secret
+          secret:
+            defaultMode: 420
+            secretName: test-app-env-override
+        - name: test-app-env-override-otel-config
+          configMap:
+            name: test-app-env-override-otel-config
+            optional: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-env-secret-api
+  namespace: test-sidecars-env-vars
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: otel-collector
+          image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "https://otel-collector.test.example.com:4317"
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: otel-auth
+                  key: headers
+            - name: OTEL_SERVICE_NAME
+              value: "test-app-env-secret"  # Overridden by app
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "environment=test,region=us-east-1"  # From environment
+            - name: OTEL_CUSTOM_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: otel-auth
+                  key: headers
+            - name: OTEL_CUSTOM_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: test-app-env-secret-otel-config
+                  key: otel-collector.yaml
+          volumeMounts:
+            - name: test-app-env-secret-otel-config
+              mountPath: /etc/otelcol/
+          restartPolicy: Always
+      volumes:
+        - name: config-secret
+          secret:
+            defaultMode: 420
+            secretName: test-app-env-secret
+        - name: test-app-env-secret-otel-config
+          configMap:
+            name: test-app-env-secret-otel-config
+            optional: true 

@@ -49,7 +49,10 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector(app.Name, sc.Env)
+					// Merge environment variables (app-level overrides environment-level)
+					mergedEnvVars := MergeEnvVars(sc.Env.Spec.Providers.Sidecars.OtelCollector.EnvVars, sidecar.EnvVars)
+
+					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars)
 					if cont != nil {
 						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name)
 						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
@@ -98,7 +101,10 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector(app.Name, sc.Env)
+					// Merge environment variables (app-level overrides environment-level)
+					mergedEnvVars := MergeEnvVars(sc.Env.Spec.Providers.Sidecars.OtelCollector.EnvVars, sidecar.EnvVars)
+
+					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars)
 					if cont != nil {
 						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name)
 						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
@@ -171,7 +177,7 @@ func getTokenRefresher(appName string) *core.Container {
 	return &cont
 }
 
-func getOtelCollector(appName string, env *crd.ClowdEnvironment) *core.Container {
+func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.EnvVar) *core.Container {
 	port := int32(13133)
 	probeHandler := core.ProbeHandler{
 		HTTPGet: &core.HTTPGetAction{
@@ -226,6 +232,9 @@ func getOtelCollector(appName string, env *crd.ClowdEnvironment) *core.Container
 	}}
 	cont.LivenessProbe = &livenessProbe
 	cont.ReadinessProbe = &readinessProbe
+
+	// Convert and set environment variables
+	cont.Env = ConvertEnvVars(envVars)
 
 	return &cont
 }
