@@ -5,7 +5,7 @@ metadata:
   name: test-metrics-operator
 status:
   prometheus:
-    hostname: prometheus-operated.test-metrics-operator.svc.cluster.local
+    serverAddress: http://prometheus-operated.test-metrics-operator.svc.cluster.local:9090
 ---
 apiVersion: v1
 kind: Secret
@@ -71,7 +71,7 @@ spec:
     path: /metrics
     port: metrics
   namespaceSelector:
-    matchNames: 
+    matchNames:
     - test-metrics-operator
   selector:
     matchLabels:
