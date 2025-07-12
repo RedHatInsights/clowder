@@ -310,7 +310,7 @@ spec:
           env:
           - name: LOCALBIN
             value: /tmp/bin
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1304.1749680715
+          image: registry.access.redhat.com/ubi8/ubi:8.10-1752069635
           name: test-template
           script: |
             set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && cp /var/workdir/manifest.yaml . && cp /var/workdir/deploy-kustomize.yaml . && dnf install make python3.12 diffutils -y && make build-template && make test-template
@@ -337,7 +337,7 @@ spec:
               secretKeyRef:
                 key: MINIKUBE_ROOTDIR
                 name: minikube-ssh-key
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1304.1749680715
+          image: registry.access.redhat.com/ubi8/ubi:8.10-1752069635
           name: e2e-tests
           script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests.sh
           workingDir: /var/workdir/source
