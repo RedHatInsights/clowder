@@ -184,7 +184,7 @@ spec:
         - name: name
           value: prefetch-dependencies-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.2@sha256:a1ddc34bf0a169bb2e64a98caf9027b66af8fc66a3a60f71bb451ce36af6a399
+          value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.2@sha256:f10a4841e6f75fbb314b1d8cbf14f652499c1fe7f59e59aed59f7431c680aa17
         - name: kind
           value: task
         resolver: bundles
@@ -225,7 +225,7 @@ spec:
         - name: name
           value: buildah-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-buildah-oci-ta:0.4@sha256:48b99ad18fd3bde2d22ec2c397d36c55e45ca90ddf1620c9e00bdee518e297bf
+          value: quay.io/konflux-ci/tekton-catalog/task-buildah-oci-ta:0.4@sha256:aed6b8fb68dbad39e5365dfb43f887dca75c40a2f8f957a9cd3f41e96243c6d6
         - name: kind
           value: task
         resolver: bundles
@@ -260,7 +260,7 @@ spec:
           image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:9b180776a41d9a22a1c51539f1647c60defbbd55b44bbebdd4130e33512d8b0d
           name: use-trusted-artifact
         - computeResources: {}
-          image: registry.access.redhat.com/ubi9/go-toolset:1.23.9-1751538372
+          image: registry.access.redhat.com/ubi9/go-toolset:1.24.4-1752083840
           name: unit-tests
           script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
           workingDir: /var/workdir/source
@@ -299,11 +299,13 @@ spec:
     - name: build-source-image
       params:
       - name: BINARY_IMAGE
-        value: $(params.output-image)
+        value: $(tasks.build-image-index.results.IMAGE_URL)
       - name: SOURCE_ARTIFACT
         value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
       - name: CACHI2_ARTIFACT
         value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
+      - name: BINARY_IMAGE_DIGEST
+        value: $(tasks.build-image-index.results.IMAGE_DIGEST)
       runAfter:
       - build-image-index
       taskRef:
@@ -311,7 +313,7 @@ spec:
         - name: name
           value: source-build-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-source-build-oci-ta:0.2@sha256:b424894fc8e806c12658daa565b835fd2d66e7f7608afc47529eb7b410f030d7
+          value: quay.io/konflux-ci/tekton-catalog/task-source-build-oci-ta:0.3@sha256:b1eb49583b41872b27356fee20d5f0eb6ff7f5cdeacde7ffb39655f031104728
         - name: kind
           value: task
         resolver: bundles
@@ -379,7 +381,7 @@ spec:
         - name: name
           value: ecosystem-cert-preflight-checks
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-ecosystem-cert-preflight-checks:0.2@sha256:b550ff4f0b634512ce5200074be7afd7a5a6c05b783620c626e2a3035cd56448
+          value: quay.io/konflux-ci/tekton-catalog/task-ecosystem-cert-preflight-checks:0.2@sha256:abbe195626eec925288df6425679559025d1be4af5ae70ca6dbbcb49ad3bf08b
         - name: kind
           value: task
         resolver: bundles

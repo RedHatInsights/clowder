@@ -1,0 +1,23 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-vars
+  namespace: test-sidecars-env-vars
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-override
+  namespace: test-sidecars-env-vars
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-secret
+  namespace: test-sidecars-env-vars
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-env-vars 
