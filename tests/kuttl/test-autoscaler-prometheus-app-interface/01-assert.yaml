@@ -18,7 +18,7 @@ metadata:
   name: puptoo-processor
   namespace: test-autoscaler-prom-app-interface
 spec:
-  replicas: 2
+  replicas: 1
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
