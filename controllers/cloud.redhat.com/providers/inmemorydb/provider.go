@@ -30,7 +30,7 @@ func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 // Checks this app's list of dependencies to ensure shared app is included
 func checkDependency(app *crd.ClowdApp) error {
 	for _, appName := range app.Spec.Dependencies {
-		if app.Spec.SharedInMemoryDbAppName == appName {
+		if app.Spec.SharedInMemoryDBAppName == appName {
 			return nil
 		}
 	}

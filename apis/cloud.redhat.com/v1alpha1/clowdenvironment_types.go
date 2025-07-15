@@ -18,9 +18,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

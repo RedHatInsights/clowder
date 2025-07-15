@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
+	core "k8s.io/api/core/v1"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
-	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
-	core "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"

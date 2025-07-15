@@ -17,8 +17,9 @@ import (
 	"errors"
 	"fmt"
 
-	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
+	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
@@ -471,7 +472,7 @@ type ClowdAppSpec struct {
 
 	// In (*_shared_*) mode, the application name that should create the in memory
 	// DB instance this application should use
-	SharedInMemoryDbAppName string `json:"sharedInMemoryDbAppName,omitempty"`
+	SharedInMemoryDBAppName string `json:"sharedInMemoryDbAppName,omitempty"`
 
 	// If featureFlags is set to true, Clowder will pass configuration of a
 	// FeatureFlags instance to the pods in the ClowdApp. This single
@@ -734,7 +735,7 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 	}
 
 	if inMem {
-		sharedName = app.Spec.SharedInMemoryDbAppName
+		sharedName = app.Spec.SharedInMemoryDBAppName
 		errorOut = "could not get app for in memory db in env"
 	} else {
 		sharedName = app.Spec.Database.SharedDBAppName

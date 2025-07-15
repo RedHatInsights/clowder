@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	"github.com/go-logr/logr"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

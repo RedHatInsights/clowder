@@ -3,12 +3,13 @@ package sidecar
 import (
 	"fmt"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"

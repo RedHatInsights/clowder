@@ -1,10 +1,11 @@
 package autoscaler
 
 import (
-	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	v2 "k8s.io/api/autoscaling/v2"
+
+	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 // ProvName sets the provider name identifier

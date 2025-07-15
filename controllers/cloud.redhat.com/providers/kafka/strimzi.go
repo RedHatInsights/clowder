@@ -6,13 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -20,6 +17,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )

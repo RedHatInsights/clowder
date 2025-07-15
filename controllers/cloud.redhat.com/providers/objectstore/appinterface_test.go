@@ -3,9 +3,10 @@ package objectstore
 import (
 	"testing"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
