@@ -5,7 +5,7 @@ metadata:
   name: test-metrics-app-interface
 status:
   prometheus:
-    hostname: cool-name-12345
+    serverAddress: cool-name-12345
 ---
 apiVersion: v1
 kind: Secret
@@ -68,7 +68,7 @@ spec:
     path: /metrics
     port: metrics
   namespaceSelector:
-    matchNames: 
+    matchNames:
     - test-metrics-app-interface
   selector:
     matchLabels:
