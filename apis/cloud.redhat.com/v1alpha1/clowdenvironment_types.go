@@ -132,8 +132,8 @@ type PrometheusConfig struct {
 	// Determines whether to deploy prometheus in operator mode
 	Deploy bool `json:"deploy,omitempty"`
 
-	// Specify prometheus hostname when in app-interface mode
-	AppInterfaceHostname string `json:"appInterfaceHostname,omitempty"`
+	// Specify prometheus internal URL when in app-interface mode
+	AppInterfaceInternalURL string `json:"appInterfaceInternalURL,omitempty"`
 }
 
 // MetricsConfig configures the Clowder provider controlling the creation of
@@ -672,16 +672,9 @@ type EnvResourceStatus struct {
 	ReadyTopics        int32 `json:"readyTopics"`
 }
 
-type ProtocolScheme string
-
-const ProtocolSchemeHTTP ProtocolScheme = "http"
-const ProtocolSchemeHTTPS ProtocolScheme = "https"
-
 // PrometheusStatus provides info on how to connect to Prometheus
 type PrometheusStatus struct {
-	Hostname string         `json:"hostname"`
-	Port     int32          `json:"port"`
-	Scheme   ProtocolScheme `json:"scheme"`
+	ServerAddress string `json:"serverAddress"`
 }
 
 // AppInfo details information about a specific app.

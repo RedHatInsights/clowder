@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-autoscaler-prom-app-interface
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-customer-monitoring
+spec:
+  finalizers:
+  - kubernetes
