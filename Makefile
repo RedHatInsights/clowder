@@ -150,7 +150,7 @@ docker-push:
 
 # Push the docker image
 docker-push-minikube:
-	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(CLOWDER_BUILD_TAG) --tls-verify=false
+		$(RUNTIME) push ${IMG} #127.0.0.1:5000/clowder:$(CLOWDER_BUILD_TAG) #--tls-verify=false
 
 deploy-minikube: docker-build-no-test docker-push-minikube deploy
 

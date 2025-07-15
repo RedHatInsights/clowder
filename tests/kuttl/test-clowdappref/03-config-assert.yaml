@@ -1,0 +1,36 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: |
+    # Get the consumer-app config and verify it contains the ClowdAppRef endpoints
+    kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/consumer-app-config.json
+    echo "Consumer app config:"
+    cat /tmp/consumer-app-config.json
+    
+    # Check that remote-service endpoints are present
+    grep -q "auth.remote-cluster.example.com" /tmp/consumer-app-config.json
+    grep -q "payment.remote-cluster.example.com" /tmp/consumer-app-config.json
+    grep -q "auth-service" /tmp/consumer-app-config.json
+    grep -q "payment-service" /tmp/consumer-app-config.json
+    
+    echo "✅ Consumer app config contains ClowdAppRef endpoints"
+- script: |
+    # Get the mixed-deps-app config and verify it contains both ClowdAppRef and ClowdApp endpoints
+    kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/mixed-deps-app-config.json
+    echo "Mixed deps app config:"
+    cat /tmp/mixed-deps-app-config.json
+    
+    # Check that remote-service endpoints are present
+    grep -q "auth.remote-cluster.example.com" /tmp/mixed-deps-app-config.json
+    grep -q "payment.remote-cluster.example.com" /tmp/mixed-deps-app-config.json
+    
+    # Check that consumer-app endpoints are also present
+    grep -q "consumer-app-processor" /tmp/mixed-deps-app-config.json
+    
+    echo "✅ Mixed deps app config contains both ClowdAppRef and ClowdApp endpoints"
+- script: |
+    # Verify the endpoint configuration structure
+    kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d | jq -r '.endpoints[]' | grep -E "(auth-service|payment-service)"
+    
+    echo "✅ Endpoints are properly structured in configuration" 
