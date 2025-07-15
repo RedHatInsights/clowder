@@ -895,11 +895,6 @@ _Underlying type:_ _string_
 _Appears in:_
 - [ClowdJobInvocationStatus](#clowdjobinvocationstatus)
 
-| Field | Description |
-| --- | --- |
-| `Invoked` |  |
-| `Complete` |  |
-| `Failed` |  |
 
 
 #### JobTestingSpec
@@ -1341,10 +1336,6 @@ _Underlying type:_ _string_
 _Appears in:_
 - [PrometheusStatus](#prometheusstatus)
 
-| Field | Description |
-| --- | --- |
-| `http` |  |
-| `https` |  |
 
 
 #### ProvidersConfig
@@ -1654,7 +1645,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `mocktitlements` _string_ | Mock entitlements image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used. |  |  |
-| `keycloak` _string_ | Keycloak image -- default is 'quay.io/keycloak/keycloak:\{KeycloakVersion\}' unless overridden here |  |  |
+| `keycloak` _string_ | Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}' unless overridden here |  |  |
 | `caddy` _string_ | Caddy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used. |  |  |
 | `caddyGateway` _string_ | Caddy Gateway image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used. |  |  |
 | `caddyProxy` _string_ | Caddy Reverse Proxy image -- if not defined, value from operator config is used if set, otherwise a hard-coded default is used. |  |  |
