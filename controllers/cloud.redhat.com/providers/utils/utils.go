@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-logr/logr"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
-	"github.com/go-logr/logr"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"

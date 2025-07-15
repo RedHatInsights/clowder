@@ -2,9 +2,11 @@
 
 package config
 
-import "encoding/json"
-import "fmt"
-import "reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+)
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
@@ -624,7 +626,7 @@ type PrivateDependencyEndpoint struct {
 	Port int `json:"port" yaml:"port" mapstructure:"port"`
 
 	// The TLS port of the dependent service.
-	TlsPort *int `json:"tlsPort,omitempty" yaml:"tlsPort,omitempty" mapstructure:"tlsPort,omitempty"`
+	TLSPort *int `json:"tlsPort,omitempty" yaml:"tlsPort,omitempty" mapstructure:"tlsPort,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

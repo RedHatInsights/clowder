@@ -5,8 +5,9 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 )
 
 const webPort = 8000
@@ -51,11 +52,9 @@ func TestSingleDependency(t *testing.T) {
 			ObjectMeta: nobjMeta,
 			Spec: crd.ClowdAppSpec{
 				Deployments: []crd.Deployment{{
+					Web: true,
 					WebServices: crd.WebServices{
 						Private: crd.PrivateWebService{
-							Enabled: true,
-						},
-						Public: crd.PublicWebService{
 							Enabled: true,
 						},
 					},
@@ -67,8 +66,9 @@ func TestSingleDependency(t *testing.T) {
 
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
+	appRefs := &crd.ClowdAppRefList{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps)
+	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
 
 	if len(missing) > 0 {
 		t.Errorf("We got a missing dep when there shouldn't have been one")
@@ -124,8 +124,9 @@ func TestMissingDependency(t *testing.T) {
 
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
+	appRefs := &crd.ClowdAppRefList{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps)
+	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -190,8 +191,9 @@ func TestOptionalDependency(t *testing.T) {
 
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
+	appRefs := &crd.ClowdAppRefList{}
 
-	makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps)
+	makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -283,8 +285,9 @@ func TestMultiDependency(t *testing.T) {
 
 	deps := []config.DependencyEndpoint{}
 	privDeps := []config.PrivateDependencyEndpoint{}
+	appRefs := &crd.ClowdAppRefList{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps)
+	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")

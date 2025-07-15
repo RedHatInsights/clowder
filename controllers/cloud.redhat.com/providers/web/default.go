@@ -1,14 +1,15 @@
 package web
 
 import (
+	apps "k8s.io/api/apps/v1"
+	batch "k8s.io/api/batch/v1"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provCronjob "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	provDeploy "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	apps "k8s.io/api/apps/v1"
-	batch "k8s.io/api/batch/v1"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
@@ -31,7 +32,6 @@ func (web *webProvider) EnvProvide() error {
 
 func (web *webProvider) Provide(app *crd.ClowdApp) error {
 
-	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
 	if privatePort == 0 {

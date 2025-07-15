@@ -1,0 +1,75 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 300
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdappref
+status:
+  ready: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: remote-service
+  namespace: test-clowdappref
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: consumer-app
+  namespace: test-clowdappref
+status:
+  ready: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: mixed-deps-app
+  namespace: test-clowdappref
+status:
+  ready: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: consumer-app
+  namespace: test-clowdappref
+  labels:
+    app: consumer-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: consumer-app
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mixed-deps-app
+  namespace: test-clowdappref
+  labels:
+    app: mixed-deps-app
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: mixed-deps-app
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-app-processor
+  namespace: test-clowdappref
+  labels:
+    app: consumer-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mixed-deps-app-processor
+  namespace: test-clowdappref
+  labels:
+    app: mixed-deps-app 
