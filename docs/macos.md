@@ -25,6 +25,8 @@ kube start \
 ```
     
 ## Configure Minikube for Local Testing
+
+Run script to setup Minikube cluster.
 ```
 build/setup_kube.sh
 ```
@@ -32,7 +34,6 @@ build/setup_kube.sh
 ## Setup Network Proxy
 
 Next start an Alpine docker container that will act as a proxy that will connect your local machine's port 5000 to the registry running in the Minikube cluster at port 5000. You'll find more on this in the Minikube documentation for running [docker on macOS](https://minikube.sigs.k8s.io/docs/handbook/registry/#enabling-insecure-registries).
-
 ```
 docker run --rm -it -d --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
 ```
