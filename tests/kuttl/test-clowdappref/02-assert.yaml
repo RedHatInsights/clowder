@@ -15,8 +15,6 @@ kind: ClowdAppRef
 metadata:
   name: remote-service
   namespace: test-clowdappref
-status:
-  ready: true
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
