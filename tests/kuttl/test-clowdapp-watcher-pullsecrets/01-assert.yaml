@@ -1,0 +1,128 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-pullsecrets
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+data:
+  cdappconfig.json: eyJlbmRwb2ludHMiOlt7ImFwaVBhdGgiOiIvYXBpL3B1cHRvby1wcm9jZXNzb3IvIiwiYXBpUGF0aHMiOlsiL2FwaS9wdXB0b28tcHJvY2Vzc29yLyJdLCJhcHAiOiJwdXB0b28iLCJob3N0bmFtZSI6InB1cHRvby1wcm9jZXNzb3IudGVzdC1jbG93ZGFwcC13YXRjaGVyLXB1bGxzZWNyZXRzLnN2YyIsIm5hbWUiOiJwcm9jZXNzb3IiLCJwb3J0Ijo4MDAwLCJ0bHNQb3J0IjowfV0sImhhc2hDYWNoZSI6ImQ1YmI2MjUzYjY5NTdlNzM2MGU4OGRhMTMxMDUwYzM2NTNhMGQ5ZmExY2RlZWFlNTc1M2IyNjlkMTMwMDZjMTZlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwibG9nZ2luZyI6eyJjbG91ZHdhdGNoIjp7ImFjY2Vzc0tleUlkIjoiIiwibG9nR3JvdXAiOiIiLCJyZWdpb24iOiIiLCJzZWNyZXRBY2Nlc3NLZXkiOiIifSwidHlwZSI6Im51bGwifSwibWV0YWRhdGEiOnsiZGVwbG95bWVudHMiOlt7ImltYWdlIjoicXVheS5pby9wc2F2L2Nsb3dkZXItaGVsbG8iLCJuYW1lIjoicHJvY2Vzc29yIn1dLCJlbnZOYW1lIjoidGVzdC1jbG93ZGFwcC13YXRjaGVyLXB1bGxzZWNyZXRzIiwibmFtZSI6InB1cHRvbyJ9LCJtZXRyaWNzUGF0aCI6Ii9tZXRyaWNzIiwibWV0cmljc1BvcnQiOjkwMDAsInByaXZhdGVFbmRwb2ludHMiOlt7ImFwcCI6InB1cHRvbyIsImhvc3RuYW1lIjoicHVwdG9vLXByb2Nlc3Nvci50ZXN0LWNsb3dkYXBwLXdhdGNoZXItcHVsbHNlY3JldHMuc3ZjIiwibmFtZSI6InByb2Nlc3NvciIsInBvcnQiOjEwMDAwLCJ0bHNQb3J0IjowfV0sInByaXZhdGVQb3J0IjoxMDAwMCwicHVibGljUG9ydCI6ODAwMCwid2ViUG9ydCI6ODAwMH0=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-pullsecrets
+spec:
+  strategy:
+    type: RollingUpdate
+  template:
+    spec:
+      serviceAccountName: puptoo-processor
+      containers:
+      - env:
+        - name: ENV_VAR_1
+          value: "env_var_1"
+        - name: ENV_VAR_2
+          value: "env_var_2"
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+      initContainers:
+      - env:
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+        - name: ENV_VAR_1
+          value: "override_1"
+        - name: ENV_VAR_3
+          value: "env_var_3"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-pullsecrets
+spec:
+  selector:
+    pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    appProtocol: http
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdapp-watcher-pullsecrets
+status:
+  apps:
+    - name: puptoo
+      deployments:
+      - hostname: puptoo-processor.test-clowdapp-watcher-pullsecrets.svc
+        name: puptoo-processor
+        port: 8000
+---
+apiVersion: v1
+data:
+  test_data: dGVzdDEyMzQ= #test1234
+kind: Secret
+metadata:
+  name: test-clowdapp-watcher-pullsecrets-test-clowdapp-watcher-pullsecrets-clowder-copy
+  namespace: test-clowdapp-watcher-pullsecrets
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-clowdapp-watcher-pullsecrets
+type: Opaque
+---
+apiVersion: v1
+imagePullSecrets:
+- name: test-clowdapp-watcher-pullsecrets-test-clowdapp-watcher-pullsecrets-clowder-copy
+kind: ServiceAccount
+metadata:
+  labels:
+    app: puptoo
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-pullsecrets
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdApp
+    name: puptoo
+---
+apiVersion: v1
+imagePullSecrets:
+- name: test-clowdapp-watcher-pullsecrets-test-clowdapp-watcher-pullsecrets-clowder-copy
+kind: ServiceAccount
+metadata:
+  labels:
+    app: test-clowdapp-watcher-pullsecrets
+  name: test-clowdapp-watcher-pullsecrets-env
+  namespace: test-clowdapp-watcher-pullsecrets
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    controller: true
+    kind: ClowdEnvironment
+    name: test-clowdapp-watcher-pullsecrets
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-pullsecrets
+  labels:
+    kubernetes.io/metadata.name: test-clowdapp-watcher-pullsecrets

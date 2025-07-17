@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ff-server
+  namespace: test-clowdapp-watcher-ff-app-interface-ff-location
+type: Opaque
+data:
+  CLIENT_ACCESS_TOKEN: YXBwLWEtc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-a-stage.rds.example.com
