@@ -2,6 +2,8 @@ CLOWDER_BUILD_TAG ?= $(shell git rev-parse HEAD)
 
 GO_CMD ?= go
 
+OS := $(shell uname -s)
+
 TEMPLATE_KUSTOMIZE ?= "deploy-kustomize.yaml"
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
@@ -148,9 +150,16 @@ docker-build-no-test:
 docker-push:
 	$(RUNTIME) push ${IMG}
 
-# Push the docker image
+
+# For folks using Darwin for their OS, they need to use Docker for pushing a local Clowder image
+# to Minikube.
+ifeq ($(OS),Darwin)
+docker-push-minikube:
+	docker push ${IMG}
+else
 docker-push-minikube:
 	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(CLOWDER_BUILD_TAG) --tls-verify=false
+endif
 
 deploy-minikube: docker-build-no-test docker-push-minikube deploy
 
