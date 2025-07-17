@@ -6,6 +6,9 @@ metadata:
   namespace: test-clowdapp-watcher-kafka-msk
 status:
   conditions:
+  - reason: ZooKeeperRemoval
+    status: "True"
+    type: Warning
   - reason: ZooKeeperStorage
     status: "True"
     type: Warning

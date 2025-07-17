@@ -6,14 +6,6 @@ metadata:
   namespace: test-clowdapp-watcher-kafka-msk
 spec:
   entityOperator:
-    tlsSidecar:
-      resources:
-        limits:
-          cpu: 100m
-          memory: 100Mi
-        requests:
-          cpu: 50m
-          memory: 50Mi
     userOperator:
       resources:
         limits:
@@ -52,7 +44,7 @@ spec:
         memory: 600Mi
     storage:
       type: ephemeral
-    version: 3.4.0
+    version: 3.8.0
   zookeeper:
     replicas: 1
     resources:
