@@ -32,7 +32,7 @@ spec:
   - name: path-context
     value: .
   - name: prefetch-input
-    value: '[{"path":".","type":"gomod"},{"path":"./deps/controller-gen","type":"gomod"},{"path":"./deps/kustomize","type":"gomod"}]'
+    value: '[{"path":".","type":"gomod"}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
