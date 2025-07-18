@@ -57,4 +57,3 @@ echo Installing apps...
 bonfire process --clowd-env=test host-inventory ingress engine 2>/dev/null | minikube kubectl -- apply --validate=false -n test -f -
 # TODO: Use 'minikube service' to get a URL(s) to the apps
 # TODO: Install UI + keycloak
-
