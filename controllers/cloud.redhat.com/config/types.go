@@ -2,9 +2,11 @@
 
 package config
 
-import "encoding/json"
-import "fmt"
-import "reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+)
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {

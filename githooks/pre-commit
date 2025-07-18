@@ -1,0 +1,105 @@
+#!/bin/bash
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}Running pre-commit checks...${NC}"
+
+# Get list of staged Go files
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' | grep -v 'zz_generated' | grep -v 'build/operator_bundles' || true)
+
+if [ -z "$STAGED_GO_FILES" ]; then
+    echo -e "${GREEN}No Go files staged for commit.${NC}"
+    exit 0
+fi
+
+echo "Checking staged Go files:"
+echo "$STAGED_GO_FILES"
+
+# Check if golangci-lint is available
+GOLANGCI_LINT_CMD=""
+if command -v golangci-lint &> /dev/null; then
+    GOLANGCI_LINT_CMD="golangci-lint"
+elif [ -f "$(go env GOPATH)/bin/golangci-lint" ]; then
+    GOLANGCI_LINT_CMD="$(go env GOPATH)/bin/golangci-lint"
+else
+    echo -e "${YELLOW}Warning: golangci-lint not found. Install it with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest${NC}"
+fi
+
+# Run go fmt
+echo -e "\n${GREEN}Running go fmt...${NC}"
+UNFORMATTED=$(echo "$STAGED_GO_FILES" | xargs gofmt -l)
+if [ -n "$UNFORMATTED" ]; then
+    echo -e "${RED}Error: The following files are not formatted:${NC}"
+    echo "$UNFORMATTED"
+    echo -e "${YELLOW}Run 'go fmt ./...' to fix formatting issues.${NC}"
+    exit 1
+fi
+
+# Run go vet
+echo -e "\n${GREEN}Running go vet...${NC}"
+if ! go vet ./...; then
+    echo -e "${RED}Error: go vet found issues.${NC}"
+    exit 1
+fi
+
+# Run goimports if available
+if command -v goimports &> /dev/null; then
+    echo -e "\n${GREEN}Running goimports...${NC}"
+    UNIMPORTED=$(echo "$STAGED_GO_FILES" | xargs goimports -l)
+    if [ -n "$UNIMPORTED" ]; then
+        echo -e "${RED}Error: The following files have import issues:${NC}"
+        echo "$UNIMPORTED"
+        echo -e "${YELLOW}Run 'goimports -w .' to fix import issues.${NC}"
+        exit 1
+    fi
+elif [ -f "$(go env GOPATH)/bin/goimports" ]; then
+    echo -e "\n${GREEN}Running goimports...${NC}"
+    UNIMPORTED=$(echo "$STAGED_GO_FILES" | xargs "$(go env GOPATH)/bin/goimports" -l)
+    if [ -n "$UNIMPORTED" ]; then
+        echo -e "${RED}Error: The following files have import issues:${NC}"
+        echo "$UNIMPORTED"
+        echo -e "${YELLOW}Run 'goimports -w .' to fix import issues.${NC}"
+        exit 1
+    fi
+fi
+
+# Run ineffassign if available
+if command -v ineffassign &> /dev/null; then
+    echo -e "\n${GREEN}Running ineffassign...${NC}"
+    if ! ineffassign ./...; then
+        echo -e "${RED}Error: ineffassign found issues.${NC}"
+        exit 1
+    fi
+elif [ -f "$(go env GOPATH)/bin/ineffassign" ]; then
+    echo -e "\n${GREEN}Running ineffassign...${NC}"
+    if ! "$(go env GOPATH)/bin/ineffassign" ./...; then
+        echo -e "${RED}Error: ineffassign found issues.${NC}"
+        exit 1
+    fi
+fi
+
+# Run golangci-lint if available
+if [ -n "$GOLANGCI_LINT_CMD" ]; then
+    echo -e "\n${GREEN}Running golangci-lint...${NC}"
+    if ! $GOLANGCI_LINT_CMD run --timeout=5m; then
+        echo -e "${RED}Error: golangci-lint found issues.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}Skipping golangci-lint (not installed).${NC}"
+fi
+
+# Ensure code builds
+echo -e "\n${GREEN}Checking that code builds...${NC}"
+if ! go build ./...; then
+    echo -e "${RED}Error: Code does not build.${NC}"
+    exit 1
+fi
+
+echo -e "\n${GREEN}✓ All pre-commit checks passed!${NC}" 
