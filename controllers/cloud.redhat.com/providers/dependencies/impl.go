@@ -250,7 +250,7 @@ func processAppAndAppRefEndpoints(
 }
 
 func getAppRefAPIPaths(deployment *crd.ClowdAppRefDeployment) []string {
-	apiPaths := []string{}
+	var apiPaths []string
 
 	if len(deployment.APIPaths) > 0 {
 		apiPaths = deployment.APIPaths
