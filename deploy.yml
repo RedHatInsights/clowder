@@ -1739,6 +1739,79 @@ objects:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
                                   type: boolean
+                                envVars:
+                                  description: Environment variables to be set in
+                                    the sidecar container (app-level overrides)
+                                  items:
+                                    description: EnvVar represents an environment
+                                      variable present in a Container.
+                                    properties:
+                                      name:
+                                        description: Name of the environment variable.
+                                          Must be a C_IDENTIFIER.
+                                        type: string
+                                      value:
+                                        description: 'Variable references $(VAR_NAME)
+                                          are expanded using the previous defined
+
+                                          environment variables in the container and
+                                          any service environment variables.
+
+                                          If a variable cannot be resolved, the reference
+                                          in the input string will be
+
+                                          unchanged. The $(VAR_NAME) syntax can be
+                                          escaped with a double $$, ie: $$(VAR_NAME).
+
+                                          Escaped references will never be expanded,
+                                          regardless of whether the variable
+
+                                          exists or not.'
+                                        type: string
+                                      valueFrom:
+                                        description: Source for the environment variable's
+                                          value. Cannot be used if value is not empty.
+                                        properties:
+                                          configMapKeyRef:
+                                            description: Selects a key of a ConfigMap.
+                                            properties:
+                                              key:
+                                                description: The key to select.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the ConfigMap
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                          secretKeyRef:
+                                            description: Selects a key of a secret
+                                              in the pod's namespace
+                                            properties:
+                                              key:
+                                                description: The key of the secret
+                                                  to select from.  Must be a valid
+                                                  secret key.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the Secret
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                        type: object
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -5833,6 +5906,79 @@ objects:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
                                   type: boolean
+                                envVars:
+                                  description: Environment variables to be set in
+                                    the sidecar container (app-level overrides)
+                                  items:
+                                    description: EnvVar represents an environment
+                                      variable present in a Container.
+                                    properties:
+                                      name:
+                                        description: Name of the environment variable.
+                                          Must be a C_IDENTIFIER.
+                                        type: string
+                                      value:
+                                        description: 'Variable references $(VAR_NAME)
+                                          are expanded using the previous defined
+
+                                          environment variables in the container and
+                                          any service environment variables.
+
+                                          If a variable cannot be resolved, the reference
+                                          in the input string will be
+
+                                          unchanged. The $(VAR_NAME) syntax can be
+                                          escaped with a double $$, ie: $$(VAR_NAME).
+
+                                          Escaped references will never be expanded,
+                                          regardless of whether the variable
+
+                                          exists or not.'
+                                        type: string
+                                      valueFrom:
+                                        description: Source for the environment variable's
+                                          value. Cannot be used if value is not empty.
+                                        properties:
+                                          configMapKeyRef:
+                                            description: Selects a key of a ConfigMap.
+                                            properties:
+                                              key:
+                                                description: The key to select.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the ConfigMap
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                          secretKeyRef:
+                                            description: Selects a key of a secret
+                                              in the pod's namespace
+                                            properties:
+                                              key:
+                                                description: The key of the secret
+                                                  to select from.  Must be a valid
+                                                  secret key.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the Secret
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                        type: object
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -9276,9 +9422,9 @@ objects:
                         prometheus:
                           description: Prometheus specific configuration
                           properties:
-                            appInterfaceHostname:
-                              description: Specify prometheus hostname when in app-interface
-                                mode
+                            appInterfaceInternalURL:
+                              description: Specify prometheus internal URL when in
+                                app-interface mode
                               type: string
                             deploy:
                               description: Determines whether to deploy prometheus
@@ -9364,9 +9510,85 @@ objects:
                         otelCollector:
                           description: Sets up OpenTelemetry collector configuration
                           properties:
+                            configMap:
+                              description: Configurable shared ConfigMap name (optional)
+                              type: string
                             enabled:
                               description: Enable or disable otel collector sidecar
                               type: boolean
+                            envVars:
+                              description: Environment variables to be set in the
+                                otel collector container
+                              items:
+                                description: EnvVar represents an environment variable
+                                  present in a Container.
+                                properties:
+                                  name:
+                                    description: Name of the environment variable.
+                                      Must be a C_IDENTIFIER.
+                                    type: string
+                                  value:
+                                    description: 'Variable references $(VAR_NAME)
+                                      are expanded using the previous defined
+
+                                      environment variables in the container and any
+                                      service environment variables.
+
+                                      If a variable cannot be resolved, the reference
+                                      in the input string will be
+
+                                      unchanged. The $(VAR_NAME) syntax can be escaped
+                                      with a double $$, ie: $$(VAR_NAME).
+
+                                      Escaped references will never be expanded, regardless
+                                      of whether the variable
+
+                                      exists or not.'
+                                    type: string
+                                  valueFrom:
+                                    description: Source for the environment variable's
+                                      value. Cannot be used if value is not empty.
+                                    properties:
+                                      configMapKeyRef:
+                                        description: Selects a key of a ConfigMap.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: Name of the referent.
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secretKeyRef:
+                                        description: Selects a key of a secret in
+                                          the pod's namespace
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: Name of the referent.
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                required:
+                                - name
+                                type: object
+                              type: array
                             image:
                               description: Configurable image
                               type: string
@@ -9983,17 +10205,10 @@ objects:
                   description: PrometheusStatus provides info on how to connect to
                     Prometheus
                   properties:
-                    hostname:
-                      type: string
-                    port:
-                      format: int32
-                      type: integer
-                    scheme:
+                    serverAddress:
                       type: string
                   required:
-                  - hostname
-                  - port
-                  - scheme
+                  - serverAddress
                   type: object
                 ready:
                   type: boolean

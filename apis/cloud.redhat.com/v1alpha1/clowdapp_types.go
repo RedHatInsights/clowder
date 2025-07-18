@@ -270,6 +270,9 @@ type Sidecar struct {
 
 	// Defines if the sidecar is enabled, defaults to False
 	Enabled bool `json:"enabled"`
+
+	// Environment variables to be set in the sidecar container (app-level overrides)
+	EnvVars []EnvVar `json:"envVars,omitempty"`
 }
 
 // Metadata for applying annotations etc to PodSpec
