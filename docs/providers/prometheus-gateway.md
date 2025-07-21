@@ -51,20 +51,62 @@ The Prometheus Gateway deployment is created with the following default configur
   - Memory Limits: 256Mi
 - **Replicas**: 1
 
+## Application Configuration
+
+When Prometheus Gateway is enabled, Clowder automatically exposes its configuration to your applications through the standard `cdappconfig.json` mechanism. Applications will receive:
+
+```json
+{
+  "prometheusGateway": {
+    "hostname": "my-environment-prometheus-gateway.my-namespace.svc",
+    "port": 9091
+  }
+}
+```
+
+This configuration allows your applications to automatically discover and connect to the Prometheus Gateway without hardcoding hostnames or ports.
+
 ## Using the Prometheus Gateway
 
 Once deployed, applications can push metrics to the Pushgateway using the standard Prometheus client libraries or simple HTTP requests.
 
+### Example: Using Application Configuration
+
+```python
+import json
+import os
+from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
+
+# Load Clowder configuration
+with open(os.environ.get('ACG_CONFIG', '/cdapp/cdappconfig.json')) as f:
+    config = json.load(f)
+
+# Use prometheus gateway configuration from Clowder
+if 'prometheusGateway' in config:
+    gateway_config = config['prometheusGateway']
+    gateway_endpoint = f"{gateway_config['hostname']}:{gateway_config['port']}"
+    
+    registry = CollectorRegistry()
+    duration_gauge = Gauge('job_duration_seconds', 'Job duration', registry=registry)
+    duration_gauge.set(45.2)
+    
+    push_to_gateway(gateway_endpoint, job='my-batch-job', registry=registry)
+```
+
 ### Example: Pushing Metrics with curl
 
 ```bash
+# Using the configuration from cdappconfig.json
+GATEWAY_HOST=$(jq -r '.prometheusGateway.hostname' /cdapp/cdappconfig.json)
+GATEWAY_PORT=$(jq -r '.prometheusGateway.port' /cdapp/cdappconfig.json)
+
 # Push a simple metric
 echo "job_duration_seconds 45.2" | curl --data-binary @- \
-  http://<environment-name>-prometheus-gateway.<namespace>:9091/metrics/job/my-batch-job
+  http://${GATEWAY_HOST}:${GATEWAY_PORT}/metrics/job/my-batch-job
 
 # Push multiple metrics with metadata
 cat <<EOF | curl --data-binary @- \
-  http://<environment-name>-prometheus-gateway.<namespace>:9091/metrics/job/my-batch-job/instance/worker-1
+  http://${GATEWAY_HOST}:${GATEWAY_PORT}/metrics/job/my-batch-job/instance/worker-1
 # TYPE job_duration_seconds gauge
 # HELP job_duration_seconds Duration of the batch job in seconds
 job_duration_seconds 45.2
@@ -74,17 +116,14 @@ processed_records_total 1234
 EOF
 ```
 
-### Example: Using Python Client
+### Manual Configuration (if needed)
 
-```python
-from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
+If you need to manually specify the gateway endpoint:
 
-registry = CollectorRegistry()
-duration_gauge = Gauge('job_duration_seconds', 'Job duration', registry=registry)
-duration_gauge.set(45.2)
-
-push_to_gateway('my-environment-prometheus-gateway.my-namespace:9091', 
-                job='my-batch-job', registry=registry)
+```bash
+# Push a simple metric manually
+echo "job_duration_seconds 45.2" | curl --data-binary @- \
+  http://my-environment-prometheus-gateway.my-namespace.svc:9091/metrics/job/my-batch-job
 ```
 
 ## Integration with Prometheus
@@ -99,16 +138,20 @@ The Prometheus Gateway automatically integrates with your Prometheus instance th
 
 ## Best Practices
 
-1. **Use Appropriate Job Names**: Use descriptive job names in your push URLs to easily identify metrics in Prometheus.
+1. **Use Application Configuration**: Always use the configuration from `cdappconfig.json` instead of hardcoding hostnames and ports.
 
-2. **Include Instance Labels**: For jobs that run on multiple instances, include instance identifiers in your push URLs.
+2. **Use Appropriate Job Names**: Use descriptive job names in your push URLs to easily identify metrics in Prometheus.
 
-3. **Clean Up Metrics**: Delete metrics from the Pushgateway when jobs complete to avoid stale data:
+3. **Include Instance Labels**: For jobs that run on multiple instances, include instance identifiers in your push URLs.
+
+4. **Clean Up Metrics**: Delete metrics from the Pushgateway when jobs complete to avoid stale data:
    ```bash
-   curl -X DELETE http://gateway:9091/metrics/job/my-batch-job/instance/worker-1
+   GATEWAY_HOST=$(jq -r '.prometheusGateway.hostname' /cdapp/cdappconfig.json)
+   GATEWAY_PORT=$(jq -r '.prometheusGateway.port' /cdapp/cdappconfig.json)
+   curl -X DELETE http://${GATEWAY_HOST}:${GATEWAY_PORT}/metrics/job/my-batch-job/instance/worker-1
    ```
 
-4. **Monitor Push Success**: Set up alerts on `push_time_seconds` and `push_failure_time_seconds` metrics to monitor the health of your batch jobs.
+5. **Monitor Push Success**: Set up alerts on `push_time_seconds` and `push_failure_time_seconds` metrics to monitor the health of your batch jobs.
 
 ## Limitations
 

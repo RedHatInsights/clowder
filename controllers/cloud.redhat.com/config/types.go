@@ -2,9 +2,11 @@
 
 package config
 
-import "encoding/json"
-import "fmt"
-import "reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+)
 
 // ClowdApp deployment configuration for Clowder enabled apps.
 type AppConfig struct {
@@ -48,6 +50,9 @@ type AppConfig struct {
 
 	// ObjectStore corresponds to the JSON schema field "objectStore".
 	ObjectStore *ObjectStoreConfig `json:"objectStore,omitempty" yaml:"objectStore,omitempty" mapstructure:"objectStore,omitempty"`
+
+	// PrometheusGateway corresponds to the JSON schema field "prometheusGateway".
+	PrometheusGateway *PrometheusGatewayConfig `json:"prometheusGateway,omitempty" yaml:"prometheusGateway,omitempty" mapstructure:"prometheusGateway,omitempty"`
 
 	// PrivateEndpoints corresponds to the JSON schema field "privateEndpoints".
 	PrivateEndpoints []PrivateDependencyEndpoint `json:"privateEndpoints,omitempty" yaml:"privateEndpoints,omitempty" mapstructure:"privateEndpoints,omitempty"`
@@ -561,6 +566,15 @@ func (j *ObjectStoreBucket) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Prometheus Gateway Configuration
+type PrometheusGatewayConfig struct {
+	// Defines the hostname for the Prometheus Gateway server configuration.
+	Hostname string `json:"hostname" yaml:"hostname" mapstructure:"hostname"`
+
+	// Defines the port for the Prometheus Gateway server configuration.
+	Port int `json:"port" yaml:"port" mapstructure:"port"`
+}
+
 // Object Storage Configuration
 type ObjectStoreConfig struct {
 	// Defines the access key for the Object Storage server configuration.
@@ -580,6 +594,27 @@ type ObjectStoreConfig struct {
 
 	// Details if the Object Server uses TLS.
 	Tls bool `json:"tls" yaml:"tls" mapstructure:"tls"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PrometheusGatewayConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["hostname"]; !ok || v == nil {
+		return fmt.Errorf("field hostname in PrometheusGatewayConfig: required")
+	}
+	if v, ok := raw["port"]; !ok || v == nil {
+		return fmt.Errorf("field port in PrometheusGatewayConfig: required")
+	}
+	type Plain PrometheusGatewayConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = PrometheusGatewayConfig(plain)
+	return nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
