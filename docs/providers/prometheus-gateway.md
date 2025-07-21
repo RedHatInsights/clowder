@@ -28,6 +28,7 @@ spec:
         deploy: true
       prometheusGateway:
         deploy: true
+        image: "quay.io/prometheus/pushgateway:v1.11.1"  # Optional: Override default image
 ```
 
 ## What Gets Created
@@ -42,7 +43,7 @@ When you enable the Prometheus Gateway provider, Clowder will create the followi
 
 The Prometheus Gateway deployment is created with the following default configuration:
 
-- **Image**: `prom/pushgateway:latest`
+- **Image**: `quay.io/prometheus/pushgateway:v1.11.1` (configurable via ClowdEnvironment spec or Clowder global config)
 - **Port**: 9091 (standard Pushgateway port)
 - **Resources**:
   - CPU Requests: 50m
@@ -50,6 +51,29 @@ The Prometheus Gateway deployment is created with the following default configur
   - Memory Requests: 128Mi
   - Memory Limits: 256Mi
 - **Replicas**: 1
+
+## Image Configuration
+
+The Prometheus Gateway image can be configured at multiple levels:
+
+1. **Environment Level**: Override for a specific ClowdEnvironment
+   ```yaml
+   spec:
+     providers:
+       metrics:
+         prometheusGateway:
+           deploy: true
+           image: "my-registry.com/pushgateway:custom-tag"
+   ```
+
+2. **Global Level**: Override in the Clowder operator configuration
+   ```yaml
+   # clowder-config.yaml
+   images:
+     prometheusGateway: "my-registry.com/pushgateway:enterprise"
+   ```
+
+3. **Default**: Falls back to `quay.io/prometheus/pushgateway:v1.11.1`
 
 ## Application Configuration
 

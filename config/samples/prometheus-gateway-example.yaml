@@ -13,6 +13,7 @@ spec:
         deploy: true
       prometheusGateway:
         deploy: true
+        # image: "custom-registry.com/pushgateway:v1.11.1"  # Optional: override default image
     web:
       port: 8000
       mode: none

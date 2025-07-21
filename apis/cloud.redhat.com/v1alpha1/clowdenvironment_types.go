@@ -139,6 +139,9 @@ type PrometheusConfig struct {
 type PrometheusGatewayConfig struct {
 	// Determines whether to deploy prometheus-gateway in operator mode
 	Deploy bool `json:"deploy,omitempty"`
+
+	// Image to use for prometheus-gateway deployment
+	Image string `json:"image,omitempty"`
 }
 
 // MetricsConfig configures the Clowder provider controlling the creation of

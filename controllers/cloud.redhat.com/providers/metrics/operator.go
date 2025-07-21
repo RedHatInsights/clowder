@@ -22,6 +22,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var DefaultImagePrometheusGateway = "quay.io/prometheus/pushgateway:v1.11.1"
+
+func GetPrometheusGatewayImage(env *crd.ClowdEnvironment) string {
+	if env.Spec.Providers.Metrics.PrometheusGateway.Image != "" {
+		return env.Spec.Providers.Metrics.PrometheusGateway.Image
+	}
+	if clowderconfig.LoadedConfig.Images.PrometheusGateway != "" {
+		return clowderconfig.LoadedConfig.Images.PrometheusGateway
+	}
+	return DefaultImagePrometheusGateway
+}
+
 type metricsProvider struct {
 	providers.Provider
 }
@@ -274,7 +286,7 @@ func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvi
 	deployment.Spec.Template.Spec.Containers = []core.Container{
 		{
 			Name:  "prometheus-gateway",
-			Image: "prom/pushgateway:latest",
+			Image: GetPrometheusGatewayImage(env),
 			Ports: []core.ContainerPort{
 				{
 					ContainerPort: 9091,
