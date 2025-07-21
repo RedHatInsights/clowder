@@ -266,22 +266,25 @@ func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvi
 		return err
 	}
 
-	deployment.SetName(nn.Name)
-	deployment.SetNamespace(nn.Namespace)
+	// Get base labels from ClowdEnvironment and add specific labels for prometheus gateway
+	labels := env.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels["app"] = "prometheus-gateway"
+	labels["env"] = env.Name
+
+	// Create labeler to set labels and owner references
+	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler(deployment)
 
 	replicas := int32(1)
 	deployment.Spec.Replicas = &replicas
 	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: map[string]string{
-			"app": "prometheus-gateway",
-			"env": env.Name,
-		},
+		MatchLabels: labels,
 	}
 
-	deployment.Spec.Template.ObjectMeta.Labels = map[string]string{
-		"app": "prometheus-gateway",
-		"env": env.Name,
-	}
+	deployment.Spec.Template.ObjectMeta.Labels = labels
 
 	deployment.Spec.Template.Spec.Containers = []core.Container{
 		{
@@ -306,9 +309,6 @@ func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvi
 		},
 	}
 
-	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
-	labeler(deployment)
-
 	return cache.Update(PrometheusGatewayDeployment, deployment)
 }
 
@@ -324,8 +324,14 @@ func createPrometheusGatewayService(cache *rc.ObjectCache, env *crd.ClowdEnviron
 		return err
 	}
 
-	service.SetName(nn.Name)
-	service.SetNamespace(nn.Namespace)
+	// Get base labels from ClowdEnvironment and add specific labels for prometheus gateway
+	labels := env.GetLabels()
+	labels["app"] = "prometheus-gateway"
+	labels["env"] = env.Name
+
+	// Create labeler to set labels and owner references
+	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler(service)
 
 	service.Spec.Selector = map[string]string{
 		"app": "prometheus-gateway",
@@ -339,9 +345,6 @@ func createPrometheusGatewayService(cache *rc.ObjectCache, env *crd.ClowdEnviron
 			Name:       "http",
 		},
 	}
-
-	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
-	labeler(service)
 
 	return cache.Update(PrometheusGatewayService, service)
 }
@@ -358,8 +361,16 @@ func createPrometheusGatewayServiceMonitor(cache *rc.ObjectCache, env *crd.Clowd
 		return err
 	}
 
-	serviceMonitor.SetName(nn.Name)
-	serviceMonitor.SetNamespace(nn.Namespace)
+	// Get base labels from ClowdEnvironment and add prometheus-specific labels
+	labels := env.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels["prometheus"] = env.Name
+
+	// Create labeler to set labels and owner references
+	labeler := utils.MakeLabeler(nn, labels, env)
+	labeler(serviceMonitor)
 
 	serviceMonitor.Spec.Selector = metav1.LabelSelector{
 		MatchLabels: map[string]string{
@@ -374,14 +385,6 @@ func createPrometheusGatewayServiceMonitor(cache *rc.ObjectCache, env *crd.Clowd
 			Path: "/metrics",
 		},
 	}
-
-	// Set the prometheus label so it gets picked up by the Prometheus instance
-	serviceMonitor.ObjectMeta.Labels = map[string]string{
-		"prometheus": env.Name,
-	}
-
-	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
-	labeler(serviceMonitor)
 
 	return cache.Update(PrometheusGatewayServiceMonitor, serviceMonitor)
 }

@@ -83,6 +83,14 @@ kind: Deployment
 metadata:
   name: test-prometheus-gateway-prometheus-gateway
   namespace: test-prometheus-gateway
+  labels:
+    app: prometheus-gateway
+    env: test-prometheus-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-prometheus-gateway
+    controller: true
 spec:
   replicas: 1
   selector:
@@ -115,6 +123,14 @@ kind: Service
 metadata:
   name: test-prometheus-gateway-prometheus-gateway
   namespace: test-prometheus-gateway
+  labels:
+    app: prometheus-gateway
+    env: test-prometheus-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-prometheus-gateway
+    controller: true
 spec:
   selector:
     app: prometheus-gateway
@@ -131,7 +147,13 @@ metadata:
   name: test-prometheus-gateway-prometheus-gateway
   namespace: test-prometheus-gateway
   labels:
+    app: test-prometheus-gateway
     prometheus: test-prometheus-gateway
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdEnvironment
+    name: test-prometheus-gateway
+    controller: true
 spec:
   selector:
     matchLabels:
