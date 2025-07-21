@@ -153,7 +153,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.3 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
-	golang.org/x/crypto/x509roots/fallback v0.0.0-20250630195050-b3790b8d9143 // indirect
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20250711192710-b903b535d3ef // indirect
 	golang.org/x/exp v0.0.0-20250531010427-b6e5de432a8b // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
