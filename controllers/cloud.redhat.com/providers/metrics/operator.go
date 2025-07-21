@@ -135,6 +135,11 @@ func (m *metricsProvider) Provide(app *crd.ClowdApp) error {
 
 	// Populate prometheus gateway configuration if enabled
 	if m.Env.Spec.Providers.Metrics.PrometheusGateway.Deploy {
+		// Validate that target namespace is set
+		if m.Env.Status.TargetNamespace == "" {
+			return fmt.Errorf("ClowdEnvironment %s has empty TargetNamespace", m.Env.Name)
+		}
+
 		m.Config.PrometheusGateway = &config.PrometheusGatewayConfig{
 			Hostname: fmt.Sprintf("%s-prometheus-gateway.%s.svc", m.Env.Name, m.Env.Status.TargetNamespace),
 			Port:     9091,
@@ -255,6 +260,11 @@ func createPrometheusGateway(cache *rc.ObjectCache, env *crd.ClowdEnvironment) e
 }
 
 func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	// Validate that target namespace is set
+	if env.Status.TargetNamespace == "" {
+		return fmt.Errorf("ClowdEnvironment %s has empty TargetNamespace", env.Name)
+	}
+
 	deployment := &apps.Deployment{}
 
 	nn := types.NamespacedName{
@@ -313,6 +323,11 @@ func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvi
 }
 
 func createPrometheusGatewayService(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	// Validate that target namespace is set
+	if env.Status.TargetNamespace == "" {
+		return fmt.Errorf("ClowdEnvironment %s has empty TargetNamespace", env.Name)
+	}
+
 	service := &core.Service{}
 
 	nn := types.NamespacedName{
@@ -326,6 +341,9 @@ func createPrometheusGatewayService(cache *rc.ObjectCache, env *crd.ClowdEnviron
 
 	// Get base labels from ClowdEnvironment and add specific labels for prometheus gateway
 	labels := env.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
 	labels["app"] = "prometheus-gateway"
 	labels["env"] = env.Name
 
@@ -350,6 +368,11 @@ func createPrometheusGatewayService(cache *rc.ObjectCache, env *crd.ClowdEnviron
 }
 
 func createPrometheusGatewayServiceMonitor(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	// Validate that target namespace is set
+	if env.Status.TargetNamespace == "" {
+		return fmt.Errorf("ClowdEnvironment %s has empty TargetNamespace", env.Name)
+	}
+
 	serviceMonitor := &prom.ServiceMonitor{}
 
 	nn := types.NamespacedName{
