@@ -56,21 +56,6 @@ Clowder currently supports the following features:
 - CronJob support
 - Jobs Support
 
-## Roadmap
-
-Our current roadmap looks like this:
-
-* Autoscaling (possibly via [Keda](https://github.com/kedacore/keda))
-* Dynamic routing for public web sevices
-* Automatic metrics configuration
-* Automatic network policy configuration
-* Standard, configurable alerting: Error rate, latency, Kafka topic lag, etc
-* Canary deployments (possibly via [Flagger](https://github.com/weaveworks/flagger))
-* Operational remediations
-* Observe service status from a `ClowdApp` `status`, based on sevice dependencies.
-* Istio integration
-* Advanced logging configurations (e.g. logging messages to kafka topics)
-
 ## Updating E2E Test Golang Deps
 
 Clowder's E2E tests require a few golang dependecies that are not included in the root `go.mod` file. These will need to be updated regularly as a separate process. You can run the following script to update these:
