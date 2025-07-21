@@ -7,10 +7,12 @@ import (
 	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -31,6 +33,12 @@ var PrometheusRoleBinding = rc.NewSingleResourceIdent(ProvName, "prometheus_role
 
 var PrometheusServiceAccount = rc.NewSingleResourceIdent(ProvName, "prometheus_service_account", &core.ServiceAccount{})
 
+var PrometheusGatewayDeployment = rc.NewSingleResourceIdent(ProvName, "prometheus_gateway_deployment", &apps.Deployment{})
+
+var PrometheusGatewayService = rc.NewSingleResourceIdent(ProvName, "prometheus_gateway_service", &core.Service{})
+
+var PrometheusGatewayServiceMonitor = rc.NewSingleResourceIdent(ProvName, "prometheus_gateway_service_monitor", &prom.ServiceMonitor{})
+
 func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		PrometheusSubscription,
@@ -38,6 +46,9 @@ func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error
 		PrometheusRole,
 		PrometheusRoleBinding,
 		PrometheusServiceAccount,
+		PrometheusGatewayDeployment,
+		PrometheusGatewayService,
+		PrometheusGatewayServiceMonitor,
 	)
 	return &metricsProvider{Provider: *p}, nil
 }
@@ -87,7 +98,18 @@ func (m *metricsProvider) EnvProvide() error {
 		return err
 	}
 
-	return createSubscription(m.Cache, m.Env)
+	if err := createSubscription(m.Cache, m.Env); err != nil {
+		return err
+	}
+
+	// Create Prometheus Gateway if enabled
+	if m.Env.Spec.Providers.Metrics.PrometheusGateway.Deploy {
+		if err := createPrometheusGateway(m.Cache, m.Env); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m *metricsProvider) Provide(app *crd.ClowdApp) error {
@@ -186,4 +208,157 @@ func createSubscription(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error 
 	}
 
 	return cache.Update(PrometheusSubscription, subObj)
+}
+
+func createPrometheusGateway(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	// Create Prometheus Gateway Deployment
+	if err := createPrometheusGatewayDeployment(cache, env); err != nil {
+		return err
+	}
+
+	// Create Prometheus Gateway Service
+	if err := createPrometheusGatewayService(cache, env); err != nil {
+		return err
+	}
+
+	// Create ServiceMonitor for Prometheus Gateway if enabled
+	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
+		if err := createPrometheusGatewayServiceMonitor(cache, env); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	deployment := &apps.Deployment{}
+
+	nn := types.NamespacedName{
+		Name:      env.Name + "-prometheus-gateway",
+		Namespace: env.Status.TargetNamespace,
+	}
+
+	if err := cache.Create(PrometheusGatewayDeployment, nn, deployment); err != nil {
+		return err
+	}
+
+	deployment.SetName(nn.Name)
+	deployment.SetNamespace(nn.Namespace)
+
+	replicas := int32(1)
+	deployment.Spec.Replicas = &replicas
+	deployment.Spec.Selector = &metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"app": "prometheus-gateway",
+			"env": env.Name,
+		},
+	}
+
+	deployment.Spec.Template.ObjectMeta.Labels = map[string]string{
+		"app": "prometheus-gateway",
+		"env": env.Name,
+	}
+
+	deployment.Spec.Template.Spec.Containers = []core.Container{
+		{
+			Name:  "prometheus-gateway",
+			Image: "prom/pushgateway:latest",
+			Ports: []core.ContainerPort{
+				{
+					ContainerPort: 9091,
+					Name:          "http",
+				},
+			},
+			Resources: core.ResourceRequirements{
+				Limits: core.ResourceList{
+					"memory": resource.MustParse("256Mi"),
+					"cpu":    resource.MustParse("100m"),
+				},
+				Requests: core.ResourceList{
+					"memory": resource.MustParse("128Mi"),
+					"cpu":    resource.MustParse("50m"),
+				},
+			},
+		},
+	}
+
+	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
+	labeler(deployment)
+
+	return cache.Update(PrometheusGatewayDeployment, deployment)
+}
+
+func createPrometheusGatewayService(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	service := &core.Service{}
+
+	nn := types.NamespacedName{
+		Name:      env.Name + "-prometheus-gateway",
+		Namespace: env.Status.TargetNamespace,
+	}
+
+	if err := cache.Create(PrometheusGatewayService, nn, service); err != nil {
+		return err
+	}
+
+	service.SetName(nn.Name)
+	service.SetNamespace(nn.Namespace)
+
+	service.Spec.Selector = map[string]string{
+		"app": "prometheus-gateway",
+		"env": env.Name,
+	}
+
+	service.Spec.Ports = []core.ServicePort{
+		{
+			Port:       9091,
+			TargetPort: intstr.FromInt(9091),
+			Name:       "http",
+		},
+	}
+
+	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
+	labeler(service)
+
+	return cache.Update(PrometheusGatewayService, service)
+}
+
+func createPrometheusGatewayServiceMonitor(cache *rc.ObjectCache, env *crd.ClowdEnvironment) error {
+	serviceMonitor := &prom.ServiceMonitor{}
+
+	nn := types.NamespacedName{
+		Name:      env.Name + "-prometheus-gateway",
+		Namespace: env.Status.TargetNamespace,
+	}
+
+	if err := cache.Create(PrometheusGatewayServiceMonitor, nn, serviceMonitor); err != nil {
+		return err
+	}
+
+	serviceMonitor.SetName(nn.Name)
+	serviceMonitor.SetNamespace(nn.Namespace)
+
+	serviceMonitor.Spec.Selector = metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"app": "prometheus-gateway",
+			"env": env.Name,
+		},
+	}
+
+	serviceMonitor.Spec.Endpoints = []prom.Endpoint{
+		{
+			Port: "http",
+			Path: "/metrics",
+		},
+	}
+
+	// Set the prometheus label so it gets picked up by the Prometheus instance
+	serviceMonitor.ObjectMeta.Labels = map[string]string{
+		"prometheus": env.Name,
+	}
+
+	labeler := utils.GetCustomLabeler(map[string]string{"env": env.Name}, nn, env)
+	labeler(serviceMonitor)
+
+	return cache.Update(PrometheusGatewayServiceMonitor, serviceMonitor)
 }
