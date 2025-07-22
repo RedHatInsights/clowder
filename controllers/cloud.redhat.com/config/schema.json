@@ -78,6 +78,9 @@
                 "hostname": {
                     "description": "The external hostname of the deployment, where applicable",
                     "type": "string"
+                },
+                "prometheusGateway": {
+                    "$ref": "#/definitions/PrometheusGatewayConfig"
                 }
             },
             "required": [
@@ -543,6 +546,25 @@
                 "hostname",
                 "port",
                 "app"
+            ]
+        },
+        "PrometheusGatewayConfig": {
+            "id": "prometheusGatewayConfig",
+            "type": "object",
+            "description": "Prometheus Gateway Configuration",
+            "properties": {
+                "hostname": {
+                    "description": "Defines the hostname for the Prometheus Gateway server configuration.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "Defines the port for the Prometheus Gateway server configuration.",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "hostname",
+                "port"
             ]
         }
     }
