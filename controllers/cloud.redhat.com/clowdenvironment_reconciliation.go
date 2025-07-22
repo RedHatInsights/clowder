@@ -412,21 +412,15 @@ func (r *ClowdEnvironmentReconciliation) setEnvResourceStatus() (ctrl.Result, er
 }
 
 func (r *ClowdEnvironmentReconciliation) setPrometheusStatus() (ctrl.Result, error) {
-	var hostname string
-	var scheme crd.ProtocolScheme
-	var port int32
+	var url string
 
 	if r.env.Spec.Providers.Metrics.Mode == "app-interface" {
-		hostname = r.env.Spec.Providers.Metrics.Prometheus.AppInterfaceHostname
-		scheme = crd.ProtocolSchemeHTTPS
-		port = 443
+		url = r.env.Spec.Providers.Metrics.Prometheus.AppInterfaceInternalURL
 	} else {
-		hostname = fmt.Sprintf("prometheus-operated.%s.svc.cluster.local", r.env.Status.TargetNamespace)
-		scheme = crd.ProtocolSchemeHTTP
-		port = 9090
+		url = fmt.Sprintf("http://prometheus-operated.%s.svc.cluster.local:9090", r.env.Status.TargetNamespace)
 	}
 
-	r.env.Status.Prometheus = crd.PrometheusStatus{Hostname: hostname, Scheme: scheme, Port: port}
+	r.env.Status.Prometheus = crd.PrometheusStatus{ServerAddress: url}
 
 	return ctrl.Result{}, nil
 }

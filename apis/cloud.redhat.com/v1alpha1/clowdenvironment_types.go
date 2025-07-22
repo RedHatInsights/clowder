@@ -132,8 +132,8 @@ type PrometheusConfig struct {
 	// Determines whether to deploy prometheus in operator mode
 	Deploy bool `json:"deploy,omitempty"`
 
-	// Specify prometheus hostname when in app-interface mode
-	AppInterfaceHostname string `json:"appInterfaceHostname,omitempty"`
+	// Specify prometheus internal URL when in app-interface mode
+	AppInterfaceInternalURL string `json:"appInterfaceInternalURL,omitempty"`
 }
 
 // MetricsConfig configures the Clowder provider controlling the creation of
@@ -517,7 +517,72 @@ type OtelCollectorConfig struct {
 	Enabled bool `json:"enabled"`
 	// Configurable image
 	Image string `json:"image,omitempty"`
+	// Configurable shared ConfigMap name (optional)
+	ConfigMap string `json:"configMap,omitempty"`
+	// Environment variables to be set in the otel collector container
+	EnvVars []EnvVar `json:"envVars,omitempty"`
 }
+
+// EnvVar represents an environment variable present in a Container.
+type EnvVar struct {
+	// Name of the environment variable. Must be a C_IDENTIFIER.
+	Name string `json:"name"`
+
+	// Variable references $(VAR_NAME) are expanded using the previous defined
+	// environment variables in the container and any service environment variables.
+	// If a variable cannot be resolved, the reference in the input string will be
+	// unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).
+	// Escaped references will never be expanded, regardless of whether the variable
+	// exists or not.
+	// +optional
+	Value string `json:"value,omitempty"`
+
+	// Source for the environment variable's value. Cannot be used if value is not empty.
+	// +optional
+	ValueFrom *EnvVarSource `json:"valueFrom,omitempty"`
+}
+
+// EnvVarSource represents a source for the value of an EnvVar.
+type EnvVarSource struct {
+	// Selects a key of a ConfigMap.
+	// +optional
+	ConfigMapKeyRef *ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+
+	// Selects a key of a secret in the pod's namespace
+	// +optional
+	SecretKeyRef *SecretKeySelector `json:"secretKeyRef,omitempty"`
+}
+
+// ConfigMapKeySelector selects a key from a ConfigMap.
+type ConfigMapKeySelector struct {
+	// The ConfigMap to select from.
+	LocalObjectReference `json:",inline"`
+	// The key to select.
+	Key string `json:"key"`
+	// Specify whether the ConfigMap or its key must be defined
+	// +optional
+	Optional *bool `json:"optional,omitempty"`
+}
+
+// SecretKeySelector selects a key from a Secret.
+type SecretKeySelector struct {
+	// The name of the secret in the pod's namespace to select from.
+	LocalObjectReference `json:",inline"`
+	// The key of the secret to select from.  Must be a valid secret key.
+	Key string `json:"key"`
+	// Specify whether the Secret or its key must be defined
+	// +optional
+	Optional *bool `json:"optional,omitempty"`
+}
+
+// LocalObjectReference contains enough information to let you locate the
+// referenced object inside the same namespace.
+type LocalObjectReference struct {
+	// Name of the referent.
+	// +optional
+	Name string `json:"name,omitempty"`
+}
+
 type Sidecars struct {
 	// Sets up Token Refresher configuration
 	TokenRefresher TokenRefresherConfig `json:"tokenRefresher,omitempty"`
@@ -607,16 +672,9 @@ type EnvResourceStatus struct {
 	ReadyTopics        int32 `json:"readyTopics"`
 }
 
-type ProtocolScheme string
-
-const ProtocolSchemeHTTP ProtocolScheme = "http"
-const ProtocolSchemeHTTPS ProtocolScheme = "https"
-
 // PrometheusStatus provides info on how to connect to Prometheus
 type PrometheusStatus struct {
-	Hostname string         `json:"hostname"`
-	Port     int32          `json:"port"`
-	Scheme   ProtocolScheme `json:"scheme"`
+	ServerAddress string `json:"serverAddress"`
 }
 
 // AppInfo details information about a specific app.
