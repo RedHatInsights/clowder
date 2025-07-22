@@ -1739,79 +1739,6 @@ objects:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
                                   type: boolean
-                                envVars:
-                                  description: Environment variables to be set in
-                                    the sidecar container (app-level overrides)
-                                  items:
-                                    description: EnvVar represents an environment
-                                      variable present in a Container.
-                                    properties:
-                                      name:
-                                        description: Name of the environment variable.
-                                          Must be a C_IDENTIFIER.
-                                        type: string
-                                      value:
-                                        description: 'Variable references $(VAR_NAME)
-                                          are expanded using the previous defined
-
-                                          environment variables in the container and
-                                          any service environment variables.
-
-                                          If a variable cannot be resolved, the reference
-                                          in the input string will be
-
-                                          unchanged. The $(VAR_NAME) syntax can be
-                                          escaped with a double $$, ie: $$(VAR_NAME).
-
-                                          Escaped references will never be expanded,
-                                          regardless of whether the variable
-
-                                          exists or not.'
-                                        type: string
-                                      valueFrom:
-                                        description: Source for the environment variable's
-                                          value. Cannot be used if value is not empty.
-                                        properties:
-                                          configMapKeyRef:
-                                            description: Selects a key of a ConfigMap.
-                                            properties:
-                                              key:
-                                                description: The key to select.
-                                                type: string
-                                              name:
-                                                description: Name of the referent.
-                                                type: string
-                                              optional:
-                                                description: Specify whether the ConfigMap
-                                                  or its key must be defined
-                                                type: boolean
-                                            required:
-                                            - key
-                                            type: object
-                                          secretKeyRef:
-                                            description: Selects a key of a secret
-                                              in the pod's namespace
-                                            properties:
-                                              key:
-                                                description: The key of the secret
-                                                  to select from.  Must be a valid
-                                                  secret key.
-                                                type: string
-                                              name:
-                                                description: Name of the referent.
-                                                type: string
-                                              optional:
-                                                description: Specify whether the Secret
-                                                  or its key must be defined
-                                                type: boolean
-                                            required:
-                                            - key
-                                            type: object
-                                        type: object
-                                    required:
-                                    - name
-                                    type: object
-                                  type: array
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -5906,79 +5833,6 @@ objects:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
                                   type: boolean
-                                envVars:
-                                  description: Environment variables to be set in
-                                    the sidecar container (app-level overrides)
-                                  items:
-                                    description: EnvVar represents an environment
-                                      variable present in a Container.
-                                    properties:
-                                      name:
-                                        description: Name of the environment variable.
-                                          Must be a C_IDENTIFIER.
-                                        type: string
-                                      value:
-                                        description: 'Variable references $(VAR_NAME)
-                                          are expanded using the previous defined
-
-                                          environment variables in the container and
-                                          any service environment variables.
-
-                                          If a variable cannot be resolved, the reference
-                                          in the input string will be
-
-                                          unchanged. The $(VAR_NAME) syntax can be
-                                          escaped with a double $$, ie: $$(VAR_NAME).
-
-                                          Escaped references will never be expanded,
-                                          regardless of whether the variable
-
-                                          exists or not.'
-                                        type: string
-                                      valueFrom:
-                                        description: Source for the environment variable's
-                                          value. Cannot be used if value is not empty.
-                                        properties:
-                                          configMapKeyRef:
-                                            description: Selects a key of a ConfigMap.
-                                            properties:
-                                              key:
-                                                description: The key to select.
-                                                type: string
-                                              name:
-                                                description: Name of the referent.
-                                                type: string
-                                              optional:
-                                                description: Specify whether the ConfigMap
-                                                  or its key must be defined
-                                                type: boolean
-                                            required:
-                                            - key
-                                            type: object
-                                          secretKeyRef:
-                                            description: Selects a key of a secret
-                                              in the pod's namespace
-                                            properties:
-                                              key:
-                                                description: The key of the secret
-                                                  to select from.  Must be a valid
-                                                  secret key.
-                                                type: string
-                                              name:
-                                                description: Name of the referent.
-                                                type: string
-                                              optional:
-                                                description: Specify whether the Secret
-                                                  or its key must be defined
-                                                type: boolean
-                                            required:
-                                            - key
-                                            type: object
-                                        type: object
-                                    required:
-                                    - name
-                                    type: object
-                                  type: array
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -8799,12 +8653,6 @@ objects:
                   items:
                     type: string
                   type: array
-                sharedInMemoryDbAppName:
-                  description: 'In (*_shared_*) mode, the application name that should
-                    create the in memory
-
-                    DB instance this application should use'
-                  type: string
                 testing:
                   description: Iqe plugin and other specifics
                   properties:
@@ -9116,9 +8964,17 @@ objects:
                             secret called ''elasticache'''
                           enum:
                           - redis
+                          - app-interface
                           - elasticache
                           - none
                           type: string
+                        pvc:
+                          description: 'If using the (*_local_*) mode and PVC is set
+                            to true, this instructs the local
+
+                            Database instance to use a PVC instead of emptyDir for
+                            its volumes.'
+                          type: boolean
                       required:
                       - mode
                       type: object
@@ -9180,7 +9036,7 @@ objects:
                               type: object
                             name:
                               description: 'Defines the kafka cluster name (default:
-                                <ClowdEnvironment Name>)'
+                                <ClowdEnvironment Name>-<UID>)'
                               type: string
                             namespace:
                               description: 'The namespace the kafka cluster is expected
@@ -9241,7 +9097,7 @@ objects:
                             mode.
                           properties:
                             image:
-                              description: Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
+                              description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
                               type: string
                             name:
                               description: 'Defines the kafka connect cluster name
@@ -9282,7 +9138,7 @@ objects:
                                   x-kubernetes-preserve-unknown-fields: true
                               type: object
                             version:
-                              description: Version. If unset, default is '3.6.0'
+                              description: Version. If unset, default is '2.5.0'
                               type: string
                           type: object
                         connectClusterName:
@@ -9422,9 +9278,9 @@ objects:
                         prometheus:
                           description: Prometheus specific configuration
                           properties:
-                            appInterfaceInternalURL:
-                              description: Specify prometheus internal URL when in
-                                app-interface mode
+                            appInterfaceHostname:
+                              description: Specify prometheus hostname when in app-interface
+                                mode
                               type: string
                             deploy:
                               description: Determines whether to deploy prometheus
@@ -9510,85 +9366,9 @@ objects:
                         otelCollector:
                           description: Sets up OpenTelemetry collector configuration
                           properties:
-                            configMap:
-                              description: Configurable shared ConfigMap name (optional)
-                              type: string
                             enabled:
                               description: Enable or disable otel collector sidecar
                               type: boolean
-                            envVars:
-                              description: Environment variables to be set in the
-                                otel collector container
-                              items:
-                                description: EnvVar represents an environment variable
-                                  present in a Container.
-                                properties:
-                                  name:
-                                    description: Name of the environment variable.
-                                      Must be a C_IDENTIFIER.
-                                    type: string
-                                  value:
-                                    description: 'Variable references $(VAR_NAME)
-                                      are expanded using the previous defined
-
-                                      environment variables in the container and any
-                                      service environment variables.
-
-                                      If a variable cannot be resolved, the reference
-                                      in the input string will be
-
-                                      unchanged. The $(VAR_NAME) syntax can be escaped
-                                      with a double $$, ie: $$(VAR_NAME).
-
-                                      Escaped references will never be expanded, regardless
-                                      of whether the variable
-
-                                      exists or not.'
-                                    type: string
-                                  valueFrom:
-                                    description: Source for the environment variable's
-                                      value. Cannot be used if value is not empty.
-                                    properties:
-                                      configMapKeyRef:
-                                        description: Selects a key of a ConfigMap.
-                                        properties:
-                                          key:
-                                            description: The key to select.
-                                            type: string
-                                          name:
-                                            description: Name of the referent.
-                                            type: string
-                                          optional:
-                                            description: Specify whether the ConfigMap
-                                              or its key must be defined
-                                            type: boolean
-                                        required:
-                                        - key
-                                        type: object
-                                      secretKeyRef:
-                                        description: Selects a key of a secret in
-                                          the pod's namespace
-                                        properties:
-                                          key:
-                                            description: The key of the secret to
-                                              select from.  Must be a valid secret
-                                              key.
-                                            type: string
-                                          name:
-                                            description: Name of the referent.
-                                            type: string
-                                          optional:
-                                            description: Specify whether the Secret
-                                              or its key must be defined
-                                            type: boolean
-                                        required:
-                                        - key
-                                        type: object
-                                    type: object
-                                required:
-                                - name
-                                type: object
-                              type: array
                             image:
                               description: Configurable image
                               type: string
@@ -9908,11 +9688,6 @@ objects:
                                 value from operator config is used if set, otherwise
                                 a hard-coded default is used.
                               type: string
-                            caddyProxy:
-                              description: Caddy Reverse Proxy image -- if not defined,
-                                value from operator config is used if set, otherwise
-                                a hard-coded default is used.
-                              type: string
                             keycloak:
                               description: Keycloak image -- default is 'quay.io/keycloak/keycloak:{KeycloakVersion}'
                                 unless overridden here
@@ -10205,10 +9980,10 @@ objects:
                   description: PrometheusStatus provides info on how to connect to
                     Prometheus
                   properties:
-                    serverAddress:
+                    hostname:
                       type: string
                   required:
-                  - serverAddress
+                  - hostname
                   type: object
                 ready:
                   type: boolean
