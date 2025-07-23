@@ -51,10 +51,3 @@ You can check that the pod is running with:
 ```
 kubectl get pods -n clowder-system
 ```
-
-## Running
-
-Minikube can now be run the same way as the rest of the documentation suggests. 
-Setting the config will also make the minikube experience less verbose.
-
-``minikube config set vm-driver podman``
