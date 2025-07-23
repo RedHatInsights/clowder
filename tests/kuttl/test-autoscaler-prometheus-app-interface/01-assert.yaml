@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-autoscaler-prom-app-interface
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-autoscaler-prom-app-interface
+spec:
+  replicas: 1
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: puptoo-processor
+  namespace: test-autoscaler-prom-app-interface
+spec:
+  maxReplicaCount: 3
+  minReplicaCount: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: puptoo-processor
+  triggers:
+    - metadata:
+        type: Utilization
+        value: '50'
+      type: cpu
+    - metadata:
+        query: sum(promhttp_metric_handler_requests_total{job="puptoo-processor",code="200"})
+        serverAddress: https://app-interface.unmodified.route.to.prometheus:1111
+        threshold: '4'
+      type: prometheus

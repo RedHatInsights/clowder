@@ -354,6 +354,23 @@ _Appears in:_
 
 
 
+#### ConfigMapKeySelector
+
+
+
+ConfigMapKeySelector selects a key from a ConfigMap.
+
+
+
+_Appears in:_
+- [EnvVarSource](#envvarsource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _string_ | The key to select. |  |  |
+| `optional` _boolean_ | Specify whether the ConfigMap or its key must be defined |  |  |
+
+
 #### CyndiSpec
 
 
@@ -537,6 +554,42 @@ _Appears in:_
 | `readyDeployments` _integer_ |  |  |  |
 | `managedTopics` _integer_ |  |  |  |
 | `readyTopics` _integer_ |  |  |  |
+
+
+#### EnvVar
+
+
+
+EnvVar represents an environment variable present in a Container.
+
+
+
+_Appears in:_
+- [OtelCollectorConfig](#otelcollectorconfig)
+- [Sidecar](#sidecar)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name of the environment variable. Must be a C_IDENTIFIER. |  |  |
+| `value` _string_ | Variable references $(VAR_NAME) are expanded using the previous defined<br />environment variables in the container and any service environment variables.<br />If a variable cannot be resolved, the reference in the input string will be<br />unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).<br />Escaped references will never be expanded, regardless of whether the variable<br />exists or not. |  |  |
+| `valueFrom` _[EnvVarSource](#envvarsource)_ | Source for the environment variable's value. Cannot be used if value is not empty. |  |  |
+
+
+#### EnvVarSource
+
+
+
+EnvVarSource represents a source for the value of an EnvVar.
+
+
+
+_Appears in:_
+- [EnvVar](#envvar)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `configMapKeyRef` _[ConfigMapKeySelector](#configmapkeyselector)_ | Selects a key of a ConfigMap. |  |  |
+| `secretKeyRef` _[SecretKeySelector](#secretkeyselector)_ | Selects a key of a secret in the pod's namespace |  |  |
 
 
 #### FeatureFlagsConfig
@@ -990,6 +1043,21 @@ _Appears in:_
 | `topicName` _string_ | The requested name for this topic. |  | MaxLength: 249 <br />MinLength: 1 <br />Pattern: `[a-zA-Z0-9\._\-]` <br /> |
 
 
+#### LocalObjectReference
+
+_Underlying type:_ _[struct{Name string "json:\"name,omitempty\""}](#struct{name-string-"json:\"name,omitempty\""})_
+
+LocalObjectReference contains enough information to let you locate the
+referenced object inside the same namespace.
+
+
+
+_Appears in:_
+- [ConfigMapKeySelector](#configmapkeyselector)
+- [SecretKeySelector](#secretkeyselector)
+
+
+
 #### LoggingConfig
 
 
@@ -1158,6 +1226,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enable or disable otel collector sidecar |  |  |
 | `image` _string_ | Configurable image |  |  |
+| `configMap` _string_ | Configurable shared ConfigMap name (optional) |  |  |
+| `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the otel collector container |  |  |
 
 
 #### PodSpec
@@ -1256,6 +1326,25 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `hostname` _string_ |  |  |  |
+| `port` _integer_ |  |  |  |
+| `scheme` _[ProtocolScheme](#protocolscheme)_ |  |  |  |
+
+
+#### ProtocolScheme
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [PrometheusStatus](#prometheusstatus)
+
+| Field | Description |
+| --- | --- |
+| `http` |  |
+| `https` |  |
 
 
 #### ProvidersConfig
@@ -1306,6 +1395,23 @@ _Appears in:_
 | `apiPaths` _[APIPath](#apipath) array_ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from. |  | Pattern: `^\/api\/[a-zA-Z0-9-]+\/$` <br /> |
 | `whitelistPaths` _string array_ | WhitelistPaths define the paths that do not require authentication |  |  |
 | `sessionAffinity` _boolean_ | Set SessionAffinity to true to enable sticky sessions |  |  |
+
+
+#### SecretKeySelector
+
+
+
+SecretKeySelector selects a key from a Secret.
+
+
+
+_Appears in:_
+- [EnvVarSource](#envvarsource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _string_ | The key of the secret to select from.  Must be a valid secret key. |  |  |
+| `optional` _boolean_ | Specify whether the Secret or its key must be defined |  |  |
 
 
 #### ServiceConfig
@@ -1370,6 +1476,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _string_ | The name of the sidecar, only supported names allowed, (otel-collector, token-refresher) |  |  |
 | `enabled` _boolean_ | Defines if the sidecar is enabled, defaults to False |  |  |
+| `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the sidecar container (app-level overrides) |  |  |
 
 
 #### Sidecars
