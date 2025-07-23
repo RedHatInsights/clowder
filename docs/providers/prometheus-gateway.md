@@ -13,7 +13,7 @@ Prometheus Pushgateway acts as an intermediary service where applications can pu
 
 ## Configuration
 
-To enable Prometheus Gateway in your ClowdEnvironment, you need to set the `prometheusGateway.deploy` field to `true` in the metrics provider configuration:
+Note that Clowder only supports creating a Prometheus Gateway when the metrics provider is in 'operator' mode. To enable Prometheus Gateway in your ClowdEnvironment, you need to set the `prometheusGateway.deploy` field to `true` in the metrics provider configuration:
 
 ```yaml
 apiVersion: cloud.redhat.com/v1alpha1
