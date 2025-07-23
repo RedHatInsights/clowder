@@ -120,4 +120,61 @@ spec:
         - name: test-app-env-secret-otel-config
           configMap:
             name: test-app-env-secret-otel-config
-            optional: true 
+            optional: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-env-fieldref-api
+  namespace: test-sidecars-env-vars
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: otel-collector
+          image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "https://otel-collector.test.example.com:4317"
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: otel-auth
+                  key: headers
+            - name: OTEL_SERVICE_NAME
+              value: "test-app-env-fieldref"  # Overridden by app
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "environment=test,region=us-east-1"
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: K8S_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: test-app-env-fieldref-otel-config
+              mountPath: /etc/otelcol/
+          restartPolicy: Always
+      volumes:
+        - name: config-secret
+          secret:
+            defaultMode: 420
+            secretName: test-app-env-fieldref
+        - name: test-app-env-fieldref-otel-config
+          configMap:
+            name: test-app-env-fieldref-otel-config
+            optional: true

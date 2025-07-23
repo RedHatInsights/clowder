@@ -88,6 +88,44 @@ data:
           processors: [batch]
           exporters: [logging]
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-env-fieldref-otel-config
+  namespace: test-sidecars-env-vars
+data:
+  otel-collector.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      batch:
+      resource/add_pod_metadata:
+        attributes:
+        - action: insert
+          key: k8s.pod.name
+          value: ${K8S_POD_NAME}
+        - action: insert
+          key: k8s.pod.ip
+          value: ${K8S_POD_IP}
+        - action: insert
+          key: k8s.namespace.name
+          value: ${K8S_NAMESPACE}
+        - action: insert
+          key: k8s.node.name
+          value: ${K8S_NODE_NAME}
+    exporters:
+      logging:
+        loglevel: debug
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch, resource/add_pod_metadata]
+          exporters: [logging]
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
