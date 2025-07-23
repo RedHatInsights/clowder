@@ -8653,6 +8653,12 @@ objects:
                   items:
                     type: string
                   type: array
+                sharedInMemoryDbAppName:
+                  description: 'In (*_shared_*) mode, the application name that should
+                    create the in memory
+
+                    DB instance this application should use'
+                  type: string
                 testing:
                   description: Iqe plugin and other specifics
                   properties:
@@ -8964,17 +8970,9 @@ objects:
                             secret called ''elasticache'''
                           enum:
                           - redis
-                          - app-interface
                           - elasticache
                           - none
                           type: string
-                        pvc:
-                          description: 'If using the (*_local_*) mode and PVC is set
-                            to true, this instructs the local
-
-                            Database instance to use a PVC instead of emptyDir for
-                            its volumes.'
-                          type: boolean
                       required:
                       - mode
                       type: object
@@ -9036,7 +9034,7 @@ objects:
                               type: object
                             name:
                               description: 'Defines the kafka cluster name (default:
-                                <ClowdEnvironment Name>-<UID>)'
+                                <ClowdEnvironment Name>)'
                               type: string
                             namespace:
                               description: 'The namespace the kafka cluster is expected
@@ -9097,7 +9095,7 @@ objects:
                             mode.
                           properties:
                             image:
-                              description: Image. If unset, default is 'quay.io/cloudservices/xjoin-kafka-connect-strimzi:latest'
+                              description: Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
                               type: string
                             name:
                               description: 'Defines the kafka connect cluster name
@@ -9138,7 +9136,7 @@ objects:
                                   x-kubernetes-preserve-unknown-fields: true
                               type: object
                             version:
-                              description: Version. If unset, default is '2.5.0'
+                              description: Version. If unset, default is '3.6.0'
                               type: string
                           type: object
                         connectClusterName:
@@ -9685,6 +9683,11 @@ objects:
                               type: string
                             caddyGateway:
                               description: Caddy Gateway image -- if not defined,
+                                value from operator config is used if set, otherwise
+                                a hard-coded default is used.
+                              type: string
+                            caddyProxy:
+                              description: Caddy Reverse Proxy image -- if not defined,
                                 value from operator config is used if set, otherwise
                                 a hard-coded default is used.
                               type: string
