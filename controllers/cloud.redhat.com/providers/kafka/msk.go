@@ -242,6 +242,14 @@ func (s *mskProvider) configureListeners() error {
 		return err
 	}
 
+	if _, err := s.HashCache.CreateOrUpdateObject(secret, true); err != nil {
+		return err
+	}
+
+	if err := s.HashCache.AddClowdObjectToObject(s.Env, secret); err != nil {
+		return err
+	}
+
 	brokers, err = getBrokerConfig(secret)
 	if err != nil {
 		return err

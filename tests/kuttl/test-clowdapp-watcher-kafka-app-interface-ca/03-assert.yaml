@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-app-interface-ca
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+data:
+  cdappconfig.json: eyJlbmRwb2ludHMiOlt7ImFwaVBhdGgiOiIvYXBpL3B1cHRvby1wcm9jZXNzb3IvIiwiYXBpUGF0aHMiOlsiL2FwaS9wdXB0b28tcHJvY2Vzc29yLyJdLCJhcHAiOiJwdXB0b28iLCJob3N0bmFtZSI6InB1cHRvby1wcm9jZXNzb3IudGVzdC1jbG93ZGFwcC13YXRjaGVyLWthZmthLWFwcC1pbnRlcmZhY2UtY2Euc3ZjIiwibmFtZSI6InByb2Nlc3NvciIsInBvcnQiOjgwMDAsInRsc1BvcnQiOjB9XSwiaGFzaENhY2hlIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NTIzNzMxNTZkYzU2OWUxMDVkNmZkY2MzZDZkMThjZTI1NzU5ODI1ZGM3M2E5ZWVmZTU1NGIyYmI4OTkyNTNlYmEiLCJrYWZrYSI6eyJicm9rZXJzIjpbeyJjYWNlcnQiOiJuZXctY2FjZXJ0IiwiaG9zdG5hbWUiOiJ0ZXN0LWNsb3dkYXBwLXdhdGNoZXIta2Fma2EtYXBwLWludGVyZmFjZS1jYS1rYWZrYS1ib290c3RyYXAudGVzdC1jbG93ZGFwcC13YXRjaGVyLWthZmthLWFwcC1pbnRlcmZhY2UtY2Euc3ZjIiwicG9ydCI6OTA5Mywic2VjdXJpdHlQcm90b2NvbCI6IlNTTCJ9XSwidG9waWNzIjpbeyJuYW1lIjoiYm9iIiwicmVxdWVzdGVkTmFtZSI6ImJvYiJ9XX0sImxvZ2dpbmciOnsiY2xvdWR3YXRjaCI6eyJhY2Nlc3NLZXlJZCI6IiIsImxvZ0dyb3VwIjoiIiwicmVnaW9uIjoiIiwic2VjcmV0QWNjZXNzS2V5IjoiIn0sInR5cGUiOiJudWxsIn0sIm1ldGFkYXRhIjp7ImRlcGxveW1lbnRzIjpbeyJpbWFnZSI6InF1YXkuaW8vcHNhdi9jbG93ZGVyLWhlbGxvIiwibmFtZSI6InByb2Nlc3NvciJ9XSwiZW52TmFtZSI6InRlc3QtY2xvd2RhcHAtd2F0Y2hlci1rYWZrYS1hcHAtaW50ZXJmYWNlLWNhIiwibmFtZSI6InB1cHRvbyJ9LCJtZXRyaWNzUGF0aCI6Ii9tZXRyaWNzIiwibWV0cmljc1BvcnQiOjkwMDAsInByaXZhdGVFbmRwb2ludHMiOlt7ImFwcCI6InB1cHRvbyIsImhvc3RuYW1lIjoicHVwdG9vLXByb2Nlc3Nvci50ZXN0LWNsb3dkYXBwLXdhdGNoZXIta2Fma2EtYXBwLWludGVyZmFjZS1jYS5zdmMiLCJuYW1lIjoicHJvY2Vzc29yIiwicG9ydCI6MTAwMDAsInRsc1BvcnQiOjB9XSwicHJpdmF0ZVBvcnQiOjEwMDAwLCJwdWJsaWNQb3J0Ijo4MDAwLCJ3ZWJQb3J0Ijo4MDAwfQ==
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-kafka-app-interface-ca
+spec:
+  strategy:
+    type: RollingUpdate
+  template:
+    spec:
+      serviceAccountName: puptoo-processor
+      containers:
+      - env:
+        - name: ENV_VAR_1
+          value: "env_var_1"
+        - name: ENV_VAR_2
+          value: "env_var_2"
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+      initContainers:
+      - env:
+        - name: ACG_CONFIG
+          value: /cdapp/cdappconfig.json
+        - name: ENV_VAR_1
+          value: "override_1"
+        - name: ENV_VAR_3
+          value: "env_var_3"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: puptoo-processor
+  namespace: test-clowdapp-watcher-kafka-app-interface-ca
+spec:
+  selector:
+    pod: puptoo-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    appProtocol: http
+  - port: 10000
+    targetPort: 10000
+    name: private
+    appProtocol: http
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    appProtocol: http
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdapp-watcher-kafka-app-interface-ca
+status:
+  apps:
+    - name: puptoo
+      deployments:
+      - hostname: puptoo-processor.test-clowdapp-watcher-kafka-app-interface-ca.svc
+        name: puptoo-processor
+        port: 8000
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-kafka-app-interface-ca
+  labels:
+    kubernetes.io/metadata.name: test-clowdapp-watcher-kafka-app-interface-ca
