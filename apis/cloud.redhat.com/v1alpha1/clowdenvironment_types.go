@@ -136,6 +136,14 @@ type PrometheusConfig struct {
 	AppInterfaceInternalURL string `json:"appInterfaceInternalURL,omitempty"`
 }
 
+type PrometheusGatewayConfig struct {
+	// Determines whether to deploy prometheus-gateway in operator mode
+	Deploy bool `json:"deploy,omitempty"`
+
+	// Image to use for prometheus-gateway deployment
+	Image string `json:"image,omitempty"`
+}
+
 // MetricsConfig configures the Clowder provider controlling the creation of
 // metrics services and their probes.
 type MetricsConfig struct {
@@ -154,6 +162,9 @@ type MetricsConfig struct {
 
 	// Prometheus specific configuration
 	Prometheus PrometheusConfig `json:"prometheus,omitempty"`
+
+	// Prometheus Gateway specific configuration
+	PrometheusGateway PrometheusGatewayConfig `json:"prometheusGateway,omitempty"`
 }
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider

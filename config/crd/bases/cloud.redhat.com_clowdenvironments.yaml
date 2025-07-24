@@ -463,6 +463,17 @@ spec:
                               operator mode
                             type: boolean
                         type: object
+                      prometheusGateway:
+                        description: Prometheus Gateway specific configuration
+                        properties:
+                          deploy:
+                            description: Determines whether to deploy prometheus-gateway
+                              in operator mode
+                            type: boolean
+                          image:
+                            description: Image to use for prometheus-gateway deployment
+                            type: string
+                        type: object
                     required:
                     - mode
                     - port

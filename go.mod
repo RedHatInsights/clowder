@@ -47,7 +47,7 @@ require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.4 // indirect
@@ -99,7 +99,7 @@ require (
 	github.com/libdns/libdns v1.1.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mholt/acmez/v3 v3.1.2 // indirect
@@ -123,6 +123,7 @@ require (
 	github.com/redhatinsights/crcauthlib v0.4.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0-beta.2 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -135,8 +136,8 @@ require (
 	github.com/smallstep/scep v0.0.0-20250318231241-a25cabb69492 // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
-	github.com/spf13/cobra v1.8.1 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/cobra v1.9.1 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/tailscale/tscert v0.0.0-20240608151842-d3f834017e53 // indirect
 	github.com/urfave/cli v1.22.14 // indirect

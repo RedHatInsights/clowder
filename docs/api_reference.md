@@ -1108,6 +1108,7 @@ _Appears in:_
 | `path` _string_ | A prefix path that pods will be instructed to use when setting up their<br />metrics server. |  |  |
 | `mode` _[MetricsMode](#metricsmode)_ | The mode of operation of the Metrics provider. The allowed modes are<br /> (*_none_*), which disables metrics service generation, or<br />(*_operator_*) where services and probes are generated.<br />(*_app-interface_*) where services and probes are generated for app-interface. |  | Enum: [none operator app-interface] <br /> |
 | `prometheus` _[PrometheusConfig](#prometheusconfig)_ | Prometheus specific configuration |  |  |
+| `prometheusGateway` _[PrometheusGatewayConfig](#prometheusgatewayconfig)_ | Prometheus Gateway specific configuration |  |  |
 
 
 #### MetricsMode
@@ -1311,6 +1312,22 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `deploy` _boolean_ | Determines whether to deploy prometheus in operator mode |  |  |
 | `appInterfaceInternalURL` _string_ | Specify prometheus internal URL when in app-interface mode |  |  |
+
+#### PrometheusGatewayConfig
+
+
+
+
+
+
+
+_Appears in:_
+- [MetricsConfig](#metricsconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `deploy` _boolean_ | Determines whether to deploy prometheus-gateway in operator mode |  |  |
+| `image` _string_ | Image to use for prometheus-gateway deployment |  |  |
 
 
 #### PrometheusStatus

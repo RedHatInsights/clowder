@@ -24,6 +24,10 @@ func (m *appinterfaceMetricsProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
+	// Note: Prometheus Gateway is not supported in app-interface mode
+	// as it requires operator-managed resources. The configuration
+	// is intentionally not populated here.
+
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
 		if err := createServiceMonitorObjects(m.Cache, m.Env, app, "app-sre", "openshift-customer-monitoring"); err != nil {
 			return err

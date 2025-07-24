@@ -93,6 +93,9 @@
 - [16. Property `root > BOPURL`](#BOPURL)
 - [17. Property `root > hashCache`](#hashCache)
 - [18. Property `root > hostname`](#hostname)
+- [19. Property `root > prometheusGateway`](#prometheusGateway)
+  - [19.1. Property `root > prometheusGateway > hostname`](#prometheusGateway_hostname)
+  - [19.2. Property `root > prometheusGateway > port`](#prometheusGateway_port)
 
 **Title:** AppConfig
 
@@ -105,26 +108,27 @@
 
 **Description:** ClowdApp deployment configuration for Clowder enabled apps.
 
-| Property                                 | Pattern | Type    | Deprecated | Definition                          | Title/Description                                                                                         |
-| ---------------------------------------- | ------- | ------- | ---------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| - [privatePort](#privatePort )           | No      | integer | No         | -                                   | Defines the private port that the app should be configured to listen on for API traffic.                  |
-| - [publicPort](#publicPort )             | No      | integer | No         | -                                   | Defines the public port that the app should be configured to listen on for API traffic.                   |
-| - [webPort](#webPort )                   | No      | integer | No         | -                                   | Deprecated: Use 'publicPort' instead.                                                                     |
-| - [tlsCAPath](#tlsCAPath )               | No      | string  | No         | -                                   | Defines the port CA path                                                                                  |
-| + [metricsPort](#metricsPort )           | No      | integer | No         | -                                   | Defines the metrics port that the app should be configured to listen on for metric traffic.               |
-| + [metricsPath](#metricsPath )           | No      | string  | No         | -                                   | Defines the path to the metrics server that the app should be configured to listen on for metric traffic. |
-| + [logging](#logging )                   | No      | object  | No         | In #/definitions/LoggingConfig      | Logging Configuration                                                                                     |
-| - [metadata](#metadata )                 | No      | object  | No         | In #/definitions/AppMetadata        | Arbitrary metadata pertaining to the application application                                              |
-| - [kafka](#kafka )                       | No      | object  | No         | In #/definitions/KafkaConfig        | Kafka Configuration                                                                                       |
-| - [database](#database )                 | No      | object  | No         | In #/definitions/DatabaseConfig     | Database Configuration                                                                                    |
-| - [objectStore](#objectStore )           | No      | object  | No         | In #/definitions/ObjectStoreConfig  | Object Storage Configuration                                                                              |
-| - [inMemoryDb](#inMemoryDb )             | No      | object  | No         | In #/definitions/InMemoryDBConfig   | In Memory DB Configuration                                                                                |
-| - [featureFlags](#featureFlags )         | No      | object  | No         | In #/definitions/FeatureFlagsConfig | Feature Flags Configuration                                                                               |
-| - [endpoints](#endpoints )               | No      | array   | No         | -                                   | -                                                                                                         |
-| - [privateEndpoints](#privateEndpoints ) | No      | array   | No         | -                                   | -                                                                                                         |
-| - [BOPURL](#BOPURL )                     | No      | string  | No         | -                                   | Defines the path to the BOPURL.                                                                           |
-| - [hashCache](#hashCache )               | No      | string  | No         | -                                   | A set of configMap/secret hashes                                                                          |
-| - [hostname](#hostname )                 | No      | string  | No         | -                                   | The external hostname of the deployment, where applicable                                                 |
+| Property                                   | Pattern | Type    | Deprecated | Definition                               | Title/Description                                                                                         |
+| ------------------------------------------ | ------- | ------- | ---------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| - [privatePort](#privatePort )             | No      | integer | No         | -                                        | Defines the private port that the app should be configured to listen on for API traffic.                  |
+| - [publicPort](#publicPort )               | No      | integer | No         | -                                        | Defines the public port that the app should be configured to listen on for API traffic.                   |
+| - [webPort](#webPort )                     | No      | integer | No         | -                                        | Deprecated: Use 'publicPort' instead.                                                                     |
+| - [tlsCAPath](#tlsCAPath )                 | No      | string  | No         | -                                        | Defines the port CA path                                                                                  |
+| + [metricsPort](#metricsPort )             | No      | integer | No         | -                                        | Defines the metrics port that the app should be configured to listen on for metric traffic.               |
+| + [metricsPath](#metricsPath )             | No      | string  | No         | -                                        | Defines the path to the metrics server that the app should be configured to listen on for metric traffic. |
+| + [logging](#logging )                     | No      | object  | No         | In #/definitions/LoggingConfig           | Logging Configuration                                                                                     |
+| - [metadata](#metadata )                   | No      | object  | No         | In #/definitions/AppMetadata             | Arbitrary metadata pertaining to the application application                                              |
+| - [kafka](#kafka )                         | No      | object  | No         | In #/definitions/KafkaConfig             | Kafka Configuration                                                                                       |
+| - [database](#database )                   | No      | object  | No         | In #/definitions/DatabaseConfig          | Database Configuration                                                                                    |
+| - [objectStore](#objectStore )             | No      | object  | No         | In #/definitions/ObjectStoreConfig       | Object Storage Configuration                                                                              |
+| - [inMemoryDb](#inMemoryDb )               | No      | object  | No         | In #/definitions/InMemoryDBConfig        | In Memory DB Configuration                                                                                |
+| - [featureFlags](#featureFlags )           | No      | object  | No         | In #/definitions/FeatureFlagsConfig      | Feature Flags Configuration                                                                               |
+| - [endpoints](#endpoints )                 | No      | array   | No         | -                                        | -                                                                                                         |
+| - [privateEndpoints](#privateEndpoints )   | No      | array   | No         | -                                        | -                                                                                                         |
+| - [BOPURL](#BOPURL )                       | No      | string  | No         | -                                        | Defines the path to the BOPURL.                                                                           |
+| - [hashCache](#hashCache )                 | No      | string  | No         | -                                        | A set of configMap/secret hashes                                                                          |
+| - [hostname](#hostname )                   | No      | string  | No         | -                                        | The external hostname of the deployment, where applicable                                                 |
+| - [prometheusGateway](#prometheusGateway ) | No      | object  | No         | In #/definitions/PrometheusGatewayConfig | Prometheus Gateway Configuration                                                                          |
 
 ## <a name="privatePort"></a>1. Property `root > privatePort`
 
@@ -1186,5 +1190,39 @@ Must be one of:
 | **Required** | No       |
 
 **Description:** The external hostname of the deployment, where applicable
+
+## <a name="prometheusGateway"></a>19. Property `root > prometheusGateway`
+
+|                           |                                                                           |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Type**                  | `object`                                                                  |
+| **Required**              | No                                                                        |
+| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+| **Defined in**            | #/definitions/PrometheusGatewayConfig                                     |
+
+**Description:** Prometheus Gateway Configuration
+
+| Property                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                     |
+| ------------------------------------------ | ------- | ------- | ---------- | ---------- | --------------------------------------------------------------------- |
+| + [hostname](#prometheusGateway_hostname ) | No      | string  | No         | -          | Defines the hostname for the Prometheus Gateway server configuration. |
+| + [port](#prometheusGateway_port )         | No      | integer | No         | -          | Defines the port for the Prometheus Gateway server configuration.     |
+
+### <a name="prometheusGateway_hostname"></a>19.1. Property `root > prometheusGateway > hostname`
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | Yes      |
+
+**Description:** Defines the hostname for the Prometheus Gateway server configuration.
+
+### <a name="prometheusGateway_port"></a>19.2. Property `root > prometheusGateway > port`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | Yes       |
+
+**Description:** Defines the port for the Prometheus Gateway server configuration.
 
 ----------------------------------------------------------------------------------------------------------------------------
