@@ -1447,6 +1447,7 @@ _Appears in:_
 | `deploy` _boolean_ | Determines whether to deploy prometheus-gateway in operator mode |  |  |
 | `image` _string_ | Image to use for prometheus-gateway deployment |  |  |
 
+
 #### PrometheusStatus
 
 
