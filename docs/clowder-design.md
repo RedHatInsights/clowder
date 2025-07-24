@@ -95,3 +95,26 @@ Common configuration interface:
 The design proposed in this document is intentionally opinionated and makes
 choices on behalf of apps because more often than not dev teams do not have
 strong preferences on many operational aspects of their application.
+
+## Validation
+
+Clowder includes validating webhooks to ensure ClowdApp resources are properly configured before they are applied to the cluster. The following validations are performed:
+
+### Duplicate Name Validation
+ClowdApp names must be unique within each ClowdEnvironment. When creating a new ClowdApp, the validating webhook will check if another ClowdApp with the same name already exists in the same ClowdEnvironment and reject the request if a duplicate is found. This ensures uniqueness of ClowdApp names within each environment while allowing the same name to be used across different ClowdEnvironments.
+
+### Database Configuration Validation
+- Cannot set both `database.name` and `database.sharedDbAppName` simultaneously
+- Cannot use Cyndi with a shared database
+
+### Sidecar Validation
+- Sidecar names must be one of the supported types: `token-refresher` or `otel-collector`
+- This validation applies to both deployment and job sidecars
+
+### Init Container Validation
+- When multiple init containers are defined, each must have a unique name
+
+### Deployment Strategy Validation
+- Private strategy cannot be set to `Recreate` for deployments with public web services enabled
+
+These validations help ensure proper configuration and prevent common misconfigurations that could cause deployment issues.
