@@ -11,6 +11,8 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 ### Resource Types
 - [ClowdApp](#clowdapp)
 - [ClowdAppList](#clowdapplist)
+- [ClowdAppRef](#clowdappref)
+- [ClowdAppRefList](#clowdappreflist)
 - [ClowdEnvironment](#clowdenvironment)
 - [ClowdEnvironmentList](#clowdenvironmentlist)
 - [ClowdJobInvocation](#clowdjobinvocation)
@@ -188,6 +190,156 @@ ClowdAppList contains a list of ClowdApp
 | `kind` _string_ | `ClowdAppList` | | |
 | `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[ClowdApp](#clowdapp) array_ | A list of ClowdApp Resources. |  |  |
+
+
+#### ClowdAppRef
+
+
+
+ClowdAppRef is the Schema for the clowdapprefs API
+
+
+
+_Appears in:_
+- [ClowdAppRefList](#clowdappreflist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `cloud.redhat.com/v1alpha1` | | |
+| `kind` _string_ | `ClowdAppRef` | | |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[ClowdAppRefSpec](#clowdapprefspec)_ |  |  |  |
+
+
+#### ClowdAppRefDeployment
+
+
+
+ClowdAppRefDeployment represents a deployment within a ClowdAppRef
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name of the deployment |  |  |
+| `hostname` _string_ | Hostname where the deployment is accessible |  |  |
+| `port` _integer_ | Port where the deployment is accessible (default: 8000) |  |  |
+| `tlsPort` _integer_ | TLSPort where the deployment is accessible via TLS (default: 8443) |  |  |
+| `privatePort` _integer_ | PrivatePort for internal service communication (default: 10000) |  |  |
+| `tlsPrivatePort` _integer_ | TLSPrivatePort for internal service communication via TLS (default: 10443) |  |  |
+| `web` _boolean_ | Web indicates if this deployment has a public web service |  |  |
+| `webServices` _[ClowdAppRefWebServices](#clowdapprefwebservices)_ | WebServices defines the web services configuration for this deployment |  |  |
+| `apiPaths` _string array_ | APIPaths defines the API paths available on this deployment |  |  |
+| `apiPath` _string_ | Deprecated: Use APIPaths instead |  |  |
+
+
+#### ClowdAppRefList
+
+
+
+ClowdAppRefList contains a list of ClowdAppRef
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `cloud.redhat.com/v1alpha1` | | |
+| `kind` _string_ | `ClowdAppRefList` | | |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[ClowdAppRef](#clowdappref) array_ |  |  |  |
+
+
+#### ClowdAppRefPrivateWebService
+
+
+
+ClowdAppRefPrivateWebService defines the private web service configuration for a ClowdAppRef deployment
+
+
+
+_Appears in:_
+- [ClowdAppRefWebServices](#clowdapprefwebservices)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `enabled` _boolean_ | Enabled indicates if the private web service is enabled |  |  |
+
+
+#### ClowdAppRefPublicWebService
+
+
+
+ClowdAppRefPublicWebService defines the public web service configuration for a ClowdAppRef deployment
+
+
+
+_Appears in:_
+- [ClowdAppRefWebServices](#clowdapprefwebservices)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `enabled` _boolean_ | Enabled indicates if the public web service is enabled |  |  |
+
+
+#### ClowdAppRefRemoteCluster
+
+
+
+ClowdAppRefRemoteCluster defines information about the remote cluster
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name defines the name of the remote cluster |  |  |
+| `region` _string_ | Region defines the region of the remote cluster |  |  |
+| `environment` _string_ | Environment defines the environment of the remote cluster (e.g., prod, stage) |  |  |
+
+
+#### ClowdAppRefSpec
+
+
+
+ClowdAppRefSpec defines the desired state of ClowdAppRef
+
+
+
+_Appears in:_
+- [ClowdAppRef](#clowdappref)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `envName` _string_ | The name of the ClowdEnvironment resource that this ClowdAppRef will be used in |  |  |
+| `deployments` _[ClowdAppRefDeployment](#clowdapprefdeployment) array_ | A list of deployments that represent services on a different cluster |  |  |
+| `remoteCluster` _[ClowdAppRefRemoteCluster](#clowdapprefremotecluster)_ | RemoteCluster defines information about the remote cluster where the services are located |  |  |
+| `disabled` _boolean_ | Disabled turns off this ClowdAppRef |  |  |
+
+
+
+
+#### ClowdAppRefWebServices
+
+
+
+ClowdAppRefWebServices defines the web services configuration for a ClowdAppRef deployment
+
+
+
+_Appears in:_
+- [ClowdAppRefDeployment](#clowdapprefdeployment)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `public` _[ClowdAppRefPublicWebService](#clowdapprefpublicwebservice)_ | Public defines the public web service configuration |  |  |
+| `private` _[ClowdAppRefPrivateWebService](#clowdapprefprivatewebservice)_ | Private defines the private web service configuration |  |  |
 
 
 #### ClowdAppSpec
@@ -1312,6 +1464,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `deploy` _boolean_ | Determines whether to deploy prometheus in operator mode |  |  |
 | `appInterfaceInternalURL` _string_ | Specify prometheus internal URL when in app-interface mode |  |  |
+
 
 #### PrometheusGatewayConfig
 
