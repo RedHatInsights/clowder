@@ -168,7 +168,7 @@ func processAppAndAppRefEndpoints(
 						Port:     int(webPort),
 						Name:     innerDeployment.Name,
 						App:      depApp.Name,
-						TLSPort:  utils.IntPtr(int(tlsPort)),
+						TlsPort:  utils.IntPtr(int(tlsPort)),
 						// if app has multiple paths set, set apiPath to first name for backward compatibility
 						ApiPath:  apiPaths[0],
 						ApiPaths: apiPaths,
@@ -181,7 +181,7 @@ func processAppAndAppRefEndpoints(
 						Port:     int(privatePort),
 						Name:     innerDeployment.Name,
 						App:      depApp.Name,
-						TLSPort:  utils.IntPtr(int(tlsPrivatePort)),
+						TlsPort:  utils.IntPtr(int(tlsPrivatePort)),
 					})
 				}
 			}
@@ -225,7 +225,7 @@ func processAppAndAppRefEndpoints(
 						Port:     int(deploymentPort),
 						Name:     innerDeployment.Name,
 						App:      depAppRef.Name,
-						TLSPort:  utils.IntPtr(int(deploymentTLSPort)),
+						TlsPort:  utils.IntPtr(int(deploymentTLSPort)),
 						// if app has multiple paths set, set apiPath to first name for backward compatibility
 						ApiPath:  apiPaths[0],
 						ApiPaths: apiPaths,
@@ -237,7 +237,7 @@ func processAppAndAppRefEndpoints(
 						Port:     int(deploymentPrivatePort),
 						Name:     innerDeployment.Name,
 						App:      depAppRef.Name,
-						TLSPort:  utils.IntPtr(int(deploymentTLSPrivatePort)),
+						TlsPort:  utils.IntPtr(int(deploymentTLSPrivatePort)),
 					})
 				}
 			}
