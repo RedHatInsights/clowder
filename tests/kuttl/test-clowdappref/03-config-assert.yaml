@@ -5,119 +5,125 @@ commands:
 - script: |
     #!/bin/bash
     set -e
-    
+
     echo "🔍 Testing consumer-app cdappconfig.json structure and content..."
-    
+
     # Get the consumer-app config
     kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/consumer-app-config.json
-    
+
     echo "📋 Consumer app config:"
     cat /tmp/consumer-app-config.json | jq .
-    
+
     # Verify JSON is valid
     jq empty /tmp/consumer-app-config.json || (echo "❌ Invalid JSON structure" && exit 1)
     echo "✅ Valid JSON structure"
-    
+
     # Check basic structure exists
     jq -e '.endpoints' /tmp/consumer-app-config.json > /dev/null || (echo "❌ Missing endpoints section" && exit 1)
     echo "✅ Endpoints section exists"
-    
+
     # Check that remote-service endpoints are present with correct structure
     AUTH_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "auth-service")' /tmp/consumer-app-config.json)
     PAYMENT_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "payment-service")' /tmp/consumer-app-config.json)
-    
+
     if [ -z "$AUTH_ENDPOINT" ] || [ "$AUTH_ENDPOINT" = "null" ]; then
         echo "❌ auth-service endpoint not found"
         exit 1
     fi
     echo "✅ auth-service endpoint found"
-    
+
     if [ -z "$PAYMENT_ENDPOINT" ] || [ "$PAYMENT_ENDPOINT" = "null" ]; then
         echo "❌ payment-service endpoint not found"
         exit 1
     fi
     echo "✅ payment-service endpoint found"
-    
+
     # Verify auth-service configuration
     AUTH_HOSTNAME=$(echo "$AUTH_ENDPOINT" | jq -r '.hostname')
     AUTH_PORT=$(echo "$AUTH_ENDPOINT" | jq -r '.port')
     AUTH_TLS_PORT=$(echo "$AUTH_ENDPOINT" | jq -r '.tlsPort')
-    
+
     if [ "$AUTH_HOSTNAME" != "auth.remote-cluster.example.com" ]; then
         echo "❌ auth-service hostname incorrect: expected 'auth.remote-cluster.example.com', got '$AUTH_HOSTNAME'"
         exit 1
     fi
     echo "✅ auth-service hostname correct: $AUTH_HOSTNAME"
-    
+
     if [ "$AUTH_PORT" != "8080" ]; then
         echo "❌ auth-service port incorrect: expected '8080', got '$AUTH_PORT'"
         exit 1
     fi
     echo "✅ auth-service port correct: $AUTH_PORT"
-    
+
     if [ "$AUTH_TLS_PORT" != "8443" ]; then
         echo "❌ auth-service tlsPort incorrect: expected '8443', got '$AUTH_TLS_PORT'"
         exit 1
     fi
     echo "✅ auth-service tlsPort correct: $AUTH_TLS_PORT"
-    
-    # Verify auth-service API paths (should have multiple paths)
+
+    # Verify auth-service API paths (should have single path)
     AUTH_API_PATHS=$(echo "$AUTH_ENDPOINT" | jq -r '.apiPaths[]?' 2>/dev/null | wc -l)
-    if [ "$AUTH_API_PATHS" -lt 2 ]; then
-        echo "❌ auth-service should have multiple API paths, found: $AUTH_API_PATHS"
+    if [ "$AUTH_API_PATHS" -ne 1 ]; then
+        echo "❌ auth-service should have exactly 1 API path, found: $AUTH_API_PATHS"
         echo "API paths found:"
         echo "$AUTH_ENDPOINT" | jq -r '.apiPaths[]?' 2>/dev/null || echo "No API paths found"
         exit 1
     fi
-    echo "✅ auth-service has multiple API paths ($AUTH_API_PATHS paths)"
-    
-    # Check specific API paths for auth-service
-    echo "$AUTH_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/auth/v1/")' > /dev/null || (echo "❌ Missing /api/auth/v1/ path" && exit 1)
-    echo "$AUTH_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/auth/v2/")' > /dev/null || (echo "❌ Missing /api/auth/v2/ path" && exit 1)
-    echo "✅ auth-service API paths are correct"
-    
+    echo "✅ auth-service has single API path ($AUTH_API_PATHS path)"
+
+    # Check specific API path for auth-service
+    echo "$AUTH_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/auth-service")' > /dev/null || (echo "❌ Missing /api/auth-service path" && exit 1)
+    echo "✅ auth-service API path is correct"
+
     # Verify payment-service configuration
     PAYMENT_HOSTNAME=$(echo "$PAYMENT_ENDPOINT" | jq -r '.hostname')
     PAYMENT_PORT=$(echo "$PAYMENT_ENDPOINT" | jq -r '.port')
-    
+
     if [ "$PAYMENT_HOSTNAME" != "payment.remote-cluster.example.com" ]; then
         echo "❌ payment-service hostname incorrect: expected 'payment.remote-cluster.example.com', got '$PAYMENT_HOSTNAME'"
         exit 1
     fi
     echo "✅ payment-service hostname correct: $PAYMENT_HOSTNAME"
-    
+
     if [ "$PAYMENT_PORT" != "8080" ]; then
         echo "❌ payment-service port incorrect: expected '8080', got '$PAYMENT_PORT'"
         exit 1
     fi
     echo "✅ payment-service port correct: $PAYMENT_PORT"
-    
-    # Check payment-service API path (should have legacy apiPath)
-    PAYMENT_API_PATH=$(echo "$PAYMENT_ENDPOINT" | jq -r '.apiPath // empty')
-    if [ "$PAYMENT_API_PATH" != "/api/payment/" ]; then
-        echo "❌ payment-service apiPath incorrect: expected '/api/payment/', got '$PAYMENT_API_PATH'"
+
+    # Check payment-service API paths (should have multiple paths)
+    PAYMENT_API_PATHS=$(echo "$PAYMENT_ENDPOINT" | jq -r '.apiPaths[]?' 2>/dev/null | wc -l)
+    if [ "$PAYMENT_API_PATHS" -ne 2 ]; then
+        echo "❌ payment-service should have exactly 2 API paths, found: $PAYMENT_API_PATHS"
+        echo "API paths found:"
+        echo "$PAYMENT_ENDPOINT" | jq -r '.apiPaths[]?' 2>/dev/null || echo "No API paths found"
         exit 1
     fi
-    echo "✅ payment-service API path correct: $PAYMENT_API_PATH"
-    
+    echo "✅ payment-service has 2 API paths ($PAYMENT_API_PATHS paths)"
+
+    # Check specific API paths for payment-service
+    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/v1/payment/")' > /dev/null || (echo "❌ Missing /api/v1/payment/ path" && exit 1)
+    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/v2/payment/")' > /dev/null || (echo "❌ Missing /api/v2/payment/ path" && exit 1)
+    echo "✅ payment-service API paths are correct"
+
     echo "🎉 Consumer app configuration validation complete!"
 
 - script: |
     #!/bin/bash
     set -e
-    
+
     echo "🔍 Testing mixed-deps-app cdappconfig.json structure and content..."
-    
+
     # Get the mixed-deps-app config
     kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/mixed-deps-app-config.json
-    
+
     echo "📋 Mixed deps app config:"
     cat /tmp/mixed-deps-app-config.json | jq .
-    
+
     # Verify JSON is valid
     jq empty /tmp/mixed-deps-app-config.json || (echo "❌ Invalid JSON structure" && exit 1)
     echo "✅ Valid JSON structure"
-    
+
     # Count total endpoints (should have ClowdAppRef + ClowdApp endpoints)
     TOTAL_ENDPOINTS=$(jq '.endpoints | length' /tmp/mixed-deps-app-config.json)
     if [ "$TOTAL_ENDPOINTS" -lt 3 ]; then
@@ -126,12 +132,12 @@ commands:
         exit 1
     fi
     echo "✅ Found $TOTAL_ENDPOINTS endpoints as expected"
-    
+
     # Check that remote-service endpoints are present (from ClowdAppRef)
     jq -e '.endpoints[] | select(.name == "auth-service")' /tmp/mixed-deps-app-config.json > /dev/null || (echo "❌ auth-service endpoint missing" && exit 1)
     jq -e '.endpoints[] | select(.name == "payment-service")' /tmp/mixed-deps-app-config.json > /dev/null || (echo "❌ payment-service endpoint missing" && exit 1)
     echo "✅ ClowdAppRef endpoints present"
-    
+
     # Check that consumer-app endpoints are present (from ClowdApp dependency)
     CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "consumer-app-processor")' /tmp/mixed-deps-app-config.json)
     if [ -z "$CONSUMER_ENDPOINT" ] || [ "$CONSUMER_ENDPOINT" = "null" ]; then
@@ -141,7 +147,7 @@ commands:
         exit 1
     fi
     echo "✅ ClowdApp dependency endpoint present"
-    
+
     # Verify consumer-app endpoint points to internal service (not external hostname)
     CONSUMER_HOSTNAME=$(echo "$CONSUMER_ENDPOINT" | jq -r '.hostname')
     if [[ "$CONSUMER_HOSTNAME" == *".remote-cluster.example.com" ]]; then
@@ -149,7 +155,7 @@ commands:
         exit 1
     fi
     echo "✅ consumer-app endpoint has internal hostname: $CONSUMER_HOSTNAME"
-    
+
     # Verify auth-service still has external hostname (from ClowdAppRef)
     AUTH_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "auth-service") | .hostname' /tmp/mixed-deps-app-config.json)
     if [ "$AUTH_HOSTNAME" != "auth.remote-cluster.example.com" ]; then
@@ -157,18 +163,18 @@ commands:
         exit 1
     fi
     echo "✅ auth-service has external hostname: $AUTH_HOSTNAME"
-    
+
     echo "🎉 Mixed deps app configuration validation complete!"
 
 - script: |
     #!/bin/bash
     set -e
-    
+
     echo "🔍 Testing endpoint structure and dependencies configuration..."
-    
+
     # Check dependencies section in consumer-app
     kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/consumer-config-deps.json
-    
+
     # Verify dependencies section exists and contains remote-service
     DEPS_SECTION=$(jq -r '.dependencies // empty' /tmp/consumer-config-deps.json)
     if [ -z "$DEPS_SECTION" ]; then
@@ -176,11 +182,11 @@ commands:
         exit 1
     fi
     echo "✅ Dependencies section exists"
-    
+
     # Check if remote-service is listed in dependencies
     jq -e '.dependencies | has("remote-service")' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ remote-service not found in dependencies" && exit 1)
     echo "✅ remote-service found in dependencies"
-    
+
     # Verify remote-service dependency structure
     REMOTE_SERVICE_DEPS=$(jq -r '.dependencies["remote-service"]' /tmp/consumer-config-deps.json)
     if [ "$REMOTE_SERVICE_DEPS" = "null" ] || [ -z "$REMOTE_SERVICE_DEPS" ]; then
@@ -188,30 +194,30 @@ commands:
         exit 1
     fi
     echo "✅ remote-service dependency has endpoint configuration"
-    
+
     # Check that auth-service and payment-service are in the dependency endpoints
     jq -e '.dependencies["remote-service"]["auth-service"]' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ auth-service not found in remote-service dependencies" && exit 1)
     jq -e '.dependencies["remote-service"]["payment-service"]' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ payment-service not found in remote-service dependencies" && exit 1)
     echo "✅ Both auth-service and payment-service found in dependencies"
-    
+
     # Test mixed-deps-app dependencies
     kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/mixed-config-deps.json
-    
+
     # Should have both remote-service and consumer-app dependencies
     jq -e '.dependencies | has("remote-service")' /tmp/mixed-config-deps.json > /dev/null || (echo "❌ remote-service not found in mixed-deps dependencies" && exit 1)
     jq -e '.dependencies | has("consumer-app")' /tmp/mixed-config-deps.json > /dev/null || (echo "❌ consumer-app not found in mixed-deps dependencies" && exit 1)
     echo "✅ Both remote-service and consumer-app found in mixed-deps dependencies"
-    
+
     echo "🎉 Dependencies structure validation complete!"
 
 - script: |
     #!/bin/bash
     set -e
-    
+
     echo "🔍 Testing web services configuration..."
-    
+
     kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/consumer-web-config.json
-    
+
     # Check web services configuration exists
     WEB_CONFIG=$(jq -r '.webPort // empty' /tmp/consumer-web-config.json)
     if [ -z "$WEB_CONFIG" ]; then
@@ -219,27 +225,27 @@ commands:
         exit 1
     fi
     echo "✅ Web port configuration found: $WEB_CONFIG"
-    
+
     # Verify web port is correct (should match ClowdEnvironment web port: 8000)
     if [ "$WEB_CONFIG" != "8000" ]; then
         echo "❌ Web port incorrect: expected '8000', got '$WEB_CONFIG'"
         exit 1
     fi
     echo "✅ Web port correct: $WEB_CONFIG"
-    
+
     # Check metrics configuration
     METRICS_CONFIG=$(jq -r '.metricsPort // empty' /tmp/consumer-web-config.json)
     if [ -z "$METRICS_CONFIG" ]; then
         echo "❌ Missing metrics port configuration"
         exit 1
     fi
-    
+
     if [ "$METRICS_CONFIG" != "9000" ]; then
         echo "❌ Metrics port incorrect: expected '9000', got '$METRICS_CONFIG'"
         exit 1
     fi
     echo "✅ Metrics port correct: $METRICS_CONFIG"
-    
+
     # Check metrics path
     METRICS_PATH=$(jq -r '.metricsPath // empty' /tmp/consumer-web-config.json)
     if [ "$METRICS_PATH" != "/metrics" ]; then
@@ -247,7 +253,7 @@ commands:
         exit 1
     fi
     echo "✅ Metrics path correct: $METRICS_PATH"
-    
+
     echo "🎉 Web services configuration validation complete!"
     echo ""
-    echo "🎊 All ClowdAppRef configuration tests passed successfully! 🎊" 
+    echo "🎊 All ClowdAppRef configuration tests passed successfully! 🎊"

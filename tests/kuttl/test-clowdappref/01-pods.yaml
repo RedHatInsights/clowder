@@ -45,36 +45,29 @@ metadata:
   namespace: test-clowdappref
 spec:
   envName: test-clowdappref
-  deployments:
-  - name: auth-service
-    hostname: auth.remote-cluster.example.com
+  remoteEnvironment:
+    name: production
     port: 8080
     tlsPort: 8443
     privatePort: 10000
     tlsPrivatePort: 10443
+  deployments:
+  - name: auth-service
+    hostname: auth.remote-cluster.example.com
     web: true
-    webServices:
-      public:
-        enabled: true
-      private:
-        enabled: true
-    apiPath: "/api/auth/"
-    apiPaths:
-    - "/api/auth/v1/"
-    - "/api/auth/v2/"
   - name: payment-service
     hostname: payment.remote-cluster.example.com
-    port: 8080
-    tlsPort: 8443
-    web: true
     webServices:
       public:
         enabled: true
-    apiPath: "/api/payment/"
+        apiPaths:
+        - "/api/v1/payment/"
+        - "/api/v2/payment/"
+      private:
+        enabled: true
   remoteCluster:
     name: remote-cluster
     region: us-west-2
-    environment: production
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -112,4 +105,4 @@ spec:
     - remote-service
     - consumer-app
   optionalDependencies:
-    - nonexistent-service 
+    - nonexistent-service

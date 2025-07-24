@@ -217,11 +217,11 @@ type Deployment struct {
 	// Defines the desired replica count for the pod
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	// If set to true, creates a service on the webPort defined in
-	// the ClowdEnvironment resource, along with the relevant liveness and
-	// readiness probes.
+	// If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+	// Deprecated: Use WebServices instead.
 	Web WebDeprecated `json:"web,omitempty"`
 
+	// WebServices defines the web services configuration for this deployment
 	WebServices WebServices `json:"webServices,omitempty"`
 
 	// PodSpec defines a container running inside a ClowdApp.
@@ -240,6 +240,10 @@ type Deployment struct {
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
+}
+
+func (d *Deployment) GetWebServices() WebServices {
+	return d.WebServices
 }
 
 func (d *Deployment) GetReplicaCount() *int32 {
