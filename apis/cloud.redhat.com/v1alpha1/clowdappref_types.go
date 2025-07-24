@@ -27,53 +27,19 @@ type ClowdAppRefDeployment struct {
 	// Name of the deployment
 	Name string `json:"name"`
 
-	// Hostname where the deployment is accessible
+	// Hostname (FQDN) used to reach this deployment in the remote cluster
 	Hostname string `json:"hostname"`
 
-	// Port where the deployment is accessible (default: 8000)
-	Port int32 `json:"port,omitempty"`
-
-	// TLSPort where the deployment is accessible via TLS (default: 8443)
-	TLSPort int32 `json:"tlsPort,omitempty"`
-
-	// PrivatePort for internal service communication (default: 10000)
-	PrivatePort int32 `json:"privatePort,omitempty"`
-
-	// TLSPrivatePort for internal service communication via TLS (default: 10443)
-	TLSPrivatePort int32 `json:"tlsPrivatePort,omitempty"`
-
-	// Web indicates if this deployment has a public web service
-	Web bool `json:"web,omitempty"`
+	// If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+	// Deprecated: Use WebServices instead.
+	Web WebDeprecated `json:"web,omitempty"`
 
 	// WebServices defines the web services configuration for this deployment
-	WebServices ClowdAppRefWebServices `json:"webServices,omitempty"`
-
-	// APIPaths defines the API paths available on this deployment
-	APIPaths []string `json:"apiPaths,omitempty"`
-
-	// Deprecated: Use APIPaths instead
-	APIPath string `json:"apiPath,omitempty"`
+	WebServices WebServices `json:"webServices,omitempty"`
 }
 
-// ClowdAppRefWebServices defines the web services configuration for a ClowdAppRef deployment
-type ClowdAppRefWebServices struct {
-	// Public defines the public web service configuration
-	Public ClowdAppRefPublicWebService `json:"public,omitempty"`
-
-	// Private defines the private web service configuration
-	Private ClowdAppRefPrivateWebService `json:"private,omitempty"`
-}
-
-// ClowdAppRefPublicWebService defines the public web service configuration for a ClowdAppRef deployment
-type ClowdAppRefPublicWebService struct {
-	// Enabled indicates if the public web service is enabled
-	Enabled bool `json:"enabled,omitempty"`
-}
-
-// ClowdAppRefPrivateWebService defines the private web service configuration for a ClowdAppRef deployment
-type ClowdAppRefPrivateWebService struct {
-	// Enabled indicates if the private web service is enabled
-	Enabled bool `json:"enabled,omitempty"`
+func (d *ClowdAppRefDeployment) GetWebServices() WebServices {
+	return d.WebServices
 }
 
 // ClowdAppRefSpec defines the desired state of ClowdAppRef
@@ -81,14 +47,35 @@ type ClowdAppRefSpec struct {
 	// The name of the ClowdEnvironment resource that this ClowdAppRef will be used in
 	EnvName string `json:"envName"`
 
-	// A list of deployments that represent services on a different cluster
-	Deployments []ClowdAppRefDeployment `json:"deployments"`
+	// ClowdAppRefRemoteEnvironment defines details about the remote ClowdEnvironment configuration
+	RemoteEnvironment ClowdAppRefRemoteEnvironment `json:"remoteEnvironment,omitempty"`
+
+	// Deployments defines a list of deployments associated with the ClowdApp in the remote cluster
+	Deployments []ClowdAppRefDeployment `json:"deployments,omitempty"`
 
 	// RemoteCluster defines information about the remote cluster where the services are located
 	RemoteCluster ClowdAppRefRemoteCluster `json:"remoteCluster,omitempty"`
 
 	// Disabled turns off this ClowdAppRef
 	Disabled bool `json:"disabled,omitempty"`
+}
+
+// ClowdAppRefRemoteEnvironment defines information about the remote ClowdEnvironment
+type ClowdAppRefRemoteEnvironment struct {
+	// Name defines the name of the remote ClowdEnvironment
+	Name string `json:"name,omitempty"`
+
+	// Port defines the port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
+	Port int32 `json:"port,omitempty"`
+
+	// TLSPort defines the TLS port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
+	TLSPort int32 `json:"tlsPort,omitempty"`
+
+	// PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
+	PrivatePort int32 `json:"privatePort,omitempty"`
+
+	// TLSPrivatePort defines the TLS private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
+	TLSPrivatePort int32 `json:"tlsPrivatePort,omitempty"`
 }
 
 // ClowdAppRefRemoteCluster defines information about the remote cluster
@@ -98,9 +85,6 @@ type ClowdAppRefRemoteCluster struct {
 
 	// Region defines the region of the remote cluster
 	Region string `json:"region,omitempty"`
-
-	// Environment defines the environment of the remote cluster (e.g., prod, stage)
-	Environment string `json:"environment,omitempty"`
 }
 
 // ClowdAppRefStatus defines the observed state of ClowdAppRef

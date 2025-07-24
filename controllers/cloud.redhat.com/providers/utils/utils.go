@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-logr/logr"
 
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -316,18 +317,23 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 	}
 }
 
-func GetAPIPaths(deployment *crd.Deployment, defaultPath string) []string {
+type DeploymentWithWebServices interface {
+	GetWebServices() v1alpha1.WebServices
+}
+
+func GetAPIPaths(deployment DeploymentWithWebServices, defaultPath string) []string {
 	apiPaths := []string{}
-	if deployment.WebServices.Public.APIPaths == nil {
+	webServices := deployment.GetWebServices()
+	if webServices.Public.APIPaths == nil {
 		// singular apiPath is deprecated, use it only if apiPaths is undefined
-		apiPath := deployment.WebServices.Public.APIPath
+		apiPath := webServices.Public.APIPath
 		if apiPath == "" {
 			apiPath = defaultPath
 		}
 		apiPaths = []string{fmt.Sprintf("/api/%s/", apiPath)}
 	} else {
 		// apiPaths was defined, use it and ignore 'apiPath'
-		for _, path := range deployment.WebServices.Public.APIPaths {
+		for _, path := range webServices.Public.APIPaths {
 			// convert crd.APIPath array items into plain strings
 			apiPaths = append(apiPaths, string(path))
 		}

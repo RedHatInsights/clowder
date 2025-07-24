@@ -50,70 +50,96 @@ spec:
             description: ClowdAppRefSpec defines the desired state of ClowdAppRef
             properties:
               deployments:
-                description: A list of deployments that represent services on a different
-                  cluster
+                description: Deployments defines a list of deployments associated
+                  with the ClowdApp in the remote cluster
                 items:
                   description: ClowdAppRefDeployment represents a deployment within
                     a ClowdAppRef
                   properties:
-                    apiPath:
-                      description: 'Deprecated: Use APIPaths instead'
-                      type: string
-                    apiPaths:
-                      description: APIPaths defines the API paths available on this
-                        deployment
-                      items:
-                        type: string
-                      type: array
                     hostname:
-                      description: Hostname where the deployment is accessible
+                      description: Hostname (FQDN) used to reach this deployment in
+                        the remote cluster
                       type: string
                     name:
                       description: Name of the deployment
                       type: string
-                    port:
-                      description: 'Port where the deployment is accessible (default:
-                        8000)'
-                      format: int32
-                      type: integer
-                    privatePort:
-                      description: 'PrivatePort for internal service communication
-                        (default: 10000)'
-                      format: int32
-                      type: integer
-                    tlsPort:
-                      description: 'TLSPort where the deployment is accessible via
-                        TLS (default: 8443)'
-                      format: int32
-                      type: integer
-                    tlsPrivatePort:
-                      description: 'TLSPrivatePort for internal service communication
-                        via TLS (default: 10443)'
-                      format: int32
-                      type: integer
                     web:
-                      description: Web indicates if this deployment has a public web
-                        service
+                      description: |-
+                        If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+                        Deprecated: Use WebServices instead.
                       type: boolean
                     webServices:
                       description: WebServices defines the web services configuration
                         for this deployment
                       properties:
+                        metrics:
+                          description: |-
+                            MetricsWebService is the definition of the metrics web service. This is automatically
+                            enabled and the configuration here at the moment is included for completeness, as there
+                            are no configurable options.
+                          type: object
                         private:
-                          description: Private defines the private web service configuration
+                          description: |-
+                            PrivateWebService is the definition of the private web service. There can be only
+                            one private service managed by Clowder.
                           properties:
+                            appProtocol:
+                              description: AppProtocol determines the protocol to
+                                be used for the private port, (defaults to http)
+                              enum:
+                              - http
+                              - http2
+                              - https
+                              - tcp
+                              - tls
+                              - grpc
+                              - grpc-web
+                              - mongo
+                              - mysql
+                              - redis
+                              type: string
                             enabled:
-                              description: Enabled indicates if the private web service
-                                is enabled
+                              description: |-
+                                Enabled describes if Clowder should enable the private service and provide the
+                                configuration in the cdappconfig.
                               type: boolean
                           type: object
                         public:
-                          description: Public defines the public web service configuration
+                          description: |-
+                            PublicWebService is the definition of the public web service. There can be only
+                            one public service managed by Clowder.
                           properties:
+                            apiPath:
+                              description: (DEPRECATED, use apiPaths instead) Configures
+                                a path named '/api/<apiPath>/' that this app will
+                                serve requests from.
+                              type: string
+                            apiPaths:
+                              description: 'Defines a list of API paths (each matching
+                                format: "/api/some-path/") that this app will serve
+                                requests from.'
+                              items:
+                                description: A string representing an API path that
+                                  should route to this app for Clowder-managed Ingresses
+                                  (in format "/api/somepath/")
+                                pattern: ^\/api\/[a-zA-Z0-9-]+\/$
+                                type: string
+                              type: array
                             enabled:
-                              description: Enabled indicates if the public web service
-                                is enabled
+                              description: |-
+                                Enabled describes if Clowder should enable the public service and provide the
+                                configuration in the cdappconfig.
                               type: boolean
+                            sessionAffinity:
+                              description: Set SessionAffinity to true to enable sticky
+                                sessions
+                              type: boolean
+                            whitelistPaths:
+                              description: WhitelistPaths define the paths that do
+                                not require authentication
+                              items:
+                                type: string
+                              type: array
                           type: object
                       type: object
                   required:
@@ -132,10 +158,6 @@ spec:
                 description: RemoteCluster defines information about the remote cluster
                   where the services are located
                 properties:
-                  environment:
-                    description: Environment defines the environment of the remote
-                      cluster (e.g., prod, stage)
-                    type: string
                   name:
                     description: Name defines the name of the remote cluster
                     type: string
@@ -143,8 +165,39 @@ spec:
                     description: Region defines the region of the remote cluster
                     type: string
                 type: object
+              remoteEnvironment:
+                description: ClowdAppRefRemoteEnvironment defines details about the
+                  remote ClowdEnvironment configuration
+                properties:
+                  name:
+                    description: Name defines the name of the remote ClowdEnvironment
+                    type: string
+                  port:
+                    description: 'Port defines the port used to reach deployments
+                      in the remote cluster (default: use the same value as ClowdApps
+                      in the local cluster)'
+                    format: int32
+                    type: integer
+                  privatePort:
+                    description: 'PrivatePort defines the private port used to reach
+                      deployments in the remote cluster (default: use the same value
+                      as ClowdApps in the local cluster)'
+                    format: int32
+                    type: integer
+                  tlsPort:
+                    description: 'TLSPort defines the TLS port used to reach deployments
+                      in the remote cluster (default: use the same value as ClowdApps
+                      in the local cluster)'
+                    format: int32
+                    type: integer
+                  tlsPrivatePort:
+                    description: 'TLSPrivatePort defines the TLS private port used
+                      to reach deployments in the remote cluster (default: use the
+                      same value as ClowdApps in the local cluster)'
+                    format: int32
+                    type: integer
+                type: object
             required:
-            - deployments
             - envName
             type: object
           status:

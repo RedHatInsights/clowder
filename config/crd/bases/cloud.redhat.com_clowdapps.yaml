@@ -3324,14 +3324,12 @@ spec:
                       type: integer
                     web:
                       description: |-
-                        If set to true, creates a service on the webPort defined in
-                        the ClowdEnvironment resource, along with the relevant liveness and
-                        readiness probes.
+                        If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+                        Deprecated: Use WebServices instead.
                       type: boolean
                     webServices:
-                      description: |-
-                        WebServices defines the structs for the three exposed web services: public,
-                        private and metrics.
+                      description: WebServices defines the web services configuration
+                        for this deployment
                       properties:
                         metrics:
                           description: |-
