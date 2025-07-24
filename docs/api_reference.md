@@ -269,7 +269,7 @@ _Appears in:_
 
 
 
-
+ClowdAppRefRemoteEnvironment defines information about the remote ClowdEnvironment
 
 
 

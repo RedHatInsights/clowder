@@ -74,7 +74,7 @@ api-docs:
 	./build/build_api_docs.sh
 	./build/build_config_docs.sh
 
-build-template: 
+build-template:
 	@echo "Checking for $(TEMPLATE_KUSTOMIZE)"
 	@if [ ! -f $(TEMPLATE_KUSTOMIZE) ]; then \
 		$(MAKE) build-template-kustomize; \
@@ -100,7 +100,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./controllers/..."
 
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./controllers/..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./apis/..."
 
 fmt: ## Run go fmt against code.
 	$(GO_CMD) fmt ./...
