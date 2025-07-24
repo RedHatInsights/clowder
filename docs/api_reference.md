@@ -590,6 +590,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `configMapKeyRef` _[ConfigMapKeySelector](#configmapkeyselector)_ | Selects a key of a ConfigMap. |  |  |
 | `secretKeyRef` _[SecretKeySelector](#secretkeyselector)_ | Selects a key of a secret in the pod's namespace |  |  |
+| `fieldRef` _[ObjectFieldSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectfieldselector-v1-core)_ | Selects a field of the pod: supports metadata.name, metadata.namespace,<br />metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,<br />spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs. |  |  |
 
 
 #### FeatureFlagsConfig
@@ -1107,6 +1108,7 @@ _Appears in:_
 | `path` _string_ | A prefix path that pods will be instructed to use when setting up their<br />metrics server. |  |  |
 | `mode` _[MetricsMode](#metricsmode)_ | The mode of operation of the Metrics provider. The allowed modes are<br /> (*_none_*), which disables metrics service generation, or<br />(*_operator_*) where services and probes are generated.<br />(*_app-interface_*) where services and probes are generated for app-interface. |  | Enum: [none operator app-interface] <br /> |
 | `prometheus` _[PrometheusConfig](#prometheusconfig)_ | Prometheus specific configuration |  |  |
+| `prometheusGateway` _[PrometheusGatewayConfig](#prometheusgatewayconfig)_ | Prometheus Gateway specific configuration |  |  |
 
 
 #### MetricsMode
@@ -1309,7 +1311,23 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `deploy` _boolean_ | Determines whether to deploy prometheus in operator mode |  |  |
-| `appInterfaceHostname` _string_ | Specify prometheus hostname when in app-interface mode |  |  |
+| `appInterfaceInternalURL` _string_ | Specify prometheus internal URL when in app-interface mode |  |  |
+
+#### PrometheusGatewayConfig
+
+
+
+
+
+
+
+_Appears in:_
+- [MetricsConfig](#metricsconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `deploy` _boolean_ | Determines whether to deploy prometheus-gateway in operator mode |  |  |
+| `image` _string_ | Image to use for prometheus-gateway deployment |  |  |
 
 
 #### PrometheusStatus
@@ -1325,26 +1343,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `hostname` _string_ |  |  |  |
-| `port` _integer_ |  |  |  |
-| `scheme` _[ProtocolScheme](#protocolscheme)_ |  |  |  |
-
-
-#### ProtocolScheme
-
-_Underlying type:_ _string_
-
-
-
-
-
-_Appears in:_
-- [PrometheusStatus](#prometheusstatus)
-
-| Field | Description |
-| --- | --- |
-| `http` |  |
-| `https` |  |
+| `serverAddress` _string_ |  |  |  |
 
 
 #### ProvidersConfig

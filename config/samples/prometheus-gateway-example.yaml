@@ -1,0 +1,38 @@
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: prometheus-gateway-example
+spec:
+  targetNamespace: prometheus-gateway-example
+  providers:
+    metrics:
+      mode: operator
+      port: 9000
+      path: "/metrics"
+      prometheus:
+        deploy: true
+      prometheusGateway:
+        deploy: true
+        # image: "custom-registry.com/pushgateway:v1.11.1"  # Optional: override default image
+    web:
+      port: 8000
+      mode: none
+    kafka:
+      mode: none
+    database:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    logging:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi 

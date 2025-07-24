@@ -19,5 +19,13 @@ func (m *noneMetricsProvider) EnvProvide() error {
 
 func (m *noneMetricsProvider) Provide(app *crd.ClowdApp) error {
 
-	return createMetricsOnDeployments(m.Cache, m.Env, app, m.Config)
+	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config); err != nil {
+		return err
+	}
+
+	// Note: Prometheus Gateway is not supported in none mode
+	// as no metrics infrastructure is deployed. The configuration
+	// is intentionally not populated here.
+
+	return nil
 }

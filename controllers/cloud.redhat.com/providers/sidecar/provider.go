@@ -71,6 +71,17 @@ func ConvertEnvVars(envVars []crd.EnvVar) []core.EnvVar {
 					Optional: envVar.ValueFrom.SecretKeyRef.Optional,
 				}
 			}
+
+			if envVar.ValueFrom.FieldRef != nil {
+				coreEnvVar.ValueFrom.FieldRef = &core.ObjectFieldSelector{
+					APIVersion: envVar.ValueFrom.FieldRef.APIVersion,
+					FieldPath:  envVar.ValueFrom.FieldRef.FieldPath,
+				}
+				// Set default API version if not specified
+				if coreEnvVar.ValueFrom.FieldRef.APIVersion == "" {
+					coreEnvVar.ValueFrom.FieldRef.APIVersion = "v1"
+				}
+			}
 		}
 
 		coreEnvVars = append(coreEnvVars, coreEnvVar)
