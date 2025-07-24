@@ -42,6 +42,12 @@ docker run --rm -it -d --network=host alpine ash -c "apk add socat && socat TCP-
 
 Lastly, run the make target `deploy-minikube-quick` that will build the image locally, push the image to the registry running in Minikube, and start the pod. This command also sets a tag that will need to be updated each time you make a change locally to Clowder. This will ensure that the new pod comes up with your changes. 
 ```
-CLOWDER_BUILD_TAG=boop334 make deploy-minikube-quick
+CLOWDER_BUILD_TAG=test001 make deploy-minikube-quick
 ```
 
+## Verify
+
+You can check that the pod is running with:
+```
+kubectl get pods -n clowder-system
+```

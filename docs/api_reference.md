@@ -590,6 +590,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `configMapKeyRef` _[ConfigMapKeySelector](#configmapkeyselector)_ | Selects a key of a ConfigMap. |  |  |
 | `secretKeyRef` _[SecretKeySelector](#secretkeyselector)_ | Selects a key of a secret in the pod's namespace |  |  |
+| `fieldRef` _[ObjectFieldSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectfieldselector-v1-core)_ | Selects a field of the pod: supports metadata.name, metadata.namespace,<br />metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,<br />spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs. |  |  |
 
 
 #### FeatureFlagsConfig
@@ -1311,7 +1312,6 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `deploy` _boolean_ | Determines whether to deploy prometheus in operator mode |  |  |
 | `appInterfaceInternalURL` _string_ | Specify prometheus internal URL when in app-interface mode |  |  |
-
 
 #### PrometheusGatewayConfig
 

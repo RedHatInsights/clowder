@@ -562,6 +562,12 @@ type EnvVarSource struct {
 	// Selects a key of a secret in the pod's namespace
 	// +optional
 	SecretKeyRef *SecretKeySelector `json:"secretKeyRef,omitempty"`
+
+	// Selects a field of the pod: supports metadata.name, metadata.namespace,
+	// metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,
+	// spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+	// +optional
+	FieldRef *core.ObjectFieldSelector `json:"fieldRef,omitempty"`
 }
 
 // ConfigMapKeySelector selects a key from a ConfigMap.

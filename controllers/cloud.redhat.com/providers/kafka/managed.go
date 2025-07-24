@@ -154,6 +154,15 @@ func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
 		return nil, err
 	}
 
+	_, err = k.HashCache.CreateOrUpdateObject(secret, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = k.HashCache.AddClowdObjectToObject(k.Env, secret); err != nil {
+		return nil, err
+	}
+
 	return secret, nil
 }
 
