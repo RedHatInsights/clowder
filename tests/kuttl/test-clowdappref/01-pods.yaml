@@ -61,8 +61,8 @@ spec:
       public:
         enabled: true
         apiPaths:
-        - "/api/v1/payment/"
-        - "/api/v2/payment/"
+        - "/api/payment1/"
+        - "/api/payment2/"
       private:
         enabled: true
   remoteCluster:

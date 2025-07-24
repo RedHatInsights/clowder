@@ -72,7 +72,7 @@ commands:
     echo "✅ auth-service has single API path ($AUTH_API_PATHS path)"
 
     # Check specific API path for auth-service
-    echo "$AUTH_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/auth-service")' > /dev/null || (echo "❌ Missing /api/auth-service path" && exit 1)
+    echo "$AUTH_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/auth-service/")' > /dev/null || (echo "❌ Missing /api/auth-service/ path" && exit 1)
     echo "✅ auth-service API path is correct"
 
     # Verify payment-service configuration
@@ -102,8 +102,8 @@ commands:
     echo "✅ payment-service has 2 API paths ($PAYMENT_API_PATHS paths)"
 
     # Check specific API paths for payment-service
-    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/v1/payment/")' > /dev/null || (echo "❌ Missing /api/v1/payment/ path" && exit 1)
-    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/v2/payment/")' > /dev/null || (echo "❌ Missing /api/v2/payment/ path" && exit 1)
+    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/payment1/")' > /dev/null || (echo "❌ Missing /api/v1/payment/ path" && exit 1)
+    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/payment2/")' > /dev/null || (echo "❌ Missing /api/v2/payment/ path" && exit 1)
     echo "✅ payment-service API paths are correct"
 
     echo "🎉 Consumer app configuration validation complete!"
