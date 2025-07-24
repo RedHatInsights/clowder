@@ -13,6 +13,8 @@ spec:
       port: 9000
       mode: operator
       path: "/metrics"
+      prometheus:
+        deploy: true
     kafka:
       mode: none
     db:
@@ -32,6 +34,9 @@ spec:
     requests:
       cpu: 30m
       memory: 512Mi
+status:
+  prometheus:
+    serverAddress: "http://test.com:8000"
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdAppRef
