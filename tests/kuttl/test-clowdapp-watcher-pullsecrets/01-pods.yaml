@@ -1,0 +1,72 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdapp-watcher-pullsecrets
+spec:
+  targetNamespace: test-clowdapp-watcher-pullsecrets
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    pullSecrets:
+    - name: test-clowdapp-watcher-pullsecrets
+      namespace: test-clowdapp-watcher-pullsecrets-secret
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-pullsecrets
+spec:
+  envName: test-clowdapp-watcher-pullsecrets
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      env: 
+        - name: ENV_VAR_1
+          value: env_var_1
+        - name: ENV_VAR_2
+          value: env_var_2
+      initContainers:
+        - env:
+          - name: ENV_VAR_1
+            value: override_1
+          - name: ENV_VAR_3
+            value: env_var_3
+    webServices:
+      public:
+        enabled: true
+      private:
+        enabled: true
+---
+apiVersion: v1
+data:
+  test_data: dGVzdDEyMzQ= #test1234
+kind: Secret
+metadata:
+  name: test-clowdapp-watcher-pullsecrets
+  namespace: test-clowdapp-watcher-pullsecrets-secret
+type: Opaque

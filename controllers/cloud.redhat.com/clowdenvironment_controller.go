@@ -165,6 +165,7 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		env:       &env,
 		log:       &log,
 		oldStatus: env.Status.DeepCopy(),
+		hashCache: r.HashCache,
 	}
 
 	result, resErr := reconciliation.Reconcile()

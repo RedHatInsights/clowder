@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-pullsecrets
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-clowdapp-watcher-pullsecrets-secret
+spec:
+  finalizers:
+  - kubernetes

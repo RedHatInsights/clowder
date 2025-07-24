@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+data:
+  hostname: a2Fma2EtaG9zdC1uYW1l # kafka-host-name
+  port: MjcwMTU= # 27015
+  username: a2Fma2EtdXNlcm5hbWU= # kafka-username
+  password: a2Fma2EtcGFzc3dvcmQ= # kafka-password
+  cacert: c29tZS1wZW0=
+kind: Secret
+metadata:
+  name: managed-secret
+  namespace: test-clowdapp-watcher-kafka-managed-secret
+type: Opaque
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-clowdapp-watcher-kafka-managed-secret
+spec:
+  targetNamespace: test-clowdapp-watcher-kafka-managed-secret
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: managed
+      managedSecretRef:
+        name: managed-secret
+        namespace: test-clowdapp-watcher-kafka-managed-secret
+      managedPrefix: ""
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-managed-secret
+spec:
+  envName: test-clowdapp-watcher-kafka-managed-secret
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      env: 
+        - name: ENV_VAR_1
+          value: env_var_1
+  kafkaTopics:
+  - replicas: 3
+    partitions: 64
+    topicName: topicOne
+  - replicas: 5
+    partitions: 32
+    topicName: topicTwo

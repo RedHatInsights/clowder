@@ -89,6 +89,15 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
+	_, err := s.HashCache.CreateOrUpdateObject(&kafkaCASecret, true)
+	if err != nil {
+		return err
+	}
+
+	if err = s.HashCache.AddClowdObjectToObject(s.Env, &kafkaCASecret); err != nil {
+		return err
+	}
+
 	kafkaCACert := string(kafkaCASecret.Data["ca.crt"])
 
 	s.Config.Kafka = &config.KafkaConfig{}
@@ -798,6 +807,15 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 
 			err = s.Client.Get(s.Ctx, secnn, kafkaSecret)
 			if err != nil {
+				return err
+			}
+
+			_, err = s.HashCache.CreateOrUpdateObject(kafkaSecret, true)
+			if err != nil {
+				return err
+			}
+
+			if err = s.HashCache.AddClowdObjectToObject(s.Env, kafkaSecret); err != nil {
 				return err
 			}
 

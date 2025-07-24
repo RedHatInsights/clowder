@@ -1,0 +1,13 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: sleep 5
+- script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-msk test-clowdapp-watcher-kafka-msk-connect -o json > /tmp/test-clowdapp-watcher-kafka-msk-user
+- script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-msk test-clowdapp-watcher-kafka-msk-cluster-ca-cert -o json > /tmp/test-clowdapp-watcher-kafka-msk-cluster-ca-cert
+
+- script: sh create_json.sh
+- script: sh create_certs.sh
+- script: kubectl apply -f /tmp/watcher-managed-secret.yaml -n test-clowdapp-watcher-kafka-msk-sec-source
+- script: kubectl apply -f /tmp/test-clowdapp-watcher-kafka-msk-ca-cert.yaml -n test-clowdapp-watcher-kafka-msk-sec-source
+- script: kubectl apply -f /tmp/test-clowdapp-watcher-kafka-msk-connect-user.yaml -n test-clowdapp-watcher-kafka-msk-sec-source
