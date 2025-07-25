@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"sort"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
@@ -19,6 +15,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 type SkippedError struct {

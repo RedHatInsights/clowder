@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/types"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
@@ -11,10 +16,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/featureflags"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/inmemorydb"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/objectstore"
-	apps "k8s.io/api/apps/v1"
-	core "k8s.io/api/core/v1"
-	rbac "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/types"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"

@@ -11,6 +11,8 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 ### Resource Types
 - [ClowdApp](#clowdapp)
 - [ClowdAppList](#clowdapplist)
+- [ClowdAppRef](#clowdappref)
+- [ClowdAppRefList](#clowdappreflist)
 - [ClowdEnvironment](#clowdenvironment)
 - [ClowdEnvironmentList](#clowdenvironmentlist)
 - [ClowdJobInvocation](#clowdjobinvocation)
@@ -188,6 +190,121 @@ ClowdAppList contains a list of ClowdApp
 | `kind` _string_ | `ClowdAppList` | | |
 | `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[ClowdApp](#clowdapp) array_ | A list of ClowdApp Resources. |  |  |
+
+
+#### ClowdAppRef
+
+
+
+ClowdAppRef is the Schema for the clowdapprefs API
+
+
+
+_Appears in:_
+- [ClowdAppRefList](#clowdappreflist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `cloud.redhat.com/v1alpha1` | | |
+| `kind` _string_ | `ClowdAppRef` | | |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[ClowdAppRefSpec](#clowdapprefspec)_ |  |  |  |
+
+
+#### ClowdAppRefDeployment
+
+
+
+ClowdAppRefDeployment represents a deployment within a ClowdAppRef
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name of the deployment |  |  |
+| `hostname` _string_ | Hostname (FQDN) used to reach this deployment in the remote cluster |  |  |
+| `web` _[WebDeprecated](#webdeprecated)_ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.<br />Deprecated: Use WebServices instead. |  |  |
+| `webServices` _[WebServices](#webservices)_ | WebServices defines the web services configuration for this deployment |  |  |
+
+
+#### ClowdAppRefList
+
+
+
+ClowdAppRefList contains a list of ClowdAppRef
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `cloud.redhat.com/v1alpha1` | | |
+| `kind` _string_ | `ClowdAppRefList` | | |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[ClowdAppRef](#clowdappref) array_ |  |  |  |
+
+
+#### ClowdAppRefRemoteCluster
+
+
+
+ClowdAppRefRemoteCluster defines information about the remote cluster
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name defines the name of the remote cluster |  |  |
+| `region` _string_ | Region defines the region of the remote cluster |  |  |
+
+
+#### ClowdAppRefRemoteEnvironment
+
+
+
+ClowdAppRefRemoteEnvironment defines information about the remote ClowdEnvironment
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name defines the name of the remote ClowdEnvironment |  |  |
+| `port` _integer_ | Port defines the port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `tlsPort` _integer_ | TLSPort defines the TLS port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `privatePort` _integer_ | PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `tlsPrivatePort` _integer_ | TLSPrivatePort defines the TLS private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+
+
+#### ClowdAppRefSpec
+
+
+
+ClowdAppRefSpec defines the desired state of ClowdAppRef
+
+
+
+_Appears in:_
+- [ClowdAppRef](#clowdappref)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `envName` _string_ | The name of the ClowdEnvironment resource that this ClowdAppRef will be used in |  |  |
+| `remoteEnvironment` _[ClowdAppRefRemoteEnvironment](#clowdapprefremoteenvironment)_ | ClowdAppRefRemoteEnvironment defines details about the remote ClowdEnvironment configuration |  |  |
+| `deployments` _[ClowdAppRefDeployment](#clowdapprefdeployment) array_ | Deployments defines a list of deployments associated with the ClowdApp in the remote cluster |  |  |
+| `remoteCluster` _[ClowdAppRefRemoteCluster](#clowdapprefremotecluster)_ | RemoteCluster defines information about the remote cluster where the services are located |  |  |
+| `disabled` _boolean_ | Disabled turns off this ClowdAppRef |  |  |
+
+
 
 
 #### ClowdAppSpec
@@ -461,8 +578,8 @@ _Appears in:_
 | `name` _string_ | Name defines the identifier of a Pod inside the ClowdApp. This name will<br />be used along side the name of the ClowdApp itself to form a <app>-<pod><br />pattern which will be used for all other created resources and also for<br />some labels. It must be unique within a ClowdApp. |  |  |
 | `minReplicas` _integer_ | Deprecated: Use Replicas instead<br />If Replicas is not set and MinReplicas is set, then MinReplicas will be used |  |  |
 | `replicas` _integer_ | Defines the desired replica count for the pod |  |  |
-| `web` _[WebDeprecated](#webdeprecated)_ | If set to true, creates a service on the webPort defined in<br />the ClowdEnvironment resource, along with the relevant liveness and<br />readiness probes. |  |  |
-| `webServices` _[WebServices](#webservices)_ |  |  |  |
+| `web` _[WebDeprecated](#webdeprecated)_ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.<br />Deprecated: Use WebServices instead. |  |  |
+| `webServices` _[WebServices](#webservices)_ | WebServices defines the web services configuration for this deployment |  |  |
 | `podSpec` _[PodSpec](#podspec)_ | PodSpec defines a container running inside a ClowdApp. |  |  |
 | `k8sAccessLevel` _[K8sAccessLevel](#k8saccesslevel)_ | K8sAccessLevel defines the level of access for this deployment |  | Enum: [default view  edit] <br /> |
 | `autoScaler` _[AutoScaler](#autoscaler)_ | AutoScaler defines the configuration for the Keda auto scaler |  |  |
@@ -1313,6 +1430,7 @@ _Appears in:_
 | `deploy` _boolean_ | Determines whether to deploy prometheus in operator mode |  |  |
 | `appInterfaceInternalURL` _string_ | Specify prometheus internal URL when in app-interface mode |  |  |
 
+
 #### PrometheusGatewayConfig
 
 
@@ -1635,6 +1753,7 @@ WebDeprecated defines a boolean flag to help distinguish from the newer WebServi
 
 
 _Appears in:_
+- [ClowdAppRefDeployment](#clowdapprefdeployment)
 - [Deployment](#deployment)
 
 
@@ -1684,6 +1803,7 @@ private and metrics.
 
 
 _Appears in:_
+- [ClowdAppRefDeployment](#clowdapprefdeployment)
 - [Deployment](#deployment)
 
 | Field | Description | Default | Validation |

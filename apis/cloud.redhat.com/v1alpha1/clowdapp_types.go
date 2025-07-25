@@ -17,8 +17,9 @@ import (
 	"errors"
 	"fmt"
 
-	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
+	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
@@ -216,11 +217,11 @@ type Deployment struct {
 	// Defines the desired replica count for the pod
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	// If set to true, creates a service on the webPort defined in
-	// the ClowdEnvironment resource, along with the relevant liveness and
-	// readiness probes.
+	// If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+	// Deprecated: Use WebServices instead.
 	Web WebDeprecated `json:"web,omitempty"`
 
+	// WebServices defines the web services configuration for this deployment
 	WebServices WebServices `json:"webServices,omitempty"`
 
 	// PodSpec defines a container running inside a ClowdApp.
@@ -239,6 +240,10 @@ type Deployment struct {
 	DeploymentStrategy *DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
+}
+
+func (d *Deployment) GetWebServices() WebServices {
+	return d.WebServices
 }
 
 func (d *Deployment) GetReplicaCount() *int32 {
@@ -471,7 +476,7 @@ type ClowdAppSpec struct {
 
 	// In (*_shared_*) mode, the application name that should create the in memory
 	// DB instance this application should use
-	SharedInMemoryDbAppName string `json:"sharedInMemoryDbAppName,omitempty"`
+	SharedInMemoryDBAppName string `json:"sharedInMemoryDbAppName,omitempty"`
 
 	// If featureFlags is set to true, Clowder will pass configuration of a
 	// FeatureFlags instance to the pods in the ClowdApp. This single
@@ -734,7 +739,7 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 	}
 
 	if inMem {
-		sharedName = app.Spec.SharedInMemoryDbAppName
+		sharedName = app.Spec.SharedInMemoryDBAppName
 		errorOut = "could not get app for in memory db in env"
 	} else {
 		sharedName = app.Spec.Database.SharedDBAppName

@@ -40,12 +40,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	// +kubebuilder:scaffold:imports
 )
 

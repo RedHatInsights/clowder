@@ -5,15 +5,16 @@ import (
 
 	res "k8s.io/apimachinery/pkg/api/resource"
 
+	apps "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	apps "k8s.io/api/apps/v1"
-	v2 "k8s.io/api/autoscaling/v2"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -24,15 +25,15 @@ const (
 )
 
 // Creates a simple HPA in the resource cache for the deployment and ClowdApp
-func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment crd.Deployment) error {
-	cachedDeployment, err := getDeploymentFromCache(&deployment, app, sp)
+func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment *crd.Deployment) error {
+	cachedDeployment, err := getDeploymentFromCache(deployment, app, sp)
 	if err != nil {
 		return errors.Wrap("Could not get deployment from resource cache", err)
 	}
-	hpaMaker := newSimpleHPAMaker(&deployment, app, appConfig, cachedDeployment)
+	hpaMaker := newSimpleHPAMaker(deployment, app, appConfig, cachedDeployment)
 	hpaResource := hpaMaker.getResource()
 
-	err = cacheAutoscaler(app, sp, deployment, hpaResource)
+	err = cacheAutoscaler(app, sp, deployment, &hpaResource)
 	if err != nil {
 		return errors.Wrap("Could not add HPA to resource cache", err)
 	}
@@ -41,9 +42,9 @@ func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp 
 }
 
 // Adds the HPA to the resource cache
-func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment crd.Deployment, hpaResource v2.HorizontalPodAutoscaler) error {
-	nn := app.GetDeploymentNamespacedName(&deployment)
-	return sp.Cache.Create(SimpleAutoScaler, nn, &hpaResource)
+func cacheAutoscaler(app *crd.ClowdApp, sp *providers.Provider, deployment *crd.Deployment, hpaResource *v2.HorizontalPodAutoscaler) error {
+	nn := app.GetDeploymentNamespacedName(deployment)
+	return sp.Cache.Create(SimpleAutoScaler, nn, hpaResource)
 }
 
 // Get the core apps.Deployment from the provider cache

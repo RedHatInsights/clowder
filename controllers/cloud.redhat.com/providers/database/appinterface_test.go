@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 )
 
 func TestAppInterfaceDb(t *testing.T) {

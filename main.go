@@ -24,7 +24,7 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
-	_ "net/http/pprof"
+	// _ "net/http/pprof" // Commented out to avoid exposing profiling endpoint (gosec G108)
 
 	"go.uber.org/zap"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -35,10 +35,11 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/logging"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	controllers "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/rhc-osdk-utils/logging"
 	//+kubebuilder:scaffold:imports
 )
 

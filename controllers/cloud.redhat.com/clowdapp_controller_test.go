@@ -3,8 +3,9 @@ package controllers
 import (
 	"testing"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 )
 
 func TestReconcileMetricsStartDisabled(t *testing.T) {

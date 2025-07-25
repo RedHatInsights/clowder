@@ -147,11 +147,12 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		},
 	})
 
-	for _, vol := range pt.Spec.Volumes {
-		if vol.VolumeSource.ConfigMap != nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
-			vol.VolumeSource.ConfigMap.DefaultMode = utils.Int32Ptr(420)
-		} else if vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
-			vol.VolumeSource.Secret.DefaultMode = utils.Int32Ptr(420)
+	for i := range pt.Spec.Volumes {
+		vol := &pt.Spec.Volumes[i]
+		if vol.ConfigMap != nil && (vol.ConfigMap.DefaultMode == nil || *vol.ConfigMap.DefaultMode == 0) {
+			vol.ConfigMap.DefaultMode = utils.Int32Ptr(420)
+		} else if vol.Secret != nil && (vol.Secret.DefaultMode == nil || *vol.Secret.DefaultMode == 0) {
+			vol.Secret.DefaultMode = utils.Int32Ptr(420)
 		}
 	}
 

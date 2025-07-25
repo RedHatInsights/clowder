@@ -2,11 +2,13 @@
 
 package v1alpha1
 
-import "fmt"
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-import apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 func init() {
 	SchemeBuilder.Register(&Subscription{}, &SubscriptionList{})
@@ -610,8 +612,8 @@ type SubscriptionSpecConfigVolumesElemCinderSecretRef struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// Cinder represents a cinder volume attached and mounted on kubelets host machine.
-// More info: https://examples.k8s.io/mysql-cinder-pd/README.md
+// Cinder represents a cinder volume attached and mounted on kubelets host
+// machine. More info: https://examples.k8s.io/mysql-cinder-pd/README.md
 type SubscriptionSpecConfigVolumesElemCinder struct {
 	// Filesystem type to mount. Must be a filesystem type supported by the host
 	// operating system. Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be
@@ -2138,8 +2140,8 @@ type SubscriptionSpecConfigVolumesElemGlusterfs struct {
 	ReadOnly *bool `json:"readOnly,omitempty"`
 }
 
-// HostPath represents a pre-existing file or directory on the host machine that is
-// directly exposed to the container. This is generally used for system agents or
+// HostPath represents a pre-existing file or directory on the host machine that
+// is directly exposed to the container. This is generally used for system agents or
 // other privileged things that are allowed to see the host machine. Most
 // containers will NOT need this. More info:
 // https://kubernetes.io/docs/concepts/storage/volumes#hostpath --- TODO(jonesdl)
