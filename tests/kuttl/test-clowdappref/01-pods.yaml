@@ -41,7 +41,7 @@ status:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdAppRef
 metadata:
-  name: remote-service
+  name: remote-app
   namespace: test-clowdappref
 spec:
   envName: test-clowdappref
@@ -87,7 +87,7 @@ spec:
       private:
         enabled: true
   dependencies:
-    - remote-service
+    - remote-app
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -102,7 +102,7 @@ spec:
       image: quay.io/psav/clowder-hello
     web: true
   dependencies:
-    - remote-service
+    - remote-app
     - consumer-app
   optionalDependencies:
     - nonexistent-service
