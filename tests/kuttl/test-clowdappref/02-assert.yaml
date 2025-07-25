@@ -13,7 +13,7 @@ status:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdAppRef
 metadata:
-  name: remote-service
+  name: remote-app
   namespace: test-clowdappref
 ---
 apiVersion: cloud.redhat.com/v1alpha1
@@ -72,4 +72,4 @@ metadata:
   name: mixed-deps-app-processor
   namespace: test-clowdappref
   labels:
-    app: mixed-deps-app 
+    app: mixed-deps-app
