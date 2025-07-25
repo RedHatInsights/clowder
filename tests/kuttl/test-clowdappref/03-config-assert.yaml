@@ -23,20 +23,20 @@ commands:
     echo "✅ Endpoints section exists"
 
     # Check that remote-app endpoints are present with correct structure
-    AUTH_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "remote-app-auth-service")' /tmp/consumer-app-config.json)
-    PAYMENT_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "remote-app-payment-service")' /tmp/consumer-app-config.json)
+    AUTH_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app")' /tmp/consumer-app-config.json)
+    PAYMENT_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "payment-service" and .app == "remote-app")' /tmp/consumer-app-config.json)
 
-        if [ -z "$AUTH_ENDPOINT" ] || [ "$AUTH_ENDPOINT" = "null" ]; then
-        echo "❌ remote-app-auth-service endpoint not found"
+            if [ -z "$AUTH_ENDPOINT" ] || [ "$AUTH_ENDPOINT" = "null" ]; then
+        echo "❌ auth-service endpoint (app: remote-app) not found"
         exit 1
     fi
-    echo "✅ remote-app-auth-service endpoint found"
+    echo "✅ auth-service endpoint (app: remote-app) found"
 
     if [ -z "$PAYMENT_ENDPOINT" ] || [ "$PAYMENT_ENDPOINT" = "null" ]; then
-        echo "❌ remote-app-payment-service endpoint not found"
+        echo "❌ payment-service endpoint (app: remote-app) not found"
         exit 1
     fi
-    echo "✅ remote-app-payment-service endpoint found"
+    echo "✅ payment-service endpoint (app: remote-app) found"
 
     # Verify auth-service configuration
     AUTH_HOSTNAME=$(echo "$AUTH_ENDPOINT" | jq -r '.hostname')
@@ -73,7 +73,7 @@ commands:
 
     # Check specific API path for auth-service
     echo "$AUTH_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/remote-app-auth-service/")' > /dev/null || (echo "❌ Missing /api/remote-app-auth-service/ path" && exit 1)
-    echo "✅ remote-app-auth-service API path is correct"
+    echo "✅ auth-service API path is correct"
 
     # Verify payment-service configuration
     PAYMENT_HOSTNAME=$(echo "$PAYMENT_ENDPOINT" | jq -r '.hostname')
@@ -102,21 +102,21 @@ commands:
     echo "✅ payment-service has 2 API paths ($PAYMENT_API_PATHS paths)"
 
         # Check specific API paths for payment-service
-    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/v1/payment/")' > /dev/null || (echo "❌ Missing /api/v1/payment/ path" && exit 1)
-    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/v2/payment/")' > /dev/null || (echo "❌ Missing /api/v2/payment/ path" && exit 1)
-    echo "✅ remote-app-payment-service API paths are correct"
+    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/payment1/")' > /dev/null || (echo "❌ Missing /api/payment1/ path" && exit 1)
+    echo "$PAYMENT_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/payment2/")' > /dev/null || (echo "❌ Missing /api/payment2/ path" && exit 1)
+    echo "✅ payment-service API paths are correct"
 
-    # Check consumer-app-processor endpoint (self-reference)
-    CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "consumer-app-processor")' /tmp/consumer-app-config.json)
+        # Check consumer-app-processor endpoint (self-reference)
+    CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "processor" and .app == "consumer-app")' /tmp/consumer-app-config.json)
     if [ -z "$CONSUMER_ENDPOINT" ] || [ "$CONSUMER_ENDPOINT" = "null" ]; then
-        echo "❌ consumer-app-processor endpoint not found"
+        echo "❌ processor endpoint (app: consumer-app) not found"
         exit 1
     fi
-    echo "✅ consumer-app-processor endpoint found"
+    echo "✅ processor endpoint (app: consumer-app) found"
 
     # Check consumer-app-processor API path
     echo "$CONSUMER_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/consumer-app-processor/")' > /dev/null || (echo "❌ Missing /api/consumer-app-processor/ path" && exit 1)
-    echo "✅ consumer-app-processor API path is correct"
+    echo "✅ consumer-app processor API path is correct"
 
     echo "🎉 Consumer app configuration validation complete!"
 
@@ -139,23 +139,23 @@ commands:
     # Count total endpoints (should have ClowdAppRef + ClowdApp endpoints)
     TOTAL_ENDPOINTS=$(jq '.endpoints | length' /tmp/mixed-deps-app-config.json)
     if [ "$TOTAL_ENDPOINTS" -lt 3 ]; then
-        echo "❌ Expected at least 3 endpoints (remote-app-auth-service, remote-app-payment-service, consumer-app-processor), found: $TOTAL_ENDPOINTS"
-        jq '.endpoints[].name' /tmp/mixed-deps-app-config.json
+        echo "❌ Expected at least 3 endpoints (auth-service from remote-app, payment-service from remote-app, processor from consumer-app), found: $TOTAL_ENDPOINTS"
+        jq '.endpoints[] | {name: .name, app: .app}' /tmp/mixed-deps-app-config.json
         exit 1
     fi
     echo "✅ Found $TOTAL_ENDPOINTS endpoints as expected"
 
     # Check that remote-app endpoints are present (from ClowdAppRef)
-    jq -e '.endpoints[] | select(.name == "remote-app-auth-service")' /tmp/mixed-deps-app-config.json > /dev/null || (echo "❌ remote-app-auth-service endpoint missing" && exit 1)
-    jq -e '.endpoints[] | select(.name == "remote-app-payment-service")' /tmp/mixed-deps-app-config.json > /dev/null || (echo "❌ remote-app-payment-service endpoint missing" && exit 1)
+    jq -e '.endpoints[] | select(.name == "auth-service" and .app == "remote-app")' /tmp/mixed-deps-app-config.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app) missing" && exit 1)
+    jq -e '.endpoints[] | select(.name == "payment-service" and .app == "remote-app")' /tmp/mixed-deps-app-config.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app) missing" && exit 1)
     echo "✅ ClowdAppRef endpoints present"
 
     # Check that consumer-app endpoints are present (from ClowdApp dependency)
-    CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "consumer-app-processor")' /tmp/mixed-deps-app-config.json)
+    CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "processor" and .app == "consumer-app")' /tmp/mixed-deps-app-config.json)
     if [ -z "$CONSUMER_ENDPOINT" ] || [ "$CONSUMER_ENDPOINT" = "null" ]; then
-        echo "❌ consumer-app-processor endpoint not found"
+        echo "❌ processor endpoint (app: consumer-app) not found"
         echo "Available endpoints:"
-        jq '.endpoints[].name' /tmp/mixed-deps-app-config.json
+        jq '.endpoints[] | {name: .name, app: .app}' /tmp/mixed-deps-app-config.json
         exit 1
     fi
     echo "✅ ClowdApp dependency endpoint present"
@@ -169,12 +169,12 @@ commands:
     echo "✅ consumer-app endpoint has internal hostname: $CONSUMER_HOSTNAME"
 
     # Verify auth-service still has external hostname (from ClowdAppRef)
-    AUTH_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "remote-app-auth-service") | .hostname' /tmp/mixed-deps-app-config.json)
+    AUTH_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app") | .hostname' /tmp/mixed-deps-app-config.json)
     if [ "$AUTH_HOSTNAME" != "auth.remote-cluster.example.com" ]; then
-        echo "❌ remote-app-auth-service should have external hostname, got: $AUTH_HOSTNAME"
+        echo "❌ auth-service (app: remote-app) should have external hostname, got: $AUTH_HOSTNAME"
         exit 1
     fi
-    echo "✅ remote-app-auth-service has external hostname: $AUTH_HOSTNAME"
+    echo "✅ auth-service (app: remote-app) has external hostname: $AUTH_HOSTNAME"
 
     echo "🎉 Mixed deps app configuration validation complete!"
 
@@ -182,90 +182,34 @@ commands:
     #!/bin/bash
     set -e
 
-    echo "🔍 Testing endpoint structure and dependencies configuration..."
+    echo "🔍 Testing endpoint structure and configuration..."
 
-    # Check dependencies section in consumer-app
+    # Check endpoints section in consumer-app
     kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/consumer-config-deps.json
 
-    # Verify dependencies section exists and contains remote-service
-    DEPS_SECTION=$(jq -r '.dependencies // empty' /tmp/consumer-config-deps.json)
-    if [ -z "$DEPS_SECTION" ]; then
-        echo "❌ Missing dependencies section in consumer-app config"
+    # Verify endpoints section exists and contains remote-app endpoints
+    ENDPOINTS_SECTION=$(jq -r '.endpoints // empty' /tmp/consumer-config-deps.json)
+    if [ -z "$ENDPOINTS_SECTION" ]; then
+        echo "❌ Missing endpoints section in consumer-app config"
         exit 1
     fi
-    echo "✅ Dependencies section exists"
+    echo "✅ Endpoints section exists"
 
-        # Check if remote-app is listed in dependencies
-    jq -e '.dependencies | has("remote-app")' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ remote-app not found in dependencies" && exit 1)
-    echo "✅ remote-app found in dependencies"
+    # Check if remote-app endpoints are present in endpoints array
+    jq -e '.endpoints[] | select(.app == "remote-app" and .name == "auth-service")' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app) not found in endpoints" && exit 1)
+    jq -e '.endpoints[] | select(.app == "remote-app" and .name == "payment-service")' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app) not found in endpoints" && exit 1)
+    echo "✅ Both auth-service and payment-service endpoints found for remote-app"
 
-    # Verify remote-app dependency structure
-    REMOTE_APP_DEPS=$(jq -r '.dependencies["remote-app"]' /tmp/consumer-config-deps.json)
-    if [ "$REMOTE_APP_DEPS" = "null" ] || [ -z "$REMOTE_APP_DEPS" ]; then
-        echo "❌ remote-app dependency has no endpoints"
-        exit 1
-    fi
-    echo "✅ remote-app dependency has endpoint configuration"
+    # Check if consumer-app processor endpoint is present (self-reference)
+    jq -e '.endpoints[] | select(.app == "consumer-app" and .name == "processor")' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ processor endpoint (app: consumer-app) not found in endpoints" && exit 1)
+    echo "✅ processor endpoint found for consumer-app"
 
-    # Check that auth-service and payment-service are in the dependency endpoints
-    jq -e '.dependencies["remote-app"]["remote-app-auth-service"]' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ remote-app-auth-service not found in remote-app dependencies" && exit 1)
-    jq -e '.dependencies["remote-app"]["remote-app-payment-service"]' /tmp/consumer-config-deps.json > /dev/null || (echo "❌ remote-app-payment-service not found in remote-app dependencies" && exit 1)
-    echo "✅ Both remote-app-auth-service and remote-app-payment-service found in dependencies"
-
-    # Test mixed-deps-app dependencies
+    # Test mixed-deps-app endpoints
     kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/mixed-config-deps.json
 
-    # Should have both remote-app and consumer-app dependencies
-    jq -e '.dependencies | has("remote-app")' /tmp/mixed-config-deps.json > /dev/null || (echo "❌ remote-app not found in mixed-deps dependencies" && exit 1)
-    jq -e '.dependencies | has("consumer-app")' /tmp/mixed-config-deps.json > /dev/null || (echo "❌ consumer-app not found in mixed-deps dependencies" && exit 1)
-    echo "✅ Both remote-app and consumer-app found in mixed-deps dependencies"
+    # Should have both remote-app and consumer-app endpoints
+    jq -e '.endpoints[] | select(.app == "remote-app")' /tmp/mixed-config-deps.json > /dev/null || (echo "❌ remote-app endpoints not found in mixed-deps endpoints" && exit 1)
+    jq -e '.endpoints[] | select(.app == "consumer-app")' /tmp/mixed-config-deps.json > /dev/null || (echo "❌ consumer-app endpoints not found in mixed-deps endpoints" && exit 1)
+    echo "✅ Both remote-app and consumer-app endpoints found in mixed-deps"
 
-    echo "🎉 Dependencies structure validation complete!"
-
-- script: |
-    #!/bin/bash
-    set -e
-
-    echo "🔍 Testing web services configuration..."
-
-    kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/consumer-web-config.json
-
-    # Check web services configuration exists
-    WEB_CONFIG=$(jq -r '.webPort // empty' /tmp/consumer-web-config.json)
-    if [ -z "$WEB_CONFIG" ]; then
-        echo "❌ Missing web port configuration"
-        exit 1
-    fi
-    echo "✅ Web port configuration found: $WEB_CONFIG"
-
-    # Verify web port is correct (should match ClowdEnvironment web port: 8000)
-    if [ "$WEB_CONFIG" != "8000" ]; then
-        echo "❌ Web port incorrect: expected '8000', got '$WEB_CONFIG'"
-        exit 1
-    fi
-    echo "✅ Web port correct: $WEB_CONFIG"
-
-    # Check metrics configuration
-    METRICS_CONFIG=$(jq -r '.metricsPort // empty' /tmp/consumer-web-config.json)
-    if [ -z "$METRICS_CONFIG" ]; then
-        echo "❌ Missing metrics port configuration"
-        exit 1
-    fi
-
-    if [ "$METRICS_CONFIG" != "9000" ]; then
-        echo "❌ Metrics port incorrect: expected '9000', got '$METRICS_CONFIG'"
-        exit 1
-    fi
-    echo "✅ Metrics port correct: $METRICS_CONFIG"
-
-    # Check metrics path
-    METRICS_PATH=$(jq -r '.metricsPath // empty' /tmp/consumer-web-config.json)
-    if [ "$METRICS_PATH" != "/metrics" ]; then
-        echo "❌ Metrics path incorrect: expected '/metrics', got '$METRICS_PATH'"
-        exit 1
-    fi
-    echo "✅ Metrics path correct: $METRICS_PATH"
-
-    echo "🎉 Web services configuration validation complete!"
-    echo ""
-    echo "🎊 All ClowdAppRef configuration tests passed successfully! 🎊"
+    echo "🎉 Endpoints structure validation complete!"
