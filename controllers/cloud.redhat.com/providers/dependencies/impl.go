@@ -162,7 +162,7 @@ func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd
 }
 
 func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployment, depAppRef crd.ClowdAppRef, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, webPort int32, tlsPort int32, privatePort int32, tlsPrivatePort int32) {
-	apiPaths := provutils.GetAPIPaths(innerDeployment, innerDeployment.Name)
+	apiPaths := provutils.GetAPIPaths(innerDeployment, fmt.Sprintf("%s-%s", depAppRef.Name, innerDeployment.Name))
 
 	// Use the configured ports from the ClowdAppRef, or fall back to defaults
 	deploymentPort := webPort
