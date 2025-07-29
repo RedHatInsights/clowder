@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -13,24 +12,27 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
 const (
 	TerminationLogPath = "/dev/termination-log"
 )
 
-func (dp *deploymentProvider) makeDeployment(deployment crd.Deployment, app *crd.ClowdApp) error {
+func (dp *deploymentProvider) makeDeployment(deployment *crd.Deployment, app *crd.ClowdApp) error {
 
 	d := &apps.Deployment{}
-	nn := app.GetDeploymentNamespacedName(&deployment)
+	nn := app.GetDeploymentNamespacedName(deployment)
 
 	if err := dp.Cache.Create(CoreDeployment, nn, d); err != nil {
 		return err
 	}
 
-	if err := initDeployment(app, dp.Env, d, nn, &deployment); err != nil {
+	if err := initDeployment(app, dp.Env, d, nn, deployment); err != nil {
 		return err
 	}
 
@@ -187,7 +189,7 @@ func setImagePullPolicy(env *crd.ClowdEnvironment, c *core.Container) {
 
 }
 
-func loadEnvVars(pod crd.PodSpec) []core.EnvVar {
+func loadEnvVars(pod *crd.PodSpec) []core.EnvVar {
 	envvars := pod.Env
 	envvars = append(envvars, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
 
@@ -239,7 +241,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		Image:                    pod.Image,
 		Command:                  pod.Command,
 		Args:                     pod.Args,
-		Env:                      loadEnvVars(pod),
+		Env:                      loadEnvVars(&pod),
 		Resources:                ProcessResources(&pod, env),
 		VolumeMounts:             pod.VolumeMounts,
 		TerminationMessagePath:   TerminationLogPath,

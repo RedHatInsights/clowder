@@ -16,9 +16,10 @@ package sizing
 // strictly. The method names are long, but more importantly, accurate
 
 import (
-	conf "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing/sizingconfig"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	conf "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing/sizingconfig"
 )
 
 // Public methods

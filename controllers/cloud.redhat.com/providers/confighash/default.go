@@ -1,13 +1,14 @@
 package confighash
 
 import (
+	apps "k8s.io/api/apps/v1"
+	batch "k8s.io/api/batch/v1"
+	core "k8s.io/api/core/v1"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	apps "k8s.io/api/apps/v1"
-	batch "k8s.io/api/batch/v1"
-	core "k8s.io/api/core/v1"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -43,12 +44,12 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	for _, deployment := range dList.Items {
-		depInner := deployment
+	for i := range dList.Items {
+		depInner := &dList.Items[i]
 		annotations := map[string]string{"configHash": hash}
 		utils.UpdateAnnotations(&depInner.Spec.Template, annotations)
 
-		if err := ch.Cache.Update(deployProvider.CoreDeployment, &depInner); err != nil {
+		if err := ch.Cache.Update(deployProvider.CoreDeployment, depInner); err != nil {
 			return err
 		}
 	}
@@ -58,12 +59,12 @@ func (ch *confighashProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	for _, job := range jList.Items {
-		jobInner := job
+	for i := range jList.Items {
+		jobInner := &jList.Items[i]
 		annotations := map[string]string{"configHash": hash}
 		utils.UpdateAnnotations(&jobInner.Spec.JobTemplate.Spec.Template, annotations)
 
-		if err := ch.Cache.Update(cronjobProvider.CoreCronJob, &jobInner); err != nil {
+		if err := ch.Cache.Update(cronjobProvider.CoreCronJob, jobInner); err != nil {
 			return err
 		}
 	}

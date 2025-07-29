@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+	core "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
-	core "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type appInterfaceObjectstoreProvider struct {

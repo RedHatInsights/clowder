@@ -1,12 +1,13 @@
 package featureflags
 
 import (
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type appInterfaceFeatureFlagProvider struct {

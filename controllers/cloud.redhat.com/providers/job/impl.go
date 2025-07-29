@@ -3,9 +3,10 @@ package job
 import (
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"

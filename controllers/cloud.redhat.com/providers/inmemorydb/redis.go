@@ -58,9 +58,9 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		return nil
 	}
 
-	providerUtils.DebugLog(r.Log, "sharedinMemoryDbAppName", "app", app.Name, "sharedInMemoryDbAppName", app.Spec.SharedInMemoryDbAppName)
+	providerUtils.DebugLog(r.Log, "sharedinMemoryDbAppName", "app", app.Name, "sharedInMemoryDbAppName", app.Spec.SharedInMemoryDBAppName)
 
-	if app.Spec.SharedInMemoryDbAppName != "" {
+	if app.Spec.SharedInMemoryDBAppName != "" {
 		return r.processSharedInMemoryDb(app)
 	}
 

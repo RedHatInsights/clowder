@@ -61,14 +61,15 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/web"
 
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
@@ -92,6 +93,8 @@ type ClowdEnvironmentReconciler struct {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdenvironments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapprefs,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapprefs/status,verbs=get;update;patch
 
 func SetEnv(name string) {
 	mu.Lock()
@@ -115,7 +118,7 @@ func ReadEnv() string {
 func (r *ClowdEnvironmentReconciler) getEnv(ctx context.Context, req ctrl.Request) (crd.ClowdEnvironment, ctrl.Result, error) {
 	env := crd.ClowdEnvironment{}
 
-	if getEnvErr := r.Client.Get(ctx, req.NamespacedName, &env); getEnvErr != nil {
+	if getEnvErr := r.Get(ctx, req.NamespacedName, &env); getEnvErr != nil {
 		return env, ctrl.Result{}, getEnvErr
 	}
 
@@ -229,6 +232,16 @@ func (r *ClowdEnvironmentReconciler) setupWatch(ctrlr *builder.Builder, mgr ctrl
 func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Recorder = mgr.GetEventRecorderFor("env")
 
+	cache := mgr.GetCache()
+
+	// Index ClowdAppRef by envName for efficient lookups
+	if err := cache.IndexField(
+		context.TODO(), &crd.ClowdAppRef{}, "spec.envName", func(o client.Object) []string {
+			return []string{o.(*crd.ClowdAppRef).Spec.EnvName}
+		}); err != nil {
+		return err
+	}
+
 	ctrlr := ctrl.NewControllerManagedBy(mgr).For(&crd.ClowdEnvironment{})
 
 	watchers := []Watcher{
@@ -257,6 +270,12 @@ func (r *ClowdEnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 	)
 
+	ctrlr.Watches(
+		&crd.ClowdAppRef{},
+		handler.EnqueueRequestsFromMapFunc(r.envToEnqueueUponAppRefUpdate),
+		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
+	)
+
 	ctrlr.WithOptions(controller.Options{
 		RateLimiter: workqueue.NewTypedItemExponentialFailureRateLimiter[reconcile.Request](time.Duration(500*time.Millisecond), time.Duration(60*time.Second)),
 	})
@@ -272,7 +291,7 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(ctx context.Conte
 	// Get the ClowdEnvironment resource
 
 	app := crd.ClowdApp{}
-	err := r.Client.Get(ctx, obj, &app)
+	err := r.Get(ctx, obj, &app)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -288,6 +307,35 @@ func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppUpdate(ctx context.Conte
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
 			Name: app.Spec.EnvName,
+		},
+	}}
+}
+
+func (r *ClowdEnvironmentReconciler) envToEnqueueUponAppRefUpdate(ctx context.Context, a client.Object) []reconcile.Request {
+	obj := types.NamespacedName{
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
+	}
+
+	// Get the ClowdAppRef resource
+
+	appRef := crd.ClowdAppRef{}
+	err := r.Get(ctx, obj, &appRef)
+
+	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return []reconcile.Request{}
+		}
+		r.Log.Error(err, "Failed to fetch ClowdAppRef")
+		return nil
+	}
+
+	logMessage(r.Log, "Reconciliation triggered", "ctrl", "env", "type", "update", "resType", "ClowdAppRef", "name", a.GetName(), "namespace", a.GetNamespace())
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name: appRef.Spec.EnvName,
 		},
 	}}
 }
