@@ -15,9 +15,7 @@ linters:
     staticcheck:
       checks:
         - all
-        - '-SA1019'  # ignore deprecations
         - '-ST1003'  # ignore naming
-        - '-ST1000'  # ignore package comment
 
 formatters:
   enable:

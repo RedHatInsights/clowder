@@ -33,7 +33,7 @@ func (web *webProvider) EnvProvide() error {
 
 func (web *webProvider) Provide(app *crd.ClowdApp) error {
 
-	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port)) // nolint:staticcheck  // ignore SA1019, we know this is deprecated
 	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
 	if privatePort == 0 {
