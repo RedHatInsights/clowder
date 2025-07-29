@@ -93,6 +93,7 @@ func (web *localWebProvider) EnvProvide() error {
 
 func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
+	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	web.Config.Hostname = &web.Env.Status.Hostname
 
