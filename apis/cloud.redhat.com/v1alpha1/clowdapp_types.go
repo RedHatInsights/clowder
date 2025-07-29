@@ -580,7 +580,7 @@ func (i *ClowdApp) GetLabels() map[string]string {
 	}
 
 	if _, ok := i.Labels["app"]; !ok {
-		i.Labels["app"] = i.ObjectMeta.Name
+		i.Labels["app"] = i.Name
 	}
 
 	newMap := make(map[string]string, len(i.Labels))
@@ -610,8 +610,8 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
-		Name:       i.ObjectMeta.Name,
-		UID:        i.ObjectMeta.UID,
+		Name:       i.Name,
+		UID:        i.UID,
 		Controller: utils.TruePtr(),
 	}
 }
@@ -633,7 +633,7 @@ func (i *ClowdApp) GetClowdName() string {
 
 // GetUID returns ObjectMeta.UID
 func (i *ClowdApp) GetUID() types.UID {
-	return i.ObjectMeta.UID
+	return i.UID
 }
 
 // GetDeploymentStatus returns the Status.Deployments member

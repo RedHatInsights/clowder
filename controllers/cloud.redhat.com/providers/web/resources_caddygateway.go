@@ -242,7 +242,7 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 
 	cm.Name = snn.Name
 	cm.Namespace = snn.Namespace
-	cm.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
+	cm.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
 
 	appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 	if err != nil {
@@ -335,7 +335,7 @@ func makeWebGatewayDeployment(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	port := int32(9090)
 

@@ -180,7 +180,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 }
 
 func (db *sharedDbProvider) EnvProvide() error {
-	appList, err := db.Provider.Env.GetAppsInEnv(db.Provider.Ctx, db.Provider.Client)
+	appList, err := db.Env.GetAppsInEnv(db.Ctx, db.Client)
 	if err != nil {
 		return err
 	}
@@ -317,7 +317,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 
 	secret.Name = nn.Name
 	secret.Namespace = nn.Namespace
-	secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
+	secret.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 	secret.Type = core.SecretTypeOpaque
 
 	if err := db.Cache.Update(SharedDBAppSecret, secret); err != nil {

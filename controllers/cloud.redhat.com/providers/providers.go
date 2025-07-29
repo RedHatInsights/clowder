@@ -294,7 +294,7 @@ func MakeOrGetSecret(obj obj.ClowdObject, cache *rc.ObjectCache, resourceIdent r
 
 		secret.Name = nn.Name
 		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
+		secret.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
 	} else {

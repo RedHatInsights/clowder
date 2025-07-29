@@ -294,7 +294,7 @@ func createPrometheusGatewayDeployment(cache *rc.ObjectCache, env *crd.ClowdEnvi
 		MatchLabels: labels,
 	}
 
-	deployment.Spec.Template.ObjectMeta.Labels = labels
+	deployment.Spec.Template.Labels = labels
 
 	deployment.Spec.Template.Spec.Containers = []core.Container{
 		{

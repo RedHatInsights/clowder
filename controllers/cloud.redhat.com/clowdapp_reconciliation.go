@@ -248,7 +248,7 @@ func (r *ClowdAppReconciliation) isNamespaceDeleted(namespace string, message st
 		return ctrl.Result{Requeue: true}, getNSErr
 	}
 
-	if ns.ObjectMeta.DeletionTimestamp != nil {
+	if ns.DeletionTimestamp != nil {
 		return ctrl.Result{}, NewSkippedError(message)
 	}
 	return ctrl.Result{}, nil

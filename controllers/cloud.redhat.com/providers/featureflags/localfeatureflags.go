@@ -303,7 +303,7 @@ func makeLocalFeatureFlags(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap pr
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	port := int32(featureFlagsPort)
 
@@ -416,7 +416,7 @@ func makeLocalFeatureFlagsEdge(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMa
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	portEdge := int32(featureFlagsEdgePort)
 

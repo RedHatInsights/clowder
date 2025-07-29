@@ -187,7 +187,7 @@ func (i *ClowdJobInvocation) GetLabels() map[string]string {
 	}
 
 	if _, ok := i.Labels["clowdjob"]; !ok {
-		i.Labels["clowdjob"] = i.ObjectMeta.Name
+		i.Labels["clowdjob"] = i.Name
 	}
 
 	newMap := make(map[string]string, len(i.Labels))
@@ -212,8 +212,8 @@ func (i *ClowdJobInvocation) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
-		Name:       i.ObjectMeta.Name,
-		UID:        i.ObjectMeta.UID,
+		Name:       i.Name,
+		UID:        i.UID,
 		Controller: utils.TruePtr(),
 	}
 }
@@ -240,7 +240,7 @@ func (i *ClowdJobInvocation) GetIQEName() string {
 
 // GetUID returns ObjectMeta.UID
 func (i *ClowdJobInvocation) GetUID() types.UID {
-	return i.ObjectMeta.UID
+	return i.UID
 }
 
 // SetObjectMeta sets the metadata on a ClowdApp object.
@@ -258,7 +258,7 @@ func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client) (*batchv1.JobList, error) {
 
 	jobs := batchv1.JobList{}
-	if err := c.List(ctx, &jobs, client.InNamespace(i.ObjectMeta.Namespace)); err != nil {
+	if err := c.List(ctx, &jobs, client.InNamespace(i.Namespace)); err != nil {
 		return nil, err
 	}
 

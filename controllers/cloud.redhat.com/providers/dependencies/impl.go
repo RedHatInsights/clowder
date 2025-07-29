@@ -14,8 +14,8 @@ import (
 
 func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 
-	if dep.Provider.Env.Spec.Providers.Web.PrivatePort == 0 {
-		dep.Provider.Env.Spec.Providers.Web.PrivatePort = 10000
+	if dep.Env.Spec.Providers.Web.PrivatePort == 0 {
+		dep.Env.Spec.Providers.Web.PrivatePort = 10000
 	}
 
 	depConfig := []config.DependencyEndpoint{}
@@ -30,10 +30,10 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		[]string{app.Name},
 		&depConfig,
 		&privDepConfig,
-		dep.Provider.Env.Spec.Providers.Web.Port,
-		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
-		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
-		dep.Provider.Env.Spec.Providers.Web.TLS.PrivatePort,
+		dep.Env.Spec.Providers.Web.Port,
+		dep.Env.Spec.Providers.Web.TLS.Port,
+		dep.Env.Spec.Providers.Web.PrivatePort,
+		dep.Env.Spec.Providers.Web.TLS.PrivatePort,
 	)
 
 	// Return if no deps
@@ -66,10 +66,10 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	missingDeps := makeDepConfig(
 		&depConfig,
 		&privDepConfig,
-		dep.Provider.Env.Spec.Providers.Web.Port,
-		dep.Provider.Env.Spec.Providers.Web.TLS.Port,
-		dep.Provider.Env.Spec.Providers.Web.PrivatePort,
-		dep.Provider.Env.Spec.Providers.Web.TLS.PrivatePort,
+		dep.Env.Spec.Providers.Web.Port,
+		dep.Env.Spec.Providers.Web.TLS.Port,
+		dep.Env.Spec.Providers.Web.PrivatePort,
+		dep.Env.Spec.Providers.Web.TLS.PrivatePort,
 		app,
 		apps,
 		appRefs,

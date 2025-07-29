@@ -753,7 +753,7 @@ func (i *ClowdEnvironment) SetConditions(conditions clusterv1.Conditions) {
 // GetLabels returns a base set of labels relating to the ClowdEnvironment.
 func (i *ClowdEnvironment) GetLabels() map[string]string {
 	return map[string]string{
-		"app": i.ObjectMeta.Name,
+		"app": i.Name,
 	}
 }
 
@@ -762,8 +762,8 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
-		Name:       i.ObjectMeta.Name,
-		UID:        i.ObjectMeta.UID,
+		Name:       i.Name,
+		UID:        i.UID,
 		Controller: utils.TruePtr(),
 	}
 }
@@ -790,7 +790,7 @@ func (i *ClowdEnvironment) GetClowdSAName() string {
 
 // GetUID returns ObjectMeta.UID
 func (i *ClowdEnvironment) GetUID() types.UID {
-	return i.ObjectMeta.UID
+	return i.UID
 }
 
 // GetDeploymentStatus returns the Status.Deployments member

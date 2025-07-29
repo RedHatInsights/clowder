@@ -184,7 +184,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 
 	cm.Name = snn.Name
 	cm.Namespace = snn.Namespace
-	cm.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
+	cm.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 
 	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort, env)
 	if err != nil {

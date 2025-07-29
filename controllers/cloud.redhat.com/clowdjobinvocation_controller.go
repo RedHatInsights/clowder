@@ -69,7 +69,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 
 	cji := crd.ClowdJobInvocation{}
-	if err := r.Client.Get(ctx, req.NamespacedName, &cji); err != nil {
+	if err := r.Get(ctx, req.NamespacedName, &cji); err != nil {
 		if k8serr.IsNotFound(err) {
 			// Must have been deleted
 			return ctrl.Result{}, nil
@@ -125,7 +125,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	// Get the ClowdApp. Used to find definition of job being invoked
 	app := crd.ClowdApp{}
-	appErr := r.Client.Get(ctx, types.NamespacedName{
+	appErr := r.Get(ctx, types.NamespacedName{
 		Name:      cji.Spec.AppName,
 		Namespace: req.Namespace,
 	}, &app)
@@ -153,7 +153,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// Get the ClowdEnv for InvokeJob. Env is needed to build out our pod
 	// template for each job
 	env := crd.ClowdEnvironment{}
-	envErr := r.Client.Get(ctx, types.NamespacedName{
+	envErr := r.Get(ctx, types.NamespacedName{
 		Name: app.Spec.EnvName,
 	}, &env)
 
@@ -214,7 +214,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 		if err := iqe.CreateIqeJobResource(ctx, &cache, &cji, &env, &app, nn, &j, r.Log, r.Client); err != nil {
 			r.Log.Error(err, "Iqe Job creation encountered an error", "jobinvocation", nn.Name)
-			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.ObjectMeta.Name)
+			r.Recorder.Eventf(&cji, "Warning", "IQEJobFailure", "Job [%s] failed to invoke", j.Name)
 			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, err); condErr != nil {
 				return ctrl.Result{}, condErr
 			}
@@ -236,7 +236,7 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			cji.Status.JobMap = map[string]crd.JobConditionState{nn.Name: crd.JobInvoked}
 		}
 
-		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
+		r.Recorder.Eventf(&cji, "Normal", "IQEJobInvoked", "Job [%s] was invoked successfully", j.Name)
 	}
 
 	if cacheErr := cache.ApplyAll(); cacheErr != nil {
@@ -288,11 +288,11 @@ func (r *ClowdJobInvocationReconciler) InvokeJob(cache *rc.ObjectCache, job *crd
 
 	r.Log.Info("Job Invoked Successfully", "jobinvocation", job.Name, "namespace", app.Namespace)
 	if cji.Status.JobMap != nil {
-		cji.Status.JobMap[j.ObjectMeta.Name] = crd.JobInvoked
+		cji.Status.JobMap[j.Name] = crd.JobInvoked
 	} else {
-		cji.Status.JobMap = map[string]crd.JobConditionState{j.ObjectMeta.Name: crd.JobInvoked}
+		cji.Status.JobMap = map[string]crd.JobConditionState{j.Name: crd.JobInvoked}
 	}
-	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.ObjectMeta.Name)
+	r.Recorder.Eventf(cji, "Normal", "ClowdJobInvoked", "Job [%s] was invoked successfully", j.Name)
 
 	return nil
 }
@@ -325,7 +325,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 func UpdateInvokedJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
 
 	for _, s := range jobs.Items {
-		jobName := s.ObjectMeta.Name
+		jobName := s.Name
 		if _, ok := cji.Status.JobMap[jobName]; ok {
 			for _, c := range s.Status.Conditions {
 				condition := c.Type
@@ -365,7 +365,7 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 	// backoffLimit threshold. The Condition status is only populated when
 	// the jobs have succeeded or passed the backoff limit
 	for _, s := range jobs.Items {
-		jobName := s.ObjectMeta.Name
+		jobName := s.Name
 		if _, ok := cji.Status.JobMap[jobName]; ok {
 			for _, c := range s.Status.Conditions {
 				condition := c.Type

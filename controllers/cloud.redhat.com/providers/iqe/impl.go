@@ -264,10 +264,10 @@ func CreateIqeJobResource(ctx context.Context, cache *rc.ObjectCache, cji *crd.C
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
-	j.ObjectMeta.Labels = labels
-	j.ObjectMeta.Labels["job"] = cji.GetIQEName()
+	j.Labels = labels
+	j.Labels["job"] = cji.GetIQEName()
 	j.Name = nn.Name
-	j.Spec.Template.ObjectMeta.Labels = labels
+	j.Spec.Template.Labels = labels
 
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 	j.Spec.BackoffLimit = utils.Int32Ptr(0)

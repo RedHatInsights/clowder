@@ -39,7 +39,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		refApp, err = crd.GetAppForDBInSameEnv(e.Provider.Ctx, e.Provider.Client, app, true)
+		refApp, err = crd.GetAppForDBInSameEnv(e.Ctx, e.Client, app, true)
 
 		if err != nil {
 			return err
@@ -50,7 +50,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 		ecNameSpace = app.Namespace
 	}
 
-	err := e.Provider.Client.List(e.Provider.Ctx, &secrets, client.InNamespace(ecNameSpace))
+	err := e.Client.List(e.Ctx, &secrets, client.InNamespace(ecNameSpace))
 
 	if err != nil {
 		msg := fmt.Sprintf("Failed to list secrets in %s", ecNameSpace)
@@ -97,7 +97,7 @@ func (e *elasticache) Provide(app *crd.ClowdApp) error {
 		return &missingDeps
 	}
 
-	e.Provider.Config.InMemoryDb = &creds
+	e.Config.InMemoryDb = &creds
 
 	return nil
 }

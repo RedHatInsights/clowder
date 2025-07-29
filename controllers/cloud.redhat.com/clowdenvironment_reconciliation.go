@@ -281,7 +281,7 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 		return ctrl.Result{Requeue: true}, getNSErr
 	}
 
-	if ens.ObjectMeta.DeletionTimestamp != nil {
+	if ens.DeletionTimestamp != nil {
 		return ctrl.Result{}, NewSkippedError("target namespace is to be deleted")
 	}
 

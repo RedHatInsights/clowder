@@ -84,7 +84,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		},
 	}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},

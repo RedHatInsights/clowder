@@ -324,7 +324,7 @@ func makeLocalMinIO(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers
 			VolumeSource: volSource,
 		},
 	}
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	port := int32(9000)
 

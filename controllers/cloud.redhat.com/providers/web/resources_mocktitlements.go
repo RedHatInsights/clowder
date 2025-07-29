@@ -63,7 +63,7 @@ func makeMocktitlementsSecret(p *providers.Provider) error {
 
 	sec.Name = nn.Name
 	sec.Namespace = nn.Namespace
-	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
+	sec.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
 	sec.Type = core.SecretTypeOpaque
 
 	envSec := &core.Secret{}
@@ -177,7 +177,7 @@ func makeMocktitlements(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap provi
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	env := o.(*crd.ClowdEnvironment)
 	caddyImage := provutils.GetCaddyImage(env)

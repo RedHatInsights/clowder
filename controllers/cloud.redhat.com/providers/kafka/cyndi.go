@@ -126,7 +126,7 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 
 	foundMatchingApps := []crd.ClowdApp{}
 	for _, foundApp := range appList.Items {
-		if foundApp.ObjectMeta.Name == name {
+		if foundApp.Name == name {
 			foundMatchingApps = append(foundMatchingApps, foundApp)
 		}
 	}
