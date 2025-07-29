@@ -17,7 +17,7 @@ func CreateAPIServer() *http.Server {
 		w.Header().Add(
 			"Content-Type", "application/json",
 		)
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdapps/present/", func(w http.ResponseWriter, _ *http.Request) {
@@ -25,7 +25,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetPresentApps())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdapps/managed/", func(w http.ResponseWriter, _ *http.Request) {
@@ -33,7 +33,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetManagedApps())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdenvs/present/", func(w http.ResponseWriter, _ *http.Request) {
@@ -41,7 +41,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetPresentEnvs())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdenvs/managed/", func(w http.ResponseWriter, _ *http.Request) {
@@ -49,7 +49,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetManagedEnvs())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	srv := http.Server{
