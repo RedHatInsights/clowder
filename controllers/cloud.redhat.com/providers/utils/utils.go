@@ -10,6 +10,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
@@ -23,19 +24,37 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var DefaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
-var DefaultImageCaddyGateway = DefaultImageCaddySideCar
-var DefaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
-var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:745c249"
-var DefaultKeyCloakVersion = "23.0.1"
-var DefaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:5519eba"
-var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
-var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
-var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
-var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
-var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
-var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
-var DefaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
+var defaultImageCaddyGateway = defaultImageCaddySideCar
+var defaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
+var defaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:745c249"
+var defaultKeyCloakVersion = "23.0.1"
+var defaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:5519eba"
+var defaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", defaultKeyCloakVersion)
+var defaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
+var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
+var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
+var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
+var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
+var defaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+
+// GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
+func GetDefaultDatabaseImage(version int32) (string, error) {
+	var defaultImageDatabasePG = map[int32]string{
+		16: defaultImageDatabasePG16,
+		15: defaultImageDatabasePG15,
+		14: defaultImageDatabasePG14,
+		13: defaultImageDatabasePG13,
+		12: defaultImageDatabasePG12,
+	}
+
+	image, ok := defaultImageDatabasePG[version]
+	if !ok {
+		return "", errors.NewClowderError(fmt.Sprintf("no default image for PostgreSQL version %d", version))
+	}
+
+	return image, nil
+}
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -182,7 +201,7 @@ func GetInMemoryDBImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.InMemoryDB != "" {
 		return clowderconfig.LoadedConfig.Images.InMemoryDB
 	}
-	return DefaultImageInMemoryDB
+	return defaultImageInMemoryDB
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
@@ -193,7 +212,7 @@ func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.CaddyGateway != "" {
 		return clowderconfig.LoadedConfig.Images.CaddyGateway
 	}
-	return DefaultImageCaddyGateway
+	return defaultImageCaddyGateway
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
@@ -204,7 +223,7 @@ func GetCaddyImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
 		return clowderconfig.LoadedConfig.Images.Caddy
 	}
-	return DefaultImageCaddySideCar
+	return defaultImageCaddySideCar
 }
 
 // GetCaddyProxyImage returns the caddy image to use in a given environment
@@ -215,7 +234,7 @@ func GetCaddyProxyImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
 		return clowderconfig.LoadedConfig.Images.CaddyProxy
 	}
-	return DefaultImageCaddyProxy
+	return defaultImageCaddyProxy
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
@@ -226,7 +245,7 @@ func GetKeycloakImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
 		return clowderconfig.LoadedConfig.Images.Keycloak
 	}
-	return DefaultImageKeyCloak
+	return defaultImageKeyCloak
 }
 
 // GetMocktitlementsImage returns the mocktitlements image to use in a given environment
@@ -237,7 +256,7 @@ func GetMocktitlementsImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Mocktitlements != "" {
 		return clowderconfig.LoadedConfig.Images.Mocktitlements
 	}
-	return DefaultImageMocktitlements
+	return defaultImageMocktitlements
 }
 
 // GetMockBOPImage returns the mock BOP image to use in a given environment
@@ -248,7 +267,7 @@ func GetMockBOPImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		return clowderconfig.LoadedConfig.Images.MBOP
 	}
-	return DefaultImageMBOP
+	return defaultImageMBOP
 }
 
 // GetKeycloakVersion returns the keycloak version to use in a given environment
@@ -256,7 +275,7 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.KeycloakVersion != "" {
 		return env.Spec.Providers.Web.KeycloakVersion
 	}
-	return DefaultKeyCloakVersion
+	return defaultKeyCloakVersion
 }
 
 func GetClowderNamespace() (string, error) {

@@ -164,7 +164,12 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		},
 	}
 
-	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, provutils.DefaultImageDatabasePG15, ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
+	dbImage, err := provutils.GetDefaultDatabaseImage(15)
+	if err != nil {
+		return err
+	}
+
+	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, dbImage, ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
 
 	if err = ff.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return err

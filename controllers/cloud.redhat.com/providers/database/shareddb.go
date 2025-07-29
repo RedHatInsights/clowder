@@ -108,10 +108,10 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 
 	var image string
 
-	image, ok := imageList[version]
+	image, err = provutils.GetDefaultDatabaseImage(version)
 
-	if !ok {
-		return nil, errors.NewClowderError(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
+	if err != nil {
+		return nil, err
 	}
 
 	imgComponents := strings.Split(image, ":")
