@@ -742,10 +742,12 @@ func init() {
 	SchemeBuilder.Register(&ClowdEnvironment{}, &ClowdEnvironmentList{})
 }
 
+// GetConditions returns the conditions for this ClowdEnvironment
 func (i *ClowdEnvironment) GetConditions() clusterv1.Conditions {
 	return i.Status.Conditions
 }
 
+// SetConditions updates the conditions for this ClowdEnvironment
 func (i *ClowdEnvironment) SetConditions(conditions clusterv1.Conditions) {
 	i.Status.Conditions = conditions
 }

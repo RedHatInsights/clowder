@@ -32,6 +32,7 @@ import (
 // log is for logging in this package.
 var clowdapplog = logf.Log.WithName("clowdapp-resource")
 
+// SetupWebhookWithManager configures the webhook for this ClowdApp resource
 func (i *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(i).

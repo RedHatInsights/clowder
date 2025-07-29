@@ -86,26 +86,32 @@ type Provider struct {
 	HashCache *hashcache.HashCache
 }
 
+// GetClient returns the Kubernetes client
 func (prov *Provider) GetClient() client.Client {
 	return prov.Client
 }
 
+// GetCtx returns the context for provider operations
 func (prov *Provider) GetCtx() context.Context {
 	return prov.Ctx
 }
 
+// GetEnv returns the ClowdEnvironment associated with this provider
 func (prov *Provider) GetEnv() *crd.ClowdEnvironment {
 	return prov.Env
 }
 
+// GetCache returns the object cache used by the provider
 func (prov *Provider) GetCache() *rc.ObjectCache {
 	return prov.Cache
 }
 
+// GetLog returns the logger instance for the provider
 func (prov *Provider) GetLog() logr.Logger {
 	return prov.Log
 }
 
+// GetConfig returns the application configuration
 func (prov *Provider) GetConfig() *config.AppConfig {
 	return prov.Config
 }

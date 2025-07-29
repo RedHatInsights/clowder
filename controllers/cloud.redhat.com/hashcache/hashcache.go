@@ -84,6 +84,7 @@ func (hc *HashCache) Read(obj client.Object) (*HashObject, error) {
 	return v, nil
 }
 
+// RemoveClowdObjectFromObjects removes a Clowder object from all cached objects
 func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -143,6 +144,7 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object, alwaysUpdate bool) 
 	return oldHash != hash, nil
 }
 
+// GetSuperHashForClowdObject returns the combined hash of all objects associated with a Clowder object
 func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) string {
 	hc.lock.RLock()
 	defer hc.lock.RUnlock()
@@ -181,6 +183,7 @@ func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) str
 	return generateHashFromData([]byte(superstring))
 }
 
+// AddClowdObjectToObject associates a Clowder object with a Kubernetes object in the cache
 func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
 	var oType string
 
@@ -218,6 +221,7 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 	return nil
 }
 
+// Delete removes an object from the hash cache
 func (hc *HashCache) Delete(obj client.Object) {
 	var oType string
 

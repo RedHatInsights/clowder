@@ -168,10 +168,12 @@ type ClowdJobInvocationList struct {
 	Items           []ClowdJobInvocation `json:"items"`
 }
 
+// GetConditions returns the conditions for this ClowdJobInvocation
 func (i *ClowdJobInvocation) GetConditions() clusterv1.Conditions {
 	return i.Status.Conditions
 }
 
+// SetConditions updates the conditions for this ClowdJobInvocation
 func (i *ClowdJobInvocation) SetConditions(conditions clusterv1.Conditions) {
 	i.Status.Conditions = conditions
 }
@@ -255,6 +257,7 @@ func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	}
 }
 
+// GetInvokedJobs retrieves all jobs associated with this ClowdJobInvocation
 func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client) (*batchv1.JobList, error) {
 
 	jobs := batchv1.JobList{}

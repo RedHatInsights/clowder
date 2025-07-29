@@ -197,6 +197,7 @@ type WebServices struct {
 // +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
+// DeploymentMetadata defines the metadata for the deployment.
 type DeploymentMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
@@ -242,10 +243,12 @@ type Deployment struct {
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
 }
 
+// GetWebServices returns the web services configuration for this deployment
 func (d *Deployment) GetWebServices() WebServices {
 	return d.WebServices
 }
 
+// GetReplicaCount returns the desired replica count for this deployment
 func (d *Deployment) GetReplicaCount() *int32 {
 	if d.Replicas != nil {
 		return d.Replicas
@@ -257,6 +260,7 @@ func (d *Deployment) GetReplicaCount() *int32 {
 	return &retVal
 }
 
+// HasAutoScaler returns true if this deployment has autoscaling configured
 func (d *Deployment) HasAutoScaler() bool {
 	return d.AutoScaler != nil || d.AutoScalerSimple != nil
 }
@@ -565,10 +569,12 @@ func init() {
 	SchemeBuilder.Register(&ClowdApp{}, &ClowdAppList{})
 }
 
+// GetConditions returns the conditions for this ClowdApp
 func (i *ClowdApp) GetConditions() clusterv1.Conditions {
 	return i.Status.Conditions
 }
 
+// SetConditions updates the conditions for this ClowdApp
 func (i *ClowdApp) SetConditions(conditions clusterv1.Conditions) {
 	i.Status.Conditions = conditions
 }
@@ -755,6 +761,7 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 	return nil, errors.New(errorOut)
 }
 
+// GetOurEnv retrieves the ClowdEnvironment associated with this ClowdApp
 func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *ClowdEnvironment) error {
 	return pClient.Get(ctx, types.NamespacedName{Name: i.Spec.EnvName}, env)
 }
