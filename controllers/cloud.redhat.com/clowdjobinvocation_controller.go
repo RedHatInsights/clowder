@@ -380,6 +380,7 @@ func countCompletedJobs(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) int 
 	return jobsCompleted
 }
 
+// HandleNotReady checks if the ClowdApp is ready and if not, requeues for reconiliation
 func (r *ClowdJobInvocationReconciler) HandleNotReady(ctx context.Context, app crd.ClowdApp, cji crd.ClowdJobInvocation) error {
 	if app.IsReady() {
 		return nil

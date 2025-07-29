@@ -29,12 +29,12 @@ type appInterface struct {
 }
 
 func fetchCa(caURL string) (string, error) {
-	resp, err := http.Get(caURL) // nolint
+	resp, err := http.Get(caURL) // nolint:gosec  // ignore G107
 
 	if err != nil {
 		return "", errors.Wrap("Error fetching CA bundle", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 
 	if resp.StatusCode != 200 {
 		msg := fmt.Sprintf("Bad status code: %d", resp.StatusCode)

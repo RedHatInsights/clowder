@@ -10,9 +10,12 @@ import (
 	core "k8s.io/api/core/v1"
 )
 
-var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2023-09-20-f5e3403"                               // nolint:gosec
+// DefaultImageSideCarTokenRefresher defines the default token refresher sidecar image
+var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2023-09-20-f5e3403" // nolint:gosec
+// DefaultImageSideCarOtelCollector defines the default OpenTelemetry collector sidecar image
 var DefaultImageSideCarOtelCollector = "ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0" // nolint:gosec
 
+// GetTokenRefresherSidecar returns the token refresher sidecar image for the environment
 func GetTokenRefresherSidecar(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Sidecars.TokenRefresher.Image != "" {
 		return env.Spec.Providers.Sidecars.TokenRefresher.Image
@@ -23,6 +26,7 @@ func GetTokenRefresherSidecar(env *crd.ClowdEnvironment) string {
 	return DefaultImageSideCarTokenRefresher
 }
 
+// GetOtelCollectorSidecar returns the OpenTelemetry collector sidecar image for the environment
 func GetOtelCollectorSidecar(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Sidecars.OtelCollector.Image != "" {
 		return env.Spec.Providers.Sidecars.OtelCollector.Image
@@ -33,6 +37,7 @@ func GetOtelCollectorSidecar(env *crd.ClowdEnvironment) string {
 	return DefaultImageSideCarOtelCollector
 }
 
+// GetOtelCollectorConfigMap returns the config map name for the OpenTelemetry collector
 func GetOtelCollectorConfigMap(env *crd.ClowdEnvironment, appName string) string {
 	if env.Spec.Providers.Sidecars.OtelCollector.ConfigMap != "" {
 		return env.Spec.Providers.Sidecars.OtelCollector.ConfigMap

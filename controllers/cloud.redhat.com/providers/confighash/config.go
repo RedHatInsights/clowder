@@ -1,3 +1,4 @@
+// Package confighash provides configuration hash management for Clowder applications
 package confighash
 
 import (

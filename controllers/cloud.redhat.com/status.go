@@ -441,9 +441,9 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, msg, err := GetEnvResourceStatus(ctx, client, o)
-	if err != nil {
-		return err
+	deploymentStatus, msg, getEnvStatusErr := GetEnvResourceStatus(ctx, client, o)
+	if getEnvStatusErr != nil {
+		return getEnvStatusErr
 	}
 
 	condition := &clusterv1.Condition{}
@@ -499,9 +499,9 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, err := GetAppResourceStatus(ctx, client, o)
-	if err != nil {
-		return err
+	deploymentStatus, getAppStatusErr := GetAppResourceStatus(ctx, client, o)
+	if getAppStatusErr != nil {
+		return getAppStatusErr
 	}
 
 	condition := &clusterv1.Condition{}

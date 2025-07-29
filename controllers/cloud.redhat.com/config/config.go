@@ -51,6 +51,7 @@ func (r *InMemoryDBConfig) Populate(data *map[string]string) error {
 	return nil
 }
 
+// DatabaseConfigContainer holds database configuration along with its reference information
 type DatabaseConfigContainer struct {
 	Config DatabaseConfig       `json:"config"`
 	Ref    types.NamespacedName `json:"ref"`

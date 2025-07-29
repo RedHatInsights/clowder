@@ -435,7 +435,7 @@ type InMemoryDBConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
-// AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+// AutoScalerMode mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
 // +kubebuilder:validation:Enum={"none", "enabled", "keda"}
 type AutoScalerMode string
 
@@ -446,7 +446,7 @@ type AutoScalerConfig struct {
 	Mode AutoScalerMode `json:"mode,omitempty"`
 }
 
-// Describes what amount of app config is mounted to the pod
+// ConfigAccessMode describes what amount of app config is mounted to the pod
 // +kubebuilder:validation:Enum={"none", "app", "", "environment"}
 type ConfigAccessMode string
 
@@ -621,6 +621,7 @@ type Sidecars struct {
 	OtelCollector OtelCollectorConfig `json:"otelCollector,omitempty"`
 }
 
+// DeploymentConfig defines the deployment configuration for a ClowdEnvironment
 type DeploymentConfig struct {
 	OmitPullPolicy bool `json:"omitPullPolicy,omitempty"`
 }
@@ -696,6 +697,7 @@ type ClowdEnvironmentStatus struct {
 	Prometheus      PrometheusStatus      `json:"prometheus,omitempty"`
 }
 
+// EnvResourceStatus describes the status of ClowdEnvironment resources
 type EnvResourceStatus struct {
 	ManagedDeployments int32 `json:"managedDeployments"`
 	ReadyDeployments   int32 `json:"readyDeployments"`
@@ -864,7 +866,7 @@ func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Clie
 	return appList, nil
 }
 
-// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+// GetNamespacesInEnv gets all namespaces in the ClowdEnvironment.
 func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
 
 	var err error
@@ -900,7 +902,7 @@ func (i *ClowdEnvironment) IsNodePort() bool {
 	return i.Spec.ServiceConfig.Type == "NodePort"
 }
 
-// GetClowdHostname gets the hostname for a particular environment
+// GenerateHostname gets or creates the hostname for the environment
 func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.Client, log logr.Logger, random bool) string {
 	nn := types.NamespacedName{
 		Name: "cluster",

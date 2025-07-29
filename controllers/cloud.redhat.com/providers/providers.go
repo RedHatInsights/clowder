@@ -1,3 +1,4 @@
+// Package providers contains the core provider framework and common utilities for Clowder resource management
 package providers
 
 import (
@@ -116,6 +117,7 @@ func (prov *Provider) GetConfig() *config.AppConfig {
 	return prov.Config
 }
 
+// RootProvider defines the basic interface that all providers should implement
 type RootProvider interface {
 	GetClient() client.Client
 	GetCtx() context.Context

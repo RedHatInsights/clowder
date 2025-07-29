@@ -1,5 +1,5 @@
 // Package utils provides utility functions and helpers for Clowder providers
-package utils
+package utils // nolint:revive  // ignore meaningless name check
 
 import (
 	"fmt"
@@ -14,7 +14,6 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -299,13 +298,16 @@ func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 	}
 }
 
+// KubeLinterAnnotations defines standard annotations to ignore specific kube-linter checks for Job pods
 var KubeLinterAnnotations = map[string]string{
 	"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
 	"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
 }
 
+// RCharSet defines the character set used for random string generation
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
+// AddCertVolume adds a TLS certificate volume to the provided PodSpec
 func AddCertVolume(d *core.PodSpec, dnn string) {
 	d.Volumes = append(d.Volumes, core.Volume{
 		Name: "tls-ca",
@@ -340,10 +342,12 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 	}
 }
 
+// DeploymentWithWebServices defines an interface for deployments that have web services configuration
 type DeploymentWithWebServices interface {
-	GetWebServices() v1alpha1.WebServices
+	GetWebServices() crd.WebServices
 }
 
+// GetAPIPaths returns the API paths for a deployment with web services configuration
 func GetAPIPaths(deployment DeploymentWithWebServices, defaultPath string) []string {
 	apiPaths := []string{}
 	webServices := deployment.GetWebServices()
@@ -364,15 +368,18 @@ func GetAPIPaths(deployment DeploymentWithWebServices, defaultPath string) []str
 	return apiPaths
 }
 
+// SecretEnvVar represents an environment variable that references a secret key
 type SecretEnvVar struct {
 	Name string
 	Key  string
 }
 
+// NewSecretEnvVar creates a new SecretEnvVar with the provided name and key
 func NewSecretEnvVar(name, key string) SecretEnvVar {
 	return SecretEnvVar{Name: name, Key: key}
 }
 
+// AppendEnvVarsFromSecret appends environment variables from a secret to the provided slice
 func AppendEnvVarsFromSecret(envvars []core.EnvVar, secName string, inputs ...SecretEnvVar) []core.EnvVar {
 	for _, env := range inputs {
 		newVar := core.EnvVar{

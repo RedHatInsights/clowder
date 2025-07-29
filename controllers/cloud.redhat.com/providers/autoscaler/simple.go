@@ -18,10 +18,14 @@ import (
 )
 
 const (
-	ClowdAPIVersion      = "clowd.redhat.com/v1alpha1"
-	ClowdKind            = "ClowdApp"
+	// ClowdAPIVersion defines the API version for ClowdApp resources
+	ClowdAPIVersion = "clowd.redhat.com/v1alpha1"
+	// ClowdKind defines the kind name for ClowdApp resources
+	ClowdKind = "ClowdApp"
+	// DeploymentAPIVersion defines the API version for Deployment resources
 	DeploymentAPIVersion = "apps/v1"
-	DeploymentKind       = "Deployment"
+	// DeploymentKind defines the kind name for Deployment resources
+	DeploymentKind = "Deployment"
 )
 
 // ProvideSimpleAutoScaler creates a simple HPA in the resource cache for the deployment and ClowdApp

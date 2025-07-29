@@ -37,6 +37,7 @@ func NewSkippedError(errString string) error {
 }
 
 const (
+	// SKIPRECONCILE represents a mode to skip reconciliation operations
 	SKIPRECONCILE = "SKIPRECONCILE"
 )
 

@@ -79,7 +79,8 @@ var cEnv = ""
 
 const (
 	envFinalizer = "finalizer.env.cloud.redhat.com"
-	SILENTFAIL   = "SILENTFAIL"
+	// SILENTFAIL represents a silent failure mode for environment operations
+	SILENTFAIL = "SILENTFAIL"
 )
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object

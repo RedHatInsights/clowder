@@ -18,6 +18,7 @@ type webProvider struct {
 	providers.Provider
 }
 
+// NewWebProvider creates a new web provider instance
 func NewWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CoreService,

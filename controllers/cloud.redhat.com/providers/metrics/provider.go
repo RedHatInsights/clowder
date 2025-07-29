@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
+// MetricsServiceMonitor represents the resource identifier for metrics service monitors
 var MetricsServiceMonitor = rc.NewMultiResourceIdent(ProvName, "metrics-service-monitor", &prom.ServiceMonitor{})
 
 // ProvName sets the provider name identifier

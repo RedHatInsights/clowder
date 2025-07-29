@@ -9,8 +9,10 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+// DefaultImageObjectStoreMinio defines the default MinIO object store image
 var DefaultImageObjectStoreMinio = "minio/minio:RELEASE.2020-11-19T23-48-16Z-amd64"
 
+// GetObjectStoreMinioImage returns the MinIO object store image for the environment
 func GetObjectStoreMinioImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.ObjectStore.Images.Minio != "" {
 		return env.Spec.Providers.ObjectStore.Images.Minio

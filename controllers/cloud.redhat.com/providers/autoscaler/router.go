@@ -10,6 +10,7 @@ type autoScaleProviderRouter struct {
 	providers.Provider
 }
 
+// NewAutoScaleProviderRouter creates a new autoscaler provider router with the given provider
 func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		SimpleAutoScaler,

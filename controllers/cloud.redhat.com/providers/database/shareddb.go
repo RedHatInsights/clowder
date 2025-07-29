@@ -267,7 +267,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	defer dbClient.Close()
+	defer dbClient.Close() // nolint:errcheck  // no need to check error return value
 
 	pErr := dbClient.PingContext(ctx)
 	if pErr != nil {
@@ -280,7 +280,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 				return envErr
 			}
 
-			defer envDbClient.Close()
+			defer envDbClient.Close() // nolint:errcheck  // no need to check error return value
 
 			sqlStatement := fmt.Sprintf("CREATE DATABASE \"%s\" WITH OWNER=\"%s\";", app.Spec.Database.Name, dbCfg.Username)
 			preppedStatement, err := envDbClient.PrepareContext(ctx, sqlStatement)

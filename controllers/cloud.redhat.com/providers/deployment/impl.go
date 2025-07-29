@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	// TerminationLogPath defines the standard path for container termination logs
 	TerminationLogPath = "/dev/termination-log"
 )
 

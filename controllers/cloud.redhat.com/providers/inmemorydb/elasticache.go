@@ -1,3 +1,4 @@
+// Package inmemorydb provides in-memory database provisioning including Redis and ElastiCache
 package inmemorydb
 
 import (

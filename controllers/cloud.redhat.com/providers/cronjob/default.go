@@ -1,3 +1,4 @@
+// Package cronjob provides cron job management functionality for Clowder applications
 package cronjob
 
 import (

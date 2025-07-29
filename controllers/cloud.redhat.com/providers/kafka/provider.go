@@ -37,6 +37,7 @@ type rootKafkaProvider struct {
 	providers.Provider
 }
 
+// DefaultImageKafkaConnect defines the default Kafka Connect image
 var DefaultImageKafkaConnect = "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
 
 // ProvName is the name/ident of the provider

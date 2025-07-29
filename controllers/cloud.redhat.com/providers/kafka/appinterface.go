@@ -1,3 +1,4 @@
+// Package kafka provides Kafka messaging infrastructure management for Clowder applications
 package kafka
 
 import (

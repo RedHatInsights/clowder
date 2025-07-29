@@ -11,11 +11,16 @@ import (
 // ProvName sets the provider name identifier
 var ProvName = "autoscaler"
 
+// ENABLED represents the enabled mode for the autoscaler provider
 const ENABLED = "enabled"
+
+// KEDA represents the KEDA mode for the autoscaler provider (synonym for enabled)
 const KEDA = "keda"
 
 // CoreAutoScaler is the config that is presented as the cdappconfig.json file.
 var CoreAutoScaler = rc.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
+
+// SimpleAutoScaler represents the resource identifier for simple HPA autoscaling
 var SimpleAutoScaler = rc.NewMultiResourceIdent(ProvName, "simple_hpa", &v2.HorizontalPodAutoscaler{})
 
 // GetAutoScaler returns the correct autoscaler provider.

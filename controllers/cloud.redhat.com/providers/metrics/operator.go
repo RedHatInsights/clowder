@@ -22,8 +22,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// DefaultImagePrometheusGateway defines the default Prometheus gateway image
 var DefaultImagePrometheusGateway = "quay.io/prometheus/pushgateway:v1.11.1"
 
+// GetPrometheusGatewayImage returns the Prometheus gateway image for the environment
 func GetPrometheusGatewayImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Metrics.PrometheusGateway.Image != "" {
 		return env.Spec.Providers.Metrics.PrometheusGateway.Image
@@ -38,22 +40,31 @@ type metricsProvider struct {
 	providers.Provider
 }
 
+// PrometheusSubscription represents the resource identifier for Prometheus subscriptions
 var PrometheusSubscription = rc.NewSingleResourceIdent(ProvName, "prometheus_subscription", &sub.Subscription{})
 
+// PrometheusInstance represents the resource identifier for Prometheus instances
 var PrometheusInstance = rc.NewSingleResourceIdent(ProvName, "prometheus_instance", &prom.Prometheus{})
 
+// PrometheusRole represents the resource identifier for Prometheus roles
 var PrometheusRole = rc.NewSingleResourceIdent(ProvName, "prometheus_role", &rbac.Role{})
 
+// PrometheusRoleBinding represents the resource identifier for Prometheus role bindings
 var PrometheusRoleBinding = rc.NewSingleResourceIdent(ProvName, "prometheus_role_binding", &rbac.RoleBinding{})
 
+// PrometheusServiceAccount represents the resource identifier for Prometheus service accounts
 var PrometheusServiceAccount = rc.NewSingleResourceIdent(ProvName, "prometheus_service_account", &core.ServiceAccount{})
 
+// PrometheusGatewayDeployment represents the resource identifier for Prometheus gateway deployments
 var PrometheusGatewayDeployment = rc.NewSingleResourceIdent(ProvName, "prometheus_gateway_deployment", &apps.Deployment{})
 
+// PrometheusGatewayService represents the resource identifier for Prometheus gateway services
 var PrometheusGatewayService = rc.NewSingleResourceIdent(ProvName, "prometheus_gateway_service", &core.Service{})
 
+// PrometheusGatewayServiceMonitor represents the resource identifier for Prometheus gateway service monitors
 var PrometheusGatewayServiceMonitor = rc.NewSingleResourceIdent(ProvName, "prometheus_gateway_service_monitor", &prom.ServiceMonitor{})
 
+// NewMetricsProvider creates a new metrics provider instance
 func NewMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		PrometheusSubscription,

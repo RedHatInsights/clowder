@@ -33,6 +33,7 @@ type localWebProvider struct {
 	providers.Provider
 }
 
+// NewLocalWebProvider creates a new local web provider instance
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		WebKeycloakDeployment,

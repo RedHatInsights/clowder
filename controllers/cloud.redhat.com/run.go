@@ -42,9 +42,13 @@ import (
 var (
 	secretCompare schema.GroupVersionKind
 	setupLog      = ctrl.Log.WithName("setup")
-	Scheme        = runtime.NewScheme()
-	CacheConfig   *rc.CacheConfig
-	DebugOptions  rc.DebugOptions
+	// Scheme defines the runtime scheme for the Clowder controller
+	Scheme = runtime.NewScheme()
+	// CacheConfig holds the cache configuration for the Clowder controller
+	CacheConfig *rc.CacheConfig
+	// DebugOptions holds the debug configuration options for the Clowder controller
+	DebugOptions rc.DebugOptions
+	// ProtectedGVKs holds the map of protected GroupVersionKinds that should not be deleted
 	ProtectedGVKs = make(map[schema.GroupVersionKind]bool)
 )
 
@@ -76,6 +80,8 @@ func init() {
 	}
 }
 
+// Version contains the current version of Clowder
+//
 //go:embed version.txt
 var Version string
 

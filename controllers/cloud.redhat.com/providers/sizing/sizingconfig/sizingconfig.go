@@ -4,12 +4,17 @@ package sizingconfig
 const (
 	// SizeXSmall represents the x-small size designation
 	SizeXSmall string = "x-small"
-	SizeSmall  string = "small"
+	// SizeSmall represents the small size designation
+	SizeSmall string = "small"
+	// SizeMedium represents the medium size designation
 	SizeMedium string = "medium"
-	SizeLarge  string = "large"
+	// SizeLarge represents the large size designation
+	SizeLarge string = "large"
+	// SizeXLarge represents the x-large size designation
 	SizeXLarge string = "x-large"
 	// DefaultSizeVol is the default volume size when none is specified
-	DefaultSizeVol    = SizeXSmall
+	DefaultSizeVol = SizeXSmall
+	// DefaultSizeCPURAM is the default CPU and memory size when none is specified
 	DefaultSizeCPURAM = SizeXSmall
 )
 

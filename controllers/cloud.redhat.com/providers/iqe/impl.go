@@ -26,11 +26,19 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// DefaultImageIQESelenium defines the default selenium image for IQE testing
 var DefaultImageIQESelenium = "quay.io/redhatqe/selenium-standalone"
 
+// IqeSecret represents the resource identifier for IQE secrets
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
+
+// VaultSecret represents the resource identifier for vault secrets
 var VaultSecret = rc.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
+
+// IqeClowdJob represents the resource identifier for IQE ClowdJob resources
 var IqeClowdJob = rc.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
+
+// ClowdJob represents the multi-resource identifier for ClowdJob resources
 var ClowdJob = rc.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
 
 func joinNullableSlice(s *[]string) string {

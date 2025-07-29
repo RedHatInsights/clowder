@@ -1,3 +1,4 @@
+// Package autoscaler provides KEDA-based autoscaling functionality for Clowder deployments
 package autoscaler
 
 import (
@@ -30,6 +31,7 @@ func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.Ap
 	return asp.Cache.Update(CoreAutoScaler, s)
 }
 
+// ProvideKedaAutoScaler creates KEDA autoscaling configuration for the specified deployment
 func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment *crd.Deployment) error {
 	err := makeAutoScalers(deployment, app, c, asp)
 	return err

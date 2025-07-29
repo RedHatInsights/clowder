@@ -65,6 +65,7 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 	}
 }
 
+// Reconcile is the main function that runs the reconciliation steps for a ClowdApp
 func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
 	for _, step := range r.steps() {
 		result, err := step()

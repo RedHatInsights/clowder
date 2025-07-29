@@ -33,6 +33,7 @@ func createServiceAccountForClowdObj(cache *rc.ObjectCache, ident rc.ResourceIde
 	return CreateServiceAccount(cache, ident, nn, labeler)
 }
 
+// CreateServiceAccount creates a service account for the given app with the specified access level
 func CreateServiceAccount(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object)) error {
 
 	sa := &core.ServiceAccount{}
@@ -46,6 +47,7 @@ func CreateServiceAccount(cache *rc.ObjectCache, ident rc.ResourceIdent, nn type
 	return cache.Update(ident, sa)
 }
 
+// CreateRoleBinding creates a role binding for the service account with the specified role
 func CreateRoleBinding(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object), accessLevel crd.K8sAccessLevel) error {
 	if accessLevel == "default" || accessLevel == "" {
 		return nil

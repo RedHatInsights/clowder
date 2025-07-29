@@ -265,6 +265,7 @@ func (d *Deployment) HasAutoScaler() bool {
 	return d.AutoScaler != nil || d.AutoScalerSimple != nil
 }
 
+// DeploymentStrategy defines the deployment strategy for a deployment
 type DeploymentStrategy struct {
 	// PrivateStrategy allows a deployment that only uses a private port to set
 	// the deployment strategy one of Recreate or Rolling, default for a
@@ -273,6 +274,7 @@ type DeploymentStrategy struct {
 	PrivateStrategy apps.DeploymentStrategyType `json:"privateStrategy,omitempty"`
 }
 
+// Sidecar defines a sidecar container for a deployment
 type Sidecar struct {
 	// The name of the sidecar, only supported names allowed, (otel-collector, token-refresher)
 	Name string `json:"name"`
@@ -443,6 +445,7 @@ type KafkaTopicSpec struct {
 	TopicName string `json:"topicName"`
 }
 
+// TestingSpec defines the testing configuration for a ClowdApp
 type TestingSpec struct {
 	IqePlugin string `json:"iqePlugin"`
 }
@@ -531,6 +534,7 @@ type ClowdAppStatus struct {
 	Conditions  []clusterv1.Condition `json:"conditions,omitempty"`
 }
 
+// AppResourceStatus defines the status of an app resource
 type AppResourceStatus struct {
 	ManagedDeployments int32 `json:"managedDeployments"`
 	ReadyDeployments   int32 `json:"readyDeployments"`

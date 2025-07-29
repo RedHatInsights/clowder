@@ -32,20 +32,26 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// JobConditionState describes the state a job is in
 type JobConditionState string
 
 const (
-	JobInvoked  JobConditionState = "Invoked"
+	// JobInvoked represents a job that has been invoked
+	JobInvoked JobConditionState = "Invoked"
+	// JobComplete represents a job that has completed successfully
 	JobComplete JobConditionState = "Complete"
-	JobFailed   JobConditionState = "Failed"
+	// JobFailed represents a job that has failed
+	JobFailed JobConditionState = "Failed"
 )
 
+// JobTestingSpec is the struct for building out test jobs (iqe, etc) in a CJI
 type JobTestingSpec struct {
 	// Iqe is the job spec to override defaults from the ClowdApp's
 	// definition of the job
 	Iqe IqeJobSpec `json:"iqe,omitempty"`
 }
 
+// IqeJobSpec defines the specification for IQE (Integration Quality Engineering) jobs
 type IqeJobSpec struct {
 	// Image tag to use for IQE container. By default, Clowder will set the image tag to be
 	// baseImage:name-of-iqe-plugin, where baseImage is defined in the ClowdEnvironment. Only the tag can be overridden here.
@@ -99,6 +105,7 @@ type IqeJobSpec struct {
 	IbutsuSource string `json:"ibutsuSource,omitempty"`
 }
 
+// IqeUISpec defines configuration options for running IQE with UI components
 type IqeUISpec struct {
 	// No longer used
 	Enabled bool `json:"enabled,omitempty"`
@@ -107,6 +114,7 @@ type IqeUISpec struct {
 	Selenium IqeSeleniumSpec `json:"selenium,omitempty"`
 }
 
+// IqeSeleniumSpec defines configuration options for running IQE with a selenium container
 type IqeSeleniumSpec struct {
 	// Whether or not a selenium container should be deployed in the IQE pod
 	Deploy bool `json:"deploy,omitempty"`
@@ -230,7 +238,7 @@ func (i *ClowdJobInvocation) GetClowdName() string {
 	return i.Name
 }
 
-// GetClowdName returns the name of the ClowdJobInvocation object.
+// GetClowdSAName returns the service account name for the ClowdJobInvocation object.
 func (i *ClowdJobInvocation) GetClowdSAName() string {
 	return fmt.Sprintf("%s-cji", i.Name)
 }
@@ -268,6 +276,7 @@ func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client
 	return &jobs, nil
 }
 
+// GenerateJobName generates a random job name for the Job
 func (i *ClowdJobInvocation) GenerateJobName() string {
 	randomString := utils.RandStringLower(7)
 	return fmt.Sprintf("%s-iqe-%s", i.Name, randomString)

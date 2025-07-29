@@ -9,7 +9,10 @@ import (
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+// DefaultImageFeatureFlagsUnleash defines the default Unleash server image for feature flags
 var DefaultImageFeatureFlagsUnleash = "unleashorg/unleash-server:5.6.9"
+
+// DefaultImageFeatureFlagsUnleashEdge defines the default Unleash Edge image for feature flags
 var DefaultImageFeatureFlagsUnleashEdge = "unleashorg/unleash-edge:v19.6.3"
 
 // GetFeatureFlagsUnleashImage returns the Unleash feature flags image for the environment

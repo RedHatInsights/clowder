@@ -1,3 +1,4 @@
+// Package serviceaccount provides service account and RBAC management for Clowder applications
 package serviceaccount
 
 import (
@@ -43,6 +44,7 @@ type serviceaccountProvider struct {
 	providers.Provider
 }
 
+// NewServiceAccountProvider creates a new service account provider instance
 func NewServiceAccountProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CoreDeploymentRoleBinding,

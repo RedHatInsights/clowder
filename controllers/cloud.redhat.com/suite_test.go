@@ -122,10 +122,10 @@ func (suite *TestSuite) SetupSuite() {
 
 		if err == nil && resp.StatusCode == 200 {
 			logger.Info("Manager ready", zap.Int("duration", 100*i))
-			defer resp.Body.Close()
+			defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 			return
 		} else if err == nil {
-			defer resp.Body.Close()
+			defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 		}
 
 		if i == 50 {
@@ -490,7 +490,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	resp, err := http.Get("http://127.0.0.1:2019/config/")
 	assert.NoError(suite.T(), err, "failed test because get failed")
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 
 	config := clowderconfig.ClowderConfig{}
 	sData, _ := io.ReadAll(resp.Body)
@@ -500,7 +500,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	resp, err = http.Get("http://127.0.0.1:2019/clowdapps/present/")
 	assert.NoError(suite.T(), err, "failed test because get failed")
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 	capps := []string{}
 	sData, _ = io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &capps)

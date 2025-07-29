@@ -1,3 +1,4 @@
+// Package hashcache provides a thread-safe hash cache implementation for Kubernetes objects
 package hashcache
 
 import (
@@ -24,11 +25,13 @@ func generateHashFromData(data []byte) (hash string) {
 	return
 }
 
+// Ident represents an identifier for a hash cache entry with namespaced name and type
 type Ident struct {
 	NN   types.NamespacedName
 	Type string
 }
 
+// HashObject represents a cached hash object with associated ClowdApps and ClowdEnvs
 type HashObject struct {
 	Hash      string
 	ClowdApps map[types.NamespacedName]bool
@@ -36,11 +39,13 @@ type HashObject struct {
 	Always    bool // Secret/ConfigMap should be always updated
 }
 
+// HashCache provides a thread-safe cache for hash objects
 type HashCache struct {
 	data map[Ident]*HashObject
 	lock sync.RWMutex
 }
 
+// NewHashCache creates and returns a new HashCache instance
 func NewHashCache() HashCache {
 	return HashCache{
 		data: map[Ident]*HashObject{},
@@ -48,6 +53,7 @@ func NewHashCache() HashCache {
 	}
 }
 
+// NewHashObject creates and returns a new HashObject with the provided hash and always flag
 func NewHashObject(hash string, always bool) HashObject {
 	return HashObject{
 		Hash:      hash,
@@ -57,6 +63,7 @@ func NewHashObject(hash string, always bool) HashObject {
 	}
 }
 
+// ItemNotFoundError represents an error when an item is not found in the hash cache
 type ItemNotFoundError struct {
 	item string
 }
@@ -239,4 +246,5 @@ func (hc *HashCache) Delete(obj client.Object) {
 	delete(hc.data, id)
 }
 
+// DefaultHashCache is the global default hash cache instance
 var DefaultHashCache = NewHashCache()
