@@ -24,7 +24,7 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 
 _Underlying type:_ _string_
 
-A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
+APIPath is a string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
 
 _Validation:_
 - Pattern: `^\/api\/[a-zA-Z0-9-]+\/$`
@@ -69,7 +69,7 @@ _Appears in:_
 
 
 
-
+AppResourceStatus defines the status of an app resource
 
 
 
@@ -126,7 +126,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+AutoScalerMode mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
 
 _Validation:_
 - Enum: [none enabled keda]
@@ -140,7 +140,7 @@ _Appears in:_
 
 
 
-SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+AutoScalerSimple defines a simple HPA with scaling for RAM and CPU by
 value and utilization thresholds, along with replica count limits
 
 
@@ -461,7 +461,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-Describes what amount of app config is mounted to the pod
+ConfigAccessMode describes what amount of app config is mounted to the pod
 
 _Validation:_
 - Enum: [none app  environment]
@@ -592,7 +592,7 @@ _Appears in:_
 
 
 
-
+DeploymentConfig defines the deployment configuration for a ClowdEnvironment
 
 
 
@@ -626,7 +626,7 @@ _Appears in:_
 
 
 
-
+DeploymentMetadata defines the metadata for the deployment.
 
 
 
@@ -642,7 +642,7 @@ _Appears in:_
 
 
 
-
+DeploymentStrategy defines the deployment strategy for a deployment
 
 
 
@@ -658,7 +658,7 @@ _Appears in:_
 
 
 
-
+EnvResourceStatus describes the status of ClowdEnvironment resources
 
 
 
@@ -736,7 +736,7 @@ _Appears in:_
 
 
 
-
+FeatureFlagsImages defines the container images used for feature flags
 
 
 
@@ -768,7 +768,7 @@ _Appears in:_
 
 
 
-
+GatewayCert defines the certificate configuration for gateway TLS
 
 
 
@@ -857,7 +857,7 @@ _Appears in:_
 
 
 
-
+IqeConfig defines configuration for IQE (Insights Quality Engineering) testing
 
 
 
@@ -876,7 +876,7 @@ _Appears in:_
 
 
 
-
+IqeJobSpec defines the specification for IQE (Integration Quality Engineering) jobs
 
 
 
@@ -907,7 +907,7 @@ _Appears in:_
 
 
 
-
+IqeSeleniumSpec defines configuration options for running IQE with a selenium container
 
 
 
@@ -924,7 +924,7 @@ _Appears in:_
 
 
 
-
+IqeUIConfig defines configuration for IQE UI testing
 
 
 
@@ -940,7 +940,7 @@ _Appears in:_
 
 
 
-
+IqeUISeleniumConfig defines configuration for IQE Selenium-based UI testing
 
 
 
@@ -958,7 +958,7 @@ _Appears in:_
 
 
 
-
+IqeUISpec defines configuration options for running IQE with UI components
 
 
 
@@ -1006,7 +1006,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-
+JobConditionState describes the state a job is in
 
 
 
@@ -1015,16 +1015,16 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `Invoked` |  |
-| `Complete` |  |
-| `Failed` |  |
+| `Invoked` | JobInvoked represents a job that has been invoked<br /> |
+| `Complete` | JobComplete represents a job that has completed successfully<br /> |
+| `Failed` | JobFailed represents a job that has failed<br /> |
 
 
 #### JobTestingSpec
 
 
 
-
+JobTestingSpec is the struct for building out test jobs (iqe, etc) in a CJI
 
 
 
@@ -1303,7 +1303,7 @@ _Appears in:_
 
 
 
-
+ObjectStoreImages defines the container images used for object storage
 
 
 
@@ -1334,7 +1334,7 @@ _Appears in:_
 
 
 
-
+OtelCollectorConfig defines configuration for OpenTelemetry collector sidecar
 
 
 
@@ -1384,7 +1384,7 @@ _Appears in:_
 
 
 
-Metadata for applying annotations etc to PodSpec
+PodspecMetadata defines metadata for applying annotations etc to PodSpec
 
 
 
@@ -1418,7 +1418,7 @@ _Appears in:_
 
 
 
-
+PrometheusConfig defines configuration for Prometheus monitoring
 
 
 
@@ -1435,7 +1435,7 @@ _Appears in:_
 
 
 
-
+PrometheusGatewayConfig defines configuration for Prometheus gateway
 
 
 
@@ -1582,7 +1582,7 @@ _Appears in:_
 
 
 
-
+Sidecar defines a sidecar container for a deployment
 
 
 
@@ -1600,7 +1600,7 @@ _Appears in:_
 
 
 
-
+Sidecars defines configuration for sidecar containers
 
 
 
@@ -1651,7 +1651,7 @@ _Appears in:_
 
 
 
-
+TLS defines TLS configuration settings
 
 
 
@@ -1669,7 +1669,7 @@ _Appears in:_
 
 
 
-
+TestingConfig defines configuration for testing capabilities
 
 
 
@@ -1687,7 +1687,7 @@ _Appears in:_
 
 
 
-
+TestingSpec defines the testing configuration for a ClowdApp
 
 
 
@@ -1703,7 +1703,7 @@ _Appears in:_
 
 
 
-
+TokenRefresherConfig defines configuration for token refresher sidecar
 
 
 

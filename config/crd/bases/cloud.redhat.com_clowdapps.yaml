@@ -356,7 +356,7 @@ spec:
                       type: object
                     autoScalerSimple:
                       description: |-
-                        SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+                        AutoScalerSimple defines a simple HPA with scaling for RAM and CPU by
                         value and utilization thresholds, along with replica count limits
                       properties:
                         cpu:
@@ -419,6 +419,8 @@ spec:
                       - edit
                       type: string
                     metadata:
+                      description: DeploymentMetadata defines the metadata for the
+                        deployment.
                       properties:
                         annotations:
                           additionalProperties:
@@ -1357,6 +1359,8 @@ spec:
                           description: Lists the expected side cars, will be validated
                             in the validating webhook
                           items:
+                            description: Sidecar defines a sidecar container for a
+                              deployment
                             properties:
                               enabled:
                                 description: Defines if the sidecar is enabled, defaults
@@ -3378,9 +3382,9 @@ spec:
                                 format: "/api/some-path/") that this app will serve
                                 requests from.'
                               items:
-                                description: A string representing an API path that
-                                  should route to this app for Clowder-managed Ingresses
-                                  (in format "/api/somepath/")
+                                description: APIPath is a string representing an API
+                                  path that should route to this app for Clowder-managed
+                                  Ingresses (in format "/api/somepath/")
                                 pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                 type: string
                               type: array
@@ -4392,6 +4396,8 @@ spec:
                           description: Lists the expected side cars, will be validated
                             in the validating webhook
                           items:
+                            description: Sidecar defines a sidecar container for a
+                              deployment
                             properties:
                               enabled:
                                 description: Defines if the sidecar is enabled, defaults
