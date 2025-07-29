@@ -10,7 +10,7 @@ import (
 // ProvName sets the provider name identifier
 var ProvName = "web"
 
-// GetEnd returns the correct end provider.
+// GetWeb returns the correct web provider.
 func GetWeb(c *providers.Provider) (providers.ClowderProvider, error) {
 
 	webMode := c.Env.Spec.Providers.Web.Mode

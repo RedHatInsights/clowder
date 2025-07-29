@@ -23,13 +23,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// WebBOPDeployment is the mocked bop deployment
+// WebMocktitlementsDeployment is the resource ident for the web mocktitlements deployment
 var WebMocktitlementsDeployment = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_deployment", &apps.Deployment{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebMocktitlementsService is the resource ident for the web mocktitlements service
 var WebMocktitlementsService = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_service", &core.Service{})
 
-// WebKeycloakIngress is the mocked bop ingress
+// WebMocktitlementsIngress is the resource ident for the web mocktitlements ingress
 var WebMocktitlementsIngress = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_ingress", &networking.Ingress{})
 
 func configureMocktitlements(web *localWebProvider) error {

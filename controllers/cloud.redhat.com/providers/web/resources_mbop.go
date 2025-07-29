@@ -26,10 +26,10 @@ import (
 // WebBOPDeployment is the mocked bop deployment
 var WebBOPDeployment = rc.NewSingleResourceIdent(ProvName, "web_bop_deployment", &apps.Deployment{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebBOPService is the resource ident for the web BOP service
 var WebBOPService = rc.NewSingleResourceIdent(ProvName, "web_bop_service", &core.Service{})
 
-// WebKeycloakIngress is the mocked bop ingress
+// WebBOPIngress is the resource ident for the web BOP ingress
 var WebBOPIngress = rc.NewSingleResourceIdent(ProvName, "web_bop_ingress", &networking.Ingress{})
 
 func configureMBOP(web *localWebProvider) error {

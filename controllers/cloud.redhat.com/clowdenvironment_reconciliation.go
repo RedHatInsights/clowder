@@ -86,7 +86,7 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 	}
 }
 
-// Public method to iterate through the steps of the reconciliation process
+// Reconcile iterates through the steps of the reconciliation process
 func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 	r.log.Info("Reconciliation started")
 	// The env stays locked for the entire reconciliation

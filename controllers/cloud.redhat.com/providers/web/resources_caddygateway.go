@@ -25,22 +25,22 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// WebIngress is the mocked secret config
+// WebGatewayDeployment is the resource ident for the web gateway deployment
 var WebGatewayDeployment = rc.NewSingleResourceIdent(ProvName, "web_gateway_deployment", &apps.Deployment{})
 
-// WebIngress is the mocked secret config
+// WebGatewayIngress is the resource ident for the web gateway ingress
 var WebGatewayIngress = rc.NewSingleResourceIdent(ProvName, "web_gateway_ingress", &networking.Ingress{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebGatewayService is the resource ident for the web gateway service
 var WebGatewayService = rc.NewSingleResourceIdent(ProvName, "web_gateway_service", &core.Service{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebGatewayConfigMap is the resource ident for the web gateway config map
 var WebGatewayConfigMap = rc.NewSingleResourceIdent(ProvName, "web_gateway_configmap", &core.Service{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebGatewayCertificateIssuer is the resource ident for the web gateway certificate issuer
 var WebGatewayCertificateIssuer = rc.NewSingleResourceIdent(ProvName, "web_gateway_cert_issuer", &certmanager.Issuer{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebGatewayCertificate is the resource ident for the web gateway certificate
 var WebGatewayCertificate = rc.NewSingleResourceIdent(ProvName, "web_gateway_certificate", &certmanager.Certificate{})
 
 func configureWebGateway(web *localWebProvider) error {

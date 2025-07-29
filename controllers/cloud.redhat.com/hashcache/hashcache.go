@@ -105,7 +105,7 @@ func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	}
 }
 
-// CreatesOrUpdates HashObject and adding attribute alwaysUpdate.
+// CreateOrUpdateObject creates or updates a HashObject and adds attribute alwaysUpdate.
 // This function returns a boolean indicating whether the hashCache should be updated.
 func (hc *HashCache) CreateOrUpdateObject(obj client.Object, alwaysUpdate bool) (bool, error) {
 	hc.lock.Lock()

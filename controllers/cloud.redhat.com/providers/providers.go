@@ -24,7 +24,7 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
-// MinioSecret is the resource ident for the Minio secret object.
+// RootSecret is the resource ident for the root environment secret object.
 var RootSecret = rc.NewSingleResourceIdent("root", "root_env", &core.Secret{})
 
 type providerAccessor struct {

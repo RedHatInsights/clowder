@@ -358,7 +358,7 @@ type SimpleAutoScalerReplicas struct {
 	Max int32 `json:"max"`
 }
 
-// SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+// AutoScalerSimple defines a simple HPA with scaling for RAM and CPU by
 // value and utilization thresholds, along with replica count limits
 type AutoScalerSimple struct {
 	Replicas SimpleAutoScalerReplicas `json:"replicas"`
@@ -511,7 +511,7 @@ type ClowdAppSpec struct {
 }
 
 const (
-	// Ready means all the deployments are ready
+	// DeploymentsReady means all the deployments are ready
 	DeploymentsReady clusterv1.ConditionType = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
 	ReconciliationSuccessful clusterv1.ConditionType = "ReconciliationSuccessful"
@@ -647,7 +647,7 @@ func (i *ClowdApp) GetDeploymentStatus() *AppResourceStatus {
 	return &i.Status.Deployments
 }
 
-// GetDeploymentStatus returns the Status.Deployments member
+// GetDeploymentNamespacedName returns the namespaced name for a deployment
 func (i *ClowdApp) GetDeploymentNamespacedName(d *Deployment) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%s-%s", i.Name, d.Name),
@@ -655,7 +655,7 @@ func (i *ClowdApp) GetDeploymentNamespacedName(d *Deployment) types.NamespacedNa
 	}
 }
 
-// GetDeploymentStatus returns the Status.Deployments member
+// GetCronJobNamespacedName returns the namespaced name for a cron job
 func (i *ClowdApp) GetCronJobNamespacedName(d *Job) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%s-%s", i.Name, d.Name),
@@ -766,7 +766,7 @@ func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *Cl
 	return pClient.Get(ctx, types.NamespacedName{Name: i.Spec.EnvName}, env)
 }
 
-// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+// GetNamespacesInEnv gets all namespaces in the ClowdEnvironment associated with this app.
 func (i *ClowdApp) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
 
 	var env = &ClowdEnvironment{}

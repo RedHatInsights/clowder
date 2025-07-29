@@ -39,7 +39,7 @@ var SharedDBPVC = rc.NewMultiResourceIdent(ProvName, "shared_db_pvc", &core.Pers
 // SharedDBSecret is the ident referring to the local DB secret object.
 var SharedDBSecret = rc.NewMultiResourceIdent(ProvName, "shared_db_secret", &core.Secret{})
 
-// SharedDBSecret is the ident referring to the local DB secret object.
+// SharedDBAppSecret is the ident referring to the shared DB app secret object.
 var SharedDBAppSecret = rc.NewSingleResourceIdent(ProvName, "shared_db_app_secret", &core.Secret{})
 
 type sharedDbProvider struct {
