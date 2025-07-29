@@ -32,9 +32,9 @@ import (
 // log is for logging in this package.
 var clowdapplog = logf.Log.WithName("clowdapp-resource")
 
-func (r *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (i *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+		For(i).
 		Complete()
 }
 
@@ -42,10 +42,10 @@ func (r *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:webhook:path=/mutate-pod,mutating=true,failurePolicy=ignore,sideEffects=None,groups="",resources=pods,verbs=create;update,versions=v1,name=vclowdmutatepod.kb.io,admissionReviewVersions={v1}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateCreate() (admission.Warnings, error) {
-	clowdapplog.Info("validate create", "name", r.Name)
+func (i *ClowdApp) ValidateCreate() (admission.Warnings, error) {
+	clowdapplog.Info("validate create", "name", i.Name)
 
-	return []string{}, r.processValidations(r,
+	return []string{}, i.processValidations(i,
 		validateDatabase,
 		validateSidecars,
 		validateInit,
@@ -54,10 +54,10 @@ func (r *ClowdApp) ValidateCreate() (admission.Warnings, error) {
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) {
-	clowdapplog.Info("validate update", "name", r.Name)
+func (i *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) {
+	clowdapplog.Info("validate update", "name", i.Name)
 
-	return []string{}, r.processValidations(r,
+	return []string{}, i.processValidations(i,
 		validateDatabase,
 		validateSidecars,
 		validateInit,
@@ -66,14 +66,14 @@ func (r *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) 
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *ClowdApp) ValidateDelete() (admission.Warnings, error) {
-	clowdapplog.Info("validate delete", "name", r.Name)
+func (i *ClowdApp) ValidateDelete() (admission.Warnings, error) {
+	clowdapplog.Info("validate delete", "name", i.Name)
 	return []string{}, nil
 }
 
 type appValidationFunc func(*ClowdApp) field.ErrorList
 
-func (r *ClowdApp) processValidations(o *ClowdApp, vfns ...appValidationFunc) error {
+func (i *ClowdApp) processValidations(o *ClowdApp, vfns ...appValidationFunc) error {
 	var allErrs field.ErrorList
 
 	for _, validation := range vfns {
@@ -89,20 +89,20 @@ func (r *ClowdApp) processValidations(o *ClowdApp, vfns ...appValidationFunc) er
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "cloud.redhat.com", Kind: "ClowdApp"},
-		r.Name, allErrs,
+		i.Name, allErrs,
 	)
 }
 
-func validateDatabase(r *ClowdApp) field.ErrorList {
+func validateDatabase(i *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if r.Spec.Database.Name != "" && r.Spec.Database.SharedDBAppName != "" {
+	if i.Spec.Database.Name != "" && i.Spec.Database.SharedDBAppName != "" {
 		allErrs = append(allErrs, field.Forbidden(
 			field.NewPath("spec.Database.Name", "spec.Database.SharedDBAppName"), "cannot set db name and sharedDbApp Name together"),
 		)
 	}
 
-	if r.Spec.Database.SharedDBAppName != "" && r.Spec.Cyndi.Enabled {
+	if i.Spec.Database.SharedDBAppName != "" && i.Spec.Cyndi.Enabled {
 		allErrs = append(allErrs, field.Forbidden(
 			field.NewPath("spec.Database.SharedDBAppName", "spec.Cyndi.Enabled"), "cannot use cyndi with a shared database"),
 		)
@@ -111,10 +111,10 @@ func validateDatabase(r *ClowdApp) field.ErrorList {
 	return allErrs
 }
 
-func validateInit(r *ClowdApp) field.ErrorList {
+func validateInit(i *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	for depIdx, deployment := range r.Spec.Deployments {
+	for depIdx, deployment := range i.Spec.Deployments {
 		if len(deployment.PodSpec.InitContainers) > 1 {
 			for icIdx, ic := range deployment.PodSpec.InitContainers {
 				if ic.Name == "" {
@@ -131,9 +131,9 @@ func validateInit(r *ClowdApp) field.ErrorList {
 	return allErrs
 }
 
-func validateSidecars(r *ClowdApp) field.ErrorList {
+func validateSidecars(i *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
-	for depIndx, deployment := range r.Spec.Deployments {
+	for depIndx, deployment := range i.Spec.Deployments {
 		for carIndx, sidecar := range deployment.PodSpec.Sidecars {
 			if sidecar.Name != "token-refresher" && sidecar.Name != "otel-collector" {
 				allErrs = append(
@@ -146,7 +146,7 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 			}
 		}
 	}
-	for jobIndx, job := range r.Spec.Jobs {
+	for jobIndx, job := range i.Spec.Jobs {
 		if job.Schedule == "" {
 			continue
 		}
@@ -165,9 +165,9 @@ func validateSidecars(r *ClowdApp) field.ErrorList {
 	return allErrs
 }
 
-func validateDeploymentStrategy(r *ClowdApp) field.ErrorList {
+func validateDeploymentStrategy(i *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
-	for depIndex, deployment := range r.Spec.Deployments {
+	for depIndex, deployment := range i.Spec.Deployments {
 		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.PrivateStrategy == apps.RecreateDeploymentStrategyType {
 			allErrs = append(
 				allErrs,
