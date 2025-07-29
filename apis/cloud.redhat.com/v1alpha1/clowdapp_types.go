@@ -139,7 +139,7 @@ type Job struct {
 // WebDeprecated defines a boolean flag to help distinguish from the newer WebServices
 type WebDeprecated bool
 
-// A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
+// APIPath is a string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
 // +kubebuilder:validation:Pattern=`^\/api\/[a-zA-Z0-9-]+\/$`
 type APIPath string
 
