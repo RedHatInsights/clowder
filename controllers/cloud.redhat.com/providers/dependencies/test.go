@@ -25,6 +25,7 @@ func defaultMetaObject() metav1.ObjectMeta {
 	}
 }
 
+// TestSingleDependency tests the behavior of a single dependency
 func TestSingleDependency(t *testing.T) {
 
 	var app crd.ClowdApp
@@ -95,6 +96,7 @@ func TestSingleDependency(t *testing.T) {
 	}
 }
 
+// TestMissingDependency tests the behavior when a dependency is missing
 func TestMissingDependency(t *testing.T) {
 
 	var app crd.ClowdApp
@@ -141,6 +143,7 @@ func TestMissingDependency(t *testing.T) {
 	}
 }
 
+// TestOptionalDependency tests the behavior of optional dependencies
 func TestOptionalDependency(t *testing.T) {
 
 	var app crd.ClowdApp
@@ -227,6 +230,7 @@ func assertAppConfig(t *testing.T, cfg config.DependencyEndpoint, hostname strin
 	}
 }
 
+// TestMultiDependency tests the behavior with multiple dependencies
 func TestMultiDependency(t *testing.T) {
 
 	var app crd.ClowdApp
@@ -306,12 +310,16 @@ func TestMultiDependency(t *testing.T) {
 	}
 }
 
+// Params represents a nested map of configuration parameters
 type Params map[string]map[string]string
+
+// IDAndParams holds an identifier and associated resource parameters
 type IDAndParams struct {
 	Params Params
 	ID     string
 }
 
+// NewIDAndParam creates a new IDAndParams instance with the specified resource parameters
 func NewIDAndParam(id, limitCPU, limitMemory, requestsCPU, requestsMemory string) IDAndParams {
 	return IDAndParams{
 		ID: id,

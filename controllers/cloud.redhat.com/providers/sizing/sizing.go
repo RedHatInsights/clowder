@@ -1,3 +1,4 @@
+// Package sizing provides resource sizing and scaling functionality for Clowder applications
 package sizing
 
 // Note on package:

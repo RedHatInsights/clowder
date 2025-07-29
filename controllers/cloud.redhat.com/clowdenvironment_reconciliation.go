@@ -22,6 +22,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+// SkippedError represents an error that occurred during reconciliation that can be skipped
 type SkippedError struct {
 	err error
 }
@@ -30,6 +31,7 @@ func (se SkippedError) Error() string {
 	return fmt.Sprintf("skipped because: %s", se.err.Error())
 }
 
+// NewSkippedError creates a new SkippedError with the given message
 func NewSkippedError(errString string) error {
 	return SkippedError{err: fmt.Errorf("%s", errString)}
 }

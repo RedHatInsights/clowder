@@ -1,3 +1,4 @@
+// Package controllers provides the main controller implementations for Clowder resources
 package controllers
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 )
 
+// CreateAPIServer creates and configures the HTTP API server for Clowder configuration endpoints
 func CreateAPIServer() *http.Server {
 	mux := http.NewServeMux()
 

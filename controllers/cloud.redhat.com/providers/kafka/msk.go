@@ -31,7 +31,7 @@ type mskProvider struct {
 	providers.Provider
 }
 
-// NewStrimzi returns a new strimzi provider object.
+// NewMSK returns a new MSK provider object.
 func NewMSK(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CyndiPipeline,

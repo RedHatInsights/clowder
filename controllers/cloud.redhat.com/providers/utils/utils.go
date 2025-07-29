@@ -1,4 +1,5 @@
-package providers
+// Package utils provides utility functions and helpers for Clowder providers
+package utils
 
 import (
 	"fmt"
@@ -6,8 +7,6 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -15,6 +14,8 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 
+	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -194,6 +195,7 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
 }
 
+// GetInMemoryDBImage returns the in-memory database image for the environment
 func GetInMemoryDBImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.InMemoryDB.Image != "" {
 		return env.Spec.Providers.InMemoryDB.Image
@@ -204,7 +206,7 @@ func GetInMemoryDBImage(env *crd.ClowdEnvironment) string {
 	return defaultImageInMemoryDB
 }
 
-// GetCaddyImage returns the caddy image to use in a given environment
+// GetCaddyGatewayImage returns the caddy gateway image to use in a given environment
 func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.Images.CaddyGateway != "" {
 		return env.Spec.Providers.Web.Images.CaddyGateway
@@ -278,6 +280,7 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 	return defaultKeyCloakVersion
 }
 
+// GetClowderNamespace returns the namespace where Clowder is running
 func GetClowderNamespace() (string, error) {
 	clowderNsB, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 
@@ -289,6 +292,7 @@ func GetClowderNamespace() (string, error) {
 	return string(clowderNsB), nil
 }
 
+// DebugLog logs a debug message with the provided logger and key-value pairs
 func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		logger.Info(msg, keysAndValues...)

@@ -322,6 +322,7 @@ func (r *ClowdJobInvocationReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Complete(r)
 }
 
+// UpdateInvokedJobStatus updates the status of invoked jobs in a ClowdJobInvocation
 func UpdateInvokedJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) error {
 
 	for _, s := range jobs.Items {
@@ -346,6 +347,7 @@ func UpdateInvokedJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) 
 	return nil
 }
 
+// GetJobsStatus returns true if all jobs in the ClowdJobInvocation have completed successfully
 func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
 
 	jobsRequired := len(cji.Spec.Jobs)

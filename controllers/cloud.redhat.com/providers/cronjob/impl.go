@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+// GetCronJobName generates a name for a cron job based on the app and job
 func GetCronJobName(app *crd.ClowdApp, cronjob *crd.Job) string {
 	return fmt.Sprintf("%s-%s", app.Name, cronjob.Name)
 }

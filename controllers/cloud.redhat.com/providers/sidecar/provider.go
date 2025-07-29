@@ -126,7 +126,7 @@ func MergeEnvVars(envVars []crd.EnvVar, appEnvVars []crd.EnvVar) []crd.EnvVar {
 // ProvName sets the provider name identifier
 var ProvName = "sidecar"
 
-// GetEnd returns the correct end provider.
+// GetSideCar returns the correct sidecar provider.
 func GetSideCar(c *providers.Provider) (providers.ClowderProvider, error) {
 	return NewSidecarProvider(c)
 }

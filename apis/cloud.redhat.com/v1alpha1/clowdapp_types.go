@@ -284,7 +284,7 @@ type Sidecar struct {
 	EnvVars []EnvVar `json:"envVars,omitempty"`
 }
 
-// Metadata for applying annotations etc to PodSpec
+// PodspecMetadata defines metadata for applying annotations etc to PodSpec
 type PodspecMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }

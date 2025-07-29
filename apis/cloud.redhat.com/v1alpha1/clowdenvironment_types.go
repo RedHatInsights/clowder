@@ -105,6 +105,7 @@ type WebConfig struct {
 	GatewayCert GatewayCert `json:"gatewayCert,omitempty"`
 }
 
+// GatewayCert defines the certificate configuration for gateway TLS
 type GatewayCert struct {
 	// Determines whether to enable the gateway cert, default is disabled
 	Enabled bool `json:"enabled,omitempty"`
@@ -119,6 +120,7 @@ type GatewayCert struct {
 	EmailAddress string `json:"emailAddress,omitempty"`
 }
 
+// TLS defines TLS configuration settings
 type TLS struct {
 	Enabled     bool  `json:"enabled,omitempty"`
 	Port        int32 `json:"port,omitempty"`
@@ -129,6 +131,7 @@ type TLS struct {
 // +kubebuilder:validation:Enum=none;operator;app-interface
 type MetricsMode string
 
+// PrometheusConfig defines configuration for Prometheus monitoring
 type PrometheusConfig struct {
 	// Determines whether to deploy prometheus in operator mode
 	Deploy bool `json:"deploy,omitempty"`
@@ -137,6 +140,7 @@ type PrometheusConfig struct {
 	AppInterfaceInternalURL string `json:"appInterfaceInternalURL,omitempty"`
 }
 
+// PrometheusGatewayConfig defines configuration for Prometheus gateway
 type PrometheusGatewayConfig struct {
 	// Determines whether to deploy prometheus-gateway in operator mode
 	Deploy bool `json:"deploy,omitempty"`
@@ -344,6 +348,7 @@ type ServiceMeshConfig struct {
 	Mode ServiceMeshMode `json:"mode,omitempty"`
 }
 
+// ObjectStoreImages defines the container images used for object storage
 type ObjectStoreImages struct {
 	Minio string `json:"minio,omitempty"`
 }
@@ -373,6 +378,7 @@ type ObjectStoreConfig struct {
 	Images ObjectStoreImages `json:"images,omitempty"`
 }
 
+// FeatureFlagsImages defines the container images used for feature flags
 type FeatureFlagsImages struct {
 	Unleash     string `json:"unleash,omitempty"`
 	UnleashEdge string `json:"unleashEdge,omitempty"`
@@ -444,6 +450,7 @@ type AutoScalerConfig struct {
 // +kubebuilder:validation:Enum={"none", "app", "", "environment"}
 type ConfigAccessMode string
 
+// TestingConfig defines configuration for testing capabilities
 type TestingConfig struct {
 	// Defines the environment for iqe/smoke testing
 	Iqe IqeConfig `json:"iqe,omitempty"`
@@ -460,6 +467,7 @@ type TestingConfig struct {
 	ConfigAccess ConfigAccessMode `json:"configAccess"`
 }
 
+// IqeConfig defines configuration for IQE (Insights Quality Engineering) testing
 type IqeConfig struct {
 	ImageBase string `json:"imageBase"`
 
@@ -475,11 +483,13 @@ type IqeConfig struct {
 	UI IqeUIConfig `json:"ui,omitempty"`
 }
 
+// IqeUIConfig defines configuration for IQE UI testing
 type IqeUIConfig struct {
 	// Defines configurations for selenium containers in this environment
 	Selenium IqeUISeleniumConfig `json:"selenium,omitempty"`
 }
 
+// IqeUISeleniumConfig defines configuration for IQE Selenium-based UI testing
 type IqeUISeleniumConfig struct {
 	// Defines the image used for selenium containers in this environment
 	ImageBase string `json:"imageBase,omitempty"`
@@ -517,6 +527,7 @@ type ClowdEnvironmentSpec struct {
 	Disabled bool `json:"disabled,omitempty"`
 }
 
+// TokenRefresherConfig defines configuration for token refresher sidecar
 type TokenRefresherConfig struct {
 	// Enables or disables token refresher sidecars
 	Enabled bool `json:"enabled"`
@@ -524,6 +535,7 @@ type TokenRefresherConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
+// OtelCollectorConfig defines configuration for OpenTelemetry collector sidecar
 type OtelCollectorConfig struct {
 	// Enable or disable otel collector sidecar
 	Enabled bool `json:"enabled"`
@@ -601,6 +613,7 @@ type LocalObjectReference struct {
 	Name string `json:"name,omitempty"`
 }
 
+// Sidecars defines configuration for sidecar containers
 type Sidecars struct {
 	// Sets up Token Refresher configuration
 	TokenRefresher TokenRefresherConfig `json:"tokenRefresher,omitempty"`

@@ -1,3 +1,4 @@
+// Package database provides database connectivity and management for Clowder applications
 package database
 
 import (
@@ -125,6 +126,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+// GetDbConfig retrieves database configuration from app-interface
 func GetDbConfig(
 	ctx context.Context, pClient client.Client, namespace, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
 ) (*config.DatabaseConfigContainer, error) {

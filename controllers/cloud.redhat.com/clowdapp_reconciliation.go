@@ -25,6 +25,7 @@ import (
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
+// ClowdAppReconciliation manages the reconciliation state and context for a ClowdApp resource
 type ClowdAppReconciliation struct {
 	cache                 *rc.ObjectCache
 	recorder              record.EventRecorder
@@ -90,6 +91,7 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+// ReportDependencies reports dependency status and issues for a ClowdApp
 func ReportDependencies(ctx context.Context, pClient client.Client, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 	appName := app.Name
 	appDependencies := app.Spec.Dependencies

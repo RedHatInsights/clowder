@@ -1,3 +1,4 @@
+// Package iqe provides IQE (Insights Quality Engineering) testing functionality for Clowder applications
 package iqe
 
 import (

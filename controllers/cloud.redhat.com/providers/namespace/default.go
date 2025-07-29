@@ -1,3 +1,4 @@
+// Package namespace provides namespace management functionality for Clowder applications
 package namespace
 
 import (

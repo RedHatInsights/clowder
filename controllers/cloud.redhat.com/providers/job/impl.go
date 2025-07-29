@@ -1,3 +1,4 @@
+// Package job provides job and cron job management for Clowder applications
 package job
 
 import (
@@ -16,7 +17,7 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-// applyJob build the k8s job resource and applies it from the Job config
+// CreateJobResource builds the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
 func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
 	labels := cji.GetLabels()

@@ -18,7 +18,7 @@ const KEDA = "keda"
 var CoreAutoScaler = rc.NewMultiResourceIdent(ProvName, "core_autoscaler", &keda.ScaledObject{})
 var SimpleAutoScaler = rc.NewMultiResourceIdent(ProvName, "simple_hpa", &v2.HorizontalPodAutoscaler{})
 
-// GetAutoscaler returns the correct end provider.
+// GetAutoScaler returns the correct autoscaler provider.
 func GetAutoScaler(c *p.Provider) (p.ClowderProvider, error) {
 	mode := c.Env.Spec.Providers.AutoScaler.Mode
 	// Keda is preserved as a synonym of enabled for backwards compatibility

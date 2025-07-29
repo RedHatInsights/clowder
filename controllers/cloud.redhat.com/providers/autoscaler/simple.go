@@ -24,7 +24,7 @@ const (
 	DeploymentKind       = "Deployment"
 )
 
-// Creates a simple HPA in the resource cache for the deployment and ClowdApp
+// ProvideSimpleAutoScaler creates a simple HPA in the resource cache for the deployment and ClowdApp
 func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment *crd.Deployment) error {
 	cachedDeployment, err := getDeploymentFromCache(deployment, app, sp)
 	if err != nil {
