@@ -32,7 +32,7 @@ var KafkaInstance = rc.NewSingleResourceIdent(ProvName, "kafka_instance", &strim
 // KafkaUser is the resource ident for a KafkaUser object.
 var KafkaUser = rc.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{}, rc.ResourceOptions{WriteNow: true})
 
-// KafkaUser is the resource ident for a KafkaUser object.
+// KafkaConnectUser is the resource ident for a KafkaConnectUser object.
 var KafkaConnectUser = rc.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.

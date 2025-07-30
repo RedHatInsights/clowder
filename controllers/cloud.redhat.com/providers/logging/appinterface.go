@@ -1,3 +1,4 @@
+// Package logging provides logging configuration management for Clowder applications
 package logging
 
 import (

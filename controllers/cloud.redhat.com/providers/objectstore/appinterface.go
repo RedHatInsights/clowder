@@ -1,3 +1,4 @@
+// Package objectstore provides object storage provisioning and management for Clowder applications
 package objectstore
 
 import (

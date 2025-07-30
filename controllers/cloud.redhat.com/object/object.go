@@ -1,3 +1,4 @@
+// Package object defines interfaces and utilities for working with Clowder objects
 package object
 
 import (

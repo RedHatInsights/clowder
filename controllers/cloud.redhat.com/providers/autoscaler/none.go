@@ -9,7 +9,7 @@ type noneAutoScalerProvider struct {
 	providers.Provider
 }
 
-// NewNoneDBProvider returns a new none db provider object.
+// NewNoneAutoScalerProvider returns a new none autoscaler provider object.
 func NewNoneAutoScalerProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &noneAutoScalerProvider{Provider: *p}, nil
 }

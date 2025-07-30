@@ -1,3 +1,4 @@
+// Package deployment provides deployment management functionality for Clowder applications
 package deployment
 
 import (
@@ -15,6 +16,7 @@ type deploymentProvider struct {
 // CoreDeployment is the deployment for the apps deployments.
 var CoreDeployment = rc.NewMultiResourceIdent(ProvName, "core_deployment", &apps.Deployment{})
 
+// NewDeploymentProvider creates a new deployment provider instance
 func NewDeploymentProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(CoreDeployment)
 	return &deploymentProvider{Provider: *p}, nil

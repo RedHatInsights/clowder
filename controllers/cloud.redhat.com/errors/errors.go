@@ -1,3 +1,4 @@
+// Package errors provides custom error types and error handling utilities for Clowder
 package errors
 
 import (
@@ -75,6 +76,7 @@ func (m *MissingDependency) ToString() string {
 	return fmt.Sprintf("source: %s, details: %s", m.Source, m.Details)
 }
 
+// MakeMissingDependencies creates a MissingDependencies error from a single MissingDependency
 func MakeMissingDependencies(missingDep MissingDependency) MissingDependencies {
 	return MissingDependencies{
 		MissingDeps: []MissingDependency{missingDep},

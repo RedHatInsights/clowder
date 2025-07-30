@@ -22,6 +22,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+// SkippedError represents an error that occurred during reconciliation that can be skipped
 type SkippedError struct {
 	err error
 }
@@ -30,11 +31,13 @@ func (se SkippedError) Error() string {
 	return fmt.Sprintf("skipped because: %s", se.err.Error())
 }
 
+// NewSkippedError creates a new SkippedError with the given message
 func NewSkippedError(errString string) error {
 	return SkippedError{err: fmt.Errorf("%s", errString)}
 }
 
 const (
+	// SKIPRECONCILE represents a mode to skip reconciliation operations
 	SKIPRECONCILE = "SKIPRECONCILE"
 )
 
@@ -84,7 +87,7 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 	}
 }
 
-// Public method to iterate through the steps of the reconciliation process
+// Reconcile iterates through the steps of the reconciliation process
 func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 	r.log.Info("Reconciliation started")
 	// The env stays locked for the entire reconciliation
@@ -281,7 +284,7 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 		return ctrl.Result{Requeue: true}, getNSErr
 	}
 
-	if ens.ObjectMeta.DeletionTimestamp != nil {
+	if ens.DeletionTimestamp != nil {
 		return ctrl.Result{}, NewSkippedError("target namespace is to be deleted")
 	}
 

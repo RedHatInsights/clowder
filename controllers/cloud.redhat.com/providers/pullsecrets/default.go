@@ -1,3 +1,4 @@
+// Package pullsecrets provides pull secret management functionality for Clowder applications
 package pullsecrets
 
 import (

@@ -1,4 +1,5 @@
-package providers
+// Package utils provides utility functions and helpers for Clowder providers
+package utils // nolint:revive  // ignore meaningless name check
 
 import (
 	"fmt"
@@ -6,14 +7,14 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,19 +24,37 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var DefaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
-var DefaultImageCaddyGateway = DefaultImageCaddySideCar
-var DefaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
-var DefaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:745c249"
-var DefaultKeyCloakVersion = "23.0.1"
-var DefaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:5519eba"
-var DefaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", DefaultKeyCloakVersion)
-var DefaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
-var DefaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
-var DefaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
-var DefaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
-var DefaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
-var DefaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
+var defaultImageCaddyGateway = defaultImageCaddySideCar
+var defaultImageMBOP = "quay.io/cloudservices/mbop:4fbb291"
+var defaultImageMocktitlements = "quay.io/cloudservices/mocktitlements:745c249"
+var defaultKeyCloakVersion = "23.0.1"
+var defaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:5519eba"
+var defaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", defaultKeyCloakVersion)
+var defaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
+var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
+var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
+var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
+var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
+var defaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+
+// GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
+func GetDefaultDatabaseImage(version int32) (string, error) {
+	var defaultImageDatabasePG = map[int32]string{
+		16: defaultImageDatabasePG16,
+		15: defaultImageDatabasePG15,
+		14: defaultImageDatabasePG14,
+		13: defaultImageDatabasePG13,
+		12: defaultImageDatabasePG12,
+	}
+
+	image, ok := defaultImageDatabasePG[version]
+	if !ok {
+		return "", errors.NewClowderError(fmt.Sprintf("no default image for PostgreSQL version %d", version))
+	}
+
+	return image, nil
+}
 
 // MakeLocalDB populates the given deployment object with the local DB struct.
 func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.ClowdObject, extraLabels *map[string]string, cfg *config.DatabaseConfig, image string, usePVC bool, dbName string, res *core.ResourceRequirements) {
@@ -84,7 +103,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		},
 	}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	envVars := []core.EnvVar{
 		{Name: "POSTGRESQL_USER", Value: cfg.Username},
@@ -175,6 +194,7 @@ func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, ba
 	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
 }
 
+// GetInMemoryDBImage returns the in-memory database image for the environment
 func GetInMemoryDBImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.InMemoryDB.Image != "" {
 		return env.Spec.Providers.InMemoryDB.Image
@@ -182,10 +202,10 @@ func GetInMemoryDBImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.InMemoryDB != "" {
 		return clowderconfig.LoadedConfig.Images.InMemoryDB
 	}
-	return DefaultImageInMemoryDB
+	return defaultImageInMemoryDB
 }
 
-// GetCaddyImage returns the caddy image to use in a given environment
+// GetCaddyGatewayImage returns the caddy gateway image to use in a given environment
 func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.Images.CaddyGateway != "" {
 		return env.Spec.Providers.Web.Images.CaddyGateway
@@ -193,7 +213,7 @@ func GetCaddyGatewayImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.CaddyGateway != "" {
 		return clowderconfig.LoadedConfig.Images.CaddyGateway
 	}
-	return DefaultImageCaddyGateway
+	return defaultImageCaddyGateway
 }
 
 // GetCaddyImage returns the caddy image to use in a given environment
@@ -204,7 +224,7 @@ func GetCaddyImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
 		return clowderconfig.LoadedConfig.Images.Caddy
 	}
-	return DefaultImageCaddySideCar
+	return defaultImageCaddySideCar
 }
 
 // GetCaddyProxyImage returns the caddy image to use in a given environment
@@ -215,7 +235,7 @@ func GetCaddyProxyImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Caddy != "" {
 		return clowderconfig.LoadedConfig.Images.CaddyProxy
 	}
-	return DefaultImageCaddyProxy
+	return defaultImageCaddyProxy
 }
 
 // GetKeycloakImage returns the keycloak image to use in a given environment
@@ -226,7 +246,7 @@ func GetKeycloakImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
 		return clowderconfig.LoadedConfig.Images.Keycloak
 	}
-	return DefaultImageKeyCloak
+	return defaultImageKeyCloak
 }
 
 // GetMocktitlementsImage returns the mocktitlements image to use in a given environment
@@ -237,7 +257,7 @@ func GetMocktitlementsImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.Mocktitlements != "" {
 		return clowderconfig.LoadedConfig.Images.Mocktitlements
 	}
-	return DefaultImageMocktitlements
+	return defaultImageMocktitlements
 }
 
 // GetMockBOPImage returns the mock BOP image to use in a given environment
@@ -248,7 +268,7 @@ func GetMockBOPImage(env *crd.ClowdEnvironment) string {
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		return clowderconfig.LoadedConfig.Images.MBOP
 	}
-	return DefaultImageMBOP
+	return defaultImageMBOP
 }
 
 // GetKeycloakVersion returns the keycloak version to use in a given environment
@@ -256,9 +276,10 @@ func GetKeycloakVersion(env *crd.ClowdEnvironment) string {
 	if env.Spec.Providers.Web.KeycloakVersion != "" {
 		return env.Spec.Providers.Web.KeycloakVersion
 	}
-	return DefaultKeyCloakVersion
+	return defaultKeyCloakVersion
 }
 
+// GetClowderNamespace returns the namespace where Clowder is running
 func GetClowderNamespace() (string, error) {
 	clowderNsB, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 
@@ -270,19 +291,23 @@ func GetClowderNamespace() (string, error) {
 	return string(clowderNsB), nil
 }
 
+// DebugLog logs a debug message with the provided logger and key-value pairs
 func DebugLog(logger logr.Logger, msg string, keysAndValues ...interface{}) {
 	if clowderconfig.LoadedConfig.DebugOptions.Logging.DebugLogging {
 		logger.Info(msg, keysAndValues...)
 	}
 }
 
+// KubeLinterAnnotations defines standard annotations to ignore specific kube-linter checks for Job pods
 var KubeLinterAnnotations = map[string]string{
 	"ignore-check.kube-linter.io/no-liveness-probe":  "probes not required on Job pods",
 	"ignore-check.kube-linter.io/no-readiness-probe": "probes not required on Job pods",
 }
 
+// RCharSet defines the character set used for random string generation
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
+// AddCertVolume adds a TLS certificate volume to the provided PodSpec
 func AddCertVolume(d *core.PodSpec, dnn string) {
 	d.Volumes = append(d.Volumes, core.Volume{
 		Name: "tls-ca",
@@ -317,10 +342,12 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 	}
 }
 
+// DeploymentWithWebServices defines an interface for deployments that have web services configuration
 type DeploymentWithWebServices interface {
-	GetWebServices() v1alpha1.WebServices
+	GetWebServices() crd.WebServices
 }
 
+// GetAPIPaths returns the API paths for a deployment with web services configuration
 func GetAPIPaths(deployment DeploymentWithWebServices, defaultPath string) []string {
 	apiPaths := []string{}
 	webServices := deployment.GetWebServices()
@@ -341,15 +368,18 @@ func GetAPIPaths(deployment DeploymentWithWebServices, defaultPath string) []str
 	return apiPaths
 }
 
+// SecretEnvVar represents an environment variable that references a secret key
 type SecretEnvVar struct {
 	Name string
 	Key  string
 }
 
+// NewSecretEnvVar creates a new SecretEnvVar with the provided name and key
 func NewSecretEnvVar(name, key string) SecretEnvVar {
 	return SecretEnvVar{Name: name, Key: key}
 }
 
+// AppendEnvVarsFromSecret appends environment variables from a secret to the provided slice
 func AppendEnvVarsFromSecret(envvars []core.EnvVar, secName string, inputs ...SecretEnvVar) []core.EnvVar {
 	for _, env := range inputs {
 		newVar := core.EnvVar{

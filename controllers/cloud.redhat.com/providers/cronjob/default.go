@@ -1,3 +1,4 @@
+// Package cronjob provides cron job management functionality for Clowder applications
 package cronjob
 
 import (
@@ -15,6 +16,7 @@ type cronjobProvider struct {
 // CoreCronJob is the cronjob for the apps cronjobs.
 var CoreCronJob = rc.NewMultiResourceIdent(ProvName, "core_cronjob", &batch.CronJob{})
 
+// NewCronJobProvider creates a new cron job provider instance
 func NewCronJobProvider(p *p.Provider) (p.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(CoreCronJob)
 	return &cronjobProvider{Provider: *p}, nil

@@ -71,6 +71,7 @@ import (
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
 
+// ReconciliationMetrics holds metrics data for ClowdApp reconciliation operations
 type ReconciliationMetrics struct {
 	appName            string
 	envName            string
@@ -130,6 +131,7 @@ type ClowdAppReconciler struct {
 	HashCache *hashcache.HashCache
 }
 
+// Watcher manages watch operations for ClowdApp resources and their dependencies
 type Watcher struct {
 	obj    client.Object
 	filter HandlerFuncBuilder

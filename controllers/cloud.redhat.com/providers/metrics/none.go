@@ -9,6 +9,7 @@ type noneMetricsProvider struct {
 	providers.Provider
 }
 
+// NewNoneMetricsProvider creates a new metrics provider that does nothing
 func NewNoneMetricsProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &noneMetricsProvider{Provider: *p}, nil
 }

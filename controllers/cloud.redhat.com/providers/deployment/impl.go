@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	// TerminationLogPath defines the standard path for container termination logs
 	TerminationLogPath = "/dev/termination-log"
 )
 
@@ -215,14 +216,14 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 
 	pod := deployment.PodSpec
 
-	utils.UpdateAnnotations(d, app.ObjectMeta.Annotations, deployment.Metadata.Annotations)
+	utils.UpdateAnnotations(d, app.Annotations, deployment.Metadata.Annotations)
 
 	setLocalAnnotations(env, deployment, d, app)
 
 	setMinReplicas(deployment, d)
 
 	d.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	d.Spec.Template.ObjectMeta.Labels = labels
+	d.Spec.Template.Labels = labels
 	d.Spec.Strategy = apps.DeploymentStrategy{
 		Type: apps.RollingUpdateDeploymentStrategyType,
 		RollingUpdate: &apps.RollingUpdateDeployment{
@@ -288,7 +289,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				DefaultMode: utils.Int32Ptr(420),
-				SecretName:  app.ObjectMeta.Name,
+				SecretName:  app.Name,
 			},
 		},
 	})
@@ -306,7 +307,7 @@ func initDeployment(app *crd.ClowdApp, env *crd.ClowdEnvironment, d *apps.Deploy
 }
 
 func setRecreateDeploymentStrategyForPVCs(vol core.Volume, d *apps.Deployment) {
-	if vol.VolumeSource.PersistentVolumeClaim == nil {
+	if vol.PersistentVolumeClaim == nil {
 		return
 	}
 	d.Spec.Strategy = apps.DeploymentStrategy{
@@ -315,20 +316,20 @@ func setRecreateDeploymentStrategyForPVCs(vol core.Volume, d *apps.Deployment) {
 }
 
 func setVolumeSourceConfigMapDefaultMode(vol *core.Volume) {
-	if vol.VolumeSource.PersistentVolumeClaim != nil {
+	if vol.PersistentVolumeClaim != nil {
 		return
 	}
-	if vol.VolumeSource.ConfigMap != nil && vol.VolumeSource.Secret == nil && (vol.VolumeSource.ConfigMap.DefaultMode == nil || *vol.VolumeSource.ConfigMap.DefaultMode == 0) {
-		vol.VolumeSource.ConfigMap.DefaultMode = utils.Int32Ptr(420)
+	if vol.ConfigMap != nil && vol.Secret == nil && (vol.ConfigMap.DefaultMode == nil || *vol.ConfigMap.DefaultMode == 0) {
+		vol.ConfigMap.DefaultMode = utils.Int32Ptr(420)
 	}
 }
 
 func setVolumeSourceSecretDefaultMode(vol *core.Volume) {
-	if vol.VolumeSource.PersistentVolumeClaim != nil {
+	if vol.PersistentVolumeClaim != nil {
 		return
 	}
-	if vol.VolumeSource.ConfigMap == nil && vol.VolumeSource.Secret != nil && (vol.VolumeSource.Secret.DefaultMode == nil || *vol.VolumeSource.Secret.DefaultMode == 0) {
-		vol.VolumeSource.Secret.DefaultMode = utils.Int32Ptr(420)
+	if vol.ConfigMap == nil && vol.Secret != nil && (vol.Secret.DefaultMode == nil || *vol.Secret.DefaultMode == 0) {
+		vol.Secret.DefaultMode = utils.Int32Ptr(420)
 	}
 }
 

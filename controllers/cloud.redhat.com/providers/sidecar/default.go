@@ -1,3 +1,4 @@
+// Package sidecar provides sidecar container management functionality for Clowder applications
 package sidecar
 
 import (
@@ -22,6 +23,7 @@ type sidecarProvider struct {
 	providers.Provider
 }
 
+// NewSidecarProvider creates a new sidecar provider instance
 func NewSidecarProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &sidecarProvider{Provider: *p}, nil
 }

@@ -1134,6 +1134,8 @@ spec:
                   type: object
                 type: array
               deployments:
+                description: EnvResourceStatus describes the status of ClowdEnvironment
+                  resources
                 properties:
                   managedDeployments:
                     format: int32

@@ -1,3 +1,4 @@
+// Package servicemesh provides service mesh integration functionality for Clowder applications
 package servicemesh
 
 import (

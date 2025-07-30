@@ -83,7 +83,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
-	secMap, err := providers.MakeOrGetSecret(app, r.Provider.Cache, RedisSecret, nn, dataInit)
+	secMap, err := providers.MakeOrGetSecret(app, r.Cache, RedisSecret, nn, dataInit)
 	if err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
@@ -94,7 +94,7 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 
 	configMap := &core.ConfigMap{}
 
-	err = r.Provider.Cache.Create(RedisConfigMap, nn, configMap)
+	err = r.Cache.Create(RedisConfigMap, nn, configMap)
 
 	if err != nil {
 		return err
@@ -105,13 +105,13 @@ func (r *localRedis) Provide(app *crd.ClowdApp) error {
 
 	configMap.Data = map[string]string{"redis.conf": "stop-writes-on-bgsave-error no\nprotected-mode no"}
 
-	err = r.Provider.Cache.Update(RedisConfigMap, configMap)
+	err = r.Cache.Update(RedisConfigMap, configMap)
 
 	if err != nil {
 		return err
 	}
 
-	r.Provider.Config.InMemoryDb = &creds
+	r.Config.InMemoryDb = &creds
 
 	objList := []rc.ResourceIdent{
 		RedisDeployment,
@@ -137,7 +137,7 @@ func makeLocalRedis(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap provide
 	labeler(dd)
 
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 	dd.Spec.Replicas = &oneReplica
 
 	probeHandler := core.ProbeHandler{
@@ -219,7 +219,7 @@ func (r *localRedis) processSharedInMemoryDb(app *crd.ClowdApp) error {
 
 	shimdbCfg := config.InMemoryDBConfig{}
 
-	refApp, err := crd.GetAppForDBInSameEnv(r.Provider.Ctx, r.Provider.Client, app, true)
+	refApp, err := crd.GetAppForDBInSameEnv(r.Ctx, r.Client, app, true)
 
 	if err != nil {
 		return err
@@ -236,7 +236,7 @@ func (r *localRedis) processSharedInMemoryDb(app *crd.ClowdApp) error {
 
 	// This is a REAL call here, not a cached call as the reconciliation must have been processed
 	// for the app we depend on.
-	if err = r.Provider.Client.Get(r.Provider.Ctx, inn, &secret); err != nil {
+	if err = r.Client.Get(r.Ctx, inn, &secret); err != nil {
 		return errors.Wrap("Couldn't set/get secret", err)
 	}
 
@@ -251,7 +251,7 @@ func (r *localRedis) processSharedInMemoryDb(app *crd.ClowdApp) error {
 		return errors.Wrap("couldn't convert to int", err)
 	}
 
-	r.Provider.Config.InMemoryDb = &shimdbCfg
+	r.Config.InMemoryDb = &shimdbCfg
 
 	return nil
 }

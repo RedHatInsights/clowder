@@ -7,7 +7,7 @@ import (
 // ProvName sets the provider name identifier
 var ProvName = "deployment"
 
-// GetEnd returns the correct end provider.
+// GetDeployment returns the correct deployment provider.
 func GetDeployment(c *providers.Provider) (providers.ClowderProvider, error) {
 	return NewDeploymentProvider(c)
 }

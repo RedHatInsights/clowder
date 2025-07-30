@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+// GetCronJobName generates a name for a cron job based on the app and job
 func GetCronJobName(app *crd.ClowdApp, cronjob *crd.Job) string {
 	return fmt.Sprintf("%s-%s", app.Name, cronjob.Name)
 }
@@ -47,7 +48,7 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 
 	pod := cronjob.PodSpec
 
-	pt.ObjectMeta.Labels = labels
+	pt.Labels = labels
 
 	envvar := pod.Env
 	envvar = append(envvar, core.EnvVar{Name: "ACG_CONFIG", Value: "/cdapp/cdappconfig.json"})
@@ -142,7 +143,7 @@ func buildPodTemplate(app *crd.ClowdApp, env *crd.ClowdEnvironment, pt *core.Pod
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				DefaultMode: utils.Int32Ptr(420),
-				SecretName:  app.ObjectMeta.Name,
+				SecretName:  app.Name,
 			},
 		},
 	})
@@ -167,11 +168,11 @@ func applyCronJob(app *crd.ClowdApp, cj *batch.CronJob, pt *core.PodTemplateSpec
 	app.SetObjectMeta(cj, crd.Name(nn.Name), crd.Labels(labels))
 
 	utils.UpdateAnnotations(pt, provutils.KubeLinterAnnotations)
-	utils.UpdateAnnotations(cj, provutils.KubeLinterAnnotations, app.ObjectMeta.Annotations)
+	utils.UpdateAnnotations(cj, provutils.KubeLinterAnnotations, app.Annotations)
 
 	cj.Spec.Schedule = cronjob.Schedule
 
-	cj.Spec.JobTemplate.ObjectMeta.Labels = labels
+	cj.Spec.JobTemplate.Labels = labels
 	cj.Spec.JobTemplate.Spec.Template = *pt
 	cj.Spec.JobTemplate.Spec.ActiveDeadlineSeconds = cronjob.ActiveDeadlineSeconds
 

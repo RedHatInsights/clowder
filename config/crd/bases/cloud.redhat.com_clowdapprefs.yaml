@@ -119,9 +119,9 @@ spec:
                                 format: "/api/some-path/") that this app will serve
                                 requests from.'
                               items:
-                                description: A string representing an API path that
-                                  should route to this app for Clowder-managed Ingresses
-                                  (in format "/api/somepath/")
+                                description: APIPath is a string representing an API
+                                  path that should route to this app for Clowder-managed
+                                  Ingresses (in format "/api/somepath/")
                                 pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                 type: string
                               type: array

@@ -1,0 +1,34 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - gocritic
+    - gosec
+    - govet
+    - ineffassign
+    - revive
+    - staticcheck
+    - unused
+    - bodyclose
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - '-ST1003'  # ignore naming
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-same-issues: 20
+
+run:
+  timeout: 5m
+
+output:
+  formats:
+    text:
+      colors: false 

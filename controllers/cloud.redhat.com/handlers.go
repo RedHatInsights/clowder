@@ -39,6 +39,7 @@ type enqueueRequestForObjectCustom struct {
 
 var _ handler.EventHandler = &enqueueRequestForObjectCustom{}
 
+// HandlerFuncBuilder is a function that builds handler functions for a controller
 type HandlerFuncBuilder func(logr logr.Logger, ctrlName string) HandlerFuncs
 
 func createNewHandler(mgr manager.Manager, scheme *runtime.Scheme, input HandlerFuncBuilder, log logr.Logger, ctrlName string, typeOfOwner runtime.Object, hashCache *hashcache.HashCache) (handler.EventHandler, error) {

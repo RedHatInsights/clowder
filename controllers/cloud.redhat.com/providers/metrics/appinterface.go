@@ -1,3 +1,4 @@
+// Package metrics provides metrics collection and monitoring functionality for Clowder applications
 package metrics
 
 import (
@@ -10,6 +11,7 @@ type appinterfaceMetricsProvider struct {
 	p.Provider
 }
 
+// NewAppInterfaceMetrics creates a new app-interface metrics provider instance
 func NewAppInterfaceMetrics(p *p.Provider) (p.ClowderProvider, error) {
 	return &appinterfaceMetricsProvider{Provider: *p}, nil
 }

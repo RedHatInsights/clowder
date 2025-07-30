@@ -343,6 +343,7 @@ spec:
                 type: array
               jobMap:
                 additionalProperties:
+                  description: JobConditionState describes the state a job is in
                   type: string
                 description: JobMap is a map of the job names run by Job invocation
                   and their outcomes

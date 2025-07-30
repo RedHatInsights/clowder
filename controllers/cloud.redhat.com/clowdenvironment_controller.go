@@ -79,7 +79,8 @@ var cEnv = ""
 
 const (
 	envFinalizer = "finalizer.env.cloud.redhat.com"
-	SILENTFAIL   = "SILENTFAIL"
+	// SILENTFAIL represents a silent failure mode for environment operations
+	SILENTFAIL = "SILENTFAIL"
 )
 
 // ClowdEnvironmentReconciler reconciles a ClowdEnvironment object
@@ -96,18 +97,21 @@ type ClowdEnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapprefs,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapprefs/status,verbs=get;update;patch
 
+// SetEnv sets the current environment name for the controller
 func SetEnv(name string) {
 	mu.Lock()
 	defer mu.Unlock()
 	cEnv = name
 }
 
+// ReleaseEnv releases the current environment lock
 func ReleaseEnv() {
 	mu.Lock()
 	defer mu.Unlock()
 	cEnv = ""
 }
 
+// ReadEnv returns the currently set environment name
 func ReadEnv() string {
 	mu.RLock()
 	defer mu.RUnlock()

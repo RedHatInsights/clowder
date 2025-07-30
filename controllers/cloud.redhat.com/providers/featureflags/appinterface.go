@@ -1,3 +1,4 @@
+// Package featureflags provides feature flag management for Clowder applications
 package featureflags
 
 import (

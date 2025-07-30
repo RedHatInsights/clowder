@@ -1,3 +1,4 @@
+// Package job provides job and cron job management for Clowder applications
 package job
 
 import (
@@ -16,15 +17,15 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-// applyJob build the k8s job resource and applies it from the Job config
+// CreateJobResource builds the k8s job resource and applies it from the Job config
 // defined in the ClowdApp
 func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, app *crd.ClowdApp, nn types.NamespacedName, job *crd.Job, j *batchv1.Job) error {
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
-	j.ObjectMeta.Labels = labels
-	j.ObjectMeta.Labels["job"] = job.Name
-	j.Spec.Template.ObjectMeta.Labels = labels
+	j.Labels = labels
+	j.Labels["job"] = job.Name
+	j.Spec.Template.Labels = labels
 	j.Spec.ActiveDeadlineSeconds = job.ActiveDeadlineSeconds
 
 	pod := job.PodSpec
@@ -143,7 +144,7 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	}
 
 	utils.UpdateAnnotations(&j.Spec.Template, provutils.KubeLinterAnnotations, cji.Annotations)
-	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations, app.ObjectMeta.Annotations)
+	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations, app.Annotations)
 
 	return nil
 }

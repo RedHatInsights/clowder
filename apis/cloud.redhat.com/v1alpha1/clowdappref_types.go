@@ -38,6 +38,7 @@ type ClowdAppRefDeployment struct {
 	WebServices WebServices `json:"webServices,omitempty"`
 }
 
+// GetWebServices returns the web services configuration for this ClowdAppRef deployment
 func (d *ClowdAppRefDeployment) GetWebServices() WebServices {
 	return d.WebServices
 }

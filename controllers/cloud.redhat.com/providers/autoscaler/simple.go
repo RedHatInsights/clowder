@@ -18,13 +18,17 @@ import (
 )
 
 const (
-	ClowdAPIVersion      = "clowd.redhat.com/v1alpha1"
-	ClowdKind            = "ClowdApp"
+	// ClowdAPIVersion defines the API version for ClowdApp resources
+	ClowdAPIVersion = "clowd.redhat.com/v1alpha1"
+	// ClowdKind defines the kind name for ClowdApp resources
+	ClowdKind = "ClowdApp"
+	// DeploymentAPIVersion defines the API version for Deployment resources
 	DeploymentAPIVersion = "apps/v1"
-	DeploymentKind       = "Deployment"
+	// DeploymentKind defines the kind name for Deployment resources
+	DeploymentKind = "Deployment"
 )
 
-// Creates a simple HPA in the resource cache for the deployment and ClowdApp
+// ProvideSimpleAutoScaler creates a simple HPA in the resource cache for the deployment and ClowdApp
 func ProvideSimpleAutoScaler(app *crd.ClowdApp, appConfig *config.AppConfig, sp *providers.Provider, deployment *crd.Deployment) error {
 	cachedDeployment, err := getDeploymentFromCache(deployment, app, sp)
 	if err != nil {

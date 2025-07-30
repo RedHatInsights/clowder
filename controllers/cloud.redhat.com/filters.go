@@ -17,6 +17,7 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// HandlerFuncs contains handler functions for Kubernetes resource events
 type HandlerFuncs struct {
 	// Create returns true if the Create event should be processed
 	CreateFunc func(event.CreateEvent) (bool, string)

@@ -1,3 +1,4 @@
+// Package iqe provides IQE (Insights Quality Engineering) testing functionality for Clowder applications
 package iqe
 
 import (
@@ -25,11 +26,19 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// DefaultImageIQESelenium defines the default selenium image for IQE testing
 var DefaultImageIQESelenium = "quay.io/redhatqe/selenium-standalone"
 
+// IqeSecret represents the resource identifier for IQE secrets
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
+
+// VaultSecret represents the resource identifier for vault secrets
 var VaultSecret = rc.NewSingleResourceIdent("cji", "vault_secret", &core.Secret{})
+
+// IqeClowdJob represents the resource identifier for IQE ClowdJob resources
 var IqeClowdJob = rc.NewSingleResourceIdent("cji", "iqe_clowdjob", &batchv1.Job{})
+
+// ClowdJob represents the multi-resource identifier for ClowdJob resources
 var ClowdJob = rc.NewMultiResourceIdent("cji", "clowdjob", &batchv1.Job{})
 
 func joinNullableSlice(s *[]string) string {
@@ -264,10 +273,10 @@ func CreateIqeJobResource(ctx context.Context, cache *rc.ObjectCache, cji *crd.C
 	labels := cji.GetLabels()
 	cji.SetObjectMeta(j, crd.Name(nn.Name), crd.Labels(labels))
 
-	j.ObjectMeta.Labels = labels
-	j.ObjectMeta.Labels["job"] = cji.GetIQEName()
+	j.Labels = labels
+	j.Labels["job"] = cji.GetIQEName()
 	j.Name = nn.Name
-	j.Spec.Template.ObjectMeta.Labels = labels
+	j.Spec.Template.Labels = labels
 
 	j.Spec.Template.Spec.RestartPolicy = core.RestartPolicyNever
 	j.Spec.BackoffLimit = utils.Int32Ptr(0)

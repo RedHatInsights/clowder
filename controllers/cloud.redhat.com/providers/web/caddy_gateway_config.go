@@ -1,3 +1,4 @@
+// Package web provides web service and ingress management functionality for Clowder applications
 package web
 
 import (
@@ -11,11 +12,13 @@ import (
 	"github.com/caddyserver/caddy/v2/modules/caddytls"
 )
 
+// ProxyRoute represents a proxy route configuration with upstream and path information
 type ProxyRoute struct {
 	Upstream string `json:"upstream"`
 	Path     string `json:"path"`
 }
 
+// GenerateRoute creates a Caddy HTTP route configuration for the given proxy route
 func GenerateRoute(upstream ProxyRoute, warnings *[]caddyconfig.Warning) *caddyhttp.Route {
 	reverseProxy := caddyreverseproxy.Handler{
 		Upstreams: []*caddyreverseproxy.Upstream{{
@@ -46,6 +49,7 @@ func GenerateRoute(upstream ProxyRoute, warnings *[]caddyconfig.Warning) *caddyh
 	return &route
 }
 
+// GenerateConfig creates a complete Caddy configuration for the provided routes and TLS settings
 func GenerateConfig(hostname string, bopAddress string, whitelist []string, appRoutes []ProxyRoute) (string, error) {
 	var warnings []caddyconfig.Warning
 

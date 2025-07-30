@@ -1,3 +1,4 @@
+// Package database provides database connectivity and management for Clowder applications
 package database
 
 import (
@@ -28,12 +29,12 @@ type appInterface struct {
 }
 
 func fetchCa(caURL string) (string, error) {
-	resp, err := http.Get(caURL) // nolint
+	resp, err := http.Get(caURL) // nolint:gosec  // ignore G107
 
 	if err != nil {
 		return "", errors.Wrap("Error fetching CA bundle", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 
 	if resp.StatusCode != 200 {
 		msg := fmt.Sprintf("Bad status code: %d", resp.StatusCode)
@@ -125,6 +126,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+// GetDbConfig retrieves database configuration from app-interface
 func GetDbConfig(
 	ctx context.Context, pClient client.Client, namespace, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
 ) (*config.DatabaseConfigContainer, error) {

@@ -20,7 +20,7 @@ type managedKafkaProvider struct {
 	providers.Provider
 }
 
-// NewNoneKafka returns a new non kafka provider object.
+// NewManagedKafka returns a new managed kafka provider object.
 func NewManagedKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &managedKafkaProvider{Provider: *p}, nil
 }

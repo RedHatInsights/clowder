@@ -1,3 +1,4 @@
+// Package sizing provides resource sizing and scaling functionality for Clowder applications
 package sizing
 
 // Note on package:
@@ -24,27 +25,27 @@ import (
 
 // Public methods
 
-// Get default resource requirement requests and limits
+// GetDefaultResourceRequirements gets default resource requirement requests and limits
 func GetDefaultResourceRequirements() core.ResourceRequirements {
 	return GetResourceRequirementsForSize(GetDefaultSizeCPURAM())
 }
 
-// Gets the default size for CPU and RAM
+// GetDefaultSizeCPURAM gets the default size for CPU and RAM
 func GetDefaultSizeCPURAM() string {
 	return conf.DefaultSizeCPURAM
 }
 
-// Gets the default vol size
+// GetDefaultSizeVol gets the default volume size
 func GetDefaultSizeVol() string {
 	return conf.DefaultSizeVol
 }
 
-// Get the default volume capacity
+// GetDefaultVolCapacity gets the default volume capacity
 func GetDefaultVolCapacity() string {
 	return conf.VolSizeToCapacity[GetDefaultSizeVol()]
 }
 
-// Get resource requirements - request and limits - for a given size
+// GetResourceRequirementsForSize gets resource requirements - request and limits - for a given size
 func GetResourceRequirementsForSize(tShirtSize string) core.ResourceRequirements {
 	requestSize := useDefaultIfEmptySize(tShirtSize, GetDefaultSizeCPURAM())
 	limitSize := conf.LimitSizeToRequestSize[requestSize]
@@ -60,13 +61,13 @@ func GetResourceRequirementsForSize(tShirtSize string) core.ResourceRequirements
 	}
 }
 
-// For a givin vol size get the capacity. Providing "" gets the default.
+// GetVolCapacityForSize gets the capacity for a given volume size. Providing "" gets the default.
 func GetVolCapacityForSize(size string) string {
 	requestSize := useDefaultIfEmptySize(size, GetDefaultSizeVol())
 	return conf.VolSizeToCapacity[requestSize]
 }
 
-// Accepts 2 sizes. Returns true if first size is larger than second
+// IsSizeLarger accepts 2 sizes and returns true if first size is larger than second
 func IsSizeLarger(capacityA string, capacityB string) bool {
 	return conf.SizeIndex[capacityA] > conf.SizeIndex[capacityB]
 }
