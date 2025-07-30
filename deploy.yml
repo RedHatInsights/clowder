@@ -14,6 +14,298 @@ objects:
   metadata:
     annotations:
       controller-gen.kubebuilder.io/version: v0.16.4
+    name: clowdapprefs.cloud.redhat.com
+  spec:
+    group: cloud.redhat.com
+    names:
+      kind: ClowdAppRef
+      listKind: ClowdAppRefList
+      plural: clowdapprefs
+      singular: clowdappref
+    scope: Namespaced
+    versions:
+    - additionalPrinterColumns:
+      - jsonPath: .status.ready
+        name: Ready
+        type: boolean
+      - jsonPath: .spec.envName
+        name: Env
+        type: string
+      - jsonPath: .metadata.creationTimestamp
+        name: Age
+        type: date
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: ClowdAppRef is the Schema for the clowdapprefs API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+                of an object.
+
+                Servers should convert recognized schemas to the latest internal value,
+                and
+
+                may reject unrecognized values.
+
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource
+                this object represents.
+
+                Servers may infer this from the endpoint the client submits requests
+                to.
+
+                Cannot be updated.
+
+                In CamelCase.
+
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: ClowdAppRefSpec defines the desired state of ClowdAppRef
+              properties:
+                deployments:
+                  description: Deployments defines a list of deployments associated
+                    with the ClowdApp in the remote cluster
+                  items:
+                    description: ClowdAppRefDeployment represents a deployment within
+                      a ClowdAppRef
+                    properties:
+                      hostname:
+                        description: Hostname (FQDN) used to reach this deployment
+                          in the remote cluster
+                        type: string
+                      name:
+                        description: Name of the deployment
+                        type: string
+                      web:
+                        description: 'If set to true, creates a service on the webPort
+                          defined in the ClowdEnvironment resource, along with the
+                          relevant liveness and readiness probes.
+
+                          Deprecated: Use WebServices instead.'
+                        type: boolean
+                      webServices:
+                        description: WebServices defines the web services configuration
+                          for this deployment
+                        properties:
+                          metrics:
+                            description: 'MetricsWebService is the definition of the
+                              metrics web service. This is automatically
+
+                              enabled and the configuration here at the moment is
+                              included for completeness, as there
+
+                              are no configurable options.'
+                            type: object
+                          private:
+                            description: 'PrivateWebService is the definition of the
+                              private web service. There can be only
+
+                              one private service managed by Clowder.'
+                            properties:
+                              appProtocol:
+                                description: AppProtocol determines the protocol to
+                                  be used for the private port, (defaults to http)
+                                enum:
+                                - http
+                                - http2
+                                - https
+                                - tcp
+                                - tls
+                                - grpc
+                                - grpc-web
+                                - mongo
+                                - mysql
+                                - redis
+                                type: string
+                              enabled:
+                                description: 'Enabled describes if Clowder should
+                                  enable the private service and provide the
+
+                                  configuration in the cdappconfig.'
+                                type: boolean
+                            type: object
+                          public:
+                            description: 'PublicWebService is the definition of the
+                              public web service. There can be only
+
+                              one public service managed by Clowder.'
+                            properties:
+                              apiPath:
+                                description: (DEPRECATED, use apiPaths instead) Configures
+                                  a path named '/api/<apiPath>/' that this app will
+                                  serve requests from.
+                                type: string
+                              apiPaths:
+                                description: 'Defines a list of API paths (each matching
+                                  format: "/api/some-path/") that this app will serve
+                                  requests from.'
+                                items:
+                                  description: A string representing an API path that
+                                    should route to this app for Clowder-managed Ingresses
+                                    (in format "/api/somepath/")
+                                  pattern: ^\/api\/[a-zA-Z0-9-]+\/$
+                                  type: string
+                                type: array
+                              enabled:
+                                description: 'Enabled describes if Clowder should
+                                  enable the public service and provide the
+
+                                  configuration in the cdappconfig.'
+                                type: boolean
+                              sessionAffinity:
+                                description: Set SessionAffinity to true to enable
+                                  sticky sessions
+                                type: boolean
+                              whitelistPaths:
+                                description: WhitelistPaths define the paths that
+                                  do not require authentication
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                        type: object
+                    required:
+                    - hostname
+                    - name
+                    type: object
+                  type: array
+                disabled:
+                  description: Disabled turns off this ClowdAppRef
+                  type: boolean
+                envName:
+                  description: The name of the ClowdEnvironment resource that this
+                    ClowdAppRef will be used in
+                  type: string
+                remoteCluster:
+                  description: RemoteCluster defines information about the remote
+                    cluster where the services are located
+                  properties:
+                    name:
+                      description: Name defines the name of the remote cluster
+                      type: string
+                    region:
+                      description: Region defines the region of the remote cluster
+                      type: string
+                  type: object
+                remoteEnvironment:
+                  description: ClowdAppRefRemoteEnvironment defines details about
+                    the remote ClowdEnvironment configuration
+                  properties:
+                    name:
+                      description: Name defines the name of the remote ClowdEnvironment
+                      type: string
+                    port:
+                      description: 'Port defines the port used to reach deployments
+                        in the remote cluster (default: use the same value as ClowdApps
+                        in the local cluster)'
+                      format: int32
+                      type: integer
+                    privatePort:
+                      description: 'PrivatePort defines the private port used to reach
+                        deployments in the remote cluster (default: use the same value
+                        as ClowdApps in the local cluster)'
+                      format: int32
+                      type: integer
+                    tlsPort:
+                      description: 'TLSPort defines the TLS port used to reach deployments
+                        in the remote cluster (default: use the same value as ClowdApps
+                        in the local cluster)'
+                      format: int32
+                      type: integer
+                    tlsPrivatePort:
+                      description: 'TLSPrivatePort defines the TLS private port used
+                        to reach deployments in the remote cluster (default: use the
+                        same value as ClowdApps in the local cluster)'
+                      format: int32
+                      type: integer
+                  type: object
+              required:
+              - envName
+              type: object
+            status:
+              description: ClowdAppRefStatus defines the observed state of ClowdAppRef
+              properties:
+                conditions:
+                  description: Conditions represents the latest available observations
+                    of the ClowdAppRef's current state
+                  items:
+                    description: Condition defines an observation of a Cluster API
+                      resource operational state.
+                    properties:
+                      lastTransitionTime:
+                        description: 'Last time the condition transitioned from one
+                          status to another.
+
+                          This should be when the underlying condition changed. If
+                          that is not known, then using the time when
+
+                          the API field changed is acceptable.'
+                        format: date-time
+                        type: string
+                      message:
+                        description: 'A human readable message indicating details
+                          about the transition.
+
+                          This field may be empty.'
+                        type: string
+                      reason:
+                        description: 'The reason for the condition''s last transition
+                          in CamelCase.
+
+                          The specific API may choose whether or not this field is
+                          considered a guaranteed API.
+
+                          This field may not be empty.'
+                        type: string
+                      severity:
+                        description: 'Severity provides an explicit classification
+                          of Reason code, so the users or machines can immediately
+
+                          understand the current situation and act accordingly.
+
+                          The Severity field MUST be set only when Status=False.'
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False,
+                          Unknown.
+                        type: string
+                      type:
+                        description: 'Type of condition in CamelCase or in foo.example.com/CamelCase.
+
+                          Many .condition.type values are consistent across resources
+                          like Available, but because arbitrary conditions
+
+                          can be useful (see .node.status.conditions), the ability
+                          to deconflict is important.'
+                        type: string
+                    required:
+                    - lastTransitionTime
+                    - status
+                    - type
+                    type: object
+                  type: array
+                ready:
+                  description: Ready indicates if the ClowdAppRef is ready to be used
+                  type: boolean
+              required:
+              - ready
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+- apiVersion: apiextensions.k8s.io/v1
+  kind: CustomResourceDefinition
+  metadata:
+    annotations:
+      controller-gen.kubebuilder.io/version: v0.16.4
     name: clowdapps.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -1739,6 +2031,102 @@ objects:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
                                   type: boolean
+                                envVars:
+                                  description: Environment variables to be set in
+                                    the sidecar container (app-level overrides)
+                                  items:
+                                    description: EnvVar represents an environment
+                                      variable present in a Container.
+                                    properties:
+                                      name:
+                                        description: Name of the environment variable.
+                                          Must be a C_IDENTIFIER.
+                                        type: string
+                                      value:
+                                        description: 'Variable references $(VAR_NAME)
+                                          are expanded using the previous defined
+
+                                          environment variables in the container and
+                                          any service environment variables.
+
+                                          If a variable cannot be resolved, the reference
+                                          in the input string will be
+
+                                          unchanged. The $(VAR_NAME) syntax can be
+                                          escaped with a double $$, ie: $$(VAR_NAME).
+
+                                          Escaped references will never be expanded,
+                                          regardless of whether the variable
+
+                                          exists or not.'
+                                        type: string
+                                      valueFrom:
+                                        description: Source for the environment variable's
+                                          value. Cannot be used if value is not empty.
+                                        properties:
+                                          configMapKeyRef:
+                                            description: Selects a key of a ConfigMap.
+                                            properties:
+                                              key:
+                                                description: The key to select.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the ConfigMap
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                          fieldRef:
+                                            description: 'Selects a field of the pod:
+                                              supports metadata.name, metadata.namespace,
+
+                                              metadata.labels[''<KEY>''], metadata.annotations[''<KEY>''],
+                                              spec.nodeName,
+
+                                              spec.serviceAccountName, status.hostIP,
+                                              status.podIP, status.podIPs.'
+                                            properties:
+                                              apiVersion:
+                                                description: Version of the schema
+                                                  the FieldPath is written in terms
+                                                  of, defaults to "v1".
+                                                type: string
+                                              fieldPath:
+                                                description: Path of the field to
+                                                  select in the specified API version.
+                                                type: string
+                                            required:
+                                            - fieldPath
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                          secretKeyRef:
+                                            description: Selects a key of a secret
+                                              in the pod's namespace
+                                            properties:
+                                              key:
+                                                description: The key of the secret
+                                                  to select from.  Must be a valid
+                                                  secret key.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the Secret
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                        type: object
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -4478,18 +4866,14 @@ objects:
                         type: integer
                       web:
                         description: 'If set to true, creates a service on the webPort
-                          defined in
+                          defined in the ClowdEnvironment resource, along with the
+                          relevant liveness and readiness probes.
 
-                          the ClowdEnvironment resource, along with the relevant liveness
-                          and
-
-                          readiness probes.'
+                          Deprecated: Use WebServices instead.'
                         type: boolean
                       webServices:
-                        description: 'WebServices defines the structs for the three
-                          exposed web services: public,
-
-                          private and metrics.'
+                        description: WebServices defines the web services configuration
+                          for this deployment
                         properties:
                           metrics:
                             description: 'MetricsWebService is the definition of the
@@ -5833,6 +6217,102 @@ objects:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
                                   type: boolean
+                                envVars:
+                                  description: Environment variables to be set in
+                                    the sidecar container (app-level overrides)
+                                  items:
+                                    description: EnvVar represents an environment
+                                      variable present in a Container.
+                                    properties:
+                                      name:
+                                        description: Name of the environment variable.
+                                          Must be a C_IDENTIFIER.
+                                        type: string
+                                      value:
+                                        description: 'Variable references $(VAR_NAME)
+                                          are expanded using the previous defined
+
+                                          environment variables in the container and
+                                          any service environment variables.
+
+                                          If a variable cannot be resolved, the reference
+                                          in the input string will be
+
+                                          unchanged. The $(VAR_NAME) syntax can be
+                                          escaped with a double $$, ie: $$(VAR_NAME).
+
+                                          Escaped references will never be expanded,
+                                          regardless of whether the variable
+
+                                          exists or not.'
+                                        type: string
+                                      valueFrom:
+                                        description: Source for the environment variable's
+                                          value. Cannot be used if value is not empty.
+                                        properties:
+                                          configMapKeyRef:
+                                            description: Selects a key of a ConfigMap.
+                                            properties:
+                                              key:
+                                                description: The key to select.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the ConfigMap
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                          fieldRef:
+                                            description: 'Selects a field of the pod:
+                                              supports metadata.name, metadata.namespace,
+
+                                              metadata.labels[''<KEY>''], metadata.annotations[''<KEY>''],
+                                              spec.nodeName,
+
+                                              spec.serviceAccountName, status.hostIP,
+                                              status.podIP, status.podIPs.'
+                                            properties:
+                                              apiVersion:
+                                                description: Version of the schema
+                                                  the FieldPath is written in terms
+                                                  of, defaults to "v1".
+                                                type: string
+                                              fieldPath:
+                                                description: Path of the field to
+                                                  select in the specified API version.
+                                                type: string
+                                            required:
+                                            - fieldPath
+                                            type: object
+                                            x-kubernetes-map-type: atomic
+                                          secretKeyRef:
+                                            description: Selects a key of a secret
+                                              in the pod's namespace
+                                            properties:
+                                              key:
+                                                description: The key of the secret
+                                                  to select from.  Must be a valid
+                                                  secret key.
+                                                type: string
+                                              name:
+                                                description: Name of the referent.
+                                                type: string
+                                              optional:
+                                                description: Specify whether the Secret
+                                                  or its key must be defined
+                                                type: boolean
+                                            required:
+                                            - key
+                                            type: object
+                                        type: object
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -9276,14 +9756,25 @@ objects:
                         prometheus:
                           description: Prometheus specific configuration
                           properties:
-                            appInterfaceHostname:
-                              description: Specify prometheus hostname when in app-interface
-                                mode
+                            appInterfaceInternalURL:
+                              description: Specify prometheus internal URL when in
+                                app-interface mode
                               type: string
                             deploy:
                               description: Determines whether to deploy prometheus
                                 in operator mode
                               type: boolean
+                          type: object
+                        prometheusGateway:
+                          description: Prometheus Gateway specific configuration
+                          properties:
+                            deploy:
+                              description: Determines whether to deploy prometheus-gateway
+                                in operator mode
+                              type: boolean
+                            image:
+                              description: Image to use for prometheus-gateway deployment
+                              type: string
                           type: object
                       required:
                       - mode
@@ -9364,9 +9855,108 @@ objects:
                         otelCollector:
                           description: Sets up OpenTelemetry collector configuration
                           properties:
+                            configMap:
+                              description: Configurable shared ConfigMap name (optional)
+                              type: string
                             enabled:
                               description: Enable or disable otel collector sidecar
                               type: boolean
+                            envVars:
+                              description: Environment variables to be set in the
+                                otel collector container
+                              items:
+                                description: EnvVar represents an environment variable
+                                  present in a Container.
+                                properties:
+                                  name:
+                                    description: Name of the environment variable.
+                                      Must be a C_IDENTIFIER.
+                                    type: string
+                                  value:
+                                    description: 'Variable references $(VAR_NAME)
+                                      are expanded using the previous defined
+
+                                      environment variables in the container and any
+                                      service environment variables.
+
+                                      If a variable cannot be resolved, the reference
+                                      in the input string will be
+
+                                      unchanged. The $(VAR_NAME) syntax can be escaped
+                                      with a double $$, ie: $$(VAR_NAME).
+
+                                      Escaped references will never be expanded, regardless
+                                      of whether the variable
+
+                                      exists or not.'
+                                    type: string
+                                  valueFrom:
+                                    description: Source for the environment variable's
+                                      value. Cannot be used if value is not empty.
+                                    properties:
+                                      configMapKeyRef:
+                                        description: Selects a key of a ConfigMap.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: Name of the referent.
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      fieldRef:
+                                        description: 'Selects a field of the pod:
+                                          supports metadata.name, metadata.namespace,
+
+                                          metadata.labels[''<KEY>''], metadata.annotations[''<KEY>''],
+                                          spec.nodeName,
+
+                                          spec.serviceAccountName, status.hostIP,
+                                          status.podIP, status.podIPs.'
+                                        properties:
+                                          apiVersion:
+                                            description: Version of the schema the
+                                              FieldPath is written in terms of, defaults
+                                              to "v1".
+                                            type: string
+                                          fieldPath:
+                                            description: Path of the field to select
+                                              in the specified API version.
+                                            type: string
+                                        required:
+                                        - fieldPath
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                      secretKeyRef:
+                                        description: Selects a key of a secret in
+                                          the pod's namespace
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: Name of the referent.
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                required:
+                                - name
+                                type: object
+                              type: array
                             image:
                               description: Configurable image
                               type: string
@@ -9983,10 +10573,10 @@ objects:
                   description: PrometheusStatus provides info on how to connect to
                     Prometheus
                   properties:
-                    hostname:
+                    serverAddress:
                       type: string
                   required:
-                  - hostname
+                  - serverAddress
                   type: object
                 ready:
                   type: boolean
@@ -10676,6 +11266,25 @@ objects:
   - apiGroups:
     - cloud.redhat.com
     resources:
+    - clowdapprefs
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - cloud.redhat.com
+    resources:
+    - clowdapprefs/status
+    - clowdapps/status
+    - clowdenvironments/status
+    - clowdjobinvocations/status
+    verbs:
+    - get
+    - patch
+    - update
+  - apiGroups:
+    - cloud.redhat.com
+    resources:
     - clowdapps
     - clowdenvironments
     - clowdjobinvocations
@@ -10687,16 +11296,6 @@ objects:
     - patch
     - update
     - watch
-  - apiGroups:
-    - cloud.redhat.com
-    resources:
-    - clowdapps/status
-    - clowdenvironments/status
-    - clowdjobinvocations/status
-    verbs:
-    - get
-    - patch
-    - update
   - apiGroups:
     - config.openshift.io
     resources:
