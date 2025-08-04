@@ -133,7 +133,7 @@ visit the [developing clowder](docs/developer-guide.md) page for more detailed i
 
 ## History
 
-To understand more about the design decisions made while developing Clowder,
+To understand more about the design decisions made while developing clowder,
 please visit the [design document](docs/clowder-design.adoc).
 
 ## Connect
