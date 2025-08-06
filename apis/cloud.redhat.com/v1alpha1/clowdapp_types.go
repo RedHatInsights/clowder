@@ -282,6 +282,12 @@ type Sidecar struct {
 	// Defines if the sidecar is enabled, defaults to False
 	Enabled bool `json:"enabled"`
 
+	// Configurable image for the sidecar
+	Image string `json:"image,omitempty"`
+
+	// Configurable shared ConfigMap name for the sidecar
+	ConfigMap string `json:"configMap,omitempty"`
+
 	// Environment variables to be set in the sidecar container (app-level overrides)
 	EnvVars []EnvVar `json:"envVars,omitempty"`
 }
