@@ -55,9 +55,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 					// Merge environment variables (app-level overrides environment-level)
 					mergedEnvVars := MergeEnvVars(sc.Env.Spec.Providers.Sidecars.OtelCollector.EnvVars, sidecar.EnvVars)
 
-					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars)
+					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars, &sidecar)
 					if cont != nil {
-						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name)
+						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name, &sidecar)
 						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
 						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
@@ -107,9 +107,9 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 					// Merge environment variables (app-level overrides environment-level)
 					mergedEnvVars := MergeEnvVars(sc.Env.Spec.Providers.Sidecars.OtelCollector.EnvVars, sidecar.EnvVars)
 
-					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars)
+					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars, &sidecar)
 					if cont != nil {
-						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name)
+						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name, &sidecar)
 						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
 						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
@@ -180,7 +180,7 @@ func getTokenRefresher(appName string) *core.Container {
 	return &cont
 }
 
-func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.EnvVar) *core.Container {
+func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.EnvVar, appSidecar *crd.Sidecar) *core.Container {
 	port := int32(13133)
 	probeHandler := core.ProbeHandler{
 		HTTPGet: &core.HTTPGetAction{
@@ -213,7 +213,7 @@ func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.E
 
 	restartPolicy := core.ContainerRestartPolicyAlways
 	cont.Name = "otel-collector"
-	cont.Image = GetOtelCollectorSidecar(env)
+	cont.Image = GetOtelCollectorSidecar(env, appSidecar)
 	cont.Args = []string{}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
