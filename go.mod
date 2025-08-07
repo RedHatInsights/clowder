@@ -2,9 +2,9 @@ module github.com/RedHatInsights/clowder
 
 go 1.24.4
 
-toolchain 1.24.4
+toolchain go1.24.4
 
-tools (
+tool (
 	sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.4
 	sigs.k8s.io/kustomize/kustomize/v5@v5.5.0
 	sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.17
