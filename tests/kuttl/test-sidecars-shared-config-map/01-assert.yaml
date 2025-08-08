@@ -118,4 +118,32 @@ spec:
       - configMap:
           defaultMode: 420
           name: shared-otel-config
-        name: app-three-otel-config 
+        name: app-three-otel-config
+---
+# Verify that app-four uses the custom ConfigMap
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-four-api
+  namespace: test-sidecars-shared-config-map
+spec:
+  template:
+    spec:
+      containers:
+        - name: app-four-api
+      initContainers:
+        - name: otel-collector
+          image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+          restartPolicy: Always
+          volumeMounts:
+            - mountPath: /etc/otelcol/
+              name: app-four-otel-config
+      volumes:
+        - name: config-secret
+          secret:
+            defaultMode: 420
+            secretName: app-four
+        - configMap:
+            defaultMode: 420
+            name: custom-otel-config
+          name: app-four-otel-config
