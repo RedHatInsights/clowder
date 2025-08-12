@@ -3,6 +3,7 @@ package inmemorydb
 import (
 	"fmt"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
@@ -24,6 +25,17 @@ func GetInMemoryDB(c *providers.Provider) (providers.ClowderProvider, error) {
 		errStr := fmt.Sprintf("No matching in-memory db mode for %s", dbMode)
 		return nil, errors.NewClowderError(errStr)
 	}
+}
+
+// Checks this app's list of dependencies to ensure shared app is included
+func checkDependency(app *crd.ClowdApp) error {
+	for _, appName := range app.Spec.Dependencies {
+		if app.Spec.SharedInMemoryDBAppName == appName {
+			return nil
+		}
+	}
+
+	return errors.NewClowderError("The requested app's in memory db was not found in the dependencies")
 }
 
 func init() {

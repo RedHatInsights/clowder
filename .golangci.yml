@@ -1,29 +1,34 @@
-issues:
-  exclude-rules:
-    - linters:
-        - staticcheck
-      text: "web.Config.WebPort is deprecated"
-    - linters:
-        - staticcheck
-      text: "broker.Sasl.SecurityProtocol is deprecated"
-    - path: apis/cloud.redhat.com/v1alpha1/groupversion_info.go
-      linters:
-        - gofmt
-        - goimports
-  exclude:
-    - "G108: Profiling endpoint is automatically"
+version: "2"
+
 linters:
   enable:
     - errcheck
     - gocritic
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - revive
     - staticcheck
-    - typecheck
     - unused
     - bodyclose
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - '-ST1003'  # ignore naming
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-same-issues: 20
+
+run:
+  timeout: 5m
+
+output:
+  formats:
+    text:
+      colors: false 

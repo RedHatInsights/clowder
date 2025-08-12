@@ -40,12 +40,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -121,10 +122,10 @@ func (suite *TestSuite) SetupSuite() {
 
 		if err == nil && resp.StatusCode == 200 {
 			logger.Info("Manager ready", zap.Int("duration", 100*i))
-			defer resp.Body.Close()
+			defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 			return
 		} else if err == nil {
-			defer resp.Body.Close()
+			defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 		}
 
 		if i == 50 {
@@ -489,7 +490,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	resp, err := http.Get("http://127.0.0.1:2019/config/")
 	assert.NoError(suite.T(), err, "failed test because get failed")
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 
 	config := clowderconfig.ClowderConfig{}
 	sData, _ := io.ReadAll(resp.Body)
@@ -499,7 +500,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	resp, err = http.Get("http://127.0.0.1:2019/clowdapps/present/")
 	assert.NoError(suite.T(), err, "failed test because get failed")
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 	capps := []string{}
 	sData, _ = io.ReadAll(resp.Body)
 	err = json.Unmarshal(sData, &capps)

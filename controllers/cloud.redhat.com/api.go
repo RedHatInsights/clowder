@@ -1,3 +1,4 @@
+// Package controllers provides the main controller implementations for Clowder resources
 package controllers
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 )
 
+// CreateAPIServer creates and configures the HTTP API server for Clowder configuration endpoints
 func CreateAPIServer() *http.Server {
 	mux := http.NewServeMux()
 
@@ -17,7 +19,7 @@ func CreateAPIServer() *http.Server {
 		w.Header().Add(
 			"Content-Type", "application/json",
 		)
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdapps/present/", func(w http.ResponseWriter, _ *http.Request) {
@@ -25,7 +27,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetPresentApps())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdapps/managed/", func(w http.ResponseWriter, _ *http.Request) {
@@ -33,7 +35,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetManagedApps())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdenvs/present/", func(w http.ResponseWriter, _ *http.Request) {
@@ -41,7 +43,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetPresentEnvs())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	mux.HandleFunc("/clowdenvs/managed/", func(w http.ResponseWriter, _ *http.Request) {
@@ -49,7 +51,7 @@ func CreateAPIServer() *http.Server {
 			"Content-Type", "application/json",
 		)
 		jsonString, _ := json.Marshal(GetManagedEnvs())
-		fmt.Fprintf(w, "%s", jsonString)
+		_, _ = fmt.Fprintf(w, "%s", jsonString)
 	})
 
 	srv := http.Server{

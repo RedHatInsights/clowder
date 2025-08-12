@@ -1,3 +1,4 @@
+// Package dependencies provides dependency management functionality for Clowder applications
 package dependencies
 
 import (

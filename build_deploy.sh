@@ -67,18 +67,18 @@ build_main_image() {
   cicd::image_builder::build_and_push
 }
 
-BASE_IMAGE_FILES=("go.mod" "go.sum" "Dockerfile.base")
-BASE_IMAGE_NAME='quay.io/cloudservices/clowder-base'
-BASE_IMAGE_TAG=$(get_base_image_tag)
+BASE_IMAGE_FILES=("go.mod" "go.sum")
+#BASE_IMAGE_NAME='quay.io/cloudservices/clowder-base'
+#BASE_IMAGE_TAG=$(get_base_image_tag)
 
-if base_image_tag_exists "$BASE_IMAGE_TAG"; then
-  echo "Base image exists, skipping..."
-else
-  if ! build_base_image; then
-    echo "Error building base image!"
-    exit 1
-  fi
-fi
+#if base_image_tag_exists "$BASE_IMAGE_TAG"; then
+#  echo "Base image exists, skipping..."
+#else
+#  if ! build_base_image; then
+#    echo "Error building base image!"
+#    exit 1
+#  fi
+#fi
 
 if ! make update-version; then
   echo "Error updating version!"

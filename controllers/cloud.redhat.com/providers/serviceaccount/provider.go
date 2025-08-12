@@ -7,7 +7,7 @@ import (
 // ProvName sets the provider name identifier
 var ProvName = "serviceaccount"
 
-// GetEnd returns the correct end provider.
+// GetServiceAccount returns the correct service account provider.
 func GetServiceAccount(c *providers.Provider) (providers.ClowderProvider, error) {
 	return NewServiceAccountProvider(c)
 }

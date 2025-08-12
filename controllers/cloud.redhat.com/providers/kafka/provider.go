@@ -5,13 +5,14 @@ import (
 	"strconv"
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	core "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -36,6 +37,7 @@ type rootKafkaProvider struct {
 	providers.Provider
 }
 
+// DefaultImageKafkaConnect defines the default Kafka Connect image
 var DefaultImageKafkaConnect = "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
 
 // ProvName is the name/ident of the provider
@@ -86,14 +88,11 @@ func getKafkaUsername(env *crd.ClowdEnvironment, app *crd.ClowdApp) string {
 
 func getKafkaName(e *crd.ClowdEnvironment) string {
 	if e.Spec.Providers.Kafka.Cluster.Name == "" {
-		// generate a unique name based on the ClowdEnvironment's UID
-
-		// convert e.UID (which is a apimachinery types.UID) to string
-		// types.UID is a string alias so this should not fail...
-		uidString := string(e.UID)
-
-		// append the initial portion of the UUID onto the kafka cluster's name
-		return fmt.Sprintf("%s-%s", e.Name, strings.Split(uidString, "-")[0])
+		// historically this function returned <ClowdEnvironment Name>-<UID> for uniqueness
+		// but affects ClowdApp consumers that need a predictable naming convention to create
+		// other Kafka related resources (Users, Connectors, etc)
+		// Instead, we return the env name which is unique enough since objects are namespaced
+		return e.Name
 	}
 	return e.Spec.Providers.Kafka.Cluster.Name
 }

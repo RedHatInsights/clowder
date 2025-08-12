@@ -10,6 +10,7 @@ type autoScaleProviderRouter struct {
 	providers.Provider
 }
 
+// NewAutoScaleProviderRouter creates a new autoscaler provider router with the given provider
 func NewAutoScaleProviderRouter(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		SimpleAutoScaler,
@@ -24,7 +25,8 @@ func (asp *autoScaleProviderRouter) EnvProvide() error {
 
 func (asp *autoScaleProviderRouter) Provide(app *crd.ClowdApp) error {
 	var err error
-	for _, deployment := range app.Spec.Deployments {
+	for i := range app.Spec.Deployments {
+		deployment := &app.Spec.Deployments[i]
 		// If we find a SimpleAutoScaler config create one
 		if deployment.AutoScalerSimple != nil {
 			err = ProvideSimpleAutoScaler(app, asp.GetConfig(), &asp.Provider, deployment)

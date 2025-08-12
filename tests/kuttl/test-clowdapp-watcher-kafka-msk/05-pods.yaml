@@ -1,0 +1,32 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  labels:
+    strimzi.io/cluster: test-clowdapp-watcher-kafka-msk
+  name: test-clowdapp-watcher-kafka-msk-connect2
+  namespace: test-clowdapp-watcher-kafka-msk
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    acls:
+    - host: '*'
+      operation: All
+      resource:
+        name: '*'
+        patternType: literal
+        type: topic
+    - host: '*'
+      operation: All
+      resource:
+        name: '*'
+        patternType: literal
+        type: group
+    - host: '*'
+      operation: All
+      resource:
+        name: '*'
+        patternType: literal
+        type: cluster
+    type: simple

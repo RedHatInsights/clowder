@@ -356,7 +356,7 @@ spec:
                       type: object
                     autoScalerSimple:
                       description: |-
-                        SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+                        AutoScalerSimple defines a simple HPA with scaling for RAM and CPU by
                         value and utilization thresholds, along with replica count limits
                       properties:
                         cpu:
@@ -419,6 +419,8 @@ spec:
                       - edit
                       type: string
                     metadata:
+                      description: DeploymentMetadata defines the metadata for the
+                        deployment.
                       properties:
                         annotations:
                           additionalProperties:
@@ -1357,11 +1359,96 @@ spec:
                           description: Lists the expected side cars, will be validated
                             in the validating webhook
                           items:
+                            description: Sidecar defines a sidecar container for a
+                              deployment
                             properties:
                               enabled:
                                 description: Defines if the sidecar is enabled, defaults
                                   to False
                                 type: boolean
+                              envVars:
+                                description: Environment variables to be set in the
+                                  sidecar container (app-level overrides)
+                                items:
+                                  description: EnvVar represents an environment variable
+                                    present in a Container.
+                                  properties:
+                                    name:
+                                      description: Name of the environment variable.
+                                        Must be a C_IDENTIFIER.
+                                      type: string
+                                    value:
+                                      description: |-
+                                        Variable references $(VAR_NAME) are expanded using the previous defined
+                                        environment variables in the container and any service environment variables.
+                                        If a variable cannot be resolved, the reference in the input string will be
+                                        unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).
+                                        Escaped references will never be expanded, regardless of whether the variable
+                                        exists or not.
+                                      type: string
+                                    valueFrom:
+                                      description: Source for the environment variable's
+                                        value. Cannot be used if value is not empty.
+                                      properties:
+                                        configMapKeyRef:
+                                          description: Selects a key of a ConfigMap.
+                                          properties:
+                                            key:
+                                              description: The key to select.
+                                              type: string
+                                            name:
+                                              description: Name of the referent.
+                                              type: string
+                                            optional:
+                                              description: Specify whether the ConfigMap
+                                                or its key must be defined
+                                              type: boolean
+                                          required:
+                                          - key
+                                          type: object
+                                        fieldRef:
+                                          description: |-
+                                            Selects a field of the pod: supports metadata.name, metadata.namespace,
+                                            metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,
+                                            spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+                                          properties:
+                                            apiVersion:
+                                              description: Version of the schema the
+                                                FieldPath is written in terms of,
+                                                defaults to "v1".
+                                              type: string
+                                            fieldPath:
+                                              description: Path of the field to select
+                                                in the specified API version.
+                                              type: string
+                                          required:
+                                          - fieldPath
+                                          type: object
+                                          x-kubernetes-map-type: atomic
+                                        secretKeyRef:
+                                          description: Selects a key of a secret in
+                                            the pod's namespace
+                                          properties:
+                                            key:
+                                              description: The key of the secret to
+                                                select from.  Must be a valid secret
+                                                key.
+                                              type: string
+                                            name:
+                                              description: Name of the referent.
+                                              type: string
+                                            optional:
+                                              description: Specify whether the Secret
+                                                or its key must be defined
+                                              type: boolean
+                                          required:
+                                          - key
+                                          type: object
+                                      type: object
+                                  required:
+                                  - name
+                                  type: object
+                                type: array
                               name:
                                 description: The name of the sidecar, only supported
                                   names allowed, (otel-collector, token-refresher)
@@ -3241,14 +3328,12 @@ spec:
                       type: integer
                     web:
                       description: |-
-                        If set to true, creates a service on the webPort defined in
-                        the ClowdEnvironment resource, along with the relevant liveness and
-                        readiness probes.
+                        If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+                        Deprecated: Use WebServices instead.
                       type: boolean
                     webServices:
-                      description: |-
-                        WebServices defines the structs for the three exposed web services: public,
-                        private and metrics.
+                      description: WebServices defines the web services configuration
+                        for this deployment
                       properties:
                         metrics:
                           description: |-
@@ -3297,9 +3382,9 @@ spec:
                                 format: "/api/some-path/") that this app will serve
                                 requests from.'
                               items:
-                                description: A string representing an API path that
-                                  should route to this app for Clowder-managed Ingresses
-                                  (in format "/api/somepath/")
+                                description: APIPath is a string representing an API
+                                  path that should route to this app for Clowder-managed
+                                  Ingresses (in format "/api/somepath/")
                                 pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                 type: string
                               type: array
@@ -4311,11 +4396,96 @@ spec:
                           description: Lists the expected side cars, will be validated
                             in the validating webhook
                           items:
+                            description: Sidecar defines a sidecar container for a
+                              deployment
                             properties:
                               enabled:
                                 description: Defines if the sidecar is enabled, defaults
                                   to False
                                 type: boolean
+                              envVars:
+                                description: Environment variables to be set in the
+                                  sidecar container (app-level overrides)
+                                items:
+                                  description: EnvVar represents an environment variable
+                                    present in a Container.
+                                  properties:
+                                    name:
+                                      description: Name of the environment variable.
+                                        Must be a C_IDENTIFIER.
+                                      type: string
+                                    value:
+                                      description: |-
+                                        Variable references $(VAR_NAME) are expanded using the previous defined
+                                        environment variables in the container and any service environment variables.
+                                        If a variable cannot be resolved, the reference in the input string will be
+                                        unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).
+                                        Escaped references will never be expanded, regardless of whether the variable
+                                        exists or not.
+                                      type: string
+                                    valueFrom:
+                                      description: Source for the environment variable's
+                                        value. Cannot be used if value is not empty.
+                                      properties:
+                                        configMapKeyRef:
+                                          description: Selects a key of a ConfigMap.
+                                          properties:
+                                            key:
+                                              description: The key to select.
+                                              type: string
+                                            name:
+                                              description: Name of the referent.
+                                              type: string
+                                            optional:
+                                              description: Specify whether the ConfigMap
+                                                or its key must be defined
+                                              type: boolean
+                                          required:
+                                          - key
+                                          type: object
+                                        fieldRef:
+                                          description: |-
+                                            Selects a field of the pod: supports metadata.name, metadata.namespace,
+                                            metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,
+                                            spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+                                          properties:
+                                            apiVersion:
+                                              description: Version of the schema the
+                                                FieldPath is written in terms of,
+                                                defaults to "v1".
+                                              type: string
+                                            fieldPath:
+                                              description: Path of the field to select
+                                                in the specified API version.
+                                              type: string
+                                          required:
+                                          - fieldPath
+                                          type: object
+                                          x-kubernetes-map-type: atomic
+                                        secretKeyRef:
+                                          description: Selects a key of a secret in
+                                            the pod's namespace
+                                          properties:
+                                            key:
+                                              description: The key of the secret to
+                                                select from.  Must be a valid secret
+                                                key.
+                                              type: string
+                                            name:
+                                              description: Name of the referent.
+                                              type: string
+                                            optional:
+                                              description: Specify whether the Secret
+                                                or its key must be defined
+                                              type: boolean
+                                          required:
+                                          - key
+                                          type: object
+                                      type: object
+                                  required:
+                                  - name
+                                  type: object
+                                type: array
                               name:
                                 description: The name of the sidecar, only supported
                                   names allowed, (otel-collector, token-refresher)
@@ -6269,6 +6439,11 @@ spec:
                 items:
                   type: string
                 type: array
+              sharedInMemoryDbAppName:
+                description: |-
+                  In (*_shared_*) mode, the application name that should create the in memory
+                  DB instance this application should use
+                type: string
               testing:
                 description: Iqe plugin and other specifics
                 properties:

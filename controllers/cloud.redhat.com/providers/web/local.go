@@ -33,6 +33,7 @@ type localWebProvider struct {
 	providers.Provider
 }
 
+// NewLocalWebProvider creates a new local web provider instance
 func NewLocalWebProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		WebKeycloakDeployment,
@@ -93,7 +94,7 @@ func (web *localWebProvider) EnvProvide() error {
 
 func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
-	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
+	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port)) // nolint:staticcheck  // ignore SA1019, we know this is deprecated
 	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	web.Config.Hostname = &web.Env.Status.Hostname
 
@@ -129,7 +130,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 		sec.Name = nn.Name
 		sec.Namespace = nn.Namespace
-		sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
+		sec.OwnerReferences = []metav1.OwnerReference{web.Env.MakeOwnerReference()}
 		sec.Type = core.SecretTypeOpaque
 
 		sec.StringData = map[string]string{
@@ -232,7 +233,7 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 				},
 			},
 		}
-		netobj.Spec.Rules[0].IngressRuleValue.HTTP.Paths = append(netobj.Spec.Rules[0].IngressRuleValue.HTTP.Paths, path)
+		netobj.Spec.Rules[0].HTTP.Paths = append(netobj.Spec.Rules[0].HTTP.Paths, path)
 	}
 
 	return web.Cache.Update(WebIngress, netobj)

@@ -1,0 +1,61 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-autoscaler-prom-app-interface
+spec:
+  targetNamespace: test-autoscaler-prom-app-interface
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: app-interface
+      path: "/metrics"
+      prometheus:
+        appInterfaceInternalURL: https://app-interface.unmodified.route.to.prometheus:1111
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+    autoScaler:
+      mode: enabled
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-autoscaler-prom-app-interface
+spec:
+  envName: test-autoscaler-prom-app-interface
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    autoScaler:
+      maxReplicaCount: 3
+      triggers:
+      - type: cpu
+        metadata:
+          type: Utilization
+          value: "50"
+      - type: prometheus
+        metadata:
+          threshold: '4'
+          query: sum(promhttp_metric_handler_requests_total{job="puptoo-processor",code="200"})

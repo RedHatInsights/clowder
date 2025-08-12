@@ -3,11 +3,12 @@ package kafka
 import (
 	"testing"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+	"github.com/stretchr/testify/assert"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAppInterface(t *testing.T) {

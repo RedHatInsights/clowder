@@ -71,6 +71,25 @@ rules:
 - apiGroups:
   - cloud.redhat.com
   resources:
+  - clowdapprefs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - clowdapprefs/status
+  - clowdapps/status
+  - clowdenvironments/status
+  - clowdjobinvocations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cloud.redhat.com
+  resources:
   - clowdapps
   - clowdenvironments
   - clowdjobinvocations
@@ -82,16 +101,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - cloud.redhat.com
-  resources:
-  - clowdapps/status
-  - clowdenvironments/status
-  - clowdjobinvocations/status
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - config.openshift.io
   resources:

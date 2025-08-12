@@ -23,7 +23,6 @@ spec:
       mode: none
     inMemoryDb:
       mode: redis
-      pvc: false
     featureFlags:
       mode: none
   resourceDefaults:

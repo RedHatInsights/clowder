@@ -2,10 +2,15 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 10
-- script: kubectl get secret --namespace=test-kafka-managed puptoo -o json > /tmp/test-kafka-managed
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed | base64 -d > /tmp/test-kafka-managed-json
-
+- script: >
+    for i in {1..15}; do
+    kubectl get secret --namespace=test-kafka-managed puptoo -o json > /tmp/test-kafka-managed &&
+    jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed | base64 -d > /tmp/test-kafka-managed-json &&
+    jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < /tmp/test-kafka-managed-json &&
+    jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < /tmp/test-kafka-managed-json &&
+    exit 0 || sleep 1;
+    done;
+    echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
 - script: jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < /tmp/test-kafka-managed-json
 - script: jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < /tmp/test-kafka-managed-json
 - script: jq -r '.kafka.brokers[].hostname == "kafka-host-name"' -e < /tmp/test-kafka-managed-json

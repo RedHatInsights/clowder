@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	// Import the providers to initialize them
@@ -70,6 +71,7 @@ import (
 
 const appFinalizer = "finalizer.app.cloud.redhat.com"
 
+// ReconciliationMetrics holds metrics data for ClowdApp reconciliation operations
 type ReconciliationMetrics struct {
 	appName            string
 	envName            string
@@ -100,6 +102,8 @@ func (rm *ReconciliationMetrics) stop() {
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapps/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapprefs,verbs=get;list;watch
+// +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdapprefs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=serviceaccounts;configmaps;services;persistentvolumeclaims;secrets;events;namespaces,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=batch,resources=cronjobs;jobs,verbs=get;list;create;update;watch;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -127,6 +131,7 @@ type ClowdAppReconciler struct {
 	HashCache *hashcache.HashCache
 }
 
+// Watcher manages watch operations for ClowdApp resources and their dependencies
 type Watcher struct {
 	obj    client.Object
 	filter HandlerFuncBuilder
@@ -200,6 +205,12 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder.WithPredicates(environmentPredicate(r.Log, "app")),
 	)
 
+	ctrlr.Watches(
+		&crd.ClowdAppRef{},
+		handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponAppRefUpdate),
+		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
+	)
+
 	watchers := []Watcher{
 		{obj: &apps.Deployment{}, filter: deploymentFilter},
 		{obj: &core.Service{}, filter: generationOnlyFilter},
@@ -230,7 +241,7 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(ctx context.Context, a c
 	// Get the ClowdEnvironment resource
 
 	env := crd.ClowdEnvironment{}
-	err := r.Client.Get(ctx, obj, &env)
+	err := r.Get(ctx, obj, &env)
 
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -261,6 +272,56 @@ func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(ctx context.Context, a c
 	}
 
 	logMessage(r.Log, "Reconciliation triggered", "ctrl", "app", "type", "update", "resType", "ClowdEnv", "name", a.GetName(), "namespace", a.GetNamespace())
+
+	return reqs
+}
+
+func (r *ClowdAppReconciler) appsToEnqueueUponAppRefUpdate(ctx context.Context, a client.Object) []reconcile.Request {
+	reqs := []reconcile.Request{}
+	obj := types.NamespacedName{
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
+	}
+
+	// Get the ClowdAppRef resource
+
+	appRef := crd.ClowdAppRef{}
+	err := r.Get(ctx, obj, &appRef)
+
+	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// Must have been deleted
+			return reqs
+		}
+		r.Log.Error(err, "Failed to fetch ClowdAppRef")
+		return nil
+	}
+
+	// Get all ClowdApp resources that reference this env
+	appList := &crd.ClowdAppList{}
+	err = r.List(ctx, appList, client.MatchingFields{"spec.envName": appRef.Spec.EnvName})
+	if err != nil {
+		r.Log.Error(err, "Failed to fetch ClowdApps")
+		return nil
+	}
+
+	// Filter based on dependencies - only reconcile apps that have this appRef as a dependency
+	for _, app := range appList.Items {
+		// Check if this app depends on the appRef
+		for _, dep := range append(app.Spec.Dependencies, app.Spec.OptionalDependencies...) {
+			if dep == appRef.Name {
+				reqs = append(reqs, reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      app.Name,
+						Namespace: app.Namespace,
+					},
+				})
+				break
+			}
+		}
+	}
+
+	logMessage(r.Log, "Reconciliation triggered", "ctrl", "app", "type", "update", "resType", "ClowdAppRef", "name", a.GetName(), "namespace", a.GetNamespace())
 
 	return reqs
 }

@@ -5,10 +5,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -23,12 +24,16 @@ func defaultMetaObject() metav1.ObjectMeta {
 	}
 }
 
+// Params represents a map of parameter categories to parameter key-value pairs
 type Params map[string]map[string]string
+
+// IDAndParams represents a structure containing an ID and associated parameters
 type IDAndParams struct {
 	Params Params
 	ID     string
 }
 
+// NewIDAndParam creates a new IDAndParams instance with the specified resource values
 func NewIDAndParam(id, limitCPU, limitMemory, requestsCPU, requestsMemory string) IDAndParams {
 	return IDAndParams{
 		ID: id,
@@ -120,6 +125,7 @@ func setupResourcesForTest(params Params) (*apps.Deployment, *crd.ClowdEnvironme
 	return d, &env, &app
 }
 
+// TestResourceDefaults validates the default resource settings for deployments
 func TestResourceDefaults(t *testing.T) {
 
 	envOptions := []IDAndParams{

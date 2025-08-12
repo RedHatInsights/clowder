@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	prov "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	db "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"
-	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -125,7 +126,7 @@ func getDbSecretInSameEnv(s prov.RootProvider, app *crd.ClowdApp, name string) (
 
 	foundMatchingApps := []crd.ClowdApp{}
 	for _, foundApp := range appList.Items {
-		if foundApp.ObjectMeta.Name == name {
+		if foundApp.Name == name {
 			foundMatchingApps = append(foundMatchingApps, foundApp)
 		}
 	}

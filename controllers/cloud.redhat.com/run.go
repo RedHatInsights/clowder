@@ -5,21 +5,22 @@ import (
 	_ "embed"
 	"os"
 
-	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	cert "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
+	sub "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/metrics/subscriptions"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 	"github.com/prometheus/client_golang/prometheus"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
+
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -28,6 +29,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -39,9 +42,13 @@ import (
 var (
 	secretCompare schema.GroupVersionKind
 	setupLog      = ctrl.Log.WithName("setup")
-	Scheme        = runtime.NewScheme()
-	CacheConfig   *rc.CacheConfig
-	DebugOptions  rc.DebugOptions
+	// Scheme defines the runtime scheme for the Clowder controller
+	Scheme = runtime.NewScheme()
+	// CacheConfig holds the cache configuration for the Clowder controller
+	CacheConfig *rc.CacheConfig
+	// DebugOptions holds the debug configuration options for the Clowder controller
+	DebugOptions rc.DebugOptions
+	// ProtectedGVKs holds the map of protected GroupVersionKinds that should not be deleted
 	ProtectedGVKs = make(map[schema.GroupVersionKind]bool)
 )
 
@@ -73,6 +80,8 @@ func init() {
 	}
 }
 
+// Version contains the current version of Clowder
+//
 //go:embed version.txt
 var Version string
 

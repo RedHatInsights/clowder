@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"sort"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,8 +15,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
+// SkippedError represents an error that occurred during reconciliation that can be skipped
 type SkippedError struct {
 	err error
 }
@@ -28,11 +31,13 @@ func (se SkippedError) Error() string {
 	return fmt.Sprintf("skipped because: %s", se.err.Error())
 }
 
+// NewSkippedError creates a new SkippedError with the given message
 func NewSkippedError(errString string) error {
 	return SkippedError{err: fmt.Errorf("%s", errString)}
 }
 
 const (
+	// SKIPRECONCILE represents a mode to skip reconciliation operations
 	SKIPRECONCILE = "SKIPRECONCILE"
 )
 
@@ -57,6 +62,7 @@ type ClowdEnvironmentReconciliation struct {
 	env       *crd.ClowdEnvironment
 	log       *logr.Logger
 	oldStatus *crd.ClowdEnvironmentStatus
+	hashCache *hashcache.HashCache
 }
 
 // Returns a list of step methods that should be run during reconciliation
@@ -81,7 +87,7 @@ func (r *ClowdEnvironmentReconciliation) steps() []func() (ctrl.Result, error) {
 	}
 }
 
-// Public method to iterate through the steps of the reconciliation process
+// Reconcile iterates through the steps of the reconciliation process
 func (r *ClowdEnvironmentReconciliation) Reconcile() (ctrl.Result, error) {
 	r.log.Info("Reconciliation started")
 	// The env stays locked for the entire reconciliation
@@ -128,11 +134,12 @@ func (r *ClowdEnvironmentReconciliation) markedForDeletion() (ctrl.Result, error
 func (r *ClowdEnvironmentReconciliation) finalizeEnvironmentImplementation() error {
 
 	provider := providers.Provider{
-		Ctx:    r.ctx,
-		Client: r.client,
-		Env:    r.env,
-		Cache:  r.cache,
-		Log:    *r.log,
+		Ctx:       r.ctx,
+		Client:    r.client,
+		Env:       r.env,
+		Cache:     r.cache,
+		Log:       *r.log,
+		HashCache: r.hashCache,
 	}
 
 	err := runProvidersForEnvFinalize(*r.log, provider)
@@ -277,7 +284,7 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 		return ctrl.Result{Requeue: true}, getNSErr
 	}
 
-	if ens.ObjectMeta.DeletionTimestamp != nil {
+	if ens.DeletionTimestamp != nil {
 		return ctrl.Result{}, NewSkippedError("target namespace is to be deleted")
 	}
 
@@ -285,12 +292,15 @@ func (r *ClowdEnvironmentReconciliation) isTargetNamespaceMarkedForDeletion() (c
 }
 
 func (r *ClowdEnvironmentReconciliation) runProviders() (ctrl.Result, error) {
+	r.hashCache.RemoveClowdObjectFromObjects(r.env)
+
 	provider := providers.Provider{
-		Ctx:    r.ctx,
-		Client: r.client,
-		Env:    r.env,
-		Cache:  r.cache,
-		Log:    *r.log,
+		Ctx:       r.ctx,
+		Client:    r.client,
+		Env:       r.env,
+		Cache:     r.cache,
+		Log:       *r.log,
+		HashCache: r.hashCache,
 	}
 	provErr := runProvidersForEnv(*r.log, provider)
 
@@ -412,15 +422,15 @@ func (r *ClowdEnvironmentReconciliation) setEnvResourceStatus() (ctrl.Result, er
 }
 
 func (r *ClowdEnvironmentReconciliation) setPrometheusStatus() (ctrl.Result, error) {
-	var hostname string
+	var url string
 
 	if r.env.Spec.Providers.Metrics.Mode == "app-interface" {
-		hostname = r.env.Spec.Providers.Metrics.Prometheus.AppInterfaceHostname
+		url = r.env.Spec.Providers.Metrics.Prometheus.AppInterfaceInternalURL
 	} else {
-		hostname = fmt.Sprintf("prometheus-operated.%s.svc.cluster.local", r.env.Status.TargetNamespace)
+		url = fmt.Sprintf("http://prometheus-operated.%s.svc.cluster.local:9090", r.env.Status.TargetNamespace)
 	}
 
-	r.env.Status.Prometheus = crd.PrometheusStatus{Hostname: hostname}
+	r.env.Status.Prometheus = crd.PrometheusStatus{ServerAddress: url}
 
 	return ctrl.Result{}, nil
 }

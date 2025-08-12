@@ -1,3 +1,4 @@
+// Package database provides database connectivity and management for Clowder applications
 package database
 
 import (
@@ -9,13 +10,14 @@ import (
 	"strconv"
 	"strings"
 
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var rdsCaBundles = make(map[string]string)
@@ -27,12 +29,12 @@ type appInterface struct {
 }
 
 func fetchCa(caURL string) (string, error) {
-	resp, err := http.Get(caURL) // nolint
+	resp, err := http.Get(caURL) // nolint:gosec  // ignore G107
 
 	if err != nil {
 		return "", errors.Wrap("Error fetching CA bundle", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck  // no need to check error return value
 
 	if resp.StatusCode != 200 {
 		msg := fmt.Sprintf("Bad status code: %d", resp.StatusCode)
@@ -101,7 +103,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		refApp, err := crd.GetAppForDBInSameEnv(a.Ctx, a.Client, app)
+		refApp, err := crd.GetAppForDBInSameEnv(a.Ctx, a.Client, app, false)
 
 		if err != nil {
 			return err
@@ -124,6 +126,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+// GetDbConfig retrieves database configuration from app-interface
 func GetDbConfig(
 	ctx context.Context, pClient client.Client, namespace, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
 ) (*config.DatabaseConfigContainer, error) {

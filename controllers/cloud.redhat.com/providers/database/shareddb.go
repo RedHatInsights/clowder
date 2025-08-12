@@ -39,7 +39,7 @@ var SharedDBPVC = rc.NewMultiResourceIdent(ProvName, "shared_db_pvc", &core.Pers
 // SharedDBSecret is the ident referring to the local DB secret object.
 var SharedDBSecret = rc.NewMultiResourceIdent(ProvName, "shared_db_secret", &core.Secret{})
 
-// SharedDBSecret is the ident referring to the local DB secret object.
+// SharedDBAppSecret is the ident referring to the shared DB app secret object.
 var SharedDBAppSecret = rc.NewSingleResourceIdent(ProvName, "shared_db_app_secret", &core.Secret{})
 
 type sharedDbProvider struct {
@@ -108,10 +108,10 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 
 	var image string
 
-	image, ok := imageList[version]
+	image, err = provutils.GetDefaultDatabaseImage(version)
 
-	if !ok {
-		return nil, errors.NewClowderError(fmt.Sprintf("Requested image version (%v), doesn't exist", version))
+	if err != nil {
+		return nil, err
 	}
 
 	imgComponents := strings.Split(image, ":")
@@ -180,7 +180,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 }
 
 func (db *sharedDbProvider) EnvProvide() error {
-	appList, err := db.Provider.Env.GetAppsInEnv(db.Provider.Ctx, db.Provider.Client)
+	appList, err := db.Env.GetAppsInEnv(db.Ctx, db.Client)
 	if err != nil {
 		return err
 	}
@@ -267,7 +267,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 		return err
 	}
 
-	defer dbClient.Close()
+	defer dbClient.Close() // nolint:errcheck  // no need to check error return value
 
 	pErr := dbClient.PingContext(ctx)
 	if pErr != nil {
@@ -280,7 +280,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 				return envErr
 			}
 
-			defer envDbClient.Close()
+			defer envDbClient.Close() // nolint:errcheck  // no need to check error return value
 
 			sqlStatement := fmt.Sprintf("CREATE DATABASE \"%s\" WITH OWNER=\"%s\";", app.Spec.Database.Name, dbCfg.Username)
 			preppedStatement, err := envDbClient.PrepareContext(ctx, sqlStatement)
@@ -317,7 +317,7 @@ func (db *sharedDbProvider) Provide(app *crd.ClowdApp) error {
 
 	secret.Name = nn.Name
 	secret.Namespace = nn.Namespace
-	secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
+	secret.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 	secret.Type = core.SecretTypeOpaque
 
 	if err := db.Cache.Update(SharedDBAppSecret, secret); err != nil {
@@ -340,7 +340,7 @@ func (db *sharedDbProvider) processSharedDB(app *crd.ClowdApp) error {
 	dbCfg := config.DatabaseConfig{}
 	dbCfg.SslMode = "disable"
 
-	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app)
+	refApp, err := crd.GetAppForDBInSameEnv(db.Ctx, db.Client, app, false)
 
 	if err != nil {
 		return err

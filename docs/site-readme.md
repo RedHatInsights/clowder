@@ -22,16 +22,16 @@ Learn more about Clowder [here](docs/learn-more.md)
 In addition to reducing the effort to maintain a deployment template, Clowder
 provides a number of other benefits:
 
-* **Consistent deployment** Whether you're deploying to production, running smoke
+- **Consistent deployment** Whether you're deploying to production, running smoke
   tests on a PR, or developing your application locally, Clowder will use the
   same app definition for all three. No more endlessly tweaking environment variables!
-* **Focus on development** Clowder has the best practices of running an app in
+- **Focus on development** Clowder has the best practices of running an app in
   a microservices environment as well as specific requirements from the app-sre
   team, such as pod affinity, rollout parameters etc built-in. Spend less time
   worrying about configuring deployment templates and more time writing your app.
-* **Assisting Ops** Any dev or SRE that learns how Clowder deploys apps will
+- **Assisting Ops** Any dev or SRE that learns how Clowder deploys apps will
   implicitly understand the deployment of any other app utilizing Clowder.
-* **Deploy a full environment locally** Gone are the days of hacking together
+- **Deploy a full environment locally** Gone are the days of hacking together
   scripts that just about get you mocked or partially working dependant services.
   With  Clowder, you can deploy an instance of the cloud.redhat.com platform on your
   local laptop, or in a dev cluster to use as you wish.
@@ -46,36 +46,21 @@ for Python, Go, Javascript and Ruby.
 
 ## Feature List
 
-Clowder currently features support for:
+Clowder currently supports the following features:
 
-* Kafka Topics
-* Object Storage
-* PostgreSQL Database
-* In-Memory DB
-* Feature Flags (development only)
-* CronJob support
-* Jobs Support
-
-## Roadmap
-
-Our current roadmap looks like this:
-
-* Autoscaling (possibly via [Keda](https://github.com/kedacore/keda))
-* Dynamic routing for public web sevices
-* Automatic metrics configuration
-* Automatic network policy configuration
-* Standard, configurable alerting: Error rate, latency, Kafka topic lag, etc
-* Canary deployments (possibly via [Flagger](https://github.com/weaveworks/flagger))
-* Operational remediations
-* Observe service status from a `ClowdApp` `status`, based on sevice dependencies.
-* Istio integration
-* Advanced logging configurations (e.g. logging messages to kafka topics)
+- Kafka Topics
+- Object Storage
+- PostgreSQL Database
+- In-Memory DB
+- Feature Flags (development only)
+- CronJob support
+- Jobs Support
 
 ## Updating E2E Test Golang Deps
 
-Clowder's E2E tests require a few golang dependecies that are not included in the root `go.mod` file. These will need to be updated regularly as a separate process. You can run the following script to update these:
+Clowder's build tools (controller-gen, kustomize, setup-envtest) are now managed via Go 1.24's tools directive in the main `go.mod` file. To update tool dependencies, run:
 ```
-./deps/update_e2e_deps.sh
+make update-deps
 ```
 
 ## Getting Clowder
@@ -148,7 +133,7 @@ visit the [developing clowder](docs/developer-guide.md) page for more detailed i
 
 ## History
 
-To understand more about the design decisions made while developing Clowder,
+To understand more about the design decisions made while developing clowder,
 please visit the [design document](docs/clowder-design.adoc).
 
 ## Connect

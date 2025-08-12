@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -19,7 +20,7 @@ type managedKafkaProvider struct {
 	providers.Provider
 }
 
-// NewNoneKafka returns a new non kafka provider object.
+// NewManagedKafka returns a new managed kafka provider object.
 func NewManagedKafka(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &managedKafkaProvider{Provider: *p}, nil
 }
@@ -151,6 +152,15 @@ func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
 	secret := &core.Secret{}
 
 	if err = k.Client.Get(k.Ctx, secretRef, secret); err != nil {
+		return nil, err
+	}
+
+	_, err = k.HashCache.CreateOrUpdateObject(secret, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = k.HashCache.AddClowdObjectToObject(k.Env, secret); err != nil {
 		return nil, err
 	}
 

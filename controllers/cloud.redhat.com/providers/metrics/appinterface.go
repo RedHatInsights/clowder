@@ -1,3 +1,4 @@
+// Package metrics provides metrics collection and monitoring functionality for Clowder applications
 package metrics
 
 import (
@@ -10,6 +11,7 @@ type appinterfaceMetricsProvider struct {
 	p.Provider
 }
 
+// NewAppInterfaceMetrics creates a new app-interface metrics provider instance
 func NewAppInterfaceMetrics(p *p.Provider) (p.ClowderProvider, error) {
 	return &appinterfaceMetricsProvider{Provider: *p}, nil
 }
@@ -23,6 +25,10 @@ func (m *appinterfaceMetricsProvider) Provide(app *crd.ClowdApp) error {
 	if err := createMetricsOnDeployments(m.Cache, m.Env, app, m.Config); err != nil {
 		return err
 	}
+
+	// Note: Prometheus Gateway is not supported in app-interface mode
+	// as it requires operator-managed resources. The configuration
+	// is intentionally not populated here.
 
 	if clowderconfig.LoadedConfig.Features.CreateServiceMonitor {
 		if err := createServiceMonitorObjects(m.Cache, m.Env, app, "app-sre", "openshift-customer-monitoring"); err != nil {

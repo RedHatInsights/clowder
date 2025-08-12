@@ -1,0 +1,102 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-vars
+  namespace: test-sidecars-env-vars
+spec:
+  envName: test-sidecars-env-vars
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            # No environment variables at app level - should use environment-level defaults
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-override
+  namespace: test-sidecars-env-vars
+spec:
+  envName: test-sidecars-env-vars
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            envVars:
+              - name: OTEL_SERVICE_NAME
+                value: "test-app-env-override"  # Override environment-level value
+              - name: OTEL_RESOURCE_ATTRIBUTES
+                value: "environment=test,region=us-east-1,service=override"  # Override environment-level value
+              - name: OTEL_CUSTOM_VAR
+                value: "app-specific-value"  # New app-specific variable
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-secret
+  namespace: test-sidecars-env-vars
+spec:
+  envName: test-sidecars-env-vars
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            envVars:
+              - name: OTEL_SERVICE_NAME
+                value: "test-app-env-secret"
+              - name: OTEL_CUSTOM_SECRET
+                valueFrom:
+                  secretKeyRef:
+                    name: otel-auth
+                    key: headers
+              - name: OTEL_CUSTOM_CONFIG
+                valueFrom:
+                  configMapKeyRef:
+                    name: test-app-env-secret-otel-config
+                    key: otel-collector.yaml
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-fieldref
+  namespace: test-sidecars-env-vars
+spec:
+  envName: test-sidecars-env-vars
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            envVars:
+              - name: OTEL_SERVICE_NAME
+                value: "test-app-env-fieldref"
+              - name: K8S_POD_NAME
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.name
+              - name: K8S_POD_IP
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: status.podIP
+              - name: K8S_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: K8S_NODE_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName

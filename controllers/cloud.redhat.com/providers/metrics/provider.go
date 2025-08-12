@@ -10,12 +10,13 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
+// MetricsServiceMonitor represents the resource identifier for metrics service monitors
 var MetricsServiceMonitor = rc.NewMultiResourceIdent(ProvName, "metrics-service-monitor", &prom.ServiceMonitor{})
 
 // ProvName sets the provider name identifier
 var ProvName = "metrics"
 
-// GetEnd returns the correct end provider.
+// GetMetrics returns the correct metrics provider.
 func GetMetrics(c *providers.Provider) (providers.ClowderProvider, error) {
 	c.Cache.AddPossibleGVKFromIdent(
 		MetricsServiceMonitor,

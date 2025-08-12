@@ -23,13 +23,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// WebBOPDeployment is the mocked bop deployment
+// WebMocktitlementsDeployment is the resource ident for the web mocktitlements deployment
 var WebMocktitlementsDeployment = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_deployment", &apps.Deployment{})
 
-// WebKeycloakService is the mocked keycloak deployment
+// WebMocktitlementsService is the resource ident for the web mocktitlements service
 var WebMocktitlementsService = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_service", &core.Service{})
 
-// WebKeycloakIngress is the mocked bop ingress
+// WebMocktitlementsIngress is the resource ident for the web mocktitlements ingress
 var WebMocktitlementsIngress = rc.NewSingleResourceIdent(ProvName, "web_mocktitlements_ingress", &networking.Ingress{})
 
 func configureMocktitlements(web *localWebProvider) error {
@@ -63,7 +63,7 @@ func makeMocktitlementsSecret(p *providers.Provider) error {
 
 	sec.Name = nn.Name
 	sec.Namespace = nn.Namespace
-	sec.ObjectMeta.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
+	sec.OwnerReferences = []metav1.OwnerReference{p.Env.MakeOwnerReference()}
 	sec.Type = core.SecretTypeOpaque
 
 	envSec := &core.Secret{}
@@ -177,7 +177,7 @@ func makeMocktitlements(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap provi
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	env := o.(*crd.ClowdEnvironment)
 	caddyImage := provutils.GetCaddyImage(env)

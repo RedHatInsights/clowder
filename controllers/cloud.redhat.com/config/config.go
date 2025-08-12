@@ -1,3 +1,4 @@
+// Package config provides the configuration for the Clowder config.
 package config
 
 import (
@@ -21,6 +22,36 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) error {
 	return nil
 }
 
+// Populate sets the in-memory database configuration on the object from the passed in map.
+func (r *InMemoryDBConfig) Populate(data *map[string]string) error {
+	port, err := strconv.Atoi((*data)["port"])
+	if err != nil {
+		return err
+	}
+	r.Port = int(port)
+
+	username, exists := (*data)["username"]
+	if exists && username != "" {
+		r.Username = &username
+	}
+
+	password, exists := (*data)["password"]
+	if exists && password != "" {
+		r.Password = &password
+	}
+
+	sslMode, err := strconv.ParseBool((*data)["sslmode"])
+	if err != nil {
+		return err
+	}
+	r.SslMode = &sslMode
+
+	r.Hostname = (*data)["hostname"]
+
+	return nil
+}
+
+// DatabaseConfigContainer holds database configuration along with its reference information
 type DatabaseConfigContainer struct {
 	Config DatabaseConfig       `json:"config"`
 	Ref    types.NamespacedName `json:"ref"`
