@@ -5,13 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,8 +15,17 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
+// ClowdAppReconciliation manages the reconciliation state and context for a ClowdApp resource
 type ClowdAppReconciliation struct {
 	cache                 *rc.ObjectCache
 	recorder              record.EventRecorder
@@ -63,6 +65,7 @@ func (r *ClowdAppReconciliation) steps() []func() (ctrl.Result, error) {
 	}
 }
 
+// Reconcile is the main function that runs the reconciliation steps for a ClowdApp
 func (r *ClowdAppReconciliation) Reconcile() (ctrl.Result, error) {
 	for _, step := range r.steps() {
 		result, err := step()
@@ -89,6 +92,7 @@ func (r *ClowdAppReconciliation) stopMetrics() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+// ReportDependencies reports dependency status and issues for a ClowdApp
 func ReportDependencies(ctx context.Context, pClient client.Client, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 	appName := app.Name
 	appDependencies := app.Spec.Dependencies
@@ -247,7 +251,7 @@ func (r *ClowdAppReconciliation) isNamespaceDeleted(namespace string, message st
 		return ctrl.Result{Requeue: true}, getNSErr
 	}
 
-	if ns.ObjectMeta.DeletionTimestamp != nil {
+	if ns.DeletionTimestamp != nil {
 		return ctrl.Result{}, NewSkippedError(message)
 	}
 	return ctrl.Result{}, nil

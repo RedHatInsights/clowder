@@ -1,3 +1,4 @@
+// Package v1alpha1 contains the group version info
 // +kubebuilder:object:generate=true
 // +groupName=operators.coreos.com
 package v1alpha1

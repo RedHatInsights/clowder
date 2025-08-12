@@ -1,15 +1,17 @@
+// Package autoscaler provides KEDA-based autoscaling functionality for Clowder deployments
 package autoscaler
 
 import (
 	"fmt"
 
+	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	apps "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/types"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
-	apps "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider) error {
@@ -29,8 +31,9 @@ func makeAutoScalers(deployment *crd.Deployment, app *crd.ClowdApp, c *config.Ap
 	return asp.Cache.Update(CoreAutoScaler, s)
 }
 
-func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment crd.Deployment) error {
-	err := makeAutoScalers(&deployment, app, c, asp)
+// ProvideKedaAutoScaler creates KEDA autoscaling configuration for the specified deployment
+func ProvideKedaAutoScaler(app *crd.ClowdApp, c *config.AppConfig, asp *providers.Provider, deployment *crd.Deployment) error {
+	err := makeAutoScalers(deployment, app, c, asp)
 	return err
 }
 
@@ -82,7 +85,7 @@ func getTriggerRoute(triggerType string, c *config.AppConfig, env *crd.ClowdEnvi
 	case "kafka":
 		result["bootstrapServers"] = fmt.Sprintf("%s:%d", c.Kafka.Brokers[0].Hostname, *c.Kafka.Brokers[0].Port)
 	case "prometheus":
-		result["serverAddress"] = "http://" + env.Status.Prometheus.Hostname + ":9090"
+		result["serverAddress"] = env.Status.Prometheus.ServerAddress
 
 	// The following are the possible triggers for the keda autoscaler.
 	// See https://github.com/kedacore/keda/blob/main/pkg/scaling/scale_handler.go#L313.

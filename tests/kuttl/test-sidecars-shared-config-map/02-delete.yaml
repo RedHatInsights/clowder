@@ -1,0 +1,59 @@
+---
+# Delete ClowdApps
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-one
+  namespace: test-sidecars-shared-config-map
+$delete: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-two
+  namespace: test-sidecars-shared-config-map
+$delete: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-three
+  namespace: test-sidecars-shared-config-map
+$delete: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-four
+  namespace: test-sidecars-shared-config-map
+$delete: true
+---
+# Delete ClowdEnvironment
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-shared-config-map
+$delete: true
+---
+# Delete shared ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-otel-config
+  namespace: test-sidecars-shared-config-map
+$delete: true
+---
+# Delete custom ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-otel-config
+  namespace: test-sidecars-shared-config-map
+$delete: true
+---
+# Delete Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-sidecars-shared-config-map
+$delete: true 

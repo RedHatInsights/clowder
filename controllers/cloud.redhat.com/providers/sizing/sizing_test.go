@@ -3,9 +3,10 @@ package sizing
 import (
 	"testing"
 
-	conf "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing/sizingconfig"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	conf "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing/sizingconfig"
 )
 
 func TestGetLimitSizeForRequestSize(t *testing.T) {

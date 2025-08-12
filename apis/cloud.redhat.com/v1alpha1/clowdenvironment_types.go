@@ -18,9 +18,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,6 +105,7 @@ type WebConfig struct {
 	GatewayCert GatewayCert `json:"gatewayCert,omitempty"`
 }
 
+// GatewayCert defines the certificate configuration for gateway TLS
 type GatewayCert struct {
 	// Determines whether to enable the gateway cert, default is disabled
 	Enabled bool `json:"enabled,omitempty"`
@@ -118,6 +120,7 @@ type GatewayCert struct {
 	EmailAddress string `json:"emailAddress,omitempty"`
 }
 
+// TLS defines TLS configuration settings
 type TLS struct {
 	Enabled     bool  `json:"enabled,omitempty"`
 	Port        int32 `json:"port,omitempty"`
@@ -128,12 +131,22 @@ type TLS struct {
 // +kubebuilder:validation:Enum=none;operator;app-interface
 type MetricsMode string
 
+// PrometheusConfig defines configuration for Prometheus monitoring
 type PrometheusConfig struct {
 	// Determines whether to deploy prometheus in operator mode
 	Deploy bool `json:"deploy,omitempty"`
 
-	// Specify prometheus hostname when in app-interface mode
-	AppInterfaceHostname string `json:"appInterfaceHostname,omitempty"`
+	// Specify prometheus internal URL when in app-interface mode
+	AppInterfaceInternalURL string `json:"appInterfaceInternalURL,omitempty"`
+}
+
+// PrometheusGatewayConfig defines configuration for Prometheus gateway
+type PrometheusGatewayConfig struct {
+	// Determines whether to deploy prometheus-gateway in operator mode
+	Deploy bool `json:"deploy,omitempty"`
+
+	// Image to use for prometheus-gateway deployment
+	Image string `json:"image,omitempty"`
 }
 
 // MetricsConfig configures the Clowder provider controlling the creation of
@@ -154,6 +167,9 @@ type MetricsConfig struct {
 
 	// Prometheus specific configuration
 	Prometheus PrometheusConfig `json:"prometheus,omitempty"`
+
+	// Prometheus Gateway specific configuration
+	PrometheusGateway PrometheusGatewayConfig `json:"prometheusGateway,omitempty"`
 }
 
 // KafkaMode details the mode of operation of the Clowder Kafka Provider
@@ -332,6 +348,7 @@ type ServiceMeshConfig struct {
 	Mode ServiceMeshMode `json:"mode,omitempty"`
 }
 
+// ObjectStoreImages defines the container images used for object storage
 type ObjectStoreImages struct {
 	Minio string `json:"minio,omitempty"`
 }
@@ -361,6 +378,7 @@ type ObjectStoreConfig struct {
 	Images ObjectStoreImages `json:"images,omitempty"`
 }
 
+// FeatureFlagsImages defines the container images used for feature flags
 type FeatureFlagsImages struct {
 	Unleash     string `json:"unleash,omitempty"`
 	UnleashEdge string `json:"unleashEdge,omitempty"`
@@ -417,7 +435,7 @@ type InMemoryDBConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
-// AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+// AutoScalerMode mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
 // +kubebuilder:validation:Enum={"none", "enabled", "keda"}
 type AutoScalerMode string
 
@@ -428,10 +446,11 @@ type AutoScalerConfig struct {
 	Mode AutoScalerMode `json:"mode,omitempty"`
 }
 
-// Describes what amount of app config is mounted to the pod
+// ConfigAccessMode describes what amount of app config is mounted to the pod
 // +kubebuilder:validation:Enum={"none", "app", "", "environment"}
 type ConfigAccessMode string
 
+// TestingConfig defines configuration for testing capabilities
 type TestingConfig struct {
 	// Defines the environment for iqe/smoke testing
 	Iqe IqeConfig `json:"iqe,omitempty"`
@@ -448,6 +467,7 @@ type TestingConfig struct {
 	ConfigAccess ConfigAccessMode `json:"configAccess"`
 }
 
+// IqeConfig defines configuration for IQE (Insights Quality Engineering) testing
 type IqeConfig struct {
 	ImageBase string `json:"imageBase"`
 
@@ -463,11 +483,13 @@ type IqeConfig struct {
 	UI IqeUIConfig `json:"ui,omitempty"`
 }
 
+// IqeUIConfig defines configuration for IQE UI testing
 type IqeUIConfig struct {
 	// Defines configurations for selenium containers in this environment
 	Selenium IqeUISeleniumConfig `json:"selenium,omitempty"`
 }
 
+// IqeUISeleniumConfig defines configuration for IQE Selenium-based UI testing
 type IqeUISeleniumConfig struct {
 	// Defines the image used for selenium containers in this environment
 	ImageBase string `json:"imageBase,omitempty"`
@@ -505,6 +527,7 @@ type ClowdEnvironmentSpec struct {
 	Disabled bool `json:"disabled,omitempty"`
 }
 
+// TokenRefresherConfig defines configuration for token refresher sidecar
 type TokenRefresherConfig struct {
 	// Enables or disables token refresher sidecars
 	Enabled bool `json:"enabled"`
@@ -512,12 +535,85 @@ type TokenRefresherConfig struct {
 	Image string `json:"image,omitempty"`
 }
 
+// OtelCollectorConfig defines configuration for OpenTelemetry collector sidecar
 type OtelCollectorConfig struct {
 	// Enable or disable otel collector sidecar
 	Enabled bool `json:"enabled"`
 	// Configurable image
 	Image string `json:"image,omitempty"`
+	// Configurable shared ConfigMap name (optional)
+	ConfigMap string `json:"configMap,omitempty"`
+	// Environment variables to be set in the otel collector container
+	EnvVars []EnvVar `json:"envVars,omitempty"`
 }
+
+// EnvVar represents an environment variable present in a Container.
+type EnvVar struct {
+	// Name of the environment variable. Must be a C_IDENTIFIER.
+	Name string `json:"name"`
+
+	// Variable references $(VAR_NAME) are expanded using the previous defined
+	// environment variables in the container and any service environment variables.
+	// If a variable cannot be resolved, the reference in the input string will be
+	// unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).
+	// Escaped references will never be expanded, regardless of whether the variable
+	// exists or not.
+	// +optional
+	Value string `json:"value,omitempty"`
+
+	// Source for the environment variable's value. Cannot be used if value is not empty.
+	// +optional
+	ValueFrom *EnvVarSource `json:"valueFrom,omitempty"`
+}
+
+// EnvVarSource represents a source for the value of an EnvVar.
+type EnvVarSource struct {
+	// Selects a key of a ConfigMap.
+	// +optional
+	ConfigMapKeyRef *ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+
+	// Selects a key of a secret in the pod's namespace
+	// +optional
+	SecretKeyRef *SecretKeySelector `json:"secretKeyRef,omitempty"`
+
+	// Selects a field of the pod: supports metadata.name, metadata.namespace,
+	// metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,
+	// spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+	// +optional
+	FieldRef *core.ObjectFieldSelector `json:"fieldRef,omitempty"`
+}
+
+// ConfigMapKeySelector selects a key from a ConfigMap.
+type ConfigMapKeySelector struct {
+	// The ConfigMap to select from.
+	LocalObjectReference `json:",inline"`
+	// The key to select.
+	Key string `json:"key"`
+	// Specify whether the ConfigMap or its key must be defined
+	// +optional
+	Optional *bool `json:"optional,omitempty"`
+}
+
+// SecretKeySelector selects a key from a Secret.
+type SecretKeySelector struct {
+	// The name of the secret in the pod's namespace to select from.
+	LocalObjectReference `json:",inline"`
+	// The key of the secret to select from.  Must be a valid secret key.
+	Key string `json:"key"`
+	// Specify whether the Secret or its key must be defined
+	// +optional
+	Optional *bool `json:"optional,omitempty"`
+}
+
+// LocalObjectReference contains enough information to let you locate the
+// referenced object inside the same namespace.
+type LocalObjectReference struct {
+	// Name of the referent.
+	// +optional
+	Name string `json:"name,omitempty"`
+}
+
+// Sidecars defines configuration for sidecar containers
 type Sidecars struct {
 	// Sets up Token Refresher configuration
 	TokenRefresher TokenRefresherConfig `json:"tokenRefresher,omitempty"`
@@ -525,6 +621,7 @@ type Sidecars struct {
 	OtelCollector OtelCollectorConfig `json:"otelCollector,omitempty"`
 }
 
+// DeploymentConfig defines the deployment configuration for a ClowdEnvironment
 type DeploymentConfig struct {
 	OmitPullPolicy bool `json:"omitPullPolicy,omitempty"`
 }
@@ -600,6 +697,7 @@ type ClowdEnvironmentStatus struct {
 	Prometheus      PrometheusStatus      `json:"prometheus,omitempty"`
 }
 
+// EnvResourceStatus describes the status of ClowdEnvironment resources
 type EnvResourceStatus struct {
 	ManagedDeployments int32 `json:"managedDeployments"`
 	ReadyDeployments   int32 `json:"readyDeployments"`
@@ -609,7 +707,7 @@ type EnvResourceStatus struct {
 
 // PrometheusStatus provides info on how to connect to Prometheus
 type PrometheusStatus struct {
-	Hostname string `json:"hostname"`
+	ServerAddress string `json:"serverAddress"`
 }
 
 // AppInfo details information about a specific app.
@@ -659,10 +757,12 @@ func init() {
 	SchemeBuilder.Register(&ClowdEnvironment{}, &ClowdEnvironmentList{})
 }
 
+// GetConditions returns the conditions for this ClowdEnvironment
 func (i *ClowdEnvironment) GetConditions() clusterv1.Conditions {
 	return i.Status.Conditions
 }
 
+// SetConditions updates the conditions for this ClowdEnvironment
 func (i *ClowdEnvironment) SetConditions(conditions clusterv1.Conditions) {
 	i.Status.Conditions = conditions
 }
@@ -670,7 +770,7 @@ func (i *ClowdEnvironment) SetConditions(conditions clusterv1.Conditions) {
 // GetLabels returns a base set of labels relating to the ClowdEnvironment.
 func (i *ClowdEnvironment) GetLabels() map[string]string {
 	return map[string]string{
-		"app": i.ObjectMeta.Name,
+		"app": i.Name,
 	}
 }
 
@@ -679,8 +779,8 @@ func (i *ClowdEnvironment) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
-		Name:       i.ObjectMeta.Name,
-		UID:        i.ObjectMeta.UID,
+		Name:       i.Name,
+		UID:        i.UID,
 		Controller: utils.TruePtr(),
 	}
 }
@@ -707,7 +807,7 @@ func (i *ClowdEnvironment) GetClowdSAName() string {
 
 // GetUID returns ObjectMeta.UID
 func (i *ClowdEnvironment) GetUID() types.UID {
-	return i.ObjectMeta.UID
+	return i.UID
 }
 
 // GetDeploymentStatus returns the Status.Deployments member
@@ -766,7 +866,7 @@ func (i *ClowdEnvironment) GetAppsInEnv(ctx context.Context, pClient client.Clie
 	return appList, nil
 }
 
-// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+// GetNamespacesInEnv gets all namespaces in the ClowdEnvironment.
 func (i *ClowdEnvironment) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
 
 	var err error
@@ -802,7 +902,7 @@ func (i *ClowdEnvironment) IsNodePort() bool {
 	return i.Spec.ServiceConfig.Type == "NodePort"
 }
 
-// GetClowdHostname gets the hostname for a particular environment
+// GenerateHostname gets or creates the hostname for the environment
 func (i *ClowdEnvironment) GenerateHostname(ctx context.Context, pClient client.Client, log logr.Logger, random bool) string {
 	nn := types.NamespacedName{
 		Name: "cluster",

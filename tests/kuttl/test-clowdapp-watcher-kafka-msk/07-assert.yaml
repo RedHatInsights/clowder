@@ -1,0 +1,75 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-msk-env
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: strimzi-topic-operator
+  namespace: test-clowdapp-watcher-kafka-msk-sec-source
+  labels:
+    app: strimzi
+spec:
+  template:
+    spec:
+      serviceAccountName: strimzi-topic-operator
+      containers:
+      - name: strimzi-topic-operator
+        env:
+        - name: STRIMZI_NAMESPACE
+          value: test-clowdapp-watcher-kafka-msk-sec-source
+        - name: STRIMZI_RESOURCE_LABELS
+          value: strimzi.io/cluster=test-clowdapp-watcher-kafka-msk
+        - name: STRIMZI_KAFKA_BOOTSTRAP_SERVERS
+          value: test-clowdapp-watcher-kafka-msk-kafka-bootstrap.test-clowdapp-watcher-kafka-msk.svc:9093
+        - name: STRIMZI_FULL_RECONCILIATION_INTERVAL_MS
+          value: '120000'
+        - name: STRIMZI_LOG_LEVEL
+          value: INFO
+        - name: STRIMZI_TLS_ENABLED
+          value: 'false'
+        - name: STRIMZI_TLS_AUTH_ENABLED
+          value: 'false'
+        - name: STRIMZI_JAVA_OPTS
+          value: '-Xmx512M -Xms256M'
+        - name: STRIMZI_PUBLIC_CA
+          value: 'false'
+        - name: STRIMZI_SASL_ENABLED
+          value: 'true'
+        - name: STRIMZI_SASL_USERNAME
+          value: test-clowdapp-watcher-kafka-msk-connect2
+        - name: STRIMZI_SASL_PASSWORD
+        - name: STRIMZI_SASL_MECHANISM
+          value: scram-sha-512
+        - name: STRIMZI_SECURITY_PROTOCOL
+          value: SASL_SSL
+        - name: STRIMZI_USE_FINALIZERS
+          value: 'false'
+status:
+  conditions:
+  - reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+---
+kind: KafkaTopic
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: test-clowdapp-watcher-kafka-msk-topic-one
+  namespace: test-clowdapp-watcher-kafka-msk-sec-source
+status:
+  conditions:
+  - status: "True"
+    type: Ready

@@ -6,13 +6,10 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
 // ProvName is the providers name ident.
 var ProvName = "database"
-
-var imageList map[int32]string
 
 // GetDatabase returns the correct database provider based on the environment.
 func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
@@ -34,13 +31,6 @@ func GetDatabase(c *p.Provider) (p.ClowderProvider, error) {
 
 func init() {
 	p.ProvidersRegistration.Register(GetDatabase, 5, ProvName)
-	imageList = map[int32]string{
-		16: provutils.DefaultImageDatabasePG16,
-		15: provutils.DefaultImageDatabasePG15,
-		14: provutils.DefaultImageDatabasePG14,
-		13: provutils.DefaultImageDatabasePG13,
-		12: provutils.DefaultImageDatabasePG12,
-	}
 }
 
 func checkDependency(app *crd.ClowdApp) error {

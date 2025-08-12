@@ -1,14 +1,16 @@
+// Package sidecar provides sidecar container management functionality for Clowder applications
 package sidecar
 
 import (
 	"fmt"
+
+	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	cronjobProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
-	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
@@ -21,6 +23,7 @@ type sidecarProvider struct {
 	providers.Provider
 }
 
+// NewSidecarProvider creates a new sidecar provider instance
 func NewSidecarProvider(p *providers.Provider) (providers.ClowderProvider, error) {
 	return &sidecarProvider{Provider: *p}, nil
 }
@@ -49,15 +52,19 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector(app.Name)
+					// Merge environment variables (app-level overrides environment-level)
+					mergedEnvVars := MergeEnvVars(sc.Env.Spec.Providers.Sidecars.OtelCollector.EnvVars, sidecar.EnvVars)
+
+					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars, &sidecar)
 					if cont != nil {
+						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name, &sidecar)
 						d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *cont)
 						d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
 									LocalObjectReference: core.LocalObjectReference{
-										Name: fmt.Sprintf("%s-otel-config", app.Name),
+										Name: configMapName,
 									},
 									Optional: utils.TruePtr(),
 								},
@@ -97,15 +104,19 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 				}
 			case "otel-collector":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.OtelCollector.Enabled {
-					cont := getOtelCollector(app.Name)
+					// Merge environment variables (app-level overrides environment-level)
+					mergedEnvVars := MergeEnvVars(sc.Env.Spec.Providers.Sidecars.OtelCollector.EnvVars, sidecar.EnvVars)
+
+					cont := getOtelCollector(app.Name, sc.Env, mergedEnvVars, &sidecar)
 					if cont != nil {
+						configMapName := GetOtelCollectorConfigMap(sc.Env, app.Name, &sidecar)
 						cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers = append(cj.Spec.JobTemplate.Spec.Template.Spec.InitContainers, *cont)
 						cj.Spec.JobTemplate.Spec.Template.Spec.Volumes = append(cj.Spec.JobTemplate.Spec.Template.Spec.Volumes, core.Volume{
 							Name: fmt.Sprintf("%s-otel-config", app.Name),
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
 									LocalObjectReference: core.LocalObjectReference{
-										Name: fmt.Sprintf("%s-otel-config", app.Name),
+										Name: configMapName,
 									},
 									Optional: utils.TruePtr(),
 								},
@@ -169,7 +180,7 @@ func getTokenRefresher(appName string) *core.Container {
 	return &cont
 }
 
-func getOtelCollector(appName string) *core.Container {
+func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.EnvVar, appSidecar *crd.Sidecar) *core.Container {
 	port := int32(13133)
 	probeHandler := core.ProbeHandler{
 		HTTPGet: &core.HTTPGetAction{
@@ -202,7 +213,7 @@ func getOtelCollector(appName string) *core.Container {
 
 	restartPolicy := core.ContainerRestartPolicyAlways
 	cont.Name = "otel-collector"
-	cont.Image = DefaultImageSideCarOtelCollector
+	cont.Image = GetOtelCollectorSidecar(env, appSidecar)
 	cont.Args = []string{}
 	cont.TerminationMessagePath = "/dev/termination-log"
 	cont.TerminationMessagePolicy = core.TerminationMessageReadFile
@@ -224,6 +235,9 @@ func getOtelCollector(appName string) *core.Container {
 	}}
 	cont.LivenessProbe = &livenessProbe
 	cont.ReadinessProbe = &readinessProbe
+
+	// Convert and set environment variables
+	cont.Env = ConvertEnvVars(envVars)
 
 	return &cont
 }

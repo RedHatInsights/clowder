@@ -3,8 +3,6 @@ package controllers
 import (
 	"encoding/json"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/go-difflib/difflib"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	"github.com/go-logr/logr"
@@ -13,9 +11,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// HandlerFuncs contains handler functions for Kubernetes resource events
 type HandlerFuncs struct {
 	// Create returns true if the Create event should be processed
 	CreateFunc func(event.CreateEvent) (bool, string)

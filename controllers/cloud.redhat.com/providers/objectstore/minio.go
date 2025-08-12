@@ -5,12 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	apps "k8s.io/api/apps/v1"
@@ -19,6 +13,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -108,6 +109,14 @@ func (m *minioProvider) Provide(app *crd.ClowdApp) error {
 	nn := providers.GetNamespacedName(m.Env, "minio")
 
 	if err := m.Client.Get(m.Ctx, nn, secret); err != nil {
+		return err
+	}
+
+	if _, err := m.HashCache.CreateOrUpdateObject(secret, true); err != nil {
+		return err
+	}
+
+	if err := m.HashCache.AddClowdObjectToObject(m.Env, secret); err != nil {
 		return err
 	}
 
@@ -315,7 +324,7 @@ func makeLocalMinIO(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers
 			VolumeSource: volSource,
 		},
 	}
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	port := int32(9000)
 

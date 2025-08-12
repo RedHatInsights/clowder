@@ -1,19 +1,4 @@
-/*
-Copyright 2021.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
+// Package main provides the entry point for the Clowder controller manager
 package main
 
 import (
@@ -24,7 +9,7 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
-	_ "net/http/pprof"
+	// _ "net/http/pprof" // Commented out to avoid exposing profiling endpoint (gosec G108)
 
 	"go.uber.org/zap"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -35,10 +20,11 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/RedHatInsights/rhc-osdk-utils/logging"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	controllers "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/rhc-osdk-utils/logging"
 	//+kubebuilder:scaffold:imports
 )
 

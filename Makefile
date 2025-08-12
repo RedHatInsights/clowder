@@ -2,6 +2,8 @@ CLOWDER_BUILD_TAG ?= $(shell git rev-parse HEAD)
 
 GO_CMD ?= go
 
+OS := $(shell uname -s)
+
 TEMPLATE_KUSTOMIZE ?= "deploy-kustomize.yaml"
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
@@ -72,7 +74,7 @@ api-docs:
 	./build/build_api_docs.sh
 	./build/build_config_docs.sh
 
-build-template: 
+build-template:
 	@echo "Checking for $(TEMPLATE_KUSTOMIZE)"
 	@if [ ! -f $(TEMPLATE_KUSTOMIZE) ]; then \
 		$(MAKE) build-template-kustomize; \
@@ -98,7 +100,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./controllers/..."
 
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./controllers/..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./apis/..."
 
 fmt: ## Run go fmt against code.
 	$(GO_CMD) fmt ./...
@@ -148,9 +150,16 @@ docker-build-no-test:
 docker-push:
 	$(RUNTIME) push ${IMG}
 
-# Push the docker image
+
+# For folks using Darwin for their OS, they need to use Docker for pushing a local Clowder image
+# to Minikube.
+ifeq ($(OS),Darwin)
+docker-push-minikube:
+	docker push ${IMG}
+else
 docker-push-minikube:
 	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(CLOWDER_BUILD_TAG) --tls-verify=false
+endif
 
 deploy-minikube: docker-build-no-test docker-push-minikube deploy
 
@@ -196,24 +205,22 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 
-## Tool Versions
-KUSTOMIZE_VERSION ?= v5.5.0
-CONTROLLER_TOOLS_VERSION ?= v0.16.4
+## Tool Versions managed in go.mod tools directive
 
 update-deps:
-	KUSTOMIZE_VERSION=$(KUSTOMIZE_VERSION) CONTROLLER_TOOLS_VERSION=$(CONTROLLER_TOOLS_VERSION) ./deps/update_e2e_deps.sh
+	$(GO_CMD) mod tidy
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+	GOBIN=$(LOCALBIN) $(GO_CMD) install sigs.k8s.io/controller-tools/cmd/controller-gen
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
+	GOBIN=$(LOCALBIN) $(GO_CMD) install sigs.k8s.io/kustomize/kustomize/v5
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.17
+	GOBIN=$(LOCALBIN) $(GO_CMD) install sigs.k8s.io/controller-runtime/tools/setup-envtest

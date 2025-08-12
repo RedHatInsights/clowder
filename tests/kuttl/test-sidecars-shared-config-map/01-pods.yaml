@@ -1,0 +1,186 @@
+---
+# Shared ConfigMap for OpenTelemetry
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-otel-config
+  namespace: test-sidecars-shared-config-map
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 1024
+    exporters:
+      logging:
+        loglevel: info
+      prometheus:
+        endpoint: "0.0.0.0:9999"
+        namespace: shared_otel
+        metric_expiration: 30m
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [logging]
+        metrics:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [prometheus, logging]
+---
+# Custom ConfigMap for app four for OpenTelemetry
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-otel-config
+  namespace: test-sidecars-shared-config-map
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 1024
+    exporters:
+      logging:
+        loglevel: info
+      prometheus:
+        endpoint: "0.0.0.0:9999"
+        namespace: shared_otel
+        metric_expiration: 30m
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [logging]
+        metrics:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [prometheus, logging]
+---
+# ClowdEnvironment with shared ConfigMap
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-shared-config-map
+spec:
+  targetNamespace: test-sidecars-shared-config-map
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    sidecars:
+      otelCollector:
+        enabled: true
+        configMap: shared-otel-config
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+# First application using the shared ConfigMap
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-one
+  namespace: test-sidecars-shared-config-map
+spec:
+  envName: test-sidecars-shared-config-map
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      sidecars:
+        - name: otel-collector
+          enabled: true
+---
+# Second application using the shared ConfigMap
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-two
+  namespace: test-sidecars-shared-config-map
+spec:
+  envName: test-sidecars-shared-config-map
+  deployments:
+  - name: worker
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      sidecars:
+        - name: otel-collector
+          enabled: true
+  jobs:
+    - name: batch-job
+      schedule: "*/5 * * * *"
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        sidecars:
+          - name: otel-collector
+            enabled: true
+---
+# Third application using the shared ConfigMap
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-three
+  namespace: test-sidecars-shared-config-map
+spec:
+  envName: test-sidecars-shared-config-map
+  deployments:
+  - name: api
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      sidecars:
+        - name: otel-collector
+          enabled: true
+---
+# Forth application using the app ConfigMap
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-four
+  namespace: test-sidecars-shared-config-map
+spec:
+  envName: test-sidecars-shared-config-map
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        sidecars:
+          - name: otel-collector
+            configMap: custom-otel-config
+            enabled: true

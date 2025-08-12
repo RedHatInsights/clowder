@@ -1,3 +1,4 @@
+// Package pullsecrets provides pull secret management functionality for Clowder applications
 package pullsecrets
 
 import (
@@ -105,6 +106,15 @@ func copyPullSecrets(prov *providers.Provider, namespace string, obj object.Clow
 			Name:      pullSecretName.Name,
 			Namespace: pullSecretName.Namespace,
 		}, sourcePullSecObj); err != nil {
+			return nil, err
+		}
+
+		_, err := prov.HashCache.CreateOrUpdateObject(sourcePullSecObj, true)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = prov.HashCache.AddClowdObjectToObject(obj, sourcePullSecObj); err != nil {
 			return nil, err
 		}
 

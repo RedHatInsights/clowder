@@ -1,3 +1,4 @@
+// Package logging provides logging configuration management for Clowder applications
 package logging
 
 import (
@@ -40,6 +41,14 @@ func setCloudwatchSecret(ns string, p *providers.Provider, c *config.LoggingConf
 
 	if err != nil {
 		return errors.Wrap("Failed to fetch cloudwatch secret", err)
+	}
+
+	if _, err := p.HashCache.CreateOrUpdateObject(&secret, true); err != nil {
+		return err
+	}
+
+	if err := p.HashCache.AddClowdObjectToObject(p.Env, &secret); err != nil {
+		return err
 	}
 
 	c.Cloudwatch = &config.CloudWatchConfig{

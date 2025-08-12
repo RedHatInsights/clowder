@@ -1,0 +1,8 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-managed-secret puptoo -o json > /tmp/test-clowdapp-watcher-kafka-managed-secret
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-managed-secret | base64 -d > /tmp/test-clowdapp-watcher-kafka-managed-secret-json
+
+- script: jq -r '.kafka.brokers[0].sasl.password == "kafka-password"'  -e < /tmp/test-clowdapp-watcher-kafka-managed-secret-json

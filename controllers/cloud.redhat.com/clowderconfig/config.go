@@ -1,3 +1,4 @@
+// Package clowderconfig provides a struct for the Clowder config.
 package clowderconfig
 
 import (
@@ -6,6 +7,7 @@ import (
 	"os"
 )
 
+// ClowderConfig is the struct for the Clowder config.
 type ClowderConfig struct {
 	Images struct {
 		MBOP                    string `json:"mbop"`
@@ -21,6 +23,7 @@ type ClowderConfig struct {
 		TokenRefresher          string `json:"tokenRefresher"`
 		OtelCollector           string `json:"otelCollector"`
 		InMemoryDB              string `json:"inMemoryDB"`
+		PrometheusGateway       string `json:"prometheusGateway"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {
@@ -91,6 +94,7 @@ func getConfig() ClowderConfig {
 	return clowderConfig
 }
 
+// LoadedConfig is the loaded Clowder config.
 var LoadedConfig ClowderConfig
 
 func init() {

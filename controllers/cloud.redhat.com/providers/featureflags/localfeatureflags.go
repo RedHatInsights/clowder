@@ -163,7 +163,12 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		},
 	}
 
-	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, provutils.DefaultImageDatabasePG15, ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
+	dbImage, err := provutils.GetDefaultDatabaseImage(15)
+	if err != nil {
+		return err
+	}
+
+	provutils.MakeLocalDB(dd, namespacedNameDb, ff.Env, labels, &dbCfg, dbImage, ff.Env.Spec.Providers.FeatureFlags.PVC, "unleash", &res)
 
 	if err = ff.Cache.Update(LocalFFDBDeployment, dd); err != nil {
 		return err
@@ -304,7 +309,7 @@ func makeLocalFeatureFlags(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap pr
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	port := int32(featureFlagsPort)
 
@@ -418,7 +423,7 @@ func makeLocalFeatureFlagsEdge(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMa
 	dd.Spec.Replicas = &replicas
 	dd.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
 
-	dd.Spec.Template.ObjectMeta.Labels = labels
+	dd.Spec.Template.Labels = labels
 
 	portEdge := int32(featureFlagsEdgePort)
 

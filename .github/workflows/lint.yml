@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  # Optional: allow read access to pull request.  Use with 'only-new-issues' option.
-  # pull-requests: read
 jobs:
   golangci:
     name: Lint
@@ -19,47 +17,18 @@ jobs:
       - name: Display build environment
         run: printenv
 
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         name: Set up Go 1.x
         with:
-          go-version: "1.22.7"
+          go-version: "1.24.4"
         env:
           GO111MODULE: off
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout clowder
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v8
         with:
-          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: latest
+          version: v2.3
 
-          args: >
-            --enable=errcheck,gocritic,gofmt,goimports,gosec,gosimple,govet,ineffassign,revive,staticcheck,typecheck,unused,bodyclose
-            --fix=false
-            --max-same-issues=20
-            --out-${NO_FUTURE}format=colored-line-number
-            --print-issued-lines=true
-            --print-linter-name=true
-            --sort-results=true
-            --timeout=5m0s
-            --uniq-by-line=false
-          # Optional: working directory, useful for monorepos
-          # working-directory: somedir
-
-          # Optional: golangci-lint command line arguments.
-          # args: --issues-exit-code=0
-
-          # Optional: show only new issues if it's a pull request. The default value is `false`.
-          only-new-issues: false
-
-          # Optional: if set to true then the all caching functionality will be complete disabled,
-          #           takes precedence over all other caching options.
-          # skip-cache: true
-
-          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
-          # skip-pkg-cache: true
-
-          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
-          # skip-build-cache: true

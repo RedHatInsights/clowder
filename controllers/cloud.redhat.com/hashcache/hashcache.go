@@ -1,3 +1,4 @@
+// Package hashcache provides a thread-safe hash cache implementation for Kubernetes objects
 package hashcache
 
 import (
@@ -7,13 +8,14 @@ import (
 	"sort"
 	"sync"
 
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func generateHashFromData(data []byte) (hash string) {
@@ -23,22 +25,27 @@ func generateHashFromData(data []byte) (hash string) {
 	return
 }
 
+// Ident represents an identifier for a hash cache entry with namespaced name and type
 type Ident struct {
 	NN   types.NamespacedName
 	Type string
 }
 
+// HashObject represents a cached hash object with associated ClowdApps and ClowdEnvs
 type HashObject struct {
 	Hash      string
 	ClowdApps map[types.NamespacedName]bool
 	ClowdEnvs map[types.NamespacedName]bool
+	Always    bool // Secret/ConfigMap should be always updated
 }
 
+// HashCache provides a thread-safe cache for hash objects
 type HashCache struct {
 	data map[Ident]*HashObject
 	lock sync.RWMutex
 }
 
+// NewHashCache creates and returns a new HashCache instance
 func NewHashCache() HashCache {
 	return HashCache{
 		data: map[Ident]*HashObject{},
@@ -46,14 +53,17 @@ func NewHashCache() HashCache {
 	}
 }
 
-func NewHashObject(hash string) HashObject {
+// NewHashObject creates and returns a new HashObject with the provided hash and always flag
+func NewHashObject(hash string, always bool) HashObject {
 	return HashObject{
 		Hash:      hash,
 		ClowdApps: map[types.NamespacedName]bool{},
 		ClowdEnvs: map[types.NamespacedName]bool{},
+		Always:    always,
 	}
 }
 
+// ItemNotFoundError represents an error when an item is not found in the hash cache
 type ItemNotFoundError struct {
 	item string
 }
@@ -81,6 +91,7 @@ func (hc *HashCache) Read(obj client.Object) (*HashObject, error) {
 	return v, nil
 }
 
+// RemoveClowdObjectFromObjects removes a Clowder object from all cached objects
 func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -101,7 +112,9 @@ func (hc *HashCache) RemoveClowdObjectFromObjects(obj client.Object) {
 	}
 }
 
-func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
+// CreateOrUpdateObject creates or updates a HashObject and adds attribute alwaysUpdate.
+// This function returns a boolean indicating whether the hashCache should be updated.
+func (hc *HashCache) CreateOrUpdateObject(obj client.Object, alwaysUpdate bool) (bool, error) {
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
 
@@ -129,7 +142,7 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 	hashObject, ok := hc.data[id]
 
 	if !ok {
-		hashObj := NewHashObject(hash)
+		hashObj := NewHashObject(hash, alwaysUpdate)
 		hc.data[id] = &hashObj
 		return true, nil
 	}
@@ -138,6 +151,7 @@ func (hc *HashCache) CreateOrUpdateObject(obj client.Object) (bool, error) {
 	return oldHash != hash, nil
 }
 
+// GetSuperHashForClowdObject returns the combined hash of all objects associated with a Clowder object
 func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) string {
 	hc.lock.RLock()
 	defer hc.lock.RUnlock()
@@ -176,12 +190,8 @@ func (hc *HashCache) GetSuperHashForClowdObject(clowdObj object.ClowdObject) str
 	return generateHashFromData([]byte(superstring))
 }
 
+// AddClowdObjectToObject associates a Clowder object with a Kubernetes object in the cache
 func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj client.Object) error {
-
-	if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != "true" {
-		return nil
-	}
-
 	var oType string
 
 	switch obj.(type) {
@@ -198,6 +208,10 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 	if !ok {
 		return ItemNotFoundError{item: fmt.Sprintf("%s/%s", id.NN.Name, id.NN.Namespace)}
 	}
+	if obj.GetAnnotations()[clowderconfig.LoadedConfig.Settings.RestarterAnnotationName] != "true" && !hc.data[id].Always {
+		return nil
+	}
+
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
 
@@ -214,6 +228,7 @@ func (hc *HashCache) AddClowdObjectToObject(clowdObj object.ClowdObject, obj cli
 	return nil
 }
 
+// Delete removes an object from the hash cache
 func (hc *HashCache) Delete(obj client.Object) {
 	var oType string
 
@@ -231,4 +246,5 @@ func (hc *HashCache) Delete(obj client.Object) {
 	delete(hc.data, id)
 }
 
+// DefaultHashCache is the global default hash cache instance
 var DefaultHashCache = NewHashCache()

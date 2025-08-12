@@ -1,12 +1,14 @@
+// Package featureflags provides feature flag management for Clowder applications
 package featureflags
 
 import (
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type appInterfaceFeatureFlagProvider struct {
@@ -42,6 +44,14 @@ func (ff *appInterfaceFeatureFlagProvider) Provide(_ *crd.ClowdApp) error {
 		Name:      ff.Env.Spec.Providers.FeatureFlags.CredentialRef.Name,
 		Namespace: ff.Env.Spec.Providers.FeatureFlags.CredentialRef.Namespace,
 	}, sec); err != nil {
+		return err
+	}
+
+	if _, err := ff.HashCache.CreateOrUpdateObject(sec, true); err != nil {
+		return err
+	}
+
+	if err := ff.HashCache.AddClowdObjectToObject(ff.Env, sec); err != nil {
 		return err
 	}
 

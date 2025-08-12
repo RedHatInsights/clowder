@@ -4,10 +4,6 @@ import (
 	"context"
 	"testing"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -15,6 +11,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 )
 
 type mockBucket struct {
@@ -89,8 +91,9 @@ func getTestProvider(t *testing.T) providers.Provider {
 				Name: "test",
 			},
 		},
-		Client: &FakeClient{},
-		Config: &config.AppConfig{},
+		Client:    &FakeClient{},
+		Config:    &config.AppConfig{},
+		HashCache: &hashcache.HashCache{},
 	}
 }
 
@@ -118,6 +121,8 @@ func setupBucketTest(t *testing.T, mockBuckets []mockBucket) (
 	testMinioProvider := getTestMinioProvider(t)
 	testBucketHandler := &mockBucketHandler{MockBuckets: mockBuckets}
 	testMinioProvider.BucketHandler = testBucketHandler
+	hc := hashcache.NewHashCache()
+	testMinioProvider.HashCache = &hc
 	return testBucketHandler, testApp, testMinioProvider
 }
 
