@@ -27,7 +27,11 @@ func GetTokenRefresherSidecar(env *crd.ClowdEnvironment) string {
 }
 
 // GetOtelCollectorSidecar returns the OpenTelemetry collector sidecar image for the environment
-func GetOtelCollectorSidecar(env *crd.ClowdEnvironment) string {
+func GetOtelCollectorSidecar(env *crd.ClowdEnvironment, appSidecar *crd.Sidecar) string {
+	// Priority: ClowdApp sidecar.image > ClowdEnvironment image > global config > default
+	if appSidecar != nil && appSidecar.Image != "" {
+		return appSidecar.Image
+	}
 	if env.Spec.Providers.Sidecars.OtelCollector.Image != "" {
 		return env.Spec.Providers.Sidecars.OtelCollector.Image
 	}
@@ -38,7 +42,11 @@ func GetOtelCollectorSidecar(env *crd.ClowdEnvironment) string {
 }
 
 // GetOtelCollectorConfigMap returns the config map name for the OpenTelemetry collector
-func GetOtelCollectorConfigMap(env *crd.ClowdEnvironment, appName string) string {
+func GetOtelCollectorConfigMap(env *crd.ClowdEnvironment, appName string, appSidecar *crd.Sidecar) string {
+	// Priority: ClowdApp sidecar.configMap > ClowdEnvironment configMap > default
+	if appSidecar != nil && appSidecar.ConfigMap != "" {
+		return appSidecar.ConfigMap
+	}
 	if env.Spec.Providers.Sidecars.OtelCollector.ConfigMap != "" {
 		return env.Spec.Providers.Sidecars.OtelCollector.ConfigMap
 	}

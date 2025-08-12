@@ -1362,6 +1362,10 @@ spec:
                             description: Sidecar defines a sidecar container for a
                               deployment
                             properties:
+                              configMap:
+                                description: Configurable shared ConfigMap name for
+                                  the sidecar
+                                type: string
                               enabled:
                                 description: Defines if the sidecar is enabled, defaults
                                   to False
@@ -1449,6 +1453,9 @@ spec:
                                   - name
                                   type: object
                                 type: array
+                              image:
+                                description: Configurable image for the sidecar
+                                type: string
                               name:
                                 description: The name of the sidecar, only supported
                                   names allowed, (otel-collector, token-refresher)
@@ -4399,6 +4406,10 @@ spec:
                             description: Sidecar defines a sidecar container for a
                               deployment
                             properties:
+                              configMap:
+                                description: Configurable shared ConfigMap name for
+                                  the sidecar
+                                type: string
                               enabled:
                                 description: Defines if the sidecar is enabled, defaults
                                   to False
@@ -4486,6 +4497,9 @@ spec:
                                   - name
                                   type: object
                                 type: array
+                              image:
+                                description: Configurable image for the sidecar
+                                type: string
                               name:
                                 description: The name of the sidecar, only supported
                                   names allowed, (otel-collector, token-refresher)
