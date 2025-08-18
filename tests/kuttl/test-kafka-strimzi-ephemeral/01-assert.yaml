@@ -104,7 +104,7 @@ data:
   .dockerconfigjson: Zm9vCg==
 kind: Secret
 metadata:
-  name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
+  name: env-test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
   namespace: test-kafka-strimzi-ephemeral-kafka
 type: Opaque
 ---
@@ -113,6 +113,6 @@ data:
   .dockerconfigjson: Zm9vCg==
 kind: Secret
 metadata:
-  name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
+  name: env-test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
   namespace: test-kafka-strimzi-ephemeral-connect
 type: Opaque
