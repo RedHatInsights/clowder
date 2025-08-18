@@ -33,7 +33,7 @@ func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, er
 }
 
 func (ps *pullsecretProvider) EnvProvide() error {
-	secList, err := copyPullSecrets(&ps.Provider, ps.Env.Status.TargetNamespace, ps.Env)
+	secList, err := CopyPullSecrets(&ps.Provider, ps.Env.Status.TargetNamespace, ps.Env)
 
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (ps *pullsecretProvider) EnvProvide() error {
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 
-	secList, err := copyPullSecrets(&ps.Provider, app.Namespace, app)
+	secList, err := CopyPullSecrets(&ps.Provider, app.Namespace, app)
 
 	if err != nil {
 		return err
@@ -95,7 +95,7 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 	return ps.Cache.Update(serviceaccount.CoreAppServiceAccount, sa)
 }
 
-func copyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
+func CopyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
 
 	var secList []string
 

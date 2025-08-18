@@ -25,6 +25,7 @@ import (
 
 type providerInterface interface {
 	providers.RootProvider
+	GetProvider() *providers.Provider
 	KafkaTopicName(topic crd.KafkaTopicSpec, namespace ...string) (string, error)
 	KafkaName() string
 	KafkaNamespace() string
@@ -408,14 +409,14 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	k.SetLabels(providers.Labels{"env": s.GetEnv().Name})
 
 	// add pull secrets to the kafka cluster pod template configurations
-	envPullSecrets := &core.SecretList{}
-	if err := s.GetCache().List(pullsecrets.CoreEnvPullSecrets, envPullSecrets); err != nil {
+	secretNames, err := pullsecrets.CopyPullSecrets(s.GetProvider(), s.GetEnv().Spec.Providers.Kafka.Cluster.Namespace, s.GetEnv())
+
+	if err != nil {
 		return err
 	}
 
-	for _, secret := range envPullSecrets.Items {
-		name := &secret.Name
-		k.Spec.Template.Pod.ImagePullSecrets = append(k.Spec.Template.Pod.ImagePullSecrets, strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{Name: name})
+	for _, name := range secretNames {
+		k.Spec.Template.Pod.ImagePullSecrets = append(k.Spec.Template.Pod.ImagePullSecrets, strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{Name: &name})
 	}
 
 	return s.GetCache().Update(KafkaConnect, k)

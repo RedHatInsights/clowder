@@ -392,16 +392,16 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 
 	// add pull secrets to the kafka cluster pod template configurations
-	envPullSecrets := &core.SecretList{}
-	if err := s.Cache.List(pullsecrets.CoreEnvPullSecrets, envPullSecrets); err != nil {
+	secretNames, err := pullsecrets.CopyPullSecrets(&s.Provider, s.Env.Spec.Providers.Kafka.Cluster.Namespace, s.Env)
+
+	if err != nil {
 		return err
 	}
 
-	for _, secret := range envPullSecrets.Items {
-		name := &secret.Name
-		k.Spec.Kafka.Template.Pod.ImagePullSecrets = append(k.Spec.Kafka.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecKafkaTemplatePodImagePullSecretsElem{Name: name})
-		k.Spec.Zookeeper.Template.Pod.ImagePullSecrets = append(k.Spec.Zookeeper.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecZookeeperTemplatePodImagePullSecretsElem{Name: name})
-		k.Spec.EntityOperator.Template.Pod.ImagePullSecrets = append(k.Spec.EntityOperator.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecEntityOperatorTemplatePodImagePullSecretsElem{Name: name})
+	for _, name := range secretNames {
+		k.Spec.Kafka.Template.Pod.ImagePullSecrets = append(k.Spec.Kafka.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecKafkaTemplatePodImagePullSecretsElem{Name: &name})
+		k.Spec.Zookeeper.Template.Pod.ImagePullSecrets = append(k.Spec.Zookeeper.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecZookeeperTemplatePodImagePullSecretsElem{Name: &name})
+		k.Spec.EntityOperator.Template.Pod.ImagePullSecrets = append(k.Spec.EntityOperator.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecEntityOperatorTemplatePodImagePullSecretsElem{Name: &name})
 	}
 
 	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil && len(*s.Env.Spec.Providers.Kafka.Cluster.Config) != 0 {
@@ -561,6 +561,10 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	}
 
 	return nn, nil
+}
+
+func (s *strimziProvider) GetProvider() *providers.Provider {
+	return &s.Provider
 }
 
 func (s *strimziProvider) getBootstrapServersString() string {
