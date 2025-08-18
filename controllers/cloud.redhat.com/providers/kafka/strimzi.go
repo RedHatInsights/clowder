@@ -22,6 +22,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/pullsecrets"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
@@ -336,6 +337,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					},
 				},
 				Pod: &strimzi.KafkaSpecKafkaTemplatePod{
+					ImagePullSecrets: []strimzi.KafkaSpecKafkaTemplatePodImagePullSecretsElem{},
 					Metadata: &strimzi.KafkaSpecKafkaTemplatePodMetadata{
 						Labels: &klabels,
 					},
@@ -355,6 +357,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					},
 				},
 				Pod: &strimzi.KafkaSpecZookeeperTemplatePod{
+					ImagePullSecrets: []strimzi.KafkaSpecZookeeperTemplatePodImagePullSecretsElem{},
 					Metadata: &strimzi.KafkaSpecZookeeperTemplatePodMetadata{
 						Labels: &klabels,
 					},
@@ -367,6 +370,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					Metadata: &strimzi.KafkaSpecEntityOperatorTemplatePodMetadata{
 						Labels: &klabels,
 					},
+					ImagePullSecrets: []strimzi.KafkaSpecEntityOperatorTemplatePodImagePullSecretsElem{},
 				},
 				TopicOperatorContainer: &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
 					Env: useFinalizersEnv,
@@ -385,6 +389,19 @@ func (s *strimziProvider) configureKafkaCluster() error {
 				},
 			},
 		},
+	}
+
+	// add pull secrets to the kafka cluster pod template configurations
+	envPullSecrets := &core.SecretList{}
+	if err := s.Cache.List(pullsecrets.CoreEnvPullSecrets, envPullSecrets); err != nil {
+		return err
+	}
+
+	for _, secret := range envPullSecrets.Items {
+		name := &secret.Name
+		k.Spec.Kafka.Template.Pod.ImagePullSecrets = append(k.Spec.Kafka.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecKafkaTemplatePodImagePullSecretsElem{Name: name})
+		k.Spec.Zookeeper.Template.Pod.ImagePullSecrets = append(k.Spec.Zookeeper.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecZookeeperTemplatePodImagePullSecretsElem{Name: name})
+		k.Spec.EntityOperator.Template.Pod.ImagePullSecrets = append(k.Spec.EntityOperator.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecEntityOperatorTemplatePodImagePullSecretsElem{Name: name})
 	}
 
 	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil && len(*s.Env.Spec.Providers.Kafka.Cluster.Config) != 0 {

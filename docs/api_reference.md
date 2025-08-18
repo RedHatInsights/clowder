@@ -1593,6 +1593,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _string_ | The name of the sidecar, only supported names allowed, (otel-collector, token-refresher) |  |  |
 | `enabled` _boolean_ | Defines if the sidecar is enabled, defaults to False |  |  |
+| `image` _string_ | Configurable image for the sidecar |  |  |
+| `configMap` _string_ | Configurable shared ConfigMap name for the sidecar |  |  |
 | `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the sidecar container (app-level overrides) |  |  |
 
 

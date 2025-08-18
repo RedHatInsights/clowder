@@ -17,6 +17,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/pullsecrets"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -364,6 +365,11 @@ func configureKafkaConnectCluster(s providerInterface) error {
 			Requests: &kcRequests,
 			Limits:   &kcLimits,
 		},
+		Template: &strimzi.KafkaConnectSpecTemplate{
+			Pod: &strimzi.KafkaConnectSpecTemplatePod{
+				ImagePullSecrets: []strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{},
+			},
+		},
 	}
 
 	secName, err := s.getKafkaConnectTrustedCertSecretName()
@@ -400,6 +406,17 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	k.SetName(getConnectClusterName(s.GetEnv()))
 	k.SetNamespace(getConnectNamespace(s.GetEnv()))
 	k.SetLabels(providers.Labels{"env": s.GetEnv().Name})
+
+	// add pull secrets to the kafka cluster pod template configurations
+	envPullSecrets := &core.SecretList{}
+	if err := s.GetCache().List(pullsecrets.CoreEnvPullSecrets, envPullSecrets); err != nil {
+		return err
+	}
+
+	for _, secret := range envPullSecrets.Items {
+		name := &secret.Name
+		k.Spec.Template.Pod.ImagePullSecrets = append(k.Spec.Template.Pod.ImagePullSecrets, strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{Name: name})
+	}
 
 	return s.GetCache().Update(KafkaConnect, k)
 }

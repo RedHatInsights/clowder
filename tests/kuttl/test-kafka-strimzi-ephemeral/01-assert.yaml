@@ -41,6 +41,8 @@ spec:
           labels:
             service: strimziKafka
       pod:
+        imagePullSecrets:
+        - name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
         metadata:
           labels:
             service: strimziKafka
@@ -54,12 +56,16 @@ spec:
           labels:
             service: strimziKafka
       pod:
+        imagePullSecrets:
+        - name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
         metadata:
           labels:
             service: strimziKafka
   entityOperator:
     template:
       pod:
+        imagePullSecrets:
+        - name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
         metadata:
           labels:
             service: strimziKafka
@@ -73,6 +79,10 @@ metadata:
   annotations:
     strimzi.io/use-connector-resources: 'true'
 spec:
+  template:
+    pod:
+      imagePullSecrets:
+      - name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
   version: "3.8.0"
   image: "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
   # bootstrapServers is asserted in json asserts
