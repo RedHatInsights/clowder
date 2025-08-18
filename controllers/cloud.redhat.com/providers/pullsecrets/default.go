@@ -132,8 +132,11 @@ func CopyPullSecrets(prov *providers.Provider, namespace string, obj object.Clow
 			continue
 		}
 
-		if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
-			return nil, err
+		// check if the secret already exists, if not create it
+		if err := prov.Cache.Get(CoreEnvPullSecrets, newPullSecObj, newSecNN); err != nil {
+			if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
+				return nil, err
+			}
 		}
 
 		newPullSecObj.Data = sourcePullSecObj.Data
