@@ -95,6 +95,7 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 	return ps.Cache.Update(serviceaccount.CoreAppServiceAccount, sa)
 }
 
+// CopyPullSecrets copies the pull secrets configured on a ClowdEnvironment to a destination namespace and associates ownership with the given object.
 func CopyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
 
 	var secList []string
