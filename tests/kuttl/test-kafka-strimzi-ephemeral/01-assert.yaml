@@ -98,3 +98,21 @@ spec:
     requests:
       cpu: 200m
       memory: 500Mi
+---
+apiVersion: v1
+data:
+  .dockerconfigjson: Zm9vCg==
+kind: Secret
+metadata:
+  name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
+  namespace: test-kafka-strimzi-ephemeral-kafka
+type: Opaque
+---
+apiVersion: v1
+data:
+  .dockerconfigjson: Zm9vCg==
+kind: Secret
+metadata:
+  name: test-kafka-strimzi-ephemeral-pull-secret-clowder-copy
+  namespace: test-kafka-strimzi-ephemeral-connect
+type: Opaque

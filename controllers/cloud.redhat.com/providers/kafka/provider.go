@@ -409,7 +409,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	k.SetLabels(providers.Labels{"env": s.GetEnv().Name})
 
 	// add pull secrets to the kafka cluster pod template configurations
-	secretNames, err := pullsecrets.CopyPullSecrets(s.GetProvider(), s.GetEnv().Spec.Providers.Kafka.Cluster.Namespace, s.GetEnv())
+	secretNames, err := pullsecrets.CopyPullSecrets(s.GetProvider(), getConnectNamespace(s.GetEnv()), s.GetEnv())
 
 	if err != nil {
 		return err

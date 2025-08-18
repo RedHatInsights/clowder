@@ -392,7 +392,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	}
 
 	// add pull secrets to the kafka cluster pod template configurations
-	secretNames, err := pullsecrets.CopyPullSecrets(&s.Provider, s.Env.Spec.Providers.Kafka.Cluster.Namespace, s.Env)
+	secretNames, err := pullsecrets.CopyPullSecrets(&s.Provider, getKafkaNamespace(s.Env), s.Env)
 
 	if err != nil {
 		return err
