@@ -18,7 +18,7 @@ import (
 )
 
 // CoreEnvPullSecrets is the pull_secrets for the app.
-var CoreEnvPullSecrets = rc.NewMultiResourceIdent(ProvName, "core_env_pull_secrets", &core.Secret{})
+var CoreEnvPullSecrets = rc.NewMultiResourceIdent(ProvName, "core_env_pull_secrets", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
 
 type pullsecretProvider struct {
 	providers.Provider
