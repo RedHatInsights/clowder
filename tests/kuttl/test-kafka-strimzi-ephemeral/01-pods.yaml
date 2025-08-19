@@ -1,3 +1,11 @@
+apiVersion: v1
+data:
+  .dockerconfigjson: Zm9vCg==
+kind: Secret
+metadata:
+  name: pull-secret
+  namespace: test-kafka-strimzi-ephemeral
+type: Opaque
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
@@ -45,6 +53,9 @@ spec:
       mode: none
     featureFlags:
       mode: none
+    pullSecrets:
+      - name: pull-secret
+        namespace: test-kafka-strimzi-ephemeral
   resourceDefaults:
     limits:
       cpu: 400m
