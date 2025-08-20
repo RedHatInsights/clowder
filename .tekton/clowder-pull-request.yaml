@@ -317,26 +317,69 @@ spec:
           workingDir: /opt/app-root/src
         - computeResources: {}
           env:
+          # AWS Configuration for EC2 instance provisioning
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                key: AWS_ACCESS_KEY_ID
+                name: aws-e2e-credentials
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: AWS_SECRET_ACCESS_KEY
+                name: aws-e2e-credentials
+          - name: AWS_REGION
+            valueFrom:
+              secretKeyRef:
+                key: AWS_REGION
+                name: aws-e2e-credentials
+                optional: true
+          - name: AWS_INSTANCE_TYPE
+            valueFrom:
+              secretKeyRef:
+                key: AWS_INSTANCE_TYPE
+                name: aws-e2e-credentials
+                optional: true
+          - name: AWS_AMI_ID
+            valueFrom:
+              secretKeyRef:
+                key: AWS_AMI_ID
+                name: aws-e2e-credentials
+                optional: true
+          - name: AWS_SUBNET_ID
+            valueFrom:
+              secretKeyRef:
+                key: AWS_SUBNET_ID
+                name: aws-e2e-credentials
+                optional: true
+          # Pipeline identification for unique resource naming
+          - name: TEKTON_PIPELINE_RUN
+            value: "$(context.pipelineRun.name)"
+          # Legacy minikube configuration (kept for backward compatibility)
           - name: MINIKUBE_HOST
             valueFrom:
               secretKeyRef:
                 key: MINIKUBE_HOST
                 name: minikube-ssh-key
+                optional: true
           - name: MINIKUBE_USER
             valueFrom:
               secretKeyRef:
                 key: MINIKUBE_USER
                 name: minikube-ssh-key
+                optional: true
           - name: MINIKUBE_SSH_KEY
             valueFrom:
               secretKeyRef:
                 key: MINIKUBE_SSH_KEY
                 name: minikube-ssh-key
+                optional: true
           - name: MINIKUBE_ROOTDIR
             valueFrom:
               secretKeyRef:
                 key: MINIKUBE_ROOTDIR
                 name: minikube-ssh-key
+                optional: true
           image: registry.access.redhat.com/ubi8/ubi:8.10-1754489414
           name: e2e-tests
           script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests.sh
