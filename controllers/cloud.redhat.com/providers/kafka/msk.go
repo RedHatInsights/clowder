@@ -186,6 +186,10 @@ func (s *mskProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+func (s *mskProvider) GetProvider() *providers.Provider {
+	return &s.Provider
+}
+
 func (s *mskProvider) getBootstrapServersString() string {
 	strArray := []string{}
 	for _, bc := range s.Config.Kafka.Brokers {
