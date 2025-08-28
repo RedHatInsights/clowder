@@ -441,7 +441,7 @@ func ProcessResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.Resource
 	if *pod.Resources.Limits.Cpu() != nullCPU {
 		lcpu = pod.Resources.Limits["cpu"]
 	} else {
-		lcpu = env.Spec.ResourceDefaults.Limits["cpu"]
+		lcpu = nullCPU
 	}
 
 	if *pod.Resources.Limits.Memory() != nullMemory {
