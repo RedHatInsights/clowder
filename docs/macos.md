@@ -10,7 +10,7 @@ If you do not use ``brew``, you can follow [this guide](https://v1-18.docs.kuber
 ## Run minikube
 
 ```
-kube start \
+minikube start \
     --cpus 4 \
     --disk-size 36GB \
     --memory 16000MB \
@@ -28,7 +28,7 @@ kube start \
 
 Run script to setup Minikube cluster.
 ```
-build/setup_kube.sh
+build/kube_setup.sh
 ```
 
 ## Setup Network Proxy
