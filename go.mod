@@ -19,7 +19,7 @@ require (
 	github.com/onsi/gomega v1.37.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.56.3
 	github.com/prometheus/client_golang v1.22.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
 	k8s.io/api v0.33.0
 	k8s.io/apiextensions-apiserver v0.33.0
