@@ -27,7 +27,7 @@ import (
 var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
 var defaultImageCaddyGateway = defaultImageCaddySideCar
 var defaultImageMBOP = "quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212"
-var defaultImageMocktitlements = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:b91f56b"
+var defaultImageMocktitlements = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:f6b8612"
 var defaultKeyCloakVersion = "23.0.1"
 var defaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:84e5ba5"
 var defaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", defaultKeyCloakVersion)

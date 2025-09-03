@@ -86,7 +86,7 @@ spec:
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:b91f56b
+      - image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:f6b8612
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
