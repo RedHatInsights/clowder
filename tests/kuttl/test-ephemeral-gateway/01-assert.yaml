@@ -69,7 +69,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/cloudservices/mbop:4fbb291
+      - image: quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -86,7 +86,7 @@ spec:
         clowder/authsidecar-port: "8090"
     spec:
       containers:
-      - image: quay.io/cloudservices/mocktitlements:745c249
+      - image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:f6b8612
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
