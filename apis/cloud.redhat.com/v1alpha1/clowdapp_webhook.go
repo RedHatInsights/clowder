@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 
 	apps "k8s.io/api/apps/v1"
@@ -25,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -32,55 +34,85 @@ import (
 // log is for logging in this package.
 var clowdapplog = logf.Log.WithName("clowdapp-resource")
 
-// SetupWebhookWithManager configures the webhook for this ClowdApp resource
-func (i *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
+// clowdAppValidator is a webhook that validates ClowdApp resources
+type clowdAppValidator struct {
+	client.Client
+}
+
+func (r *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	// Add index for spec.envName field for webhook queries
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.TODO(), &ClowdApp{}, "spec.envName", func(o client.Object) []string {
+			return []string{o.(*ClowdApp).Spec.EnvName}
+		}); err != nil {
+		return err
+	}
+
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(i).
+		For(r).
+		WithValidator(&clowdAppValidator{Client: mgr.GetClient()}).
 		Complete()
 }
 
 //+kubebuilder:webhook:path=/validate-cloud-redhat-com-v1alpha1-clowdapp,mutating=false,failurePolicy=fail,sideEffects=None,groups=cloud.redhat.com,resources=clowdapps,verbs=create;update,versions=v1alpha1,name=vclowdapp.kb.io,admissionReviewVersions={v1}
 //+kubebuilder:webhook:path=/mutate-pod,mutating=true,failurePolicy=ignore,sideEffects=None,groups="",resources=pods,verbs=create;update,versions=v1,name=vclowdmutatepod.kb.io,admissionReviewVersions={v1}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (i *ClowdApp) ValidateCreate() (admission.Warnings, error) {
-	clowdapplog.Info("validate create", "name", i.Name)
+// Define default validations that should always run
+var defaultValidations = []appValidationFunc{
+	validateDatabase,
+	validateSidecars,
+	validateInit,
+	validateDeploymentStrategy,
+}
 
-	return []string{}, i.processValidations(i,
-		validateDatabase,
-		validateSidecars,
-		validateInit,
-		validateDeploymentStrategy,
-	)
+// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
+func (v *clowdAppValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+	clowdapp := obj.(*ClowdApp)
+	clowdapplog.Info("validate create", "name", clowdapp.Name)
+
+	// Create validations list with default validations plus duplicate name check
+	validations := append([]appValidationFunc{v.validateDuplicateName}, defaultValidations...)
+
+	return []string{}, v.processValidations(ctx, clowdapp, validations...)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (i *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) {
-	clowdapplog.Info("validate update", "name", i.Name)
+func (v *clowdAppValidator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
+	clowdapp := newObj.(*ClowdApp)
+	oldClowdApp := oldObj.(*ClowdApp)
+	clowdapplog.Info("validate update", "name", clowdapp.Name)
 
-	return []string{}, i.processValidations(i,
-		validateDatabase,
-		validateSidecars,
-		validateInit,
-		validateDeploymentStrategy,
-	)
+	// Start with default validations
+	validations := make([]appValidationFunc, len(defaultValidations))
+	copy(validations, defaultValidations)
+
+	// Append duplicate name validation if names differ
+	if oldClowdApp.Name != clowdapp.Name {
+		validations = append(validations, v.validateDuplicateName)
+	}
+
+	return []string{}, v.processValidations(ctx, clowdapp, validations...)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (i *ClowdApp) ValidateDelete() (admission.Warnings, error) {
-	clowdapplog.Info("validate delete", "name", i.Name)
+func (v *clowdAppValidator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
+	clowdapp := obj.(*ClowdApp)
+	clowdapplog.Info("validate delete", "name", clowdapp.Name)
+
 	return []string{}, nil
 }
 
-type appValidationFunc func(*ClowdApp) field.ErrorList
+type appValidationFunc func(context.Context, client.Client, *ClowdApp) field.ErrorList
 
-func (i *ClowdApp) processValidations(o *ClowdApp, vfns ...appValidationFunc) error {
+func (v *clowdAppValidator) processValidations(ctx context.Context, o *ClowdApp, vfns ...appValidationFunc) error {
 	var allErrs field.ErrorList
 
 	for _, validation := range vfns {
-		fieldList := validation(o)
-		if fieldList != nil {
-			allErrs = append(allErrs, fieldList...)
+		if validation != nil {
+			fieldList := validation(ctx, v.Client, o)
+			if fieldList != nil {
+				allErrs = append(allErrs, fieldList...)
+			}
 		}
 	}
 
@@ -90,11 +122,11 @@ func (i *ClowdApp) processValidations(o *ClowdApp, vfns ...appValidationFunc) er
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "cloud.redhat.com", Kind: "ClowdApp"},
-		i.Name, allErrs,
+		o.Name, allErrs,
 	)
 }
 
-func validateDatabase(i *ClowdApp) field.ErrorList {
+func validateDatabase(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if i.Spec.Database.Name != "" && i.Spec.Database.SharedDBAppName != "" {
@@ -112,7 +144,7 @@ func validateDatabase(i *ClowdApp) field.ErrorList {
 	return allErrs
 }
 
-func validateInit(i *ClowdApp) field.ErrorList {
+func validateInit(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	for depIdx, deployment := range i.Spec.Deployments {
@@ -132,7 +164,7 @@ func validateInit(i *ClowdApp) field.ErrorList {
 	return allErrs
 }
 
-func validateSidecars(i *ClowdApp) field.ErrorList {
+func validateSidecars(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 	for depIndx, deployment := range i.Spec.Deployments {
 		for carIndx, sidecar := range deployment.PodSpec.Sidecars {
@@ -166,7 +198,7 @@ func validateSidecars(i *ClowdApp) field.ErrorList {
 	return allErrs
 }
 
-func validateDeploymentStrategy(i *ClowdApp) field.ErrorList {
+func validateDeploymentStrategy(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 	for depIndex, deployment := range i.Spec.Deployments {
 		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.PrivateStrategy == apps.RecreateDeploymentStrategyType {
@@ -179,5 +211,35 @@ func validateDeploymentStrategy(i *ClowdApp) field.ErrorList {
 			)
 		}
 	}
+	return allErrs
+}
+
+func (v *clowdAppValidator) validateDuplicateName(ctx context.Context, c client.Client, r *ClowdApp) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// Check if another ClowdApp with the same name already exists in the same ClowdEnvironment
+	existingClowdApps := &ClowdAppList{}
+	err := c.List(ctx, existingClowdApps, client.MatchingFields{
+		"spec.envName": r.Spec.EnvName,
+	})
+
+	if err != nil {
+		// If we got an error, log it but don't fail validation
+		// This allows the webhook to continue functioning even if there are temporary
+		// API server issues
+		clowdapplog.Error(err, "Error checking for duplicate ClowdApp name", "name", r.Name)
+		return allErrs
+	}
+
+	// Iterate through existing ClowdApps to check for duplicates with same name in different namespaces
+	for _, existingApp := range existingClowdApps.Items {
+		if existingApp.Name == r.Name && existingApp.Namespace != r.Namespace {
+			allErrs = append(allErrs, field.Duplicate(
+				field.NewPath("metadata").Child("name"),
+				fmt.Sprintf("ClowdApp with name '%s' already exists in ClowdEnvironment '%s' in namespace '%s'", r.Name, r.Spec.EnvName, existingApp.Namespace)),
+			)
+		}
+	}
+
 	return allErrs
 }
