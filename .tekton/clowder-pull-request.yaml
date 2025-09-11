@@ -263,7 +263,7 @@ spec:
           image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:9b180776a41d9a22a1c51539f1647c60defbbd55b44bbebdd4130e33512d8b0d
           name: use-trusted-artifact
         - computeResources: {}
-          image: registry.access.redhat.com/ubi9/go-toolset:1.24.4-1755074415
+          image: registry.access.redhat.com/ubi9/go-toolset:1.24.6-1756993846
           name: unit-tests
           script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
           workingDir: /var/workdir/source
@@ -301,7 +301,7 @@ spec:
             value: /tmp/bin
           - name: IMG
             value: $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
-          image: registry.access.redhat.com/ubi9/go-toolset:1.24.4-1755074415
+          image: registry.access.redhat.com/ubi9/go-toolset:1.24.6-1756993846
           name: make-template
           script: |
             set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && make release && make build-template-kustomize && cp manifest.yaml /var/workdir/ && cp deploy-kustomize.yaml /var/workdir/
@@ -310,7 +310,7 @@ spec:
           env:
           - name: LOCALBIN
             value: /tmp/bin
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1754489414
+          image: registry.access.redhat.com/ubi8/ubi:8.10-1756195303
           name: test-template
           script: |
             set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && cp /var/workdir/manifest.yaml . && cp /var/workdir/deploy-kustomize.yaml . && dnf install make python3.12 diffutils -y && make build-template && make test-template
@@ -337,7 +337,7 @@ spec:
               secretKeyRef:
                 key: MINIKUBE_ROOTDIR
                 name: minikube-ssh-key
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1754489414
+          image: registry.access.redhat.com/ubi8/ubi:8.10-1756195303
           name: e2e-tests
           script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests.sh
           workingDir: /var/workdir/source
