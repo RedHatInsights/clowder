@@ -511,7 +511,8 @@
         "profile",
         "rhfull",
         "api.console",
-        "email"
+        "email",
+        "api.ask_red_hat"
       ],
       "optionalClientScopes": [
         "address",
@@ -803,7 +804,8 @@
         "api.console",
         "roles",
         "profile",
-        "email"
+        "email",
+        "api.ask_red_hat"
       ],
       "optionalClientScopes": [
         "address",
@@ -1060,7 +1062,8 @@
         "profile",
         "rhfull",
         "email",
-        "api.console"
+        "api.console",
+        "api.ask_red_hat"
       ],
       "optionalClientScopes": [
         "address",
@@ -1726,6 +1729,18 @@
         "gui.order": "",
         "consent.screen.text": ""
       }
+    },
+    {
+      "id": "7c9f1b20-8e32-4d7a-b3f1-2a4e6c9d8b1e",
+      "name": "api.ask_red_hat",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      }
     }
   ],
   "defaultDefaultClientScopes": [
@@ -1736,7 +1751,8 @@
     "role_list",
     "web-origins",
     "acr",
-    "api.console"
+    "api.console",
+    "api.ask_red_hat"
   ],
   "defaultOptionalClientScopes": [
     "phone",

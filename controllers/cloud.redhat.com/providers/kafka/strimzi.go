@@ -199,9 +199,11 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
 	var entityTLSLimits, entityTLSRequests apiextensions.JSON
 
+	replicasAsStr := strconv.Itoa(int(replicas))
 	err = kafConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
-		"offsets.topic.replication.factor": %s
-	}`, strconv.Itoa(int(replicas)))))
+		"offsets.topic.replication.factor": %s,
+		"default.replication.factor": %s
+	}`, replicasAsStr, replicasAsStr)))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kConfig: %w", err)
 	}

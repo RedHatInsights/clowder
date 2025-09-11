@@ -140,7 +140,6 @@ please visit the [design document](docs/clowder-design.adoc).
 
 Any questions, please ask one of the Clowder development team
 
-* [@psav](https://github.com/psav)
 * [@bsquizz](https://github.com/bsquizz)
 * [@bennyturns](https://github.com/bennyturns)
 * [@adamrdrew](https://github.com/adamrdrew)
