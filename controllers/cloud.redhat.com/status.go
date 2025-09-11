@@ -8,10 +8,6 @@ import (
 	"strings"
 	"time"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -22,6 +18,11 @@ import (
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	cond "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 )
 
 func deploymentStatusChecker(deployment apps.Deployment) bool {
@@ -285,6 +286,7 @@ func SetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
+// GetEnvResourceFigures calculates and returns resource usage figures for a ClowdEnvironment
 func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (crd.EnvResourceStatus, string, error) {
 
 	var totalManagedDeployments int32
@@ -350,6 +352,7 @@ func GetEnvResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	return deploymentStats, msg, nil
 }
 
+// GetAppResourceStatus determines if all resources for a ClowdApp are ready
 func GetAppResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdApp) (bool, error) {
 	stats, _, err := GetAppResourceFigures(ctx, client, o)
 	if err != nil {
@@ -375,6 +378,7 @@ func SetAppResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return nil
 }
 
+// GetAppResourceFigures calculates and returns resource usage figures for a ClowdApp
 func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.ClowdApp) (crd.AppResourceStatus, string, error) {
 
 	var totalManagedDeployments int32
@@ -404,6 +408,7 @@ func GetAppResourceFigures(ctx context.Context, client client.Client, o *crd.Clo
 	return deploymentStats, msg, nil
 }
 
+// GetEnvResourceStatus determines if all resources for a ClowdEnvironment are ready
 func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.ClowdEnvironment) (bool, string, error) {
 	stats, msg, err := GetEnvResourceFigures(ctx, client, o)
 	if err != nil {
@@ -415,6 +420,7 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 	return false, msg, nil
 }
 
+// SetClowdEnvConditions updates the status conditions for a ClowdEnvironment
 func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, oldStatus *crd.ClowdEnvironmentStatus, err error) error {
 	conditions := []clusterv1.Condition{}
 
@@ -435,9 +441,9 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, msg, err := GetEnvResourceStatus(ctx, client, o)
-	if err != nil {
-		return err
+	deploymentStatus, msg, getEnvStatusErr := GetEnvResourceStatus(ctx, client, o)
+	if getEnvStatusErr != nil {
+		return getEnvStatusErr
 	}
 
 	condition := &clusterv1.Condition{}
@@ -472,6 +478,7 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 	return nil
 }
 
+// SetClowdAppConditions updates the status conditions for a ClowdApp
 func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state clusterv1.ConditionType, oldStatus *crd.ClowdAppStatus, err error) error {
 	conditions := []clusterv1.Condition{}
 
@@ -492,9 +499,9 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		conditions = append(conditions, *condition)
 	}
 
-	deploymentStatus, err := GetAppResourceStatus(ctx, client, o)
-	if err != nil {
-		return err
+	deploymentStatus, getAppStatusErr := GetAppResourceStatus(ctx, client, o)
+	if getAppStatusErr != nil {
+		return getAppStatusErr
 	}
 
 	condition := &clusterv1.Condition{}
@@ -529,6 +536,7 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	return nil
 }
 
+// SetClowdJobInvocationConditions updates the status conditions for a ClowdJobInvocation
 func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state clusterv1.ConditionType, err error) error {
 	oldStatus := o.Status.DeepCopy()
 	conditions := []clusterv1.Condition{}

@@ -3,12 +3,13 @@ package serviceaccount
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -32,6 +33,7 @@ func createServiceAccountForClowdObj(cache *rc.ObjectCache, ident rc.ResourceIde
 	return CreateServiceAccount(cache, ident, nn, labeler)
 }
 
+// CreateServiceAccount creates a service account for the given app with the specified access level
 func CreateServiceAccount(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object)) error {
 
 	sa := &core.ServiceAccount{}
@@ -45,6 +47,7 @@ func CreateServiceAccount(cache *rc.ObjectCache, ident rc.ResourceIdent, nn type
 	return cache.Update(ident, sa)
 }
 
+// CreateRoleBinding creates a role binding for the service account with the specified role
 func CreateRoleBinding(cache *rc.ObjectCache, ident rc.ResourceIdent, nn types.NamespacedName, labeler func(v1.Object), accessLevel crd.K8sAccessLevel) error {
 	if accessLevel == "default" || accessLevel == "" {
 		return nil

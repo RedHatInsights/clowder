@@ -10,6 +10,7 @@ var managedEnvironments = map[string]bool{}
 var presentApps = map[string]bool{}
 var presentEnvironments = map[string]bool{}
 
+// GetManagedApps returns a list of all managed ClowdApp names
 func GetManagedApps() []string {
 	var apps []string
 	for app := range managedApps {
@@ -18,6 +19,7 @@ func GetManagedApps() []string {
 	return apps
 }
 
+// GetPresentApps returns a list of all present ClowdApp names
 func GetPresentApps() []string {
 	var apps []string
 	for app := range presentApps {
@@ -26,6 +28,7 @@ func GetPresentApps() []string {
 	return apps
 }
 
+// GetManagedEnvs returns a list of all managed ClowdEnvironment names
 func GetManagedEnvs() []string {
 	var apps []string
 	for app := range managedEnvironments {
@@ -34,6 +37,7 @@ func GetManagedEnvs() []string {
 	return apps
 }
 
+// GetPresentEnvs returns a list of all present ClowdEnvironment names
 func GetPresentEnvs() []string {
 	var apps []string
 	for app := range presentEnvironments {

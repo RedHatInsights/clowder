@@ -10,7 +10,7 @@ If you do not use ``brew``, you can follow [this guide](https://v1-18.docs.kuber
 ## Run minikube
 
 ```
-kube start \
+minikube start \
     --cpus 4 \
     --disk-size 36GB \
     --memory 16000MB \
@@ -28,7 +28,7 @@ kube start \
 
 Run script to setup Minikube cluster.
 ```
-build/setup_kube.sh
+build/kube_setup.sh
 ```
 
 ## Setup Network Proxy
@@ -42,6 +42,12 @@ docker run --rm -it -d --network=host alpine ash -c "apk add socat && socat TCP-
 
 Lastly, run the make target `deploy-minikube-quick` that will build the image locally, push the image to the registry running in Minikube, and start the pod. This command also sets a tag that will need to be updated each time you make a change locally to Clowder. This will ensure that the new pod comes up with your changes. 
 ```
-CLOWDER_BUILD_TAG=boop334 make deploy-minikube-quick
+CLOWDER_BUILD_TAG=test001 make deploy-minikube-quick
 ```
 
+## Verify
+
+You can check that the pod is running with:
+```
+kubectl get pods -n clowder-system
+```

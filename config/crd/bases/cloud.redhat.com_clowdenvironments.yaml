@@ -463,6 +463,17 @@ spec:
                               operator mode
                             type: boolean
                         type: object
+                      prometheusGateway:
+                        description: Prometheus Gateway specific configuration
+                        properties:
+                          deploy:
+                            description: Determines whether to deploy prometheus-gateway
+                              in operator mode
+                            type: boolean
+                          image:
+                            description: Image to use for prometheus-gateway deployment
+                            type: string
+                        type: object
                     required:
                     - mode
                     - port
@@ -580,6 +591,24 @@ spec:
                                       required:
                                       - key
                                       type: object
+                                    fieldRef:
+                                      description: |-
+                                        Selects a field of the pod: supports metadata.name, metadata.namespace,
+                                        metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,
+                                        spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+                                      properties:
+                                        apiVersion:
+                                          description: Version of the schema the FieldPath
+                                            is written in terms of, defaults to "v1".
+                                          type: string
+                                        fieldPath:
+                                          description: Path of the field to select
+                                            in the specified API version.
+                                          type: string
+                                      required:
+                                      - fieldPath
+                                      type: object
+                                      x-kubernetes-map-type: atomic
                                     secretKeyRef:
                                       description: Selects a key of a secret in the
                                         pod's namespace
@@ -1105,6 +1134,8 @@ spec:
                   type: object
                 type: array
               deployments:
+                description: EnvResourceStatus describes the status of ClowdEnvironment
+                  resources
                 properties:
                   managedDeployments:
                     format: int32

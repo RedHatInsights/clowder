@@ -6,17 +6,19 @@ import (
 	"strconv"
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+
+	core "k8s.io/api/core/v1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	core "k8s.io/api/core/v1"
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // KafkaManagedSecret is the resource ident for the MSK user secret object.
@@ -29,7 +31,7 @@ type mskProvider struct {
 	providers.Provider
 }
 
-// NewStrimzi returns a new strimzi provider object.
+// NewMSK returns a new MSK provider object.
 func NewMSK(p *providers.Provider) (providers.ClowderProvider, error) {
 	p.Cache.AddPossibleGVKFromIdent(
 		CyndiPipeline,
@@ -184,6 +186,10 @@ func (s *mskProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
+func (s *mskProvider) GetProvider() *providers.Provider {
+	return &s.Provider
+}
+
 func (s *mskProvider) getBootstrapServersString() string {
 	strArray := []string{}
 	for _, bc := range s.Config.Kafka.Brokers {
@@ -239,6 +245,14 @@ func (s *mskProvider) configureListeners() error {
 
 	secret, err = getSecret(s)
 	if err != nil {
+		return err
+	}
+
+	if _, err := s.HashCache.CreateOrUpdateObject(secret, true); err != nil {
+		return err
+	}
+
+	if err := s.HashCache.AddClowdObjectToObject(s.Env, secret); err != nil {
 		return err
 	}
 

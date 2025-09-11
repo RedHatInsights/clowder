@@ -98,6 +98,7 @@ func (v *clowdAppValidator) ValidateUpdate(ctx context.Context, oldObj, newObj r
 func (v *clowdAppValidator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
 	clowdapp := obj.(*ClowdApp)
 	clowdapplog.Info("validate delete", "name", clowdapp.Name)
+
 	return []string{}, nil
 }
 
@@ -128,13 +129,13 @@ func (v *clowdAppValidator) processValidations(ctx context.Context, o *ClowdApp,
 func validateDatabase(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if r.Spec.Database.Name != "" && r.Spec.Database.SharedDBAppName != "" {
+	if i.Spec.Database.Name != "" && i.Spec.Database.SharedDBAppName != "" {
 		allErrs = append(allErrs, field.Forbidden(
 			field.NewPath("spec.Database.Name", "spec.Database.SharedDBAppName"), "cannot set db name and sharedDbApp Name together"),
 		)
 	}
 
-	if r.Spec.Database.SharedDBAppName != "" && r.Spec.Cyndi.Enabled {
+	if i.Spec.Database.SharedDBAppName != "" && i.Spec.Cyndi.Enabled {
 		allErrs = append(allErrs, field.Forbidden(
 			field.NewPath("spec.Database.SharedDBAppName", "spec.Cyndi.Enabled"), "cannot use cyndi with a shared database"),
 		)
@@ -146,7 +147,7 @@ func validateDatabase(_ context.Context, _ client.Client, r *ClowdApp) field.Err
 func validateInit(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	for depIdx, deployment := range r.Spec.Deployments {
+	for depIdx, deployment := range i.Spec.Deployments {
 		if len(deployment.PodSpec.InitContainers) > 1 {
 			for icIdx, ic := range deployment.PodSpec.InitContainers {
 				if ic.Name == "" {
@@ -165,7 +166,7 @@ func validateInit(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorLi
 
 func validateSidecars(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
-	for depIndx, deployment := range r.Spec.Deployments {
+	for depIndx, deployment := range i.Spec.Deployments {
 		for carIndx, sidecar := range deployment.PodSpec.Sidecars {
 			if sidecar.Name != "token-refresher" && sidecar.Name != "otel-collector" {
 				allErrs = append(
@@ -178,7 +179,7 @@ func validateSidecars(_ context.Context, _ client.Client, r *ClowdApp) field.Err
 			}
 		}
 	}
-	for jobIndx, job := range r.Spec.Jobs {
+	for jobIndx, job := range i.Spec.Jobs {
 		if job.Schedule == "" {
 			continue
 		}
@@ -199,7 +200,7 @@ func validateSidecars(_ context.Context, _ client.Client, r *ClowdApp) field.Err
 
 func validateDeploymentStrategy(_ context.Context, _ client.Client, r *ClowdApp) field.ErrorList {
 	allErrs := field.ErrorList{}
-	for depIndex, deployment := range r.Spec.Deployments {
+	for depIndex, deployment := range i.Spec.Deployments {
 		if deployment.DeploymentStrategy != nil && deployment.WebServices.Public.Enabled && deployment.DeploymentStrategy.PrivateStrategy == apps.RecreateDeploymentStrategyType {
 			allErrs = append(
 				allErrs,

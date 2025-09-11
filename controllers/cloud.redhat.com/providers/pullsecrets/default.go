@@ -1,3 +1,4 @@
+// Package pullsecrets provides pull secret management functionality for Clowder applications
 package pullsecrets
 
 import (
@@ -17,7 +18,7 @@ import (
 )
 
 // CoreEnvPullSecrets is the pull_secrets for the app.
-var CoreEnvPullSecrets = rc.NewMultiResourceIdent(ProvName, "core_env_pull_secrets", &core.Secret{})
+var CoreEnvPullSecrets = rc.NewMultiResourceIdent(ProvName, "core_env_pull_secrets", &core.Secret{}, rc.ResourceOptions{WriteNow: true})
 
 type pullsecretProvider struct {
 	providers.Provider
@@ -32,7 +33,7 @@ func NewPullSecretProvider(p *providers.Provider) (providers.ClowderProvider, er
 }
 
 func (ps *pullsecretProvider) EnvProvide() error {
-	secList, err := copyPullSecrets(&ps.Provider, ps.Env.Status.TargetNamespace, ps.Env)
+	secList, err := CopyPullSecrets(&ps.Provider, ps.Env.Status.TargetNamespace, ps.Env)
 
 	if err != nil {
 		return err
@@ -50,7 +51,7 @@ func (ps *pullsecretProvider) EnvProvide() error {
 
 func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 
-	secList, err := copyPullSecrets(&ps.Provider, app.Namespace, app)
+	secList, err := CopyPullSecrets(&ps.Provider, app.Namespace, app)
 
 	if err != nil {
 		return err
@@ -94,7 +95,8 @@ func (ps *pullsecretProvider) Provide(app *crd.ClowdApp) error {
 	return ps.Cache.Update(serviceaccount.CoreAppServiceAccount, sa)
 }
 
-func copyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
+// CopyPullSecrets copies the pull secrets configured on a ClowdEnvironment to a destination namespace and associates ownership with the given object.
+func CopyPullSecrets(prov *providers.Provider, namespace string, obj object.ClowdObject) ([]string, error) {
 
 	var secList []string
 
@@ -105,6 +107,15 @@ func copyPullSecrets(prov *providers.Provider, namespace string, obj object.Clow
 			Name:      pullSecretName.Name,
 			Namespace: pullSecretName.Namespace,
 		}, sourcePullSecObj); err != nil {
+			return nil, err
+		}
+
+		_, err := prov.HashCache.CreateOrUpdateObject(sourcePullSecObj, true)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = prov.HashCache.AddClowdObjectToObject(obj, sourcePullSecObj); err != nil {
 			return nil, err
 		}
 
@@ -122,8 +133,11 @@ func copyPullSecrets(prov *providers.Provider, namespace string, obj object.Clow
 			continue
 		}
 
-		if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
-			return nil, err
+		// check if the secret already exists, if not create it
+		if err := prov.Cache.Get(CoreEnvPullSecrets, newPullSecObj, newSecNN); err != nil {
+			if err := prov.Cache.Create(CoreEnvPullSecrets, newSecNN, newPullSecObj); err != nil {
+				return nil, err
+			}
 		}
 
 		newPullSecObj.Data = sourcePullSecObj.Data

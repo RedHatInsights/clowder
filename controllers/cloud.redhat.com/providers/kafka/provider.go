@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	cyndi "github.com/RedHatInsights/cyndi-operator/api/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	core "k8s.io/api/core/v1"
@@ -13,9 +12,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/pullsecrets"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -23,6 +25,7 @@ import (
 
 type providerInterface interface {
 	providers.RootProvider
+	GetProvider() *providers.Provider
 	KafkaTopicName(topic crd.KafkaTopicSpec, namespace ...string) (string, error)
 	KafkaName() string
 	KafkaNamespace() string
@@ -36,6 +39,7 @@ type rootKafkaProvider struct {
 	providers.Provider
 }
 
+// DefaultImageKafkaConnect defines the default Kafka Connect image
 var DefaultImageKafkaConnect = "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
 
 // ProvName is the name/ident of the provider
@@ -362,6 +366,11 @@ func configureKafkaConnectCluster(s providerInterface) error {
 			Requests: &kcRequests,
 			Limits:   &kcLimits,
 		},
+		Template: &strimzi.KafkaConnectSpecTemplate{
+			Pod: &strimzi.KafkaConnectSpecTemplatePod{
+				ImagePullSecrets: []strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{},
+			},
+		},
 	}
 
 	secName, err := s.getKafkaConnectTrustedCertSecretName()
@@ -398,6 +407,17 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	k.SetName(getConnectClusterName(s.GetEnv()))
 	k.SetNamespace(getConnectNamespace(s.GetEnv()))
 	k.SetLabels(providers.Labels{"env": s.GetEnv().Name})
+
+	// add pull secrets to the kafka cluster pod template configurations
+	secretNames, err := pullsecrets.CopyPullSecrets(s.GetProvider(), getConnectNamespace(s.GetEnv()), s.GetEnv())
+
+	if err != nil {
+		return err
+	}
+
+	for _, name := range secretNames {
+		k.Spec.Template.Pod.ImagePullSecrets = append(k.Spec.Template.Pod.ImagePullSecrets, strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{Name: &name})
+	}
 
 	return s.GetCache().Update(KafkaConnect, k)
 }

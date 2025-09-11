@@ -74,7 +74,7 @@ api-docs:
 	./build/build_api_docs.sh
 	./build/build_config_docs.sh
 
-build-template: 
+build-template:
 	@echo "Checking for $(TEMPLATE_KUSTOMIZE)"
 	@if [ ! -f $(TEMPLATE_KUSTOMIZE) ]; then \
 		$(MAKE) build-template-kustomize; \
@@ -100,7 +100,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./controllers/..."
 
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./controllers/..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./apis/..."
 
 fmt: ## Run go fmt against code.
 	$(GO_CMD) fmt ./...
@@ -205,24 +205,22 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 
-## Tool Versions
-KUSTOMIZE_VERSION ?= v5.5.0
-CONTROLLER_TOOLS_VERSION ?= v0.16.4
+## Tool Versions managed in go.mod tools directive
 
 update-deps:
-	KUSTOMIZE_VERSION=$(KUSTOMIZE_VERSION) CONTROLLER_TOOLS_VERSION=$(CONTROLLER_TOOLS_VERSION) ./deps/update_e2e_deps.sh
+	$(GO_CMD) mod tidy
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+	GOBIN=$(LOCALBIN) $(GO_CMD) install sigs.k8s.io/controller-tools/cmd/controller-gen
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
+	GOBIN=$(LOCALBIN) $(GO_CMD) install sigs.k8s.io/kustomize/kustomize/v5
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.17
+	GOBIN=$(LOCALBIN) $(GO_CMD) install sigs.k8s.io/controller-runtime/tools/setup-envtest

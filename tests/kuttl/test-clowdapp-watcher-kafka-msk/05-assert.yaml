@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puptoo
+  namespace: test-clowdapp-watcher-kafka-msk-env
+  labels:
+    app: puptoo
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+type: Opaque
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  labels:
+    strimzi.io/cluster: test-clowdapp-watcher-kafka-msk
+  name: test-clowdapp-watcher-kafka-msk-connect2
+  namespace: test-clowdapp-watcher-kafka-msk
+status:
+  username: test-clowdapp-watcher-kafka-msk-connect2

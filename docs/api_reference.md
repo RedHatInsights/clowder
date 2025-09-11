@@ -11,6 +11,8 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 ### Resource Types
 - [ClowdApp](#clowdapp)
 - [ClowdAppList](#clowdapplist)
+- [ClowdAppRef](#clowdappref)
+- [ClowdAppRefList](#clowdappreflist)
 - [ClowdEnvironment](#clowdenvironment)
 - [ClowdEnvironmentList](#clowdenvironmentlist)
 - [ClowdJobInvocation](#clowdjobinvocation)
@@ -22,7 +24,7 @@ Package v1alpha1 contains API Schema definitions for the cloud.redhat.com v1alph
 
 _Underlying type:_ _string_
 
-A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
+APIPath is a string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
 
 _Validation:_
 - Pattern: `^\/api\/[a-zA-Z0-9-]+\/$`
@@ -67,7 +69,7 @@ _Appears in:_
 
 
 
-
+AppResourceStatus defines the status of an app resource
 
 
 
@@ -124,7 +126,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-AutoScaler mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
+AutoScalerMode mode enabled or disabled the autoscaler. The key "keda" is deprecated but preserved for backwards compatibility
 
 _Validation:_
 - Enum: [none enabled keda]
@@ -138,7 +140,7 @@ _Appears in:_
 
 
 
-SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+AutoScalerSimple defines a simple HPA with scaling for RAM and CPU by
 value and utilization thresholds, along with replica count limits
 
 
@@ -188,6 +190,121 @@ ClowdAppList contains a list of ClowdApp
 | `kind` _string_ | `ClowdAppList` | | |
 | `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[ClowdApp](#clowdapp) array_ | A list of ClowdApp Resources. |  |  |
+
+
+#### ClowdAppRef
+
+
+
+ClowdAppRef is the Schema for the clowdapprefs API
+
+
+
+_Appears in:_
+- [ClowdAppRefList](#clowdappreflist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `cloud.redhat.com/v1alpha1` | | |
+| `kind` _string_ | `ClowdAppRef` | | |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[ClowdAppRefSpec](#clowdapprefspec)_ |  |  |  |
+
+
+#### ClowdAppRefDeployment
+
+
+
+ClowdAppRefDeployment represents a deployment within a ClowdAppRef
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name of the deployment |  |  |
+| `hostname` _string_ | Hostname (FQDN) used to reach this deployment in the remote cluster |  |  |
+| `web` _[WebDeprecated](#webdeprecated)_ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.<br />Deprecated: Use WebServices instead. |  |  |
+| `webServices` _[WebServices](#webservices)_ | WebServices defines the web services configuration for this deployment |  |  |
+
+
+#### ClowdAppRefList
+
+
+
+ClowdAppRefList contains a list of ClowdAppRef
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `cloud.redhat.com/v1alpha1` | | |
+| `kind` _string_ | `ClowdAppRefList` | | |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[ClowdAppRef](#clowdappref) array_ |  |  |  |
+
+
+#### ClowdAppRefRemoteCluster
+
+
+
+ClowdAppRefRemoteCluster defines information about the remote cluster
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name defines the name of the remote cluster |  |  |
+| `region` _string_ | Region defines the region of the remote cluster |  |  |
+
+
+#### ClowdAppRefRemoteEnvironment
+
+
+
+ClowdAppRefRemoteEnvironment defines information about the remote ClowdEnvironment
+
+
+
+_Appears in:_
+- [ClowdAppRefSpec](#clowdapprefspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name defines the name of the remote ClowdEnvironment |  |  |
+| `port` _integer_ | Port defines the port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `tlsPort` _integer_ | TLSPort defines the TLS port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `privatePort` _integer_ | PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `tlsPrivatePort` _integer_ | TLSPrivatePort defines the TLS private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+
+
+#### ClowdAppRefSpec
+
+
+
+ClowdAppRefSpec defines the desired state of ClowdAppRef
+
+
+
+_Appears in:_
+- [ClowdAppRef](#clowdappref)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `envName` _string_ | The name of the ClowdEnvironment resource that this ClowdAppRef will be used in |  |  |
+| `remoteEnvironment` _[ClowdAppRefRemoteEnvironment](#clowdapprefremoteenvironment)_ | ClowdAppRefRemoteEnvironment defines details about the remote ClowdEnvironment configuration |  |  |
+| `deployments` _[ClowdAppRefDeployment](#clowdapprefdeployment) array_ | Deployments defines a list of deployments associated with the ClowdApp in the remote cluster |  |  |
+| `remoteCluster` _[ClowdAppRefRemoteCluster](#clowdapprefremotecluster)_ | RemoteCluster defines information about the remote cluster where the services are located |  |  |
+| `disabled` _boolean_ | Disabled turns off this ClowdAppRef |  |  |
+
+
 
 
 #### ClowdAppSpec
@@ -344,7 +461,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-Describes what amount of app config is mounted to the pod
+ConfigAccessMode describes what amount of app config is mounted to the pod
 
 _Validation:_
 - Enum: [none app  environment]
@@ -461,8 +578,8 @@ _Appears in:_
 | `name` _string_ | Name defines the identifier of a Pod inside the ClowdApp. This name will<br />be used along side the name of the ClowdApp itself to form a <app>-<pod><br />pattern which will be used for all other created resources and also for<br />some labels. It must be unique within a ClowdApp. |  |  |
 | `minReplicas` _integer_ | Deprecated: Use Replicas instead<br />If Replicas is not set and MinReplicas is set, then MinReplicas will be used |  |  |
 | `replicas` _integer_ | Defines the desired replica count for the pod |  |  |
-| `web` _[WebDeprecated](#webdeprecated)_ | If set to true, creates a service on the webPort defined in<br />the ClowdEnvironment resource, along with the relevant liveness and<br />readiness probes. |  |  |
-| `webServices` _[WebServices](#webservices)_ |  |  |  |
+| `web` _[WebDeprecated](#webdeprecated)_ | If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.<br />Deprecated: Use WebServices instead. |  |  |
+| `webServices` _[WebServices](#webservices)_ | WebServices defines the web services configuration for this deployment |  |  |
 | `podSpec` _[PodSpec](#podspec)_ | PodSpec defines a container running inside a ClowdApp. |  |  |
 | `k8sAccessLevel` _[K8sAccessLevel](#k8saccesslevel)_ | K8sAccessLevel defines the level of access for this deployment |  | Enum: [default view  edit] <br /> |
 | `autoScaler` _[AutoScaler](#autoscaler)_ | AutoScaler defines the configuration for the Keda auto scaler |  |  |
@@ -475,7 +592,7 @@ _Appears in:_
 
 
 
-
+DeploymentConfig defines the deployment configuration for a ClowdEnvironment
 
 
 
@@ -509,7 +626,7 @@ _Appears in:_
 
 
 
-
+DeploymentMetadata defines the metadata for the deployment.
 
 
 
@@ -525,7 +642,7 @@ _Appears in:_
 
 
 
-
+DeploymentStrategy defines the deployment strategy for a deployment
 
 
 
@@ -541,7 +658,7 @@ _Appears in:_
 
 
 
-
+EnvResourceStatus describes the status of ClowdEnvironment resources
 
 
 
@@ -590,6 +707,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `configMapKeyRef` _[ConfigMapKeySelector](#configmapkeyselector)_ | Selects a key of a ConfigMap. |  |  |
 | `secretKeyRef` _[SecretKeySelector](#secretkeyselector)_ | Selects a key of a secret in the pod's namespace |  |  |
+| `fieldRef` _[ObjectFieldSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectfieldselector-v1-core)_ | Selects a field of the pod: supports metadata.name, metadata.namespace,<br />metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,<br />spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs. |  |  |
 
 
 #### FeatureFlagsConfig
@@ -618,7 +736,7 @@ _Appears in:_
 
 
 
-
+FeatureFlagsImages defines the container images used for feature flags
 
 
 
@@ -650,7 +768,7 @@ _Appears in:_
 
 
 
-
+GatewayCert defines the certificate configuration for gateway TLS
 
 
 
@@ -739,7 +857,7 @@ _Appears in:_
 
 
 
-
+IqeConfig defines configuration for IQE (Insights Quality Engineering) testing
 
 
 
@@ -758,7 +876,7 @@ _Appears in:_
 
 
 
-
+IqeJobSpec defines the specification for IQE (Integration Quality Engineering) jobs
 
 
 
@@ -789,7 +907,7 @@ _Appears in:_
 
 
 
-
+IqeSeleniumSpec defines configuration options for running IQE with a selenium container
 
 
 
@@ -806,7 +924,7 @@ _Appears in:_
 
 
 
-
+IqeUIConfig defines configuration for IQE UI testing
 
 
 
@@ -822,7 +940,7 @@ _Appears in:_
 
 
 
-
+IqeUISeleniumConfig defines configuration for IQE Selenium-based UI testing
 
 
 
@@ -840,7 +958,7 @@ _Appears in:_
 
 
 
-
+IqeUISpec defines configuration options for running IQE with UI components
 
 
 
@@ -888,7 +1006,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-
+JobConditionState describes the state a job is in
 
 
 
@@ -901,7 +1019,7 @@ _Appears in:_
 
 
 
-
+JobTestingSpec is the struct for building out test jobs (iqe, etc) in a CJI
 
 
 
@@ -1102,6 +1220,7 @@ _Appears in:_
 | `path` _string_ | A prefix path that pods will be instructed to use when setting up their<br />metrics server. |  |  |
 | `mode` _[MetricsMode](#metricsmode)_ | The mode of operation of the Metrics provider. The allowed modes are<br /> (*_none_*), which disables metrics service generation, or<br />(*_operator_*) where services and probes are generated.<br />(*_app-interface_*) where services and probes are generated for app-interface. |  | Enum: [none operator app-interface] <br /> |
 | `prometheus` _[PrometheusConfig](#prometheusconfig)_ | Prometheus specific configuration |  |  |
+| `prometheusGateway` _[PrometheusGatewayConfig](#prometheusgatewayconfig)_ | Prometheus Gateway specific configuration |  |  |
 
 
 #### MetricsMode
@@ -1179,7 +1298,7 @@ _Appears in:_
 
 
 
-
+ObjectStoreImages defines the container images used for object storage
 
 
 
@@ -1210,7 +1329,7 @@ _Appears in:_
 
 
 
-
+OtelCollectorConfig defines configuration for OpenTelemetry collector sidecar
 
 
 
@@ -1260,7 +1379,7 @@ _Appears in:_
 
 
 
-Metadata for applying annotations etc to PodSpec
+PodspecMetadata defines metadata for applying annotations etc to PodSpec
 
 
 
@@ -1294,7 +1413,7 @@ _Appears in:_
 
 
 
-
+PrometheusConfig defines configuration for Prometheus monitoring
 
 
 
@@ -1304,7 +1423,24 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `deploy` _boolean_ | Determines whether to deploy prometheus in operator mode |  |  |
-| `appInterfaceHostname` _string_ | Specify prometheus hostname when in app-interface mode |  |  |
+| `appInterfaceInternalURL` _string_ | Specify prometheus internal URL when in app-interface mode |  |  |
+
+
+#### PrometheusGatewayConfig
+
+
+
+PrometheusGatewayConfig defines configuration for Prometheus gateway
+
+
+
+_Appears in:_
+- [MetricsConfig](#metricsconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `deploy` _boolean_ | Determines whether to deploy prometheus-gateway in operator mode |  |  |
+| `image` _string_ | Image to use for prometheus-gateway deployment |  |  |
 
 
 #### PrometheusStatus
@@ -1317,24 +1453,6 @@ PrometheusStatus provides info on how to connect to Prometheus
 
 _Appears in:_
 - [ClowdEnvironmentStatus](#clowdenvironmentstatus)
-
-| Field | Description | Default | Validation |
-| --- | --- | --- | --- |
-| `hostname` _string_ |  |  |  |
-| `port` _integer_ |  |  |  |
-| `scheme` _[ProtocolScheme](#protocolscheme)_ |  |  |  |
-
-
-#### ProtocolScheme
-
-_Underlying type:_ _string_
-
-
-
-
-
-_Appears in:_
-- [PrometheusStatus](#prometheusstatus)
 
 
 
@@ -1456,7 +1574,7 @@ _Appears in:_
 
 
 
-
+Sidecar defines a sidecar container for a deployment
 
 
 
@@ -1467,6 +1585,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _string_ | The name of the sidecar, only supported names allowed, (otel-collector, token-refresher) |  |  |
 | `enabled` _boolean_ | Defines if the sidecar is enabled, defaults to False |  |  |
+| `image` _string_ | Configurable image for the sidecar |  |  |
+| `configMap` _string_ | Configurable shared ConfigMap name for the sidecar |  |  |
 | `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the sidecar container (app-level overrides) |  |  |
 
 
@@ -1474,7 +1594,7 @@ _Appears in:_
 
 
 
-
+Sidecars defines configuration for sidecar containers
 
 
 
@@ -1525,7 +1645,7 @@ _Appears in:_
 
 
 
-
+TLS defines TLS configuration settings
 
 
 
@@ -1543,7 +1663,7 @@ _Appears in:_
 
 
 
-
+TestingConfig defines configuration for testing capabilities
 
 
 
@@ -1561,7 +1681,7 @@ _Appears in:_
 
 
 
-
+TestingSpec defines the testing configuration for a ClowdApp
 
 
 
@@ -1577,7 +1697,7 @@ _Appears in:_
 
 
 
-
+TokenRefresherConfig defines configuration for token refresher sidecar
 
 
 
@@ -1627,6 +1747,7 @@ WebDeprecated defines a boolean flag to help distinguish from the newer WebServi
 
 
 _Appears in:_
+- [ClowdAppRefDeployment](#clowdapprefdeployment)
 - [Deployment](#deployment)
 
 
@@ -1676,6 +1797,7 @@ private and metrics.
 
 
 _Appears in:_
+- [ClowdAppRefDeployment](#clowdapprefdeployment)
 - [Deployment](#deployment)
 
 | Field | Description | Default | Validation |

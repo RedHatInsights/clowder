@@ -1,12 +1,14 @@
+// Package servicemesh provides service mesh integration functionality for Clowder applications
 package servicemesh
 
 import (
 	"fmt"
 
+	apps "k8s.io/api/apps/v1"
+
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
-	apps "k8s.io/api/apps/v1"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )

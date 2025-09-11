@@ -6,13 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -20,6 +17,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/clowderconfig"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/pullsecrets"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
@@ -30,7 +33,7 @@ var KafkaInstance = rc.NewSingleResourceIdent(ProvName, "kafka_instance", &strim
 // KafkaUser is the resource ident for a KafkaUser object.
 var KafkaUser = rc.NewSingleResourceIdent(ProvName, "kafka_user", &strimzi.KafkaUser{}, rc.ResourceOptions{WriteNow: true})
 
-// KafkaUser is the resource ident for a KafkaUser object.
+// KafkaConnectUser is the resource ident for a KafkaConnectUser object.
 var KafkaConnectUser = rc.NewSingleResourceIdent(ProvName, "kafka_connect_user", &strimzi.KafkaUser{}, rc.ResourceOptions{WriteNow: true})
 
 // KafkaMetricsConfigMap is the resource ident for a KafkaMetricsConfigMap object.
@@ -86,6 +89,15 @@ func (s *strimziProvider) Provide(app *crd.ClowdApp) error {
 	}
 	kafkaCASecret := core.Secret{}
 	if _, err := utils.UpdateOrErr(s.Client.Get(s.Ctx, kafkaCASecName, &kafkaCASecret)); err != nil {
+		return err
+	}
+
+	_, err := s.HashCache.CreateOrUpdateObject(&kafkaCASecret, true)
+	if err != nil {
+		return err
+	}
+
+	if err = s.HashCache.AddClowdObjectToObject(s.Env, &kafkaCASecret); err != nil {
 		return err
 	}
 
@@ -187,9 +199,11 @@ func (s *strimziProvider) configureKafkaCluster() error {
 	var entityTopicLimits, entityTopicRequests apiextensions.JSON
 	var entityTLSLimits, entityTLSRequests apiextensions.JSON
 
+	replicasAsStr := strconv.Itoa(int(replicas))
 	err = kafConfig.UnmarshalJSON([]byte(fmt.Sprintf(`{
-		"offsets.topic.replication.factor": %s
-	}`, strconv.Itoa(int(replicas)))))
+		"offsets.topic.replication.factor": %s,
+		"default.replication.factor": %s
+	}`, replicasAsStr, replicasAsStr)))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kConfig: %w", err)
 	}
@@ -325,6 +339,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					},
 				},
 				Pod: &strimzi.KafkaSpecKafkaTemplatePod{
+					ImagePullSecrets: []strimzi.KafkaSpecKafkaTemplatePodImagePullSecretsElem{},
 					Metadata: &strimzi.KafkaSpecKafkaTemplatePodMetadata{
 						Labels: &klabels,
 					},
@@ -344,6 +359,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					},
 				},
 				Pod: &strimzi.KafkaSpecZookeeperTemplatePod{
+					ImagePullSecrets: []strimzi.KafkaSpecZookeeperTemplatePodImagePullSecretsElem{},
 					Metadata: &strimzi.KafkaSpecZookeeperTemplatePodMetadata{
 						Labels: &klabels,
 					},
@@ -356,6 +372,7 @@ func (s *strimziProvider) configureKafkaCluster() error {
 					Metadata: &strimzi.KafkaSpecEntityOperatorTemplatePodMetadata{
 						Labels: &klabels,
 					},
+					ImagePullSecrets: []strimzi.KafkaSpecEntityOperatorTemplatePodImagePullSecretsElem{},
 				},
 				TopicOperatorContainer: &strimzi.KafkaSpecEntityOperatorTemplateTopicOperatorContainer{
 					Env: useFinalizersEnv,
@@ -374,6 +391,19 @@ func (s *strimziProvider) configureKafkaCluster() error {
 				},
 			},
 		},
+	}
+
+	// add pull secrets to the kafka cluster pod template configurations
+	secretNames, err := pullsecrets.CopyPullSecrets(&s.Provider, getKafkaNamespace(s.Env), s.Env)
+
+	if err != nil {
+		return err
+	}
+
+	for _, name := range secretNames {
+		k.Spec.Kafka.Template.Pod.ImagePullSecrets = append(k.Spec.Kafka.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecKafkaTemplatePodImagePullSecretsElem{Name: &name})
+		k.Spec.Zookeeper.Template.Pod.ImagePullSecrets = append(k.Spec.Zookeeper.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecZookeeperTemplatePodImagePullSecretsElem{Name: &name})
+		k.Spec.EntityOperator.Template.Pod.ImagePullSecrets = append(k.Spec.EntityOperator.Template.Pod.ImagePullSecrets, strimzi.KafkaSpecEntityOperatorTemplatePodImagePullSecretsElem{Name: &name})
 	}
 
 	if s.Env.Spec.Providers.Kafka.Cluster.Config != nil && len(*s.Env.Spec.Providers.Kafka.Cluster.Config) != 0 {
@@ -533,6 +563,10 @@ func (s *strimziProvider) createKafkaMetricsConfigMap() (types.NamespacedName, e
 	}
 
 	return nn, nil
+}
+
+func (s *strimziProvider) GetProvider() *providers.Provider {
+	return &s.Provider
 }
 
 func (s *strimziProvider) getBootstrapServersString() string {
@@ -798,6 +832,15 @@ func (s *strimziProvider) setBrokerCredentials(app *crd.ClowdApp, configs *confi
 
 			err = s.Client.Get(s.Ctx, secnn, kafkaSecret)
 			if err != nil {
+				return err
+			}
+
+			_, err = s.HashCache.CreateOrUpdateObject(kafkaSecret, true)
+			if err != nil {
+				return err
+			}
+
+			if err = s.HashCache.AddClowdObjectToObject(s.Env, kafkaSecret); err != nil {
 				return err
 			}
 

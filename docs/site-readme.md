@@ -58,9 +58,9 @@ Clowder currently supports the following features:
 
 ## Updating E2E Test Golang Deps
 
-Clowder's E2E tests require a few golang dependecies that are not included in the root `go.mod` file. These will need to be updated regularly as a separate process. You can run the following script to update these:
+Clowder's build tools (controller-gen, kustomize, setup-envtest) are now managed via Go 1.24's tools directive in the main `go.mod` file. To update tool dependencies, run:
 ```
-./deps/update_e2e_deps.sh
+make update-deps
 ```
 
 ## Getting Clowder
@@ -133,14 +133,13 @@ visit the [developing clowder](docs/developer-guide.md) page for more detailed i
 
 ## History
 
-To understand more about the design decisions made while developing Clowder,
+To understand more about the design decisions made while developing clowder,
 please visit the [design document](docs/clowder-design.adoc).
 
 ## Connect
 
 Any questions, please ask one of the Clowder development team
 
-* [@psav](https://github.com/psav)
 * [@bsquizz](https://github.com/bsquizz)
 * [@bennyturns](https://github.com/bennyturns)
 * [@adamrdrew](https://github.com/adamrdrew)

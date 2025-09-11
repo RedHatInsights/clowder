@@ -17,8 +17,9 @@ import (
 	"errors"
 	"fmt"
 
-	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
+
+	cerrors "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
@@ -138,7 +139,7 @@ type Job struct {
 // WebDeprecated defines a boolean flag to help distinguish from the newer WebServices
 type WebDeprecated bool
 
-// A string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
+// APIPath is a string representing an API path that should route to this app for Clowder-managed Ingresses (in format "/api/somepath/")
 // +kubebuilder:validation:Pattern=`^\/api\/[a-zA-Z0-9-]+\/$`
 type APIPath string
 
@@ -196,6 +197,7 @@ type WebServices struct {
 // +kubebuilder:validation:Enum={"default", "view", "", "edit"}
 type K8sAccessLevel string
 
+// DeploymentMetadata defines the metadata for the deployment.
 type DeploymentMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
@@ -216,11 +218,11 @@ type Deployment struct {
 	// Defines the desired replica count for the pod
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	// If set to true, creates a service on the webPort defined in
-	// the ClowdEnvironment resource, along with the relevant liveness and
-	// readiness probes.
+	// If set to true, creates a service on the webPort defined in the ClowdEnvironment resource, along with the relevant liveness and readiness probes.
+	// Deprecated: Use WebServices instead.
 	Web WebDeprecated `json:"web,omitempty"`
 
+	// WebServices defines the web services configuration for this deployment
 	WebServices WebServices `json:"webServices,omitempty"`
 
 	// PodSpec defines a container running inside a ClowdApp.
@@ -241,6 +243,12 @@ type Deployment struct {
 	Metadata DeploymentMetadata `json:"metadata,omitempty"`
 }
 
+// GetWebServices returns the web services configuration for this deployment
+func (d *Deployment) GetWebServices() WebServices {
+	return d.WebServices
+}
+
+// GetReplicaCount returns the desired replica count for this deployment
 func (d *Deployment) GetReplicaCount() *int32 {
 	if d.Replicas != nil {
 		return d.Replicas
@@ -252,10 +260,12 @@ func (d *Deployment) GetReplicaCount() *int32 {
 	return &retVal
 }
 
+// HasAutoScaler returns true if this deployment has autoscaling configured
 func (d *Deployment) HasAutoScaler() bool {
 	return d.AutoScaler != nil || d.AutoScalerSimple != nil
 }
 
+// DeploymentStrategy defines the deployment strategy for a deployment
 type DeploymentStrategy struct {
 	// PrivateStrategy allows a deployment that only uses a private port to set
 	// the deployment strategy one of Recreate or Rolling, default for a
@@ -264,6 +274,7 @@ type DeploymentStrategy struct {
 	PrivateStrategy apps.DeploymentStrategyType `json:"privateStrategy,omitempty"`
 }
 
+// Sidecar defines a sidecar container for a deployment
 type Sidecar struct {
 	// The name of the sidecar, only supported names allowed, (otel-collector, token-refresher)
 	Name string `json:"name"`
@@ -271,11 +282,17 @@ type Sidecar struct {
 	// Defines if the sidecar is enabled, defaults to False
 	Enabled bool `json:"enabled"`
 
+	// Configurable image for the sidecar
+	Image string `json:"image,omitempty"`
+
+	// Configurable shared ConfigMap name for the sidecar
+	ConfigMap string `json:"configMap,omitempty"`
+
 	// Environment variables to be set in the sidecar container (app-level overrides)
 	EnvVars []EnvVar `json:"envVars,omitempty"`
 }
 
-// Metadata for applying annotations etc to PodSpec
+// PodspecMetadata defines metadata for applying annotations etc to PodSpec
 type PodspecMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
@@ -349,7 +366,7 @@ type SimpleAutoScalerReplicas struct {
 	Max int32 `json:"max"`
 }
 
-// SimpleAutoScaler defines a simple HPA with scaling for RAM and CPU by
+// AutoScalerSimple defines a simple HPA with scaling for RAM and CPU by
 // value and utilization thresholds, along with replica count limits
 type AutoScalerSimple struct {
 	Replicas SimpleAutoScalerReplicas `json:"replicas"`
@@ -434,6 +451,7 @@ type KafkaTopicSpec struct {
 	TopicName string `json:"topicName"`
 }
 
+// TestingSpec defines the testing configuration for a ClowdApp
 type TestingSpec struct {
 	IqePlugin string `json:"iqePlugin"`
 }
@@ -471,7 +489,7 @@ type ClowdAppSpec struct {
 
 	// In (*_shared_*) mode, the application name that should create the in memory
 	// DB instance this application should use
-	SharedInMemoryDbAppName string `json:"sharedInMemoryDbAppName,omitempty"`
+	SharedInMemoryDBAppName string `json:"sharedInMemoryDbAppName,omitempty"`
 
 	// If featureFlags is set to true, Clowder will pass configuration of a
 	// FeatureFlags instance to the pods in the ClowdApp. This single
@@ -502,7 +520,7 @@ type ClowdAppSpec struct {
 }
 
 const (
-	// Ready means all the deployments are ready
+	// DeploymentsReady means all the deployments are ready
 	DeploymentsReady clusterv1.ConditionType = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
 	ReconciliationSuccessful clusterv1.ConditionType = "ReconciliationSuccessful"
@@ -522,6 +540,7 @@ type ClowdAppStatus struct {
 	Conditions  []clusterv1.Condition `json:"conditions,omitempty"`
 }
 
+// AppResourceStatus defines the status of an app resource
 type AppResourceStatus struct {
 	ManagedDeployments int32 `json:"managedDeployments"`
 	ReadyDeployments   int32 `json:"readyDeployments"`
@@ -560,10 +579,12 @@ func init() {
 	SchemeBuilder.Register(&ClowdApp{}, &ClowdAppList{})
 }
 
+// GetConditions returns the conditions for this ClowdApp
 func (i *ClowdApp) GetConditions() clusterv1.Conditions {
 	return i.Status.Conditions
 }
 
+// SetConditions updates the conditions for this ClowdApp
 func (i *ClowdApp) SetConditions(conditions clusterv1.Conditions) {
 	i.Status.Conditions = conditions
 }
@@ -575,7 +596,7 @@ func (i *ClowdApp) GetLabels() map[string]string {
 	}
 
 	if _, ok := i.Labels["app"]; !ok {
-		i.Labels["app"] = i.ObjectMeta.Name
+		i.Labels["app"] = i.Name
 	}
 
 	newMap := make(map[string]string, len(i.Labels))
@@ -605,8 +626,8 @@ func (i *ClowdApp) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
-		Name:       i.ObjectMeta.Name,
-		UID:        i.ObjectMeta.UID,
+		Name:       i.Name,
+		UID:        i.UID,
 		Controller: utils.TruePtr(),
 	}
 }
@@ -628,7 +649,7 @@ func (i *ClowdApp) GetClowdName() string {
 
 // GetUID returns ObjectMeta.UID
 func (i *ClowdApp) GetUID() types.UID {
-	return i.ObjectMeta.UID
+	return i.UID
 }
 
 // GetDeploymentStatus returns the Status.Deployments member
@@ -636,7 +657,7 @@ func (i *ClowdApp) GetDeploymentStatus() *AppResourceStatus {
 	return &i.Status.Deployments
 }
 
-// GetDeploymentStatus returns the Status.Deployments member
+// GetDeploymentNamespacedName returns the namespaced name for a deployment
 func (i *ClowdApp) GetDeploymentNamespacedName(d *Deployment) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%s-%s", i.Name, d.Name),
@@ -644,7 +665,7 @@ func (i *ClowdApp) GetDeploymentNamespacedName(d *Deployment) types.NamespacedNa
 	}
 }
 
-// GetDeploymentStatus returns the Status.Deployments member
+// GetCronJobNamespacedName returns the namespaced name for a cron job
 func (i *ClowdApp) GetCronJobNamespacedName(d *Job) types.NamespacedName {
 	return types.NamespacedName{
 		Name:      fmt.Sprintf("%s-%s", i.Name, d.Name),
@@ -734,7 +755,7 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 	}
 
 	if inMem {
-		sharedName = app.Spec.SharedInMemoryDbAppName
+		sharedName = app.Spec.SharedInMemoryDBAppName
 		errorOut = "could not get app for in memory db in env"
 	} else {
 		sharedName = app.Spec.Database.SharedDBAppName
@@ -750,11 +771,12 @@ func GetAppForDBInSameEnv(ctx context.Context, pClient client.Client, app *Clowd
 	return nil, errors.New(errorOut)
 }
 
+// GetOurEnv retrieves the ClowdEnvironment associated with this ClowdApp
 func (i *ClowdApp) GetOurEnv(ctx context.Context, pClient client.Client, env *ClowdEnvironment) error {
 	return pClient.Get(ctx, types.NamespacedName{Name: i.Spec.EnvName}, env)
 }
 
-// GetAppsInEnv populates the appList with a list of all apps in the ClowdEnvironment.
+// GetNamespacesInEnv gets all namespaces in the ClowdEnvironment associated with this app.
 func (i *ClowdApp) GetNamespacesInEnv(ctx context.Context, pClient client.Client) ([]string, error) {
 
 	var env = &ClowdEnvironment{}

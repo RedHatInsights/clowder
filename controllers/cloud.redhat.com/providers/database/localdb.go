@@ -126,10 +126,10 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 		dbVersion = *(app.Spec.Database.Version)
 	}
 
-	image, ok := imageList[dbVersion]
+	image, err = provutils.GetDefaultDatabaseImage(dbVersion)
 
-	if !ok {
-		return errors.NewClowderError(fmt.Sprintf("Requested image version (%v), doesn't exist", dbVersion))
+	if err != nil {
+		return err
 	}
 
 	if app.Spec.Cyndi.Enabled {

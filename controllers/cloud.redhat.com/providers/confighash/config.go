@@ -1,3 +1,4 @@
+// Package confighash provides configuration hash management for Clowder applications
 package confighash
 
 import (
@@ -5,14 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 
-	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
-	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+
+	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
+	deployProvider "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/deployment"
 )
 
 func (ch *confighashProvider) envConfigMap(app *crd.ClowdApp, env core.EnvVar) error {
@@ -36,6 +38,11 @@ func (ch *confighashProvider) envConfigMap(app *crd.ClowdApp, env core.EnvVar) e
 		}
 		return fmt.Errorf("could not get env configmap: %w", err)
 	}
+	_, err := ch.HashCache.CreateOrUpdateObject(cf, false)
+	if err != nil {
+		return nil
+	}
+
 	return ch.HashCache.AddClowdObjectToObject(app, cf)
 }
 
@@ -60,10 +67,14 @@ func (ch *confighashProvider) envSecret(app *crd.ClowdApp, env core.EnvVar) erro
 		}
 		return fmt.Errorf("could not get env secret: %w", err)
 	}
+	_, err := ch.HashCache.CreateOrUpdateObject(sec, false)
+	if err != nil {
+		return nil
+	}
 	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
 
-func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume) error {
+func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume *core.Volume) error {
 	if volume.ConfigMap == nil {
 		return nil
 	}
@@ -81,10 +92,14 @@ func (ch *confighashProvider) volConfigMap(app *crd.ClowdApp, volume core.Volume
 		}
 		return fmt.Errorf("could not get vol configmap: %w", err)
 	}
+	_, err := ch.HashCache.CreateOrUpdateObject(cf, false)
+	if err != nil {
+		return nil
+	}
 	return ch.HashCache.AddClowdObjectToObject(app, cf)
 }
 
-func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) error {
+func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume *core.Volume) error {
 	if volume.Secret == nil {
 		return nil
 	}
@@ -101,6 +116,10 @@ func (ch *confighashProvider) volSecret(app *crd.ClowdApp, volume core.Volume) e
 			return nil
 		}
 		return fmt.Errorf("could not get vol secret: %w", err)
+	}
+	_, err := ch.HashCache.CreateOrUpdateObject(sec, false)
+	if err != nil {
+		return nil
 	}
 	return ch.HashCache.AddClowdObjectToObject(app, sec)
 }
@@ -120,8 +139,9 @@ func (ch *confighashProvider) iterateEnvVars(app *crd.ClowdApp, deployment apps.
 	return nil
 }
 
-func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, deployment apps.Deployment) error {
-	for _, volume := range deployment.Spec.Template.Spec.Volumes {
+func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, deployment *apps.Deployment) error {
+	for i := range deployment.Spec.Template.Spec.Volumes {
+		volume := &deployment.Spec.Template.Spec.Volumes[i]
 		if err := ch.volConfigMap(app, volume); err != nil {
 			return err
 		}
@@ -134,9 +154,9 @@ func (ch *confighashProvider) iterateVolumes(app *crd.ClowdApp, deployment apps.
 }
 
 func (ch *confighashProvider) updateHashCache(dList *apps.DeploymentList, app *crd.ClowdApp) error {
-	for _, deployment := range dList.Items {
-		deploy := deployment
-		if err := ch.iterateEnvVars(app, deploy); err != nil {
+	for i := range dList.Items {
+		deploy := &dList.Items[i]
+		if err := ch.iterateEnvVars(app, *deploy); err != nil {
 			return err
 		}
 		if err := ch.iterateVolumes(app, deploy); err != nil {

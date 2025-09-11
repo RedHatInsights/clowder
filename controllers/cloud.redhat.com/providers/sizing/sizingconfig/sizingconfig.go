@@ -1,20 +1,24 @@
+// Package sizingconfig provides configuration management for resource sizing policies
 package sizingconfig
 
 const (
-	// The nature of the beast in this code is we got a lot of magic strings
+	// SizeXSmall represents the x-small size designation
 	SizeXSmall string = "x-small"
-	SizeSmall  string = "small"
+	// SizeSmall represents the small size designation
+	SizeSmall string = "small"
+	// SizeMedium represents the medium size designation
 	SizeMedium string = "medium"
-	SizeLarge  string = "large"
+	// SizeLarge represents the large size designation
+	SizeLarge string = "large"
+	// SizeXLarge represents the x-large size designation
 	SizeXLarge string = "x-large"
-	// We need to define default sizes because if a ClowdApp doesn't provide
-	// volume or ram/cpu capacities we just get an empty string, so we need
-	// defaults to plug in there
-	DefaultSizeVol    = SizeXSmall
+	// DefaultSizeVol is the default volume size when none is specified
+	DefaultSizeVol = SizeXSmall
+	// DefaultSizeCPURAM is the default CPU and memory size when none is specified
 	DefaultSizeCPURAM = SizeXSmall
 )
 
-// Get a map of CPU T-Shirt sizes to capacities
+// CPUSizeToCapacity maps CPU T-Shirt sizes to their capacities
 var CPUSizeToCapacity = map[string]string{
 	SizeXSmall: "300m",
 	SizeSmall:  "600m",
@@ -26,8 +30,7 @@ var CPUSizeToCapacity = map[string]string{
 	SizeXLarge: "2400m",
 }
 
-// For any given size get the next size up
-// Allows for size to limit mapping without conditionality
+// LimitSizeToRequestSize maps request sizes to their corresponding limit sizes
 var LimitSizeToRequestSize = map[string]string{
 	SizeXSmall: SizeSmall,
 	SizeSmall:  SizeMedium,
@@ -35,7 +38,7 @@ var LimitSizeToRequestSize = map[string]string{
 	SizeLarge:  SizeXLarge,
 }
 
-// Get a map of RAM T-Shirt sizes to capacities
+// RAMSizeToCapacity maps RAM T-Shirt sizes to their capacities
 var RAMSizeToCapacity = map[string]string{
 	SizeXSmall: "512Mi",
 	SizeSmall:  "1Gi",
@@ -44,7 +47,7 @@ var RAMSizeToCapacity = map[string]string{
 	SizeXLarge: "4Gi",
 }
 
-// Get a map of volume T-Shirt size to capacities
+// VolSizeToCapacity maps volume T-Shirt sizes to their capacities
 var VolSizeToCapacity = map[string]string{
 	// x-small is because volume t shirt sizes pre-exist this implementation and there
 	// we shipped a default smaller than small. I'm just leaving that pattern intact
@@ -55,7 +58,7 @@ var VolSizeToCapacity = map[string]string{
 	SizeLarge:  "5Gi",
 }
 
-// This is used for performing size comparisons
+// SizeIndex maps sizes to their numeric indices for comparison purposes
 var SizeIndex = map[string]int{
 	SizeXSmall: 0,
 	SizeSmall:  1,

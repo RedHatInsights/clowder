@@ -1,3 +1,4 @@
+// Package providers contains the core provider framework and common utilities for Clowder resource management
 package providers
 
 import (
@@ -24,7 +25,7 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
 )
 
-// MinioSecret is the resource ident for the Minio secret object.
+// RootSecret is the resource ident for the root environment secret object.
 var RootSecret = rc.NewSingleResourceIdent("root", "root_env", &core.Secret{})
 
 type providerAccessor struct {
@@ -86,30 +87,37 @@ type Provider struct {
 	HashCache *hashcache.HashCache
 }
 
+// GetClient returns the Kubernetes client
 func (prov *Provider) GetClient() client.Client {
 	return prov.Client
 }
 
+// GetCtx returns the context for provider operations
 func (prov *Provider) GetCtx() context.Context {
 	return prov.Ctx
 }
 
+// GetEnv returns the ClowdEnvironment associated with this provider
 func (prov *Provider) GetEnv() *crd.ClowdEnvironment {
 	return prov.Env
 }
 
+// GetCache returns the object cache used by the provider
 func (prov *Provider) GetCache() *rc.ObjectCache {
 	return prov.Cache
 }
 
+// GetLog returns the logger instance for the provider
 func (prov *Provider) GetLog() logr.Logger {
 	return prov.Log
 }
 
+// GetConfig returns the application configuration
 func (prov *Provider) GetConfig() *config.AppConfig {
 	return prov.Config
 }
 
+// RootProvider defines the basic interface that all providers should implement
 type RootProvider interface {
 	GetClient() client.Client
 	GetCtx() context.Context
@@ -294,7 +302,7 @@ func MakeOrGetSecret(obj obj.ClowdObject, cache *rc.ObjectCache, resourceIdent r
 
 		secret.Name = nn.Name
 		secret.Namespace = nn.Namespace
-		secret.ObjectMeta.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
+		secret.OwnerReferences = []metav1.OwnerReference{obj.MakeOwnerReference()}
 		secret.Type = core.SecretTypeOpaque
 
 	} else {

@@ -32,20 +32,26 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
+// JobConditionState describes the state a job is in
 type JobConditionState string
 
 const (
-	JobInvoked  JobConditionState = "Invoked"
+	// JobInvoked represents a job that has been invoked
+	JobInvoked JobConditionState = "Invoked"
+	// JobComplete represents a job that has completed successfully
 	JobComplete JobConditionState = "Complete"
-	JobFailed   JobConditionState = "Failed"
+	// JobFailed represents a job that has failed
+	JobFailed JobConditionState = "Failed"
 )
 
+// JobTestingSpec is the struct for building out test jobs (iqe, etc) in a CJI
 type JobTestingSpec struct {
 	// Iqe is the job spec to override defaults from the ClowdApp's
 	// definition of the job
 	Iqe IqeJobSpec `json:"iqe,omitempty"`
 }
 
+// IqeJobSpec defines the specification for IQE (Integration Quality Engineering) jobs
 type IqeJobSpec struct {
 	// Image tag to use for IQE container. By default, Clowder will set the image tag to be
 	// baseImage:name-of-iqe-plugin, where baseImage is defined in the ClowdEnvironment. Only the tag can be overridden here.
@@ -99,6 +105,7 @@ type IqeJobSpec struct {
 	IbutsuSource string `json:"ibutsuSource,omitempty"`
 }
 
+// IqeUISpec defines configuration options for running IQE with UI components
 type IqeUISpec struct {
 	// No longer used
 	Enabled bool `json:"enabled,omitempty"`
@@ -107,6 +114,7 @@ type IqeUISpec struct {
 	Selenium IqeSeleniumSpec `json:"selenium,omitempty"`
 }
 
+// IqeSeleniumSpec defines configuration options for running IQE with a selenium container
 type IqeSeleniumSpec struct {
 	// Whether or not a selenium container should be deployed in the IQE pod
 	Deploy bool `json:"deploy,omitempty"`
@@ -168,10 +176,12 @@ type ClowdJobInvocationList struct {
 	Items           []ClowdJobInvocation `json:"items"`
 }
 
+// GetConditions returns the conditions for this ClowdJobInvocation
 func (i *ClowdJobInvocation) GetConditions() clusterv1.Conditions {
 	return i.Status.Conditions
 }
 
+// SetConditions updates the conditions for this ClowdJobInvocation
 func (i *ClowdJobInvocation) SetConditions(conditions clusterv1.Conditions) {
 	i.Status.Conditions = conditions
 }
@@ -187,7 +197,7 @@ func (i *ClowdJobInvocation) GetLabels() map[string]string {
 	}
 
 	if _, ok := i.Labels["clowdjob"]; !ok {
-		i.Labels["clowdjob"] = i.ObjectMeta.Name
+		i.Labels["clowdjob"] = i.Name
 	}
 
 	newMap := make(map[string]string, len(i.Labels))
@@ -212,8 +222,8 @@ func (i *ClowdJobInvocation) MakeOwnerReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: i.APIVersion,
 		Kind:       i.Kind,
-		Name:       i.ObjectMeta.Name,
-		UID:        i.ObjectMeta.UID,
+		Name:       i.Name,
+		UID:        i.UID,
 		Controller: utils.TruePtr(),
 	}
 }
@@ -228,7 +238,7 @@ func (i *ClowdJobInvocation) GetClowdName() string {
 	return i.Name
 }
 
-// GetClowdName returns the name of the ClowdJobInvocation object.
+// GetClowdSAName returns the service account name for the ClowdJobInvocation object.
 func (i *ClowdJobInvocation) GetClowdSAName() string {
 	return fmt.Sprintf("%s-cji", i.Name)
 }
@@ -240,7 +250,7 @@ func (i *ClowdJobInvocation) GetIQEName() string {
 
 // GetUID returns ObjectMeta.UID
 func (i *ClowdJobInvocation) GetUID() types.UID {
-	return i.ObjectMeta.UID
+	return i.UID
 }
 
 // SetObjectMeta sets the metadata on a ClowdApp object.
@@ -255,16 +265,18 @@ func (i *ClowdJobInvocation) SetObjectMeta(o metav1.Object, opts ...omfunc) {
 	}
 }
 
+// GetInvokedJobs retrieves all jobs associated with this ClowdJobInvocation
 func (i *ClowdJobInvocation) GetInvokedJobs(ctx context.Context, c client.Client) (*batchv1.JobList, error) {
 
 	jobs := batchv1.JobList{}
-	if err := c.List(ctx, &jobs, client.InNamespace(i.ObjectMeta.Namespace)); err != nil {
+	if err := c.List(ctx, &jobs, client.InNamespace(i.Namespace)); err != nil {
 		return nil, err
 	}
 
 	return &jobs, nil
 }
 
+// GenerateJobName generates a random job name for the Job
 func (i *ClowdJobInvocation) GenerateJobName() string {
 	randomString := utils.RandStringLower(7)
 	return fmt.Sprintf("%s-iqe-%s", i.Name, randomString)
