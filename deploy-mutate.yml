@@ -146,9 +146,9 @@ objects:
                                   format: "/api/some-path/") that this app will serve
                                   requests from.'
                                 items:
-                                  description: A string representing an API path that
-                                    should route to this app for Clowder-managed Ingresses
-                                    (in format "/api/somepath/")
+                                  description: APIPath is a string representing an
+                                    API path that should route to this app for Clowder-managed
+                                    Ingresses (in format "/api/somepath/")
                                   pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                   type: string
                                 type: array
@@ -753,7 +753,7 @@ objects:
                             type: array
                         type: object
                       autoScalerSimple:
-                        description: 'SimpleAutoScaler defines a simple HPA with scaling
+                        description: 'AutoScalerSimple defines a simple HPA with scaling
                           for RAM and CPU by
 
                           value and utilization thresholds, along with replica count
@@ -825,6 +825,8 @@ objects:
                         - edit
                         type: string
                       metadata:
+                        description: DeploymentMetadata defines the metadata for the
+                          deployment.
                         properties:
                           annotations:
                             additionalProperties:
@@ -2026,6 +2028,8 @@ objects:
                             description: Lists the expected side cars, will be validated
                               in the validating webhook
                             items:
+                              description: Sidecar defines a sidecar container for
+                                a deployment
                               properties:
                                 enabled:
                                   description: Defines if the sidecar is enabled,
@@ -4928,9 +4932,9 @@ objects:
                                   format: "/api/some-path/") that this app will serve
                                   requests from.'
                                 items:
-                                  description: A string representing an API path that
-                                    should route to this app for Clowder-managed Ingresses
-                                    (in format "/api/somepath/")
+                                  description: APIPath is a string representing an
+                                    API path that should route to this app for Clowder-managed
+                                    Ingresses (in format "/api/somepath/")
                                   pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                   type: string
                                 type: array
@@ -6212,6 +6216,8 @@ objects:
                             description: Lists the expected side cars, will be validated
                               in the validating webhook
                             items:
+                              description: Sidecar defines a sidecar container for
+                                a deployment
                               properties:
                                 enabled:
                                   description: Defines if the sidecar is enabled,
@@ -10545,6 +10551,8 @@ objects:
                     type: object
                   type: array
                 deployments:
+                  description: EnvResourceStatus describes the status of ClowdEnvironment
+                    resources
                   properties:
                     managedDeployments:
                       format: int32
@@ -10992,6 +11000,7 @@ objects:
                   type: array
                 jobMap:
                   additionalProperties:
+                    description: JobConditionState describes the state a job is in
                     type: string
                   description: JobMap is a map of the job names run by Job invocation
                     and their outcomes
