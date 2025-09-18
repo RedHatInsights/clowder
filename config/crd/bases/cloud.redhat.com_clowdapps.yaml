@@ -1466,6 +1466,14 @@ spec:
                               image:
                                 description: Configurable image for the sidecar
                                 type: string
+                              memoryLimit:
+                                description: Memory limit for the sidecar container
+                                  (e.g., "1024Mi")
+                                type: string
+                              memoryRequest:
+                                description: Memory request for the sidecar container
+                                  (e.g., "512Mi")
+                                type: string
                               name:
                                 description: The name of the sidecar, only supported
                                   names allowed, (otel-collector, token-refresher)
@@ -4541,6 +4549,14 @@ spec:
                                 type: array
                               image:
                                 description: Configurable image for the sidecar
+                                type: string
+                              memoryLimit:
+                                description: Memory limit for the sidecar container
+                                  (e.g., "1024Mi")
+                                type: string
+                              memoryRequest:
+                                description: Memory request for the sidecar container
+                                  (e.g., "512Mi")
                                 type: string
                               name:
                                 description: The name of the sidecar, only supported

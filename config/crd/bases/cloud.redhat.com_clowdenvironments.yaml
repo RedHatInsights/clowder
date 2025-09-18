@@ -635,6 +635,14 @@ spec:
                           image:
                             description: Configurable image
                             type: string
+                          memoryLimit:
+                            description: Memory limit for the otel collector container
+                              (e.g., "1024Mi")
+                            type: string
+                          memoryRequest:
+                            description: Memory request for the otel collector container
+                              (e.g., "512Mi")
+                            type: string
                         required:
                         - enabled
                         type: object
