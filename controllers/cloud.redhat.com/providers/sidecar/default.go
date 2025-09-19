@@ -222,11 +222,11 @@ func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.E
 	cont.Resources = core.ResourceRequirements{
 		Limits: core.ResourceList{
 			"cpu":    resource.MustParse("500m"),
-			"memory": resource.MustParse("1024Mi"),
+			"memory": resource.MustParse(GetOtelCollectorMemoryLimit(env, appSidecar)),
 		},
 		Requests: core.ResourceList{
 			"cpu":    resource.MustParse("250m"),
-			"memory": resource.MustParse("512Mi"),
+			"memory": resource.MustParse(GetOtelCollectorMemoryRequest(env, appSidecar)),
 		},
 	}
 	cont.VolumeMounts = []core.VolumeMount{{

@@ -545,6 +545,10 @@ type OtelCollectorConfig struct {
 	ConfigMap string `json:"configMap,omitempty"`
 	// Environment variables to be set in the otel collector container
 	EnvVars []EnvVar `json:"envVars,omitempty"`
+	// Memory request for the otel collector container (e.g., "512Mi")
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+	// Memory limit for the otel collector container (e.g., "1024Mi")
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 }
 
 // EnvVar represents an environment variable present in a Container.
