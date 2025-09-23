@@ -1,0 +1,36 @@
+---
+# Verify deployment exists with default memory settings
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-default-processor
+  namespace: test-sidecar-memory-default
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-app-default-processor
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        resources:
+          limits:
+            cpu: 500m
+            memory: "1024Mi"  # Default memory limit
+          requests:
+            cpu: 250m
+            memory: "512Mi"   # Default memory request
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: test-app-default-otel-config
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: test-app-default
+      - configMap:
+          defaultMode: 420
+          name: test-app-default-otel-config
+        name: test-app-default-otel-config
+
