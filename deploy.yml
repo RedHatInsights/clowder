@@ -1242,7 +1242,8 @@ objects:
                                   More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                                 properties:
                                   exec:
-                                    description: Exec specifies the action to take.
+                                    description: Exec specifies a command to execute
+                                      in the container.
                                     properties:
                                       command:
                                         description: 'Command is the command line
@@ -1268,7 +1269,7 @@ objects:
                                         x-kubernetes-list-type: atomic
                                     type: object
                                   httpGet:
-                                    description: HTTPGet specifies the http request
+                                    description: HTTPGet specifies an HTTP GET request
                                       to perform.
                                     properties:
                                       host:
@@ -1324,8 +1325,8 @@ objects:
                                     - port
                                     type: object
                                   sleep:
-                                    description: Sleep represents the duration that
-                                      the container should sleep before being terminated.
+                                    description: Sleep represents a duration that
+                                      the container should sleep.
                                     properties:
                                       seconds:
                                         description: Seconds is the number of seconds
@@ -1339,11 +1340,11 @@ objects:
                                     description: 'Deprecated. TCPSocket is NOT supported
                                       as a LifecycleHandler and kept
 
-                                      for the backward compatibility. There are no
-                                      validation of this field and
+                                      for backward compatibility. There is no validation
+                                      of this field and
 
-                                      lifecycle hooks will fail in runtime when tcp
-                                      handler is specified.'
+                                      lifecycle hooks will fail at runtime when it
+                                      is specified.'
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect
@@ -1391,7 +1392,8 @@ objects:
                                   More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                                 properties:
                                   exec:
-                                    description: Exec specifies the action to take.
+                                    description: Exec specifies a command to execute
+                                      in the container.
                                     properties:
                                       command:
                                         description: 'Command is the command line
@@ -1417,7 +1419,7 @@ objects:
                                         x-kubernetes-list-type: atomic
                                     type: object
                                   httpGet:
-                                    description: HTTPGet specifies the http request
+                                    description: HTTPGet specifies an HTTP GET request
                                       to perform.
                                     properties:
                                       host:
@@ -1473,8 +1475,8 @@ objects:
                                     - port
                                     type: object
                                   sleep:
-                                    description: Sleep represents the duration that
-                                      the container should sleep before being terminated.
+                                    description: Sleep represents a duration that
+                                      the container should sleep.
                                     properties:
                                       seconds:
                                         description: Seconds is the number of seconds
@@ -1488,11 +1490,11 @@ objects:
                                     description: 'Deprecated. TCPSocket is NOT supported
                                       as a LifecycleHandler and kept
 
-                                      for the backward compatibility. There are no
-                                      validation of this field and
+                                      for backward compatibility. There is no validation
+                                      of this field and
 
-                                      lifecycle hooks will fail in runtime when tcp
-                                      handler is specified.'
+                                      lifecycle hooks will fail at runtime when it
+                                      is specified.'
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect
@@ -1513,6 +1515,16 @@ objects:
                                     - port
                                     type: object
                                 type: object
+                              stopSignal:
+                                description: 'StopSignal defines which signal will
+                                  be sent to a container when it is being stopped.
+
+                                  If not specified, the default is defined by the
+                                  container runtime in use.
+
+                                  StopSignal can only be set for Pods with a non-empty
+                                  .spec.os.name'
+                                type: string
                             type: object
                           livenessProbe:
                             description: 'A pass-through of a Liveness Probe specification
@@ -1527,7 +1539,8 @@ objects:
                               false.'
                             properties:
                               exec:
-                                description: Exec specifies the action to take.
+                                description: Exec specifies a command to execute in
+                                  the container.
                                 properties:
                                   command:
                                     description: 'Command is the command line to execute
@@ -1559,8 +1572,7 @@ objects:
                                 format: int32
                                 type: integer
                               grpc:
-                                description: GRPC specifies an action involving a
-                                  GRPC port.
+                                description: GRPC specifies a GRPC HealthCheckRequest.
                                 properties:
                                   port:
                                     description: Port number of the gRPC service.
@@ -1582,8 +1594,8 @@ objects:
                                 - port
                                 type: object
                               httpGet:
-                                description: HTTPGet specifies the http request to
-                                  perform.
+                                description: HTTPGet specifies an HTTP GET request
+                                  to perform.
                                 properties:
                                   host:
                                     description: 'Host name to connect to, defaults
@@ -1660,8 +1672,8 @@ objects:
                                 format: int32
                                 type: integer
                               tcpSocket:
-                                description: TCPSocket specifies an action involving
-                                  a TCP port.
+                                description: TCPSocket specifies a connection to a
+                                  TCP port.
                                 properties:
                                   host:
                                     description: 'Optional: Host name to connect to,
@@ -1747,7 +1759,8 @@ objects:
                               false.'
                             properties:
                               exec:
-                                description: Exec specifies the action to take.
+                                description: Exec specifies a command to execute in
+                                  the container.
                                 properties:
                                   command:
                                     description: 'Command is the command line to execute
@@ -1779,8 +1792,7 @@ objects:
                                 format: int32
                                 type: integer
                               grpc:
-                                description: GRPC specifies an action involving a
-                                  GRPC port.
+                                description: GRPC specifies a GRPC HealthCheckRequest.
                                 properties:
                                   port:
                                     description: Port number of the gRPC service.
@@ -1802,8 +1814,8 @@ objects:
                                 - port
                                 type: object
                               httpGet:
-                                description: HTTPGet specifies the http request to
-                                  perform.
+                                description: HTTPGet specifies an HTTP GET request
+                                  to perform.
                                 properties:
                                   host:
                                     description: 'Host name to connect to, defaults
@@ -1880,8 +1892,8 @@ objects:
                                 format: int32
                                 type: integer
                               tcpSocket:
-                                description: TCPSocket specifies an action involving
-                                  a TCP port.
+                                description: TCPSocket specifies a connection to a
+                                  TCP port.
                                 properties:
                                   host:
                                     description: 'Optional: Host name to connect to,
@@ -2031,6 +2043,10 @@ objects:
                               description: Sidecar defines a sidecar container for
                                 a deployment
                               properties:
+                                configMap:
+                                  description: Configurable shared ConfigMap name
+                                    for the sidecar
+                                  type: string
                                 enabled:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
@@ -2131,6 +2147,17 @@ objects:
                                     - name
                                     type: object
                                   type: array
+                                image:
+                                  description: Configurable image for the sidecar
+                                  type: string
+                                memoryLimit:
+                                  description: Memory limit for the sidecar container
+                                    (e.g., "1024Mi")
+                                  type: string
+                                memoryRequest:
+                                  description: Memory request for the sidecar container
+                                    (e.g., "512Mi")
+                                  type: string
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -2259,6 +2286,12 @@ objects:
                                     kubelet''s host machine and then exposed to the
                                     pod.
 
+                                    Deprecated: AWSElasticBlockStore is deprecated.
+                                    All operations for the in-tree
+
+                                    awsElasticBlockStore type are redirected to the
+                                    ebs.csi.aws.com CSI driver.
+
                                     More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore'
                                   properties:
                                     fsType:
@@ -2303,8 +2336,13 @@ objects:
                                   - volumeID
                                   type: object
                                 azureDisk:
-                                  description: azureDisk represents an Azure Data
+                                  description: 'azureDisk represents an Azure Data
                                     Disk mount on the host and bind mount to the pod.
+
+                                    Deprecated: AzureDisk is deprecated. All operations
+                                    for the in-tree azureDisk type
+
+                                    are redirected to the disk.csi.azure.com CSI driver.'
                                   properties:
                                     cachingMode:
                                       description: 'cachingMode is the Host Caching
@@ -2347,9 +2385,14 @@ objects:
                                   - diskURI
                                   type: object
                                 azureFile:
-                                  description: azureFile represents an Azure File
+                                  description: 'azureFile represents an Azure File
                                     Service mount on the host and bind mount to the
                                     pod.
+
+                                    Deprecated: AzureFile is deprecated. All operations
+                                    for the in-tree azureFile type
+
+                                    are redirected to the file.csi.azure.com CSI driver.'
                                   properties:
                                     readOnly:
                                       description: 'readOnly defaults to false (read/write).
@@ -2370,8 +2413,11 @@ objects:
                                   - shareName
                                   type: object
                                 cephfs:
-                                  description: cephFS represents a Ceph FS mount on
-                                    the host that shares a pod's lifetime
+                                  description: 'cephFS represents a Ceph FS mount
+                                    on the host that shares a pod''s lifetime.
+
+                                    Deprecated: CephFS is deprecated and the in-tree
+                                    cephfs type is no longer supported.'
                                   properties:
                                     monitors:
                                       description: 'monitors is Required: Monitors
@@ -2438,6 +2484,12 @@ objects:
                                 cinder:
                                   description: 'cinder represents a cinder volume
                                     attached and mounted on kubelets host machine.
+
+                                    Deprecated: Cinder is deprecated. All operations
+                                    for the in-tree cinder type
+
+                                    are redirected to the cinder.csi.openstack.org
+                                    CSI driver.
 
                                     More info: https://examples.k8s.io/mysql-cinder-pd/README.md'
                                   properties:
@@ -2609,7 +2661,7 @@ objects:
                                 csi:
                                   description: csi (Container Storage Interface) represents
                                     ephemeral storage that is handled by certain external
-                                    CSI drivers (Beta feature).
+                                    CSI drivers.
                                   properties:
                                     driver:
                                       description: 'driver is the name of the CSI
@@ -3326,7 +3378,10 @@ objects:
                                   description: 'flexVolume represents a generic volume
                                     resource that is
 
-                                    provisioned/attached using an exec based plugin.'
+                                    provisioned/attached using an exec based plugin.
+
+                                    Deprecated: FlexVolume is deprecated. Consider
+                                    using a CSIDriver instead.'
                                   properties:
                                     driver:
                                       description: driver is the name of the driver
@@ -3390,9 +3445,12 @@ objects:
                                   - driver
                                   type: object
                                 flocker:
-                                  description: flocker represents a Flocker volume
-                                    attached to a kubelet's host machine. This depends
-                                    on the Flocker control service being running
+                                  description: 'flocker represents a Flocker volume
+                                    attached to a kubelet''s host machine. This depends
+                                    on the Flocker control service being running.
+
+                                    Deprecated: Flocker is deprecated and the in-tree
+                                    flocker type is no longer supported.'
                                   properties:
                                     datasetName:
                                       description: 'datasetName is Name of the dataset
@@ -3413,6 +3471,12 @@ objects:
 
                                     kubelet''s host machine and then exposed to the
                                     pod.
+
+                                    Deprecated: GCEPersistentDisk is deprecated. All
+                                    operations for the in-tree
+
+                                    gcePersistentDisk type are redirected to the pd.csi.storage.gke.io
+                                    CSI driver.
 
                                     More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk'
                                   properties:
@@ -3466,7 +3530,7 @@ objects:
                                   description: 'gitRepo represents a git repository
                                     at a particular revision.
 
-                                    DEPRECATED: GitRepo is deprecated. To provision
+                                    Deprecated: GitRepo is deprecated. To provision
                                     a container with a git repo, mount an
 
                                     EmptyDir into an InitContainer that clones the
@@ -3501,6 +3565,9 @@ objects:
                                 glusterfs:
                                   description: 'glusterfs represents a Glusterfs mount
                                     on the host that shares a pod''s lifetime.
+
+                                    Deprecated: Glusterfs is deprecated and the in-tree
+                                    glusterfs type is no longer supported.
 
                                     More info: https://examples.k8s.io/volumes/glusterfs/README.md'
                                   properties:
@@ -3608,7 +3675,8 @@ objects:
                                     non-executable files (noexec).
 
                                     Sub path mounts for containers are not supported
-                                    (spec.containers[*].volumeMounts.subpath).
+                                    (spec.containers[*].volumeMounts.subpath) before
+                                    1.33.
 
                                     The field spec.securityContext.fsGroupChangePolicy
                                     has no effect on this volume type.'
@@ -3821,9 +3889,13 @@ objects:
                                   - claimName
                                   type: object
                                 photonPersistentDisk:
-                                  description: photonPersistentDisk represents a PhotonController
-                                    persistent disk attached and mounted on kubelets
-                                    host machine
+                                  description: 'photonPersistentDisk represents a
+                                    PhotonController persistent disk attached and
+                                    mounted on kubelets host machine.
+
+                                    Deprecated: PhotonPersistentDisk is deprecated
+                                    and the in-tree photonPersistentDisk type is no
+                                    longer supported.'
                                   properties:
                                     fsType:
                                       description: 'fsType is the filesystem type
@@ -3843,8 +3915,16 @@ objects:
                                   - pdID
                                   type: object
                                 portworxVolume:
-                                  description: portworxVolume represents a portworx
-                                    volume attached and mounted on kubelets host machine
+                                  description: 'portworxVolume represents a portworx
+                                    volume attached and mounted on kubelets host machine.
+
+                                    Deprecated: PortworxVolume is deprecated. All
+                                    operations for the in-tree portworxVolume type
+
+                                    are redirected to the pxd.portworx.com CSI driver
+                                    when the CSIMigrationPortworx feature-gate
+
+                                    is on.'
                                   properties:
                                     fsType:
                                       description: 'fSType represents the filesystem
@@ -4431,8 +4511,11 @@ objects:
                                       x-kubernetes-list-type: atomic
                                   type: object
                                 quobyte:
-                                  description: quobyte represents a Quobyte mount
-                                    on the host that shares a pod's lifetime
+                                  description: 'quobyte represents a Quobyte mount
+                                    on the host that shares a pod''s lifetime.
+
+                                    Deprecated: Quobyte is deprecated and the in-tree
+                                    quobyte type is no longer supported.'
                                   properties:
                                     group:
                                       description: 'group to map volume access to
@@ -4477,6 +4560,9 @@ objects:
                                 rbd:
                                   description: 'rbd represents a Rados Block Device
                                     mount on the host that shares a pod''s lifetime.
+
+                                    Deprecated: RBD is deprecated and the in-tree
+                                    rbd type is no longer supported.
 
                                     More info: https://examples.k8s.io/volumes/rbd/README.md'
                                   properties:
@@ -4570,8 +4656,11 @@ objects:
                                   - monitors
                                   type: object
                                 scaleIO:
-                                  description: scaleIO represents a ScaleIO persistent
+                                  description: 'scaleIO represents a ScaleIO persistent
                                     volume attached and mounted on Kubernetes nodes.
+
+                                    Deprecated: ScaleIO is deprecated and the in-tree
+                                    scaleIO type is no longer supported.'
                                   properties:
                                     fsType:
                                       default: xfs
@@ -4761,8 +4850,11 @@ objects:
                                       type: string
                                   type: object
                                 storageos:
-                                  description: storageOS represents a StorageOS volume
+                                  description: 'storageOS represents a StorageOS volume
                                     attached and mounted on Kubernetes nodes.
+
+                                    Deprecated: StorageOS is deprecated and the in-tree
+                                    storageos type is no longer supported.'
                                   properties:
                                     fsType:
                                       description: 'fsType is the filesystem type
@@ -4831,8 +4923,14 @@ objects:
                                       type: string
                                   type: object
                                 vsphereVolume:
-                                  description: vsphereVolume represents a vSphere
-                                    volume attached and mounted on kubelets host machine
+                                  description: 'vsphereVolume represents a vSphere
+                                    volume attached and mounted on kubelets host machine.
+
+                                    Deprecated: VsphereVolume is deprecated. All operations
+                                    for the in-tree vsphereVolume type
+
+                                    are redirected to the csi.vsphere.vmware.com CSI
+                                    driver.'
                                   properties:
                                     fsType:
                                       description: 'fsType is filesystem type to mount.
@@ -5430,7 +5528,8 @@ objects:
                                   More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                                 properties:
                                   exec:
-                                    description: Exec specifies the action to take.
+                                    description: Exec specifies a command to execute
+                                      in the container.
                                     properties:
                                       command:
                                         description: 'Command is the command line
@@ -5456,7 +5555,7 @@ objects:
                                         x-kubernetes-list-type: atomic
                                     type: object
                                   httpGet:
-                                    description: HTTPGet specifies the http request
+                                    description: HTTPGet specifies an HTTP GET request
                                       to perform.
                                     properties:
                                       host:
@@ -5512,8 +5611,8 @@ objects:
                                     - port
                                     type: object
                                   sleep:
-                                    description: Sleep represents the duration that
-                                      the container should sleep before being terminated.
+                                    description: Sleep represents a duration that
+                                      the container should sleep.
                                     properties:
                                       seconds:
                                         description: Seconds is the number of seconds
@@ -5527,11 +5626,11 @@ objects:
                                     description: 'Deprecated. TCPSocket is NOT supported
                                       as a LifecycleHandler and kept
 
-                                      for the backward compatibility. There are no
-                                      validation of this field and
+                                      for backward compatibility. There is no validation
+                                      of this field and
 
-                                      lifecycle hooks will fail in runtime when tcp
-                                      handler is specified.'
+                                      lifecycle hooks will fail at runtime when it
+                                      is specified.'
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect
@@ -5579,7 +5678,8 @@ objects:
                                   More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                                 properties:
                                   exec:
-                                    description: Exec specifies the action to take.
+                                    description: Exec specifies a command to execute
+                                      in the container.
                                     properties:
                                       command:
                                         description: 'Command is the command line
@@ -5605,7 +5705,7 @@ objects:
                                         x-kubernetes-list-type: atomic
                                     type: object
                                   httpGet:
-                                    description: HTTPGet specifies the http request
+                                    description: HTTPGet specifies an HTTP GET request
                                       to perform.
                                     properties:
                                       host:
@@ -5661,8 +5761,8 @@ objects:
                                     - port
                                     type: object
                                   sleep:
-                                    description: Sleep represents the duration that
-                                      the container should sleep before being terminated.
+                                    description: Sleep represents a duration that
+                                      the container should sleep.
                                     properties:
                                       seconds:
                                         description: Seconds is the number of seconds
@@ -5676,11 +5776,11 @@ objects:
                                     description: 'Deprecated. TCPSocket is NOT supported
                                       as a LifecycleHandler and kept
 
-                                      for the backward compatibility. There are no
-                                      validation of this field and
+                                      for backward compatibility. There is no validation
+                                      of this field and
 
-                                      lifecycle hooks will fail in runtime when tcp
-                                      handler is specified.'
+                                      lifecycle hooks will fail at runtime when it
+                                      is specified.'
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect
@@ -5701,6 +5801,16 @@ objects:
                                     - port
                                     type: object
                                 type: object
+                              stopSignal:
+                                description: 'StopSignal defines which signal will
+                                  be sent to a container when it is being stopped.
+
+                                  If not specified, the default is defined by the
+                                  container runtime in use.
+
+                                  StopSignal can only be set for Pods with a non-empty
+                                  .spec.os.name'
+                                type: string
                             type: object
                           livenessProbe:
                             description: 'A pass-through of a Liveness Probe specification
@@ -5715,7 +5825,8 @@ objects:
                               false.'
                             properties:
                               exec:
-                                description: Exec specifies the action to take.
+                                description: Exec specifies a command to execute in
+                                  the container.
                                 properties:
                                   command:
                                     description: 'Command is the command line to execute
@@ -5747,8 +5858,7 @@ objects:
                                 format: int32
                                 type: integer
                               grpc:
-                                description: GRPC specifies an action involving a
-                                  GRPC port.
+                                description: GRPC specifies a GRPC HealthCheckRequest.
                                 properties:
                                   port:
                                     description: Port number of the gRPC service.
@@ -5770,8 +5880,8 @@ objects:
                                 - port
                                 type: object
                               httpGet:
-                                description: HTTPGet specifies the http request to
-                                  perform.
+                                description: HTTPGet specifies an HTTP GET request
+                                  to perform.
                                 properties:
                                   host:
                                     description: 'Host name to connect to, defaults
@@ -5848,8 +5958,8 @@ objects:
                                 format: int32
                                 type: integer
                               tcpSocket:
-                                description: TCPSocket specifies an action involving
-                                  a TCP port.
+                                description: TCPSocket specifies a connection to a
+                                  TCP port.
                                 properties:
                                   host:
                                     description: 'Optional: Host name to connect to,
@@ -5935,7 +6045,8 @@ objects:
                               false.'
                             properties:
                               exec:
-                                description: Exec specifies the action to take.
+                                description: Exec specifies a command to execute in
+                                  the container.
                                 properties:
                                   command:
                                     description: 'Command is the command line to execute
@@ -5967,8 +6078,7 @@ objects:
                                 format: int32
                                 type: integer
                               grpc:
-                                description: GRPC specifies an action involving a
-                                  GRPC port.
+                                description: GRPC specifies a GRPC HealthCheckRequest.
                                 properties:
                                   port:
                                     description: Port number of the gRPC service.
@@ -5990,8 +6100,8 @@ objects:
                                 - port
                                 type: object
                               httpGet:
-                                description: HTTPGet specifies the http request to
-                                  perform.
+                                description: HTTPGet specifies an HTTP GET request
+                                  to perform.
                                 properties:
                                   host:
                                     description: 'Host name to connect to, defaults
@@ -6068,8 +6178,8 @@ objects:
                                 format: int32
                                 type: integer
                               tcpSocket:
-                                description: TCPSocket specifies an action involving
-                                  a TCP port.
+                                description: TCPSocket specifies a connection to a
+                                  TCP port.
                                 properties:
                                   host:
                                     description: 'Optional: Host name to connect to,
@@ -6219,6 +6329,10 @@ objects:
                               description: Sidecar defines a sidecar container for
                                 a deployment
                               properties:
+                                configMap:
+                                  description: Configurable shared ConfigMap name
+                                    for the sidecar
+                                  type: string
                                 enabled:
                                   description: Defines if the sidecar is enabled,
                                     defaults to False
@@ -6319,6 +6433,17 @@ objects:
                                     - name
                                     type: object
                                   type: array
+                                image:
+                                  description: Configurable image for the sidecar
+                                  type: string
+                                memoryLimit:
+                                  description: Memory limit for the sidecar container
+                                    (e.g., "1024Mi")
+                                  type: string
+                                memoryRequest:
+                                  description: Memory request for the sidecar container
+                                    (e.g., "512Mi")
+                                  type: string
                                 name:
                                   description: The name of the sidecar, only supported
                                     names allowed, (otel-collector, token-refresher)
@@ -6447,6 +6572,12 @@ objects:
                                     kubelet''s host machine and then exposed to the
                                     pod.
 
+                                    Deprecated: AWSElasticBlockStore is deprecated.
+                                    All operations for the in-tree
+
+                                    awsElasticBlockStore type are redirected to the
+                                    ebs.csi.aws.com CSI driver.
+
                                     More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore'
                                   properties:
                                     fsType:
@@ -6491,8 +6622,13 @@ objects:
                                   - volumeID
                                   type: object
                                 azureDisk:
-                                  description: azureDisk represents an Azure Data
+                                  description: 'azureDisk represents an Azure Data
                                     Disk mount on the host and bind mount to the pod.
+
+                                    Deprecated: AzureDisk is deprecated. All operations
+                                    for the in-tree azureDisk type
+
+                                    are redirected to the disk.csi.azure.com CSI driver.'
                                   properties:
                                     cachingMode:
                                       description: 'cachingMode is the Host Caching
@@ -6535,9 +6671,14 @@ objects:
                                   - diskURI
                                   type: object
                                 azureFile:
-                                  description: azureFile represents an Azure File
+                                  description: 'azureFile represents an Azure File
                                     Service mount on the host and bind mount to the
                                     pod.
+
+                                    Deprecated: AzureFile is deprecated. All operations
+                                    for the in-tree azureFile type
+
+                                    are redirected to the file.csi.azure.com CSI driver.'
                                   properties:
                                     readOnly:
                                       description: 'readOnly defaults to false (read/write).
@@ -6558,8 +6699,11 @@ objects:
                                   - shareName
                                   type: object
                                 cephfs:
-                                  description: cephFS represents a Ceph FS mount on
-                                    the host that shares a pod's lifetime
+                                  description: 'cephFS represents a Ceph FS mount
+                                    on the host that shares a pod''s lifetime.
+
+                                    Deprecated: CephFS is deprecated and the in-tree
+                                    cephfs type is no longer supported.'
                                   properties:
                                     monitors:
                                       description: 'monitors is Required: Monitors
@@ -6626,6 +6770,12 @@ objects:
                                 cinder:
                                   description: 'cinder represents a cinder volume
                                     attached and mounted on kubelets host machine.
+
+                                    Deprecated: Cinder is deprecated. All operations
+                                    for the in-tree cinder type
+
+                                    are redirected to the cinder.csi.openstack.org
+                                    CSI driver.
 
                                     More info: https://examples.k8s.io/mysql-cinder-pd/README.md'
                                   properties:
@@ -6797,7 +6947,7 @@ objects:
                                 csi:
                                   description: csi (Container Storage Interface) represents
                                     ephemeral storage that is handled by certain external
-                                    CSI drivers (Beta feature).
+                                    CSI drivers.
                                   properties:
                                     driver:
                                       description: 'driver is the name of the CSI
@@ -7514,7 +7664,10 @@ objects:
                                   description: 'flexVolume represents a generic volume
                                     resource that is
 
-                                    provisioned/attached using an exec based plugin.'
+                                    provisioned/attached using an exec based plugin.
+
+                                    Deprecated: FlexVolume is deprecated. Consider
+                                    using a CSIDriver instead.'
                                   properties:
                                     driver:
                                       description: driver is the name of the driver
@@ -7578,9 +7731,12 @@ objects:
                                   - driver
                                   type: object
                                 flocker:
-                                  description: flocker represents a Flocker volume
-                                    attached to a kubelet's host machine. This depends
-                                    on the Flocker control service being running
+                                  description: 'flocker represents a Flocker volume
+                                    attached to a kubelet''s host machine. This depends
+                                    on the Flocker control service being running.
+
+                                    Deprecated: Flocker is deprecated and the in-tree
+                                    flocker type is no longer supported.'
                                   properties:
                                     datasetName:
                                       description: 'datasetName is Name of the dataset
@@ -7601,6 +7757,12 @@ objects:
 
                                     kubelet''s host machine and then exposed to the
                                     pod.
+
+                                    Deprecated: GCEPersistentDisk is deprecated. All
+                                    operations for the in-tree
+
+                                    gcePersistentDisk type are redirected to the pd.csi.storage.gke.io
+                                    CSI driver.
 
                                     More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk'
                                   properties:
@@ -7654,7 +7816,7 @@ objects:
                                   description: 'gitRepo represents a git repository
                                     at a particular revision.
 
-                                    DEPRECATED: GitRepo is deprecated. To provision
+                                    Deprecated: GitRepo is deprecated. To provision
                                     a container with a git repo, mount an
 
                                     EmptyDir into an InitContainer that clones the
@@ -7689,6 +7851,9 @@ objects:
                                 glusterfs:
                                   description: 'glusterfs represents a Glusterfs mount
                                     on the host that shares a pod''s lifetime.
+
+                                    Deprecated: Glusterfs is deprecated and the in-tree
+                                    glusterfs type is no longer supported.
 
                                     More info: https://examples.k8s.io/volumes/glusterfs/README.md'
                                   properties:
@@ -7796,7 +7961,8 @@ objects:
                                     non-executable files (noexec).
 
                                     Sub path mounts for containers are not supported
-                                    (spec.containers[*].volumeMounts.subpath).
+                                    (spec.containers[*].volumeMounts.subpath) before
+                                    1.33.
 
                                     The field spec.securityContext.fsGroupChangePolicy
                                     has no effect on this volume type.'
@@ -8009,9 +8175,13 @@ objects:
                                   - claimName
                                   type: object
                                 photonPersistentDisk:
-                                  description: photonPersistentDisk represents a PhotonController
-                                    persistent disk attached and mounted on kubelets
-                                    host machine
+                                  description: 'photonPersistentDisk represents a
+                                    PhotonController persistent disk attached and
+                                    mounted on kubelets host machine.
+
+                                    Deprecated: PhotonPersistentDisk is deprecated
+                                    and the in-tree photonPersistentDisk type is no
+                                    longer supported.'
                                   properties:
                                     fsType:
                                       description: 'fsType is the filesystem type
@@ -8031,8 +8201,16 @@ objects:
                                   - pdID
                                   type: object
                                 portworxVolume:
-                                  description: portworxVolume represents a portworx
-                                    volume attached and mounted on kubelets host machine
+                                  description: 'portworxVolume represents a portworx
+                                    volume attached and mounted on kubelets host machine.
+
+                                    Deprecated: PortworxVolume is deprecated. All
+                                    operations for the in-tree portworxVolume type
+
+                                    are redirected to the pxd.portworx.com CSI driver
+                                    when the CSIMigrationPortworx feature-gate
+
+                                    is on.'
                                   properties:
                                     fsType:
                                       description: 'fSType represents the filesystem
@@ -8619,8 +8797,11 @@ objects:
                                       x-kubernetes-list-type: atomic
                                   type: object
                                 quobyte:
-                                  description: quobyte represents a Quobyte mount
-                                    on the host that shares a pod's lifetime
+                                  description: 'quobyte represents a Quobyte mount
+                                    on the host that shares a pod''s lifetime.
+
+                                    Deprecated: Quobyte is deprecated and the in-tree
+                                    quobyte type is no longer supported.'
                                   properties:
                                     group:
                                       description: 'group to map volume access to
@@ -8665,6 +8846,9 @@ objects:
                                 rbd:
                                   description: 'rbd represents a Rados Block Device
                                     mount on the host that shares a pod''s lifetime.
+
+                                    Deprecated: RBD is deprecated and the in-tree
+                                    rbd type is no longer supported.
 
                                     More info: https://examples.k8s.io/volumes/rbd/README.md'
                                   properties:
@@ -8758,8 +8942,11 @@ objects:
                                   - monitors
                                   type: object
                                 scaleIO:
-                                  description: scaleIO represents a ScaleIO persistent
+                                  description: 'scaleIO represents a ScaleIO persistent
                                     volume attached and mounted on Kubernetes nodes.
+
+                                    Deprecated: ScaleIO is deprecated and the in-tree
+                                    scaleIO type is no longer supported.'
                                   properties:
                                     fsType:
                                       default: xfs
@@ -8949,8 +9136,11 @@ objects:
                                       type: string
                                   type: object
                                 storageos:
-                                  description: storageOS represents a StorageOS volume
+                                  description: 'storageOS represents a StorageOS volume
                                     attached and mounted on Kubernetes nodes.
+
+                                    Deprecated: StorageOS is deprecated and the in-tree
+                                    storageos type is no longer supported.'
                                   properties:
                                     fsType:
                                       description: 'fsType is the filesystem type
@@ -9019,8 +9209,14 @@ objects:
                                       type: string
                                   type: object
                                 vsphereVolume:
-                                  description: vsphereVolume represents a vSphere
-                                    volume attached and mounted on kubelets host machine
+                                  description: 'vsphereVolume represents a vSphere
+                                    volume attached and mounted on kubelets host machine.
+
+                                    Deprecated: VsphereVolume is deprecated. All operations
+                                    for the in-tree vsphereVolume type
+
+                                    are redirected to the csi.vsphere.vmware.com CSI
+                                    driver.'
                                   properties:
                                     fsType:
                                       description: 'fsType is filesystem type to mount.
@@ -9965,6 +10161,14 @@ objects:
                               type: array
                             image:
                               description: Configurable image
+                              type: string
+                            memoryLimit:
+                              description: Memory limit for the otel collector container
+                                (e.g., "1024Mi")
+                              type: string
+                            memoryRequest:
+                              description: Memory request for the otel collector container
+                                (e.g., "512Mi")
                               type: string
                           required:
                           - enabled
