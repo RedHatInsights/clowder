@@ -12,7 +12,7 @@ require (
 	github.com/cert-manager/cert-manager v1.12.14
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
-	github.com/kedacore/keda/v2 v2.8.1
+	github.com/kedacore/keda/v2 v2.17.2
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.88
 	github.com/onsi/ginkgo/v2 v2.23.4
@@ -26,11 +26,11 @@ require (
 	k8s.io/apimachinery v0.33.0
 	k8s.io/client-go v0.33.0
 	sigs.k8s.io/cluster-api v1.7.2
-	sigs.k8s.io/controller-runtime v0.19.1
+	sigs.k8s.io/controller-runtime v0.19.7
 )
 
 require (
-	cel.dev/expr v0.19.1 // indirect
+	cel.dev/expr v0.19.2 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
@@ -55,13 +55,14 @@ require (
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
-	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
+	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
+	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
+	github.com/expr-lang/expr v1.17.2 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/go-errors/errors v1.4.2 // indirect
+	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-openapi/jsonpointer v0.22.0 // indirect
@@ -78,7 +79,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.24.0 // indirect
 	github.com/go-openapi/swag/typeutils v0.24.0 // indirect
 	github.com/go-openapi/swag/yamlutils v0.24.0 // indirect
-	github.com/go-sql-driver/mysql v1.7.1 // indirect
+	github.com/go-sql-driver/mysql v1.9.1 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
@@ -149,7 +150,7 @@ require (
 	github.com/smallstep/scep v0.0.0-20250318231241-a25cabb69492 // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
-	github.com/spf13/cast v1.7.0 // indirect
+	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
@@ -183,7 +184,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250922171735-9219d122eba9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250908214217-97024824d090 // indirect
-	google.golang.org/grpc v1.71.0 // indirect
+	google.golang.org/grpc v1.71.1 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -192,15 +193,15 @@ require (
 	howett.net/plist v1.0.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
-	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
-	knative.dev/pkg v0.0.0-20220826162920-93b66e6a8700 // indirect
+	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
+	knative.dev/pkg v0.0.0-20250326102644-9f3e60a9244c // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250626154428-7fd020cb5fc3 // indirect
-	sigs.k8s.io/controller-tools v0.16.4 // indirect
+	sigs.k8s.io/controller-tools v0.16.5 // indirect
 	sigs.k8s.io/gateway-api v0.7.0 // indirect
-	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
+	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 	sigs.k8s.io/kustomize/api v0.20.1 // indirect
 	sigs.k8s.io/kustomize/cmd/config v0.20.1 // indirect
-	sigs.k8s.io/kustomize/kustomize/v5 v5.5.0 // indirect
+	sigs.k8s.io/kustomize/kustomize/v5 v5.6.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.20.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
