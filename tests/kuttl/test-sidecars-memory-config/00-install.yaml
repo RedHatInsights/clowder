@@ -1,0 +1,170 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-sidecars-memory-config
+spec:
+  finalizers:
+  - kubernetes
+---
+# ClowdEnvironment with default memory settings at environment level
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-memory-default
+spec:
+  targetNamespace: test-sidecars-memory-config
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    sidecars:
+      otelCollector:
+        enabled: true
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+# ClowdEnvironment with custom memory settings at environment level
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-memory-env-level
+spec:
+  targetNamespace: test-sidecars-memory-config
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    sidecars:
+      otelCollector:
+        enabled: true
+        memoryRequest: "256Mi"
+        memoryLimit: "768Mi"
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+# ConfigMap for otel collector configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-default-otel-config
+  namespace: test-sidecars-memory-config
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:10000
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 128
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:9999"
+        namespace: test-sidecars-memory-config
+        metric_expiration: 60m
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-env-level-otel-config
+  namespace: test-sidecars-memory-config
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:10000
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 128
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:9999"
+        namespace: test-sidecars-memory-config
+        metric_expiration: 60m
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-override-otel-config
+  namespace: test-sidecars-memory-config
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:10000
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 512
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:9999"
+        namespace: test-sidecars-memory-config
+        metric_expiration: 60m
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus]

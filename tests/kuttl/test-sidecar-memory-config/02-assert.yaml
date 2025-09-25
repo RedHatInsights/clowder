@@ -1,0 +1,36 @@
+---
+# Verify deployment exists with environment-level memory settings
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-env-processor
+  namespace: test-sidecar-memory-env
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-app-env-processor
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        resources:
+          limits:
+            cpu: 500m
+            memory: "2048Mi"  # Environment-level memory limit
+          requests:
+            cpu: 250m
+            memory: "256Mi"   # Environment-level memory request
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: test-app-env-otel-config
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: test-app-env
+      - configMap:
+          defaultMode: 420
+          name: test-app-env-otel-config
+        name: test-app-env-otel-config
+

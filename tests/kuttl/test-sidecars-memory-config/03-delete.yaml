@@ -1,0 +1,45 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-default
+  namespace: test-sidecars-memory-config
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-level
+  namespace: test-sidecars-memory-config
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-override
+  namespace: test-sidecars-memory-config
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-partial-override
+  namespace: test-sidecars-memory-config
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-with-job
+  namespace: test-sidecars-memory-config
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-memory-default
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-memory-env-level
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-sidecars-memory-config

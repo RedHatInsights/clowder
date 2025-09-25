@@ -1,0 +1,98 @@
+---
+# ClowdApp using default memory settings (should use 512Mi request, 1024Mi limit)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-default
+  namespace: test-sidecars-memory-config
+spec:
+  envName: test-sidecars-memory-default
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            # No memory settings specified - should use defaults
+---
+# ClowdApp using environment-level memory settings (should use 256Mi request, 768Mi limit)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-env-level
+  namespace: test-sidecars-memory-config
+spec:
+  envName: test-sidecars-memory-env-level
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            # No memory settings specified - should use environment-level settings
+---
+# ClowdApp overriding memory settings at app level (should use 128Mi request, 2048Mi limit)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-override
+  namespace: test-sidecars-memory-config
+spec:
+  envName: test-sidecars-memory-env-level
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            memoryRequest: "128Mi"
+            memoryLimit: "2048Mi"
+---
+# ClowdApp with partial override (only memory request) - should use 64Mi request, 768Mi limit from env
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-partial-override
+  namespace: test-sidecars-memory-config
+spec:
+  envName: test-sidecars-memory-env-level
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            memoryRequest: "64Mi"
+            # memoryLimit not specified - should use environment-level limit
+---
+# ClowdApp with job also testing memory settings
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-with-job
+  namespace: test-sidecars-memory-config
+spec:
+  envName: test-sidecars-memory-default
+  deployments:
+    - name: worker
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            memoryRequest: "256Mi"
+            memoryLimit: "512Mi"
+  jobs:
+    - name: migration
+      schedule: "0 2 * * *"
+      podSpec:
+        image: quay.io/cloudservices/iqe-tests:latest
+        sidecars:
+          - name: otel-collector
+            enabled: true
+            memoryRequest: "128Mi"
+            memoryLimit: "256Mi"
