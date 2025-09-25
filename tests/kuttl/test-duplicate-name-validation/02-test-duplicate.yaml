@@ -1,0 +1,12 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app
+  namespace: test-duplicate-name-validation-2
+spec:
+  envName: test-duplicate-name-validation
+  deployments:
+  - name: different-processor
+    podSpec:
+      image: quay.io/psav/clowder-hello 
