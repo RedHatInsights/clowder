@@ -10,7 +10,7 @@ require (
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
 	github.com/caddyserver/caddy/v2 v2.9.1
 	github.com/cert-manager/cert-manager v1.12.14
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.8.1
 	github.com/lib/pq v1.10.9
@@ -159,6 +159,8 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/zeebo/blake3 v0.2.4 // indirect
 	go.etcd.io/bbolt v1.3.11 // indirect
+	go.opentelemetry.io/otel v1.37.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.step.sm/cli-utils v0.9.0 // indirect
 	go.step.sm/crypto v0.45.0 // indirect
 	go.step.sm/linkedca v0.20.1 // indirect
