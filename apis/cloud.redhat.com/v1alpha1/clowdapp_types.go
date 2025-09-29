@@ -151,6 +151,9 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
+	// Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting)
+	TLS *bool `json:"tls,omitempty"`
+
 	// (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from.
 	APIPath string `json:"apiPath,omitempty"`
 
@@ -174,6 +177,9 @@ type PrivateWebService struct {
 	// Enabled describes if Clowder should enable the private service and provide the
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
+
+	// Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting)
+	TLS *bool `json:"tls,omitempty"`
 
 	// AppProtocol determines the protocol to be used for the private port, (defaults to http)
 	AppProtocol AppProtocol `json:"appProtocol,omitempty"`

@@ -122,8 +122,13 @@ type GatewayCert struct {
 
 // TLS defines TLS configuration settings
 type TLS struct {
-	Enabled     bool  `json:"enabled,omitempty"`
-	Port        int32 `json:"port,omitempty"`
+	// Determines whether TLS is enabled for ClowdApp deployments by default
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Sets the port exposed for ClowdApp deployments' TLS connections
+	Port int32 `json:"port,omitempty"`
+
+	// Sets the private port exposed for ClowdApp deployments' TLS connections
 	PrivatePort int32 `json:"privatePort,omitempty"`
 }
 

@@ -103,6 +103,11 @@ spec:
                                 Enabled describes if Clowder should enable the private service and provide the
                                 configuration in the cdappconfig.
                               type: boolean
+                            tls:
+                              description: Determines whether TLS is enabled for the
+                                private web service (if defined, overrides ClowdEnvironment
+                                setting)
+                              type: boolean
                           type: object
                         public:
                           description: |-
@@ -133,6 +138,11 @@ spec:
                             sessionAffinity:
                               description: Set SessionAffinity to true to enable sticky
                                 sessions
+                              type: boolean
+                            tls:
+                              description: Determines whether TLS is enabled for the
+                                public web service (if defined, overrides ClowdEnvironment
+                                setting)
                               type: boolean
                             whitelistPaths:
                               description: WhitelistPaths define the paths that do
