@@ -1,0 +1,52 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+# Wait for and extract the clowdapp-tls-enabled configuration
+- script: for i in {1..10}; do kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-enabled && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-enabled -o json > /tmp/test-tls-enabled-secret
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-tls-enabled-secret | base64 -d > /tmp/test-tls-enabled-json
+
+# Wait for and extract the clowdapp-tls-disabled configuration
+- script: for i in {1..10}; do kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-disabled && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-disabled -o json > /tmp/test-tls-disabled-secret
+- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-tls-disabled-secret | base64 -d > /tmp/test-tls-disabled-json
+
+# Verify clowdapp-tls-enabled has TLS ports configured
+- script: jq -r '.publicPort == 8000' -e < /tmp/test-tls-enabled-json
+- script: jq -r '.privatePort == 10000' -e < /tmp/test-tls-enabled-json
+- script: jq -r '.metricsPort == 9000' -e < /tmp/test-tls-enabled-json
+- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-tls-enabled-json
+- script: jq -r '.endpoints[0].port == 8000' -e < /tmp/test-tls-enabled-json
+- script: jq -r '.privateEndpoints[0].port == 10000' -e < /tmp/test-tls-enabled-json
+# These should have TLS ports configured since TLS is enabled
+- script: jq -r '.endpoints[0].tlsPort == 8800' -e < /tmp/test-tls-enabled-json
+- script: jq -r '.privateEndpoints[0].tlsPort == 18800' -e < /tmp/test-tls-enabled-json
+# Check that TLS CA path is set
+- script: jq -r '.tlsCAPath == "/cdapp/certs/service-ca.crt"' -e < /tmp/test-tls-enabled-json
+
+# Verify clowdapp-tls-disabled has regular ports but NO TLS ports
+- script: jq -r '.publicPort == 8000' -e < /tmp/test-tls-disabled-json
+- script: jq -r '.privatePort == 10000' -e < /tmp/test-tls-disabled-json
+- script: jq -r '.metricsPort == 9000' -e < /tmp/test-tls-disabled-json
+- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-tls-disabled-json
+# These should NOT have TLS ports since TLS is disabled by environment default
+- script: jq -r '.endpoints[0].tlsPort' < /tmp/test-tls-disabled-json | grep -q "null"
+- script: jq -r '.privateEndpoints[0].tlsPort' < /tmp/test-tls-disabled-json | grep -q "null"
+# TLS CA path should not be set when TLS is disabled
+- script: jq -r '.tlsCAPath' < /tmp/test-tls-disabled-json | grep -q "null"
+
+# Verify dependencies are properly configured in clowdapp-tls-disabled
+# It should have clowdapp-tls-enabled as a dependency with TLS ports
+- script: jq -r '.endpoints | length == 2' -e < /tmp/test-tls-disabled-json
+- script: jq -r '.privateEndpoints | length == 2' -e < /tmp/test-tls-disabled-json
+# Check dependency endpoint has TLS port (from clowdapp-tls-enabled)
+- script: jq -r '.endpoints[] | select(.name == "clowdapp-tls-enabled-processor") | .tlsPort == 8800' -e < /tmp/test-tls-disabled-json
+- script: jq -r '.privateEndpoints[] | select(.name == "clowdapp-tls-enabled-processor") | .tlsPort == 18800' -e < /tmp/test-tls-disabled-json
+# Check dependency endpoint hostname
+- script: jq -r '.endpoints[] | select(.name == "clowdapp-tls-enabled-processor") | .hostname == "clowdapp-tls-enabled-processor.test-tls-web-services-app-overrides.svc"' -e < /tmp/test-tls-disabled-json
+- script: jq -r '.privateEndpoints[] | select(.name == "clowdapp-tls-enabled-processor") | .hostname == "clowdapp-tls-enabled-processor.test-tls-web-services-app-overrides.svc"' -e < /tmp/test-tls-disabled-json
+
+# Debug output for troubleshooting (optional - can be removed)
+- script: echo "=== clowdapp-tls-enabled config ===" && cat /tmp/test-tls-enabled-json
+- script: echo "=== clowdapp-tls-disabled config ===" && cat /tmp/test-tls-disabled-json
