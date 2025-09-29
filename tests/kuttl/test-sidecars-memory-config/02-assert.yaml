@@ -13,9 +13,9 @@ spec:
           image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
           resources:
             requests:
-              memory: "512Mi"  # Default memory request
+              memory: "32Mi"  # Default memory request
             limits:
-              memory: "1Gi"  # Default memory limit (1024Mi normalized to 1Gi)
+              memory: "64Mi"  # Default memory limit
           volumeMounts:
             - name: test-app-default-otel-config
               mountPath: /etc/otelcol/
@@ -44,9 +44,9 @@ spec:
           image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
           resources:
             requests:
-              memory: "256Mi"  # Environment-level memory request
+              memory: "16Mi"  # Environment-level memory request
             limits:
-              memory: "768Mi"  # Environment-level memory limit
+              memory: "48Mi"  # Environment-level memory limit
           volumeMounts:
             - name: test-app-env-level-otel-config
               mountPath: /etc/otelcol/
@@ -75,9 +75,9 @@ spec:
           image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
           resources:
             requests:
-              memory: "128Mi"  # App-level override memory request
+              memory: "8Mi"  # App-level override memory request
             limits:
-              memory: "2Gi"  # App-level override memory limit (2048Mi normalized to 2Gi)
+              memory: "128Mi"  # App-level override memory limit
           volumeMounts:
             - name: test-app-override-otel-config
               mountPath: /etc/otelcol/
@@ -106,9 +106,9 @@ spec:
           image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
           resources:
             requests:
-              memory: "64Mi"  # App-level override memory request
+              memory: "4Mi"  # App-level override memory request
             limits:
-              memory: "768Mi"  # Environment-level memory limit (no app override)
+              memory: "48Mi"  # Environment-level memory limit (no app override)
           volumeMounts:
             - name: test-app-partial-override-otel-config
               mountPath: /etc/otelcol/
@@ -137,9 +137,9 @@ spec:
           image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
           resources:
             requests:
-              memory: "256Mi"  # App-level override memory request
+              memory: "24Mi"  # App-level override memory request
             limits:
-              memory: "512Mi"  # App-level override memory limit
+              memory: "32Mi"  # App-level override memory limit
           volumeMounts:
             - name: test-app-with-job-otel-config
               mountPath: /etc/otelcol/
@@ -172,9 +172,9 @@ spec:
             image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
             resources:
               requests:
-                memory: "128Mi"  # App-level override memory request for job
+                memory: "12Mi"  # App-level override memory request for job
               limits:
-                memory: "256Mi"  # App-level override memory limit for job
+                memory: "16Mi"  # App-level override memory limit for job
             volumeMounts:
             - mountPath: /etc/otelcol/
               name: test-app-with-job-otel-config

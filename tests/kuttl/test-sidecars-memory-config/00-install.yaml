@@ -71,8 +71,8 @@ spec:
     sidecars:
       otelCollector:
         enabled: true
-        memoryRequest: "256Mi"
-        memoryLimit: "768Mi"
+        memoryRequest: "16Mi"
+        memoryLimit: "48Mi"
   resourceDefaults:
     limits:
       cpu: 400m
