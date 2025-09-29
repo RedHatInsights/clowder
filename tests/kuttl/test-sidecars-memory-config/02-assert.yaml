@@ -13,9 +13,9 @@ spec:
           image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
           resources:
             requests:
-              memory: "32Mi"  # Default memory request
+              memory: "512Mi"  # Default memory request
             limits:
-              memory: "64Mi"  # Default memory limit
+              memory: "1Gi"  # Default memory limit (1024Mi normalized to 1Gi)
           volumeMounts:
             - name: test-app-default-otel-config
               mountPath: /etc/otelcol/

@@ -1,5 +1,5 @@
 ---
-# ClowdApp using default memory settings (should use 32Mi request, 64Mi limit)
+# ClowdApp using default memory settings (should use 512Mi request, 1Gi limit)
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
