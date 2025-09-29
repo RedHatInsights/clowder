@@ -15,7 +15,7 @@ spec:
             requests:
               memory: "512Mi"  # Default memory request
             limits:
-              memory: "1024Mi"  # Default memory limit
+              memory: "1Gi"  # Default memory limit (1024Mi normalized to 1Gi)
           volumeMounts:
             - name: test-app-default-otel-config
               mountPath: /etc/otelcol/
