@@ -90,6 +90,6 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
-func (web *webProvider) populateCA() error {
+func (web *webProvider) populateCA() {
 	web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
 }
