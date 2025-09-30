@@ -1347,6 +1347,8 @@ _Appears in:_
 | `image` _string_ | Configurable image |  |  |
 | `configMap` _string_ | Configurable shared ConfigMap name (optional) |  |  |
 | `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the otel collector container |  |  |
+| `memoryRequest` _string_ | Memory request for the otel collector container (e.g., "512Mi") |  |  |
+| `memoryLimit` _string_ | Memory limit for the otel collector container (e.g., "1024Mi") |  |  |
 
 
 #### PodSpec
@@ -1596,6 +1598,8 @@ _Appears in:_
 | `image` _string_ | Configurable image for the sidecar |  |  |
 | `configMap` _string_ | Configurable shared ConfigMap name for the sidecar |  |  |
 | `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the sidecar container (app-level overrides) |  |  |
+| `memoryRequest` _string_ | Memory request for the sidecar container (e.g., "512Mi") |  |  |
+| `memoryLimit` _string_ | Memory limit for the sidecar container (e.g., "1024Mi") |  |  |
 
 
 #### Sidecars

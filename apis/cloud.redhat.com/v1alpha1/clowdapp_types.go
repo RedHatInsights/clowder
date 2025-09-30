@@ -290,6 +290,12 @@ type Sidecar struct {
 
 	// Environment variables to be set in the sidecar container (app-level overrides)
 	EnvVars []EnvVar `json:"envVars,omitempty"`
+
+	// Memory request for the sidecar container (e.g., "512Mi")
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+
+	// Memory limit for the sidecar container (e.g., "1024Mi")
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 }
 
 // PodspecMetadata defines metadata for applying annotations etc to PodSpec
