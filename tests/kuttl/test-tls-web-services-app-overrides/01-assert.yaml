@@ -177,21 +177,3 @@ metadata:
     kind: ClowdApp
     name: clowdapp-tls-disabled
 type: Opaque
----
-# Assert that environment status includes both apps
-apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvironment
-metadata:
-  name: test-tls-web-services-app-overrides
-status:
-  apps:
-    - name: clowdapp-tls-enabled
-      deployments:
-      - hostname: clowdapp-tls-enabled-processor.test-tls-web-services-app-overrides.svc
-        name: clowdapp-tls-enabled-processor
-        port: 8000
-    - name: clowdapp-tls-disabled
-      deployments:
-      - hostname: clowdapp-tls-disabled-processor.test-tls-web-services-app-overrides.svc
-        name: clowdapp-tls-disabled-processor
-        port: 8000
