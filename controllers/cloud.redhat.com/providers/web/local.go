@@ -104,9 +104,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 	}
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
-	if err := web.populateCA(); err != nil {
-		return err
-	}
+	// 'true' if TLS is enabled for 1 or more deployments on this ClowdApp
+	var tlsEnabled bool
 
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
@@ -154,7 +153,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if web.Env.Spec.Providers.Web.TLS.Enabled {
+		if isPublicTLSEnabled(&innerDeployment, web.Env) || isPrivateTLSEnabled(&innerDeployment, web.Env) {
+			tlsEnabled = true
 			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
 		}
 
@@ -172,6 +172,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
+	}
+
+	if tlsEnabled {
+		web.populateCA()
 	}
 
 	return nil
@@ -239,11 +243,8 @@ func (web *localWebProvider) createIngress(app *crd.ClowdApp, deployment *crd.De
 	return web.Cache.Update(WebIngress, netobj)
 }
 
-func (web *localWebProvider) populateCA() error {
-	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
-	}
-	return nil
+func (web *localWebProvider) populateCA() {
+	web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
 }
 
 func setSecretVersion(cache *rc.ObjectCache, nn types.NamespacedName, desiredVersion string) error {
