@@ -122,8 +122,13 @@ type GatewayCert struct {
 
 // TLS defines TLS configuration settings
 type TLS struct {
-	Enabled     bool  `json:"enabled,omitempty"`
-	Port        int32 `json:"port,omitempty"`
+	// Determines whether TLS is enabled for ClowdApp deployments by default
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Sets the port exposed for ClowdApp deployments' TLS connections
+	Port int32 `json:"port,omitempty"`
+
+	// Sets the private port exposed for ClowdApp deployments' TLS connections
 	PrivatePort int32 `json:"privatePort,omitempty"`
 }
 
@@ -545,6 +550,10 @@ type OtelCollectorConfig struct {
 	ConfigMap string `json:"configMap,omitempty"`
 	// Environment variables to be set in the otel collector container
 	EnvVars []EnvVar `json:"envVars,omitempty"`
+	// Memory request for the otel collector container (e.g., "512Mi")
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+	// Memory limit for the otel collector container (e.g., "1024Mi")
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 }
 
 // EnvVar represents an environment variable present in a Container.

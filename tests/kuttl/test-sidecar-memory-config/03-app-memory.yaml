@@ -1,0 +1,79 @@
+---
+# Test ClowdApp-level memory configuration
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecar-memory-app
+spec:
+  targetNamespace: test-sidecar-memory-app
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    sidecars:
+      otelCollector:
+        enabled: true
+        # No environment-level memory settings - should use defaults if not overridden
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-app
+  namespace: test-sidecar-memory-app
+spec:
+  envName: test-sidecar-memory-app
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      sidecars:
+        - name: otel-collector
+          enabled: true
+          memoryRequest: "128Mi"  # Custom app-level memory request
+          memoryLimit: "4096Mi"   # Custom app-level memory limit
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-app-app-otel-config
+  namespace: test-sidecar-memory-app
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      batch:
+    exporters:
+      logging:
+        loglevel: debug
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging]
+
