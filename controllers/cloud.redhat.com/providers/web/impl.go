@@ -23,6 +23,20 @@ var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Servi
 // CoreCaddyConfigMap represents the resource identifier for core Caddy configuration maps
 var CoreCaddyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_caddy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
+func isPublicTLSEnabled(deployment *crd.Deployment, env *crd.ClowdEnvironment) bool {
+	if deployment.WebServices.Public.TLS != nil {
+		return *deployment.WebServices.Public.TLS
+	}
+	return env.Spec.Providers.Web.TLS.Enabled
+}
+
+func isPrivateTLSEnabled(deployment *crd.Deployment, env *crd.ClowdEnvironment) bool {
+	if deployment.WebServices.Private.TLS != nil {
+		return *deployment.WebServices.Private.TLS
+	}
+	return env.Spec.Providers.Web.TLS.Enabled
+}
+
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
@@ -116,48 +130,48 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		)
 	}
 
-	var pub, priv bool
+	var pubTLS, privTLS bool
 	var pubPort, privPort int32
-	if env.Spec.Providers.Web.TLS.Enabled {
-		if deployment.WebServices.Public.Enabled {
-			tlsPort := core.ServicePort{
-				Name:        "tls",
-				Port:        env.Spec.Providers.Web.TLS.Port,
+
+	if isPublicTLSEnabled(deployment, env) && deployment.WebServices.Public.Enabled {
+		tlsPort := core.ServicePort{
+			Name:        "tls",
+			Port:        env.Spec.Providers.Web.TLS.Port,
+			Protocol:    "TCP",
+			AppProtocol: &appProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
+		}
+		servicePorts = append(servicePorts, tlsPort)
+		pubTLS = true
+		pubPort = int32(env.Spec.Providers.Web.TLS.Port)
+	}
+
+	if isPrivateTLSEnabled(deployment, env) && deployment.WebServices.Private.Enabled {
+		appProtocolPriv := "http"
+		if deployment.WebServices.Private.AppProtocol != "" {
+			appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
+		}
+
+		if appProtocolPriv == "http" {
+			tlsPrivatePort := core.ServicePort{
+				Name:        "tls-private",
+				Port:        env.Spec.Providers.Web.TLS.PrivatePort,
 				Protocol:    "TCP",
-				AppProtocol: &appProtocol,
-				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
+				AppProtocol: &appProtocolPriv,
+				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
 			}
-			servicePorts = append(servicePorts, tlsPort)
-			pub = true
-			pubPort = int32(env.Spec.Providers.Web.TLS.Port)
+			servicePorts = append(servicePorts, tlsPrivatePort)
+			privTLS = true
+			privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
 		}
-		if deployment.WebServices.Private.Enabled {
-			appProtocolPriv := "http"
-			if deployment.WebServices.Private.AppProtocol != "" {
-				appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
-			}
+	}
 
-			if appProtocolPriv == "http" {
-				tlsPrivatePort := core.ServicePort{
-					Name:        "tls-private",
-					Port:        env.Spec.Providers.Web.TLS.PrivatePort,
-					Protocol:    "TCP",
-					AppProtocol: &appProtocolPriv,
-					TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
-				}
-				servicePorts = append(servicePorts, tlsPrivatePort)
-				priv = true
-				privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
-			}
+	if privTLS || pubTLS {
+		if err := generateCaddyConfigMap(cache, nn, app, pubTLS, privTLS, pubPort, privPort, env); err != nil {
+			return err
 		}
-
-		if priv || pub {
-			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
-				return err
-			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv, env)
-			setServiceTLSAnnotations(s, nn.Name)
-		}
+		populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pubTLS, privTLS, env)
+		setServiceTLSAnnotations(s, nn.Name)
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())
