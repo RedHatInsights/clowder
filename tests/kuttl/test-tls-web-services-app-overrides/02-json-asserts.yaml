@@ -31,12 +31,9 @@ commands:
 - script: jq -r '.metricsPort == 9000' -e < /tmp/test-tls-disabled-json
 - script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-tls-disabled-json
 
-# TODO: turns out Clowder always provides the TLS port if its present in the ClowdEnvironment
-# We will need to determine if apps need to see '0' for this case, if so, uncomment the below
-#
 # These should NOT have TLS ports since TLS is disabled by environment default
-#- script: jq -r '.endpoints[0].tlsPort' < /tmp/test-tls-disabled-json | grep -q "null"
-#- script: jq -r '.privateEndpoints[0].tlsPort' < /tmp/test-tls-disabled-json | grep -q "null"
+- script: jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled")' | .tlsPort == 0' < /tmp/test-tls-disabled-json
+- script: jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled")' | .tlsPort == 0' < /tmp/test-tls-disabled-json
 
 # TLS CA path should not be set when TLS is disabled
 - script: jq -r '.tlsCAPath' < /tmp/test-tls-disabled-json | grep -q "null"
