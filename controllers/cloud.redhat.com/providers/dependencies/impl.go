@@ -24,6 +24,15 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	// Process self endpoints
 	appMap := map[string]crd.ClowdApp{app.Name: *app}
 	appRefMap := map[string]crd.ClowdAppRef{} // empty since we're only processing self
+
+	// Avoid mapping ports when TLS is false
+	tlsPort := int32(0)
+	tlsPrivPort := int32(0)
+	if dep.Env.Spec.Providers.Web.TLS.Enabled {
+		tlsPort = dep.Env.Spec.Providers.Web.TLS.Port
+		tlsPrivPort = dep.Env.Spec.Providers.Web.TLS.PrivatePort
+	}
+
 	_ = processAppAndAppRefEndpoints(
 		appMap,
 		appRefMap,
@@ -31,9 +40,9 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		dep.Env.Spec.Providers.Web.Port,
-		dep.Env.Spec.Providers.Web.TLS.Port,
+		tlsPort,
 		dep.Env.Spec.Providers.Web.PrivatePort,
-		dep.Env.Spec.Providers.Web.TLS.PrivatePort,
+		tlsPrivPort,
 	)
 
 	// Return if no deps
@@ -67,9 +76,9 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		dep.Env.Spec.Providers.Web.Port,
-		dep.Env.Spec.Providers.Web.TLS.Port,
+		tlsPort,
 		dep.Env.Spec.Providers.Web.PrivatePort,
-		dep.Env.Spec.Providers.Web.TLS.PrivatePort,
+		tlsPrivPort,
 		app,
 		apps,
 		appRefs,
