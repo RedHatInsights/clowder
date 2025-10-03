@@ -964,11 +964,17 @@ spec:
                         description: TLS sidecar enablement
                         properties:
                           enabled:
+                            description: Determines whether TLS is enabled for ClowdApp
+                              deployments by default
                             type: boolean
                           port:
+                            description: Sets the port exposed for ClowdApp deployments'
+                              TLS connections
                             format: int32
                             type: integer
                           privatePort:
+                            description: Sets the private port exposed for ClowdApp
+                              deployments' TLS connections
                             format: int32
                             type: integer
                         type: object
