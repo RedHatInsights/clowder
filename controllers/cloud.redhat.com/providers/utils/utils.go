@@ -397,3 +397,24 @@ func AppendEnvVarsFromSecret(envvars []core.EnvVar, secName string, inputs ...Se
 	}
 	return envvars
 }
+
+// IsPublicTLSEnabled returns true if public TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+func IsPublicTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
+	if deploymentWebConfig.Public.TLS != nil {
+		return *deploymentWebConfig.Public.TLS
+	}
+	return envTLSConfig.Enabled
+}
+
+// IsPrivateTLSEnabled returns true if public TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+func IsPrivateTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
+	if deploymentWebConfig.Private.TLS != nil {
+		return *deploymentWebConfig.Private.TLS
+	}
+	return envTLSConfig.Enabled
+}
+
+// IsAnyTLSEnabled returns true if public OR private TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+func IsAnyTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
+	return IsPublicTLSEnabled(deploymentWebConfig, envTLSConfig) || IsPrivateTLSEnabled(deploymentWebConfig, envTLSConfig)
+}

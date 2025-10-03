@@ -16,8 +16,8 @@ const privatePort = 10000
 const tlsPrivatePort = 18800
 
 // makeWebCfg builds a WebConfig from the test constants
-func makeWebCfg() crd.WebConfig {
-	return crd.WebConfig{
+func makeWebCfg() *crd.WebConfig {
+	return &crd.WebConfig{
 		Port:        int32(webPort),
 		PrivatePort: int32(privatePort),
 		TLS: crd.TLS{
