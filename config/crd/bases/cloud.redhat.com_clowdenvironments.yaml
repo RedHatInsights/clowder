@@ -635,6 +635,14 @@ spec:
                           image:
                             description: Configurable image
                             type: string
+                          memoryLimit:
+                            description: Memory limit for the otel collector container
+                              (e.g., "1024Mi")
+                            type: string
+                          memoryRequest:
+                            description: Memory request for the otel collector container
+                              (e.g., "512Mi")
+                            type: string
                         required:
                         - enabled
                         type: object
@@ -683,7 +691,7 @@ spec:
                                   Claims lists the names of resources, defined in spec.resourceClaims,
                                   that are used by this container.
 
-                                  This is an alpha field and requires enabling the
+                                  This field depends on the
                                   DynamicResourceAllocation feature gate.
 
                                   This field is immutable. It can only be set for containers.
@@ -760,7 +768,7 @@ spec:
                                           Claims lists the names of resources, defined in spec.resourceClaims,
                                           that are used by this container.
 
-                                          This is an alpha field and requires enabling the
+                                          This field depends on the
                                           DynamicResourceAllocation feature gate.
 
                                           This field is immutable. It can only be set for containers.
@@ -956,11 +964,17 @@ spec:
                         description: TLS sidecar enablement
                         properties:
                           enabled:
+                            description: Determines whether TLS is enabled for ClowdApp
+                              deployments by default
                             type: boolean
                           port:
+                            description: Sets the port exposed for ClowdApp deployments'
+                              TLS connections
                             format: int32
                             type: integer
                           privatePort:
+                            description: Sets the private port exposed for ClowdApp
+                              deployments' TLS connections
                             format: int32
                             type: integer
                         type: object
@@ -984,7 +998,7 @@ spec:
                       Claims lists the names of resources, defined in spec.resourceClaims,
                       that are used by this container.
 
-                      This is an alpha field and requires enabling the
+                      This field depends on the
                       DynamicResourceAllocation feature gate.
 
                       This field is immutable. It can only be set for containers.
