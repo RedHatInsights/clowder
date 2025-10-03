@@ -32,8 +32,8 @@ commands:
 - script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-tls-disabled-json
 
 # These should NOT have TLS ports since TLS is disabled by environment default
-- script: jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled")' | .tlsPort == 0' < /tmp/test-tls-disabled-json
-- script: jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled")' | .tlsPort == 0' < /tmp/test-tls-disabled-json
+- script: jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled") | .tlsPort == 0' < /tmp/test-tls-disabled-json
+- script: jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled") | .tlsPort == 0' < /tmp/test-tls-disabled-json
 
 # TLS CA path should not be set when TLS is disabled
 - script: jq -r '.tlsCAPath' < /tmp/test-tls-disabled-json | grep -q "null"
