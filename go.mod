@@ -131,7 +131,7 @@ require (
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
-	github.com/quic-go/quic-go v0.52.0 // indirect
+	github.com/quic-go/quic-go v0.55.0 // indirect
 	github.com/redhatinsights/crcauthlib v0.4.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0 // indirect
@@ -163,7 +163,6 @@ require (
 	go.step.sm/crypto v0.45.0 // indirect
 	go.step.sm/linkedca v0.20.1 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	go.uber.org/mock v0.5.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap/exp v0.3.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
