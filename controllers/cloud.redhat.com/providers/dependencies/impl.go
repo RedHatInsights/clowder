@@ -25,24 +25,13 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	appMap := map[string]crd.ClowdApp{app.Name: *app}
 	appRefMap := map[string]crd.ClowdAppRef{} // empty since we're only processing self
 
-	// Avoid mapping ports when TLS is false
-	tlsPort := int32(0)
-	tlsPrivPort := int32(0)
-	if dep.Env.Spec.Providers.Web.TLS.Enabled {
-		tlsPort = dep.Env.Spec.Providers.Web.TLS.Port
-		tlsPrivPort = dep.Env.Spec.Providers.Web.TLS.PrivatePort
-	}
-
 	_ = processAppAndAppRefEndpoints(
 		appMap,
 		appRefMap,
 		[]string{app.Name},
 		&depConfig,
 		&privDepConfig,
-		dep.Env.Spec.Providers.Web.Port,
-		tlsPort,
-		dep.Env.Spec.Providers.Web.PrivatePort,
-		tlsPrivPort,
+		dep.Env.Spec.Providers.Web,
 	)
 
 	// Return if no deps
@@ -75,10 +64,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	missingDeps := makeDepConfig(
 		&depConfig,
 		&privDepConfig,
-		dep.Env.Spec.Providers.Web.Port,
-		tlsPort,
-		dep.Env.Spec.Providers.Web.PrivatePort,
-		tlsPrivPort,
+		dep.Env.Spec.Providers.Web,
 		app,
 		apps,
 		appRefs,
@@ -114,10 +100,7 @@ func (dep *dependenciesProvider) getAppRefsInEnv() (*crd.ClowdAppRefList, error)
 func makeDepConfig(
 	depConfig *[]config.DependencyEndpoint,
 	privDepConfig *[]config.PrivateDependencyEndpoint,
-	webPort int32,
-	tlsPort int32,
-	privatePort int32,
-	tlsPrivatePort int32,
+	webConfig crd.WebConfig,
 	app *crd.ClowdApp,
 	apps *crd.ClowdAppList,
 	appRefs *crd.ClowdAppRefList,
@@ -136,23 +119,27 @@ func makeDepConfig(
 		appRefMap[iappRef.Name] = *iappRef
 	}
 
-	missingDeps = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.Dependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
-	_ = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
+	missingDeps = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.Dependencies, depConfig, privDepConfig, webConfig)
+	_ = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, webConfig)
 
 	return missingDeps
 }
 
-func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd.ClowdApp, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, webPort int32, tlsPort int32, privatePort int32, tlsPrivatePort int32) {
+func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd.ClowdApp, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, webConfig crd.WebConfig) {
 	apiPaths := provutils.GetAPIPaths(innerDeployment, depApp.GetDeploymentNamespacedName(innerDeployment).Name)
 
 	if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
 		name := depApp.GetDeploymentNamespacedName(innerDeployment).Name
+		tlsPort := int(0)
+		if isTlsEnabled(webConfig, innerDeployment.WebServices) {
+			tlsPort = int(webConfig.TLS.Port)
+		}
 		*depConfig = append(*depConfig, config.DependencyEndpoint{
 			Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 			Port:     int(webPort),
 			Name:     innerDeployment.Name,
 			App:      depApp.Name,
-			TlsPort:  utils.IntPtr(int(tlsPort)),
+			TlsPort:  utils.IntPtr(tlsPort),
 			// if app has multiple paths set, set apiPath to first name for backward compatibility
 			ApiPath:  apiPaths[0],
 			ApiPaths: apiPaths,
@@ -160,38 +147,45 @@ func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd
 	}
 	if innerDeployment.WebServices.Private.Enabled {
 		name := depApp.GetDeploymentNamespacedName(innerDeployment).Name
+		tlsPrivatePort := int(0)
+		if isTlsEnabled(webConfig, innerDeployment.WebServices) {
+			tlsPrivatePort = int(webConfig.TLS.Port)
+		}
 		*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
 			Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
 			Port:     int(privatePort),
 			Name:     innerDeployment.Name,
 			App:      depApp.Name,
-			TlsPort:  utils.IntPtr(int(tlsPrivatePort)),
+			TlsPort:  utils.IntPtr(tlsPrivatePort),
 		})
 	}
 }
 
-func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployment, depAppRef crd.ClowdAppRef, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, webPort int32, tlsPort int32, privatePort int32, tlsPrivatePort int32) {
+func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployment, depAppRef crd.ClowdAppRef, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, webConfig crd.WebConfig) {
 	apiPaths := provutils.GetAPIPaths(innerDeployment, fmt.Sprintf("%s-%s", depAppRef.Name, innerDeployment.Name))
 
 	// Use the configured ports from the ClowdAppRef, or fall back to defaults
-	deploymentPort := webPort
+	deploymentPort := webConfig.Port
 	if depAppRef.Spec.RemoteEnvironment.Port != 0 {
 		deploymentPort = depAppRef.Spec.RemoteEnvironment.Port
 	}
 
-	deploymentTLSPort := tlsPort
-	if depAppRef.Spec.RemoteEnvironment.TLSPort != 0 {
-		deploymentTLSPort = depAppRef.Spec.RemoteEnvironment.TLSPort
-	}
-
-	deploymentPrivatePort := privatePort
+	deploymentPrivatePort := webConfig.PrivatePort
 	if depAppRef.Spec.RemoteEnvironment.PrivatePort != 0 {
 		deploymentPrivatePort = depAppRef.Spec.RemoteEnvironment.PrivatePort
 	}
 
-	deploymentTLSPrivatePort := tlsPrivatePort
-	if depAppRef.Spec.RemoteEnvironment.TLSPrivatePort != 0 {
-		deploymentTLSPrivatePort = depAppRef.Spec.RemoteEnvironment.TLSPrivatePort
+	deploymentTLSPort := int32(0)
+	deploymentTLSPrivatePort := int32(0)
+	if isTlsEnabled(webConfig, innerDeployment.WebServices) {
+		deploymentTLSPort = webConfig.TLS.Port
+		if depAppRef.Spec.RemoteEnvironment.TLSPort != 0 {
+			deploymentTLSPort = depAppRef.Spec.RemoteEnvironment.TLSPort
+		}
+		deploymentTLSPrivatePort = webConfig.TLS.PrivatePort
+		if depAppRef.Spec.RemoteEnvironment.TLSPrivatePort != 0 {
+			deploymentTLSPrivatePort = depAppRef.Spec.RemoteEnvironment.TLSPrivatePort
+		}
 	}
 
 	if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
@@ -223,10 +217,7 @@ func processAppAndAppRefEndpoints(
 	depList []string,
 	depConfig *[]config.DependencyEndpoint,
 	privDepConfig *[]config.PrivateDependencyEndpoint,
-	webPort int32,
-	tlsPort int32,
-	privatePort int32,
-	tlsPrivatePort int32,
+	webConfig crd.WebConfig,
 ) (missingDeps []string) {
 
 	missingDeps = []string{}
@@ -237,14 +228,14 @@ func processAppAndAppRefEndpoints(
 			for i := range depApp.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depApp.Spec.Deployments[i]
-				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
+				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, webConfig)
 			}
 		} else if depAppRef, exists := appRefMap[dep]; exists {
 			// If dependency exists in ClowdAppRef, configure endpoints for each deployment
 			for i := range depAppRef.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depAppRef.Spec.Deployments[i]
-				configureAppRefDependencyEndpoints(innerDeployment, depAppRef, depConfig, privDepConfig, webPort, tlsPort, privatePort, tlsPrivatePort)
+				configureAppRefDependencyEndpoints(innerDeployment, depAppRef, depConfig, privDepConfig, webConfig)
 			}
 		} else {
 			// If dependency is not found in ClowdApp or ClowdAppRef, mark as missing
@@ -253,4 +244,9 @@ func processAppAndAppRefEndpoints(
 	}
 
 	return missingDeps
+}
+
+func isTlsEnabled(webConfig crd.WebConfig, innerDeployment crd.WebServices) bool {
+	clowdAppTlsEnabled := innerDeployment.Public.TLS != nil && *innerDeployment.Public.TLS
+	return clowdAppTlsEnabled || webConfig.TLS.Enabled
 }

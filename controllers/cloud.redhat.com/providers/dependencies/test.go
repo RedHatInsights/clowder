@@ -15,6 +15,18 @@ const tlsPort = 8800
 const privatePort = 10000
 const tlsPrivatePort = 18800
 
+// makeWebCfg builds a WebConfig from the test constants
+func makeWebCfg() crd.WebConfig {
+	return crd.WebConfig{
+		Port:        int32(webPort),
+		PrivatePort: int32(privatePort),
+		TLS: crd.TLS{
+			Port:        int32(tlsPort),
+			PrivatePort: int32(tlsPrivatePort),
+		},
+	}
+}
+
 func defaultMetaObject() metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:      "reqapp",
@@ -69,7 +81,7 @@ func TestSingleDependency(t *testing.T) {
 	privDeps := []config.PrivateDependencyEndpoint{}
 	appRefs := &crd.ClowdAppRefList{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
+	missing := makeDepConfig(&deps, &privDeps, makeWebCfg(), &app, &apps, appRefs)
 
 	if len(missing) > 0 {
 		t.Errorf("We got a missing dep when there shouldn't have been one")
@@ -128,7 +140,7 @@ func TestMissingDependency(t *testing.T) {
 	privDeps := []config.PrivateDependencyEndpoint{}
 	appRefs := &crd.ClowdAppRefList{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
+	missing := makeDepConfig(&deps, &privDeps, makeWebCfg(), &app, &apps, appRefs)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -196,7 +208,7 @@ func TestOptionalDependency(t *testing.T) {
 	privDeps := []config.PrivateDependencyEndpoint{}
 	appRefs := &crd.ClowdAppRefList{}
 
-	makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
+	makeDepConfig(&deps, &privDeps, makeWebCfg(), &app, &apps, appRefs)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
@@ -291,7 +303,7 @@ func TestMultiDependency(t *testing.T) {
 	privDeps := []config.PrivateDependencyEndpoint{}
 	appRefs := &crd.ClowdAppRefList{}
 
-	missing := makeDepConfig(&deps, &privDeps, webPort, tlsPort, privatePort, tlsPrivatePort, &app, &apps, appRefs)
+	missing := makeDepConfig(&deps, &privDeps, makeWebCfg(), &app, &apps, appRefs)
 
 	if len(privDeps) > 0 {
 		t.Errorf("We got private deps we shouldn't have")
