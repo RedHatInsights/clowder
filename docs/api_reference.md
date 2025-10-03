@@ -280,9 +280,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _string_ | Name defines the name of the remote ClowdEnvironment |  |  |
 | `port` _integer_ | Port defines the port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
-| `tlsPort` _integer_ | TLSPort defines the TLS port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
 | `privatePort` _integer_ | PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
-| `tlsPrivatePort` _integer_ | TLSPrivatePort defines the TLS private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `tls` _[TLS](#tls)_ | TLS defines TLS configuration options for reaching deployments in the remote cluster (default: use same values as the ClowdEnvironment in local cluster) |  |  |
 
 
 #### ClowdAppRefSpec
@@ -1664,6 +1663,7 @@ TLS defines TLS configuration settings
 
 
 _Appears in:_
+- [ClowdAppRefRemoteEnvironment](#clowdapprefremoteenvironment)
 - [WebConfig](#webconfig)
 
 | Field | Description | Default | Validation |

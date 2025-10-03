@@ -50,7 +50,9 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			return errors.Wrap("making service", err)
 		}
 
-		if isPublicTLSEnabled(&innerDeployment, web.Env) || isPrivateTLSEnabled(&innerDeployment, web.Env) {
+		deploymentWebConfig := &innerDeployment.WebServices
+		envTLSConfig := &web.Env.Spec.Providers.Web.TLS
+		if provutils.IsAnyTLSEnabled(deploymentWebConfig, envTLSConfig) {
 			tlsEnabled = true
 			d := &apps.Deployment{}
 			dnn := app.GetDeploymentNamespacedName(&innerDeployment)

@@ -55,8 +55,8 @@ commands:
     fi
     echo "✅ auth-service port correct: $AUTH_PORT"
 
-    if [ "$AUTH_TLS_PORT" != "8443" ]; then
-        echo "❌ auth-service tlsPort incorrect: expected '8443', got '$AUTH_TLS_PORT'"
+    if [ "$AUTH_TLS_PORT" != "0" ]; then
+        echo "❌ auth-service tlsPort incorrect: expected '0', got '$AUTH_TLS_PORT'"
         exit 1
     fi
     echo "✅ auth-service tlsPort correct: $AUTH_TLS_PORT"

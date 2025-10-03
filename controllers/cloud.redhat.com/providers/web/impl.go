@@ -23,20 +23,6 @@ var CoreService = rc.NewMultiResourceIdent(ProvName, "core_service", &core.Servi
 // CoreCaddyConfigMap represents the resource identifier for core Caddy configuration maps
 var CoreCaddyConfigMap = rc.NewMultiResourceIdent(ProvName, "core_caddy_config_map", &core.ConfigMap{}, rc.ResourceOptions{WriteNow: true})
 
-func isPublicTLSEnabled(deployment *crd.Deployment, env *crd.ClowdEnvironment) bool {
-	if deployment.WebServices.Public.TLS != nil {
-		return *deployment.WebServices.Public.TLS
-	}
-	return env.Spec.Providers.Web.TLS.Enabled
-}
-
-func isPrivateTLSEnabled(deployment *crd.Deployment, env *crd.ClowdEnvironment) bool {
-	if deployment.WebServices.Private.TLS != nil {
-		return *deployment.WebServices.Private.TLS
-	}
-	return env.Spec.Providers.Web.TLS.Enabled
-}
-
 func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.ClowdApp, env *crd.ClowdEnvironment) error {
 
 	s := &core.Service{}
@@ -133,7 +119,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	var pubTLS, privTLS bool
 	var pubPort, privPort int32
 
-	if isPublicTLSEnabled(deployment, env) && deployment.WebServices.Public.Enabled {
+	if provutils.IsPublicTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Public.Enabled {
 		tlsPort := core.ServicePort{
 			Name:        "tls",
 			Port:        env.Spec.Providers.Web.TLS.Port,
@@ -146,7 +132,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		pubPort = int32(env.Spec.Providers.Web.TLS.Port)
 	}
 
-	if isPrivateTLSEnabled(deployment, env) && deployment.WebServices.Private.Enabled {
+	if provutils.IsPrivateTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Private.Enabled {
 		appProtocolPriv := "http"
 		if deployment.WebServices.Private.AppProtocol != "" {
 			appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)

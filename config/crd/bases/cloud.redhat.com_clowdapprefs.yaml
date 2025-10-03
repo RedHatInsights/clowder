@@ -194,18 +194,26 @@ spec:
                       as ClowdApps in the local cluster)'
                     format: int32
                     type: integer
-                  tlsPort:
-                    description: 'TLSPort defines the TLS port used to reach deployments
-                      in the remote cluster (default: use the same value as ClowdApps
-                      in the local cluster)'
-                    format: int32
-                    type: integer
-                  tlsPrivatePort:
-                    description: 'TLSPrivatePort defines the TLS private port used
-                      to reach deployments in the remote cluster (default: use the
-                      same value as ClowdApps in the local cluster)'
-                    format: int32
-                    type: integer
+                  tls:
+                    description: 'TLS defines TLS configuration options for reaching
+                      deployments in the remote cluster (default: use same values
+                      as the ClowdEnvironment in local cluster)'
+                    properties:
+                      enabled:
+                        description: Determines whether TLS is enabled for ClowdApp
+                          deployments by default
+                        type: boolean
+                      port:
+                        description: Sets the port exposed for ClowdApp deployments'
+                          TLS connections
+                        format: int32
+                        type: integer
+                      privatePort:
+                        description: Sets the private port exposed for ClowdApp deployments'
+                          TLS connections
+                        format: int32
+                        type: integer
+                    type: object
                 type: object
             required:
             - envName
