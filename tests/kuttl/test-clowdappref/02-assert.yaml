@@ -13,7 +13,13 @@ status:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdAppRef
 metadata:
-  name: remote-app
+  name: remote-app-tls
+  namespace: test-clowdappref
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: remote-app-no-tls
   namespace: test-clowdappref
 ---
 apiVersion: cloud.redhat.com/v1alpha1

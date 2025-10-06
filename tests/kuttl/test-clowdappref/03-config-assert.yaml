@@ -71,11 +71,12 @@ commands:
     fi
     echo "✅ auth-service (remote-app-tls) port correct: $AUTH_TLS_PORT"
 
-    if [ "$AUTH_TLS_TLS_PORT" != "8443" ]; then
-        echo "❌ auth-service (remote-app-tls) tlsPort incorrect: expected '8443', got '$AUTH_TLS_TLS_PORT'"
+    # auth-service does not have TLS enabled, so tlsPort should be 0
+    if [ "$AUTH_TLS_TLS_PORT" != "0" ]; then
+        echo "❌ auth-service (remote-app-tls) tlsPort incorrect: expected '0', got '$AUTH_TLS_TLS_PORT'"
         exit 1
     fi
-    echo "✅ auth-service (remote-app-tls) tlsPort correct: $AUTH_TLS_TLS_PORT"
+    echo "✅ auth-service (remote-app-tls) tlsPort correct (disabled): $AUTH_TLS_TLS_PORT"
 
     # Verify auth-service API paths for remote-app-tls (should have single path)
     AUTH_TLS_API_PATHS=$(echo "$AUTH_TLS_ENDPOINT" | jq -r '.apiPaths[]?' 2>/dev/null | wc -l)
