@@ -406,7 +406,7 @@ func IsPublicTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.
 	return envTLSConfig.Enabled
 }
 
-// IsPrivateTLSEnabled returns true if public TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+// IsPrivateTLSEnabled returns true if private TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
 func IsPrivateTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
 	if deploymentWebConfig.Private.TLS != nil {
 		return *deploymentWebConfig.Private.TLS
