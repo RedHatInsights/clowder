@@ -116,48 +116,48 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		)
 	}
 
-	var pub, priv bool
+	var pubTLS, privTLS bool
 	var pubPort, privPort int32
-	if env.Spec.Providers.Web.TLS.Enabled {
-		if deployment.WebServices.Public.Enabled {
-			tlsPort := core.ServicePort{
-				Name:        "tls",
-				Port:        env.Spec.Providers.Web.TLS.Port,
+
+	if provutils.IsPublicTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Public.Enabled {
+		tlsPort := core.ServicePort{
+			Name:        "tls",
+			Port:        env.Spec.Providers.Web.TLS.Port,
+			Protocol:    "TCP",
+			AppProtocol: &appProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
+		}
+		servicePorts = append(servicePorts, tlsPort)
+		pubTLS = true
+		pubPort = int32(env.Spec.Providers.Web.TLS.Port)
+	}
+
+	if provutils.IsPrivateTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Private.Enabled {
+		appProtocolPriv := "http"
+		if deployment.WebServices.Private.AppProtocol != "" {
+			appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
+		}
+
+		if appProtocolPriv == "http" {
+			tlsPrivatePort := core.ServicePort{
+				Name:        "tls-private",
+				Port:        env.Spec.Providers.Web.TLS.PrivatePort,
 				Protocol:    "TCP",
-				AppProtocol: &appProtocol,
-				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
+				AppProtocol: &appProtocolPriv,
+				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
 			}
-			servicePorts = append(servicePorts, tlsPort)
-			pub = true
-			pubPort = int32(env.Spec.Providers.Web.TLS.Port)
+			servicePorts = append(servicePorts, tlsPrivatePort)
+			privTLS = true
+			privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
 		}
-		if deployment.WebServices.Private.Enabled {
-			appProtocolPriv := "http"
-			if deployment.WebServices.Private.AppProtocol != "" {
-				appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
-			}
+	}
 
-			if appProtocolPriv == "http" {
-				tlsPrivatePort := core.ServicePort{
-					Name:        "tls-private",
-					Port:        env.Spec.Providers.Web.TLS.PrivatePort,
-					Protocol:    "TCP",
-					AppProtocol: &appProtocolPriv,
-					TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
-				}
-				servicePorts = append(servicePorts, tlsPrivatePort)
-				priv = true
-				privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
-			}
+	if privTLS || pubTLS {
+		if err := generateCaddyConfigMap(cache, nn, app, pubTLS, privTLS, pubPort, privPort, env); err != nil {
+			return err
 		}
-
-		if priv || pub {
-			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
-				return err
-			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv, env)
-			setServiceTLSAnnotations(s, nn.Name)
-		}
+		populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pubTLS, privTLS, env)
+		setServiceTLSAnnotations(s, nn.Name)
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())

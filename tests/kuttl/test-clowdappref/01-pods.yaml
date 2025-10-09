@@ -41,16 +41,51 @@ status:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdAppRef
 metadata:
-  name: remote-app
+  name: remote-app-tls
   namespace: test-clowdappref
 spec:
   envName: test-clowdappref
   remoteEnvironment:
     name: production
     port: 8080
-    tlsPort: 8443
     privatePort: 10000
-    tlsPrivatePort: 10443
+    tls:
+      port: 8443
+      privatePort: 10443
+  deployments:
+  - name: auth-service
+    hostname: auth.remote-cluster.example.com
+    web: true
+  - name: payment-service
+    hostname: payment.remote-cluster.example.com
+    webServices:
+      public:
+        tls: true
+        enabled: true
+        apiPaths:
+        - "/api/payment1/"
+        - "/api/payment2/"
+      private:
+        tls: true
+        enabled: true
+  remoteCluster:
+    name: remote-cluster
+    region: us-west-2
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: remote-app-no-tls
+  namespace: test-clowdappref
+spec:
+  envName: test-clowdappref
+  remoteEnvironment:
+    name: production
+    port: 8080
+    privatePort: 10000
+    tls:
+      port: 8443
+      privatePort: 10443
   deployments:
   - name: auth-service
     hostname: auth.remote-cluster.example.com
@@ -87,7 +122,8 @@ spec:
       private:
         enabled: true
   dependencies:
-    - remote-app
+    - remote-app-tls
+    - remote-app-no-tls
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -102,7 +138,8 @@ spec:
       image: quay.io/psav/clowder-hello
     web: true
   dependencies:
-    - remote-app
+    - remote-app-tls
+    - remote-app-no-tls
     - consumer-app
   optionalDependencies:
     - nonexistent-service

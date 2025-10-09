@@ -69,14 +69,11 @@ type ClowdAppRefRemoteEnvironment struct {
 	// Port defines the port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
 	Port int32 `json:"port,omitempty"`
 
-	// TLSPort defines the TLS port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
-	TLSPort int32 `json:"tlsPort,omitempty"`
-
 	// PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
 	PrivatePort int32 `json:"privatePort,omitempty"`
 
-	// TLSPrivatePort defines the TLS private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
-	TLSPrivatePort int32 `json:"tlsPrivatePort,omitempty"`
+	// TLS defines TLS configuration options for reaching deployments in the remote cluster (default: use same values as the ClowdEnvironment in local cluster)
+	TLS TLS `json:"tls,omitempty"`
 }
 
 // ClowdAppRefRemoteCluster defines information about the remote cluster
