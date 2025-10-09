@@ -280,9 +280,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _string_ | Name defines the name of the remote ClowdEnvironment |  |  |
 | `port` _integer_ | Port defines the port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
-| `tlsPort` _integer_ | TLSPort defines the TLS port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
 | `privatePort` _integer_ | PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
-| `tlsPrivatePort` _integer_ | TLSPrivatePort defines the TLS private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster) |  |  |
+| `tls` _[TLS](#tls)_ | TLS defines TLS configuration options for reaching deployments in the remote cluster (default: use same values as the ClowdEnvironment in local cluster) |  |  |
 
 
 #### ClowdAppRefSpec
@@ -1413,6 +1412,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled describes if Clowder should enable the private service and provide the<br />configuration in the cdappconfig. |  |  |
+| `tls` _boolean_ | Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting) |  |  |
 | `appProtocol` _[AppProtocol](#appprotocol)_ | AppProtocol determines the protocol to be used for the private port, (defaults to http) |  | Enum: [http http2 https tcp tls grpc grpc-web mongo mysql redis] <br /> |
 
 
@@ -1510,6 +1510,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled describes if Clowder should enable the public service and provide the<br />configuration in the cdappconfig. |  |  |
+| `tls` _boolean_ | Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting) |  |  |
 | `apiPath` _string_ | (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from. |  |  |
 | `apiPaths` _[APIPath](#apipath) array_ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from. |  | Pattern: `^\/api\/[a-zA-Z0-9-]+\/$` <br /> |
 | `whitelistPaths` _string array_ | WhitelistPaths define the paths that do not require authentication |  |  |
@@ -1662,13 +1663,14 @@ TLS defines TLS configuration settings
 
 
 _Appears in:_
+- [ClowdAppRefRemoteEnvironment](#clowdapprefremoteenvironment)
 - [WebConfig](#webconfig)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `enabled` _boolean_ |  |  |  |
-| `port` _integer_ |  |  |  |
-| `privatePort` _integer_ |  |  |  |
+| `enabled` _boolean_ | Determines whether TLS is enabled for ClowdApp deployments by default |  |  |
+| `port` _integer_ | Sets the port exposed for ClowdApp deployments' TLS connections |  |  |
+| `privatePort` _integer_ | Sets the private port exposed for ClowdApp deployments' TLS connections |  |  |
 
 
 #### TestingConfig
