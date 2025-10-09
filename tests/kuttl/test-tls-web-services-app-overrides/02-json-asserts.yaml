@@ -35,8 +35,8 @@ commands:
 - script: jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled") | .tlsPort == 0' < /tmp/test-tls-disabled-json
 - script: jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-tls-disabled") | .tlsPort == 0' < /tmp/test-tls-disabled-json
 
-# TLS CA path should not be set when TLS is disabled
-- script: jq -r '.tlsCAPath' < /tmp/test-tls-disabled-json | grep -q "null"
+# TLS CA path should be set on all ClowdApps, ensure it is also set on this ClowdApp
+- script: jq -r '.tlsCAPath == "/cdapp/certs/service-ca.crt"' -e < /tmp/test-tls-disabled-json
 
 # Verify dependencies are properly configured in clowdapp-tls-disabled
 # It should have clowdapp-tls-enabled as a dependency with TLS ports
