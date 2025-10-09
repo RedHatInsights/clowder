@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-tls-web-services-app-overrides
+spec:
+  finalizers:
+  - kubernetes

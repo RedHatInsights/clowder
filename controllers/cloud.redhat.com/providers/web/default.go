@@ -41,9 +41,8 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	}
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
-	if err := web.populateCA(); err != nil {
-		return errors.Wrap("populating ca", err)
-	}
+	// 'true' if TLS is enabled for 1 or more deployments on this ClowdApp
+	var tlsEnabled bool
 
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
@@ -51,7 +50,10 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			return errors.Wrap("making service", err)
 		}
 
-		if web.Env.Spec.Providers.Web.TLS.Enabled {
+		deploymentWebConfig := &innerDeployment.WebServices
+		envTLSConfig := &web.Env.Spec.Providers.Web.TLS
+		if provutils.IsAnyTLSEnabled(deploymentWebConfig, envTLSConfig) {
+			tlsEnabled = true
 			d := &apps.Deployment{}
 			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 
@@ -67,7 +69,9 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
-	if web.Env.Spec.Providers.Web.TLS.Enabled {
+	if tlsEnabled {
+		web.populateCA()
+
 		d := &batch.CronJobList{}
 
 		if err := web.Cache.List(provCronjob.CoreCronJob, d); err != nil {
@@ -88,9 +92,6 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
-func (web *webProvider) populateCA() error {
-	if web.Env.Spec.Providers.Web.TLS.Enabled {
-		web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
-	}
-	return nil
+func (web *webProvider) populateCA() {
+	web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
 }
