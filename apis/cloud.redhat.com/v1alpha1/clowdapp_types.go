@@ -151,6 +151,10 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
+	// H2CEnabled describes if Clowder should enable the public H2C service and provide the
+	// configuration in the cdappconfig.
+	H2CEnabled bool `json:"h2cEnabled,omitempty"`
+
 	// Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting)
 	TLS *bool `json:"tls,omitempty"`
 
@@ -177,6 +181,10 @@ type PrivateWebService struct {
 	// Enabled describes if Clowder should enable the private service and provide the
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
+
+	// H2CEnabled describes if Clowder should enable the private H2C service and provide the
+	// configuration in the cdappconfig.
+	H2CEnabled bool `json:"h2cEnabled,omitempty"`
 
 	// Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting)
 	TLS *bool `json:"tls,omitempty"`
