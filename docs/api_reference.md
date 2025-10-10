@@ -1412,6 +1412,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled describes if Clowder should enable the private service and provide the<br />configuration in the cdappconfig. |  |  |
+| `h2cEnabled` _boolean_ | H2CEnabled describes if Clowder should enable the private H2C service and provide the<br />configuration in the cdappconfig. |  |  |
 | `tls` _boolean_ | Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting) |  |  |
 | `appProtocol` _[AppProtocol](#appprotocol)_ | AppProtocol determines the protocol to be used for the private port, (defaults to http) |  | Enum: [http http2 https tcp tls grpc grpc-web mongo mysql redis] <br /> |
 
@@ -1510,6 +1511,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled describes if Clowder should enable the public service and provide the<br />configuration in the cdappconfig. |  |  |
+| `h2cEnabled` _boolean_ | H2CEnabled describes if Clowder should enable the public H2C service and provide the<br />configuration in the cdappconfig. |  |  |
 | `tls` _boolean_ | Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting) |  |  |
 | `apiPath` _string_ | (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from. |  |  |
 | `apiPaths` _[APIPath](#apipath) array_ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from. |  | Pattern: `^\/api\/[a-zA-Z0-9-]+\/$` <br /> |
@@ -1671,6 +1673,8 @@ _Appears in:_
 | `enabled` _boolean_ | Determines whether TLS is enabled for ClowdApp deployments by default |  |  |
 | `port` _integer_ | Sets the port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment. |  |  |
 | `privatePort` _integer_ | Sets the private port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment. |  |  |
+| `h2cPort` _integer_ | Sets the H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment. |  |  |
+| `h2cPrivatePort` _integer_ | Sets the private H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment. |  |  |
 
 
 #### TestingConfig
@@ -1740,6 +1744,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `port` _integer_ | The port that web services inside ClowdApp pods should be served on. |  |  |
 | `privatePort` _integer_ | The private port that web services inside a ClowdApp should be served on. |  |  |
+| `h2cPort` _integer_ | The H2C port that web services inside ClowdApp pods should be served on. |  |  |
+| `h2cPrivatePort` _integer_ | The private H2C port that web services inside a ClowdApp should be served on. |  |  |
 | `aiuthPort` _integer_ | The auth port that the web local mode will use with the AuthSidecar |  |  |
 | `apiPrefix` _string_ | An api prefix path that pods will be instructed to use when setting up<br />their web server. |  |  |
 | `mode` _[WebMode](#webmode)_ | The mode of operation of the Web provider. The allowed modes are<br />(*_none_*/*_operator_*), and (*_local_*) which deploys keycloak and BOP. |  | Enum: [none operator local] <br /> |

@@ -896,6 +896,16 @@ spec:
                               for mTLS verification
                             type: string
                         type: object
+                      h2cPort:
+                        description: The H2C port that web services inside ClowdApp
+                          pods should be served on.
+                        format: int32
+                        type: integer
+                      h2cPrivatePort:
+                        description: The private H2C port that web services inside
+                          a ClowdApp should be served on.
+                        format: int32
+                        type: integer
                       images:
                         description: Optional images to use for web provider components
                           -- only applies when running in (*_local_*) mode.
@@ -967,6 +977,18 @@ spec:
                             description: Determines whether TLS is enabled for ClowdApp
                               deployments by default
                             type: boolean
+                          h2cPort:
+                            description: Sets the H2C port exposed for ClowdApp deployments'
+                              TLS connections. If unset, H2C TLS is disabled in the
+                              environment.
+                            format: int32
+                            type: integer
+                          h2cPrivatePort:
+                            description: Sets the private H2C port exposed for ClowdApp
+                              deployments' TLS connections. If unset, H2C TLS is disabled
+                              in the environment.
+                            format: int32
+                            type: integer
                           port:
                             description: Sets the port exposed for ClowdApp deployments'
                               TLS connections. If unset, TLS is disabled in the environment.
