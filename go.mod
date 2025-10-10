@@ -183,7 +183,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251007200510-49b9836ed3ff // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251002232023-7c0ddcbb5797 // indirect
-	google.golang.org/grpc v1.74.2 // indirect
+	google.golang.org/grpc v1.75.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -193,7 +193,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
-	knative.dev/pkg v0.0.0-20251001003403-1e71536171b9 // indirect
+	knative.dev/pkg v0.0.0-20251007184713-a624c759bede // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251007053059-f48fe1c564dc // indirect
 	sigs.k8s.io/controller-tools v0.16.4 // indirect
 	sigs.k8s.io/gateway-api v0.7.0 // indirect
