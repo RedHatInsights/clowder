@@ -134,12 +134,22 @@ func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd
 		if provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) {
 			tlsPort = int(envWebConfig.TLS.Port)
 		}
+		h2cPort := int(0)
+		if innerDeployment.WebServices.Public.H2CEnabled && envWebConfig.H2CPort != 0 {
+			h2cPort = int(envWebConfig.H2CPort)
+		}
+		h2cTLSPort := int(0)
+		if innerDeployment.WebServices.Public.H2CEnabled && provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPort != 0 {
+			h2cTLSPort = int(envWebConfig.TLS.H2CPort)
+		}
 		*depConfig = append(*depConfig, config.DependencyEndpoint{
-			Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
-			Port:     int(envWebConfig.Port),
-			Name:     innerDeployment.Name,
-			App:      depApp.Name,
-			TlsPort:  utils.IntPtr(tlsPort),
+			Hostname:   fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
+			Port:       int(envWebConfig.Port),
+			Name:       innerDeployment.Name,
+			App:        depApp.Name,
+			TlsPort:    utils.IntPtr(tlsPort),
+			H2CPort:    utils.IntPtr(h2cPort),
+			H2CTLSPort: utils.IntPtr(h2cTLSPort),
 			// if app has multiple paths set, set apiPath to first name for backward compatibility
 			ApiPath:  apiPaths[0],
 			ApiPaths: apiPaths,
@@ -151,12 +161,22 @@ func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd
 		if provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) {
 			tlsPrivatePort = int(envWebConfig.TLS.PrivatePort)
 		}
+		h2cPrivatePort := int(0)
+		if innerDeployment.WebServices.Private.H2CEnabled && envWebConfig.H2CPrivatePort != 0 {
+			h2cPrivatePort = int(envWebConfig.H2CPrivatePort)
+		}
+		h2cTLSPrivatePort := int(0)
+		if innerDeployment.WebServices.Private.H2CEnabled && provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPrivatePort != 0 {
+			h2cTLSPrivatePort = int(envWebConfig.TLS.H2CPrivatePort)
+		}
 		*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
-			Hostname: fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
-			Port:     int(envWebConfig.PrivatePort),
-			Name:     innerDeployment.Name,
-			App:      depApp.Name,
-			TlsPort:  utils.IntPtr(tlsPrivatePort),
+			Hostname:   fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
+			Port:       int(envWebConfig.PrivatePort),
+			Name:       innerDeployment.Name,
+			App:        depApp.Name,
+			TlsPort:    utils.IntPtr(tlsPrivatePort),
+			H2CPort:    utils.IntPtr(h2cPrivatePort),
+			H2CTLSPort: utils.IntPtr(h2cTLSPrivatePort),
 		})
 	}
 }
@@ -177,6 +197,10 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 
 	deploymentTLSPort := int32(0)
 	deploymentTLSPrivatePort := int32(0)
+	deploymentH2CPort := int32(0)
+	deploymentH2CPrivatePort := int32(0)
+	deploymentH2CTLSPort := int32(0)
+	deploymentH2CTLSPrivatePort := int32(0)
 
 	if provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
 		// default to port defined by local ClowdEnvironment unless remote environment specifies one
@@ -194,13 +218,45 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 		}
 	}
 
+	// H2C port configuration
+	if innerDeployment.WebServices.Public.H2CEnabled {
+		deploymentH2CPort = envWebConfig.H2CPort
+		if depAppRef.Spec.RemoteEnvironment.H2CPort != 0 {
+			deploymentH2CPort = depAppRef.Spec.RemoteEnvironment.H2CPort
+		}
+	}
+
+	if innerDeployment.WebServices.Private.H2CEnabled {
+		deploymentH2CPrivatePort = envWebConfig.H2CPrivatePort
+		if depAppRef.Spec.RemoteEnvironment.H2CPrivatePort != 0 {
+			deploymentH2CPrivatePort = depAppRef.Spec.RemoteEnvironment.H2CPrivatePort
+		}
+	}
+
+	// H2C TLS port configuration
+	if innerDeployment.WebServices.Public.H2CEnabled && provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
+		deploymentH2CTLSPort = envWebConfig.TLS.H2CPort
+		if depAppRef.Spec.RemoteEnvironment.TLS.H2CPort != 0 {
+			deploymentH2CTLSPort = depAppRef.Spec.RemoteEnvironment.TLS.H2CPort
+		}
+	}
+
+	if innerDeployment.WebServices.Private.H2CEnabled && provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
+		deploymentH2CTLSPrivatePort = envWebConfig.TLS.H2CPrivatePort
+		if depAppRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort != 0 {
+			deploymentH2CTLSPrivatePort = depAppRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort
+		}
+	}
+
 	if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
 		*depConfig = append(*depConfig, config.DependencyEndpoint{
-			Hostname: innerDeployment.Hostname,
-			Port:     int(deploymentPort),
-			Name:     innerDeployment.Name,
-			App:      depAppRef.Name,
-			TlsPort:  utils.IntPtr(int(deploymentTLSPort)),
+			Hostname:   innerDeployment.Hostname,
+			Port:       int(deploymentPort),
+			Name:       innerDeployment.Name,
+			App:        depAppRef.Name,
+			TlsPort:    utils.IntPtr(int(deploymentTLSPort)),
+			H2CPort:    utils.IntPtr(int(deploymentH2CPort)),
+			H2CTLSPort: utils.IntPtr(int(deploymentH2CTLSPort)),
 			// if app has multiple paths set, set apiPath to first name for backward compatibility
 			ApiPath:  apiPaths[0],
 			ApiPaths: apiPaths,
@@ -208,11 +264,13 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 	}
 	if innerDeployment.WebServices.Private.Enabled {
 		*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
-			Hostname: innerDeployment.Hostname,
-			Port:     int(deploymentPrivatePort),
-			Name:     innerDeployment.Name,
-			App:      depAppRef.Name,
-			TlsPort:  utils.IntPtr(int(deploymentTLSPrivatePort)),
+			Hostname:   innerDeployment.Hostname,
+			Port:       int(deploymentPrivatePort),
+			Name:       innerDeployment.Name,
+			App:        depAppRef.Name,
+			TlsPort:    utils.IntPtr(int(deploymentTLSPrivatePort)),
+			H2CPort:    utils.IntPtr(int(deploymentH2CPrivatePort)),
+			H2CTLSPort: utils.IntPtr(int(deploymentH2CTLSPrivatePort)),
 		})
 	}
 }

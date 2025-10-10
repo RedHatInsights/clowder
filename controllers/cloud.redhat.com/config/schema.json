@@ -16,6 +16,14 @@
                     "description": "Defines the public port that the app should be configured to listen on for API traffic.",
                     "type": "integer"
                 },
+                "h2cPrivatePort": {
+                    "description": "Defines the private H2C port that the app should be configured to listen on for H2C traffic.",
+                    "type": "integer"
+                },
+                "h2cPublicPort": {
+                    "description": "Defines the public H2C port that the app should be configured to listen on for H2C traffic.",
+                    "type": "integer"
+                },
                 "webPort": {
                     "description": "Deprecated: Use 'publicPort' instead.",
                     "type": "integer"
@@ -495,6 +503,14 @@
                     "description": "The TLS port of the dependent service.",
                     "type": "integer"
                 },
+                "h2cPort": {
+                    "description": "The H2C port of the dependent service.",
+                    "type": "integer"
+                },
+                "h2cTLSPort": {
+                    "description": "The H2C TLS port of the dependent service.",
+                    "type": "integer"
+                },
                 "apiPath": {
                     "description": "The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)",
                     "type": "string"
@@ -538,6 +554,14 @@
                 },
                 "tlsPort": {
                     "description": "The TLS port of the dependent service.",
+                    "type": "integer"
+                },
+                "h2cPort": {
+                    "description": "The H2C port of the dependent service.",
+                    "type": "integer"
+                },
+                "h2cTLSPort": {
+                    "description": "The H2C TLS port of the dependent service.",
                     "type": "integer"
                 }
             },

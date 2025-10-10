@@ -72,6 +72,12 @@ type ClowdAppRefRemoteEnvironment struct {
 	// PrivatePort defines the private port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
 	PrivatePort int32 `json:"privatePort,omitempty"`
 
+	// H2CPort defines the H2C port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
+	H2CPort int32 `json:"h2cPort,omitempty"`
+
+	// H2CPrivatePort defines the private H2C port used to reach deployments in the remote cluster (default: use the same value as ClowdApps in the local cluster)
+	H2CPrivatePort int32 `json:"h2cPrivatePort,omitempty"`
+
 	// TLS defines TLS configuration options for reaching deployments in the remote cluster (default: use same values as the ClowdEnvironment in local cluster)
 	TLS TLS `json:"tls,omitempty"`
 }

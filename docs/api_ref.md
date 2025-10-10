@@ -2,100 +2,106 @@
 
 - [1. Property `root > privatePort`](#privatePort)
 - [2. Property `root > publicPort`](#publicPort)
-- [3. Property `root > webPort`](#webPort)
-- [4. Property `root > tlsCAPath`](#tlsCAPath)
-- [5. Property `root > metricsPort`](#metricsPort)
-- [6. Property `root > metricsPath`](#metricsPath)
-- [7. Property `root > logging`](#logging)
-  - [7.1. Property `root > logging > type`](#logging_type)
-  - [7.2. Property `root > logging > cloudwatch`](#logging_cloudwatch)
-    - [7.2.1. Property `root > logging > cloudwatch > accessKeyId`](#logging_cloudwatch_accessKeyId)
-    - [7.2.2. Property `root > logging > cloudwatch > secretAccessKey`](#logging_cloudwatch_secretAccessKey)
-    - [7.2.3. Property `root > logging > cloudwatch > region`](#logging_cloudwatch_region)
-    - [7.2.4. Property `root > logging > cloudwatch > logGroup`](#logging_cloudwatch_logGroup)
-- [8. Property `root > metadata`](#metadata)
-  - [8.1. Property `root > metadata > name`](#metadata_name)
-  - [8.2. Property `root > metadata > envName`](#metadata_envName)
-  - [8.3. Property `root > metadata > deployments`](#metadata_deployments)
-    - [8.3.1. root > metadata > deployments > DeploymentMetadata](#metadata_deployments_items)
-      - [8.3.1.1. Property `root > metadata > deployments > DeploymentMetadata > name`](#metadata_deployments_items_name)
-      - [8.3.1.2. Property `root > metadata > deployments > DeploymentMetadata > image`](#metadata_deployments_items_image)
-- [9. Property `root > kafka`](#kafka)
-  - [9.1. Property `root > kafka > brokers`](#kafka_brokers)
-    - [9.1.1. root > kafka > brokers > BrokerConfig](#kafka_brokers_items)
-      - [9.1.1.1. Property `root > kafka > brokers > brokers items > hostname`](#kafka_brokers_items_hostname)
-      - [9.1.1.2. Property `root > kafka > brokers > brokers items > port`](#kafka_brokers_items_port)
-      - [9.1.1.3. Property `root > kafka > brokers > brokers items > cacert`](#kafka_brokers_items_cacert)
-      - [9.1.1.4. Property `root > kafka > brokers > brokers items > authtype`](#kafka_brokers_items_authtype)
-      - [9.1.1.5. Property `root > kafka > brokers > brokers items > sasl`](#kafka_brokers_items_sasl)
-        - [9.1.1.5.1. Property `root > kafka > brokers > brokers items > sasl > username`](#kafka_brokers_items_sasl_username)
-        - [9.1.1.5.2. Property `root > kafka > brokers > brokers items > sasl > password`](#kafka_brokers_items_sasl_password)
-        - [9.1.1.5.3. Property `root > kafka > brokers > brokers items > sasl > securityProtocol`](#kafka_brokers_items_sasl_securityProtocol)
-        - [9.1.1.5.4. Property `root > kafka > brokers > brokers items > sasl > saslMechanism`](#kafka_brokers_items_sasl_saslMechanism)
-      - [9.1.1.6. Property `root > kafka > brokers > brokers items > securityProtocol`](#kafka_brokers_items_securityProtocol)
-  - [9.2. Property `root > kafka > topics`](#kafka_topics)
-    - [9.2.1. root > kafka > topics > TopicConfig](#kafka_topics_items)
-      - [9.2.1.1. Property `root > kafka > topics > topics items > requestedName`](#kafka_topics_items_requestedName)
-      - [9.2.1.2. Property `root > kafka > topics > topics items > name`](#kafka_topics_items_name)
-- [10. Property `root > database`](#database)
-  - [10.1. Property `root > database > name`](#database_name)
-  - [10.2. Property `root > database > username`](#database_username)
-  - [10.3. Property `root > database > password`](#database_password)
-  - [10.4. Property `root > database > hostname`](#database_hostname)
-  - [10.5. Property `root > database > port`](#database_port)
-  - [10.6. Property `root > database > adminUsername`](#database_adminUsername)
-  - [10.7. Property `root > database > adminPassword`](#database_adminPassword)
-  - [10.8. Property `root > database > rdsCa`](#database_rdsCa)
-  - [10.9. Property `root > database > sslMode`](#database_sslMode)
-- [11. Property `root > objectStore`](#objectStore)
-  - [11.1. Property `root > objectStore > buckets`](#objectStore_buckets)
-    - [11.1.1. root > objectStore > buckets > ObjectStoreBucket](#objectStore_buckets_items)
-      - [11.1.1.1. Property `root > objectStore > buckets > buckets items > accessKey`](#objectStore_buckets_items_accessKey)
-      - [11.1.1.2. Property `root > objectStore > buckets > buckets items > secretKey`](#objectStore_buckets_items_secretKey)
-      - [11.1.1.3. Property `root > objectStore > buckets > buckets items > region`](#objectStore_buckets_items_region)
-      - [11.1.1.4. Property `root > objectStore > buckets > buckets items > requestedName`](#objectStore_buckets_items_requestedName)
-      - [11.1.1.5. Property `root > objectStore > buckets > buckets items > name`](#objectStore_buckets_items_name)
-      - [11.1.1.6. Property `root > objectStore > buckets > buckets items > tls`](#objectStore_buckets_items_tls)
-      - [11.1.1.7. Property `root > objectStore > buckets > buckets items > endpoint`](#objectStore_buckets_items_endpoint)
-  - [11.2. Property `root > objectStore > accessKey`](#objectStore_accessKey)
-  - [11.3. Property `root > objectStore > secretKey`](#objectStore_secretKey)
-  - [11.4. Property `root > objectStore > hostname`](#objectStore_hostname)
-  - [11.5. Property `root > objectStore > port`](#objectStore_port)
-  - [11.6. Property `root > objectStore > tls`](#objectStore_tls)
-- [12. Property `root > inMemoryDb`](#inMemoryDb)
-  - [12.1. Property `root > inMemoryDb > hostname`](#inMemoryDb_hostname)
-  - [12.2. Property `root > inMemoryDb > port`](#inMemoryDb_port)
-  - [12.3. Property `root > inMemoryDb > username`](#inMemoryDb_username)
-  - [12.4. Property `root > inMemoryDb > password`](#inMemoryDb_password)
-  - [12.5. Property `root > inMemoryDb > sslMode`](#inMemoryDb_sslMode)
-- [13. Property `root > featureFlags`](#featureFlags)
-  - [13.1. Property `root > featureFlags > hostname`](#featureFlags_hostname)
-  - [13.2. Property `root > featureFlags > port`](#featureFlags_port)
-  - [13.3. Property `root > featureFlags > clientAccessToken`](#featureFlags_clientAccessToken)
-  - [13.4. Property `root > featureFlags > scheme`](#featureFlags_scheme)
-- [14. Property `root > endpoints`](#endpoints)
-  - [14.1. root > endpoints > DependencyEndpoint](#endpoints_items)
-    - [14.1.1. Property `root > endpoints > endpoints items > name`](#endpoints_items_name)
-    - [14.1.2. Property `root > endpoints > endpoints items > hostname`](#endpoints_items_hostname)
-    - [14.1.3. Property `root > endpoints > endpoints items > port`](#endpoints_items_port)
-    - [14.1.4. Property `root > endpoints > endpoints items > app`](#endpoints_items_app)
-    - [14.1.5. Property `root > endpoints > endpoints items > tlsPort`](#endpoints_items_tlsPort)
-    - [14.1.6. Property `root > endpoints > endpoints items > apiPath`](#endpoints_items_apiPath)
-    - [14.1.7. Property `root > endpoints > endpoints items > apiPaths`](#endpoints_items_apiPaths)
-      - [14.1.7.1. root > endpoints > endpoints items > apiPaths > apiPaths items](#endpoints_items_apiPaths_items)
-- [15. Property `root > privateEndpoints`](#privateEndpoints)
-  - [15.1. root > privateEndpoints > PrivateDependencyEndpoint](#privateEndpoints_items)
-    - [15.1.1. Property `root > privateEndpoints > privateEndpoints items > name`](#privateEndpoints_items_name)
-    - [15.1.2. Property `root > privateEndpoints > privateEndpoints items > hostname`](#privateEndpoints_items_hostname)
-    - [15.1.3. Property `root > privateEndpoints > privateEndpoints items > port`](#privateEndpoints_items_port)
-    - [15.1.4. Property `root > privateEndpoints > privateEndpoints items > app`](#privateEndpoints_items_app)
-    - [15.1.5. Property `root > privateEndpoints > privateEndpoints items > tlsPort`](#privateEndpoints_items_tlsPort)
-- [16. Property `root > BOPURL`](#BOPURL)
-- [17. Property `root > hashCache`](#hashCache)
-- [18. Property `root > hostname`](#hostname)
-- [19. Property `root > prometheusGateway`](#prometheusGateway)
-  - [19.1. Property `root > prometheusGateway > hostname`](#prometheusGateway_hostname)
-  - [19.2. Property `root > prometheusGateway > port`](#prometheusGateway_port)
+- [3. Property `root > h2cPrivatePort`](#h2cPrivatePort)
+- [4. Property `root > h2cPublicPort`](#h2cPublicPort)
+- [5. Property `root > webPort`](#webPort)
+- [6. Property `root > tlsCAPath`](#tlsCAPath)
+- [7. Property `root > metricsPort`](#metricsPort)
+- [8. Property `root > metricsPath`](#metricsPath)
+- [9. Property `root > logging`](#logging)
+  - [9.1. Property `root > logging > type`](#logging_type)
+  - [9.2. Property `root > logging > cloudwatch`](#logging_cloudwatch)
+    - [9.2.1. Property `root > logging > cloudwatch > accessKeyId`](#logging_cloudwatch_accessKeyId)
+    - [9.2.2. Property `root > logging > cloudwatch > secretAccessKey`](#logging_cloudwatch_secretAccessKey)
+    - [9.2.3. Property `root > logging > cloudwatch > region`](#logging_cloudwatch_region)
+    - [9.2.4. Property `root > logging > cloudwatch > logGroup`](#logging_cloudwatch_logGroup)
+- [10. Property `root > metadata`](#metadata)
+  - [10.1. Property `root > metadata > name`](#metadata_name)
+  - [10.2. Property `root > metadata > envName`](#metadata_envName)
+  - [10.3. Property `root > metadata > deployments`](#metadata_deployments)
+    - [10.3.1. root > metadata > deployments > DeploymentMetadata](#metadata_deployments_items)
+      - [10.3.1.1. Property `root > metadata > deployments > DeploymentMetadata > name`](#metadata_deployments_items_name)
+      - [10.3.1.2. Property `root > metadata > deployments > DeploymentMetadata > image`](#metadata_deployments_items_image)
+- [11. Property `root > kafka`](#kafka)
+  - [11.1. Property `root > kafka > brokers`](#kafka_brokers)
+    - [11.1.1. root > kafka > brokers > BrokerConfig](#kafka_brokers_items)
+      - [11.1.1.1. Property `root > kafka > brokers > brokers items > hostname`](#kafka_brokers_items_hostname)
+      - [11.1.1.2. Property `root > kafka > brokers > brokers items > port`](#kafka_brokers_items_port)
+      - [11.1.1.3. Property `root > kafka > brokers > brokers items > cacert`](#kafka_brokers_items_cacert)
+      - [11.1.1.4. Property `root > kafka > brokers > brokers items > authtype`](#kafka_brokers_items_authtype)
+      - [11.1.1.5. Property `root > kafka > brokers > brokers items > sasl`](#kafka_brokers_items_sasl)
+        - [11.1.1.5.1. Property `root > kafka > brokers > brokers items > sasl > username`](#kafka_brokers_items_sasl_username)
+        - [11.1.1.5.2. Property `root > kafka > brokers > brokers items > sasl > password`](#kafka_brokers_items_sasl_password)
+        - [11.1.1.5.3. Property `root > kafka > brokers > brokers items > sasl > securityProtocol`](#kafka_brokers_items_sasl_securityProtocol)
+        - [11.1.1.5.4. Property `root > kafka > brokers > brokers items > sasl > saslMechanism`](#kafka_brokers_items_sasl_saslMechanism)
+      - [11.1.1.6. Property `root > kafka > brokers > brokers items > securityProtocol`](#kafka_brokers_items_securityProtocol)
+  - [11.2. Property `root > kafka > topics`](#kafka_topics)
+    - [11.2.1. root > kafka > topics > TopicConfig](#kafka_topics_items)
+      - [11.2.1.1. Property `root > kafka > topics > topics items > requestedName`](#kafka_topics_items_requestedName)
+      - [11.2.1.2. Property `root > kafka > topics > topics items > name`](#kafka_topics_items_name)
+- [12. Property `root > database`](#database)
+  - [12.1. Property `root > database > name`](#database_name)
+  - [12.2. Property `root > database > username`](#database_username)
+  - [12.3. Property `root > database > password`](#database_password)
+  - [12.4. Property `root > database > hostname`](#database_hostname)
+  - [12.5. Property `root > database > port`](#database_port)
+  - [12.6. Property `root > database > adminUsername`](#database_adminUsername)
+  - [12.7. Property `root > database > adminPassword`](#database_adminPassword)
+  - [12.8. Property `root > database > rdsCa`](#database_rdsCa)
+  - [12.9. Property `root > database > sslMode`](#database_sslMode)
+- [13. Property `root > objectStore`](#objectStore)
+  - [13.1. Property `root > objectStore > buckets`](#objectStore_buckets)
+    - [13.1.1. root > objectStore > buckets > ObjectStoreBucket](#objectStore_buckets_items)
+      - [13.1.1.1. Property `root > objectStore > buckets > buckets items > accessKey`](#objectStore_buckets_items_accessKey)
+      - [13.1.1.2. Property `root > objectStore > buckets > buckets items > secretKey`](#objectStore_buckets_items_secretKey)
+      - [13.1.1.3. Property `root > objectStore > buckets > buckets items > region`](#objectStore_buckets_items_region)
+      - [13.1.1.4. Property `root > objectStore > buckets > buckets items > requestedName`](#objectStore_buckets_items_requestedName)
+      - [13.1.1.5. Property `root > objectStore > buckets > buckets items > name`](#objectStore_buckets_items_name)
+      - [13.1.1.6. Property `root > objectStore > buckets > buckets items > tls`](#objectStore_buckets_items_tls)
+      - [13.1.1.7. Property `root > objectStore > buckets > buckets items > endpoint`](#objectStore_buckets_items_endpoint)
+  - [13.2. Property `root > objectStore > accessKey`](#objectStore_accessKey)
+  - [13.3. Property `root > objectStore > secretKey`](#objectStore_secretKey)
+  - [13.4. Property `root > objectStore > hostname`](#objectStore_hostname)
+  - [13.5. Property `root > objectStore > port`](#objectStore_port)
+  - [13.6. Property `root > objectStore > tls`](#objectStore_tls)
+- [14. Property `root > inMemoryDb`](#inMemoryDb)
+  - [14.1. Property `root > inMemoryDb > hostname`](#inMemoryDb_hostname)
+  - [14.2. Property `root > inMemoryDb > port`](#inMemoryDb_port)
+  - [14.3. Property `root > inMemoryDb > username`](#inMemoryDb_username)
+  - [14.4. Property `root > inMemoryDb > password`](#inMemoryDb_password)
+  - [14.5. Property `root > inMemoryDb > sslMode`](#inMemoryDb_sslMode)
+- [15. Property `root > featureFlags`](#featureFlags)
+  - [15.1. Property `root > featureFlags > hostname`](#featureFlags_hostname)
+  - [15.2. Property `root > featureFlags > port`](#featureFlags_port)
+  - [15.3. Property `root > featureFlags > clientAccessToken`](#featureFlags_clientAccessToken)
+  - [15.4. Property `root > featureFlags > scheme`](#featureFlags_scheme)
+- [16. Property `root > endpoints`](#endpoints)
+  - [16.1. root > endpoints > DependencyEndpoint](#endpoints_items)
+    - [16.1.1. Property `root > endpoints > endpoints items > name`](#endpoints_items_name)
+    - [16.1.2. Property `root > endpoints > endpoints items > hostname`](#endpoints_items_hostname)
+    - [16.1.3. Property `root > endpoints > endpoints items > port`](#endpoints_items_port)
+    - [16.1.4. Property `root > endpoints > endpoints items > app`](#endpoints_items_app)
+    - [16.1.5. Property `root > endpoints > endpoints items > tlsPort`](#endpoints_items_tlsPort)
+    - [16.1.6. Property `root > endpoints > endpoints items > h2cPort`](#endpoints_items_h2cPort)
+    - [16.1.7. Property `root > endpoints > endpoints items > h2cTLSPort`](#endpoints_items_h2cTLSPort)
+    - [16.1.8. Property `root > endpoints > endpoints items > apiPath`](#endpoints_items_apiPath)
+    - [16.1.9. Property `root > endpoints > endpoints items > apiPaths`](#endpoints_items_apiPaths)
+      - [16.1.9.1. root > endpoints > endpoints items > apiPaths > apiPaths items](#endpoints_items_apiPaths_items)
+- [17. Property `root > privateEndpoints`](#privateEndpoints)
+  - [17.1. root > privateEndpoints > PrivateDependencyEndpoint](#privateEndpoints_items)
+    - [17.1.1. Property `root > privateEndpoints > privateEndpoints items > name`](#privateEndpoints_items_name)
+    - [17.1.2. Property `root > privateEndpoints > privateEndpoints items > hostname`](#privateEndpoints_items_hostname)
+    - [17.1.3. Property `root > privateEndpoints > privateEndpoints items > port`](#privateEndpoints_items_port)
+    - [17.1.4. Property `root > privateEndpoints > privateEndpoints items > app`](#privateEndpoints_items_app)
+    - [17.1.5. Property `root > privateEndpoints > privateEndpoints items > tlsPort`](#privateEndpoints_items_tlsPort)
+    - [17.1.6. Property `root > privateEndpoints > privateEndpoints items > h2cPort`](#privateEndpoints_items_h2cPort)
+    - [17.1.7. Property `root > privateEndpoints > privateEndpoints items > h2cTLSPort`](#privateEndpoints_items_h2cTLSPort)
+- [18. Property `root > BOPURL`](#BOPURL)
+- [19. Property `root > hashCache`](#hashCache)
+- [20. Property `root > hostname`](#hostname)
+- [21. Property `root > prometheusGateway`](#prometheusGateway)
+  - [21.1. Property `root > prometheusGateway > hostname`](#prometheusGateway_hostname)
+  - [21.2. Property `root > prometheusGateway > port`](#prometheusGateway_port)
 
 **Title:** AppConfig
 
@@ -112,6 +118,8 @@
 | ------------------------------------------ | ------- | ------- | ---------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | - [privatePort](#privatePort )             | No      | integer | No         | -                                        | Defines the private port that the app should be configured to listen on for API traffic.                  |
 | - [publicPort](#publicPort )               | No      | integer | No         | -                                        | Defines the public port that the app should be configured to listen on for API traffic.                   |
+| - [h2cPrivatePort](#h2cPrivatePort )       | No      | integer | No         | -                                        | Defines the private H2C port that the app should be configured to listen on for H2C traffic.              |
+| - [h2cPublicPort](#h2cPublicPort )         | No      | integer | No         | -                                        | Defines the public H2C port that the app should be configured to listen on for H2C traffic.               |
 | - [webPort](#webPort )                     | No      | integer | No         | -                                        | Deprecated: Use 'publicPort' instead.                                                                     |
 | - [tlsCAPath](#tlsCAPath )                 | No      | string  | No         | -                                        | Defines the port CA path                                                                                  |
 | + [metricsPort](#metricsPort )             | No      | integer | No         | -                                        | Defines the metrics port that the app should be configured to listen on for metric traffic.               |
@@ -148,7 +156,25 @@
 
 **Description:** Defines the public port that the app should be configured to listen on for API traffic.
 
-## <a name="webPort"></a>3. Property `root > webPort`
+## <a name="h2cPrivatePort"></a>3. Property `root > h2cPrivatePort`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | No        |
+
+**Description:** Defines the private H2C port that the app should be configured to listen on for H2C traffic.
+
+## <a name="h2cPublicPort"></a>4. Property `root > h2cPublicPort`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | No        |
+
+**Description:** Defines the public H2C port that the app should be configured to listen on for H2C traffic.
+
+## <a name="webPort"></a>5. Property `root > webPort`
 
 |              |           |
 | ------------ | --------- |
@@ -157,7 +183,7 @@
 
 **Description:** Deprecated: Use 'publicPort' instead.
 
-## <a name="tlsCAPath"></a>4. Property `root > tlsCAPath`
+## <a name="tlsCAPath"></a>6. Property `root > tlsCAPath`
 
 |              |          |
 | ------------ | -------- |
@@ -166,7 +192,7 @@
 
 **Description:** Defines the port CA path
 
-## <a name="metricsPort"></a>5. Property `root > metricsPort`
+## <a name="metricsPort"></a>7. Property `root > metricsPort`
 
 |              |           |
 | ------------ | --------- |
@@ -175,7 +201,7 @@
 
 **Description:** Defines the metrics port that the app should be configured to listen on for metric traffic.
 
-## <a name="metricsPath"></a>6. Property `root > metricsPath`
+## <a name="metricsPath"></a>8. Property `root > metricsPath`
 
 |              |          |
 | ------------ | -------- |
@@ -184,7 +210,7 @@
 
 **Description:** Defines the path to the metrics server that the app should be configured to listen on for metric traffic.
 
-## <a name="logging"></a>7. Property `root > logging`
+## <a name="logging"></a>9. Property `root > logging`
 
 **Title:** LoggingConfig
 
@@ -202,7 +228,7 @@
 | + [type](#logging_type )             | No      | string | No         | -                                 | Defines the type of logging configuration |
 | - [cloudwatch](#logging_cloudwatch ) | No      | object | No         | In #/definitions/CloudWatchConfig | CloudWatchConfig                          |
 
-### <a name="logging_type"></a>7.1. Property `root > logging > type`
+### <a name="logging_type"></a>9.1. Property `root > logging > type`
 
 |              |          |
 | ------------ | -------- |
@@ -211,7 +237,7 @@
 
 **Description:** Defines the type of logging configuration
 
-### <a name="logging_cloudwatch"></a>7.2. Property `root > logging > cloudwatch`
+### <a name="logging_cloudwatch"></a>9.2. Property `root > logging > cloudwatch`
 
 **Title:** CloudWatchConfig
 
@@ -231,7 +257,7 @@
 | + [region](#logging_cloudwatch_region )                   | No      | string | No         | -          | Defines the region that the app should use for configuring CloudWatch.     |
 | + [logGroup](#logging_cloudwatch_logGroup )               | No      | string | No         | -          | Defines the logGroup that the app should use for configuring CloudWatch.   |
 
-#### <a name="logging_cloudwatch_accessKeyId"></a>7.2.1. Property `root > logging > cloudwatch > accessKeyId`
+#### <a name="logging_cloudwatch_accessKeyId"></a>9.2.1. Property `root > logging > cloudwatch > accessKeyId`
 
 |              |          |
 | ------------ | -------- |
@@ -240,7 +266,7 @@
 
 **Description:** Defines the access key that the app should use for configuring CloudWatch.
 
-#### <a name="logging_cloudwatch_secretAccessKey"></a>7.2.2. Property `root > logging > cloudwatch > secretAccessKey`
+#### <a name="logging_cloudwatch_secretAccessKey"></a>9.2.2. Property `root > logging > cloudwatch > secretAccessKey`
 
 |              |          |
 | ------------ | -------- |
@@ -249,7 +275,7 @@
 
 **Description:** Defines the secret key that the app should use for configuring CloudWatch.
 
-#### <a name="logging_cloudwatch_region"></a>7.2.3. Property `root > logging > cloudwatch > region`
+#### <a name="logging_cloudwatch_region"></a>9.2.3. Property `root > logging > cloudwatch > region`
 
 |              |          |
 | ------------ | -------- |
@@ -258,7 +284,7 @@
 
 **Description:** Defines the region that the app should use for configuring CloudWatch.
 
-#### <a name="logging_cloudwatch_logGroup"></a>7.2.4. Property `root > logging > cloudwatch > logGroup`
+#### <a name="logging_cloudwatch_logGroup"></a>9.2.4. Property `root > logging > cloudwatch > logGroup`
 
 |              |          |
 | ------------ | -------- |
@@ -267,7 +293,7 @@
 
 **Description:** Defines the logGroup that the app should use for configuring CloudWatch.
 
-## <a name="metadata"></a>8. Property `root > metadata`
+## <a name="metadata"></a>10. Property `root > metadata`
 
 **Title:** AppMetadata
 
@@ -286,7 +312,7 @@
 | - [envName](#metadata_envName )         | No      | string | No         | -          | Name of the ClowdEnvironment this ClowdApp runs in  |
 | - [deployments](#metadata_deployments ) | No      | array  | No         | -          | Metadata pertaining to an application's deployments |
 
-### <a name="metadata_name"></a>8.1. Property `root > metadata > name`
+### <a name="metadata_name"></a>10.1. Property `root > metadata > name`
 
 |              |          |
 | ------------ | -------- |
@@ -295,7 +321,7 @@
 
 **Description:** Name of the ClowdApp
 
-### <a name="metadata_envName"></a>8.2. Property `root > metadata > envName`
+### <a name="metadata_envName"></a>10.2. Property `root > metadata > envName`
 
 |              |          |
 | ------------ | -------- |
@@ -304,7 +330,7 @@
 
 **Description:** Name of the ClowdEnvironment this ClowdApp runs in
 
-### <a name="metadata_deployments"></a>8.3. Property `root > metadata > deployments`
+### <a name="metadata_deployments"></a>10.3. Property `root > metadata > deployments`
 
 |              |         |
 | ------------ | ------- |
@@ -325,7 +351,7 @@
 | ------------------------------------------------- | ------------------- |
 | [DeploymentMetadata](#metadata_deployments_items) | Deployment Metadata |
 
-#### <a name="metadata_deployments_items"></a>8.3.1. root > metadata > deployments > DeploymentMetadata
+#### <a name="metadata_deployments_items"></a>10.3.1. root > metadata > deployments > DeploymentMetadata
 
 **Title:** DeploymentMetadata
 
@@ -343,7 +369,7 @@
 | + [name](#metadata_deployments_items_name )   | No      | string | No         | -          | Name of deployment       |
 | + [image](#metadata_deployments_items_image ) | No      | string | No         | -          | Image used by deployment |
 
-##### <a name="metadata_deployments_items_name"></a>8.3.1.1. Property `root > metadata > deployments > DeploymentMetadata > name`
+##### <a name="metadata_deployments_items_name"></a>10.3.1.1. Property `root > metadata > deployments > DeploymentMetadata > name`
 
 |              |          |
 | ------------ | -------- |
@@ -352,7 +378,7 @@
 
 **Description:** Name of deployment
 
-##### <a name="metadata_deployments_items_image"></a>8.3.1.2. Property `root > metadata > deployments > DeploymentMetadata > image`
+##### <a name="metadata_deployments_items_image"></a>10.3.1.2. Property `root > metadata > deployments > DeploymentMetadata > image`
 
 |              |          |
 | ------------ | -------- |
@@ -361,7 +387,7 @@
 
 **Description:** Image used by deployment
 
-## <a name="kafka"></a>9. Property `root > kafka`
+## <a name="kafka"></a>11. Property `root > kafka`
 
 |                           |                           |
 | ------------------------- | ------------------------- |
@@ -377,7 +403,7 @@
 | + [brokers](#kafka_brokers ) | No      | array | No         | -          | Defines the brokers the app should connect to for Kafka services.        |
 | + [topics](#kafka_topics )   | No      | array | No         | -          | Defines a list of the topic configurations available to the application. |
 
-### <a name="kafka_brokers"></a>9.1. Property `root > kafka > brokers`
+### <a name="kafka_brokers"></a>11.1. Property `root > kafka > brokers`
 
 |              |         |
 | ------------ | ------- |
@@ -398,7 +424,7 @@
 | ------------------------------------ | -------------------- |
 | [BrokerConfig](#kafka_brokers_items) | Broker Configuration |
 
-#### <a name="kafka_brokers_items"></a>9.1.1. root > kafka > brokers > BrokerConfig
+#### <a name="kafka_brokers_items"></a>11.1.1. root > kafka > brokers > BrokerConfig
 
 |                           |                            |
 | ------------------------- | -------------------------- |
@@ -418,7 +444,7 @@
 | - [sasl](#kafka_brokers_items_sasl )                         | No      | object           | No         | In #/definitions/KafkaSASLConfig | SASL Configuration for Kafka                                                                           |
 | - [securityProtocol](#kafka_brokers_items_securityProtocol ) | No      | string           | No         | -                                | Broker security procotol, expect one of either: SASL_SSL, SSL                                          |
 
-##### <a name="kafka_brokers_items_hostname"></a>9.1.1.1. Property `root > kafka > brokers > brokers items > hostname`
+##### <a name="kafka_brokers_items_hostname"></a>11.1.1.1. Property `root > kafka > brokers > brokers items > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -427,7 +453,7 @@
 
 **Description:** Hostname of kafka broker
 
-##### <a name="kafka_brokers_items_port"></a>9.1.1.2. Property `root > kafka > brokers > brokers items > port`
+##### <a name="kafka_brokers_items_port"></a>11.1.1.2. Property `root > kafka > brokers > brokers items > port`
 
 |              |           |
 | ------------ | --------- |
@@ -436,7 +462,7 @@
 
 **Description:** Port of kafka broker
 
-##### <a name="kafka_brokers_items_cacert"></a>9.1.1.3. Property `root > kafka > brokers > brokers items > cacert`
+##### <a name="kafka_brokers_items_cacert"></a>11.1.1.3. Property `root > kafka > brokers > brokers items > cacert`
 
 |              |          |
 | ------------ | -------- |
@@ -445,7 +471,7 @@
 
 **Description:** CA certificate trust list for broker in PEM format. If absent, client should use OS default trust list
 
-##### <a name="kafka_brokers_items_authtype"></a>9.1.1.4. Property `root > kafka > brokers > brokers items > authtype`
+##### <a name="kafka_brokers_items_authtype"></a>11.1.1.4. Property `root > kafka > brokers > brokers items > authtype`
 
 |              |                    |
 | ------------ | ------------------ |
@@ -455,7 +481,7 @@
 Must be one of:
 * "sasl"
 
-##### <a name="kafka_brokers_items_sasl"></a>9.1.1.5. Property `root > kafka > brokers > brokers items > sasl`
+##### <a name="kafka_brokers_items_sasl"></a>11.1.1.5. Property `root > kafka > brokers > brokers items > sasl`
 
 |                           |                               |
 | ------------------------- | ----------------------------- |
@@ -473,7 +499,7 @@ Must be one of:
 | - [securityProtocol](#kafka_brokers_items_sasl_securityProtocol ) | No      | string | No         | -          | Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead |
 | - [saslMechanism](#kafka_brokers_items_sasl_saslMechanism )       | No      | string | No         | -          | Broker SASL mechanism, expect: SCRAM-SHA-512                                                                                |
 
-###### <a name="kafka_brokers_items_sasl_username"></a>9.1.1.5.1. Property `root > kafka > brokers > brokers items > sasl > username`
+###### <a name="kafka_brokers_items_sasl_username"></a>11.1.1.5.1. Property `root > kafka > brokers > brokers items > sasl > username`
 
 |              |          |
 | ------------ | -------- |
@@ -482,7 +508,7 @@ Must be one of:
 
 **Description:** Broker SASL username
 
-###### <a name="kafka_brokers_items_sasl_password"></a>9.1.1.5.2. Property `root > kafka > brokers > brokers items > sasl > password`
+###### <a name="kafka_brokers_items_sasl_password"></a>11.1.1.5.2. Property `root > kafka > brokers > brokers items > sasl > password`
 
 |              |          |
 | ------------ | -------- |
@@ -491,7 +517,7 @@ Must be one of:
 
 **Description:** Broker SASL password
 
-###### <a name="kafka_brokers_items_sasl_securityProtocol"></a>9.1.1.5.3. Property `root > kafka > brokers > brokers items > sasl > securityProtocol`
+###### <a name="kafka_brokers_items_sasl_securityProtocol"></a>11.1.1.5.3. Property `root > kafka > brokers > brokers items > sasl > securityProtocol`
 
 |              |          |
 | ------------ | -------- |
@@ -500,7 +526,7 @@ Must be one of:
 
 **Description:** Broker security protocol, expect one of either: SASL_SSL, SSL. DEPRECATED, use the top level securityProtocol field instead
 
-###### <a name="kafka_brokers_items_sasl_saslMechanism"></a>9.1.1.5.4. Property `root > kafka > brokers > brokers items > sasl > saslMechanism`
+###### <a name="kafka_brokers_items_sasl_saslMechanism"></a>11.1.1.5.4. Property `root > kafka > brokers > brokers items > sasl > saslMechanism`
 
 |              |          |
 | ------------ | -------- |
@@ -509,7 +535,7 @@ Must be one of:
 
 **Description:** Broker SASL mechanism, expect: SCRAM-SHA-512
 
-##### <a name="kafka_brokers_items_securityProtocol"></a>9.1.1.6. Property `root > kafka > brokers > brokers items > securityProtocol`
+##### <a name="kafka_brokers_items_securityProtocol"></a>11.1.1.6. Property `root > kafka > brokers > brokers items > securityProtocol`
 
 |              |          |
 | ------------ | -------- |
@@ -518,7 +544,7 @@ Must be one of:
 
 **Description:** Broker security procotol, expect one of either: SASL_SSL, SSL
 
-### <a name="kafka_topics"></a>9.2. Property `root > kafka > topics`
+### <a name="kafka_topics"></a>11.2. Property `root > kafka > topics`
 
 |              |         |
 | ------------ | ------- |
@@ -539,7 +565,7 @@ Must be one of:
 | ---------------------------------- | ------------------- |
 | [TopicConfig](#kafka_topics_items) | Topic Configuration |
 
-#### <a name="kafka_topics_items"></a>9.2.1. root > kafka > topics > TopicConfig
+#### <a name="kafka_topics_items"></a>11.2.1. root > kafka > topics > TopicConfig
 
 |                           |                           |
 | ------------------------- | ------------------------- |
@@ -555,7 +581,7 @@ Must be one of:
 | + [requestedName](#kafka_topics_items_requestedName ) | No      | string | No         | -          | The name that the app requested in the ClowdApp definition. |
 | + [name](#kafka_topics_items_name )                   | No      | string | No         | -          | The name of the actual topic on the Kafka server.           |
 
-##### <a name="kafka_topics_items_requestedName"></a>9.2.1.1. Property `root > kafka > topics > topics items > requestedName`
+##### <a name="kafka_topics_items_requestedName"></a>11.2.1.1. Property `root > kafka > topics > topics items > requestedName`
 
 |              |          |
 | ------------ | -------- |
@@ -564,7 +590,7 @@ Must be one of:
 
 **Description:** The name that the app requested in the ClowdApp definition.
 
-##### <a name="kafka_topics_items_name"></a>9.2.1.2. Property `root > kafka > topics > topics items > name`
+##### <a name="kafka_topics_items_name"></a>11.2.1.2. Property `root > kafka > topics > topics items > name`
 
 |              |          |
 | ------------ | -------- |
@@ -573,7 +599,7 @@ Must be one of:
 
 **Description:** The name of the actual topic on the Kafka server.
 
-## <a name="database"></a>10. Property `root > database`
+## <a name="database"></a>12. Property `root > database`
 
 **Title:** DatabaseConfig
 
@@ -598,7 +624,7 @@ Must be one of:
 | - [rdsCa](#database_rdsCa )                 | No      | string  | No         | -          | Defines the CA used to access the database.                       |
 | + [sslMode](#database_sslMode )             | No      | string  | No         | -          | Defines the postgres SSL mode that should be used.                |
 
-### <a name="database_name"></a>10.1. Property `root > database > name`
+### <a name="database_name"></a>12.1. Property `root > database > name`
 
 |              |          |
 | ------------ | -------- |
@@ -607,7 +633,7 @@ Must be one of:
 
 **Description:** Defines the database name.
 
-### <a name="database_username"></a>10.2. Property `root > database > username`
+### <a name="database_username"></a>12.2. Property `root > database > username`
 
 |              |          |
 | ------------ | -------- |
@@ -616,7 +642,7 @@ Must be one of:
 
 **Description:** Defines a username with standard access to the database.
 
-### <a name="database_password"></a>10.3. Property `root > database > password`
+### <a name="database_password"></a>12.3. Property `root > database > password`
 
 |              |          |
 | ------------ | -------- |
@@ -625,7 +651,7 @@ Must be one of:
 
 **Description:** Defines the password for the standard user.
 
-### <a name="database_hostname"></a>10.4. Property `root > database > hostname`
+### <a name="database_hostname"></a>12.4. Property `root > database > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -634,7 +660,7 @@ Must be one of:
 
 **Description:** Defines the hostname of the database configured for the ClowdApp.
 
-### <a name="database_port"></a>10.5. Property `root > database > port`
+### <a name="database_port"></a>12.5. Property `root > database > port`
 
 |              |           |
 | ------------ | --------- |
@@ -643,7 +669,7 @@ Must be one of:
 
 **Description:** Defines the port of the database configured for the ClowdApp.
 
-### <a name="database_adminUsername"></a>10.6. Property `root > database > adminUsername`
+### <a name="database_adminUsername"></a>12.6. Property `root > database > adminUsername`
 
 |              |          |
 | ------------ | -------- |
@@ -652,7 +678,7 @@ Must be one of:
 
 **Description:** Defines the pgAdmin username.
 
-### <a name="database_adminPassword"></a>10.7. Property `root > database > adminPassword`
+### <a name="database_adminPassword"></a>12.7. Property `root > database > adminPassword`
 
 |              |          |
 | ------------ | -------- |
@@ -661,7 +687,7 @@ Must be one of:
 
 **Description:** Defines the pgAdmin password.
 
-### <a name="database_rdsCa"></a>10.8. Property `root > database > rdsCa`
+### <a name="database_rdsCa"></a>12.8. Property `root > database > rdsCa`
 
 |              |          |
 | ------------ | -------- |
@@ -670,7 +696,7 @@ Must be one of:
 
 **Description:** Defines the CA used to access the database.
 
-### <a name="database_sslMode"></a>10.9. Property `root > database > sslMode`
+### <a name="database_sslMode"></a>12.9. Property `root > database > sslMode`
 
 |              |          |
 | ------------ | -------- |
@@ -679,7 +705,7 @@ Must be one of:
 
 **Description:** Defines the postgres SSL mode that should be used.
 
-## <a name="objectStore"></a>11. Property `root > objectStore`
+## <a name="objectStore"></a>13. Property `root > objectStore`
 
 |                           |                                 |
 | ------------------------- | ------------------------------- |
@@ -699,7 +725,7 @@ Must be one of:
 | + [port](#objectStore_port )           | No      | integer | No         | -          | Defines the port for the Object Storage server configuration.       |
 | + [tls](#objectStore_tls )             | No      | boolean | No         | -          | Details if the Object Server uses TLS.                              |
 
-### <a name="objectStore_buckets"></a>11.1. Property `root > objectStore > buckets`
+### <a name="objectStore_buckets"></a>13.1. Property `root > objectStore > buckets`
 
 |              |         |
 | ------------ | ------- |
@@ -718,7 +744,7 @@ Must be one of:
 | ----------------------------------------------- | --------------------- |
 | [ObjectStoreBucket](#objectStore_buckets_items) | Object Storage Bucket |
 
-#### <a name="objectStore_buckets_items"></a>11.1.1. root > objectStore > buckets > ObjectStoreBucket
+#### <a name="objectStore_buckets_items"></a>13.1.1. root > objectStore > buckets > ObjectStoreBucket
 
 |                           |                                 |
 | ------------------------- | ------------------------------- |
@@ -739,7 +765,7 @@ Must be one of:
 | - [tls](#objectStore_buckets_items_tls )                     | No      | boolean | No         | -          | Details if the Object Server uses TLS.                            |
 | - [endpoint](#objectStore_buckets_items_endpoint )           | No      | string  | No         | -          | Defines the endpoint for the Object Storage server configuration. |
 
-##### <a name="objectStore_buckets_items_accessKey"></a>11.1.1.1. Property `root > objectStore > buckets > buckets items > accessKey`
+##### <a name="objectStore_buckets_items_accessKey"></a>13.1.1.1. Property `root > objectStore > buckets > buckets items > accessKey`
 
 |              |          |
 | ------------ | -------- |
@@ -748,7 +774,7 @@ Must be one of:
 
 **Description:** Defines the access key for specificed bucket.
 
-##### <a name="objectStore_buckets_items_secretKey"></a>11.1.1.2. Property `root > objectStore > buckets > buckets items > secretKey`
+##### <a name="objectStore_buckets_items_secretKey"></a>13.1.1.2. Property `root > objectStore > buckets > buckets items > secretKey`
 
 |              |          |
 | ------------ | -------- |
@@ -757,7 +783,7 @@ Must be one of:
 
 **Description:** Defines the secret key for the specified bucket.
 
-##### <a name="objectStore_buckets_items_region"></a>11.1.1.3. Property `root > objectStore > buckets > buckets items > region`
+##### <a name="objectStore_buckets_items_region"></a>13.1.1.3. Property `root > objectStore > buckets > buckets items > region`
 
 |              |          |
 | ------------ | -------- |
@@ -766,7 +792,7 @@ Must be one of:
 
 **Description:** Defines the region for the specified bucket.
 
-##### <a name="objectStore_buckets_items_requestedName"></a>11.1.1.4. Property `root > objectStore > buckets > buckets items > requestedName`
+##### <a name="objectStore_buckets_items_requestedName"></a>13.1.1.4. Property `root > objectStore > buckets > buckets items > requestedName`
 
 |              |          |
 | ------------ | -------- |
@@ -775,7 +801,7 @@ Must be one of:
 
 **Description:** The name that was requested for the bucket in the ClowdApp.
 
-##### <a name="objectStore_buckets_items_name"></a>11.1.1.5. Property `root > objectStore > buckets > buckets items > name`
+##### <a name="objectStore_buckets_items_name"></a>13.1.1.5. Property `root > objectStore > buckets > buckets items > name`
 
 |              |          |
 | ------------ | -------- |
@@ -784,7 +810,7 @@ Must be one of:
 
 **Description:** The actual name of the bucket being accessed.
 
-##### <a name="objectStore_buckets_items_tls"></a>11.1.1.6. Property `root > objectStore > buckets > buckets items > tls`
+##### <a name="objectStore_buckets_items_tls"></a>13.1.1.6. Property `root > objectStore > buckets > buckets items > tls`
 
 |              |           |
 | ------------ | --------- |
@@ -793,7 +819,7 @@ Must be one of:
 
 **Description:** Details if the Object Server uses TLS.
 
-##### <a name="objectStore_buckets_items_endpoint"></a>11.1.1.7. Property `root > objectStore > buckets > buckets items > endpoint`
+##### <a name="objectStore_buckets_items_endpoint"></a>13.1.1.7. Property `root > objectStore > buckets > buckets items > endpoint`
 
 |              |          |
 | ------------ | -------- |
@@ -802,7 +828,7 @@ Must be one of:
 
 **Description:** Defines the endpoint for the Object Storage server configuration.
 
-### <a name="objectStore_accessKey"></a>11.2. Property `root > objectStore > accessKey`
+### <a name="objectStore_accessKey"></a>13.2. Property `root > objectStore > accessKey`
 
 |              |          |
 | ------------ | -------- |
@@ -811,7 +837,7 @@ Must be one of:
 
 **Description:** Defines the access key for the Object Storage server configuration.
 
-### <a name="objectStore_secretKey"></a>11.3. Property `root > objectStore > secretKey`
+### <a name="objectStore_secretKey"></a>13.3. Property `root > objectStore > secretKey`
 
 |              |          |
 | ------------ | -------- |
@@ -820,7 +846,7 @@ Must be one of:
 
 **Description:** Defines the secret key for the Object Storage server configuration.
 
-### <a name="objectStore_hostname"></a>11.4. Property `root > objectStore > hostname`
+### <a name="objectStore_hostname"></a>13.4. Property `root > objectStore > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -829,7 +855,7 @@ Must be one of:
 
 **Description:** Defines the hostname for the Object Storage server configuration.
 
-### <a name="objectStore_port"></a>11.5. Property `root > objectStore > port`
+### <a name="objectStore_port"></a>13.5. Property `root > objectStore > port`
 
 |              |           |
 | ------------ | --------- |
@@ -838,7 +864,7 @@ Must be one of:
 
 **Description:** Defines the port for the Object Storage server configuration.
 
-### <a name="objectStore_tls"></a>11.6. Property `root > objectStore > tls`
+### <a name="objectStore_tls"></a>13.6. Property `root > objectStore > tls`
 
 |              |           |
 | ------------ | --------- |
@@ -847,7 +873,7 @@ Must be one of:
 
 **Description:** Details if the Object Server uses TLS.
 
-## <a name="inMemoryDb"></a>12. Property `root > inMemoryDb`
+## <a name="inMemoryDb"></a>14. Property `root > inMemoryDb`
 
 |                           |                                |
 | ------------------------- | ------------------------------ |
@@ -866,7 +892,7 @@ Must be one of:
 | - [password](#inMemoryDb_password ) | No      | string  | No         | -          | Defines the password for the In Memory DB server configuration.  |
 | - [sslMode](#inMemoryDb_sslMode )   | No      | boolean | No         | -          | Defines the sslMode used by the In Memory DB server coniguration |
 
-### <a name="inMemoryDb_hostname"></a>12.1. Property `root > inMemoryDb > hostname`
+### <a name="inMemoryDb_hostname"></a>14.1. Property `root > inMemoryDb > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -875,7 +901,7 @@ Must be one of:
 
 **Description:** Defines the hostname for the In Memory DB server configuration.
 
-### <a name="inMemoryDb_port"></a>12.2. Property `root > inMemoryDb > port`
+### <a name="inMemoryDb_port"></a>14.2. Property `root > inMemoryDb > port`
 
 |              |           |
 | ------------ | --------- |
@@ -884,7 +910,7 @@ Must be one of:
 
 **Description:** Defines the port for the In Memory DB server configuration.
 
-### <a name="inMemoryDb_username"></a>12.3. Property `root > inMemoryDb > username`
+### <a name="inMemoryDb_username"></a>14.3. Property `root > inMemoryDb > username`
 
 |              |          |
 | ------------ | -------- |
@@ -893,7 +919,7 @@ Must be one of:
 
 **Description:** Defines the username for the In Memory DB server configuration.
 
-### <a name="inMemoryDb_password"></a>12.4. Property `root > inMemoryDb > password`
+### <a name="inMemoryDb_password"></a>14.4. Property `root > inMemoryDb > password`
 
 |              |          |
 | ------------ | -------- |
@@ -902,7 +928,7 @@ Must be one of:
 
 **Description:** Defines the password for the In Memory DB server configuration.
 
-### <a name="inMemoryDb_sslMode"></a>12.5. Property `root > inMemoryDb > sslMode`
+### <a name="inMemoryDb_sslMode"></a>14.5. Property `root > inMemoryDb > sslMode`
 
 |              |           |
 | ------------ | --------- |
@@ -911,7 +937,7 @@ Must be one of:
 
 **Description:** Defines the sslMode used by the In Memory DB server coniguration
 
-## <a name="featureFlags"></a>13. Property `root > featureFlags`
+## <a name="featureFlags"></a>15. Property `root > featureFlags`
 
 |                           |                                  |
 | ------------------------- | -------------------------------- |
@@ -929,7 +955,7 @@ Must be one of:
 | - [clientAccessToken](#featureFlags_clientAccessToken ) | No      | string           | No         | -          | Defines the client access token to use when connect to the FeatureFlags server |
 | + [scheme](#featureFlags_scheme )                       | No      | enum (of string) | No         | -          | Details the scheme to use for FeatureFlags http/https                          |
 
-### <a name="featureFlags_hostname"></a>13.1. Property `root > featureFlags > hostname`
+### <a name="featureFlags_hostname"></a>15.1. Property `root > featureFlags > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -938,7 +964,7 @@ Must be one of:
 
 **Description:** Defines the hostname for the FeatureFlags server
 
-### <a name="featureFlags_port"></a>13.2. Property `root > featureFlags > port`
+### <a name="featureFlags_port"></a>15.2. Property `root > featureFlags > port`
 
 |              |           |
 | ------------ | --------- |
@@ -947,7 +973,7 @@ Must be one of:
 
 **Description:** Defines the port for the FeatureFlags server
 
-### <a name="featureFlags_clientAccessToken"></a>13.3. Property `root > featureFlags > clientAccessToken`
+### <a name="featureFlags_clientAccessToken"></a>15.3. Property `root > featureFlags > clientAccessToken`
 
 |              |          |
 | ------------ | -------- |
@@ -956,7 +982,7 @@ Must be one of:
 
 **Description:** Defines the client access token to use when connect to the FeatureFlags server
 
-### <a name="featureFlags_scheme"></a>13.4. Property `root > featureFlags > scheme`
+### <a name="featureFlags_scheme"></a>15.4. Property `root > featureFlags > scheme`
 
 |              |                    |
 | ------------ | ------------------ |
@@ -969,7 +995,7 @@ Must be one of:
 * "http"
 * "https"
 
-## <a name="endpoints"></a>14. Property `root > endpoints`
+## <a name="endpoints"></a>16. Property `root > endpoints`
 
 |              |         |
 | ------------ | ------- |
@@ -988,7 +1014,7 @@ Must be one of:
 | -------------------------------------- | --------------------------------- |
 | [DependencyEndpoint](#endpoints_items) | Dependent service connection info |
 
-### <a name="endpoints_items"></a>14.1. root > endpoints > DependencyEndpoint
+### <a name="endpoints_items"></a>16.1. root > endpoints > DependencyEndpoint
 
 |                           |                                  |
 | ------------------------- | -------------------------------- |
@@ -999,17 +1025,19 @@ Must be one of:
 
 **Description:** Dependent service connection info
 
-| Property                                 | Pattern | Type            | Deprecated | Definition | Title/Description                                                                                      |
-| ---------------------------------------- | ------- | --------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| + [name](#endpoints_items_name )         | No      | string          | No         | -          | The PodSpec name of the dependent service inside the ClowdApp.                                         |
-| + [hostname](#endpoints_items_hostname ) | No      | string          | No         | -          | The hostname of the dependent service.                                                                 |
-| + [port](#endpoints_items_port )         | No      | integer         | No         | -          | The port of the dependent service.                                                                     |
-| + [app](#endpoints_items_app )           | No      | string          | No         | -          | The app name of the ClowdApp hosting the service.                                                      |
-| - [tlsPort](#endpoints_items_tlsPort )   | No      | integer         | No         | -          | The TLS port of the dependent service.                                                                 |
-| + [apiPath](#endpoints_items_apiPath )   | No      | string          | No         | -          | The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)        |
-| - [apiPaths](#endpoints_items_apiPaths ) | No      | array of string | No         | -          | The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from |
+| Property                                     | Pattern | Type            | Deprecated | Definition | Title/Description                                                                                      |
+| -------------------------------------------- | ------- | --------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| + [name](#endpoints_items_name )             | No      | string          | No         | -          | The PodSpec name of the dependent service inside the ClowdApp.                                         |
+| + [hostname](#endpoints_items_hostname )     | No      | string          | No         | -          | The hostname of the dependent service.                                                                 |
+| + [port](#endpoints_items_port )             | No      | integer         | No         | -          | The port of the dependent service.                                                                     |
+| + [app](#endpoints_items_app )               | No      | string          | No         | -          | The app name of the ClowdApp hosting the service.                                                      |
+| - [tlsPort](#endpoints_items_tlsPort )       | No      | integer         | No         | -          | The TLS port of the dependent service.                                                                 |
+| - [h2cPort](#endpoints_items_h2cPort )       | No      | integer         | No         | -          | The H2C port of the dependent service.                                                                 |
+| - [h2cTLSPort](#endpoints_items_h2cTLSPort ) | No      | integer         | No         | -          | The H2C TLS port of the dependent service.                                                             |
+| + [apiPath](#endpoints_items_apiPath )       | No      | string          | No         | -          | The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)        |
+| - [apiPaths](#endpoints_items_apiPaths )     | No      | array of string | No         | -          | The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from |
 
-#### <a name="endpoints_items_name"></a>14.1.1. Property `root > endpoints > endpoints items > name`
+#### <a name="endpoints_items_name"></a>16.1.1. Property `root > endpoints > endpoints items > name`
 
 |              |          |
 | ------------ | -------- |
@@ -1018,7 +1046,7 @@ Must be one of:
 
 **Description:** The PodSpec name of the dependent service inside the ClowdApp.
 
-#### <a name="endpoints_items_hostname"></a>14.1.2. Property `root > endpoints > endpoints items > hostname`
+#### <a name="endpoints_items_hostname"></a>16.1.2. Property `root > endpoints > endpoints items > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -1027,7 +1055,7 @@ Must be one of:
 
 **Description:** The hostname of the dependent service.
 
-#### <a name="endpoints_items_port"></a>14.1.3. Property `root > endpoints > endpoints items > port`
+#### <a name="endpoints_items_port"></a>16.1.3. Property `root > endpoints > endpoints items > port`
 
 |              |           |
 | ------------ | --------- |
@@ -1036,7 +1064,7 @@ Must be one of:
 
 **Description:** The port of the dependent service.
 
-#### <a name="endpoints_items_app"></a>14.1.4. Property `root > endpoints > endpoints items > app`
+#### <a name="endpoints_items_app"></a>16.1.4. Property `root > endpoints > endpoints items > app`
 
 |              |          |
 | ------------ | -------- |
@@ -1045,7 +1073,7 @@ Must be one of:
 
 **Description:** The app name of the ClowdApp hosting the service.
 
-#### <a name="endpoints_items_tlsPort"></a>14.1.5. Property `root > endpoints > endpoints items > tlsPort`
+#### <a name="endpoints_items_tlsPort"></a>16.1.5. Property `root > endpoints > endpoints items > tlsPort`
 
 |              |           |
 | ------------ | --------- |
@@ -1054,7 +1082,25 @@ Must be one of:
 
 **Description:** The TLS port of the dependent service.
 
-#### <a name="endpoints_items_apiPath"></a>14.1.6. Property `root > endpoints > endpoints items > apiPath`
+#### <a name="endpoints_items_h2cPort"></a>16.1.6. Property `root > endpoints > endpoints items > h2cPort`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | No        |
+
+**Description:** The H2C port of the dependent service.
+
+#### <a name="endpoints_items_h2cTLSPort"></a>16.1.7. Property `root > endpoints > endpoints items > h2cTLSPort`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | No        |
+
+**Description:** The H2C TLS port of the dependent service.
+
+#### <a name="endpoints_items_apiPath"></a>16.1.8. Property `root > endpoints > endpoints items > apiPath`
 
 |              |          |
 | ------------ | -------- |
@@ -1063,7 +1109,7 @@ Must be one of:
 
 **Description:** The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)
 
-#### <a name="endpoints_items_apiPaths"></a>14.1.7. Property `root > endpoints > endpoints items > apiPaths`
+#### <a name="endpoints_items_apiPaths"></a>16.1.9. Property `root > endpoints > endpoints items > apiPaths`
 
 |              |                   |
 | ------------ | ----------------- |
@@ -1084,14 +1130,14 @@ Must be one of:
 | ------------------------------------------------- | ----------- |
 | [apiPaths items](#endpoints_items_apiPaths_items) | -           |
 
-##### <a name="endpoints_items_apiPaths_items"></a>14.1.7.1. root > endpoints > endpoints items > apiPaths > apiPaths items
+##### <a name="endpoints_items_apiPaths_items"></a>16.1.9.1. root > endpoints > endpoints items > apiPaths > apiPaths items
 
 |              |          |
 | ------------ | -------- |
 | **Type**     | `string` |
 | **Required** | No       |
 
-## <a name="privateEndpoints"></a>15. Property `root > privateEndpoints`
+## <a name="privateEndpoints"></a>17. Property `root > privateEndpoints`
 
 |              |         |
 | ------------ | ------- |
@@ -1110,7 +1156,7 @@ Must be one of:
 | ---------------------------------------------------- | --------------------------------- |
 | [PrivateDependencyEndpoint](#privateEndpoints_items) | Dependent service connection info |
 
-### <a name="privateEndpoints_items"></a>15.1. root > privateEndpoints > PrivateDependencyEndpoint
+### <a name="privateEndpoints_items"></a>17.1. root > privateEndpoints > PrivateDependencyEndpoint
 
 |                           |                                         |
 | ------------------------- | --------------------------------------- |
@@ -1121,15 +1167,17 @@ Must be one of:
 
 **Description:** Dependent service connection info
 
-| Property                                        | Pattern | Type    | Deprecated | Definition | Title/Description                                              |
-| ----------------------------------------------- | ------- | ------- | ---------- | ---------- | -------------------------------------------------------------- |
-| + [name](#privateEndpoints_items_name )         | No      | string  | No         | -          | The PodSpec name of the dependent service inside the ClowdApp. |
-| + [hostname](#privateEndpoints_items_hostname ) | No      | string  | No         | -          | The hostname of the dependent service.                         |
-| + [port](#privateEndpoints_items_port )         | No      | integer | No         | -          | The port of the dependent service.                             |
-| + [app](#privateEndpoints_items_app )           | No      | string  | No         | -          | The app name of the ClowdApp hosting the service.              |
-| - [tlsPort](#privateEndpoints_items_tlsPort )   | No      | integer | No         | -          | The TLS port of the dependent service.                         |
+| Property                                            | Pattern | Type    | Deprecated | Definition | Title/Description                                              |
+| --------------------------------------------------- | ------- | ------- | ---------- | ---------- | -------------------------------------------------------------- |
+| + [name](#privateEndpoints_items_name )             | No      | string  | No         | -          | The PodSpec name of the dependent service inside the ClowdApp. |
+| + [hostname](#privateEndpoints_items_hostname )     | No      | string  | No         | -          | The hostname of the dependent service.                         |
+| + [port](#privateEndpoints_items_port )             | No      | integer | No         | -          | The port of the dependent service.                             |
+| + [app](#privateEndpoints_items_app )               | No      | string  | No         | -          | The app name of the ClowdApp hosting the service.              |
+| - [tlsPort](#privateEndpoints_items_tlsPort )       | No      | integer | No         | -          | The TLS port of the dependent service.                         |
+| - [h2cPort](#privateEndpoints_items_h2cPort )       | No      | integer | No         | -          | The H2C port of the dependent service.                         |
+| - [h2cTLSPort](#privateEndpoints_items_h2cTLSPort ) | No      | integer | No         | -          | The H2C TLS port of the dependent service.                     |
 
-#### <a name="privateEndpoints_items_name"></a>15.1.1. Property `root > privateEndpoints > privateEndpoints items > name`
+#### <a name="privateEndpoints_items_name"></a>17.1.1. Property `root > privateEndpoints > privateEndpoints items > name`
 
 |              |          |
 | ------------ | -------- |
@@ -1138,7 +1186,7 @@ Must be one of:
 
 **Description:** The PodSpec name of the dependent service inside the ClowdApp.
 
-#### <a name="privateEndpoints_items_hostname"></a>15.1.2. Property `root > privateEndpoints > privateEndpoints items > hostname`
+#### <a name="privateEndpoints_items_hostname"></a>17.1.2. Property `root > privateEndpoints > privateEndpoints items > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -1147,7 +1195,7 @@ Must be one of:
 
 **Description:** The hostname of the dependent service.
 
-#### <a name="privateEndpoints_items_port"></a>15.1.3. Property `root > privateEndpoints > privateEndpoints items > port`
+#### <a name="privateEndpoints_items_port"></a>17.1.3. Property `root > privateEndpoints > privateEndpoints items > port`
 
 |              |           |
 | ------------ | --------- |
@@ -1156,7 +1204,7 @@ Must be one of:
 
 **Description:** The port of the dependent service.
 
-#### <a name="privateEndpoints_items_app"></a>15.1.4. Property `root > privateEndpoints > privateEndpoints items > app`
+#### <a name="privateEndpoints_items_app"></a>17.1.4. Property `root > privateEndpoints > privateEndpoints items > app`
 
 |              |          |
 | ------------ | -------- |
@@ -1165,7 +1213,7 @@ Must be one of:
 
 **Description:** The app name of the ClowdApp hosting the service.
 
-#### <a name="privateEndpoints_items_tlsPort"></a>15.1.5. Property `root > privateEndpoints > privateEndpoints items > tlsPort`
+#### <a name="privateEndpoints_items_tlsPort"></a>17.1.5. Property `root > privateEndpoints > privateEndpoints items > tlsPort`
 
 |              |           |
 | ------------ | --------- |
@@ -1174,7 +1222,25 @@ Must be one of:
 
 **Description:** The TLS port of the dependent service.
 
-## <a name="BOPURL"></a>16. Property `root > BOPURL`
+#### <a name="privateEndpoints_items_h2cPort"></a>17.1.6. Property `root > privateEndpoints > privateEndpoints items > h2cPort`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | No        |
+
+**Description:** The H2C port of the dependent service.
+
+#### <a name="privateEndpoints_items_h2cTLSPort"></a>17.1.7. Property `root > privateEndpoints > privateEndpoints items > h2cTLSPort`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `integer` |
+| **Required** | No        |
+
+**Description:** The H2C TLS port of the dependent service.
+
+## <a name="BOPURL"></a>18. Property `root > BOPURL`
 
 |              |          |
 | ------------ | -------- |
@@ -1183,7 +1249,7 @@ Must be one of:
 
 **Description:** Defines the path to the BOPURL.
 
-## <a name="hashCache"></a>17. Property `root > hashCache`
+## <a name="hashCache"></a>19. Property `root > hashCache`
 
 |              |          |
 | ------------ | -------- |
@@ -1192,7 +1258,7 @@ Must be one of:
 
 **Description:** A set of configMap/secret hashes
 
-## <a name="hostname"></a>18. Property `root > hostname`
+## <a name="hostname"></a>20. Property `root > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -1201,7 +1267,7 @@ Must be one of:
 
 **Description:** The external hostname of the deployment, where applicable
 
-## <a name="prometheusGateway"></a>19. Property `root > prometheusGateway`
+## <a name="prometheusGateway"></a>21. Property `root > prometheusGateway`
 
 |                           |                                       |
 | ------------------------- | ------------------------------------- |
@@ -1217,7 +1283,7 @@ Must be one of:
 | + [hostname](#prometheusGateway_hostname ) | No      | string  | No         | -          | Defines the hostname for the Prometheus Gateway server configuration. |
 | + [port](#prometheusGateway_port )         | No      | integer | No         | -          | Defines the port for the Prometheus Gateway server configuration.     |
 
-### <a name="prometheusGateway_hostname"></a>19.1. Property `root > prometheusGateway > hostname`
+### <a name="prometheusGateway_hostname"></a>21.1. Property `root > prometheusGateway > hostname`
 
 |              |          |
 | ------------ | -------- |
@@ -1226,7 +1292,7 @@ Must be one of:
 
 **Description:** Defines the hostname for the Prometheus Gateway server configuration.
 
-### <a name="prometheusGateway_port"></a>19.2. Property `root > prometheusGateway > port`
+### <a name="prometheusGateway_port"></a>21.2. Property `root > prometheusGateway > port`
 
 |              |           |
 | ------------ | --------- |
