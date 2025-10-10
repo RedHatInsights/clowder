@@ -122,7 +122,11 @@ spec:
         secret:
           defaultMode: 420
           secretName: clowdapp-tls-disabled
-      # Should NOT have caddy-config, caddy-tls, or tls-ca volumes
+      - configMap:
+          defaultMode: 420
+          name: openshift-service-ca.crt
+        name: tls-ca
+      # Should NOT have caddy-config or caddy-tls volumes
 ---
 # Assert that clowdapp-tls-disabled does NOT have TLS ports in its service
 apiVersion: v1

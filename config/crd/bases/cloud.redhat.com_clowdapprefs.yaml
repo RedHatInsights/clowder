@@ -205,12 +205,12 @@ spec:
                         type: boolean
                       port:
                         description: Sets the port exposed for ClowdApp deployments'
-                          TLS connections
+                          TLS connections. If unset, TLS is disabled in the environment.
                         format: int32
                         type: integer
                       privatePort:
                         description: Sets the private port exposed for ClowdApp deployments'
-                          TLS connections
+                          TLS connections. If unset, TLS is disabled in the environment.
                         format: int32
                         type: integer
                     type: object
