@@ -36,7 +36,7 @@ var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
 var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
-var defaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var defaultImageInMemoryDB = "registry.redhat.io/rhel10/valkey-8:10.0"
 
 // GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
 func GetDefaultDatabaseImage(version int32) (string, error) {
