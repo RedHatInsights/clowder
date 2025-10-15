@@ -41,7 +41,8 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 	}
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
-	envTLSConfig := &web.Env.Spec.Providers.Web.TLS
+	// 'true' if TLS is enabled for 1 or more deployments on this ClowdApp
+	var tlsEnabled bool
 
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
@@ -49,7 +50,10 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			return errors.Wrap("making service", err)
 		}
 
-		if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
+		deploymentWebConfig := &innerDeployment.WebServices
+		envTLSConfig := &web.Env.Spec.Providers.Web.TLS
+		if provutils.IsAnyTLSEnabled(deploymentWebConfig, envTLSConfig) {
+			tlsEnabled = true
 			d := &apps.Deployment{}
 			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
 
@@ -65,7 +69,7 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
-	if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
+	if tlsEnabled {
 		web.populateCA()
 
 		d := &batch.CronJobList{}

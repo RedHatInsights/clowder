@@ -104,7 +104,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 	}
 	web.Config.PrivatePort = utils.IntPtr(int(privatePort))
 
-	envTLSConfig := &web.Env.Spec.Providers.Web.TLS
+	// 'true' if TLS is enabled for 1 or more deployments on this ClowdApp
+	var tlsEnabled bool
 
 	for _, deployment := range app.Spec.Deployments {
 		innerDeployment := deployment
@@ -152,7 +153,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
+		deploymentWebConfig := &innerDeployment.WebServices
+		envTLSConfig := &web.Env.Spec.Providers.Web.TLS
+		if provutils.IsAnyTLSEnabled(deploymentWebConfig, envTLSConfig) {
+			tlsEnabled = true
 			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
 		}
 
@@ -169,9 +173,10 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		if err := web.Cache.Update(WebSecret, sec); err != nil {
 			return err
 		}
+
 	}
 
-	if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
+	if tlsEnabled {
 		web.populateCA()
 	}
 
