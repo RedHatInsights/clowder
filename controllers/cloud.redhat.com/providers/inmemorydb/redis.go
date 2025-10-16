@@ -143,7 +143,7 @@ func makeLocalRedis(env *crd.ClowdEnvironment, o obj.ClowdObject, objMap provide
 	probeHandler := core.ProbeHandler{
 		Exec: &core.ExecAction{
 			Command: []string{
-				"redis-cli",
+				"valkey-cli",
 			},
 		},
 	}
