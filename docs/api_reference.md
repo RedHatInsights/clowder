@@ -1669,8 +1669,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Determines whether TLS is enabled for ClowdApp deployments by default |  |  |
-| `port` _integer_ | Sets the port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment. |  |  |
-| `privatePort` _integer_ | Sets the private port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment. |  |  |
+| `port` _integer_ | Sets the port exposed for ClowdApp deployments' TLS connections |  |  |
+| `privatePort` _integer_ | Sets the private port exposed for ClowdApp deployments' TLS connections |  |  |
 
 
 #### TestingConfig

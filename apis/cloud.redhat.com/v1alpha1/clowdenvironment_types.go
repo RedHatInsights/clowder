@@ -125,10 +125,10 @@ type TLS struct {
 	// Determines whether TLS is enabled for ClowdApp deployments by default
 	Enabled bool `json:"enabled,omitempty"`
 
-	// Sets the port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment.
+	// Sets the port exposed for ClowdApp deployments' TLS connections
 	Port int32 `json:"port,omitempty"`
 
-	// Sets the private port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment.
+	// Sets the private port exposed for ClowdApp deployments' TLS connections
 	PrivatePort int32 `json:"privatePort,omitempty"`
 }
 
