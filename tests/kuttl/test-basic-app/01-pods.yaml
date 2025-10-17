@@ -47,7 +47,7 @@ spec:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
+      env:
         - name: ENV_VAR_1
           value: env_var_1
         - name: ENV_VAR_2
@@ -66,7 +66,7 @@ spec:
   - name: processor2
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
+      env:
         - name: ENV_VAR_1
           value: env_var_1
         - name: ENV_VAR_2
@@ -82,11 +82,10 @@ spec:
         enabled: true
       private:
         enabled: true
-        appProtocol: redis
   - name: processor3
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
+      env:
         - name: ENV_VAR_1
           value: env_var_1
         - name: ENV_VAR_2
@@ -101,7 +100,6 @@ spec:
     webServices:
       private:
         enabled: true
-        appProtocol: redis
 ---
 apiVersion: v1
 data:

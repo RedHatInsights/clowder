@@ -3569,24 +3569,14 @@ spec:
                             PrivateWebService is the definition of the private web service. There can be only
                             one private service managed by Clowder.
                           properties:
-                            appProtocol:
-                              description: AppProtocol determines the protocol to
-                                be used for the private port, (defaults to http)
-                              enum:
-                              - http
-                              - http2
-                              - https
-                              - tcp
-                              - tls
-                              - grpc
-                              - grpc-web
-                              - mongo
-                              - mysql
-                              - redis
-                              type: string
                             enabled:
                               description: |-
                                 Enabled describes if Clowder should enable the private service and provide the
+                                configuration in the cdappconfig.
+                              type: boolean
+                            h2cEnabled:
+                              description: |-
+                                H2CEnabled describes if Clowder should enable the private H2C service and provide the
                                 configuration in the cdappconfig.
                               type: boolean
                             tls:
@@ -3619,6 +3609,11 @@ spec:
                             enabled:
                               description: |-
                                 Enabled describes if Clowder should enable the public service and provide the
+                                configuration in the cdappconfig.
+                              type: boolean
+                            h2cEnabled:
+                              description: |-
+                                H2CEnabled describes if Clowder should enable the public H2C service and provide the
                                 configuration in the cdappconfig.
                               type: boolean
                             sessionAffinity:

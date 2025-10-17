@@ -20,6 +20,14 @@ type AppConfig struct {
 	// FeatureFlags corresponds to the JSON schema field "featureFlags".
 	FeatureFlags *FeatureFlagsConfig `json:"featureFlags,omitempty" yaml:"featureFlags,omitempty" mapstructure:"featureFlags,omitempty"`
 
+	// Defines the private H2C port that the app should be configured to listen on for
+	// H2C traffic.
+	H2CPrivatePort *int `json:"h2cPrivatePort,omitempty" yaml:"h2cPrivatePort,omitempty" mapstructure:"h2cPrivatePort,omitempty"`
+
+	// Defines the public H2C port that the app should be configured to listen on for
+	// H2C traffic.
+	H2CPublicPort *int `json:"h2cPublicPort,omitempty" yaml:"h2cPublicPort,omitempty" mapstructure:"h2cPublicPort,omitempty"`
+
 	// A set of configMap/secret hashes
 	HashCache *string `json:"hashCache,omitempty" yaml:"hashCache,omitempty" mapstructure:"hashCache,omitempty"`
 
@@ -63,7 +71,8 @@ type AppConfig struct {
 	// traffic.
 	PublicPort *int `json:"publicPort,omitempty" yaml:"publicPort,omitempty" mapstructure:"publicPort,omitempty"`
 
-	// Defines the port CA path
+	// Defines path to default CA certificate for TLS connections to other ClowdApps.
+	// Only populated when TLS is enabled for entire ClowdEnvironment.
 	TlsCAPath *string `json:"tlsCAPath,omitempty" yaml:"tlsCAPath,omitempty" mapstructure:"tlsCAPath,omitempty"`
 
 	// Deprecated: Use 'publicPort' instead.
@@ -308,6 +317,12 @@ type DependencyEndpoint struct {
 	// The app name of the ClowdApp hosting the service.
 	App string `json:"app" yaml:"app" mapstructure:"app"`
 
+	// The H2C port of the dependent service.
+	H2CPort *int `json:"h2cPort,omitempty" yaml:"h2cPort,omitempty" mapstructure:"h2cPort,omitempty"`
+
+	// The H2C TLS port of the dependent service.
+	H2CTLSPort *int `json:"h2cTLSPort,omitempty" yaml:"h2cTLSPort,omitempty" mapstructure:"h2cTLSPort,omitempty"`
+
 	// The hostname of the dependent service.
 	Hostname string `json:"hostname" yaml:"hostname" mapstructure:"hostname"`
 
@@ -316,6 +331,10 @@ type DependencyEndpoint struct {
 
 	// The port of the dependent service.
 	Port int `json:"port" yaml:"port" mapstructure:"port"`
+
+	// Defines path to CA certificate for TLS connections to this ClowdApp. If
+	// present, this should override use of default TLS CA path.
+	TlsCAPath *string `json:"tlsCAPath,omitempty" yaml:"tlsCAPath,omitempty" mapstructure:"tlsCAPath,omitempty"`
 
 	// The TLS port of the dependent service.
 	TlsPort *int `json:"tlsPort,omitempty" yaml:"tlsPort,omitempty" mapstructure:"tlsPort,omitempty"`
@@ -614,6 +633,12 @@ type PrivateDependencyEndpoint struct {
 	// The app name of the ClowdApp hosting the service.
 	App string `json:"app" yaml:"app" mapstructure:"app"`
 
+	// The H2C port of the dependent service.
+	H2CPort *int `json:"h2cPort,omitempty" yaml:"h2cPort,omitempty" mapstructure:"h2cPort,omitempty"`
+
+	// The H2C TLS port of the dependent service.
+	H2CTLSPort *int `json:"h2cTLSPort,omitempty" yaml:"h2cTLSPort,omitempty" mapstructure:"h2cTLSPort,omitempty"`
+
 	// The hostname of the dependent service.
 	Hostname string `json:"hostname" yaml:"hostname" mapstructure:"hostname"`
 
@@ -622,6 +647,10 @@ type PrivateDependencyEndpoint struct {
 
 	// The port of the dependent service.
 	Port int `json:"port" yaml:"port" mapstructure:"port"`
+
+	// Defines path to CA certificate for TLS connections to this ClowdApp. If
+	// present, this should override use of default TLS CA path.
+	TlsCAPath *string `json:"tlsCAPath,omitempty" yaml:"tlsCAPath,omitempty" mapstructure:"tlsCAPath,omitempty"`
 
 	// The TLS port of the dependent service.
 	TlsPort *int `json:"tlsPort,omitempty" yaml:"tlsPort,omitempty" mapstructure:"tlsPort,omitempty"`

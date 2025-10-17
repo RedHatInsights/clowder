@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: clowdapp-tls-enabled-processor
-  namespace: test-tls-web-services-app-overrides
+  namespace: test-h2c-web-services
 spec:
   template:
     spec:
@@ -38,6 +38,12 @@ spec:
           - containerPort: 18800
             name: tls-private
             protocol: TCP
+          - containerPort: 19800
+            name: h2c-tls
+            protocol: TCP
+          - containerPort: 11800
+            name: h2c-tls-private
+            protocol: TCP
         volumeMounts:
           - mountPath: /certs
             name: caddy-tls
@@ -68,7 +74,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: clowdapp-tls-enabled-processor
-  namespace: test-tls-web-services-app-overrides
+  namespace: test-h2c-web-services
 spec:
   selector:
     pod: clowdapp-tls-enabled-processor
@@ -78,11 +84,21 @@ spec:
     name: public
     protocol: TCP
     appProtocol: http
+  - port: 9800
+    targetPort: 9800
+    name: h2c
+    protocol: TCP
+    appProtocol: h2c
   - port: 10000
     targetPort: 10000
     name: private
     protocol: TCP
     appProtocol: http
+  - port: 10800
+    targetPort: 10800
+    name: h2c-private
+    protocol: TCP
+    appProtocol: h2c
   - port: 8800
     targetPort: 8800
     name: tls
@@ -93,6 +109,16 @@ spec:
     name: tls-private
     protocol: TCP
     appProtocol: http
+  - port: 19800
+    targetPort: 19800
+    name: h2c-tls
+    protocol: TCP
+    appProtocol: h2c
+  - port: 11800
+    targetPort: 11800
+    name: h2c-tls-private
+    protocol: TCP
+    appProtocol: h2c
   - port: 9000
     targetPort: 9000
     name: metrics
@@ -104,7 +130,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: clowdapp-tls-disabled-processor
-  namespace: test-tls-web-services-app-overrides
+  namespace: test-h2c-web-services
 spec:
   template:
     spec:
@@ -133,7 +159,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: clowdapp-tls-disabled-processor
-  namespace: test-tls-web-services-app-overrides
+  namespace: test-h2c-web-services
 spec:
   selector:
     pod: clowdapp-tls-disabled-processor
@@ -148,19 +174,24 @@ spec:
     name: private
     protocol: TCP
     appProtocol: http
+  - port: 10800
+    targetPort: 10800
+    name: h2c-private
+    protocol: TCP
+    appProtocol: h2c
   - port: 9000
     targetPort: 9000
     name: metrics
     protocol: TCP
     appProtocol: http
-  # Should NOT have tls or tls-private ports
+  # Should NOT have tls, tls-private, h2c, h2c-tls, or h2c-tls-private ports
 ---
 # Assert that secrets are created for both apps
 apiVersion: v1
 kind: Secret
 metadata:
   name: clowdapp-tls-enabled
-  namespace: test-tls-web-services-app-overrides
+  namespace: test-h2c-web-services
   labels:
     app: clowdapp-tls-enabled
   ownerReferences:
@@ -173,7 +204,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: clowdapp-tls-disabled
-  namespace: test-tls-web-services-app-overrides
+  namespace: test-h2c-web-services
   labels:
     app: clowdapp-tls-disabled
   ownerReferences:
