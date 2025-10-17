@@ -32,7 +32,6 @@ func (web *webProvider) EnvProvide() error {
 }
 
 func (web *webProvider) Provide(app *crd.ClowdApp) error {
-
 	web.Config.WebPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port)) // nolint:staticcheck  // ignore SA1019, we know this is deprecated
 	web.Config.PublicPort = utils.IntPtr(int(web.Env.Spec.Providers.Web.Port))
 	privatePort := web.Env.Spec.Providers.Web.PrivatePort
@@ -58,6 +57,8 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			return errors.Wrap("making service", err)
 		}
 
+		// mount CA cert volume on Deployments if TLS is configured in the environment
+		// (whether it is globally enabled or not, we will always mount the volume)
 		if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
 			d := &apps.Deployment{}
 			dnn := app.GetDeploymentNamespacedName(&innerDeployment)
@@ -74,9 +75,9 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
+	// mount CA cert volume on CronJobs if TLS is configured in the environment
+	// (whether it is globally enabled or not, we will always mount the volume)
 	if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
-		web.populateCA()
-
 		d := &batch.CronJobList{}
 
 		if err := web.Cache.List(provCronjob.CoreCronJob, d); err != nil {
@@ -94,9 +95,10 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
-	return nil
-}
+	if envTLSConfig.Enabled {
+		// if TLS is enabled environment-wide, set 'tlsCAPath' in the root level of cdappconfig
+		web.Config.TlsCAPath = utils.StringPtr(provutils.GetServiceCACertPath())
+	}
 
-func (web *webProvider) populateCA() {
-	web.Config.TlsCAPath = utils.StringPtr("/cdapp/certs/service-ca.crt")
+	return nil
 }

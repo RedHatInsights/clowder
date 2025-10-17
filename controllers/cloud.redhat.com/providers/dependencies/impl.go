@@ -12,6 +12,15 @@ import (
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
+func anyNotZero(ints ...int) bool {
+	for _, i := range ints {
+		if i != 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 
 	if dep.Env.Spec.Providers.Web.PrivatePort == 0 {
@@ -125,154 +134,135 @@ func makeDepConfig(
 	return missingDeps
 }
 
-func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd.ClowdApp, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig) {
-	apiPaths := provutils.GetAPIPaths(innerDeployment, depApp.GetDeploymentNamespacedName(innerDeployment).Name)
+func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.WebDeprecated, deploymentWebServices crd.WebServices, serviceName string, appName string, appNamespace string, envWebConfig *crd.WebConfig, apiPaths []string, depConfig *[]config.DependencyEndpoint) {
+	port := int(0)
+	tlsPort := int(0)
+	h2cPort := int(0)
+	h2cTLSPort := int(0)
 
-	if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
-		name := depApp.GetDeploymentNamespacedName(innerDeployment).Name
-		tlsPort := int(0)
-		if provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) {
+	var publicTLSEnabled bool
+
+	if bool(deploymentWeb) || deploymentWebServices.Public.Enabled {
+		port = int(envWebConfig.Port)
+		if provutils.IsPublicTLSEnabled(&deploymentWebServices, &envWebConfig.TLS) {
 			tlsPort = int(envWebConfig.TLS.Port)
+			publicTLSEnabled = true
 		}
-		h2cPort := int(0)
-		if innerDeployment.WebServices.Public.H2CEnabled && envWebConfig.H2CPort != 0 {
+	}
+
+	if deploymentWebServices.Public.H2CEnabled {
+		if envWebConfig.H2CPort != 0 {
 			h2cPort = int(envWebConfig.H2CPort)
 		}
-		h2cTLSPort := int(0)
-		if innerDeployment.WebServices.Public.H2CEnabled && provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPort != 0 {
+		if provutils.IsPublicTLSEnabled(&deploymentWebServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPort != 0 {
 			h2cTLSPort = int(envWebConfig.TLS.H2CPort)
+			publicTLSEnabled = true
 		}
-		*depConfig = append(*depConfig, config.DependencyEndpoint{
-			Hostname:   fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
-			Port:       int(envWebConfig.Port),
-			Name:       innerDeployment.Name,
-			App:        depApp.Name,
+	}
+
+	if anyNotZero(port, tlsPort, h2cPort, h2cTLSPort) {
+		dependencyEndpoint := config.DependencyEndpoint{
+			Hostname:   fmt.Sprintf("%s.%s.svc", serviceName, appNamespace),
+			Port:       port,
+			Name:       deploymentName,
+			App:        appName,
 			TlsPort:    utils.IntPtr(tlsPort),
 			H2CPort:    utils.IntPtr(h2cPort),
 			H2CTLSPort: utils.IntPtr(h2cTLSPort),
 			// if app has multiple paths set, set apiPath to first name for backward compatibility
 			ApiPath:  apiPaths[0],
 			ApiPaths: apiPaths,
-		})
-	}
-	if innerDeployment.WebServices.Private.Enabled {
-		name := depApp.GetDeploymentNamespacedName(innerDeployment).Name
-		tlsPrivatePort := int(0)
-		if provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) {
-			tlsPrivatePort = int(envWebConfig.TLS.PrivatePort)
 		}
-		h2cPrivatePort := int(0)
-		if innerDeployment.WebServices.Private.H2CEnabled && envWebConfig.H2CPrivatePort != 0 {
-			h2cPrivatePort = int(envWebConfig.H2CPrivatePort)
+
+		if publicTLSEnabled {
+			dependencyEndpoint.TlsCAPath = provutils.GetServiceCACertPath()
 		}
-		h2cTLSPrivatePort := int(0)
-		if innerDeployment.WebServices.Private.H2CEnabled && provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPrivatePort != 0 {
-			h2cTLSPrivatePort = int(envWebConfig.TLS.H2CPrivatePort)
-		}
-		*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
-			Hostname:   fmt.Sprintf("%s.%s.svc", name, depApp.Namespace),
-			Port:       int(envWebConfig.PrivatePort),
-			Name:       innerDeployment.Name,
-			App:        depApp.Name,
-			TlsPort:    utils.IntPtr(tlsPrivatePort),
-			H2CPort:    utils.IntPtr(h2cPrivatePort),
-			H2CTLSPort: utils.IntPtr(h2cTLSPrivatePort),
-		})
+
+		*depConfig = append(*depConfig, dependencyEndpoint)
 	}
 }
 
+func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebServices crd.WebServices, serviceName string, appName string, appNamespace string, envWebConfig *crd.WebConfig, privDepConfig *[]config.PrivateDependencyEndpoint) {
+	privatePort := int(0)
+	tlsPrivatePort := int(0)
+	h2cPrivatePort := int(0)
+	h2cTLSPrivatePort := int(0)
+
+	var privateTLSEnabled bool
+
+	if deploymentWebServices.Private.Enabled {
+		privatePort = int(envWebConfig.PrivatePort)
+		if provutils.IsPrivateTLSEnabled(&deploymentWebServices, &envWebConfig.TLS) {
+			tlsPrivatePort = int(envWebConfig.TLS.PrivatePort)
+			privateTLSEnabled = true
+		}
+	}
+
+	if deploymentWebServices.Private.H2CEnabled {
+		if envWebConfig.H2CPrivatePort != 0 {
+			h2cPrivatePort = int(envWebConfig.H2CPrivatePort)
+		}
+		if provutils.IsPrivateTLSEnabled(&deploymentWebServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPrivatePort != 0 {
+			h2cTLSPrivatePort = int(envWebConfig.TLS.H2CPrivatePort)
+			privateTLSEnabled = true
+		}
+	}
+
+	if anyNotZero(privatePort, tlsPrivatePort, h2cPrivatePort, h2cTLSPrivatePort) {
+		dependencyEndpoint := config.PrivateDependencyEndpoint{
+			Hostname:   fmt.Sprintf("%s.%s.svc", serviceName, appNamespace),
+			Port:       int(privatePort),
+			Name:       deploymentName,
+			App:        appName,
+			TlsPort:    utils.IntPtr(tlsPrivatePort),
+			H2CPort:    utils.IntPtr(h2cPrivatePort),
+			H2CTLSPort: utils.IntPtr(h2cTLSPrivatePort),
+		}
+
+		if privateTLSEnabled {
+			dependencyEndpoint.TlsCAPath = provutils.GetServiceCACertPath()
+		}
+
+		*privDepConfig = append(*privDepConfig, dependencyEndpoint)
+	}
+}
+
+func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd.ClowdApp, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig) {
+	serviceName := depApp.GetDeploymentNamespacedName(innerDeployment).Name
+	apiPaths := provutils.GetAPIPaths(innerDeployment, serviceName)
+
+	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, serviceName, depApp.Name, depApp.Namespace, envWebConfig, apiPaths, depConfig)
+	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, serviceName, depApp.Name, depApp.Namespace, envWebConfig, privDepConfig)
+}
+
+func coalesceInt32(vals ...int32) int32 {
+	for _, v := range vals {
+		if v != 0 {
+			return v
+		}
+	}
+	return 0
+}
+
 func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployment, depAppRef crd.ClowdAppRef, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig) {
-	apiPaths := provutils.GetAPIPaths(innerDeployment, fmt.Sprintf("%s-%s", depAppRef.Name, innerDeployment.Name))
+	serviceName := depAppRef.GetDeploymentNamespacedName(innerDeployment).Name
+	apiPaths := provutils.GetAPIPaths(innerDeployment, serviceName)
 
-	// Use the configured ports from the ClowdAppRef, or fall back to defaults
-	deploymentPort := envWebConfig.Port
-	if depAppRef.Spec.RemoteEnvironment.Port != 0 {
-		deploymentPort = depAppRef.Spec.RemoteEnvironment.Port
+	webConfig := crd.WebConfig{
+		Port:           coalesceInt32(depAppRef.Spec.RemoteEnvironment.Port, envWebConfig.Port),
+		PrivatePort:    coalesceInt32(depAppRef.Spec.RemoteEnvironment.PrivatePort, envWebConfig.PrivatePort),
+		H2CPort:        coalesceInt32(depAppRef.Spec.RemoteEnvironment.H2CPort, envWebConfig.H2CPort),
+		H2CPrivatePort: coalesceInt32(depAppRef.Spec.RemoteEnvironment.H2CPrivatePort, envWebConfig.H2CPrivatePort),
+		TLS: crd.TLS{
+			Port:           coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port),
+			H2CPort:        coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.H2CPort, envWebConfig.TLS.H2CPort),
+			PrivatePort:    coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort),
+			H2CPrivatePort: coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort, envWebConfig.TLS.H2CPrivatePort),
+		},
 	}
 
-	deploymentPrivatePort := envWebConfig.PrivatePort
-	if depAppRef.Spec.RemoteEnvironment.PrivatePort != 0 {
-		deploymentPrivatePort = depAppRef.Spec.RemoteEnvironment.PrivatePort
-	}
-
-	deploymentTLSPort := int32(0)
-	deploymentTLSPrivatePort := int32(0)
-	deploymentH2CPort := int32(0)
-	deploymentH2CPrivatePort := int32(0)
-	deploymentH2CTLSPort := int32(0)
-	deploymentH2CTLSPrivatePort := int32(0)
-
-	if provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
-		// default to port defined by local ClowdEnvironment unless remote environment specifies one
-		deploymentTLSPort = envWebConfig.TLS.Port
-		if depAppRef.Spec.RemoteEnvironment.TLS.Port != 0 {
-			deploymentTLSPort = depAppRef.Spec.RemoteEnvironment.TLS.Port
-		}
-	}
-
-	if provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
-		// default to port defined by local ClowdEnvironment unless remote environment specifies one
-		deploymentTLSPrivatePort = envWebConfig.TLS.PrivatePort
-		if depAppRef.Spec.RemoteEnvironment.TLS.PrivatePort != 0 {
-			deploymentTLSPrivatePort = depAppRef.Spec.RemoteEnvironment.TLS.PrivatePort
-		}
-	}
-
-	// H2C port configuration
-	if innerDeployment.WebServices.Public.H2CEnabled {
-		deploymentH2CPort = envWebConfig.H2CPort
-		if depAppRef.Spec.RemoteEnvironment.H2CPort != 0 {
-			deploymentH2CPort = depAppRef.Spec.RemoteEnvironment.H2CPort
-		}
-	}
-
-	if innerDeployment.WebServices.Private.H2CEnabled {
-		deploymentH2CPrivatePort = envWebConfig.H2CPrivatePort
-		if depAppRef.Spec.RemoteEnvironment.H2CPrivatePort != 0 {
-			deploymentH2CPrivatePort = depAppRef.Spec.RemoteEnvironment.H2CPrivatePort
-		}
-	}
-
-	// H2C TLS port configuration
-	if innerDeployment.WebServices.Public.H2CEnabled && provutils.IsPublicTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
-		deploymentH2CTLSPort = envWebConfig.TLS.H2CPort
-		if depAppRef.Spec.RemoteEnvironment.TLS.H2CPort != 0 {
-			deploymentH2CTLSPort = depAppRef.Spec.RemoteEnvironment.TLS.H2CPort
-		}
-	}
-
-	if innerDeployment.WebServices.Private.H2CEnabled && provutils.IsPrivateTLSEnabled(&innerDeployment.WebServices, &depAppRef.Spec.RemoteEnvironment.TLS) {
-		deploymentH2CTLSPrivatePort = envWebConfig.TLS.H2CPrivatePort
-		if depAppRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort != 0 {
-			deploymentH2CTLSPrivatePort = depAppRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort
-		}
-	}
-
-	if bool(innerDeployment.Web) || innerDeployment.WebServices.Public.Enabled {
-		*depConfig = append(*depConfig, config.DependencyEndpoint{
-			Hostname:   innerDeployment.Hostname,
-			Port:       int(deploymentPort),
-			Name:       innerDeployment.Name,
-			App:        depAppRef.Name,
-			TlsPort:    utils.IntPtr(int(deploymentTLSPort)),
-			H2CPort:    utils.IntPtr(int(deploymentH2CPort)),
-			H2CTLSPort: utils.IntPtr(int(deploymentH2CTLSPort)),
-			// if app has multiple paths set, set apiPath to first name for backward compatibility
-			ApiPath:  apiPaths[0],
-			ApiPaths: apiPaths,
-		})
-	}
-	if innerDeployment.WebServices.Private.Enabled {
-		*privDepConfig = append(*privDepConfig, config.PrivateDependencyEndpoint{
-			Hostname:   innerDeployment.Hostname,
-			Port:       int(deploymentPrivatePort),
-			Name:       innerDeployment.Name,
-			App:        depAppRef.Name,
-			TlsPort:    utils.IntPtr(int(deploymentTLSPrivatePort)),
-			H2CPort:    utils.IntPtr(int(deploymentH2CPrivatePort)),
-			H2CTLSPort: utils.IntPtr(int(deploymentH2CTLSPrivatePort)),
-		})
-	}
+	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, serviceName, depAppRef.Name, depAppRef.Namespace, &webConfig, apiPaths, depConfig)
+	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, serviceName, depAppRef.Name, depAppRef.Namespace, &webConfig, privDepConfig)
 }
 
 func processAppAndAppRefEndpoints(

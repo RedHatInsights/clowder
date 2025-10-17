@@ -84,9 +84,10 @@
     - [16.1.5. Property `root > endpoints > endpoints items > tlsPort`](#endpoints_items_tlsPort)
     - [16.1.6. Property `root > endpoints > endpoints items > h2cPort`](#endpoints_items_h2cPort)
     - [16.1.7. Property `root > endpoints > endpoints items > h2cTLSPort`](#endpoints_items_h2cTLSPort)
-    - [16.1.8. Property `root > endpoints > endpoints items > apiPath`](#endpoints_items_apiPath)
-    - [16.1.9. Property `root > endpoints > endpoints items > apiPaths`](#endpoints_items_apiPaths)
-      - [16.1.9.1. root > endpoints > endpoints items > apiPaths > apiPaths items](#endpoints_items_apiPaths_items)
+    - [16.1.8. Property `root > endpoints > endpoints items > tlsCAPath`](#endpoints_items_tlsCAPath)
+    - [16.1.9. Property `root > endpoints > endpoints items > apiPath`](#endpoints_items_apiPath)
+    - [16.1.10. Property `root > endpoints > endpoints items > apiPaths`](#endpoints_items_apiPaths)
+      - [16.1.10.1. root > endpoints > endpoints items > apiPaths > apiPaths items](#endpoints_items_apiPaths_items)
 - [17. Property `root > privateEndpoints`](#privateEndpoints)
   - [17.1. root > privateEndpoints > PrivateDependencyEndpoint](#privateEndpoints_items)
     - [17.1.1. Property `root > privateEndpoints > privateEndpoints items > name`](#privateEndpoints_items_name)
@@ -96,6 +97,7 @@
     - [17.1.5. Property `root > privateEndpoints > privateEndpoints items > tlsPort`](#privateEndpoints_items_tlsPort)
     - [17.1.6. Property `root > privateEndpoints > privateEndpoints items > h2cPort`](#privateEndpoints_items_h2cPort)
     - [17.1.7. Property `root > privateEndpoints > privateEndpoints items > h2cTLSPort`](#privateEndpoints_items_h2cTLSPort)
+    - [17.1.8. Property `root > privateEndpoints > privateEndpoints items > tlsCAPath`](#privateEndpoints_items_tlsCAPath)
 - [18. Property `root > BOPURL`](#BOPURL)
 - [19. Property `root > hashCache`](#hashCache)
 - [20. Property `root > hostname`](#hostname)
@@ -114,29 +116,29 @@
 
 **Description:** ClowdApp deployment configuration for Clowder enabled apps.
 
-| Property                                   | Pattern | Type    | Deprecated | Definition                               | Title/Description                                                                                         |
-| ------------------------------------------ | ------- | ------- | ---------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| - [privatePort](#privatePort )             | No      | integer | No         | -                                        | Defines the private port that the app should be configured to listen on for API traffic.                  |
-| - [publicPort](#publicPort )               | No      | integer | No         | -                                        | Defines the public port that the app should be configured to listen on for API traffic.                   |
-| - [h2cPrivatePort](#h2cPrivatePort )       | No      | integer | No         | -                                        | Defines the private H2C port that the app should be configured to listen on for H2C traffic.              |
-| - [h2cPublicPort](#h2cPublicPort )         | No      | integer | No         | -                                        | Defines the public H2C port that the app should be configured to listen on for H2C traffic.               |
-| - [webPort](#webPort )                     | No      | integer | No         | -                                        | Deprecated: Use 'publicPort' instead.                                                                     |
-| - [tlsCAPath](#tlsCAPath )                 | No      | string  | No         | -                                        | Defines the port CA path                                                                                  |
-| + [metricsPort](#metricsPort )             | No      | integer | No         | -                                        | Defines the metrics port that the app should be configured to listen on for metric traffic.               |
-| + [metricsPath](#metricsPath )             | No      | string  | No         | -                                        | Defines the path to the metrics server that the app should be configured to listen on for metric traffic. |
-| + [logging](#logging )                     | No      | object  | No         | In #/definitions/LoggingConfig           | LoggingConfig                                                                                             |
-| - [metadata](#metadata )                   | No      | object  | No         | In #/definitions/AppMetadata             | AppMetadata                                                                                               |
-| - [kafka](#kafka )                         | No      | object  | No         | In #/definitions/KafkaConfig             | Kafka Configuration                                                                                       |
-| - [database](#database )                   | No      | object  | No         | In #/definitions/DatabaseConfig          | DatabaseConfig                                                                                            |
-| - [objectStore](#objectStore )             | No      | object  | No         | In #/definitions/ObjectStoreConfig       | Object Storage Configuration                                                                              |
-| - [inMemoryDb](#inMemoryDb )               | No      | object  | No         | In #/definitions/InMemoryDBConfig        | In Memory DB Configuration                                                                                |
-| - [featureFlags](#featureFlags )           | No      | object  | No         | In #/definitions/FeatureFlagsConfig      | Feature Flags Configuration                                                                               |
-| - [endpoints](#endpoints )                 | No      | array   | No         | -                                        | -                                                                                                         |
-| - [privateEndpoints](#privateEndpoints )   | No      | array   | No         | -                                        | -                                                                                                         |
-| - [BOPURL](#BOPURL )                       | No      | string  | No         | -                                        | Defines the path to the BOPURL.                                                                           |
-| - [hashCache](#hashCache )                 | No      | string  | No         | -                                        | A set of configMap/secret hashes                                                                          |
-| - [hostname](#hostname )                   | No      | string  | No         | -                                        | The external hostname of the deployment, where applicable                                                 |
-| - [prometheusGateway](#prometheusGateway ) | No      | object  | No         | In #/definitions/PrometheusGatewayConfig | Prometheus Gateway Configuration                                                                          |
+| Property                                   | Pattern | Type    | Deprecated | Definition                               | Title/Description                                                                                                                              |
+| ------------------------------------------ | ------- | ------- | ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| - [privatePort](#privatePort )             | No      | integer | No         | -                                        | Defines the private port that the app should be configured to listen on for API traffic.                                                       |
+| - [publicPort](#publicPort )               | No      | integer | No         | -                                        | Defines the public port that the app should be configured to listen on for API traffic.                                                        |
+| - [h2cPrivatePort](#h2cPrivatePort )       | No      | integer | No         | -                                        | Defines the private H2C port that the app should be configured to listen on for H2C traffic.                                                   |
+| - [h2cPublicPort](#h2cPublicPort )         | No      | integer | No         | -                                        | Defines the public H2C port that the app should be configured to listen on for H2C traffic.                                                    |
+| - [webPort](#webPort )                     | No      | integer | No         | -                                        | Deprecated: Use 'publicPort' instead.                                                                                                          |
+| - [tlsCAPath](#tlsCAPath )                 | No      | string  | No         | -                                        | Defines path to default CA certificate for TLS connections to other ClowdApps. Only populated when TLS is enabled for entire ClowdEnvironment. |
+| + [metricsPort](#metricsPort )             | No      | integer | No         | -                                        | Defines the metrics port that the app should be configured to listen on for metric traffic.                                                    |
+| + [metricsPath](#metricsPath )             | No      | string  | No         | -                                        | Defines the path to the metrics server that the app should be configured to listen on for metric traffic.                                      |
+| + [logging](#logging )                     | No      | object  | No         | In #/definitions/LoggingConfig           | LoggingConfig                                                                                                                                  |
+| - [metadata](#metadata )                   | No      | object  | No         | In #/definitions/AppMetadata             | AppMetadata                                                                                                                                    |
+| - [kafka](#kafka )                         | No      | object  | No         | In #/definitions/KafkaConfig             | Kafka Configuration                                                                                                                            |
+| - [database](#database )                   | No      | object  | No         | In #/definitions/DatabaseConfig          | DatabaseConfig                                                                                                                                 |
+| - [objectStore](#objectStore )             | No      | object  | No         | In #/definitions/ObjectStoreConfig       | Object Storage Configuration                                                                                                                   |
+| - [inMemoryDb](#inMemoryDb )               | No      | object  | No         | In #/definitions/InMemoryDBConfig        | In Memory DB Configuration                                                                                                                     |
+| - [featureFlags](#featureFlags )           | No      | object  | No         | In #/definitions/FeatureFlagsConfig      | Feature Flags Configuration                                                                                                                    |
+| - [endpoints](#endpoints )                 | No      | array   | No         | -                                        | -                                                                                                                                              |
+| - [privateEndpoints](#privateEndpoints )   | No      | array   | No         | -                                        | -                                                                                                                                              |
+| - [BOPURL](#BOPURL )                       | No      | string  | No         | -                                        | Defines the path to the BOPURL.                                                                                                                |
+| - [hashCache](#hashCache )                 | No      | string  | No         | -                                        | A set of configMap/secret hashes                                                                                                               |
+| - [hostname](#hostname )                   | No      | string  | No         | -                                        | The external hostname of the deployment, where applicable                                                                                      |
+| - [prometheusGateway](#prometheusGateway ) | No      | object  | No         | In #/definitions/PrometheusGatewayConfig | Prometheus Gateway Configuration                                                                                                               |
 
 ## <a name="privatePort"></a>1. Property `root > privatePort`
 
@@ -190,7 +192,7 @@
 | **Type**     | `string` |
 | **Required** | No       |
 
-**Description:** Defines the port CA path
+**Description:** Defines path to default CA certificate for TLS connections to other ClowdApps. Only populated when TLS is enabled for entire ClowdEnvironment.
 
 ## <a name="metricsPort"></a>7. Property `root > metricsPort`
 
@@ -1025,17 +1027,18 @@ Must be one of:
 
 **Description:** Dependent service connection info
 
-| Property                                     | Pattern | Type            | Deprecated | Definition | Title/Description                                                                                      |
-| -------------------------------------------- | ------- | --------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| + [name](#endpoints_items_name )             | No      | string          | No         | -          | The PodSpec name of the dependent service inside the ClowdApp.                                         |
-| + [hostname](#endpoints_items_hostname )     | No      | string          | No         | -          | The hostname of the dependent service.                                                                 |
-| + [port](#endpoints_items_port )             | No      | integer         | No         | -          | The port of the dependent service.                                                                     |
-| + [app](#endpoints_items_app )               | No      | string          | No         | -          | The app name of the ClowdApp hosting the service.                                                      |
-| - [tlsPort](#endpoints_items_tlsPort )       | No      | integer         | No         | -          | The TLS port of the dependent service.                                                                 |
-| - [h2cPort](#endpoints_items_h2cPort )       | No      | integer         | No         | -          | The H2C port of the dependent service.                                                                 |
-| - [h2cTLSPort](#endpoints_items_h2cTLSPort ) | No      | integer         | No         | -          | The H2C TLS port of the dependent service.                                                             |
-| + [apiPath](#endpoints_items_apiPath )       | No      | string          | No         | -          | The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)        |
-| - [apiPaths](#endpoints_items_apiPaths )     | No      | array of string | No         | -          | The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from |
+| Property                                     | Pattern | Type            | Deprecated | Definition | Title/Description                                                                                                                 |
+| -------------------------------------------- | ------- | --------------- | ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| + [name](#endpoints_items_name )             | No      | string          | No         | -          | The PodSpec name of the dependent service inside the ClowdApp.                                                                    |
+| + [hostname](#endpoints_items_hostname )     | No      | string          | No         | -          | The hostname of the dependent service.                                                                                            |
+| + [port](#endpoints_items_port )             | No      | integer         | No         | -          | The port of the dependent service.                                                                                                |
+| + [app](#endpoints_items_app )               | No      | string          | No         | -          | The app name of the ClowdApp hosting the service.                                                                                 |
+| - [tlsPort](#endpoints_items_tlsPort )       | No      | integer         | No         | -          | The TLS port of the dependent service.                                                                                            |
+| - [h2cPort](#endpoints_items_h2cPort )       | No      | integer         | No         | -          | The H2C port of the dependent service.                                                                                            |
+| - [h2cTLSPort](#endpoints_items_h2cTLSPort ) | No      | integer         | No         | -          | The H2C TLS port of the dependent service.                                                                                        |
+| - [tlsCAPath](#endpoints_items_tlsCAPath )   | No      | string          | No         | -          | Defines path to CA certificate for TLS connections to this ClowdApp. If present, this should override use of default TLS CA path. |
+| + [apiPath](#endpoints_items_apiPath )       | No      | string          | No         | -          | The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)                                   |
+| - [apiPaths](#endpoints_items_apiPaths )     | No      | array of string | No         | -          | The list of API paths (each matching format: '/api/some-path/') that this app will serve requests from                            |
 
 #### <a name="endpoints_items_name"></a>16.1.1. Property `root > endpoints > endpoints items > name`
 
@@ -1100,7 +1103,16 @@ Must be one of:
 
 **Description:** The H2C TLS port of the dependent service.
 
-#### <a name="endpoints_items_apiPath"></a>16.1.8. Property `root > endpoints > endpoints items > apiPath`
+#### <a name="endpoints_items_tlsCAPath"></a>16.1.8. Property `root > endpoints > endpoints items > tlsCAPath`
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | No       |
+
+**Description:** Defines path to CA certificate for TLS connections to this ClowdApp. If present, this should override use of default TLS CA path.
+
+#### <a name="endpoints_items_apiPath"></a>16.1.9. Property `root > endpoints > endpoints items > apiPath`
 
 |              |          |
 | ------------ | -------- |
@@ -1109,7 +1121,7 @@ Must be one of:
 
 **Description:** The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)
 
-#### <a name="endpoints_items_apiPaths"></a>16.1.9. Property `root > endpoints > endpoints items > apiPaths`
+#### <a name="endpoints_items_apiPaths"></a>16.1.10. Property `root > endpoints > endpoints items > apiPaths`
 
 |              |                   |
 | ------------ | ----------------- |
@@ -1130,7 +1142,7 @@ Must be one of:
 | ------------------------------------------------- | ----------- |
 | [apiPaths items](#endpoints_items_apiPaths_items) | -           |
 
-##### <a name="endpoints_items_apiPaths_items"></a>16.1.9.1. root > endpoints > endpoints items > apiPaths > apiPaths items
+##### <a name="endpoints_items_apiPaths_items"></a>16.1.10.1. root > endpoints > endpoints items > apiPaths > apiPaths items
 
 |              |          |
 | ------------ | -------- |
@@ -1167,15 +1179,16 @@ Must be one of:
 
 **Description:** Dependent service connection info
 
-| Property                                            | Pattern | Type    | Deprecated | Definition | Title/Description                                              |
-| --------------------------------------------------- | ------- | ------- | ---------- | ---------- | -------------------------------------------------------------- |
-| + [name](#privateEndpoints_items_name )             | No      | string  | No         | -          | The PodSpec name of the dependent service inside the ClowdApp. |
-| + [hostname](#privateEndpoints_items_hostname )     | No      | string  | No         | -          | The hostname of the dependent service.                         |
-| + [port](#privateEndpoints_items_port )             | No      | integer | No         | -          | The port of the dependent service.                             |
-| + [app](#privateEndpoints_items_app )               | No      | string  | No         | -          | The app name of the ClowdApp hosting the service.              |
-| - [tlsPort](#privateEndpoints_items_tlsPort )       | No      | integer | No         | -          | The TLS port of the dependent service.                         |
-| - [h2cPort](#privateEndpoints_items_h2cPort )       | No      | integer | No         | -          | The H2C port of the dependent service.                         |
-| - [h2cTLSPort](#privateEndpoints_items_h2cTLSPort ) | No      | integer | No         | -          | The H2C TLS port of the dependent service.                     |
+| Property                                            | Pattern | Type    | Deprecated | Definition | Title/Description                                                                                                                 |
+| --------------------------------------------------- | ------- | ------- | ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| + [name](#privateEndpoints_items_name )             | No      | string  | No         | -          | The PodSpec name of the dependent service inside the ClowdApp.                                                                    |
+| + [hostname](#privateEndpoints_items_hostname )     | No      | string  | No         | -          | The hostname of the dependent service.                                                                                            |
+| + [port](#privateEndpoints_items_port )             | No      | integer | No         | -          | The port of the dependent service.                                                                                                |
+| + [app](#privateEndpoints_items_app )               | No      | string  | No         | -          | The app name of the ClowdApp hosting the service.                                                                                 |
+| - [tlsPort](#privateEndpoints_items_tlsPort )       | No      | integer | No         | -          | The TLS port of the dependent service.                                                                                            |
+| - [h2cPort](#privateEndpoints_items_h2cPort )       | No      | integer | No         | -          | The H2C port of the dependent service.                                                                                            |
+| - [h2cTLSPort](#privateEndpoints_items_h2cTLSPort ) | No      | integer | No         | -          | The H2C TLS port of the dependent service.                                                                                        |
+| - [tlsCAPath](#privateEndpoints_items_tlsCAPath )   | No      | string  | No         | -          | Defines path to CA certificate for TLS connections to this ClowdApp. If present, this should override use of default TLS CA path. |
 
 #### <a name="privateEndpoints_items_name"></a>17.1.1. Property `root > privateEndpoints > privateEndpoints items > name`
 
@@ -1239,6 +1252,15 @@ Must be one of:
 | **Required** | No        |
 
 **Description:** The H2C TLS port of the dependent service.
+
+#### <a name="privateEndpoints_items_tlsCAPath"></a>17.1.8. Property `root > privateEndpoints > privateEndpoints items > tlsCAPath`
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | No       |
+
+**Description:** Defines path to CA certificate for TLS connections to this ClowdApp. If present, this should override use of default TLS CA path.
 
 ## <a name="BOPURL"></a>18. Property `root > BOPURL`
 

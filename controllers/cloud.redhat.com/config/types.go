@@ -71,7 +71,8 @@ type AppConfig struct {
 	// traffic.
 	PublicPort *int `json:"publicPort,omitempty" yaml:"publicPort,omitempty" mapstructure:"publicPort,omitempty"`
 
-	// Defines the port CA path
+	// Defines path to default CA certificate for TLS connections to other ClowdApps.
+	// Only populated when TLS is enabled for entire ClowdEnvironment.
 	TlsCAPath *string `json:"tlsCAPath,omitempty" yaml:"tlsCAPath,omitempty" mapstructure:"tlsCAPath,omitempty"`
 
 	// Deprecated: Use 'publicPort' instead.
@@ -330,6 +331,10 @@ type DependencyEndpoint struct {
 
 	// The port of the dependent service.
 	Port int `json:"port" yaml:"port" mapstructure:"port"`
+
+	// Defines path to CA certificate for TLS connections to this ClowdApp. If
+	// present, this should override use of default TLS CA path.
+	TlsCAPath *string `json:"tlsCAPath,omitempty" yaml:"tlsCAPath,omitempty" mapstructure:"tlsCAPath,omitempty"`
 
 	// The TLS port of the dependent service.
 	TlsPort *int `json:"tlsPort,omitempty" yaml:"tlsPort,omitempty" mapstructure:"tlsPort,omitempty"`
@@ -642,6 +647,10 @@ type PrivateDependencyEndpoint struct {
 
 	// The port of the dependent service.
 	Port int `json:"port" yaml:"port" mapstructure:"port"`
+
+	// Defines path to CA certificate for TLS connections to this ClowdApp. If
+	// present, this should override use of default TLS CA path.
+	TlsCAPath *string `json:"tlsCAPath,omitempty" yaml:"tlsCAPath,omitempty" mapstructure:"tlsCAPath,omitempty"`
 
 	// The TLS port of the dependent service.
 	TlsPort *int `json:"tlsPort,omitempty" yaml:"tlsPort,omitempty" mapstructure:"tlsPort,omitempty"`

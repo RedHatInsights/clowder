@@ -307,6 +307,16 @@ var KubeLinterAnnotations = map[string]string{
 // RCharSet defines the character set used for random string generation
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
+// GetCACertDir returns the directory where CA certificates are mounted on containers
+func GetCACertDir() string {
+	return "/cdapp/certs"
+}
+
+// GetCACertPath returns the full path to the service CA certificate
+func GetServiceCACertPath() *string {
+	return utils.StringPtr(GetCACertDir() + "/service-ca.crt")
+}
+
 // AddCertVolume adds a TLS certificate volume to the provided PodSpec
 func AddCertVolume(d *core.PodSpec, dnn string) {
 	d.Volumes = append(d.Volumes, core.Volume{
@@ -325,7 +335,7 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 			vms = append(vms, core.VolumeMount{
 				Name:      "tls-ca",
 				ReadOnly:  true,
-				MountPath: "/cdapp/certs",
+				MountPath: GetCACertDir(),
 			})
 		}
 		d.Containers[i].VolumeMounts = vms
@@ -336,7 +346,7 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 		vms = append(vms, core.VolumeMount{
 			Name:      "tls-ca",
 			ReadOnly:  true,
-			MountPath: "/cdapp/certs",
+			MountPath: GetCACertDir(),
 		})
 		d.InitContainers[i].VolumeMounts = vms
 	}
