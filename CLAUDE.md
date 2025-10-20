@@ -191,10 +191,14 @@ go test ./controllers/cloud.redhat.com/providers/web/...
 # Run with verbose output
 go test -v ./controllers/...
 
-# Run kuttl e2e tests (requires running cluster)
-make kuttl
+# IMPORTANT: Testing code changes with KUTTL
+# You MUST deploy your latest changes to minikube before running KUTTL tests
+# Otherwise you'll be testing the old code that's already deployed!
+make deploy-minikube-quick  # Deploy latest changes to minikube
+make kuttl                  # Run all kuttl e2e tests
 
-# Run specific kuttl test
+# Run specific kuttl test (after deploying changes)
+make deploy-minikube-quick
 make kuttl KUTTL_TEST="--test=test-basic-app"
 ```
 

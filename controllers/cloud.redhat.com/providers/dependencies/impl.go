@@ -134,7 +134,7 @@ func makeDepConfig(
 	return missingDeps
 }
 
-func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.WebDeprecated, deploymentWebServices crd.WebServices, serviceName string, appName string, appNamespace string, envWebConfig *crd.WebConfig, apiPaths []string, depConfig *[]config.DependencyEndpoint) {
+func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.WebDeprecated, deploymentWebServices crd.WebServices, hostname string, appName string, envWebConfig *crd.WebConfig, apiPaths []string, depConfig *[]config.DependencyEndpoint) {
 	port := int(0)
 	tlsPort := int(0)
 	h2cPort := int(0)
@@ -162,7 +162,7 @@ func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.Web
 
 	if anyNotZero(port, tlsPort, h2cPort, h2cTLSPort) {
 		dependencyEndpoint := config.DependencyEndpoint{
-			Hostname:   fmt.Sprintf("%s.%s.svc", serviceName, appNamespace),
+			Hostname:   hostname,
 			Port:       port,
 			Name:       deploymentName,
 			App:        appName,
@@ -182,7 +182,7 @@ func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.Web
 	}
 }
 
-func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebServices crd.WebServices, serviceName string, appName string, appNamespace string, envWebConfig *crd.WebConfig, privDepConfig *[]config.PrivateDependencyEndpoint) {
+func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebServices crd.WebServices, hostname string, appName string, envWebConfig *crd.WebConfig, privDepConfig *[]config.PrivateDependencyEndpoint) {
 	privatePort := int(0)
 	tlsPrivatePort := int(0)
 	h2cPrivatePort := int(0)
@@ -210,7 +210,7 @@ func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebService
 
 	if anyNotZero(privatePort, tlsPrivatePort, h2cPrivatePort, h2cTLSPrivatePort) {
 		dependencyEndpoint := config.PrivateDependencyEndpoint{
-			Hostname:   fmt.Sprintf("%s.%s.svc", serviceName, appNamespace),
+			Hostname:   hostname,
 			Port:       int(privatePort),
 			Name:       deploymentName,
 			App:        appName,
@@ -231,8 +231,11 @@ func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd
 	serviceName := depApp.GetDeploymentNamespacedName(innerDeployment).Name
 	apiPaths := provutils.GetAPIPaths(innerDeployment, serviceName)
 
-	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, serviceName, depApp.Name, depApp.Namespace, envWebConfig, apiPaths, depConfig)
-	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, serviceName, depApp.Name, depApp.Namespace, envWebConfig, privDepConfig)
+	// For ClowdApp, construct the internal Kubernetes service hostname
+	hostname := fmt.Sprintf("%s.%s.svc", serviceName, depApp.Namespace)
+
+	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, hostname, depApp.Name, envWebConfig, apiPaths, depConfig)
+	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, hostname, depApp.Name, envWebConfig, privDepConfig)
 }
 
 func coalesceInt32(vals ...int32) int32 {
@@ -261,8 +264,9 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 		},
 	}
 
-	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, serviceName, depAppRef.Name, depAppRef.Namespace, &webConfig, apiPaths, depConfig)
-	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, serviceName, depAppRef.Name, depAppRef.Namespace, &webConfig, privDepConfig)
+	// For ClowdAppRef, use the explicit hostname from the deployment spec instead of generating one
+	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, innerDeployment.Hostname, depAppRef.Name, &webConfig, apiPaths, depConfig)
+	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, innerDeployment.Hostname, depAppRef.Name, &webConfig, privDepConfig)
 }
 
 func processAppAndAppRefEndpoints(
