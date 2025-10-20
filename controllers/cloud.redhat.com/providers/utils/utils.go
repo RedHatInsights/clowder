@@ -312,7 +312,7 @@ func GetCACertDir() string {
 	return "/cdapp/certs"
 }
 
-// GetCACertPath returns the full path to the service CA certificate
+// GetServiceCACertPath returns the full path to the service CA certificate
 func GetServiceCACertPath() *string {
 	return utils.StringPtr(GetCACertDir() + "/service-ca.crt")
 }
