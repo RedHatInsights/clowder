@@ -51,7 +51,8 @@ func generateServer(port int32, appPort int32, tlsConnPolicy []*caddytls.Connect
 		if protocol == "h2c" {
 			transport.Versions = []string{"h2c"}
 		}
-		reverseProxy.TransportRaw = caddyconfig.JSONModuleObject(transport, "protocol", protocol, &warnings)
+		// Always use "http" as the protocol module name
+		reverseProxy.TransportRaw = caddyconfig.JSONModuleObject(transport, "protocol", "http", &warnings)
 	}
 
 	server := &caddyhttp.Server{
@@ -108,20 +109,25 @@ func generateCaddyConfig(pub bool, priv bool, pubPort int32, privPort int32, pub
 		"tls": caddyconfig.JSON(tlsConfig, &warnings),
 	}
 
-	// Add HTTP app if there are HTTP servers
-	if len(httpServers) > 0 {
-		httpAppConfig := caddyhttp.App{
-			Servers: httpServers,
-		}
-		appsRaw["http"] = caddyconfig.JSON(httpAppConfig, &warnings)
+	// Combine HTTP and H2C servers into a single HTTP app
+	allServers := make(map[string]*caddyhttp.Server)
+
+	// Add HTTP servers
+	for name, server := range httpServers {
+		allServers[name] = server
 	}
 
-	// Add H2C app if there are H2C servers
-	if len(h2cServers) > 0 {
-		h2cAppConfig := caddyhttp.App{
-			Servers: h2cServers,
+	// Add H2C servers with different names to avoid conflicts
+	for name, server := range h2cServers {
+		allServers[name+"H2C"] = server
+	}
+
+	// Add HTTP app with all servers
+	if len(allServers) > 0 {
+		httpAppConfig := caddyhttp.App{
+			Servers: allServers,
 		}
-		appsRaw["h2c"] = caddyconfig.JSON(h2cAppConfig, &warnings)
+		appsRaw["http"] = caddyconfig.JSON(httpAppConfig, &warnings)
 	}
 
 	v := caddy.Config{
