@@ -111,7 +111,7 @@ spec:
   - port: 10000
     targetPort: 10000
     name: private
-    appProtocol: redis
+    appProtocol: http
   - port: 9000
     targetPort: 9000
     name: metrics

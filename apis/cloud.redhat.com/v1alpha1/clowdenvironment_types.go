@@ -72,6 +72,12 @@ type WebConfig struct {
 	// The private port that web services inside a ClowdApp should be served on.
 	PrivatePort int32 `json:"privatePort,omitempty"`
 
+	// The H2C port that web services inside ClowdApp pods should be served on.
+	H2CPort int32 `json:"h2cPort,omitempty"`
+
+	// The private H2C port that web services inside a ClowdApp should be served on.
+	H2CPrivatePort int32 `json:"h2cPrivatePort,omitempty"`
+
 	// The auth port that the web local mode will use with the AuthSidecar
 	AuthPort int32 `json:"aiuthPort,omitempty"`
 
@@ -130,6 +136,12 @@ type TLS struct {
 
 	// Sets the private port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment.
 	PrivatePort int32 `json:"privatePort,omitempty"`
+
+	// Sets the H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment.
+	H2CPort int32 `json:"h2cPort,omitempty"`
+
+	// Sets the private H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment.
+	H2CPrivatePort int32 `json:"h2cPrivatePort,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

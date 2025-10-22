@@ -16,12 +16,20 @@
                     "description": "Defines the public port that the app should be configured to listen on for API traffic.",
                     "type": "integer"
                 },
+                "h2cPrivatePort": {
+                    "description": "Defines the private H2C port that the app should be configured to listen on for H2C traffic.",
+                    "type": "integer"
+                },
+                "h2cPublicPort": {
+                    "description": "Defines the public H2C port that the app should be configured to listen on for H2C traffic.",
+                    "type": "integer"
+                },
                 "webPort": {
                     "description": "Deprecated: Use 'publicPort' instead.",
                     "type": "integer"
                 },
                 "tlsCAPath": {
-                    "description": "Defines the port CA path",
+                    "description": "Defines path to default CA certificate for TLS connections to other ClowdApps. Only populated when TLS is enabled for entire ClowdEnvironment.",
                     "type": "string"
                 },
                 "metricsPort": {
@@ -495,6 +503,18 @@
                     "description": "The TLS port of the dependent service.",
                     "type": "integer"
                 },
+                "h2cPort": {
+                    "description": "The H2C port of the dependent service.",
+                    "type": "integer"
+                },
+                "h2cTLSPort": {
+                    "description": "The H2C TLS port of the dependent service.",
+                    "type": "integer"
+                },
+                "tlsCAPath": {
+                    "description": "Defines path to CA certificate for TLS connections to this ClowdApp. If present, this should override use of default TLS CA path.",
+                    "type": "string"
+                },
                 "apiPath": {
                     "description": "The top level api path that the app should serve from /api/<apiPath> (deprecated, use apiPaths)",
                     "type": "string"
@@ -539,6 +559,18 @@
                 "tlsPort": {
                     "description": "The TLS port of the dependent service.",
                     "type": "integer"
+                },
+                "h2cPort": {
+                    "description": "The H2C port of the dependent service.",
+                    "type": "integer"
+                },
+                "h2cTLSPort": {
+                    "description": "The H2C TLS port of the dependent service.",
+                    "type": "integer"
+                },
+                "tlsCAPath": {
+                    "description": "Defines path to CA certificate for TLS connections to this ClowdApp. If present, this should override use of default TLS CA path.",
+                    "type": "string"
                 }
             },
             "required": [

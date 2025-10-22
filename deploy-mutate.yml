@@ -108,24 +108,15 @@ objects:
 
                               one private service managed by Clowder.'
                             properties:
-                              appProtocol:
-                                description: AppProtocol determines the protocol to
-                                  be used for the private port, (defaults to http)
-                                enum:
-                                - http
-                                - http2
-                                - https
-                                - tcp
-                                - tls
-                                - grpc
-                                - grpc-web
-                                - mongo
-                                - mysql
-                                - redis
-                                type: string
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the private service and provide the
+
+                                  configuration in the cdappconfig.'
+                                type: boolean
+                              h2cEnabled:
+                                description: 'H2CEnabled describes if Clowder should
+                                  enable the private H2C service and provide the
 
                                   configuration in the cdappconfig.'
                                 type: boolean
@@ -160,6 +151,12 @@ objects:
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the public service and provide the
+
+                                  configuration in the cdappconfig.'
+                                type: boolean
+                              h2cEnabled:
+                                description: 'H2CEnabled describes if Clowder should
+                                  enable the public H2C service and provide the
 
                                   configuration in the cdappconfig.'
                                 type: boolean
@@ -207,6 +204,18 @@ objects:
                   description: ClowdAppRefRemoteEnvironment defines details about
                     the remote ClowdEnvironment configuration
                   properties:
+                    h2cPort:
+                      description: 'H2CPort defines the H2C port used to reach deployments
+                        in the remote cluster (default: use the same value as ClowdApps
+                        in the local cluster)'
+                      format: int32
+                      type: integer
+                    h2cPrivatePort:
+                      description: 'H2CPrivatePort defines the private H2C port used
+                        to reach deployments in the remote cluster (default: use the
+                        same value as ClowdApps in the local cluster)'
+                      format: int32
+                      type: integer
                     name:
                       description: Name defines the name of the remote ClowdEnvironment
                       type: string
@@ -231,14 +240,27 @@ objects:
                           description: Determines whether TLS is enabled for ClowdApp
                             deployments by default
                           type: boolean
+                        h2cPort:
+                          description: Sets the H2C port exposed for ClowdApp deployments'
+                            TLS connections. If unset, H2C TLS is disabled in the
+                            environment.
+                          format: int32
+                          type: integer
+                        h2cPrivatePort:
+                          description: Sets the private H2C port exposed for ClowdApp
+                            deployments' TLS connections. If unset, H2C TLS is disabled
+                            in the environment.
+                          format: int32
+                          type: integer
                         port:
                           description: Sets the port exposed for ClowdApp deployments'
-                            TLS connections
+                            TLS connections. If unset, TLS is disabled in the environment.
                           format: int32
                           type: integer
                         privatePort:
                           description: Sets the private port exposed for ClowdApp
-                            deployments' TLS connections
+                            deployments' TLS connections. If unset, TLS is disabled
+                            in the environment.
                           format: int32
                           type: integer
                       type: object
@@ -5331,24 +5353,15 @@ objects:
 
                               one private service managed by Clowder.'
                             properties:
-                              appProtocol:
-                                description: AppProtocol determines the protocol to
-                                  be used for the private port, (defaults to http)
-                                enum:
-                                - http
-                                - http2
-                                - https
-                                - tcp
-                                - tls
-                                - grpc
-                                - grpc-web
-                                - mongo
-                                - mysql
-                                - redis
-                                type: string
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the private service and provide the
+
+                                  configuration in the cdappconfig.'
+                                type: boolean
+                              h2cEnabled:
+                                description: 'H2CEnabled describes if Clowder should
+                                  enable the private H2C service and provide the
 
                                   configuration in the cdappconfig.'
                                 type: boolean
@@ -5383,6 +5396,12 @@ objects:
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the public service and provide the
+
+                                  configuration in the cdappconfig.'
+                                type: boolean
+                              h2cEnabled:
+                                description: 'H2CEnabled describes if Clowder should
+                                  enable the public H2C service and provide the
 
                                   configuration in the cdappconfig.'
                                 type: boolean
@@ -11141,6 +11160,16 @@ objects:
                                 use for mTLS verification
                               type: string
                           type: object
+                        h2cPort:
+                          description: The H2C port that web services inside ClowdApp
+                            pods should be served on.
+                          format: int32
+                          type: integer
+                        h2cPrivatePort:
+                          description: The private H2C port that web services inside
+                            a ClowdApp should be served on.
+                          format: int32
+                          type: integer
                         images:
                           description: Optional images to use for web provider components
                             -- only applies when running in (*_local_*) mode.
@@ -11215,14 +11244,28 @@ objects:
                               description: Determines whether TLS is enabled for ClowdApp
                                 deployments by default
                               type: boolean
+                            h2cPort:
+                              description: Sets the H2C port exposed for ClowdApp
+                                deployments' TLS connections. If unset, H2C TLS is
+                                disabled in the environment.
+                              format: int32
+                              type: integer
+                            h2cPrivatePort:
+                              description: Sets the private H2C port exposed for ClowdApp
+                                deployments' TLS connections. If unset, H2C TLS is
+                                disabled in the environment.
+                              format: int32
+                              type: integer
                             port:
                               description: Sets the port exposed for ClowdApp deployments'
-                                TLS connections
+                                TLS connections. If unset, TLS is disabled in the
+                                environment.
                               format: int32
                               type: integer
                             privatePort:
                               description: Sets the private port exposed for ClowdApp
-                                deployments' TLS connections
+                                deployments' TLS connections. If unset, TLS is disabled
+                                in the environment.
                               format: int32
                               type: integer
                           type: object
