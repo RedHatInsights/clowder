@@ -27,7 +27,7 @@ import (
 )
 
 // DefaultImageIQESelenium defines the default selenium image for IQE testing
-var DefaultImageIQESelenium = "quay.io/redhatqe/selenium-standalone"
+var DefaultImageIQESelenium = "quay.io/cloudservices/selenium-standalone-chrome"
 
 // IqeSecret represents the resource identifier for IQE secrets
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
@@ -159,7 +159,7 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	}
 	tag := env.Spec.Providers.Testing.Iqe.UI.Selenium.DefaultImageTag
 	if tag == "" {
-		tag = "ff_102.9.0esr_chrome_112.0.5615.121"
+		tag = "136.0-20250828"
 	}
 
 	// check if this CJI has specified a selenium image tag override
