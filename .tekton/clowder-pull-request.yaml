@@ -319,22 +319,22 @@ spec:
           script: |
             set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && cp /var/workdir/manifest.yaml . && cp /var/workdir/deploy-kustomize.yaml . && dnf install make python3.12 diffutils -y && make build-template && make test-template
           workingDir: /opt/app-root/src
-        - computeResources: {}
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1756195303
-          name: setup-testbin
-          script: |
-            set -ex
-            mkdir -p /var/workdir/testbin
-            cd /var/workdir/testbin
-            curl -L -o kubebuilder https://github.com/kubernetes-sigs/kubebuilder/releases/download/v3.15.0/kubebuilder_linux_amd64
-            chmod +x kubebuilder
-            ./kubebuilder version
-            mkdir -p bin
-            cd bin
-            curl -L -o setup-envtest https://github.com/kubernetes-sigs/controller-runtime/releases/download/v0.18.4/setup-envtest-linux-amd64
-            chmod +x setup-envtest
-            ./setup-envtest use 1.30.x --bin-dir .
-          workingDir: /opt/app-root/src
+        # - computeResources: {}
+        #   image: registry.access.redhat.com/ubi8/ubi:8.10-1756195303
+        #   name: setup-testbin
+        #   script: |
+        #     set -ex
+        #     mkdir -p /var/workdir/testbin
+        #     cd /var/workdir/testbin
+        #     curl -L -o kubebuilder https://github.com/kubernetes-sigs/kubebuilder/releases/download/v3.15.0/kubebuilder_linux_amd64
+        #     chmod +x kubebuilder
+        #     ./kubebuilder version
+        #     mkdir -p bin
+        #     cd bin
+        #     curl -L -o setup-envtest https://github.com/kubernetes-sigs/controller-runtime/releases/download/v0.18.4/setup-envtest-linux-amd64
+        #     chmod +x setup-envtest
+        #     ./setup-envtest use 1.30.x --bin-dir .
+        #   workingDir: /opt/app-root/src
         - computeResources: {}
           env:
           # AWS Configuration for dynamic EC2 provisioning
