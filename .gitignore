@@ -63,3 +63,5 @@ deploy-mutate.yml.old
 deploy-kustomize.yaml
 
 minikube/*
+
+.claude

@@ -36,7 +36,7 @@ var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
 var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
-var defaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var defaultImageInMemoryDB = "registry.redhat.io/rhel10/valkey-8:10.0"
 
 // GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
 func GetDefaultDatabaseImage(version int32) (string, error) {
@@ -307,6 +307,16 @@ var KubeLinterAnnotations = map[string]string{
 // RCharSet defines the character set used for random string generation
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
+// GetCACertDir returns the directory where CA certificates are mounted on containers
+func GetCACertDir() string {
+	return "/cdapp/certs"
+}
+
+// GetServiceCACertPath returns the full path to the service CA certificate
+func GetServiceCACertPath() *string {
+	return utils.StringPtr(GetCACertDir() + "/service-ca.crt")
+}
+
 // AddCertVolume adds a TLS certificate volume to the provided PodSpec
 func AddCertVolume(d *core.PodSpec, dnn string) {
 	d.Volumes = append(d.Volumes, core.Volume{
@@ -325,7 +335,7 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 			vms = append(vms, core.VolumeMount{
 				Name:      "tls-ca",
 				ReadOnly:  true,
-				MountPath: "/cdapp/certs",
+				MountPath: GetCACertDir(),
 			})
 		}
 		d.Containers[i].VolumeMounts = vms
@@ -336,7 +346,7 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 		vms = append(vms, core.VolumeMount{
 			Name:      "tls-ca",
 			ReadOnly:  true,
-			MountPath: "/cdapp/certs",
+			MountPath: GetCACertDir(),
 		})
 		d.InitContainers[i].VolumeMounts = vms
 	}

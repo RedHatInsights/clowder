@@ -11,5 +11,5 @@ spec:
         service: redis
     spec:    
       containers:
-        - image: registry.redhat.io/rhel9/redis-6:1-199.1726663404
+        - image: registry.redhat.io/rhel10/valkey-8:10.0
           resources: {}
