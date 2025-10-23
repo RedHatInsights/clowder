@@ -104,9 +104,6 @@ spec:
       description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
       name: build-args-file
       type: string
-    - default: minikube-ssh-key
-      description: Minikube information.
-      name: minikube-ssh-key
     - name: buildah-format
       default: docker
       type: string
@@ -268,7 +265,25 @@ spec:
         - computeResources: {}
           image: registry.access.redhat.com/ubi9/go-toolset:1.24.6-1756993846
           name: unit-tests
-          script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
+          script: |
+            set -xe
+            git config --global --add safe.directory /var/workdir/source
+            
+            # Set up test environment
+            export KUBEBUILDER_ASSETS=/var/workdir/testbin/bin
+            mkdir -p /var/workdir/testbin/bin
+            
+            # Install setup-envtest if not already available
+            if [ ! -f "bin/setup-envtest" ]; then
+                make envtest
+            fi
+            
+            # Use setup-envtest to get the right binaries
+            ./bin/setup-envtest use 1.30.x --bin-dir /var/workdir/testbin/bin
+            
+            # Run tests with proper environment
+            export CLOWDER_CONFIG_PATH=test_config.json
+            make test
           workingDir: /var/workdir/source
         volumes:
         - emptyDir: {}
