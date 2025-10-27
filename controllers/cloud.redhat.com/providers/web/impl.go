@@ -29,6 +29,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	nn := app.GetDeploymentNamespacedName(deployment)
 
 	appProtocol := "http"
+	h2cAppProtocol := "h2c"
 
 	if err := cache.Create(CoreService, nn, s); err != nil {
 		return err
@@ -86,12 +87,29 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		}
 	}
 
+	// Add H2C public port if enabled
+	if deployment.WebServices.Public.H2CEnabled && env.Spec.Providers.Web.H2CPort != 0 {
+		h2cPort := core.ServicePort{
+			Name:        "h2c",
+			Port:        env.Spec.Providers.Web.H2CPort,
+			Protocol:    "TCP",
+			AppProtocol: &h2cAppProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.H2CPort)),
+		}
+		servicePorts = append(servicePorts, h2cPort)
+
+		// Append port to deployment spec
+		containerPorts = append(containerPorts,
+			core.ContainerPort{
+				Name:          "h2c",
+				ContainerPort: env.Spec.Providers.Web.H2CPort,
+				Protocol:      core.ProtocolTCP,
+			},
+		)
+	}
+
 	if deployment.WebServices.Private.Enabled {
 		privatePort := env.Spec.Providers.Web.PrivatePort
-		appProtocolPriv := "http"
-		if deployment.WebServices.Private.AppProtocol != "" {
-			appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
-		}
 
 		if privatePort == 0 {
 			privatePort = 10000
@@ -101,7 +119,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 			Name:        "private",
 			Port:        privatePort,
 			Protocol:    "TCP",
-			AppProtocol: &appProtocolPriv,
+			AppProtocol: &appProtocol,
 			TargetPort:  intstr.FromInt(int(privatePort)),
 		}
 		servicePorts = append(servicePorts, webPort)
@@ -116,48 +134,90 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		)
 	}
 
-	var pub, priv bool
-	var pubPort, privPort int32
-	if env.Spec.Providers.Web.TLS.Enabled {
-		if deployment.WebServices.Public.Enabled {
-			tlsPort := core.ServicePort{
-				Name:        "tls",
-				Port:        env.Spec.Providers.Web.TLS.Port,
-				Protocol:    "TCP",
-				AppProtocol: &appProtocol,
-				TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
-			}
-			servicePorts = append(servicePorts, tlsPort)
-			pub = true
-			pubPort = int32(env.Spec.Providers.Web.TLS.Port)
+	// Add H2C private port if enabled
+	if deployment.WebServices.Private.H2CEnabled && env.Spec.Providers.Web.H2CPrivatePort != 0 {
+		h2cPrivatePort := core.ServicePort{
+			Name:        "h2c-private",
+			Port:        env.Spec.Providers.Web.H2CPrivatePort,
+			Protocol:    "TCP",
+			AppProtocol: &h2cAppProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.H2CPrivatePort)),
 		}
-		if deployment.WebServices.Private.Enabled {
-			appProtocolPriv := "http"
-			if deployment.WebServices.Private.AppProtocol != "" {
-				appProtocolPriv = string(deployment.WebServices.Private.AppProtocol)
-			}
+		servicePorts = append(servicePorts, h2cPrivatePort)
 
-			if appProtocolPriv == "http" {
-				tlsPrivatePort := core.ServicePort{
-					Name:        "tls-private",
-					Port:        env.Spec.Providers.Web.TLS.PrivatePort,
-					Protocol:    "TCP",
-					AppProtocol: &appProtocolPriv,
-					TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
-				}
-				servicePorts = append(servicePorts, tlsPrivatePort)
-				priv = true
-				privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
-			}
-		}
+		// Append port to deployment spec
+		containerPorts = append(containerPorts,
+			core.ContainerPort{
+				Name:          "h2c-private",
+				ContainerPort: env.Spec.Providers.Web.H2CPrivatePort,
+				Protocol:      core.ProtocolTCP,
+			},
+		)
+	}
 
-		if priv || pub {
-			if err := generateCaddyConfigMap(cache, nn, app, pub, priv, pubPort, privPort, env); err != nil {
-				return err
-			}
-			populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, pub, priv, env)
-			setServiceTLSAnnotations(s, nn.Name)
+	var pubTLS, privTLS, pubH2CTLS, privH2CTLS bool
+	var pubPort, privPort, pubH2CPort, privH2CPort int32
+
+	if provutils.IsPublicTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Public.Enabled {
+		tlsPort := core.ServicePort{
+			Name:        "tls",
+			Port:        env.Spec.Providers.Web.TLS.Port,
+			Protocol:    "TCP",
+			AppProtocol: &appProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.Port)),
 		}
+		servicePorts = append(servicePorts, tlsPort)
+		pubTLS = true
+		pubPort = int32(env.Spec.Providers.Web.TLS.Port)
+	}
+
+	if provutils.IsPrivateTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Private.Enabled {
+		tlsPrivatePort := core.ServicePort{
+			Name:        "tls-private",
+			Port:        env.Spec.Providers.Web.TLS.PrivatePort,
+			Protocol:    "TCP",
+			AppProtocol: &appProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.PrivatePort)),
+		}
+		servicePorts = append(servicePorts, tlsPrivatePort)
+		privTLS = true
+		privPort = int32(env.Spec.Providers.Web.TLS.PrivatePort)
+	}
+
+	// Add TLS H2C public port if enabled
+	if provutils.IsPublicTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Public.H2CEnabled && env.Spec.Providers.Web.TLS.H2CPort != 0 {
+		tlsH2CPort := core.ServicePort{
+			Name:        "h2c-tls",
+			Port:        env.Spec.Providers.Web.TLS.H2CPort,
+			Protocol:    "TCP",
+			AppProtocol: &h2cAppProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.H2CPort)),
+		}
+		servicePorts = append(servicePorts, tlsH2CPort)
+		pubH2CTLS = true
+		pubH2CPort = int32(env.Spec.Providers.Web.TLS.H2CPort)
+	}
+
+	// Add TLS H2C private port if enabled
+	if provutils.IsPrivateTLSEnabled(&deployment.WebServices, &env.Spec.Providers.Web.TLS) && deployment.WebServices.Private.H2CEnabled && env.Spec.Providers.Web.TLS.H2CPrivatePort != 0 {
+		tlsH2CPrivatePort := core.ServicePort{
+			Name:        "h2c-tls-private",
+			Port:        env.Spec.Providers.Web.TLS.H2CPrivatePort,
+			Protocol:    "TCP",
+			AppProtocol: &h2cAppProtocol,
+			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.TLS.H2CPrivatePort)),
+		}
+		servicePorts = append(servicePorts, tlsH2CPrivatePort)
+		privH2CTLS = true
+		privH2CPort = int32(env.Spec.Providers.Web.TLS.H2CPrivatePort)
+	}
+
+	if privTLS || pubTLS || pubH2CTLS || privH2CTLS {
+		if err := generateCaddyConfigMap(cache, nn, app, pubTLS, privTLS, pubPort, privPort, pubH2CTLS, privH2CTLS, pubH2CPort, privH2CPort, env); err != nil {
+			return err
+		}
+		populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, env.Spec.Providers.Web.TLS.H2CPort, env.Spec.Providers.Web.TLS.H2CPrivatePort, pubTLS, privTLS, pubH2CTLS, privH2CTLS, env)
+		setServiceTLSAnnotations(s, nn.Name)
 	}
 
 	utils.MakeService(s, nn, map[string]string{"pod": nn.Name}, servicePorts, app, env.IsNodePort())
@@ -171,7 +231,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
-func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort int32, privPort int32, env *crd.ClowdEnvironment) error {
+func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort int32, privPort int32, pubH2C bool, privH2C bool, pubH2CPort int32, privH2CPort int32, env *crd.ClowdEnvironment) error {
 
 	cm := &core.ConfigMap{}
 	snn := types.NamespacedName{
@@ -187,7 +247,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	cm.Namespace = snn.Namespace
 	cm.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 
-	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort, env)
+	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort, pubH2C, privH2C, pubH2CPort, privH2CPort, env)
 	if err != nil {
 		return err
 	}
@@ -198,7 +258,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	return cache.Update(CoreCaddyConfigMap, cm)
 }
 
-func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, pub bool, priv bool, env *crd.ClowdEnvironment) {
+func populateSideCar(d *apps.Deployment, name string, port int32, privatePort int32, h2cPort int32, h2cPrivatePort int32, pub bool, priv bool, pubH2C bool, privH2C bool, env *crd.ClowdEnvironment) {
 	ports := []core.ContainerPort{}
 	if pub {
 		ports = append(ports, core.ContainerPort{
@@ -211,6 +271,20 @@ func populateSideCar(d *apps.Deployment, name string, port int32, privatePort in
 		ports = append(ports, core.ContainerPort{
 			Name:          "tls-private",
 			ContainerPort: privatePort,
+			Protocol:      core.ProtocolTCP,
+		})
+	}
+	if pubH2C {
+		ports = append(ports, core.ContainerPort{
+			Name:          "h2c-tls",
+			ContainerPort: h2cPort,
+			Protocol:      core.ProtocolTCP,
+		})
+	}
+	if privH2C {
+		ports = append(ports, core.ContainerPort{
+			Name:          "h2c-tls-private",
+			ContainerPort: h2cPrivatePort,
 			Protocol:      core.ProtocolTCP,
 		})
 	}

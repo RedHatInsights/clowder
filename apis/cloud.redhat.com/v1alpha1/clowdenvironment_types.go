@@ -72,6 +72,12 @@ type WebConfig struct {
 	// The private port that web services inside a ClowdApp should be served on.
 	PrivatePort int32 `json:"privatePort,omitempty"`
 
+	// The H2C port that web services inside ClowdApp pods should be served on.
+	H2CPort int32 `json:"h2cPort,omitempty"`
+
+	// The private H2C port that web services inside a ClowdApp should be served on.
+	H2CPrivatePort int32 `json:"h2cPrivatePort,omitempty"`
+
 	// The auth port that the web local mode will use with the AuthSidecar
 	AuthPort int32 `json:"aiuthPort,omitempty"`
 
@@ -122,9 +128,20 @@ type GatewayCert struct {
 
 // TLS defines TLS configuration settings
 type TLS struct {
-	Enabled     bool  `json:"enabled,omitempty"`
-	Port        int32 `json:"port,omitempty"`
+	// Determines whether TLS is enabled for ClowdApp deployments by default
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Sets the port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment.
+	Port int32 `json:"port,omitempty"`
+
+	// Sets the private port exposed for ClowdApp deployments' TLS connections. If unset, TLS is disabled in the environment.
 	PrivatePort int32 `json:"privatePort,omitempty"`
+
+	// Sets the H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment.
+	H2CPort int32 `json:"h2cPort,omitempty"`
+
+	// Sets the private H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment.
+	H2CPrivatePort int32 `json:"h2cPrivatePort,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider
@@ -545,6 +562,10 @@ type OtelCollectorConfig struct {
 	ConfigMap string `json:"configMap,omitempty"`
 	// Environment variables to be set in the otel collector container
 	EnvVars []EnvVar `json:"envVars,omitempty"`
+	// Memory request for the otel collector container (e.g., "512Mi")
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+	// Memory limit for the otel collector container (e.g., "1024Mi")
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 }
 
 // EnvVar represents an environment variable present in a Container.

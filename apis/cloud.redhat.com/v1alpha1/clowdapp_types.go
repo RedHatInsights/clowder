@@ -151,6 +151,13 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
+	// H2CEnabled describes if Clowder should enable the public H2C service and provide the
+	// configuration in the cdappconfig.
+	H2CEnabled bool `json:"h2cEnabled,omitempty"`
+
+	// Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting)
+	TLS *bool `json:"tls,omitempty"`
+
 	// (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from.
 	APIPath string `json:"apiPath,omitempty"`
 
@@ -164,10 +171,6 @@ type PublicWebService struct {
 	SessionAffinity bool `json:"sessionAffinity,omitempty"`
 }
 
-// AppProtocol is used to define an appProtocol for Istio
-// +kubebuilder:validation:Enum={"http", "http2", "https", "tcp", "tls", "grpc", "grpc-web", "mongo", "mysql", "redis"}
-type AppProtocol string
-
 // PrivateWebService is the definition of the private web service. There can be only
 // one private service managed by Clowder.
 type PrivateWebService struct {
@@ -175,8 +178,12 @@ type PrivateWebService struct {
 	// configuration in the cdappconfig.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// AppProtocol determines the protocol to be used for the private port, (defaults to http)
-	AppProtocol AppProtocol `json:"appProtocol,omitempty"`
+	// H2CEnabled describes if Clowder should enable the private H2C service and provide the
+	// configuration in the cdappconfig.
+	H2CEnabled bool `json:"h2cEnabled,omitempty"`
+
+	// Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting)
+	TLS *bool `json:"tls,omitempty"`
 }
 
 // MetricsWebService is the definition of the metrics web service. This is automatically
@@ -290,6 +297,12 @@ type Sidecar struct {
 
 	// Environment variables to be set in the sidecar container (app-level overrides)
 	EnvVars []EnvVar `json:"envVars,omitempty"`
+
+	// Memory request for the sidecar container (e.g., "512Mi")
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+
+	// Memory limit for the sidecar container (e.g., "1024Mi")
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 }
 
 // PodspecMetadata defines metadata for applying annotations etc to PodSpec
