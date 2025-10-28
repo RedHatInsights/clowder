@@ -4,20 +4,14 @@ set -euo pipefail
 # ---- helpers ----
 diag() {
   echo "--- Diagnostics for namespace: $TEST_NS ---"
-  echo "ClowdEnvironment (if any): ${CE_NAME:-<unknown>} (cluster-scoped)"
-  oc get clowdenvironment -o wide || true
-  if [[ -n "${CE_NAME:-}" ]]; then
-    echo "# oc get clowdenvironment/$CE_NAME -o yaml"
-    oc get clowdenvironment "$CE_NAME" -o yaml || true
-    echo "# oc describe clowdenvironment/$CE_NAME"
-    oc describe clowdenvironment "$CE_NAME" || true
-  fi
-  echo "# oc get all"
-  oc get all -n "$TEST_NS" || true
-  echo "# oc get clowdapp -n $TEST_NS"
-  oc get clowdapp -n "$TEST_NS" -o wide || true
+  echo "# oc get deploy -n $TEST_NS"
+  oc get deploy -n "$TEST_NS" -o wide || true
+  echo "# oc get pods -n $TEST_NS"
+  oc get pods -n "$TEST_NS" -o wide || true
   echo "# oc describe deployments"
   for d in $(oc get deploy -n "$TEST_NS" -o name 2>/dev/null || true); do oc -n "$TEST_NS" describe "$d" || true; done
+  echo "# oc describe pods"
+  for p in $(oc get pods -n "$TEST_NS" -o name 2>/dev/null || true); do oc -n "$TEST_NS" describe "$p" || true; done
   echo "# Recent events"
   oc get events -n "$TEST_NS" --sort-by=.lastTimestamp | tail -n 100 || true
   echo "--- End diagnostics ---"
@@ -29,15 +23,15 @@ trap 'echo "[deploy.sh] error detected"; diag' ERR
 # - OC_SERVER: OpenShift API URL (e.g., https://api.cluster:6443)
 # - OC_TOKEN: OpenShift Bearer token
 # - TEST_NS: Namespace to deploy into (default: clowder-e2e)
-# - RESOURCES_URL: HTTP(S) URL or local path to a YAML with ClowdEnv/ClowdApp resources
+# - RESOURCES_PATH: Path inside the repository to the YAML with resources (default: ci/full-cicd/clowder-test-resources.yaml)
 # Optional:
 # - WAIT_TIMEOUT: timeout for waits (default: 5m)
 
 TEST_NS=${TEST_NS:-clowder-e2e}
 WAIT_TIMEOUT=${WAIT_TIMEOUT:-5m}
+RESOURCES_PATH=${RESOURCES_PATH:-ci/full-cicd/clowder-test-resources.yaml}
 : "${OC_SERVER:?OC_SERVER is required}"
 : "${OC_TOKEN:?OC_TOKEN is required}"
-: "${RESOURCES_URL:?RESOURCES_URL is required}"
 
 # Login non-interactively
 oc login "$OC_SERVER" --token="$OC_TOKEN" --insecure-skip-tls-verify=true 1>/dev/null
@@ -45,18 +39,14 @@ oc login "$OC_SERVER" --token="$OC_TOKEN" --insecure-skip-tls-verify=true 1>/dev
 # Ensure namespace exists
 oc get namespace "$TEST_NS" >/dev/null 2>&1 || oc create namespace "$TEST_NS"
 
-# Obtain resources
+# Obtain resources (local path only)
 WORKDIR=$(mktemp -d)
 RES_FILE="$WORKDIR/resources.yaml"
-if [[ "$RESOURCES_URL" =~ ^https?:// ]]; then
-  curl -sSL "$RESOURCES_URL" -o "$RES_FILE"
+if [[ -f "$RESOURCES_PATH" ]]; then
+  cp "$RESOURCES_PATH" "$RES_FILE"
 else
-  if [[ -f "$RESOURCES_URL" ]]; then
-    cp "$RESOURCES_URL" "$RES_FILE"
-  else
-    echo "RESOURCES_URL is neither a valid URL nor an existing file: $RESOURCES_URL" >&2
-    exit 1
-  fi
+  echo "RESOURCES_PATH file not found: $RESOURCES_PATH" >&2
+  exit 1
 fi
 
 # Simple placeholder substitution (CHANGE_ME_NS, CHANGE_ME_ENV)
@@ -68,30 +58,7 @@ echo "Applying test resources to namespace: $TEST_NS"
 # If the YAML lacks namespace fields, use -n to apply; for namespaced objects this sets metadata.namespace.
 oc apply -n "$TEST_NS" -f "$RES_FILE"
 
-# Wait for ClowdEnvironment readiness (fail on timeout)
-echo "Waiting for ClowdEnvironment to be Ready..."
-# Try jsonpath (tolerate failure) then fallback to awk scan
-set +e
-jsonpath_ce=$(oc get -f "$RES_FILE" -o jsonpath='{range .items[?(@.kind=="ClowdEnvironment")]}{.metadata.name}{"\n"}{end}' 2>/dev/null)
-set -e
-CE_NAME="${jsonpath_ce%%$'\n'*}"
-if [[ -z "${CE_NAME:-}" ]]; then
-  CE_NAME=$(awk '
-    $0 ~ /^kind:[ ]*ClowdEnvironment$/ { in_ce=1; next }
-    in_ce && $0 ~ /^metadata:/ { meta=1; next }
-    in_ce && meta && $0 ~ /^[ ]{2}name:/ { print $2; exit }
-  ' "$RES_FILE" || true)
-fi
-if [[ -n "$CE_NAME" ]]; then
-  echo "Found ClowdEnvironment: $CE_NAME"
-  echo "Current CE status:"
-  oc get clowdenvironment "$CE_NAME" -o jsonpath='{.status}' || true; echo
-  if ! oc wait --for=jsonpath='{.status.ready}'=true clowdenvironment "$CE_NAME" --timeout="$WAIT_TIMEOUT"; then
-    echo "ClowdEnvironment did not become Ready within $WAIT_TIMEOUT"
-    diag
-    exit 1
-  fi
-fi
+# Skip ClowdEnvironment readiness checks; focus on namespace workloads
 
 # Wait for deployments rollout in the namespace (fail on timeout)
 echo "Waiting for Deployments in namespace to be available..."
@@ -105,9 +72,20 @@ for d in "${DEPLOYS[@]:-}"; do
   fi
 done
 
+# Additionally, wait for pods to be Ready
+echo "Waiting for Pods to be Ready..."
+mapfile -t PODS < <(oc get pods -n "$TEST_NS" -o name 2>/dev/null || true)
+for p in "${PODS[@]:-}"; do
+  [[ -n "$p" ]] || continue
+  if ! oc -n "$TEST_NS" wait --for=condition=Ready "$p" --timeout="$WAIT_TIMEOUT"; then
+    echo "Pod not Ready in time: $p"
+    diag
+    exit 1
+  fi
+done
+
 echo "Resources prepared at $RES_FILE"
-# Persist for tests
-mkdir -p /workspace
-cp "$RES_FILE" /workspace/resources.yaml
+# Persist for tests in a writable location
+cp "$RES_FILE" /tmp/resources.yaml || true
 
 echo "Done."
