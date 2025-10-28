@@ -8,7 +8,7 @@ set -euo pipefail
 # Required environment variables
 : ${AWS_REGION:="us-east-1"}
 : ${EC2_INSTANCE_TYPE:="m5.2xlarge"}  # 8 vCPUs, 32 GB RAM
-: ${EC2_AMI_ID:?"EC2_AMI_ID must be set (pre-built AMI with Minikube)"}
+: ${MINIKUBE_EC2_AMI_ID:?"MINIKUBE_EC2_AMI_ID must be set (pre-built AMI with Minikube)"}
 : ${EC2_KEY_PAIR_NAME:?"EC2_KEY_PAIR_NAME must be set"}
 : ${EC2_SECURITY_GROUP_ID:?"EC2_SECURITY_GROUP_ID must be set"}
 : ${EC2_SUBNET_ID:?"EC2_SUBNET_ID must be set"}
@@ -20,14 +20,14 @@ set -euo pipefail
 echo "*** Provisioning EC2 instance for Clowder E2E tests ***"
 echo "Instance Name: $EC2_INSTANCE_NAME"
 echo "Instance Type: $EC2_INSTANCE_TYPE"
-echo "AMI ID: $EC2_AMI_ID"
+echo "AMI ID: $MINIKUBE_EC2_AMI_ID"
 echo "Region: $AWS_REGION"
 
 # Launch EC2 instance from pre-built AMI
 echo "*** Launching EC2 instance from pre-built AMI..."
 INSTANCE_ID=$(aws ec2 run-instances \
     --region "$AWS_REGION" \
-    --image-id "$EC2_AMI_ID" \
+    --image-id "$MINIKUBE_EC2_AMI_ID" \
     --instance-type "$EC2_INSTANCE_TYPE" \
     --key-name "$EC2_KEY_PAIR_NAME" \
     --security-group-ids "$EC2_SECURITY_GROUP_ID" \
