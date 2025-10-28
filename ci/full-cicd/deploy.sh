@@ -70,10 +70,17 @@ oc apply -n "$TEST_NS" -f "$RES_FILE"
 
 # Wait for ClowdEnvironment readiness (fail on timeout)
 echo "Waiting for ClowdEnvironment to be Ready..."
-CE_NAME=$(oc get -f "$RES_FILE" -o jsonpath='{range .items[?(@.kind=="ClowdEnvironment")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | head -n1)
-# Fallback if jsonpath detection fails
-if [[ -z "$CE_NAME" ]]; then
-  CE_NAME=$(grep -A2 -m1 '^kind: ClowdEnvironment' "$RES_FILE" | grep -m1 '^metadata:' -A2 | grep -m1 '^  name:' | awk '{print $2}' || true)
+# Try jsonpath (tolerate failure) then fallback to awk scan
+set +e
+jsonpath_ce=$(oc get -f "$RES_FILE" -o jsonpath='{range .items[?(@.kind=="ClowdEnvironment")]}{.metadata.name}{"\n"}{end}' 2>/dev/null)
+set -e
+CE_NAME="${jsonpath_ce%%$'\n'*}"
+if [[ -z "${CE_NAME:-}" ]]; then
+  CE_NAME=$(awk '
+    $0 ~ /^kind:[ ]*ClowdEnvironment$/ { in_ce=1; next }
+    in_ce && $0 ~ /^metadata:/ { meta=1; next }
+    in_ce && meta && $0 ~ /^[ ]{2}name:/ { print $2; exit }
+  ' "$RES_FILE" || true)
 fi
 if [[ -n "$CE_NAME" ]]; then
   echo "Found ClowdEnvironment: $CE_NAME"
