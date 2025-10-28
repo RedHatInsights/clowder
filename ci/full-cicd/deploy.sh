@@ -39,7 +39,13 @@ else
   fi
 fi
 
+# Simple placeholder substitution (CHANGE_ME_NS, CHANGE_ME_ENV)
+PATCHED_FILE="$WORKDIR/resources.patched.yaml"
+sed -e "s/CHANGE_ME_NS/$TEST_NS/g" "$RES_FILE" > "$PATCHED_FILE"
+RES_FILE="$PATCHED_FILE"
+
 echo "Applying test resources to namespace: $TEST_NS"
+# If the YAML lacks namespace fields, use -n to apply; for namespaced objects this sets metadata.namespace.
 oc apply -n "$TEST_NS" -f "$RES_FILE"
 
 # Wait for ClowdEnvironment readiness (fail on timeout)

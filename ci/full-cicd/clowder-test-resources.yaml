@@ -1,18 +1,9 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: test-basic-app
-spec:
-  finalizers:
-  - kubernetes
----
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
   name: test-basic-app
 spec:
-  targetNamespace: test-basic-app
+  targetNamespace: CHANGE_ME_NS
   providers:
     web:
       port: 8000
@@ -32,8 +23,8 @@ spec:
     inMemoryDb:
       mode: none
     pullSecrets:
-    - name: test-basic-app-same-ns
-      namespace: test-basic-app
+    - name: test-basic-app
+      namespace: CHANGE_ME_NS
   resourceDefaults:
     limits:
       cpu: 400m
@@ -46,7 +37,6 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-basic-app
 spec:
   envName: test-basic-app
   deployments:
@@ -79,6 +69,6 @@ data:
   endpoint: dGVzdC1lbmRwb2ludA==
 kind: Secret
 metadata:
-  name: test-basic-app-same-ns
-  namespace: test-basic-app
+  name: test-basic-app
+  namespace: CHANGE_ME_NS
 type: Opaque
