@@ -1,23 +1,41 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ---- helpers ----
+diag() {
+  echo "--- Diagnostics for namespace: $TEST_NS ---"
+  echo "ClowdEnvironment (if any): ${CE_NAME:-<unknown>}"
+  oc get clowdenvironment -n "$TEST_NS" -o wide || true
+  if [[ -n "${CE_NAME:-}" ]]; then
+    echo "# oc get clowdenvironment/$CE_NAME -o yaml"
+    oc get clowdenvironment "$CE_NAME" -n "$TEST_NS" -o yaml || true
+    echo "# oc describe clowdenvironment/$CE_NAME"
+    oc describe clowdenvironment "$CE_NAME" -n "$TEST_NS" || true
+  fi
+  echo "# oc get all"
+  oc get all -n "$TEST_NS" || true
+  echo "# oc describe deployments"
+  for d in $(oc get deploy -n "$TEST_NS" -o name 2>/dev/null || true); do oc -n "$TEST_NS" describe "$d" || true; done
+  echo "# Recent events"
+  oc get events -n "$TEST_NS" --sort-by=.lastTimestamp | tail -n 100 || true
+  echo "--- End diagnostics ---"
+}
+
+trap 'echo "[deploy.sh] error detected"; diag' ERR
+
 # Required environment variables:
 # - OC_SERVER: OpenShift API URL (e.g., https://api.cluster:6443)
 # - OC_TOKEN: OpenShift Bearer token
 # - TEST_NS: Namespace to deploy into (default: clowder-e2e)
 # - RESOURCES_URL: HTTP(S) URL or local path to a YAML with ClowdEnv/ClowdApp resources
 # Optional:
-# - KUBECONFIG: path to kubeconfig file to write (default: $HOME/.kube/config)
 # - WAIT_TIMEOUT: timeout for waits (default: 5m)
 
 TEST_NS=${TEST_NS:-clowder-e2e}
-KUBECONFIG=${KUBECONFIG:-"$HOME/.kube/config"}
 WAIT_TIMEOUT=${WAIT_TIMEOUT:-5m}
 : "${OC_SERVER:?OC_SERVER is required}"
 : "${OC_TOKEN:?OC_TOKEN is required}"
 : "${RESOURCES_URL:?RESOURCES_URL is required}"
-
-mkdir -p "$(dirname "$KUBECONFIG")"
 
 # Login non-interactively
 oc login "$OC_SERVER" --token="$OC_TOKEN" --insecure-skip-tls-verify=true 1>/dev/null
@@ -52,7 +70,14 @@ oc apply -n "$TEST_NS" -f "$RES_FILE"
 echo "Waiting for ClowdEnvironment to be Ready..."
 CE_NAME=$(oc get -f "$RES_FILE" -o jsonpath='{range .items[?(@.kind=="ClowdEnvironment")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | head -n1)
 if [[ -n "$CE_NAME" ]]; then
-  oc -n "$TEST_NS" wait --for=jsonpath='{.status.ready}'=true clowdenvironment "$CE_NAME" --timeout="$WAIT_TIMEOUT"
+  echo "Found ClowdEnvironment: $CE_NAME"
+  echo "Current CE status:"
+  oc get clowdenvironment "$CE_NAME" -n "$TEST_NS" -o jsonpath='{.status}' || true; echo
+  if ! oc -n "$TEST_NS" wait --for=jsonpath='{.status.ready}'=true clowdenvironment "$CE_NAME" --timeout="$WAIT_TIMEOUT"; then
+    echo "ClowdEnvironment did not become Ready within $WAIT_TIMEOUT"
+    diag
+    exit 1
+  fi
 fi
 
 # Wait for deployments rollout in the namespace (fail on timeout)
@@ -60,7 +85,11 @@ echo "Waiting for Deployments in namespace to be available..."
 mapfile -t DEPLOYS < <(oc get deploy -n "$TEST_NS" -o name 2>/dev/null || true)
 for d in "${DEPLOYS[@]:-}"; do
   [[ -n "$d" ]] || continue
-  oc -n "$TEST_NS" rollout status "$d" --timeout="$WAIT_TIMEOUT"
+  if ! oc -n "$TEST_NS" rollout status "$d" --timeout="$WAIT_TIMEOUT"; then
+    echo "Deployment rollout failed or timed out: $d"
+    diag
+    exit 1
+  fi
 done
 
 echo "Resources prepared at $RES_FILE"
