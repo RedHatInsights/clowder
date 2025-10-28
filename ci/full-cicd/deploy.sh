@@ -4,16 +4,18 @@ set -euo pipefail
 # ---- helpers ----
 diag() {
   echo "--- Diagnostics for namespace: $TEST_NS ---"
-  echo "ClowdEnvironment (if any): ${CE_NAME:-<unknown>}"
-  oc get clowdenvironment -n "$TEST_NS" -o wide || true
+  echo "ClowdEnvironment (if any): ${CE_NAME:-<unknown>} (cluster-scoped)"
+  oc get clowdenvironment -o wide || true
   if [[ -n "${CE_NAME:-}" ]]; then
     echo "# oc get clowdenvironment/$CE_NAME -o yaml"
-    oc get clowdenvironment "$CE_NAME" -n "$TEST_NS" -o yaml || true
+    oc get clowdenvironment "$CE_NAME" -o yaml || true
     echo "# oc describe clowdenvironment/$CE_NAME"
-    oc describe clowdenvironment "$CE_NAME" -n "$TEST_NS" || true
+    oc describe clowdenvironment "$CE_NAME" || true
   fi
   echo "# oc get all"
   oc get all -n "$TEST_NS" || true
+  echo "# oc get clowdapp -n $TEST_NS"
+  oc get clowdapp -n "$TEST_NS" -o wide || true
   echo "# oc describe deployments"
   for d in $(oc get deploy -n "$TEST_NS" -o name 2>/dev/null || true); do oc -n "$TEST_NS" describe "$d" || true; done
   echo "# Recent events"
@@ -69,11 +71,15 @@ oc apply -n "$TEST_NS" -f "$RES_FILE"
 # Wait for ClowdEnvironment readiness (fail on timeout)
 echo "Waiting for ClowdEnvironment to be Ready..."
 CE_NAME=$(oc get -f "$RES_FILE" -o jsonpath='{range .items[?(@.kind=="ClowdEnvironment")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | head -n1)
+# Fallback if jsonpath detection fails
+if [[ -z "$CE_NAME" ]]; then
+  CE_NAME=$(grep -A2 -m1 '^kind: ClowdEnvironment' "$RES_FILE" | grep -m1 '^metadata:' -A2 | grep -m1 '^  name:' | awk '{print $2}' || true)
+fi
 if [[ -n "$CE_NAME" ]]; then
   echo "Found ClowdEnvironment: $CE_NAME"
   echo "Current CE status:"
-  oc get clowdenvironment "$CE_NAME" -n "$TEST_NS" -o jsonpath='{.status}' || true; echo
-  if ! oc -n "$TEST_NS" wait --for=jsonpath='{.status.ready}'=true clowdenvironment "$CE_NAME" --timeout="$WAIT_TIMEOUT"; then
+  oc get clowdenvironment "$CE_NAME" -o jsonpath='{.status}' || true; echo
+  if ! oc wait --for=jsonpath='{.status.ready}'=true clowdenvironment "$CE_NAME" --timeout="$WAIT_TIMEOUT"; then
     echo "ClowdEnvironment did not become Ready within $WAIT_TIMEOUT"
     diag
     exit 1
