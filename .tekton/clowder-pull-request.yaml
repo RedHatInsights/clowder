@@ -323,76 +323,29 @@ spec:
           workingDir: /opt/app-root/src
         - computeResources: {}
           env:
-          # AWS Configuration for dynamic EC2 provisioning from pre-built AMI
-          - name: AWS_REGION
+          - name: MINIKUBE_HOST
             valueFrom:
               secretKeyRef:
-                key: AWS_REGION
-                name: aws-ec2-config
-          - name: EC2_AMI_ID
+                key: MINIKUBE_HOST
+                name: minikube-ssh-key
+          - name: MINIKUBE_USER
             valueFrom:
               secretKeyRef:
-                key: EC2_AMI_ID
-                name: aws-ec2-config
-          - name: EC2_KEY_PAIR_NAME
+                key: MINIKUBE_USER
+                name: minikube-ssh-key
+          - name: MINIKUBE_SSH_KEY
             valueFrom:
               secretKeyRef:
-                key: EC2_KEY_PAIR_NAME
-                name: aws-ec2-config
-          - name: EC2_SECURITY_GROUP_ID
+                key: MINIKUBE_SSH_KEY
+                name: minikube-ssh-key
+          - name: MINIKUBE_ROOTDIR
             valueFrom:
               secretKeyRef:
-                key: EC2_SECURITY_GROUP_ID
-                name: aws-ec2-config
-          - name: EC2_SUBNET_ID
-            valueFrom:
-              secretKeyRef:
-                key: EC2_SUBNET_ID
-                name: aws-ec2-config
-          - name: EC2_PRIVATE_KEY_CONTENT
-            valueFrom:
-              secretKeyRef:
-                key: EC2_PRIVATE_KEY_CONTENT
-                name: aws-ec2-config
-          # Optional configurations (can be omitted to use defaults)
-          - name: EC2_INSTANCE_TYPE
-            value: "m5.2xlarge"
-          - name: KUBERNETES_VERSION
-            value: "1.30"
-          # AWS credentials (if not using IAM roles)
-          - name: AWS_ACCESS_KEY_ID
-            valueFrom:
-              secretKeyRef:
-                key: AWS_ACCESS_KEY_ID
-                name: aws-ec2-config
-                optional: true
-          - name: AWS_SECRET_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                key: AWS_SECRET_ACCESS_KEY
-                name: aws-ec2-config
-                optional: true
+                key: MINIKUBE_ROOTDIR
+                name: minikube-ssh-key
           image: registry.access.redhat.com/ubi8/ubi:8.10-1756195303
           name: e2e-tests
-          script: |
-            set -ex
-            
-            # Install required packages including AWS CLI
-            dnf install -y git openssh-clients python3.12 make jq diffutils unzip curl
-            
-            # Install AWS CLI v2
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            ./aws/install
-            
-            # Verify AWS CLI installation
-            aws --version
-            
-            # Test AWS credentials
-            aws sts get-caller-identity || echo "Warning: AWS credentials may not be configured"
-            
-            # Run the dynamic E2E tests with pre-built AMI
-            ci/konflux_minikube_e2e_tests_dynamic.sh
+          script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests.sh
           workingDir: /var/workdir/source
         volumes:
         - emptyDir: {}
