@@ -30,7 +30,7 @@ Main E2E test script that integrates provisioning, testing, and cleanup using th
 AWS_REGION="us-east-1"
 
 # Pre-built AMI with Minikube installed
-EC2_AMI_ID="ami-xxxxxxxxx"
+MINIKUBE_EC2_AMI_ID="ami-xxxxxxxxx"
 
 # EC2 instance configuration
 EC2_KEY_PAIR_NAME="your-key-pair-name"
@@ -144,7 +144,7 @@ The AWS credentials used must have permissions for:
 ```bash
 # Set up environment variables
 export AWS_REGION="us-east-1"
-export EC2_AMI_ID="ami-xxxxxxxxx"
+export MINIKUBE_EC2_AMI_ID="ami-xxxxxxxxx"
 export EC2_KEY_PAIR_NAME="my-key-pair"
 export EC2_SECURITY_GROUP_ID="sg-xxxxxxxxx"
 export EC2_SUBNET_ID="subnet-xxxxxxxxx"
@@ -166,7 +166,7 @@ metadata:
 type: Opaque
 stringData:
   AWS_REGION: "us-east-1"
-  EC2_AMI_ID: "ami-xxxxxxxxx"
+  MINIKUBE_EC2_AMI_ID: "ami-xxxxxxxxx"
   EC2_KEY_PAIR_NAME: "clowder-ci-key"
   EC2_SECURITY_GROUP_ID: "sg-xxxxxxxxx"
   EC2_SUBNET_ID: "subnet-xxxxxxxxx"

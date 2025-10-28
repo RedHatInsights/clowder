@@ -23,7 +23,7 @@ trap cleanup_on_exit EXIT INT TERM
 
 # Validate required AWS environment variables
 : ${AWS_REGION:="us-east-1"}
-: ${EC2_AMI_ID:?"EC2_AMI_ID must be set (pre-built AMI with Minikube)"}
+: ${MINIKUBE_EC2_AMI_ID:?"MINIKUBE_EC2_AMI_ID must be set (pre-built AMI with Minikube)"}
 : ${EC2_KEY_PAIR_NAME:?"EC2_KEY_PAIR_NAME must be set"}
 : ${EC2_SECURITY_GROUP_ID:?"EC2_SECURITY_GROUP_ID must be set"}
 : ${EC2_SUBNET_ID:?"EC2_SUBNET_ID must be set"}
