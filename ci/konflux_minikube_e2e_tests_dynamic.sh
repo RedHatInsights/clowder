@@ -3,7 +3,7 @@
 set -exv
 
 # Dynamic EC2 Minikube E2E Testing Script
-# This script provisions a new EC2 instance for each test run, runs the E2E tests, and cleans up
+# This script provisions a new EC2 instance from a pre-built AMI, runs the E2E tests, and cleans up
 
 # Trap to ensure cleanup happens even on script failure
 cleanup_on_exit() {
@@ -23,6 +23,7 @@ trap cleanup_on_exit EXIT INT TERM
 
 # Validate required AWS environment variables
 : ${AWS_REGION:="us-east-1"}
+: ${EC2_AMI_ID:?"EC2_AMI_ID must be set (your pre-built AMI with Minikube)"}
 : ${EC2_KEY_PAIR_NAME:?"EC2_KEY_PAIR_NAME must be set"}
 : ${EC2_SECURITY_GROUP_ID:?"EC2_SECURITY_GROUP_ID must be set"}
 : ${EC2_SUBNET_ID:?"EC2_SUBNET_ID must be set"}
@@ -80,8 +81,8 @@ cd /var/workdir/source
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 export PATH="/bins:$PATH"
 
-# Provision new EC2 instance with Minikube
-echo "*** Provisioning new EC2 instance with Minikube..."
+# Provision new EC2 instance with Minikube from pre-built AMI
+echo "*** Provisioning new EC2 instance from AMI with Minikube..."
 source ./ci/provision_ec2_minikube.sh
 
 # Load instance information
@@ -100,8 +101,7 @@ set +x
 cp "$EC2_PRIVATE_KEY_PATH" minikube-ssh-ident
 chmod 600 minikube-ssh-ident
 
-# Note: We don't need to delete/start minikube since it's freshly provisioned
-# Get minikube IP
+# Get minikube IP (Minikube is already started by the provisioning script)
 export MINIKUBE_IP=$(ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip")
 
 set -x

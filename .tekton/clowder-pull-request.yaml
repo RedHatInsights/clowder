@@ -343,6 +343,11 @@ spec:
               secretKeyRef:
                 key: AWS_REGION
                 name: aws-ec2-config
+          - name: EC2_AMI_ID
+            valueFrom:
+              secretKeyRef:
+                key: EC2_AMI_ID
+                name: aws-ec2-config
           - name: EC2_KEY_PAIR_NAME
             valueFrom:
               secretKeyRef:
@@ -366,8 +371,6 @@ spec:
           # Optional configurations (can be omitted to use defaults)
           - name: EC2_INSTANCE_TYPE
             value: "m5.2xlarge"
-          - name: MINIKUBE_VERSION
-            value: "v1.34.0"
           - name: KUBERNETES_VERSION
             value: "1.30"
           # AWS credentials (if not using IAM roles)

@@ -1,11 +1,12 @@
 # Dynamic EC2 Minikube E2E Testing
 
-This directory contains scripts for running Clowder E2E tests on dynamically provisioned EC2 instances instead of using a long-standing instance.
+This directory contains scripts for running Clowder E2E tests on dynamically provisioned EC2 instances using a pre-built AMI with Minikube.
 
 ## Overview
 
 The new setup provides:
-- **Fresh environment** for each test run
+- **Fresh environment** for each test run using your pre-built AMI
+- **Faster startup** since Minikube is already installed in the AMI
 - **Better isolation** between test runs
 - **Automatic cleanup** to prevent resource leaks
 - **Cost optimization** by only running instances when needed
@@ -13,7 +14,7 @@ The new setup provides:
 ## Scripts
 
 ### `provision_ec2_minikube.sh`
-Provisions a new EC2 instance with Minikube installed and configured.
+Provisions a new EC2 instance from your pre-built AMI with Minikube and starts a fresh Minikube cluster.
 
 ### `cleanup_ec2_minikube.sh`
 Terminates EC2 instances created for E2E testing.
@@ -28,11 +29,13 @@ Main E2E test script that integrates provisioning, testing, and cleanup.
 # AWS region for EC2 instances
 AWS_REGION="us-east-1"
 
+# Your pre-built AMI ID with Minikube installed
+EC2_AMI_ID="ami-xxxxxxxxx"
+
 # EC2 instance configuration
 EC2_KEY_PAIR_NAME="your-key-pair-name"
 EC2_SECURITY_GROUP_ID="sg-xxxxxxxxx"
 EC2_SUBNET_ID="subnet-xxxxxxxxx"
-EC2_PRIVATE_KEY_PATH="/path/to/your/private/key.pem"
 
 # For Tekton/CI environments, use this instead of EC2_PRIVATE_KEY_PATH
 EC2_PRIVATE_KEY_CONTENT="-----BEGIN RSA PRIVATE KEY-----\n..."
@@ -43,12 +46,6 @@ EC2_PRIVATE_KEY_CONTENT="-----BEGIN RSA PRIVATE KEY-----\n..."
 # EC2 instance type (default: m5.2xlarge)
 EC2_INSTANCE_TYPE="m5.2xlarge"
 
-# AMI ID (default: Amazon Linux 2)
-EC2_AMI_ID="ami-0c02fb55956c7d316"
-
-# Minikube version (default: v1.34.0)
-MINIKUBE_VERSION="v1.34.0"
-
 # Kubernetes version (default: 1.30)
 KUBERNETES_VERSION="1.30"
 
@@ -58,12 +55,17 @@ WAIT_FOR_TERMINATION="true"
 
 ## AWS Infrastructure Requirements
 
-### 1. VPC and Networking
+### 1. Pre-built AMI
+- Create an AMI with Minikube, Docker, and kubectl pre-installed
+- Ensure the AMI is based on Amazon Linux 2 or similar
+- The `ec2-user` should have docker permissions
+
+### 2. VPC and Networking
 - A VPC with internet gateway
 - A public subnet with auto-assign public IP enabled
 - Route table configured for internet access
 
-### 2. Security Group
+### 3. Security Group
 Create a security group with the following rules:
 ```
 Inbound Rules:
@@ -74,11 +76,11 @@ Outbound Rules:
 - All traffic (0.0.0.0/0) - for downloading packages and images
 ```
 
-### 3. EC2 Key Pair
+### 4. EC2 Key Pair
 - Create an EC2 key pair in your target region
 - Store the private key securely (for CI/CD, use secrets management)
 
-### 4. IAM Permissions
+### 5. IAM Permissions
 The AWS credentials used must have permissions for:
 ```json
 {
@@ -105,6 +107,7 @@ The AWS credentials used must have permissions for:
 ```bash
 # Set up environment variables
 export AWS_REGION="us-east-1"
+export EC2_AMI_ID="ami-xxxxxxxxx"
 export EC2_KEY_PAIR_NAME="my-key-pair"
 export EC2_SECURITY_GROUP_ID="sg-xxxxxxxxx"
 export EC2_SUBNET_ID="subnet-xxxxxxxxx"
@@ -126,6 +129,7 @@ metadata:
 type: Opaque
 stringData:
   AWS_REGION: "us-east-1"
+  EC2_AMI_ID: "ami-xxxxxxxxx"
   EC2_KEY_PAIR_NAME: "clowder-ci-key"
   EC2_SECURITY_GROUP_ID: "sg-xxxxxxxxx"
   EC2_SUBNET_ID: "subnet-xxxxxxxxx"
@@ -135,55 +139,41 @@ stringData:
     -----END RSA PRIVATE KEY-----
 ```
 
-## Migration from Static Instance
+## Benefits
 
-### Tekton Pipeline Changes
-1. Replace environment variables:
-   - Remove: `MINIKUBE_HOST`, `MINIKUBE_USER`, `MINIKUBE_SSH_KEY`, `MINIKUBE_ROOTDIR`
-   - Add: AWS configuration variables listed above
-
-2. Update the script reference:
-   ```bash
-   # Old
-   ci/konflux_minikube_e2e_tests.sh
-   
-   # New
-   ci/konflux_minikube_e2e_tests_dynamic.sh
-   ```
-
-3. Update secret references in your pipeline configuration
-
-### Benefits of Migration
 - **Consistency**: Each test run starts with a clean environment
-- **Isolation**: No interference between concurrent test runs
-- **Reliability**: No dependency on long-running infrastructure
-- **Cost**: Pay only for compute time during tests
-- **Security**: Reduced attack surface with ephemeral instances
+- **Speed**: Faster startup since Minikube is pre-installed
+- **Cost Savings**: Only pay for compute time during test runs
+- **Better Reliability**: Fresh environment eliminates accumulated state issues
+- **Improved Security**: Instances are terminated after each run
+- **Easier Debugging**: Each test run is isolated and reproducible
 
 ## Troubleshooting
 
-### Instance Provisioning Issues
-- Verify AWS credentials and permissions
-- Check VPC/subnet configuration
-- Ensure security group allows SSH access
-- Verify AMI ID is valid for your region
+### Common Issues
 
-### Cleanup Issues
-- Check AWS permissions for EC2 termination
-- Verify instance tags are set correctly
-- Use manual cleanup: `./ci/cleanup_ec2_minikube.sh <instance-id> <region>`
+1. **AWS Permissions**: Ensure IAM user/role has required EC2 permissions
+2. **Network Configuration**: Verify security group and subnet settings
+3. **Key Pair**: Ensure EC2 key pair exists in the target region
+4. **AMI Issues**: Verify your AMI has Minikube and Docker properly installed
+5. **Instance Limits**: Check AWS service limits for EC2 instances
 
-### Test Failures
-- Check instance logs: SSH to instance and check `/var/log/cloud-init-output.log`
-- Verify Minikube status: `ssh -i key.pem ec2-user@<ip> minikube status`
-- Check security group rules for port 8443 access
+### Getting Help
 
-## Cost Optimization
+- Check the logs in `/var/workdir/artifacts/` for detailed error information
+- Verify your AMI by manually launching an instance and testing Minikube
+- Review the cleanup logs to ensure instances are properly terminated
 
-The dynamic approach typically reduces costs by:
-- Eliminating 24/7 instance costs
-- Using instances only during test execution
-- Automatic cleanup prevents forgotten resources
-- Right-sizing instances for test requirements
+## Cost Considerations
 
-Estimated cost savings: 80-90% compared to persistent instances (assuming tests run 2-3 hours per day).
+The dynamic approach reduces costs because:
+- Instances only run during test execution (~30-45 minutes)
+- No idle time costs for long-running instances
+- Automatic cleanup prevents forgotten instances
+- Pre-built AMI reduces startup time
+
+Estimated cost comparison (us-east-1, m5.2xlarge):
+- **Static Instance**: $0.384/hour × 24 hours × 30 days = ~$276/month
+- **Dynamic Instance**: $0.384/hour × 1 hour × 30 test runs = ~$12/month
+
+*Actual costs may vary based on usage patterns and AWS pricing changes.*
