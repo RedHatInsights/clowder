@@ -343,6 +343,11 @@ spec:
               secretKeyRef:
                 key: MINIKUBE_ROOTDIR
                 name: minikube-ssh-key
+          - name: MINIKUBE_EC2_AMI_ID
+            valueFrom:
+              secretKeyRef:
+                key: EC2_AMI_ID
+                name: minikube-ec2-ami-id
           image: registry.access.redhat.com/ubi8/ubi:8.10-1756195303
           name: e2e-tests
           script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests_dynamic.sh
