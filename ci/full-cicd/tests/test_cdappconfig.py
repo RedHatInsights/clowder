@@ -9,6 +9,24 @@ import pytest
 def _run(cmd: list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
 
+def _get_cdappconfig_json(namespace: str, app_name: str) -> dict:
+    cp = _run([
+        "oc",
+        "get",
+        "secret",
+        app_name,
+        "-n",
+        namespace,
+        "-o",
+        "json",
+    ])
+    assert cp.returncode == 0, f"Failed to get secret {app_name} in ns {namespace}: {cp.stderr}"
+    secret = json.loads(cp.stdout)
+    raw_b64 = secret.get("data", {}).get("cdappconfig.json", "")
+    assert raw_b64, "cdappconfig.json not found in secret data"
+    from base64 import b64decode
+    content = b64decode(raw_b64).decode("utf-8")
+    return json.loads(content)
 
 def test_cdappconfig_secret_exists():
     namespace = os.environ.get("TEST_NS", "clowder-e2e")
@@ -24,11 +42,28 @@ def test_cdappconfig_secret_exists():
     else:
         pytest.fail(f"cdappconfig secret {secret_name} not found or missing data in ns {namespace}")
 
-    # Basic sanity: can we decode the JSON content?
-    # Use oc to decode base64
-    cp_json = _run(["sh", "-lc", f"oc get secret {secret_name} -n {namespace} -o jsonpath='{{.data.cdappconfig\\.json}}' | base64 -d"])
-    assert cp_json.returncode == 0, cp_json.stderr
-    assert cp_json.stdout.strip(), "cdappconfig.json content is empty"
+    # Validate it parses as JSON via helper
+    _ = _get_cdappconfig_json(namespace, app_name)
 
-    # Validate it parses as JSON
-    json.loads(cp_json.stdout)
+def test_cdappconfig_content_exact_match():
+    namespace = os.environ.get("TEST_NS", "clowder-e2e")
+    app_name = os.environ.get("CLOWDAPP_NAME", "puptoo")
+
+    expected_str = (
+        '{"endpoints":[{"apiPath":"/api/puptoo-processor/","apiPaths":["/api/puptoo-processor/"],'
+        '"app":"puptoo","h2cPort":0,"h2cTLSPort":0,"hostname":"puptoo-processor.clowder-e2e.svc",'
+        '"name":"processor","port":8000,"tlsPort":0}],"hashCache":"584847c5d012b85e0b73ea34f93678ef4c21a9dc1312ae29f545f6412d03ee28e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",'
+        '"logging":{"cloudwatch":{"accessKeyId":"","logGroup":"","region":"","secretAccessKey":""},"type":"null"},'
+        '"metadata":{"deployments":[{"image":"quay.io/psav/clowder-hello","name":"processor"}],"envName":"test-basic-app","name":"puptoo"},'
+        '"metricsPath":"/metrics","metricsPort":9000,'
+        '"privateEndpoints":[{"app":"puptoo","h2cPort":0,"h2cTLSPort":0,"hostname":"puptoo-processor.clowder-e2e.svc","name":"processor","port":10000,"tlsPort":0}],'
+        '"privatePort":10000,"publicPort":8000,"webPort":8000}'
+    )
+    expected = json.loads(expected_str)
+    actual = _get_cdappconfig_json(namespace, app_name)
+    assert actual == expected, (
+        "cdappconfig mismatch.\nExpected: "
+        + json.dumps(expected, sort_keys=True)
+        + "\nActual: "
+        + json.dumps(actual, sort_keys=True)
+    )
