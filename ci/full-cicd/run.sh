@@ -20,12 +20,17 @@ pytest $PYTEST_ARGS "$SCRIPT_DIR/tests"
 rc=$?
 set -e
 
-# Cleanup namespace
-if [ -n "${TEST_NS:-}" ]; then
-    echo "Deleting ClowdEnvironment"
-    oc delete ClowdEnvironment $(oc get ClowdEnvironment | grep "$TEST_NS" | awk '{print $1}') --wait=true --ignore-not-found=true
-    echo "Cleaning up namespace $TEST_NS"
-    oc delete namespace "$TEST_NS" --wait=true --ignore-not-found=true
+# Cleanup created resources (keep namespace intact)
+NS=${TEST_NS:-clowder-e2e}
+if [ -f /tmp/resources.yaml ]; then
+  echo "Deleting resources from /tmp/resources.yaml"
+  oc delete -f /tmp/resources.yaml -n "$NS" --ignore-not-found=true --wait=true || true
 fi
+echo "Cleaning up leftover resources in namespace $NS"
+oc -n "$NS" delete clowdapp --all --ignore-not-found=true || true
+oc -n "$NS" delete all --all --ignore-not-found=true || true
+oc -n "$NS" delete pvc --all --ignore-not-found=true || true
+oc -n "$NS" delete configmap --all --ignore-not-found=true || true
+oc -n "$NS" delete secret --all --ignore-not-found=true || true
 
 exit $rc
