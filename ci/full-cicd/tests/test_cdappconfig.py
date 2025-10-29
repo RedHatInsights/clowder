@@ -51,12 +51,12 @@ def test_cdappconfig_content_exact_match():
 
     expected_str = (
         '{"endpoints":[{"apiPath":"/api/puptoo-processor/","apiPaths":["/api/puptoo-processor/"],'
-        '"app":"puptoo","h2cPort":0,"h2cTLSPort":0,"hostname":"puptoo-processor.clowder-e2e.svc",'
+        f'"app":"puptoo","h2cPort":0,"h2cTLSPort":0,"hostname":"puptoo-processor.{namespace}.svc",'
         '"name":"processor","port":8000,"tlsPort":0}],"hashCache":"584847c5d012b85e0b73ea34f93678ef4c21a9dc1312ae29f545f6412d03ee28e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",'
         '"logging":{"cloudwatch":{"accessKeyId":"","logGroup":"","region":"","secretAccessKey":""},"type":"null"},'
         '"metadata":{"deployments":[{"image":"quay.io/psav/clowder-hello","name":"processor"}],"envName":"test-basic-app","name":"puptoo"},'
         '"metricsPath":"/metrics","metricsPort":9000,'
-        '"privateEndpoints":[{"app":"puptoo","h2cPort":0,"h2cTLSPort":0,"hostname":"puptoo-processor.clowder-e2e.svc","name":"processor","port":10000,"tlsPort":0}],'
+        f'"privateEndpoints":[{"app":"puptoo","h2cPort":0,"h2cTLSPort":0,"hostname":"puptoo-processor.{namespace}.svc","name":"processor","port":10000,"tlsPort":0}],'
         '"privatePort":10000,"publicPort":8000,"webPort":8000}'
     )
     expected = json.loads(expected_str)
