@@ -20,12 +20,12 @@ pytest $PYTEST_ARGS "$SCRIPT_DIR/tests"
 rc=$?
 set -e
 
-# Cleanup namespace on success
-if [ $rc -eq 0 ]; then
-  if [ -n "${TEST_NS:-}" ]; then
+# Cleanup namespace
+if [ -n "${TEST_NS:-}" ]; then
+    echo "Deleting ClowdEnvironment"
+    oc delete ClowdEnvironment $(oc get ClowdEnvironment | grep "$TEST_NS" | awk '{print $1}') --wait=true --ignore-not-found=true
     echo "Cleaning up namespace $TEST_NS"
     oc delete namespace "$TEST_NS" --wait=true --ignore-not-found=true
-  fi
 fi
 
 exit $rc
