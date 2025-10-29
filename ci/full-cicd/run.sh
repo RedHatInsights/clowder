@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Running tests"
 # Verbosity controls
 VERBOSE=${VERBOSE:-0}
 PYTEST_ARGS=${PYTEST_ARGS:-}
@@ -9,6 +8,7 @@ if [ "$VERBOSE" = "1" ]; then
   set -x
   PYTEST_ARGS=${PYTEST_ARGS:-"-vv -s"}
 fi
+
 # Ensure deploy and tests run
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
