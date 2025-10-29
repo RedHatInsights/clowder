@@ -29,7 +29,7 @@ trap 'echo "[deploy.sh] error detected"; diag' ERR
 
 TEST_NS=${TEST_NS:-clowder-e2e}
 WAIT_TIMEOUT=${WAIT_TIMEOUT:-5m}
-RESOURCES_PATH=${RESOURCES_PATH:-ci/full-cicd/clowder-test-resources.yaml}
+RESOURCES_PATH=${RESOURCES_PATH:-ci/full-cicd/resources/puptoo-test-resources.yaml}
 : "${OC_SERVER:?OC_SERVER is required}"
 : "${OC_TOKEN:?OC_TOKEN is required}"
 

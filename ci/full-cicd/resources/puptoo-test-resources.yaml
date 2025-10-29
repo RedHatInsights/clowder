@@ -48,12 +48,6 @@ spec:
           value: env_var_1
         - name: ENV_VAR_2
           value: env_var_2
-      # initContainers:
-      #   - env:
-      #     - name: ENV_VAR_1
-      #       value: override_1
-      #     - name: ENV_VAR_3
-      #       value: env_var_3
     webServices:
       public:
         enabled: true
@@ -72,3 +66,5 @@ metadata:
   name: test-basic-app
   namespace: CHANGE_ME_NS
 type: Opaque
+
+
