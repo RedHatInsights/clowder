@@ -53,6 +53,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: clowder-e2e-sa
-    namespace: default
+    namespace: clowder-e2e
 
 

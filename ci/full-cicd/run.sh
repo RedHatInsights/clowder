@@ -23,9 +23,11 @@ set -e
 # Cleanup created resources (keep namespace intact, minimal perms)
 NS=${TEST_NS:-clowder-e2e}
 echo "Cleaning up resources created by the test in namespace $NS"
+# Delete ClowdEnvironment
+oc delete clowdenvironment -n "$NS" $(oc get clowdenvironment -n "$NS" | grep test-basic-app | awk '{print $1}') --wait=true --ignore-not-found=true || true
 # Delete ClowdApps (operator should GC owned resources)
 oc -n "$NS" delete clowdapp --all --ignore-not-found=true || true
 # Delete known test Secret from our resources (pull secret)
-oc -n "$NS" delete secret test-basic-app --ignore-not-found=true || true
+oc delete secret -n "$NS" $(oc get secret -n "$NS" | grep test-basic-app | awk '{print $1}') --ignore-not-found=true || true
 
 exit $rc
