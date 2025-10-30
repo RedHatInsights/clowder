@@ -20,17 +20,12 @@ pytest $PYTEST_ARGS "$SCRIPT_DIR/tests"
 rc=$?
 set -e
 
-# Cleanup created resources (keep namespace intact)
+# Cleanup created resources (keep namespace intact, minimal perms)
 NS=${TEST_NS:-clowder-e2e}
-if [ -f /tmp/resources.yaml ]; then
-  echo "Deleting resources from /tmp/resources.yaml"
-  oc delete -f /tmp/resources.yaml -n "$NS" --ignore-not-found=true --wait=true || true
-fi
-echo "Cleaning up leftover resources in namespace $NS"
+echo "Cleaning up resources created by the test in namespace $NS"
+# Delete ClowdApps (operator should GC owned resources)
 oc -n "$NS" delete clowdapp --all --ignore-not-found=true || true
-oc -n "$NS" delete all --all --ignore-not-found=true || true
-oc -n "$NS" delete pvc --all --ignore-not-found=true || true
-oc -n "$NS" delete configmap --all --ignore-not-found=true || true
-oc -n "$NS" delete secret --all --ignore-not-found=true || true
+# Delete known test Secret from our resources (pull secret)
+oc -n "$NS" delete secret test-basic-app --ignore-not-found=true || true
 
 exit $rc
