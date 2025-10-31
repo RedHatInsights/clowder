@@ -26,12 +26,46 @@ echo "Region: $AWS_REGION"
 # Check if unzip is installed, install if not
 echo "*** Checking unzip installation..."
 if ! command -v unzip &> /dev/null; then
-    echo "*** unzip not found, installing..."
     
-    sudo apt-get update -qq
-    sudo apt-get install -y unzip
+    # Create a local bin directory if it doesn't exist
+    mkdir -p "$HOME/bin"
     
-    echo "*** unzip installation completed"
+    # Download and install unzip statically linked binary
+    echo "*** Downloading unzip binary for Linux..."
+    
+    # Try to download a statically linked unzip binary
+    UNZIP_URL="http://archive.ubuntu.com/ubuntu/pool/main/u/unzip/unzip_6.0-25ubuntu1_amd64.deb"
+    
+    # Create temporary directory
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+    
+    # Download and extract unzip from deb package
+    curl -s "$UNZIP_URL" -o unzip.deb
+    ar x unzip.deb
+    tar -xf data.tar.xz
+    
+    # Copy unzip binary to user's bin directory
+    cp usr/bin/unzip "$HOME/bin/"
+    chmod +x "$HOME/bin/unzip"
+    
+    # Clean up
+    cd - > /dev/null
+    rm -rf "$TEMP_DIR"
+    
+    # Add $HOME/bin to PATH if not already there
+    if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
+        export PATH="$HOME/bin:$PATH"
+        echo "*** Added $HOME/bin to PATH"
+    fi
+    
+    # Verify unzip installation
+    if command -v unzip &> /dev/null; then
+        echo "*** unzip installation completed successfully"
+    else
+        echo "*** Error: unzip installation failed"
+        exit 1
+    fi
 else
     echo "*** unzip is already installed"
 fi
