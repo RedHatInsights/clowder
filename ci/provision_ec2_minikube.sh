@@ -23,6 +23,40 @@ echo "Instance Type: $EC2_INSTANCE_TYPE"
 echo "AMI ID: $MINIKUBE_EC2_AMI_ID"
 echo "Region: $AWS_REGION"
 
+# Check if AWS CLI is installed, install if not
+echo "*** Checking AWS CLI installation..."
+if ! command -v aws &> /dev/null; then
+    echo "*** AWS CLI not found, installing..."
+    
+    if [[ "$ARCH" == "x86_64" ]]; then
+        AWS_CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    elif [[ "$ARCH" == "aarch64" ]]; then
+        AWS_CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+    else
+        echo "*** Error: Unsupported Linux architecture: $ARCH"
+        exit 1
+    fi
+        
+    # Install AWS CLI on Linux
+    curl -s "$AWS_CLI_URL" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    sudo ./aws/install
+    rm -rf awscliv2.zip aws/
+    
+    echo "*** AWS CLI installation completed"
+else
+    echo "*** AWS CLI is already installed"
+fi
+
+# Verify AWS CLI installation and version
+echo "*** Verifying AWS CLI installation..."
+if aws --version; then
+    echo "*** AWS CLI verification successful"
+else
+    echo "*** Error: AWS CLI installation verification failed"
+    exit 1
+fi
+
 # Launch EC2 instance from pre-built AMI
 echo "*** Launching EC2 instance from pre-built AMI..."
 INSTANCE_ID=$(aws ec2 run-instances \
