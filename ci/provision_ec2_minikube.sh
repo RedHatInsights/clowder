@@ -9,9 +9,9 @@ set -euo pipefail
 : ${AWS_REGION:="us-east-1"}
 : ${EC2_INSTANCE_TYPE:="m5.2xlarge"}  # 8 vCPUs, 32 GB RAM
 : ${MINIKUBE_EC2_AMI_ID:?"MINIKUBE_EC2_AMI_ID must be set (pre-built AMI with Minikube)"}
-: ${EC2_KEY_PAIR_NAME:?"EC2_KEY_PAIR_NAME must be set"}
-: ${EC2_SECURITY_GROUP_ID:?"EC2_SECURITY_GROUP_ID must be set"}
-: ${EC2_SUBNET_ID:?"EC2_SUBNET_ID must be set"}
+# : ${EC2_KEY_PAIR_NAME:?"EC2_KEY_PAIR_NAME must be set"}
+# : ${EC2_SECURITY_GROUP_ID:?"EC2_SECURITY_GROUP_ID must be set"}
+# : ${EC2_SUBNET_ID:?"EC2_SUBNET_ID must be set"}
 
 # Optional environment variables
 : ${EC2_INSTANCE_NAME:="clowder-e2e-$(date +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"}
@@ -29,9 +29,9 @@ INSTANCE_ID=$(aws ec2 run-instances \
     --region "$AWS_REGION" \
     --image-id "$MINIKUBE_EC2_AMI_ID" \
     --instance-type "$EC2_INSTANCE_TYPE" \
-    --key-name "$EC2_KEY_PAIR_NAME" \
-    --security-group-ids "$EC2_SECURITY_GROUP_ID" \
-    --subnet-id "$EC2_SUBNET_ID" \
+    # --key-name "$EC2_KEY_PAIR_NAME" \
+    # --security-group-ids "$EC2_SECURITY_GROUP_ID" \
+    # --subnet-id "$EC2_SUBNET_ID" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$EC2_INSTANCE_NAME},{Key=Purpose,Value=clowder-e2e-testing},{Key=AutoDelete,Value=true},{Key=CreatedBy,Value=clowder-ci}]" \
     --query 'Instances[0].InstanceId' \
     --output text)
