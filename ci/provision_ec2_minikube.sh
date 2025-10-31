@@ -23,6 +23,19 @@ echo "Instance Type: $EC2_INSTANCE_TYPE"
 echo "AMI ID: $MINIKUBE_EC2_AMI_ID"
 echo "Region: $AWS_REGION"
 
+# Check if unzip is installed, install if not
+echo "*** Checking unzip installation..."
+if ! command -v unzip &> /dev/null; then
+    echo "*** unzip not found, installing..."
+    
+    sudo apt-get update -qq
+    sudo apt-get install -y unzip
+    
+    echo "*** unzip installation completed"
+else
+    echo "*** unzip is already installed"
+fi
+
 # Check if AWS CLI is installed, install if not
 echo "*** Checking AWS CLI installation..."
 if ! command -v aws &> /dev/null; then
