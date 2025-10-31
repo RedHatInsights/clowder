@@ -29,24 +29,24 @@ trap cleanup_on_exit EXIT INT TERM
 # : ${EC2_SUBNET_ID:?"EC2_SUBNET_ID must be set"}
 
 # Handle private key - either as file path or content
-if [ -n "${EC2_PRIVATE_KEY_CONTENT:-}" ]; then
-    # For CI/CD environments, create key file from content
-    export EC2_PRIVATE_KEY_PATH="/tmp/ec2-private-key.pem"
-    echo -e "$EC2_PRIVATE_KEY_CONTENT" > "$EC2_PRIVATE_KEY_PATH"
-    chmod 600 "$EC2_PRIVATE_KEY_PATH"
-    echo "*** Created private key file from EC2_PRIVATE_KEY_CONTENT"
-elif [ -n "${EC2_PRIVATE_KEY_PATH:-}" ]; then
-    # For local environments, use existing file path
-    if [ ! -f "$EC2_PRIVATE_KEY_PATH" ]; then
-        echo "*** Error: Private key file not found at $EC2_PRIVATE_KEY_PATH"
-        exit 1
-    fi
-    chmod 600 "$EC2_PRIVATE_KEY_PATH"
-    echo "*** Using existing private key file at $EC2_PRIVATE_KEY_PATH"
-else
-    echo "*** Error: Either EC2_PRIVATE_KEY_PATH or EC2_PRIVATE_KEY_CONTENT must be set"
-    exit 1
-fi
+# if [ -n "${EC2_PRIVATE_KEY_CONTENT:-}" ]; then
+#     # For CI/CD environments, create key file from content
+#     export EC2_PRIVATE_KEY_PATH="/tmp/ec2-private-key.pem"
+#     echo -e "$EC2_PRIVATE_KEY_CONTENT" > "$EC2_PRIVATE_KEY_PATH"
+#     chmod 600 "$EC2_PRIVATE_KEY_PATH"
+#     echo "*** Created private key file from EC2_PRIVATE_KEY_CONTENT"
+# elif [ -n "${EC2_PRIVATE_KEY_PATH:-}" ]; then
+#     # For local environments, use existing file path
+#     if [ ! -f "$EC2_PRIVATE_KEY_PATH" ]; then
+#         echo "*** Error: Private key file not found at $EC2_PRIVATE_KEY_PATH"
+#         exit 1
+#     fi
+#     chmod 600 "$EC2_PRIVATE_KEY_PATH"
+#     echo "*** Using existing private key file at $EC2_PRIVATE_KEY_PATH"
+# else
+#     echo "*** Error: Either EC2_PRIVATE_KEY_PATH or EC2_PRIVATE_KEY_CONTENT must be set"
+#     exit 1
+# fi
 
 echo "*** Starting Clowder E2E tests with dynamic EC2 provisioning (pre-built AMI) ***"
 
@@ -98,8 +98,8 @@ echo "*** Using Minikube instance: $MINIKUBE_INSTANCE_ID at $MINIKUBE_HOST"
 set +x
 
 # Create SSH key file for connecting to the instance (copy from the validated key file)
-cp "$EC2_PRIVATE_KEY_PATH" minikube-ssh-ident
-chmod 600 minikube-ssh-ident
+# cp "$EC2_PRIVATE_KEY_PATH" minikube-ssh-ident
+# chmod 600 minikube-ssh-ident
 
 # Get minikube IP (Minikube is already started by the provisioning script)
 export MINIKUBE_IP=$(ssh -o StrictHostKeyChecking=no $MINIKUBE_USER@$MINIKUBE_HOST -i minikube-ssh-ident "minikube ip")
