@@ -27,18 +27,9 @@ echo "Region: $AWS_REGION"
 echo "*** Checking AWS CLI installation..."
 if ! command -v aws &> /dev/null; then
     echo "*** AWS CLI not found, installing..."
-    
-    if [[ "$ARCH" == "x86_64" ]]; then
-        AWS_CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-    elif [[ "$ARCH" == "aarch64" ]]; then
-        AWS_CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
-    else
-        echo "*** Error: Unsupported Linux architecture: $ARCH"
-        exit 1
-    fi
         
     # Install AWS CLI on Linux
-    curl -s "$AWS_CLI_URL" -o "awscliv2.zip"
+    curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     unzip -q awscliv2.zip
     sudo ./aws/install
     rm -rf awscliv2.zip aws/
