@@ -23,35 +23,23 @@ echo "Instance Type: $EC2_INSTANCE_TYPE"
 echo "AMI ID: $MINIKUBE_EC2_AMI_ID"
 echo "Region: $AWS_REGION"
 
-# Check if unzip is installed, install if not
-echo "*** Checking unzip installation..."
-if ! command -v unzip &> /dev/null; then
+# Note: We'll use tar instead of unzip for extracting AWS CLI
+echo "*** Using tar for zip extraction (avoiding unzip dependency)"
+
+# Check if AWS CLI is installed, install if not
+echo "*** Checking AWS CLI installation..."
+if ! command -v aws &> /dev/null; then
+    echo "*** AWS CLI not found, installing..."
+        
+    # Install AWS CLI on Linux using tar instead of unzip
+    curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+    tar -xf awscliv2.zip
     
-    # Create a local bin directory if it doesn't exist
-    mkdir -p "$HOME/bin"
+
     
-    # Download and install unzip statically linked binary
-    echo "*** Downloading unzip binary for Linux..."
-    
-    # Try to download a statically linked unzip binary
-    UNZIP_URL="http://archive.ubuntu.com/ubuntu/pool/main/u/unzip/unzip_6.0-25ubuntu1_amd64.deb"
-    
-    # Create temporary directory
-    TEMP_DIR=$(mktemp -d)
-    cd "$TEMP_DIR"
-    
-    # Download and extract unzip from deb package
-    curl -s "$UNZIP_URL" -o unzip.deb
-    ar x unzip.deb
-    tar -xf data.tar.xz
-    
-    # Copy unzip binary to user's bin directory
-    cp usr/bin/unzip "$HOME/bin/"
-    chmod +x "$HOME/bin/unzip"
-    
-    # Clean up
-    cd - > /dev/null
-    rm -rf "$TEMP_DIR"
+    # Install AWS CLI to user directory instead of system-wide
+    ./aws/install --install-dir "$HOME/.local/aws-cli" --bin-dir "$HOME/bin"
     
     # Add $HOME/bin to PATH if not already there
     if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
@@ -59,26 +47,6 @@ if ! command -v unzip &> /dev/null; then
         echo "*** Added $HOME/bin to PATH"
     fi
     
-    # Verify unzip installation
-    if command -v unzip &> /dev/null; then
-        echo "*** unzip installation completed successfully"
-    else
-        echo "*** Error: unzip installation failed"
-        exit 1
-    fi
-else
-    echo "*** unzip is already installed"
-fi
-
-# Check if AWS CLI is installed, install if not
-echo "*** Checking AWS CLI installation..."
-if ! command -v aws &> /dev/null; then
-    echo "*** AWS CLI not found, installing..."
-        
-    # Install AWS CLI on Linux
-    curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip -q awscliv2.zip
-    sudo ./aws/install
     rm -rf awscliv2.zip aws/
     
     echo "*** AWS CLI installation completed"
