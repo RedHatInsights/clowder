@@ -1,8 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.24.0
-
-toolchain go1.24.5
+go 1.25
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.5.0
@@ -10,7 +8,7 @@ require (
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.13.0
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
-	github.com/caddyserver/caddy/v2 v2.10.0
+	github.com/caddyserver/caddy/v2 v2.10.2
 	github.com/cert-manager/cert-manager v1.12.14
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
