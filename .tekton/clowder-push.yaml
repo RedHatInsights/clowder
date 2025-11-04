@@ -266,7 +266,7 @@ spec:
           image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:9b180776a41d9a22a1c51539f1647c60defbbd55b44bbebdd4130e33512d8b0d
           name: use-trusted-artifact
         - computeResources: {}
-          image: registry.access.redhat.com/ubi9/go-toolset:1.24.6-1756993846
+          image: registry.access.redhat.com/ubi9/go-toolset:1.25-1
           name: unit-tests
           script: set -xe && git config --global --add safe.directory /var/workdir/source && ls -l && pwd && make -dn test
           workingDir: /var/workdir/source
