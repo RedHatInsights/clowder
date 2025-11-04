@@ -2,6 +2,8 @@ module github.com/RedHatInsights/clowder
 
 go 1.25
 
+toolchain go1.25.0
+
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.5.0
 	github.com/RedHatInsights/cyndi-operator v0.1.13
