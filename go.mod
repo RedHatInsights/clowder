@@ -6,7 +6,7 @@ require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.5.0
 	github.com/RedHatInsights/cyndi-operator v0.1.13
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/rhc-osdk-utils v0.13.0
+	github.com/RedHatInsights/rhc-osdk-utils v0.14.0
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
 	github.com/caddyserver/caddy/v2 v2.9.1
 	github.com/cert-manager/cert-manager v1.12.14

@@ -49,8 +49,8 @@ github.com/RedHatInsights/cyndi-operator v0.1.13 h1:8xn6z04Bl8A6DG9v8xnb5RGOobZI
 github.com/RedHatInsights/cyndi-operator v0.1.13/go.mod h1:+14znST9XtWHg5iWPdUjcM2cfO/jIZ9344OxiWyLyWA=
 github.com/RedHatInsights/go-difflib v1.0.0 h1:BoruyjZfxO81sEynhkG6c4SMAQOjuBWezcJxtGK8dyw=
 github.com/RedHatInsights/go-difflib v1.0.0/go.mod h1:UMKOFdypYfrKT1B1nbGodM09nhOiAmcjes8qWP7Myrs=
-github.com/RedHatInsights/rhc-osdk-utils v0.13.0 h1:K1245gkBF4sbHzW3JphC3Rr4B1Wav9FgZLOFjpSg2f0=
-github.com/RedHatInsights/rhc-osdk-utils v0.13.0/go.mod h1:RnCyA/gKtSlDy4Aie/2snMLxKS8qI0+FJcZYFXSwkrc=
+github.com/RedHatInsights/rhc-osdk-utils v0.14.0 h1:/bVg6yo+Bcp290avrKdmMX1+Ijuq6NGwAeC5Yz2WoJc=
+github.com/RedHatInsights/rhc-osdk-utils v0.14.0/go.mod h1:RnCyA/gKtSlDy4Aie/2snMLxKS8qI0+FJcZYFXSwkrc=
 github.com/RedHatInsights/strimzi-client-go v0.38.0 h1:p6TMI2Cg9dkHyw4uV3hsMpBNuFn+RAlT85IJpGRgMY8=
 github.com/RedHatInsights/strimzi-client-go v0.38.0/go.mod h1:aOsHx9Lu4ZvS3KR+j6/X+uiyweX594098CYDEdg8kYM=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
