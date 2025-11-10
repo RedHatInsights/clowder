@@ -64,7 +64,7 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 
-	logger, err := logging.SetupLogging(clowderconfig.LoadedConfig.Features.DisableCloudWatchLogging)
+	logger, err := logging.SetupLoggingWithLevel(clowderconfig.LoadedConfig.Features.DisableCloudWatchLogging, -1)
 
 	if err != nil {
 		panic(err)
