@@ -415,12 +415,14 @@ When there are 15+ open konflux PRs, combine them into a single PR:
    gh pr create --title "chore(deps): Combined dependency updates from red-hat-konflux" --body "<detailed summary>"
    ```
 
-7. **Close individual PRs**:
-   ```bash
-   for pr in <list-of-pr-numbers>; do
-     gh pr close $pr --comment "Closing in favor of consolidated PR #<combined-pr-number>"
-   done
-   ```
+7. **Wait for individual PRs to auto-close**:
+   - After the combined PR is merged, wait ~1 minute
+   - GitHub will automatically close most/all of the individual konflux PRs since their changes are now in master
+   - Check if any PRs remain open: `gh pr list --author "app/red-hat-konflux" --state open`
+   - Only manually close PRs that didn't auto-close:
+     ```bash
+     gh pr close <pr-number> --comment "Closing - changes included in combined PR #<combined-pr-number>"
+     ```
 
 ### Handling Merge Conflicts in Konflux PRs
 
