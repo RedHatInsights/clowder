@@ -354,3 +354,144 @@ make kuttl KUTTL_TEST="--test=test-basic-app"
 - Modifying generated files directly → Changes will be overwritten on next generation
 - Not running `make pre-push` before committing → CI may fail due to missing generated files
 - Files that shouldn't be committed: `config/manager/kustomization.yaml`, `controllers/cloud.redhat.com/version.txt` (use `make no-update` to reset)
+
+## Managing Red Hat Konflux Dependency Updates
+
+The `red-hat-konflux` bot regularly opens PRs to update Go dependencies and Docker base images. These PRs typically update `go.mod`, `go.sum`, and occasionally `build/Dockerfile-local`.
+
+### Strategy 1: Merge Individual PRs (Preferred for Small Batches)
+
+When there are many open konflux PRs, use the `gh` CLI to merge them with admin privileges:
+
+```bash
+# List all open konflux PRs
+gh pr list --author "app/red-hat-konflux" --json number,title,mergeable,state --state open
+
+# Attempt to merge all PRs without conflicts
+for pr in 1447 1448 1449 ...; do
+  gh pr merge $pr --squash --delete-branch --admin
+done
+```
+
+**Note**: PRs that are behind the base branch or have conflicts will fail to merge and need conflict resolution.
+
+### Strategy 2: Combine into Single PR (For Large Batches)
+
+When there are 15+ open konflux PRs, combine them into a single PR:
+
+1. **Create a combined branch**:
+   ```bash
+   git checkout -b combined-konflux-dependency-updates
+   ```
+
+2. **Fetch all remote branches**:
+   ```bash
+   git fetch origin
+   ```
+
+3. **Merge all konflux branches sequentially**:
+   ```bash
+   # Get list of branch names from PRs
+   gh pr list --author "app/red-hat-konflux" --json headRefName --state open | jq -r '.[].headRefName'
+
+   # Merge each branch, resolving conflicts as needed
+   for branch in <list-of-branches>; do
+     git merge --no-edit "origin/$branch" || break
+   done
+   ```
+
+4. **Resolve merge conflicts**:
+   - For dependency conflicts in `go.mod`, choose the newer version
+   - For `go.sum`, either manually resolve or use `git checkout --theirs go.sum` and let CI fix it
+   - Common conflict pattern: Multiple PRs updating related dependencies (e.g., golang.org/x packages)
+
+5. **Important: Preserve critical dependencies**:
+   - **Always keep `rhc-osdk-utils` at the version specified in master** (currently v0.14.0)
+   - If a merge downgrades this package, manually revert it back
+
+6. **Push and create PR**:
+   ```bash
+   git push -u origin combined-konflux-dependency-updates
+   gh pr create --title "chore(deps): Combined dependency updates from red-hat-konflux" --body "<detailed summary>"
+   ```
+
+7. **Close individual PRs**:
+   ```bash
+   for pr in <list-of-pr-numbers>; do
+     gh pr close $pr --comment "Closing in favor of consolidated PR #<combined-pr-number>"
+   done
+   ```
+
+### Handling Merge Conflicts in Konflux PRs
+
+When PRs have conflicts (typically after other PRs have been merged):
+
+1. **Checkout the PR branch**:
+   ```bash
+   gh pr checkout <pr-number>
+   ```
+
+2. **Merge master into the PR branch**:
+   ```bash
+   git merge origin/master
+   ```
+
+3. **Resolve conflicts**:
+   - **For `go.mod`**: Choose the newer version of each dependency
+   - **For `go.sum`**: Use `git checkout --theirs go.sum` to take master's version, then let the merge commit fix it
+   - **Pattern**: When choosing between versions, use the higher version number or more recent timestamp
+
+4. **Commit and push**:
+   ```bash
+   git add go.mod go.sum
+   git commit -m "Merge master into PR #<pr-number> and resolve conflicts"
+   git push origin <branch-name>
+   ```
+
+5. **Wait a few seconds, then merge**:
+   ```bash
+   sleep 3
+   gh pr merge <pr-number> --squash --delete-branch --admin
+   ```
+
+### Workflow for Batch Merging Conflicted PRs
+
+When multiple PRs have conflicts, resolve them **in order from oldest to newest**:
+
+```bash
+# Work through PRs sequentially (oldest first)
+for pr in 1455 1456 1457 1459 1462 1463 1464; do
+  echo "Processing PR #$pr"
+
+  # Update local master
+  git checkout master && git pull origin master
+
+  # Checkout PR and merge master
+  gh pr checkout $pr
+  git merge origin/master
+
+  # Resolve conflicts (manual step)
+  # Edit go.mod to choose newer versions
+  git checkout --theirs go.sum  # Use master's go.sum
+
+  # Commit and push
+  git add go.mod go.sum
+  git commit -m "Merge master into PR #$pr and resolve conflicts"
+  git push origin <branch-name>
+
+  # Merge the PR
+  sleep 3
+  gh pr merge $pr --squash --delete-branch --admin
+done
+```
+
+**Why oldest first?**: Earlier PRs may update dependencies that later PRs also touch. Merging in order minimizes cascading conflicts.
+
+### Important Considerations
+
+- **rhc-osdk-utils**: Never allow this to be downgraded - always verify it stays at v0.14.0 (or latest specified version)
+- **Go module tidying**: Don't run `go mod tidy` locally if you lack the correct Go version - let CI handle it
+- **Conflict resolution strategy**: When in doubt, choose the newer version of dependencies
+- **Testing**: Konflux PRs are dependency updates and typically don't require local testing
+- **Admin flag**: The `--admin` flag bypasses branch protection rules - use only for automated dependency updates
+- **Timing**: Some PRs need a few seconds after pushing before GitHub recognizes them as mergeable
