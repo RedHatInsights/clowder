@@ -155,7 +155,7 @@ require (
 	github.com/smallstep/pkcs7 v0.2.1 // indirect
 	github.com/smallstep/scep v0.0.0-20250318231241-a25cabb69492 // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
-	github.com/spf13/afero v1.12.0 // indirect
+	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
