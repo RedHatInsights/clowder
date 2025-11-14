@@ -35,7 +35,7 @@ var defaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
-var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-f76fe84"
+var defaultImageDatabasePG16 = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/postgresql-rds:578ad47"
 var defaultImageInMemoryDB = "registry.redhat.io/rhel10/valkey-8:10.0"
 
 // GetDefaultDatabaseImage returns the default image for the given PostgreSQL version

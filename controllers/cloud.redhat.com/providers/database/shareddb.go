@@ -108,15 +108,11 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 
 	var image string
 
-	image, err = provutils.GetDefaultDatabaseImage(version)
+	image, err = provutils.GetDefaultDatabaseImage(version, true)
 
 	if err != nil {
 		return nil, err
 	}
-
-	imgComponents := strings.Split(image, ":")
-	tag := "cyndi-" + imgComponents[1]
-	image = imgComponents[0] + ":" + tag
 
 	labels := &map[string]string{"sub": fmt.Sprintf("shared_db_%s", strconv.Itoa(int(version)))}
 
