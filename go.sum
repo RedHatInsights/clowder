@@ -50,8 +50,8 @@ github.com/RedHatInsights/go-difflib v1.0.0 h1:BoruyjZfxO81sEynhkG6c4SMAQOjuBWez
 github.com/RedHatInsights/go-difflib v1.0.0/go.mod h1:UMKOFdypYfrKT1B1nbGodM09nhOiAmcjes8qWP7Myrs=
 github.com/RedHatInsights/rhc-osdk-utils v0.14.0 h1:/bVg6yo+Bcp290avrKdmMX1+Ijuq6NGwAeC5Yz2WoJc=
 github.com/RedHatInsights/rhc-osdk-utils v0.14.0/go.mod h1:RnCyA/gKtSlDy4Aie/2snMLxKS8qI0+FJcZYFXSwkrc=
-github.com/RedHatInsights/strimzi-client-go v0.38.0 h1:p6TMI2Cg9dkHyw4uV3hsMpBNuFn+RAlT85IJpGRgMY8=
-github.com/RedHatInsights/strimzi-client-go v0.38.0/go.mod h1:aOsHx9Lu4ZvS3KR+j6/X+uiyweX594098CYDEdg8kYM=
+github.com/RedHatInsights/strimzi-client-go v0.40.0 h1:2s2FhRpmSlZDz4AziMUoPI91lWYMRPezcR0ICvwtsus=
+github.com/RedHatInsights/strimzi-client-go v0.40.0/go.mod h1:aOsHx9Lu4ZvS3KR+j6/X+uiyweX594098CYDEdg8kYM=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
