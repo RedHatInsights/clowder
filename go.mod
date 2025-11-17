@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.25.0
+go 1.24.6
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.5.0
@@ -23,7 +23,7 @@ require (
 	go.uber.org/zap v1.27.0
 	k8s.io/api v0.34.2
 	k8s.io/apiextensions-apiserver v0.34.2
-	k8s.io/apimachinery v0.35.0-alpha.3
+	k8s.io/apimachinery v0.34.2
 	k8s.io/client-go v0.34.2
 	sigs.k8s.io/cluster-api v1.7.2
 	sigs.k8s.io/controller-runtime v0.19.1
@@ -171,7 +171,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
 	go.step.sm/crypto v0.74.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	go.uber.org/mock v0.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap/exp v0.3.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
