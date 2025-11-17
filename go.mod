@@ -200,12 +200,14 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	howett.net/plist v1.0.1 // indirect
+	k8s.io/code-generator v0.34.2 // indirect
+	k8s.io/gengo/v2 v2.0.0-20250604051438-85fd79dbfd9f // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	knative.dev/pkg v0.0.0-20251001003403-1e71536171b9 // indirect
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251116142737-cecf5d255756 // indirect
-	sigs.k8s.io/controller-tools v0.16.4 // indirect
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251007053059-f48fe1c564dc // indirect
+	sigs.k8s.io/controller-tools v0.19.0 // indirect
 	sigs.k8s.io/gateway-api v0.7.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.20.1 // indirect
