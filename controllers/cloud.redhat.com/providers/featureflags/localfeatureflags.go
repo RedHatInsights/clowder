@@ -164,7 +164,7 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 		},
 	}
 
-	dbImage, err := provutils.GetDefaultDatabaseImage(15)
+	dbImage, err := provutils.GetDefaultDatabaseImage(16, false)
 	if err != nil {
 		return err
 	}

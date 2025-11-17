@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"strings"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
@@ -126,16 +125,10 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp) error {
 		dbVersion = *(app.Spec.Database.Version)
 	}
 
-	image, err = provutils.GetDefaultDatabaseImage(dbVersion)
+	image, err = provutils.GetDefaultDatabaseImage(dbVersion, app.Spec.Cyndi.Enabled)
 
 	if err != nil {
 		return err
-	}
-
-	if app.Spec.Cyndi.Enabled {
-		imgComponents := strings.Split(image, ":")
-		tag := "cyndi-" + imgComponents[1]
-		image = imgComponents[0] + ":" + tag
 	}
 
 	resources := sizing.GetResourceRequirementsForSize(app.Spec.Database.DBResourceSize)
