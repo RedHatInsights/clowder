@@ -41,7 +41,7 @@ var defaultImageDatabasePG13Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-
 var defaultImageDatabasePG14Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-14-2318dee"
 var defaultImageDatabasePG15Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-15-2318dee"
 var defaultImageDatabasePG16Cyndi = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/postgresql-rds-cyndi:578ad47"
-var defaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var defaultImageInMemoryDB = "registry.redhat.io/rhel10/valkey-8:10.0"
 
 // GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
 func GetDefaultDatabaseImage(version int32, cyndi bool) (string, error) {
