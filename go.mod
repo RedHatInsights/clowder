@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.24.6
+go 1.25.0
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.5.0
@@ -15,15 +15,15 @@ require (
 	github.com/kedacore/keda/v2 v2.8.1
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.88
-	github.com/onsi/ginkgo/v2 v2.23.4
-	github.com/onsi/gomega v1.37.0
+	github.com/onsi/ginkgo/v2 v2.27.2
+	github.com/onsi/gomega v1.38.2
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.56.3
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
 	k8s.io/api v0.34.2
 	k8s.io/apiextensions-apiserver v0.34.2
-	k8s.io/apimachinery v0.34.2
+	k8s.io/apimachinery v0.35.0-alpha.3
 	k8s.io/client-go v0.34.2
 	sigs.k8s.io/cluster-api v1.7.2
 	sigs.k8s.io/controller-runtime v0.19.1
@@ -140,7 +140,6 @@ require (
 	github.com/redhatinsights/crcauthlib v0.4.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
@@ -204,9 +203,9 @@ require (
 	howett.net/plist v1.0.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
-	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
+	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	knative.dev/pkg v0.0.0-20251001003403-1e71536171b9 // indirect
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251007053059-f48fe1c564dc // indirect
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251118051938-928b9d36a20f // indirect
 	sigs.k8s.io/controller-tools v0.16.4 // indirect
 	sigs.k8s.io/gateway-api v0.7.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
