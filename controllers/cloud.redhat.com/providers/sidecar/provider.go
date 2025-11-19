@@ -11,7 +11,7 @@ import (
 )
 
 // DefaultImageSideCarTokenRefresher defines the default token refresher sidecar image
-var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2023-09-20-f5e3403" // nolint:gosec
+var DefaultImageSideCarTokenRefresher = "quay.io/redhat-services-prod/rhobs-mco-tenant/rhobs-token-refresher:b9f003e57d17de44a3aac77ff290fa1da2c453c8" // nolint:gosec
 // DefaultImageSideCarOtelCollector defines the default OpenTelemetry collector sidecar image
 var DefaultImageSideCarOtelCollector = "ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0" // nolint:gosec
 
