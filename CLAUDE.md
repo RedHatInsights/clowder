@@ -491,9 +491,15 @@ done
 
 ### Important Considerations
 
+- **go.mod**: The konflux bot will often try to update the go version before a docker image is available in the Red Hat registry/image catalog. Follow these steps:
+  - Ensure that the version specified in go.mod matches the version in the Dockerfile. For example, if the image in the Dockerfile is `registry.access.redhat.com/ubi9/go-toolset:1.24.6-1763038106` then go.mod should be version `1.24.6`.
+  - If the version in go.mod is increased, check for newer images at https://catalog.redhat.com/en/software/containers/ubi9/go-toolset/. Note that we always use tags with the `<go version>-<timestamp>` format (e.g., `1.25.3-1763633888` or `1.24.6-1763548439`).
+  - If there is a tag that is greater than or equal to the version being changed in go.mod, replace the FROM image in the Dockerfile to use the newer tag.
+  - If there is not a tag that is greater than or equal to the version being changed in go.mod, reject that change.
 - **rhc-osdk-utils**: Never allow this to be downgraded - always verify it stays at v0.14.0 (or latest specified version)
 - **Go module tidying**: Don't run `go mod tidy` locally if you lack the correct Go version - let CI handle it
 - **Conflict resolution strategy**: When in doubt, choose the newer version of dependencies
 - **Testing**: Konflux PRs are dependency updates and typically don't require local testing
 - **Admin flag**: The `--admin` flag bypasses branch protection rules - use only for automated dependency updates
 - **Timing**: Some PRs need a few seconds after pushing before GitHub recognizes them as mergeable
+
