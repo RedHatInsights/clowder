@@ -70,7 +70,7 @@ spec:
     - http:
         paths:
           - pathType: Prefix
-            path: /api/client/features
+            path: /api/frontend
             backend:
               service:
                 name: test-ff-local-featureflags-edge
