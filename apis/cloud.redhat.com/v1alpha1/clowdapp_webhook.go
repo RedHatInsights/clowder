@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 
 	apps "k8s.io/api/apps/v1"
@@ -36,6 +37,7 @@ var clowdapplog = logf.Log.WithName("clowdapp-resource")
 func (i *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(i).
+		WithValidator(i).
 		Complete()
 }
 
@@ -43,7 +45,7 @@ func (i *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:webhook:path=/mutate-pod,mutating=true,failurePolicy=ignore,sideEffects=None,groups="",resources=pods,verbs=create;update,versions=v1,name=vclowdmutatepod.kb.io,admissionReviewVersions={v1}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (i *ClowdApp) ValidateCreate() (admission.Warnings, error) {
+func (i *ClowdApp) ValidateCreate(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	clowdapplog.Info("validate create", "name", i.Name)
 
 	return []string{}, i.processValidations(i,
@@ -55,7 +57,7 @@ func (i *ClowdApp) ValidateCreate() (admission.Warnings, error) {
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (i *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) {
+func (i *ClowdApp) ValidateUpdate(_ context.Context, _ runtime.Object, _ runtime.Object) (admission.Warnings, error) {
 	clowdapplog.Info("validate update", "name", i.Name)
 
 	return []string{}, i.processValidations(i,
@@ -67,7 +69,7 @@ func (i *ClowdApp) ValidateUpdate(_ runtime.Object) (admission.Warnings, error) 
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (i *ClowdApp) ValidateDelete() (admission.Warnings, error) {
+func (i *ClowdApp) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	clowdapplog.Info("validate delete", "name", i.Name)
 	return []string{}, nil
 }
