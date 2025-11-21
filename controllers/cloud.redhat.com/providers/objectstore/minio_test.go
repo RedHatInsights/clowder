@@ -148,7 +148,7 @@ func (fc *FakeClient) Patch(_ context.Context, _ client.Object, _ client.Patch, 
 	return nil
 }
 
-func (fc *FakeClient) Apply(_ context.Context, _ client.Object, _ ...client.ApplyOption) error {
+func (fc *FakeClient) Apply(_ context.Context, _ runtime.ApplyConfiguration, _ ...client.ApplyOption) error {
 	return nil
 }
 
