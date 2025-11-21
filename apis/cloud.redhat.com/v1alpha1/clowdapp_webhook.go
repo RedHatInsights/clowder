@@ -36,6 +36,7 @@ var clowdapplog = logf.Log.WithName("clowdapp-resource")
 func (i *ClowdApp) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(i).
+		WithValidator(i).
 		Complete()
 }
 
