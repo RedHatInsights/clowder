@@ -9,7 +9,7 @@ require (
 	github.com/RedHatInsights/rhc-osdk-utils v0.14.0
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
 	github.com/caddyserver/caddy/v2 v2.10.2
-	github.com/cert-manager/cert-manager v1.12.14
+	github.com/cert-manager/cert-manager v1.19.1
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.8.1
@@ -26,7 +26,7 @@ require (
 	k8s.io/apimachinery v0.35.0-beta.0
 	k8s.io/client-go v0.34.2
 	sigs.k8s.io/cluster-api v1.7.2
-	sigs.k8s.io/controller-runtime v0.19.1
+	sigs.k8s.io/controller-runtime v0.22.3
 )
 
 require (
@@ -62,7 +62,7 @@ require (
 	github.com/dgraph-io/ristretto v0.2.0 // indirect
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
+	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -96,6 +96,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/btree v1.1.3 // indirect
 	github.com/google/cel-go v0.26.1 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -211,7 +212,7 @@ require (
 	knative.dev/pkg v0.0.0-20251119125415-ab67eb7f8660 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251120113359-d81cc2de7a54 // indirect
 	sigs.k8s.io/controller-tools v0.19.0 // indirect
-	sigs.k8s.io/gateway-api v0.15.25 // indirect
+	sigs.k8s.io/gateway-api v1.4.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.0 // indirect
 	sigs.k8s.io/kustomize/cmd/config v0.21.0 // indirect
