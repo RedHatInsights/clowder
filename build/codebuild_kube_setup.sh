@@ -38,10 +38,18 @@ else
     exit 1
 fi
 
-python3 -m venv "build/.build_venv"
-source build/.build_venv/bin/activate
-pip install --upgrade pip setuptools wheel
-pip install pyyaml
+# Install PyYAML globally if not in venv (for CI/CD environments like CodeBuild)
+if [ "$VIRTUAL_ENV" = "skip" ]; then
+    echo "*** Skipping PyYAML installation (already provided by system)..."
+elif [ -z "$VIRTUAL_ENV" ]; then
+    echo "*** Installing PyYAML globally (no venv detected)..."
+    pip3 install --user pyyaml || python3 -m pip install --user pyyaml
+else
+    python3 -m venv "build/.build_venv"
+    source build/.build_venv/bin/activate
+    pip install --upgrade pip setuptools wheel
+    pip install pyyaml
+fi
 
 declare -a BG_PIDS=()
 
@@ -51,7 +59,7 @@ mkdir -p "$DOWNLOAD_DIR"
 
 
 function install_strimzi_operator {
-    STRIMZI_VERSION=0.45.1
+    STRIMZI_VERSION=0.45.0
     STRIMZI_OPERATOR_NS=strimzi
     WATCH_NS="*"
     STRIMZI_TARFILE="strimzi-${STRIMZI_VERSION}.tar.gz"
