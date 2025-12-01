@@ -2,7 +2,9 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+# Increased retry timeout from 10s to 30s for database secret creation
+# Multi-app database initialization can take longer in Kind/CodeBuild
+- script: bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
 - script: curl https://truststore.pki.rds.amazonaws.com/us-east-1/us-east-1-bundle.pem > us-east-1-bundle.pem
 - script: curl https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem > default-ca-bundle.pem
 
