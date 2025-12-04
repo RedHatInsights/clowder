@@ -213,7 +213,7 @@ require (
 	knative.dev/pkg v0.0.0-20251119125415-ab67eb7f8660 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251120113359-d81cc2de7a54 // indirect
 	sigs.k8s.io/controller-tools v0.19.0 // indirect
-	sigs.k8s.io/gateway-api v1.4.0 // indirect
+	sigs.k8s.io/gateway-api v1.4.1 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.0 // indirect
 	sigs.k8s.io/kustomize/cmd/config v0.21.0 // indirect
