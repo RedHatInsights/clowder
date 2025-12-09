@@ -27,7 +27,8 @@ trap 'echo "[deploy.sh] error detected"; diag' ERR
 
 TEST_NS=${TEST_NS:-clowder-e2e}
 WAIT_TIMEOUT=${WAIT_TIMEOUT:-5m}
-RESOURCES_PATH=${RESOURCES_PATH:-ci/full-cicd/resources/puptoo-test-resources.yaml}
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+RESOURCES_PATH=${RESOURCES_PATH:-"${SCRIPT_DIR}/resources/puptoo-test-resources.yaml"}
 
 
 # Configure in-cluster auth flags (no kubeconfig writes) if running inside a Pod
