@@ -211,7 +211,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20251121143641-b6aabc6c6745 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	knative.dev/pkg v0.0.0-20251119125415-ab67eb7f8660 // indirect
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251120113359-d81cc2de7a54 // indirect
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251210110131-607e772f5d95 // indirect
 	sigs.k8s.io/controller-tools v0.19.0 // indirect
 	sigs.k8s.io/gateway-api v1.4.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
