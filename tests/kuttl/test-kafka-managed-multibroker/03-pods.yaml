@@ -1,4 +1,13 @@
 ---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+# Wait for initial reconciliation to complete
+- script: sleep 5
+# Force ClowdApp reconciliation to pick up the updated managedPrefix from ClowdEnvironment
+# Without this, topic names may not update when managedPrefix changes from "" to "test-kafka-"
+- script: kubectl annotate clowdapp puptoo -n test-kafka-managed-multibroker force-reconcile="$(date +%s)" --overwrite
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:

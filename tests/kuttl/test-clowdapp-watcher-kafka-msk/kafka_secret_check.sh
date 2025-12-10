@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Using portable shebang for better compatibility across systems
 
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <timeout_in_seconds>"
@@ -38,7 +39,7 @@ while true; do
     fi
 
     if [ "$CURRENT_USERNAME" != "$PREV_USERNAME" ]; then
-        if [ "$CURRENT_USERNAME" == "test-clowdapp-watcher-kafka-msk-connect2" ]; then
+        if [ "$CURRENT_USERNAME" = "test-clowdapp-watcher-kafka-msk-connect2" ]; then
             echo "Kafka SASL username check: TRUE"
             USERNAME_MATCH=true
         else
