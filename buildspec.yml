@@ -1,0 +1,222 @@
+version: 0.2
+
+# Environment variables used throughout the build
+env:
+  variables:
+    CLUSTER_NAME: clowder-e2e                    # Kind cluster name
+    K8S_VERSION: v1.29.4                         # Kubernetes version to test
+    KINDEST_NODE_IMAGE: kindest/node:v1.29.4     # Kind node image matching K8S version
+    KUTTL_VERSION: "0.19.0"                      # Kuttl test framework version
+    ARTIFACTS_DIR: artifacts                      # Directory for test artifacts and logs
+    CODEBUILD_BUILD_TIMEOUT: 60                  # Build timeout in minutes
+
+phases:
+  # PHASE 1: Install all required tools and dependencies
+  install:
+    commands:
+      # Fail fast on any error
+      - set -e
+      
+      # Clear Python version conflicts
+      - unset PYENV_VERSION
+      - rm -f .python-version
+      
+      # Install Go 1.24.7 (required for building Clowder)
+      - echo "Installing Go 1.24+ (required for go.mod)..."
+      - curl -fsSL https://go.dev/dl/go1.24.7.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+      - export PATH="/usr/local/go/bin:$PATH"
+      - go version
+      
+      # Install system dependencies
+      - echo "Installing base tools (jq, python3, git, make, tar, unzip)..."
+      - yum -y install jq python3 python3-pip git make tar unzip python3-pyyaml >/dev/null 2>&1 || true
+      - python3 -m pip install --upgrade pip virtualenv >/dev/null 2>&1 || true
+      - export VIRTUAL_ENV=skip  # Skip venv for kube_setup.sh
+      
+      # Install Kubernetes tooling
+      - echo "Installing kind, kubectl, helm, and kuttl..."
+      - curl -fsSL -o /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.23.0/kind-linux-amd64
+      - chmod +x /usr/local/bin/kind
+      - curl -fsSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+      - chmod +x /usr/local/bin/kubectl
+      - curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      
+      # Install kuttl test runner
+      - echo "Installing kubectl-kuttl from GitHub releases..."
+      - curl -fsSL https://github.com/kudobuilder/kuttl/releases/download/v0.19.0/kubectl-kuttl_0.19.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
+      - chmod +x /usr/local/bin/kubectl-kuttl
+      - kubectl-kuttl version
+      
+      # Create directory for test artifacts
+      - mkdir -p "${ARTIFACTS_DIR}"
+
+  # PHASE 2: Create and configure Kind cluster
+  pre_build:
+    commands:
+      - echo "Creating kind cluster ${CLUSTER_NAME} using ${KINDEST_NODE_IMAGE}..."
+      
+      # Generate Kind cluster configuration
+      # - Enables ValidatingAdmissionWebhook for Clowder webhooks
+      # - Exposes ports 80/443 for ingress testing
+      # - Configures containerd to use local registry
+      - |
+        cat > kind.yaml <<'EOF'
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+          kubeadmConfigPatches:
+            - |
+              kind: ClusterConfiguration
+              apiServer:
+                extraArgs:
+                  # Required for Clowder validating/mutating webhooks to work
+                  enable-admission-plugins: ValidatingAdmissionWebhook,MutatingAdmissionWebhook
+          # Expose ports for ingress controller
+          extraPortMappings:
+          - containerPort: 80
+            hostPort: 8080
+            protocol: TCP
+          - containerPort: 443
+            hostPort: 8443
+            protocol: TCP
+        # Configure containerd for local image registry (if needed)
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
+            endpoint = ["http://kind-registry:5000"]
+        EOF
+      
+      # Create the cluster and wait up to 3 minutes for it to be ready
+      - kind create cluster --name "${CLUSTER_NAME}" --image "${KINDEST_NODE_IMAGE}" --config kind.yaml --wait 180s
+      - kubectl cluster-info
+      - kubectl get nodes -o wide
+      
+      # Install ingress-nginx controller (required by some tests)
+      - echo "Installing ingress-nginx..."
+      - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+      - helm repo update
+      - helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace
+      - kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller --timeout=300s
+
+  # PHASE 3: Build and test Clowder
+  build:
+    commands:
+      # ==========================================
+      # Install required operators (Strimzi, cert-manager, Prometheus, etc)
+      # ==========================================
+      - echo "Preparing cluster dependencies (operators, CRDs)..."
+      - export KUBECTL_CMD="kubectl"
+      - export PATH="$PWD/bin:$PATH"
+      # This script installs: Strimzi, cert-manager, prometheus-operator, 
+      # cyndi-operator, elasticsearch-operator, keda-operator, and required CRDs
+      - bash build/codebuild_kube_setup.sh
+      
+      # ==========================================
+      # Build Clowder manifest
+      # ==========================================
+      - echo "Building clowder manifest..."
+      # Use specific image tag for reproducible tests
+      - export IMAGE_TAG=`git rev-parse --short=8 HEAD`
+      - export IMG="quay.io/cloudservices/clowder:$IMAGE_TAG"
+      # Generate manifest.yaml with CRDs and operator deployment
+      - make release
+      
+      # ==========================================
+      # Deploy Clowder operator
+      # ==========================================
+      - echo "Deploying clowder operator and config..."
+      - kubectl create namespace clowder-system || true
+      # Deploy all Clowder resources (CRDs, RBAC, Deployment, Webhooks)
+      - kubectl apply -f manifest.yaml --validate=false -n clowder-system
+      # Apply Clowder configuration (features, settings)
+      - kubectl apply -f clowder-config.yaml -n clowder-system
+      # Restart pods to pick up new config
+      - kubectl delete pod -n clowder-system -l operator-name=clowder || true
+      
+      # ==========================================
+      # Debug: Verify Clowder deployment before tests
+      # ==========================================
+      - echo "=== Debugging clowder deployment before rollout ==="
+      - sleep 10
+      - kubectl get pods -n clowder-system -o wide
+      - kubectl get deployment -n clowder-system
+      - kubectl describe deployment clowder-controller-manager -n clowder-system || true
+      - kubectl get events -n clowder-system --sort-by='.lastTimestamp' | tail -20 || true
+      - |
+        # Show pod details if it exists
+        CLOWDER_POD=$(kubectl get pod -n clowder-system -l control-plane=controller-manager -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+        if [ -n "$CLOWDER_POD" ]; then
+          echo "=== Clowder pod found: $CLOWDER_POD ==="
+          kubectl describe pod "$CLOWDER_POD" -n clowder-system || true
+          kubectl logs "$CLOWDER_POD" -n clowder-system --tail=50 || true
+        else
+          echo "=== No clowder pod found yet ==="
+        fi
+      
+      # Wait for Clowder to be ready (up to 10 minutes)
+      - echo "=== Starting rollout wait ==="
+      - kubectl rollout status deployment/clowder-controller-manager -n clowder-system --timeout=600s
+      
+      # ==========================================
+      # Run kuttl tests
+      # ==========================================
+      - echo "Running KUTTL tests..."
+      - set +e  # Don't fail immediately on test failure
+      - bash build/run_kuttl.sh --report xml
+      - TEST_RC=$?
+      - set -e
+      # Move JUnit report for CodeBuild to parse
+      - mv kuttl-report.xml "${ARTIFACTS_DIR}/junit-kuttl.xml" || true
+      
+      # ==========================================
+      # Collect logs and metrics for debugging
+      # ==========================================
+      - echo "Collecting logs and metrics..."
+      # Save logs from all Clowder pods
+      - |
+        for p in $(kubectl get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}'); do
+          kubectl logs "$p" -n clowder-system > "${ARTIFACTS_DIR}/${p}.log" || true
+          kubectl logs "$p" -n clowder-system | ./parse-controller-logs > "${ARTIFACTS_DIR}/${p}-parsed-controller-logs.log" || true
+        done
+      # Save cluster state
+      - kubectl -n clowder-system get all -o wide > "${ARTIFACTS_DIR}/clowder-system-get-all.txt" || true
+      - kubectl get events --all-namespaces --sort-by=.lastTimestamp > "${ARTIFACTS_DIR}/cluster-events.txt" || true
+      
+      # Collect Prometheus metrics from Clowder
+      - |
+        ( kubectl port-forward svc/clowder-controller-manager-metrics-service-non-auth -n clowder-system 8080 >/dev/null 2>&1 & echo $! > pf.pid ) || true
+      - sleep 5 || true
+      - curl -fsS http://127.0.0.1:8080/metrics > "${ARTIFACTS_DIR}/clowder-metrics" || true
+      - kill "$(cat pf.pid)" 2>/dev/null || true
+      
+      # ==========================================
+      # Print logs to CloudWatch if tests failed
+      # ==========================================
+      - |
+        if [ "$TEST_RC" -ne 0 ]; then
+          echo "=== BEGIN clowder-system logs (tail) ==="
+          for f in "${ARTIFACTS_DIR}"/*.log; do
+            echo "--- $(basename "$f") (last 200 lines) ---"
+            tail -n 200 "$f" || true
+          done
+          echo "=== END clowder-system logs (tail) ==="
+        fi
+      
+      # Exit with test result code (0 = pass, non-zero = fail)
+      - exit "$TEST_RC"
+
+  # PHASE 4: Cleanup - Always runs even if tests fail
+  post_build:
+    commands:
+      # Delete Kind cluster to free resources
+      - echo "Deleting kind cluster ${CLUSTER_NAME}..."
+      - kind delete cluster --name "${CLUSTER_NAME}" || true
+
+# Upload test artifacts to S3 for analysis
+artifacts:
+  files:
+    - artifacts/**/*  # All files in artifacts directory (logs, metrics, JUnit reports)
+  discard-paths: no   # Preserve directory structure
+
+
