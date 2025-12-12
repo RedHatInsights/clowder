@@ -100,8 +100,13 @@ export PATH="$PWD/bin:$PATH"
 bash build/codebuild_kube_setup.sh
 
 log_info "Building clowder manifest..."
+echo "Building clowder image locally..."
 export IMAGE_TAG=`git rev-parse --short=8 HEAD`
-export IMG="quay.io/cloudservices/clowder:$IMAGE_TAG"
+export IMG="clowder:${IMAGE_TAG}"
+# Build image locally (faster than pulling from quay, and always available)
+docker build -t ${IMG} .
+# Load image into Kind cluster
+kind load docker-image ${IMG} --name ${CLUSTER_NAME}
 make release
 
 log_info "Deploying clowder operator and config..."
