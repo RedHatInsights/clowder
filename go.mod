@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.25.3
+go 1.25.5
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.5.0
@@ -12,7 +12,7 @@ require (
 	github.com/cert-manager/cert-manager v1.19.1
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
-	github.com/kedacore/keda/v2 v2.18.1
+	github.com/kedacore/keda/v2 v2.18.2
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.88
 	github.com/onsi/ginkgo/v2 v2.27.2
@@ -114,7 +114,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.1-0.20220621161143-b0104c826a24 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/libdns/libdns v1.1.1 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
@@ -196,9 +196,9 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/api v0.256.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251111163417-95abcf5c77ba // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251111163417-95abcf5c77ba // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
 	google.golang.org/grpc v1.77.0 // indirect
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
