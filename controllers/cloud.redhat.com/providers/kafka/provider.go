@@ -378,9 +378,6 @@ func configureKafkaConnectCluster(s providerInterface) error {
 		},
 	}
 
-	k.Spec.JvmOptions.Xms = utils.StringPtr("2G")
-	k.Spec.JvmOptions.Xmx = utils.StringPtr("2G")
-
 	secName, err := s.getKafkaConnectTrustedCertSecretName()
 	if err != nil {
 		return err
