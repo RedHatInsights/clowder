@@ -288,16 +288,16 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	// default values for config/requests/limits in Strimzi resource specs
 	err := kcRequests.UnmarshalJSON([]byte(`{
-        "cpu": "500m",
-        "memory": "750Mi"
+        "cpu": "200m",
+        "memory": "2Gi"
 	}`))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kcRequests: %w", err)
 	}
 
 	err = kcLimits.UnmarshalJSON([]byte(`{
-        "cpu": "600m",
-        "memory": "1Gi"
+        "cpu": "500m",
+        "memory": "2Gi"
 	}`))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kcLimits: %w", err)
@@ -317,6 +317,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	}
 
 	k := &strimzi.KafkaConnect{}
+
 	if err := s.GetCache().Create(KafkaConnect, clusterNN, k); err != nil {
 		return err
 	}
@@ -370,6 +371,10 @@ func configureKafkaConnectCluster(s providerInterface) error {
 			Pod: &strimzi.KafkaConnectSpecTemplatePod{
 				ImagePullSecrets: []strimzi.KafkaConnectSpecTemplatePodImagePullSecretsElem{},
 			},
+		},
+		JvmOptions: &strimzi.KafkaConnectSpecJvmOptions{
+			Xms: utils.StringPtr("2G"),
+			Xmx: utils.StringPtr("2G"),
 		},
 	}
 
