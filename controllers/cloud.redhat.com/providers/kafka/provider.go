@@ -289,7 +289,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 	// default values for config/requests/limits in Strimzi resource specs
 	err := kcRequests.UnmarshalJSON([]byte(`{
         "cpu": "200m",
-        "memory": "1Gi"
+        "memory": "2Gi"
 	}`))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kcRequests: %w", err)
@@ -297,7 +297,7 @@ func configureKafkaConnectCluster(s providerInterface) error {
 
 	err = kcLimits.UnmarshalJSON([]byte(`{
         "cpu": "500m",
-        "memory": "1Gi"
+        "memory": "2Gi"
 	}`))
 	if err != nil {
 		return fmt.Errorf("could not unmarshal kcLimits: %w", err)
