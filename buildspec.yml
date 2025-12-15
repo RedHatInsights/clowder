@@ -113,13 +113,20 @@ phases:
       - bash build/codebuild_kube_setup.sh
       
       # ==========================================
-      # Build Clowder manifest
+      # Build Clowder image locally
       # ==========================================
-      - echo "Building clowder manifest..."
-      # Use specific image tag for reproducible tests
+      - echo "Building clowder image locally..."
       - export IMAGE_TAG=`git rev-parse --short=8 HEAD`
-      - export IMG="quay.io/cloudservices/clowder:$IMAGE_TAG"
-      # Generate manifest.yaml with CRDs and operator deployment
+      - export IMG="clowder:${IMAGE_TAG}"
+      # Build image locally (faster than pulling from quay, and always available)
+      - docker build -t ${IMG} .
+      # Load image into Kind cluster
+      - kind load docker-image ${IMG} --name ${CLUSTER_NAME}
+      
+      # ==========================================
+      # Generate Clowder manifest
+      # ==========================================
+      - echo "Generating manifest with local image ${IMG}..."
       - make release
       
       # ==========================================
