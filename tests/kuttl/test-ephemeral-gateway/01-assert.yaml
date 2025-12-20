@@ -82,7 +82,7 @@ spec:
       annotations:
         clowder/authsidecar-config: caddy-config-mocktitlements
         clowder/authsidecar-enabled: "true"
-        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12
+        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46
         clowder/authsidecar-port: "8090"
     spec:
       containers:
