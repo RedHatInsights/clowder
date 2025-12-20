@@ -104,8 +104,8 @@ github.com/caddyserver/certmagic v0.25.0 h1:VMleO/XA48gEWes5l+Fh6tRWo9bHkhwAEhx6
 github.com/caddyserver/certmagic v0.25.0/go.mod h1:m9yB7Mud24OQbPHOiipAoyKPn9pKHhpSJxXR1jydBxA=
 github.com/caddyserver/zerossl v0.1.3 h1:onS+pxp3M8HnHpN5MMbOMyNjmTheJyWRaZYwn+YTAyA=
 github.com/caddyserver/zerossl v0.1.3/go.mod h1:CxA0acn7oEGO6//4rtrRjYgEoa4MFw/XofZnrYwGqG4=
-github.com/ccoveille/go-safecast v1.8.2 h1:+d+s5UGQiCVJX9oYc8XvYcB2zCMBlax6lIP7YdxXLHA=
-github.com/ccoveille/go-safecast v1.8.2/go.mod h1:M0Ubpl11x63fE7iOfk5MtngQFXsntcRzOoSsFDqQYDY=
+github.com/ccoveille/go-safecast v1.6.1 h1:Nb9WMDR8PqhnKCVs2sCB+OqhohwO5qaXtCviZkIff5Q=
+github.com/ccoveille/go-safecast v1.6.1/go.mod h1:QqwNjxQ7DAqY0C721OIO9InMk9zCwcsO7tnRuHytad8=
 github.com/cenkalti/backoff/v5 v5.0.3 h1:ZN+IMa753KfX5hd8vVaMixjnqRZ3y8CuJKRKj1xcsSM=
 github.com/cenkalti/backoff/v5 v5.0.3/go.mod h1:rkhZdG3JZukswDf7f0cwqPNk4K0sa+F97BxZthm/crw=
 github.com/cert-manager/cert-manager v1.19.1 h1:Txh8L/nLWTDcb7ZnXuXbTe15BxQnLbLirXmbNk0fGgY=
