@@ -206,7 +206,7 @@ require (
 	k8s.io/code-generator v0.34.3 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20251121143641-b6aabc6c6745 // indirect
+	k8s.io/kube-openapi v0.0.0-20251125145642-4e65d59e963e // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	knative.dev/pkg v0.0.0-20251217214024-80c8bc434670 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251219095433-f28fd58a1e31 // indirect
