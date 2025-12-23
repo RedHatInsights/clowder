@@ -32,8 +32,8 @@ set -e
 unset PYENV_VERSION
 rm -f .python-version
 
-log_info "Installing Go 1.24+ (required for go.mod)..."
-curl -fsSL https://go.dev/dl/go1.24.7.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+log_info "Installing Go 1.25+ (required for go.mod)..."
+curl -fsSL https://go.dev/dl/go1.25.3.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 export PATH="/usr/local/go/bin:$PATH"
 go version
 
