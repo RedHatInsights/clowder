@@ -14,12 +14,12 @@ spec:
       mode: operator
       path: "/metrics"
     kafka:
-      forceTLS: true
       mode: app-interface
       cluster:
         name: test-kafka-app-interface
         namespace: test-kafka-app-interface
-        forceTLS: true
+        # Use tls: true instead of deprecated forceTLS field
+        tls: true
       connect:
         namespace: test-kafka-app-interface
         name: test-kafka-app-interface
