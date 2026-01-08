@@ -52,9 +52,9 @@ http_retry() {
 }
 
 get_request_edge() {
-    local TOKEN="$1"
-    local ENDPOINT="$2"
-    local RETRIES="$3"
+    local TOKEN="default:*.proxy-123"
+    local ENDPOINT="$1"
+    local RETRIES="$2"
     http_retry "$RETRIES" "GET" "$TOKEN" "test-ff-local-featureflags-edge:3063${ENDPOINT}"
 }
 
@@ -119,7 +119,7 @@ if [ 'true' != "$(get_request "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOG
 fi
 
 echo "Testing that feature toggle '$FEATURE_TOGGLE_NAME' is available through edge service..."
-if ! get_request_edge "$CLIENT_TOKEN" "/api/client/features/$FEATURE_TOGGLE_NAME" 15; then
+if ! get_request_edge "/api/frontend/$FEATURE_TOGGLE_NAME"; 15 then
     echo "Feature toggle '$FEATURE_TOGGLE_NAME' should be available through edge"
     exit 1
 fi
