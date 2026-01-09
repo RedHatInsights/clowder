@@ -182,7 +182,7 @@ require (
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20251210140736-7dacc380ba00 // indirect
 	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 // indirect
-	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/mod v0.32.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/oauth2 v0.33.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
