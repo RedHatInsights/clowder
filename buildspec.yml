@@ -22,7 +22,9 @@ phases:
       - rm -f .python-version
       
       # Install Go 1.25.3 (required for building Clowder)
-      - echo "Installing Go 1.25+ (required for go.mod)..."
+      # Must remove old Go first - older versions can't parse 'go 1.25.3' in go.mod
+      - echo "Installing Go 1.25.3 (required for go.mod with patch version)..."
+      - rm -rf /usr/local/go
       - curl -fsSL https://go.dev/dl/go1.25.3.linux-amd64.tar.gz | tar -C /usr/local -xzf -
       - export PATH="/usr/local/go/bin:$PATH"
       - go version
