@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 # Script to setup Kind cluster and run tests in CodeBuild debug session
 # Replicates buildspec.yml phases: install, pre_build, and build
 

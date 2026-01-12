@@ -3,12 +3,12 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 # Wait for and extract the clowdapp-tls-enabled configuration
-- script: for i in {1..10}; do kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-enabled && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in $(seq 1 10); do kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-enabled && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-enabled -o json > /tmp/test-tls-enabled-secret
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-tls-enabled-secret | base64 -d > /tmp/test-tls-enabled-json
 
 # Wait for and extract the clowdapp-tls-disabled configuration
-- script: for i in {1..10}; do kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-disabled && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in $(seq 1 10); do kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-disabled && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret --namespace=test-tls-web-services-app-overrides clowdapp-tls-disabled -o json > /tmp/test-tls-disabled-secret
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-tls-disabled-secret | base64 -d > /tmp/test-tls-disabled-json
 

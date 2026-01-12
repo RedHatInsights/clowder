@@ -5,8 +5,7 @@ commands:
 # Increase retry timeout from 25s to 60s to handle circular dependencies race condition
 # puptoo depends on puptoo-2, and puptoo-2 has optionalDependencies on puptoo
 # This can cause delayed reconciliation in Kind/CodeBuild environments
-# Use bash -c for {1..60} syntax compatibility with sh/dash
-- script: bash -c 'for i in {1..60}; do kubectl get secret --namespace=test-multiple-app-endpoints puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
+- script: for i in $(seq 1 60); do kubectl get secret --namespace=test-multiple-app-endpoints puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret puptoo -o json -n test-multiple-app-endpoints > /tmp/test-multiple-app-endpoints
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints | base64 -d > /tmp/test-multiple-app-endpoints-json
 
