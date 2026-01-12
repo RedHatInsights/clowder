@@ -32,7 +32,8 @@ set -e
 unset PYENV_VERSION
 rm -f .python-version
 
-log_info "Installing Go 1.25+ (required for go.mod)..."
+log_info "Installing Go 1.25.3 (required for go.mod with patch version)..."
+rm -rf /usr/local/go
 curl -fsSL https://go.dev/dl/go1.25.3.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 export PATH="/usr/local/go/bin:$PATH"
 go version
@@ -97,7 +98,7 @@ log_info "PHASE: build - Setting up operators and deploying Clowder..."
 log_info "Preparing cluster dependencies (operators, CRDs)..."
 export KUBECTL_CMD="kubectl"
 export PATH="$PWD/bin:$PATH"
-bash build/codebuild_kube_setup.sh
+bash build/kube_setup.sh
 
 log_info "Building clowder manifest..."
 echo "Building clowder image locally..."
