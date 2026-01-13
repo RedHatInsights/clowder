@@ -10577,7 +10577,7 @@ objects:
                             mode.
                           properties:
                             image:
-                              description: Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
+                              description: Image. If unset, default is 'quay.io/redhat-services-prod/hcm-eng-prod-tenant/kafka-connect'
                               type: string
                             name:
                               description: 'Defines the kafka connect cluster name
