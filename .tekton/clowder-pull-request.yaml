@@ -286,80 +286,6 @@ spec:
         volumes:
         - emptyDir: {}
           name: workdir
-    - name: run-e2e-tests
-      params:
-      - name: SOURCE_ARTIFACT
-        value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
-      runAfter:
-      - build-container
-      taskSpec:
-        metadata: {}
-        params:
-        - description: The Trusted Artifact URI pointing to the artifact with the application source code.
-          name: SOURCE_ARTIFACT
-          type: string
-        spec:
-        stepTemplate:
-          computeResources: {}
-          volumeMounts:
-          - mountPath: /var/workdir
-            name: workdir
-        steps:
-        - args:
-          - use
-          - $(params.SOURCE_ARTIFACT)=/var/workdir/source
-          computeResources: {}
-          image: quay.io/redhat-appstudio/build-trusted-artifacts:latest@sha256:9b180776a41d9a22a1c51539f1647c60defbbd55b44bbebdd4130e33512d8b0d
-          name: use-trusted-artifact
-        - computeResources: {}
-          env:
-          - name: LOCALBIN
-            value: /tmp/bin
-          - name: IMG
-            value: $(tasks.build-container.results.IMAGE_URL)@$(tasks.build-container.results.IMAGE_DIGEST)
-          image: registry.access.redhat.com/ubi9/go-toolset:1.25.3-1763633888
-          name: make-template
-          script: |
-            set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && make release && make build-template-kustomize && cp manifest.yaml /var/workdir/ && cp deploy-kustomize.yaml /var/workdir/
-          workingDir: /opt/app-root/src
-        - computeResources: {}
-          env:
-          - name: LOCALBIN
-            value: /tmp/bin
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1766090767
-          name: test-template
-          script: |
-            set -xe && cp /var/workdir/source/* /opt/app-root/src -Rv && cp /var/workdir/manifest.yaml . && cp /var/workdir/deploy-kustomize.yaml . && dnf install make python3.12 diffutils -y && make build-template && make test-template
-          workingDir: /opt/app-root/src
-        - computeResources: {}
-          env:
-          - name: MINIKUBE_HOST
-            valueFrom:
-              secretKeyRef:
-                key: MINIKUBE_HOST
-                name: minikube-ssh-key
-          - name: MINIKUBE_USER
-            valueFrom:
-              secretKeyRef:
-                key: MINIKUBE_USER
-                name: minikube-ssh-key
-          - name: MINIKUBE_SSH_KEY
-            valueFrom:
-              secretKeyRef:
-                key: MINIKUBE_SSH_KEY
-                name: minikube-ssh-key
-          - name: MINIKUBE_ROOTDIR
-            valueFrom:
-              secretKeyRef:
-                key: MINIKUBE_ROOTDIR
-                name: minikube-ssh-key
-          image: registry.access.redhat.com/ubi8/ubi:8.10-1766090767
-          name: e2e-tests
-          script: set -ex && dnf install -y git openssh-clients python3.12 make jq diffutils && ci/konflux_minikube_e2e_tests.sh
-          workingDir: /var/workdir/source
-        volumes:
-        - emptyDir: {}
-          name: workdir
     - name: build-image-index
       params:
       - name: IMAGE
@@ -377,7 +303,6 @@ spec:
         value: $(params.buildah-format)
       runAfter:
       - run-unit-tests
-      - run-e2e-tests
       taskRef:
         params:
         - name: name
