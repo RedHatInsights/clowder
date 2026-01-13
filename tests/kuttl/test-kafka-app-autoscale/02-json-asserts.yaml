@@ -4,7 +4,7 @@ kind: TestStep
 commands:
 
 - script: >
-    for i in $(seq 1 15); do
+    for i in {1..15}; do
     kubectl get secret --namespace=test-kafka-app-autoscale puptoo -o json > /tmp/test-kafka-app-autoscale &&
     jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-app-autoscale | base64 -d > /tmp/test-kafka-app-autoscale-json &&
     jq -r '.kafka.topics[] | select(.requestedName == "topicone") | .name == "topicone"' -e < /tmp/test-kafka-app-autoscale-json &&

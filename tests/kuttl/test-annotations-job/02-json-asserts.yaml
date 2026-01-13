@@ -2,8 +2,8 @@
 apiVersion: kuttl.dev/v1alpha1
 kind: TestStep
 commands:
-# Use $(seq 1 100) for POSIX sh compatibility (sh doesn't support {1..100} brace expansion)
-- script: for i in $(seq 1 100); do kubectl get pod -l app=puptoo -l pod=puptoo-standard-cron -n test-annotations-job -o json | jq -e '.items[] | select(.status.phase != "Pending" and .status.phase != "Unknown")' && exit 0 || sleep 1; done; echo "Pod was not successfully started"; exit 1
+# Use bash -c for {1..100} syntax compatibility with sh/dash in CodeBuild
+- script: bash -c 'for i in {1..100}; do kubectl get pod -l app=puptoo -l pod=puptoo-standard-cron -n test-annotations-job -o json | jq -e '\''.items[] | select(.status.phase != "Pending" and .status.phase != "Unknown")'\'' && exit 0 || sleep 1; done; echo "Pod was not successfully started"; exit 1'
 - script: kubectl get pod -l app=puptoo -l pod=puptoo-standard-cron -n test-annotations-job -o json > /tmp/test-annotations-job
 - script: kubectl logs `jq -r '.items[0].metadata.name' < /tmp/test-annotations-job` -n test-annotations-job > /tmp/test-annotations-job-output
 - script: grep "Hi" /tmp/test-annotations-job-output

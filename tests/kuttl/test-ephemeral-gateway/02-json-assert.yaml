@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in $(seq 1 5); do kubectl get secret -n test-ephemeral-gateway test-ephemeral-gateway-test-cert && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in {1..5}; do kubectl get secret -n test-ephemeral-gateway test-ephemeral-gateway-test-cert && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: rm -fr /tmp/test-ephemeral-gateway
 - script: mkdir -p /tmp/test-ephemeral-gateway/
 - script: kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["ca.crt"] | @base64d' > /tmp/test-ephemeral-gateway/ca.pem

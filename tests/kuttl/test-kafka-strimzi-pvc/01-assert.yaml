@@ -62,7 +62,7 @@ metadata:
     strimzi.io/use-connector-resources: 'true'
 spec:
   version: "3.8.0"
-  image: "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
+  image: "quay.io/redhat-services-prod/hcm-eng-prod-tenant/kafka-connect"
   bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-pvc-kafka.svc:9092
   config:
     group.id: connect-cluster

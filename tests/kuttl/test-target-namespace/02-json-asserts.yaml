@@ -2,5 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in $(seq 1 15); do kubectl get clowdenvironment test-target-namespace && exit 0 || sleep 1; done; echo "ClowdEnvironment not found"; exit 1
+- script: for i in {1..15}; do kubectl get clowdenvironment test-target-namespace && exit 0 || sleep 1; done; echo "ClowdEnvironment not found"; exit 1
 - script: kubectl get clowdenvironment test-target-namespace -o json | jq -r '.status.targetNamespace != ""' -e
