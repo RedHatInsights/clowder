@@ -244,7 +244,7 @@ type KafkaConnectClusterConfig struct {
 	// Version. If unset, default is '3.6.0'
 	Version string `json:"version,omitempty"`
 
-	// Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
+	// Image. If unset, default is 'quay.io/redhat-services-prod/hcm-eng-prod-tenant/kafka-connect'
 	Image string `json:"image,omitempty"`
 
 	// Resource Limits

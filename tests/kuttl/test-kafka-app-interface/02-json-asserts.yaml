@@ -3,7 +3,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: >
-    for i in $(seq 1 15); do
+    for i in {1..15}; do
     kubectl get secret --namespace=test-kafka-app-interface puptoo -o json > /tmp/test-kafka-app-interface &&
     jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-app-interface | base64 -d > /tmp/test-kafka-app-interface-json &&
     jq -r '.kafka.brokers[0].hostname == "test-kafka-app-interface-kafka-bootstrap.test-kafka-app-interface.svc"' -e < /tmp/test-kafka-app-interface-json &&

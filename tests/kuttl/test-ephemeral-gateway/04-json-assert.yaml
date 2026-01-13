@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in $(seq 1 5); do kubectl get secret --namespace=test-ephemeral-gateway puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in {1..5}; do kubectl get secret --namespace=test-ephemeral-gateway puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 
 # do not overwrite /tmp/test-ephemeral-gateway created in earlier 02-json-assert.yaml
 - script: kubectl get secret --namespace=test-ephemeral-gateway puptoo -o json > /tmp/test-ephemeral-gateway-apipaths

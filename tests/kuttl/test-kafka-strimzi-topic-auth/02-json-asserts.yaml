@@ -3,7 +3,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: >
-    for i in $(seq 1 5); do
+    for i in {1..5}; do
     kubectl get secret --namespace=test-kafka-strimzi-topic-auth puptoo -o json > /tmp/test-kafka-strimzi-topic-auth &&
     jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-strimzi-topic-auth | base64 -d > /tmp/test-kafka-strimzi-topic-auth-json &&
     jq -r '.kafka.brokers[0].hostname == "test-kafka-strimzi-topic-auth-kafka-bootstrap.test-kafka-strimzi-topic-auth-kafka.svc"' -e < /tmp/test-kafka-strimzi-topic-auth-json &&
