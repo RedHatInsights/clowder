@@ -110,6 +110,24 @@ jobs:
               }
             }
 
+      - name: Fail if buildspec.yml is missing
+        if: steps.check-buildspec.outputs.has-buildspec == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = '${{ steps.pr.outputs.sha }}';
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: sha,
+              state: 'failure',
+              context: 'CodeBuild / E2E Tests',
+              description: 'PR needs rebase - buildspec.yml missing'
+            });
+
+            core.setFailed('This PR branch does not contain buildspec.yml. Please rebase with master.');
+
       - name: Create pending status check
         if: steps.check-permissions.outputs.allowed == 'true' && steps.check-buildspec.outputs.has-buildspec == 'true'
         uses: actions/github-script@v7
