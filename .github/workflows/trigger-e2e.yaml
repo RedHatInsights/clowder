@@ -1,0 +1,34 @@
+name: Trigger E2E Tests
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger-codebuild:
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/test-e2e')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Post CodeBuild Trigger Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            const sha = pr.head.sha;
+            console.log(`Latest commit SHA detected: ${sha}`);
+
+            const codebuildCmd = `/codebuild_run(${sha})`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: codebuildCmd
+            });
