@@ -1,0 +1,40 @@
+name: Test E2E Logic (Debug)
+on:
+  pull_request: # Se ejecutará al hacer push a tu rama
+
+permissions:
+  contents: read # No pedimos write para evitar el error 403 inmediato
+
+jobs:
+  debug-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify CodeBuild Command Logic
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 1. Obtenemos el SHA
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            const sha = pr.head.sha;
+            console.log(`✅ SHA detectado: ${sha}`);
+
+            // 2. Construimos el comando
+            const codebuildCmd = `/codebuild_run(${sha})`;
+
+            // 3. IMPRIMIMOS en lugar de comentar (para evitar error 403 en pruebas)
+            console.log("---------------------------------------------------");
+            console.log("🤖 El bot hubiera comentado exactamente:");
+            console.log(codebuildCmd);
+            console.log("---------------------------------------------------");
+
+            // Validación simple para que te quedes tranquilo
+            if (!sha || sha.length < 7) {
+                core.setFailed("❌ Error: No se pudo obtener un SHA válido");
+            } else {
+                console.log("✅ Lógica verificada: El comando se construyó correctamente.");
+            }
