@@ -185,7 +185,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: '${{ steps.pr.outputs.sha }}',
-              state: 'pending',
+              state: 'in_progress',
               context: 'CodeBuild / E2E Tests',
               description: 'E2E tests in progress...',
               target_url: buildUrl
