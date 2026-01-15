@@ -121,7 +121,7 @@ jobs:
               sha: '${{ steps.pr.outputs.sha }}',
               state: 'pending',
               context: 'CodeBuild / E2E Tests',
-              description: 'Running E2E tests in CodeBuild...'
+              description: 'Starting E2E tests...'
             });
 
       - name: Configure AWS credentials
