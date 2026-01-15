@@ -83,8 +83,35 @@ jobs:
             core.setOutput('ref', pr.data.head.ref);
             core.setOutput('repo', pr.data.head.repo.clone_url);
 
+      - name: Check if PR has buildspec.yml
+        id: check-buildspec
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'buildspec.yml',
+                ref: '${{ steps.pr.outputs.sha }}'
+              });
+              core.setOutput('has-buildspec', 'true');
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('has-buildspec', 'false');
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: '⚠️ This PR branch does not contain `buildspec.yml`, which is required to run E2E tests.\n\nPlease rebase this PR with the `master` branch to include the latest changes, then try `/test-e2e` again.'
+                });
+              } else {
+                throw error;
+              }
+            }
+
       - name: Create pending status check
-        if: steps.check-permissions.outputs.allowed == 'true'
+        if: steps.check-permissions.outputs.allowed == 'true' && steps.check-buildspec.outputs.has-buildspec == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -98,12 +125,14 @@ jobs:
             });
 
       - name: Configure AWS credentials
+        if: steps.check-buildspec.outputs.has-buildspec == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_CODEBUILD_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Run CodeBuild
+        if: steps.check-buildspec.outputs.has-buildspec == 'true'
         id: codebuild
         uses: aws-actions/aws-codebuild-run-build@v1
         with:
