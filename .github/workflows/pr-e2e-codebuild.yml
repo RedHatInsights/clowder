@@ -8,7 +8,7 @@ permissions:
   id-token: write  # Required for OIDC authentication with AWS
   contents: read
   pull-requests: write  # To post comments back to the PR
-  statuses: write  # To create commit status checks
+  checks: write  # To create check runs
 
 jobs:
   trigger-codebuild:
@@ -115,35 +115,40 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const sha = '${{ steps.pr.outputs.sha }}';
-
-            await github.rest.repos.createCommitStatus({
+            await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: sha,
-              state: 'failure',
-              context: 'CodeBuild / E2E Tests',
-              description: 'PR needs rebase - buildspec.yml missing'
+              name: 'CodeBuild E2E Tests',
+              head_sha: '${{ steps.pr.outputs.sha }}',
+              status: 'completed',
+              conclusion: 'failure',
+              output: {
+                title: 'PR needs rebase - buildspec.yml missing',
+                summary: 'This PR branch does not contain `buildspec.yml`, which is required to run E2E tests.\n\nPlease rebase this PR with the `master` branch to include the latest changes, then try `/test-e2e` again.'
+              }
             });
 
             core.setFailed('This PR branch does not contain buildspec.yml. Please rebase with master.');
 
-      - name: Create pending status check
+      - name: Create check run
         if: steps.check-permissions.outputs.allowed == 'true' && steps.check-buildspec.outputs.has-buildspec == 'true'
+        id: create-check
         uses: actions/github-script@v7
         with:
           script: |
-            const projectUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
-
-            await github.rest.repos.createCommitStatus({
+            const { data: check } = await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
-              state: 'pending',
-              context: 'CodeBuild / E2E Tests',
-              description: 'Running E2E tests...',
-              target_url: projectUrl
+              name: 'CodeBuild E2E Tests',
+              head_sha: '${{ steps.pr.outputs.sha }}',
+              status: 'in_progress',
+              details_url: 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D',
+              output: {
+                title: 'Running E2E tests in CodeBuild',
+                summary: 'E2E tests are running in AWS CodeBuild...'
+              }
             });
+            core.setOutput('check_id', check.id);
 
       - name: Configure AWS credentials
         if: steps.check-buildspec.outputs.has-buildspec == 'true'
@@ -173,67 +178,72 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
-      - name: Update status check to in-progress
-        if: always() && steps.codebuild.outputs.aws-build-id
+      - name: Update check with build URL
+        if: always() && steps.codebuild.outputs.aws-build-id && steps.create-check.outputs.check_id
         uses: actions/github-script@v7
         with:
           script: |
-            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
-            const buildUrl = `https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${buildId}`;
-
-            await github.rest.repos.createCommitStatus({
+            await github.rest.checks.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
-              state: 'in_progress',
-              context: 'CodeBuild / E2E Tests',
-              description: 'E2E tests in progress...',
-              target_url: buildUrl
+              check_run_id: '${{ steps.create-check.outputs.check_id }}',
+              status: 'in_progress',
+              details_url: 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${{ steps.codebuild.outputs.aws-build-id }}',
+              output: {
+                title: 'E2E tests running',
+                summary: 'Build ID: `${{ steps.codebuild.outputs.aws-build-id }}`'
+              }
             });
 
-      - name: Update status check on success
-        if: success()
+      - name: Complete check run on success
+        if: success() && steps.create-check.outputs.check_id
         uses: actions/github-script@v7
         with:
           script: |
-            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
-            const buildUrl = `https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${buildId}`;
-
-            await github.rest.repos.createCommitStatus({
+            await github.rest.checks.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
-              state: 'success',
-              context: 'CodeBuild / E2E Tests',
-              description: 'E2E tests passed',
-              target_url: buildUrl
+              check_run_id: '${{ steps.create-check.outputs.check_id }}',
+              status: 'completed',
+              conclusion: 'success',
+              details_url: 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${{ steps.codebuild.outputs.aws-build-id }}',
+              output: {
+                title: 'E2E tests passed',
+                summary: 'All E2E tests completed successfully!\n\nBuild ID: `${{ steps.codebuild.outputs.aws-build-id }}`'
+              }
             });
 
-      - name: Update status check on failure
-        if: failure()
+      - name: Complete check run on failure
+        if: failure() && steps.create-check.outputs.check_id
         uses: actions/github-script@v7
         with:
           script: |
             const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
             const baseUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
 
-            let buildUrl;
-            let description;
+            let detailsUrl;
+            let title;
+            let summary;
 
             if (buildId) {
-              buildUrl = `${baseUrl}/build/${buildId}`;
-              description = 'E2E tests failed';
+              detailsUrl = `${baseUrl}/build/${buildId}`;
+              title = 'E2E tests failed';
+              summary = `E2E tests failed. Please check the build logs for details.\n\nBuild ID: \`${buildId}\``;
             } else {
-              buildUrl = baseUrl;
-              description = 'Failed to start E2E tests';
+              detailsUrl = baseUrl;
+              title = 'Failed to start E2E tests';
+              summary = 'Failed to start E2E tests. Please check the GitHub Actions logs for details.';
             }
 
-            await github.rest.repos.createCommitStatus({
+            await github.rest.checks.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
-              state: 'failure',
-              context: 'CodeBuild / E2E Tests',
-              description: description,
-              target_url: buildUrl
+              check_run_id: '${{ steps.create-check.outputs.check_id }}',
+              status: 'completed',
+              conclusion: 'failure',
+              details_url: detailsUrl,
+              output: {
+                title: title,
+                summary: summary
+              }
             });
