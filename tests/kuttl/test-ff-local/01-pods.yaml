@@ -25,6 +25,9 @@ spec:
       mode: none
     featureFlags:
       mode: local
+      images:
+        unleash: unleashorg/unleash-server:5.6.9
+        unleashEdge: unleashorg/unleash-edge:v19.6.3
   resourceDefaults:
     limits:
       cpu: 400m

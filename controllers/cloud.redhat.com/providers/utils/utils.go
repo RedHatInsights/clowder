@@ -24,7 +24,7 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
+var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46"
 var defaultImageCaddyGateway = defaultImageCaddySideCar
 var defaultImageMBOP = "quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212"
 var defaultImageMocktitlements = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:f6b8612"
@@ -35,17 +35,34 @@ var defaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
-var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
-var defaultImageInMemoryDB = "registry.redhat.io/rhel9/redis-6:1-199.1726663404"
+var defaultImageDatabasePG16 = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/postgresql-rds:d44b8d1"
+var defaultImageDatabasePG12Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-12-2318dee"
+var defaultImageDatabasePG13Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-13-2318dee"
+var defaultImageDatabasePG14Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-14-2318dee"
+var defaultImageDatabasePG15Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-15-2318dee"
+var defaultImageDatabasePG16Cyndi = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/postgresql-rds-cyndi:d44b8d1"
+var defaultImageInMemoryDB = "registry.redhat.io/rhel10/valkey-8:10.0"
 
 // GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
-func GetDefaultDatabaseImage(version int32) (string, error) {
-	var defaultImageDatabasePG = map[int32]string{
-		16: defaultImageDatabasePG16,
-		15: defaultImageDatabasePG15,
-		14: defaultImageDatabasePG14,
-		13: defaultImageDatabasePG13,
-		12: defaultImageDatabasePG12,
+func GetDefaultDatabaseImage(version int32, cyndi bool) (string, error) {
+	var defaultImageDatabasePG map[int32]string
+
+	if cyndi {
+		defaultImageDatabasePG = map[int32]string{
+			16: defaultImageDatabasePG16Cyndi,
+			15: defaultImageDatabasePG15Cyndi,
+			14: defaultImageDatabasePG14Cyndi,
+			13: defaultImageDatabasePG13Cyndi,
+			12: defaultImageDatabasePG12Cyndi,
+		}
+	} else {
+		defaultImageDatabasePG = map[int32]string{
+			16: defaultImageDatabasePG16,
+			15: defaultImageDatabasePG15,
+			14: defaultImageDatabasePG14,
+			13: defaultImageDatabasePG13,
+			12: defaultImageDatabasePG12,
+		}
 	}
 
 	image, ok := defaultImageDatabasePG[version]
@@ -307,6 +324,16 @@ var KubeLinterAnnotations = map[string]string{
 // RCharSet defines the character set used for random string generation
 const RCharSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
+// GetCACertDir returns the directory where CA certificates are mounted on containers
+func GetCACertDir() string {
+	return "/cdapp/certs"
+}
+
+// GetServiceCACertPath returns the full path to the service CA certificate
+func GetServiceCACertPath() *string {
+	return utils.StringPtr(GetCACertDir() + "/service-ca.crt")
+}
+
 // AddCertVolume adds a TLS certificate volume to the provided PodSpec
 func AddCertVolume(d *core.PodSpec, dnn string) {
 	d.Volumes = append(d.Volumes, core.Volume{
@@ -325,7 +352,7 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 			vms = append(vms, core.VolumeMount{
 				Name:      "tls-ca",
 				ReadOnly:  true,
-				MountPath: "/cdapp/certs",
+				MountPath: GetCACertDir(),
 			})
 		}
 		d.Containers[i].VolumeMounts = vms
@@ -336,7 +363,7 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 		vms = append(vms, core.VolumeMount{
 			Name:      "tls-ca",
 			ReadOnly:  true,
-			MountPath: "/cdapp/certs",
+			MountPath: GetCACertDir(),
 		})
 		d.InitContainers[i].VolumeMounts = vms
 	}
@@ -396,4 +423,36 @@ func AppendEnvVarsFromSecret(envvars []core.EnvVar, secName string, inputs ...Se
 		envvars = append(envvars, newVar)
 	}
 	return envvars
+}
+
+// IsTLSConfiguredForEnv returns true if the public and private TLS ports are defined on the ClowdEnvironment
+func IsTLSConfiguredForEnv(envTLSConfig *crd.TLS) bool {
+	return envTLSConfig.Port != 0 && envTLSConfig.PrivatePort != 0
+}
+
+// IsPublicTLSEnabled returns true if public TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+func IsPublicTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
+	if !IsTLSConfiguredForEnv(envTLSConfig) {
+		return false
+	}
+	if deploymentWebConfig.Public.TLS != nil {
+		return *deploymentWebConfig.Public.TLS
+	}
+	return envTLSConfig.Enabled
+}
+
+// IsPrivateTLSEnabled returns true if private TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+func IsPrivateTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
+	if !IsTLSConfiguredForEnv(envTLSConfig) {
+		return false
+	}
+	if deploymentWebConfig.Private.TLS != nil {
+		return *deploymentWebConfig.Private.TLS
+	}
+	return envTLSConfig.Enabled
+}
+
+// IsAnyTLSEnabled returns true if public OR private TLS is enabled at the ClowdApp deployment level or at the ClowdEnvironment web provider level
+func IsAnyTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
+	return IsPublicTLSEnabled(deploymentWebConfig, envTLSConfig) || IsPrivateTLSEnabled(deploymentWebConfig, envTLSConfig)
 }

@@ -2,15 +2,11 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: >
-    for i in {1..15}; do
-    kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > /tmp/test-kafka-managed-multibroker &&
-    jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed-multibroker | base64 -d > /tmp/test-kafka-managed-multibroker-json &&
-    jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < /tmp/test-kafka-managed-multibroker-json &&
-    jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"' -e < /tmp/test-kafka-managed-multibroker-json &&
-    exit 0 || sleep 1;
-    done;
-    echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
+# Increased retry count from 15 to 30 and sleep from 1s to 2s (total 60s)
+# Topic renaming with managedPrefix can take longer in Kind/CodeBuild environments
+# due to async reconciliation after ClowdEnvironment update
+# Use bash -c for {1..30} syntax compatibility with sh/dash
+- script: bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > /tmp/test-kafka-managed-multibroker && jq -r '\''.data["cdappconfig.json"]'\'' < /tmp/test-kafka-managed-multibroker | base64 -d > /tmp/test-kafka-managed-multibroker-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"'\'' -e < /tmp/test-kafka-managed-multibroker-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"'\'' -e < /tmp/test-kafka-managed-multibroker-json && exit 0 || sleep 2; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1'
 - script: jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < /tmp/test-kafka-managed-multibroker-json
 - script: jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"' -e < /tmp/test-kafka-managed-multibroker-json
 - script: jq -r '.kafka.brokers | length == 3' -e < /tmp/test-kafka-managed-multibroker-json

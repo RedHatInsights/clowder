@@ -11,7 +11,7 @@ import (
 )
 
 // DefaultImageSideCarTokenRefresher defines the default token refresher sidecar image
-var DefaultImageSideCarTokenRefresher = "quay.io/observatorium/token-refresher:master-2023-09-20-f5e3403" // nolint:gosec
+var DefaultImageSideCarTokenRefresher = "quay.io/redhat-services-prod/rhobs-mco-tenant/rhobs-token-refresher:b9f003e57d17de44a3aac77ff290fa1da2c453c8" // nolint:gosec
 // DefaultImageSideCarOtelCollector defines the default OpenTelemetry collector sidecar image
 var DefaultImageSideCarOtelCollector = "ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0" // nolint:gosec
 
@@ -51,6 +51,30 @@ func GetOtelCollectorConfigMap(env *crd.ClowdEnvironment, appName string, appSid
 		return env.Spec.Providers.Sidecars.OtelCollector.ConfigMap
 	}
 	return fmt.Sprintf("%s-otel-config", appName)
+}
+
+// GetOtelCollectorMemoryRequest returns the memory request for the OpenTelemetry collector
+func GetOtelCollectorMemoryRequest(env *crd.ClowdEnvironment, appSidecar *crd.Sidecar) string {
+	// Priority: ClowdApp sidecar.memoryRequest > ClowdEnvironment memoryRequest > default
+	if appSidecar != nil && appSidecar.MemoryRequest != "" {
+		return appSidecar.MemoryRequest
+	}
+	if env.Spec.Providers.Sidecars.OtelCollector.MemoryRequest != "" {
+		return env.Spec.Providers.Sidecars.OtelCollector.MemoryRequest
+	}
+	return "512Mi" // Default memory request
+}
+
+// GetOtelCollectorMemoryLimit returns the memory limit for the OpenTelemetry collector
+func GetOtelCollectorMemoryLimit(env *crd.ClowdEnvironment, appSidecar *crd.Sidecar) string {
+	// Priority: ClowdApp sidecar.memoryLimit > ClowdEnvironment memoryLimit > default
+	if appSidecar != nil && appSidecar.MemoryLimit != "" {
+		return appSidecar.MemoryLimit
+	}
+	if env.Spec.Providers.Sidecars.OtelCollector.MemoryLimit != "" {
+		return env.Spec.Providers.Sidecars.OtelCollector.MemoryLimit
+	}
+	return "1024Mi" // Default memory limit
 }
 
 // ConvertEnvVars converts custom EnvVar type to Kubernetes EnvVar

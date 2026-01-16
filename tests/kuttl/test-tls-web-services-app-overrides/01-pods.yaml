@@ -1,0 +1,128 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-tls-web-services-app-overrides
+spec:
+  targetNamespace: test-tls-web-services-app-overrides
+  providers:
+    web:
+      port: 8000
+      privatePort: 10000
+      mode: operator
+      tls:
+        enabled: false  # TLS disabled by default in environment
+        port: 8800
+        privatePort: 18800
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: clowdapp-tls-enabled
+  namespace: test-tls-web-services-app-overrides
+spec:
+  envName: test-tls-web-services-app-overrides
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello:ubi8
+      env:
+        - name: ENV_VAR_1
+          value: env_var_1
+        - name: ENV_VAR_2
+          value: env_var_2
+      initContainers:
+        - env:
+          - name: ENV_VAR_1
+            value: override_1
+          - name: ENV_VAR_3
+            value: env_var_3
+          args:
+          - ./clowder-hello
+          - "test"
+    webServices:
+      private:
+        enabled: true
+        tls: true  # Override: Enable TLS for private service
+      public:
+        enabled: true
+        tls: true  # Override: Enable TLS for public service
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: clowdapp-tls-disabled
+  namespace: test-tls-web-services-app-overrides
+spec:
+  envName: test-tls-web-services-app-overrides
+  dependencies:
+    - clowdapp-tls-enabled  # This app depends on the TLS-enabled app
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello:ubi8
+      env:
+        - name: ENV_VAR_1
+          value: env_var_1
+        - name: ENV_VAR_2
+          value: env_var_2
+    webServices:
+      private:
+        enabled: true
+        # No TLS field specified - should use environment default (false)
+      public:
+        enabled: true
+        # No TLS field specified - should use environment default (false)
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clowdapp-tls-enabled-processor-cert
+  namespace: test-tls-web-services-app-overrides
+spec:
+  dnsNames:
+  - clowdapp-tls-enabled-processor.test-tls-web-services-app-overrides.svc
+  - clowdapp-tls-enabled-processor.test-tls-web-services-app-overrides.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: clowdapp-tls-enabled-processor-serving-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: test-tls-web-services-app-overrides
+spec:
+  selfSigned: {}
+---
+apiVersion: v1
+data:
+  service-ca.crt: test-ca
+kind: ConfigMap
+metadata:
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+  name: openshift-service-ca.crt
+  namespace: test-tls-web-services-app-overrides
