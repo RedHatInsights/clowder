@@ -196,7 +196,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
+            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}'.split(':')[1];
             const buildUrl = `https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${buildId}`;
 
             await github.rest.repos.createCommitStatus({
@@ -221,7 +221,7 @@ jobs:
             let description;
 
             if (buildId) {
-              buildUrl = `${baseUrl}/build/${buildId}`;
+              buildUrl = `${baseUrl}/build/${buildId.split(':')[1]}`;
               description = 'E2E tests failed';
             } else {
               buildUrl = baseUrl;
