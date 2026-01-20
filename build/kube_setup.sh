@@ -38,10 +38,14 @@ else
     exit 1
 fi
 
-python3 -m venv "build/.build_venv"
-source build/.build_venv/bin/activate
-pip install --upgrade pip setuptools wheel
-pip install pyyaml
+if [ "$VIRTUAL_ENV" = "skip" ]; then
+    echo "*** Skipping PyYAML installation (already provided by system)..."
+else
+    python3 -m venv "build/.build_venv"
+    source build/.build_venv/bin/activate
+    pip install --upgrade pip setuptools wheel
+    pip install pyyaml
+fi
 
 declare -a BG_PIDS=()
 
@@ -251,6 +255,33 @@ function install_keda_operator {
     cd "$ROOT_DIR"
 }
 
+function install_metrics_server {
+    DEPLOYMENT=metrics-server
+    OPERATOR_NS=kube-system
+
+    # Check if metrics-server is already running
+    if ${KUBECTL_CMD} get deployment $DEPLOYMENT -n $OPERATOR_NS &> /dev/null; then
+        if ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS --timeout=5s &> /dev/null; then
+            echo "*** metrics-server deployment found, skipping install ..."
+            return
+        fi
+    fi
+
+    echo "*** Installing metrics-server ..."
+    ${KUBECTL_CMD} apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+    # Patch for Kind/local clusters that don't have valid kubelet certificates
+    echo "*** Patching metrics-server for local clusters ..."
+    ${KUBECTL_CMD} patch -n $OPERATOR_NS deployment $DEPLOYMENT --type=json \
+        -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]' 2>/dev/null || true
+
+    echo "*** Will wait for metrics-server to come up in background"
+    ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[metrics-server] /" &
+    BG_PIDS+=($!)
+
+    cd "$ROOT_DIR"
+}
+
 function install_subscription_crd {
     echo "*** Applying subscription CRD ..."
     ${KUBECTL_CMD} apply -f https://raw.githubusercontent.com/RedHatInsights/clowder/master/config/crd/static/subscriptions.operators.coreos.com.yaml
@@ -271,6 +302,7 @@ install_prometheus_operator
 install_cyndi_operator
 install_elasticsearch_operator
 install_keda_operator
+install_metrics_server
 install_subscription_crd
 install_floorist_crd
 

@@ -1,0 +1,239 @@
+name: PR E2E Tests (CodeBuild)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  id-token: write  # Required for OIDC authentication with AWS
+  contents: read
+  pull-requests: write  # To post comments back to the PR
+  statuses: write  # To create commit status checks
+
+jobs:
+  trigger-codebuild:
+    # Only run on PR comments that contain /test-e2e
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/test-e2e')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check user permissions
+        id: check-permissions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const username = context.payload.comment.user.login;
+
+            try {
+              const { data: permissionData } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: username
+              });
+
+              const permission = permissionData.permission;
+              console.log(`User ${username} has permission: ${permission}`);
+
+              // Allow admin, write, and maintain permissions
+              const allowedPermissions = ['admin', 'write', 'maintain'];
+
+              if (!allowedPermissions.includes(permission)) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: `@${username} Sorry, you don't have permission to trigger E2E tests. This command is restricted to repository maintainers.`
+                });
+
+                core.setFailed(`User ${username} does not have sufficient permissions (has: ${permission}, needs: ${allowedPermissions.join(', ')})`);
+              }
+
+              core.setOutput('allowed', 'true');
+            } catch (error) {
+              console.error('Error checking permissions:', error);
+              core.setFailed('Failed to check user permissions');
+            }
+
+      - name: React to comment
+        if: steps.check-permissions.outputs.allowed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('sha', pr.data.head.sha);
+            core.setOutput('ref', pr.data.head.ref);
+            core.setOutput('repo', pr.data.head.repo.clone_url);
+
+      - name: Check if PR has buildspec.yml
+        id: check-buildspec
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'buildspec.yml',
+                ref: '${{ steps.pr.outputs.sha }}'
+              });
+              core.setOutput('has-buildspec', 'true');
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('has-buildspec', 'false');
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: '⚠️ This PR branch does not contain `buildspec.yml`, which is required to run E2E tests.\n\nPlease rebase this PR with the `master` branch to include the latest changes, then try `/test-e2e` again.'
+                });
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Fail if buildspec.yml is missing
+        if: steps.check-buildspec.outputs.has-buildspec == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = '${{ steps.pr.outputs.sha }}';
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: sha,
+              state: 'failure',
+              context: 'CodeBuild / E2E Tests',
+              description: 'PR needs rebase - buildspec.yml missing'
+            });
+
+            core.setFailed('This PR branch does not contain buildspec.yml. Please rebase with master.');
+
+      - name: Create pending status check
+        if: steps.check-permissions.outputs.allowed == 'true' && steps.check-buildspec.outputs.has-buildspec == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const projectUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ steps.pr.outputs.sha }}',
+              state: 'pending',
+              context: 'CodeBuild / E2E Tests',
+              description: 'Running E2E tests...',
+              target_url: projectUrl
+            });
+
+      - name: Configure AWS credentials
+        if: steps.check-buildspec.outputs.has-buildspec == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_CODEBUILD_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Run CodeBuild
+        if: steps.check-buildspec.outputs.has-buildspec == 'true'
+        id: codebuild
+        uses: aws-actions/aws-codebuild-run-build@v1
+        with:
+          hide-cloudwatch-logs: true
+          project-name: clowder-pr-check
+          source-version-override: ${{ steps.pr.outputs.sha }}
+          env-vars-for-codebuild: |
+            GITHUB_PR_NUMBER,
+            GITHUB_SHA,
+            GITHUB_REF,
+            GITHUB_ACTOR,
+            GITHUB_REPOSITORY
+        env:
+          GITHUB_PR_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_SHA: ${{ steps.pr.outputs.sha }}
+          GITHUB_REF: ${{ steps.pr.outputs.ref }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Update status check to in-progress
+        if: always() && steps.codebuild.outputs.aws-build-id
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
+            const buildUrl = `https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${buildId}`;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ steps.pr.outputs.sha }}',
+              state: 'in_progress',
+              context: 'CodeBuild / E2E Tests',
+              description: 'E2E tests in progress...',
+              target_url: buildUrl
+            });
+
+      - name: Update status check on success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}'.split(':')[1];
+            const buildUrl = `https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${buildId}`;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ steps.pr.outputs.sha }}',
+              state: 'success',
+              context: 'CodeBuild / E2E Tests',
+              description: 'E2E tests passed',
+              target_url: buildUrl
+            });
+
+      - name: Update status check on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
+            const baseUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
+
+            let buildUrl;
+            let description;
+
+            if (buildId) {
+              buildUrl = `${baseUrl}/build/${buildId.split(':')[1]}`;
+              description = 'E2E tests failed';
+            } else {
+              buildUrl = baseUrl;
+              description = 'Failed to start E2E tests';
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ steps.pr.outputs.sha }}',
+              state: 'failure',
+              context: 'CodeBuild / E2E Tests',
+              description: description,
+              target_url: buildUrl
+            });

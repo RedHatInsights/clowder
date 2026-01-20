@@ -1,0 +1,47 @@
+version: 0.2
+
+# Environment variables used throughout the build
+env:
+  variables:
+    CLUSTER_NAME: clowder-e2e                    # Kind cluster name
+    K8S_VERSION: v1.29.4                         # Kubernetes version to test
+    KINDEST_NODE_IMAGE: kindest/node:v1.29.4     # Kind node image matching K8S version
+    KUTTL_VERSION: "0.19.0"                      # Kuttl test framework version
+    ARTIFACTS_DIR: artifacts                      # Directory for test artifacts and logs
+    CODEBUILD_BUILD_TIMEOUT: 60                  # Build timeout in minutes
+
+phases:
+  # PHASE 1: Install all required tools and dependencies
+  install:
+    commands:
+      - bash build/buildspec_steps/install_dependencies.sh
+      - mkdir -p "${ARTIFACTS_DIR}"
+
+  # PHASE 2: Create and configure Kind cluster
+  pre_build:
+    commands:
+      - bash build/buildspec_steps/create_kind_cluster.sh
+
+  # PHASE 3: Build and test Clowder
+  build:
+    commands:
+      - bash build/buildspec_steps/install_operators.sh
+      - bash build/buildspec_steps/build_clowder.sh
+      - bash build/buildspec_steps/deploy_clowder.sh
+      - bash build/buildspec_steps/run_kuttl_tests.sh
+
+  # PHASE 4: Cleanup - Always runs even if tests fail
+  post_build:
+    commands:
+      # Delete Kind cluster to free resources
+      - echo "Deleting kind cluster ${CLUSTER_NAME}..."
+      - kind delete cluster --name "${CLUSTER_NAME}" || true
+
+# Upload test artifacts to S3 for analysis
+artifacts:
+  files:
+    - artifacts/**/*  # All files in artifacts directory (logs, metrics, JUnit reports)
+  discard-paths: no   # Preserve directory structure
+  name: clowder-e2e-pr-${GITHUB_PR_NUMBER:-manual}-${GITHUB_SHA:-$CODEBUILD_RESOLVED_SOURCE_VERSION}
+
+
