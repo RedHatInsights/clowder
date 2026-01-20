@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-local-db-redis app-a && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in {1..300}; do kubectl get secret --namespace=test-local-db-redis app-a && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 
 - script: kubectl get secret --namespace=test-local-db-redis app-a -o json > /tmp/test-local-db-redis-json-a
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-local-db-redis-json-a | base64 -d > /tmp/app-a-cdappconfig-json

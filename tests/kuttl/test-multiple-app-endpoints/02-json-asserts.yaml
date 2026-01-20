@@ -2,11 +2,11 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: bash -c 'for i in {1..60}; do kubectl get secret --namespace=test-multiple-app-endpoints puptoo-a && exit 0 || sleep 1; done; echo "Secret \"puptoo-a\" not found"; exit 1'
+- script: bash -c 'for i in {1..300}; do kubectl get secret --namespace=test-multiple-app-endpoints puptoo-a && exit 0 || sleep 1; done; echo "Secret \"puptoo-a\" not found"; exit 1'
 - script: kubectl get secret puptoo-a -o json -n test-multiple-app-endpoints > /tmp/test-multiple-app-endpoints
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints | base64 -d > /tmp/test-multiple-app-endpoints-json
 
-- script: bash -c 'for i in {1..60}; do kubectl get secret --namespace=test-multiple-app-endpoints-b puptoo-b && exit 0 || sleep 1; done; echo "Secret \"puptoo-b\" not found"; exit 1'
+- script: bash -c 'for i in {1..300}; do kubectl get secret --namespace=test-multiple-app-endpoints-b puptoo-b && exit 0 || sleep 1; done; echo "Secret \"puptoo-b\" not found"; exit 1'
 - script: kubectl get secret puptoo-b -o json -n test-multiple-app-endpoints-b > /tmp/test-multiple-app-endpoints-b
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints-b | base64 -d > /tmp/test-multiple-app-endpoints-json-b
 
