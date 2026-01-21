@@ -2,9 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-multi-db app-c && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-- script: kubectl get secret --namespace=test-multi-db app-c -o json > /tmp/test-multi-db
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-db | base64 -d > /tmp/test-multi-db-json
-
-- script: jq -r '.database.hostname == "app-b-db.test-multi-db.svc"' -e < /tmp/test-multi-db-json
-- script: jq -r '.database.sslMode == "disable"' -e < /tmp/test-multi-db-json
+- script: bash 02-json-asserts.sh

@@ -2,11 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sh wait_for_generation.sh puptoo-processor "6"
-# there may be 2-3 rollouts depending on how quickly the operator picks up the simultaneous
-# changes to the secret and configmap, so give it a little more time...
-- script: sleep 3
-
-- script: kubectl get secret --namespace=test-config-secret-restarter puptoo -o json > /tmp/test-config-secret-restarter
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-config-secret-restarter | base64 -d > /tmp/test-config-secret-restarter-json
-- script: jq -r '.hashCache == "50c45165a261d17c43a6125311b11339cec335fa4b39e2691cad8059035d1272e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"' -e < /tmp/test-config-secret-restarter-json
+- script: bash 13-json-asserts.sh

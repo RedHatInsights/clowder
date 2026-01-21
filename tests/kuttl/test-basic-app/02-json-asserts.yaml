@@ -2,22 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-basic-app puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-- script: kubectl get secret --namespace=test-basic-app puptoo -o json > /tmp/test-basic-app
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-basic-app | base64 -d > /tmp/test-basic-app-json
-
-- script: jq -r '.webPort == 8000' -e < /tmp/test-basic-app-json
-- script: jq -r '.metricsPort == 9000' -e < /tmp/test-basic-app-json
-- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-basic-app-json
-
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .hostname == "puptoo-processor.test-basic-app.svc"' -e < /tmp/test-basic-app-json
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .hostname == "puptoo-processor2.test-basic-app.svc"' -e < /tmp/test-basic-app-json
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .port == 8000' -e < /tmp/test-basic-app-json
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .port == 8000' -e < /tmp/test-basic-app-json
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .apiPath == "/api/puptoo-processor/"' -e < /tmp/test-basic-app-json
-- script: jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .apiPaths[0] == "/api/puptoo-processor/"' -e < /tmp/test-basic-app-json
-
-- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor") | .hostname == "puptoo-processor.test-basic-app.svc"' -e < /tmp/test-basic-app-json
-- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .hostname == "puptoo-processor2.test-basic-app.svc"' -e < /tmp/test-basic-app-json
-- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor") | .port == 10000' -e < /tmp/test-basic-app-json
-- script: jq -r '.privateEndpoints[] | select(.app == "puptoo") | select(.name == "processor2") | .port == 10000' -e < /tmp/test-basic-app-json
+- script: bash 02-json-asserts.sh

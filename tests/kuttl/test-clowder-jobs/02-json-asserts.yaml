@@ -1,12 +1,5 @@
 ---
-apiVersion: kuttl.dev/v1alpha1
+apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-# Use bash -c for {1..100} syntax compatibility with sh/dash in CodeBuild
-- script: bash -c 'for i in {1..100}; do kubectl get pod -l app=puptoo -l pod=puptoo-standard-cron -n test-clowder-jobs -o json | jq -e '\''.items[] | select(.status.phase != "Pending" and .status.phase != "Unknown")'\'' && exit 0 || sleep 1; done; echo "Pod was not successfully started"; exit 1'
-- script: kubectl get pod -l app=puptoo -l pod=puptoo-standard-cron -n test-clowder-jobs -o json > /tmp/test-clowder-jobs
-- script: kubectl logs `jq -r '.items[0].metadata.name' < /tmp/test-clowder-jobs` -n test-clowder-jobs > /tmp/test-clowder-jobs-output
-- script: grep "Hi" /tmp/test-clowder-jobs-output
-- script: kubectl get pod -l app=puptoo -l job=puptoo-hello-cji -n test-clowder-jobs -o json > /tmp/test-clowder-jobs
-- script: kubectl logs `jq -r '.items[0].metadata.name' < /tmp/test-clowder-jobs` -n test-clowder-jobs > /tmp/test-clowder-jobs-output-hello-cji-runner
-- script: grep "Hello!" /tmp/test-clowder-jobs-output-hello-cji-runner
+- script: bash 02-json-asserts.sh

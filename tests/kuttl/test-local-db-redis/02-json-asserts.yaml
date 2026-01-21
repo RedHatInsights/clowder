@@ -2,14 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-local-db-redis app-a && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-
-- script: kubectl get secret --namespace=test-local-db-redis app-a -o json > /tmp/test-local-db-redis-json-a
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-local-db-redis-json-a | base64 -d > /tmp/app-a-cdappconfig-json
-
-- script: jq -r '.inMemoryDb.hostname == "app-a-redis.test-local-db-redis.svc"' -e < /tmp/app-a-cdappconfig-json
-- script: jq -r '.inMemoryDb.port == 6379' -e < /tmp/app-a-cdappconfig-json
-# ensure there is no 'username' key present
-- script: jq '.inMemoryDb | has("username")' < /tmp/app-a-cdappconfig-json | grep -q false
-# ensure there is no 'password' key present
-- script: jq '.inMemoryDb | has("password")' < /tmp/app-a-cdappconfig-json | grep -q false
+- script: bash 02-json-asserts.sh

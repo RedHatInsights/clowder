@@ -2,15 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-multi-db-shared app-c && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-- script: kubectl get secret --namespace=test-multi-db-shared app-c -o json > /tmp/test-multi-db-shared
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-db-shared | base64 -d > /tmp/test-multi-db-shared-json
-
-- script: jq -r '.database.hostname == "test-multi-db-shared-db-v13.test-multi-db-shared.svc"' -e < /tmp/test-multi-db-shared-json
-- script: jq -r '.database.sslMode == "disable"' -e < /tmp/test-multi-db-shared-json
-
-- script: kubectl get secret --namespace=test-multi-db-shared app-a -o json > /tmp/test-multi-db-shared-a
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multi-db-shared-a | base64 -d > /tmp/test-multi-db-shared-a-json
-
-- script: jq -r '.database.hostname == "test-multi-db-shared-db-v12.test-multi-db-shared.svc"' -e < /tmp/test-multi-db-shared-a-json
-- script: jq -r '.database.sslMode == "disable"' -e < /tmp/test-multi-db-shared-a-json
+- script: bash 02-json-asserts.sh

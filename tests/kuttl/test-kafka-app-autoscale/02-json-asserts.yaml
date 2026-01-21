@@ -2,16 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-
-- script: >
-    for i in {1..15}; do
-    kubectl get secret --namespace=test-kafka-app-autoscale puptoo -o json > /tmp/test-kafka-app-autoscale &&
-    jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-app-autoscale | base64 -d > /tmp/test-kafka-app-autoscale-json &&
-    jq -r '.kafka.topics[] | select(.requestedName == "topicone") | .name == "topicone"' -e < /tmp/test-kafka-app-autoscale-json &&
-    jq -r '.kafka.topics[] | select(.requestedName == "topictwo") | .name == "topictwo"' -e < /tmp/test-kafka-app-autoscale-json &&
-    jq -r '.kafka.brokers[].hostname == "test-kafka-app-autoscale-kafka-bootstrap.test-kafka-app-autoscale.svc"' -e < /tmp/test-kafka-app-autoscale-json &&
-    jq -r '.kafka.brokers[].port == 9092' -e < /tmp/test-kafka-app-autoscale-json &&
-    exit 0 || sleep 1;
-    done;
-    echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
-
+- script: bash 02-json-asserts.sh

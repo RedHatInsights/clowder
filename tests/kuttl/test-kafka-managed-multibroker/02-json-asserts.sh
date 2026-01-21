@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Source common error handling
+source "$(dirname "$0")/../_common/error-handler.sh"
+
+# Setup error handling
+setup_error_handling "test-kafka-managed-multibroker" "test-kafka-managed-multibroker"
+
+# Test commands from original yaml file
+for i in {1..15}; do kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > /tmp/test-kafka-managed-multibroker && jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed-multibroker | base64 -d > /tmp/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < /tmp/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < /tmp/test-kafka-managed-multibroker-json && break || sleep 1; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
+jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers | length == 3' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].hostname == "kafka-host-name-0"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[1].hostname == "kafka-host-name-1"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[2].hostname == "kafka-host-name-2"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].cacert == "some-pem"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].port == 27015' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].sasl.username == "kafka-username"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].sasl.password == "kafka-password"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].sasl.securityProtocol == "SASL_SSL"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].sasl.saslMechanism == "PLAIN"' -e < /tmp/test-kafka-managed-multibroker-json
+jq -r '.kafka.brokers[0].securityProtocol == "SASL_SSL"' -e < /tmp/test-kafka-managed-multibroker-json

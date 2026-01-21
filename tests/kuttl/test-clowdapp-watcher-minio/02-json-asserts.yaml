@@ -2,10 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 5
-- script: kubectl get secret --namespace=test-clowdapp-watcher-minio puptoo -o json > /tmp/test-clowdapp-watcher-minio
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-minio | base64 -d > /tmp/test-clowdapp-watcher-minio-json
-
-#HashCache changed the 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' it's our default (empty)
-- script: jq -r '.hashCache != "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"' -e < /tmp/test-clowdapp-watcher-minio-json
-- script: jq -r '.objectStore.secretKey != ""' -e < /tmp/test-clowdapp-watcher-minio-json
+- script: bash 02-json-asserts.sh

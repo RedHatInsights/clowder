@@ -2,4 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sh kafka_secret_check.sh 300
+- script: bash 08-json-asserts.sh

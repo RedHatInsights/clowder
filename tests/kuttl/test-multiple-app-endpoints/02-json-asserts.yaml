@@ -2,24 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: bash -c 'for i in {1..60}; do kubectl get secret --namespace=test-multiple-app-endpoints puptoo-a && exit 0 || sleep 1; done; echo "Secret \"puptoo-a\" not found"; exit 1'
-- script: kubectl get secret puptoo-a -o json -n test-multiple-app-endpoints > /tmp/test-multiple-app-endpoints
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints | base64 -d > /tmp/test-multiple-app-endpoints-json
-
-- script: bash -c 'for i in {1..60}; do kubectl get secret --namespace=test-multiple-app-endpoints-b puptoo-b && exit 0 || sleep 1; done; echo "Secret \"puptoo-b\" not found"; exit 1'
-- script: kubectl get secret puptoo-b -o json -n test-multiple-app-endpoints-b > /tmp/test-multiple-app-endpoints-b
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-multiple-app-endpoints-b | base64 -d > /tmp/test-multiple-app-endpoints-json-b
-
-# Positive searches
-- script: jq -r '.endpoints[] | select(.app == "puptoo-a") | .name == "processor"' -e < /tmp/test-multiple-app-endpoints-json
-- script: jq -r '.endpoints[] | select(.app == "puptoo-a-2") | .name == "processor"' -e < /tmp/test-multiple-app-endpoints-json
-
-# Negative searches
-- script: jq -r '.endpoints | length == 2' -e < /tmp/test-multiple-app-endpoints-json
-
-# Positive searches
-- script: jq -r '.endpoints[] | select(.app == "puptoo-b") | .name == "processor"' -e < /tmp/test-multiple-app-endpoints-json-b
-- script: jq -r '.endpoints[] | select(.app == "puptoo-b-2") | .name == "processor"' -e < /tmp/test-multiple-app-endpoints-json-b
-
-# Negative searches
-- script: jq -r '.endpoints | length == 2' -e < /tmp/test-multiple-app-endpoints-json-b
+- script: bash 02-json-asserts.sh

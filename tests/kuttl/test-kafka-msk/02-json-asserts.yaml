@@ -2,18 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: >
-    for i in {1..10}; do
-    kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect &&
-    kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert &&
-    exit 0 || sleep 1;
-    done;
-    echo "Expected secrets not found"; exit 1
-- script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect -o json > /tmp/test-kafka-msk-user
-- script: kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert -o json > /tmp/test-kafka-msk-cluster-ca-cert
-
-- script: sh create_json.sh
-- script: sh create_certs.sh
-- script: kubectl apply -f /tmp/managed-secret.yaml -n test-kafka-msk-sec-source
-- script: kubectl apply -f /tmp/test-kafka-msk-ca-cert.yaml -n test-kafka-msk-sec-source
-- script: kubectl apply -f /tmp/test-kafka-msk-connect-user.yaml -n test-kafka-msk-sec-source
+- script: bash 02-json-asserts.sh

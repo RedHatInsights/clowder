@@ -2,10 +2,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-service-mesh puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-- script: kubectl get secret --namespace=test-service-mesh puptoo -o json > /tmp/test-service-mesh
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-service-mesh | base64 -d > /tmp/test-service-mesh-json
-
-- script: jq -r '.webPort == 8000' -e < /tmp/test-service-mesh-json
-- script: jq -r '.metricsPort == 9000' -e < /tmp/test-service-mesh-json
-- script: jq -r '.metricsPath == "/metrics"' -e < /tmp/test-service-mesh-json
+- script: bash 02-json-asserts.sh
