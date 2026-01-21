@@ -3,3 +3,6 @@ kind: TestSuite
 startControlPlane: false
 timeout: 600
 parallel: 12
+ignoreFiles:
+- "*.sh"
+- "_common/*"
