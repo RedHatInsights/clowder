@@ -16,6 +16,6 @@ kind: Kustomization
 images:
 - name: controller
   newName: 127.0.0.1:5000/clowder
-  newTag: efd87786db5c6891acda316c4501f9178b1690f7
+  newTag: a3dc7f6f7e4c5aeb7ed316406cf69940b09962ab
 patches:
 - path: deployment_label.yaml

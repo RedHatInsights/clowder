@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-clowdapp-watcher-kafka-msk"
 
+set -x
+
 # Test commands from original yaml file
 sleep 5
 kubectl get secret --namespace=test-clowdapp-watcher-kafka-msk test-clowdapp-watcher-kafka-msk-connect2 -o json > /tmp/test-clowdapp-watcher-kafka-msk-user

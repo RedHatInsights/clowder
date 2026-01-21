@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-shared-local-db-redis"
 
+set -x
+
 # Test commands from original yaml file
 bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-local-db-redis-shared app-b && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
 kubectl get secret --namespace=test-local-db-redis-shared app-b -o json > /tmp/test-local-db-redis-shared-json-b

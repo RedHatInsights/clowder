@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-config-secret-restarter"
 
+set -x
+
 # Test commands from original yaml file
 sh wait_for_generation.sh puptoo-processor "4"
 kubectl get secret --namespace=test-config-secret-restarter puptoo -o json > /tmp/test-config-secret-restarter

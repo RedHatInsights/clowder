@@ -11,6 +11,8 @@ APP_NAME="puptoo"
 # Setup error handling
 setup_error_handling "${TEST_NAME}"
 
+set -x
+
 # Wait for secret to be created
 for i in {1..10}; do
     kubectl get secret --namespace="${NAMESPACE}" "${APP_NAME}" && break || sleep 1

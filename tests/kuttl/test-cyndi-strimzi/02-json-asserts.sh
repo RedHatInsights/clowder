@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-cyndi-strimzi"
 
+set -x
+
 # Test commands from original yaml file
 sleep 5
 kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret

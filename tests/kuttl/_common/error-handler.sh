@@ -10,6 +10,7 @@
 
 # Function to collect events from a namespace
 collect_namespace_events() {
+    set +x
     local ns="$1"
     local base_dir="${ARTIFACTS_DIR:-artifacts}"
     local artifacts_path="${base_dir}/kuttl/${KUTTL_TEST_NAME}"
@@ -31,6 +32,7 @@ collect_namespace_events() {
 
 # Function to collect events on failure
 collect_events_on_failure() {
+    set +x
     exit_code=$?
     if [ $exit_code -ne 0 ]; then
         echo "Test failed with exit code $exit_code, collecting Kubernetes events..." >&2

@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-ff-app-interface"
 
+set -x
+
 # Test commands from original yaml file
 for i in {1..5}; do kubectl get secret --namespace=test-ff-app-interface puptoo && break || sleep 1; done; echo "Secret not found"; exit 1
 kubectl get secret --namespace=test-ff-app-interface puptoo -o json > /tmp/test-ff-app-interface

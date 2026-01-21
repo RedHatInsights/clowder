@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-clowdapp-watcher-pullsecrets"
 
+set -x
+
 # Test commands from original yaml file
 kubectl get secret --namespace=test-clowdapp-watcher-pullsecrets puptoo -o json > /tmp/test-clowdapp-watcher-pullsecrets2
 jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-pullsecrets2 | base64 -d > /tmp/test-clowdapp-watcher-pullsecrets2-json

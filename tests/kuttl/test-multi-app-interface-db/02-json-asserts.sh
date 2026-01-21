@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-multi-app-interface-db"
 
+set -x
+
 # Test commands from original yaml file
 bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
 curl https://truststore.pki.rds.amazonaws.com/us-east-1/us-east-1-bundle.pem > us-east-1-bundle.pem

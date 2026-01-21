@@ -20,7 +20,7 @@ mkdir -p "${ARTIFACTS_PATH}"
 # Function to collect events from a namespace
 collect_namespace_events() {
     local ns="$1"
-    echo "Collecting events for namespace: ${ns}" >&2
+    echo "*** Collecting events for namespace: ${ns}" >&2
 
     # Check if namespace exists before trying to get events
     if kubectl get namespace "${ns}" >/dev/null 2>&1; then
@@ -29,9 +29,9 @@ collect_namespace_events() {
             --sort-by='.metadata.creationTimestamp' \
             > "${ARTIFACTS_PATH}/events-${ns}.txt" 2>&1
 
-        echo "Events saved to ${ARTIFACTS_PATH}/events-${ns}.txt" >&2
+        echo "*** Events saved to ${ARTIFACTS_PATH}/events-${ns}.txt" >&2
     else
-        echo "Namespace ${ns} does not exist (yet), skipping event collection" >&2
+        echo "*** Namespace ${ns} does not exist (yet), skipping event collection" >&2
     fi
 }
 

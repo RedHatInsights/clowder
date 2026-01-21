@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-kafka-msk"
 
+set -x
+
 # Test commands from original yaml file
 for i in {1..10}; do kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect && kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert && break || sleep 1; done; echo "Expected secrets not found"; exit 1
 kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect -o json > /tmp/test-kafka-msk-user

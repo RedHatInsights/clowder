@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-clowdapp-watcher-kafka-strimzi"
 
+set -x
+
 # Test commands from original yaml file
 sleep 1
 kubectl get secret --namespace=test-clowdapp-watcher-kafka-strimzi puptoo -o json > /tmp/test-clowdapp-watcher-kafka-strimzi

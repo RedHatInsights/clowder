@@ -2,4 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: bash 02-json-asserts.sh
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: OUTPUT=$(bash 02-json-asserts.sh 2>&1) || { echo "Assertion hit errors, see script output below"; echo "$OUTPUT"; exit 1; }

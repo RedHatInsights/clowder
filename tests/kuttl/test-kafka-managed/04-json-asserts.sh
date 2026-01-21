@@ -6,6 +6,8 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 # Setup error handling
 setup_error_handling "test-kafka-managed"
 
+set -x
+
 # Test commands from original yaml file
 bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-kafka-managed puptoo -o json > /tmp/test-kafka-managed && jq -r '\''.data["cdappconfig.json"]'\'' < /tmp/test-kafka-managed | base64 -d > /tmp/test-kafka-managed-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"'\'' -e < /tmp/test-kafka-managed-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"'\'' -e < /tmp/test-kafka-managed-json && exit 0 || sleep 2; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1'
 jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < /tmp/test-kafka-managed-json
