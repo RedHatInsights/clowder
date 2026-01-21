@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-cyndi-strimzi" "test-cyndi-strimzi-kafka"
+setup_error_handling "test-cyndi-strimzi"
 
 # Test commands from original yaml file
 sleep 5

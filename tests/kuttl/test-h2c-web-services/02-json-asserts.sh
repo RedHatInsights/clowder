@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-h2c-web-services" "test-h2c-web-services"
+setup_error_handling "test-h2c-web-services"
 
 # Test commands from original yaml file
 for i in {1..10}; do kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-enabled && break || sleep 1; done; echo "Secret not found"; exit 1

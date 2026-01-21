@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-kafka-strimzi-ephemeral" "test-kafka-strimzi-ephemeral-kafka"
+setup_error_handling "test-kafka-strimzi-ephemeral"
 
 # Test commands from original yaml file
 for i in {1..10}; do kubectl get kafka -n test-kafka-strimzi-ephemeral-kafka && kubectl get kafkaconnect -n test-kafka-strimzi-ephemeral-connect && break || sleep 1; done; echo "Kafka or KafkaConnect not found"; exit 1

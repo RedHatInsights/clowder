@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-config-secret-restarter" "test-config-secret-restarter"
+setup_error_handling "test-config-secret-restarter"
 
 # Test commands from original yaml file
 sh wait_for_generation.sh puptoo-processor "6"

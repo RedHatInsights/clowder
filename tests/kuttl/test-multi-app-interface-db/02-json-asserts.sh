@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-multi-app-interface-db" "test-multi-app-interface-db-default-ca"
+setup_error_handling "test-multi-app-interface-db"
 
 # Test commands from original yaml file
 bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'

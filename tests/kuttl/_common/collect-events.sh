@@ -48,8 +48,11 @@ if [ -f "${TEST_DIR}/00-install.yaml" ]; then
         echo "No namespaces found in ${TEST_DIR}/00-install.yaml" >&2
     fi
 else
-    # Fallback: try to collect from the test name as namespace
-    echo "00-install.yaml not found, using test name as namespace" >&2
-    NAMESPACE="${NAMESPACE:-${TEST_NAME}}"
-    collect_namespace_events "${NAMESPACE}"
+    # Use NAMESPACE environment variable set by KUTTL
+    echo "00-install.yaml not found, using NAMESPACE environment variable" >&2
+    if [ -n "${NAMESPACE}" ]; then
+        collect_namespace_events "${NAMESPACE}"
+    else
+        echo "NAMESPACE environment variable not set, skipping event collection" >&2
+    fi
 fi

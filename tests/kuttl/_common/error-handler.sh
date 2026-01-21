@@ -5,7 +5,7 @@
 #
 # Usage:
 #   source "$(dirname "$0")/../_common/error-handler.sh"
-#   setup_error_handling "test-name" "namespace"
+#   setup_error_handling "test-name"
 #
 
 # Function to collect events from a namespace
@@ -46,13 +46,16 @@ collect_events_on_failure() {
                     collect_namespace_events "${ns}"
                 done <<< "${NAMESPACES}"
             else
-                echo "No namespaces found in 00-install.yaml, using fallback" >&2
-                collect_namespace_events "${KUTTL_NAMESPACE}"
+                echo "No namespaces found in 00-install.yaml" >&2
             fi
         else
-            # Fallback: collect from the single namespace passed to setup
-            echo "00-install.yaml not found, using fallback namespace" >&2
-            collect_namespace_events "${KUTTL_NAMESPACE}"
+            # Use NAMESPACE environment variable set by KUTTL
+            echo "00-install.yaml not found, using NAMESPACE environment variable" >&2
+            if [ -n "${NAMESPACE}" ]; then
+                collect_namespace_events "${NAMESPACE}"
+            else
+                echo "NAMESPACE environment variable not set, skipping event collection" >&2
+            fi
         fi
     fi
     exit $exit_code
@@ -61,15 +64,13 @@ collect_events_on_failure() {
 # Setup error handling for a test
 # Arguments:
 #   $1: Test name (used for artifacts directory)
-#   $2: Namespace to collect events from (fallback if 00-install.yaml not found)
 setup_error_handling() {
-    if [ -z "$1" ] || [ -z "$2" ]; then
-        echo "Error: setup_error_handling requires test name and namespace arguments" >&2
+    if [ -z "$1" ]; then
+        echo "Error: setup_error_handling requires test name argument" >&2
         exit 1
     fi
 
     export KUTTL_TEST_NAME="$1"
-    export KUTTL_NAMESPACE="$2"
 
     # Enable strict error handling
     set -e

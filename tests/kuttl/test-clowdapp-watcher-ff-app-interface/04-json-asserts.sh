@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-clowdapp-watcher-ff-app-interface" "test-clowdapp-watcher-ff-app-interface"
+setup_error_handling "test-clowdapp-watcher-ff-app-interface"
 
 # Test commands from original yaml file
 kubectl get secret --namespace=test-clowdapp-watcher-ff-app-interface puptoo -o json > /tmp/test-clowdapp-watcher-ff-app-interface2

@@ -9,7 +9,7 @@ NAMESPACE="test-basic-app"
 APP_NAME="puptoo"
 
 # Setup error handling
-setup_error_handling "${TEST_NAME}" "${NAMESPACE}"
+setup_error_handling "${TEST_NAME}"
 
 # Wait for secret to be created
 for i in {1..10}; do

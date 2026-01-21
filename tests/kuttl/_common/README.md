@@ -40,12 +40,13 @@ JSON assert tests use shell scripts with built-in error handling:
 
 ### error-handler.sh
 Common error handling library that all test scripts source. Provides:
-- `setup_error_handling()` function
-- Automatic event collection via bash traps
+- `setup_error_handling(test_name)` function - takes only the test name as parameter
+- Automatic event collection via bash traps from all test namespaces
+- Uses `$NAMESPACE` environment variable (set by KUTTL) when `00-install.yaml` is not found
 - Error exit handling
 
 ### collect-events.sh
-Event collector script called by KUTTL collectors. Automatically discovers all namespaces defined in the test's `00-install.yaml` file and collects events from each. Handles cases where namespaces don't exist yet gracefully. Can also be called manually for debugging.
+Event collector script called by KUTTL collectors. Automatically discovers all namespaces defined in the test's `00-install.yaml` file and collects events from each. When `00-install.yaml` is not found, uses the `$NAMESPACE` environment variable set by KUTTL. Handles cases where namespaces don't exist yet gracefully. Can also be called manually for debugging.
 
 ## Event Collection Locations
 

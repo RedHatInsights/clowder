@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-kafka-managed-multibroker" "test-kafka-managed-multibroker"
+setup_error_handling "test-kafka-managed-multibroker"
 
 # Test commands from original yaml file
 bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > /tmp/test-kafka-managed-multibroker && jq -r '\''.data["cdappconfig.json"]'\'' < /tmp/test-kafka-managed-multibroker | base64 -d > /tmp/test-kafka-managed-multibroker-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"'\'' -e < /tmp/test-kafka-managed-multibroker-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"'\'' -e < /tmp/test-kafka-managed-multibroker-json && exit 0 || sleep 2; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1'

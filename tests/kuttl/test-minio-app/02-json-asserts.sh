@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-minio-app" "test-minio-app"
+setup_error_handling "test-minio-app"
 
 # Test commands from original yaml file
 for i in {1..10}; do kubectl get secret --namespace=test-minio-app puptoo && break || sleep 1; done; echo "Secret not found"; exit 1

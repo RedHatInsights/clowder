@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-ff-local" "test-ff-local"
+setup_error_handling "test-ff-local"
 
 # Test commands from original yaml file
 for i in {1..15}; do kubectl get secret --namespace=test-ff-local puptoo && break || sleep 1; done; echo "Secret not found"; exit 1

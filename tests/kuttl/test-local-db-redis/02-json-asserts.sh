@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-local-db-redis" "test-local-db-redis"
+setup_error_handling "test-local-db-redis"
 
 # Test commands from original yaml file
 for i in {1..10}; do kubectl get secret --namespace=test-local-db-redis app-a && break || sleep 1; done; echo "Secret not found"; exit 1

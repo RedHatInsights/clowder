@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-clowdapp-watcher-minio" "test-clowdapp-watcher-minio"
+setup_error_handling "test-clowdapp-watcher-minio"
 
 # Test commands from original yaml file
 sleep 5

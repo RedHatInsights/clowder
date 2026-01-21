@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-ephemeral-gateway" "test-ephemeral-gateway"
+setup_error_handling "test-ephemeral-gateway"
 
 # Test commands from original yaml file
 for i in {1..5}; do kubectl get secret --namespace=test-ephemeral-gateway puptoo && break || sleep 1; done; echo "Secret not found"; exit 1

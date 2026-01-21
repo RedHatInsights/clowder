@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-multiple-app-endpoints" "test-multiple-app-endpoints"
+setup_error_handling "test-multiple-app-endpoints"
 
 # Test commands from original yaml file
 bash -c 'for i in {1..60}; do kubectl get secret --namespace=test-multiple-app-endpoints puptoo-a && exit 0 || sleep 1; done; echo "Secret \"puptoo-a\" not found"; exit 1'

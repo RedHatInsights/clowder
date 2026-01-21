@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common/error-handler.sh"
 
 # Setup error handling
-setup_error_handling "test-annotations-job" "test-annotations-job"
+setup_error_handling "test-annotations-job"
 
 # Test commands from original yaml file
 bash -c 'for i in {1..100}; do kubectl get pod -l app=puptoo -l pod=puptoo-standard-cron -n test-annotations-job -o json | jq -e '\''.items[] | select(.status.phase != "Pending" and .status.phase != "Unknown")'\'' && exit 0 || sleep 1; done; echo "Pod was not successfully started"; exit 1'
