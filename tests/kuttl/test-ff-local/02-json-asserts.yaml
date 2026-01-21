@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..300}; do kubectl get secret --namespace=test-ff-local puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in {1..15}; do kubectl get secret --namespace=test-ff-local puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 - script: kubectl get secret --namespace=test-ff-local puptoo -o json > /tmp/test-ff-local
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-ff-local | base64 -d > /tmp/test-ff-local-json
 

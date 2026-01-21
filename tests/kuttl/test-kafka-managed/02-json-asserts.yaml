@@ -3,7 +3,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: >
-    for i in {1..300}; do
+    for i in {1..15}; do
     kubectl get secret --namespace=test-kafka-managed puptoo -o json > /tmp/test-kafka-managed &&
     jq -r '.data["cdappconfig.json"]' < /tmp/test-kafka-managed | base64 -d > /tmp/test-kafka-managed-json &&
     jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < /tmp/test-kafka-managed-json &&

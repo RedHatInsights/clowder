@@ -5,7 +5,7 @@ commands:
 # Increased retry timeout from 10s to 30s for shared database secret creation
 # Shared database reconciliation can be slower in resource-constrained environments
 # Use bash -c for {1..30} syntax compatibility with sh/dash in CodeBuild
-- script: bash -c 'for i in {1..300}; do kubectl get secret --namespace=test-local-db-redis-shared app-b && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
+- script: bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-local-db-redis-shared app-b && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
 
 - script: kubectl get secret --namespace=test-local-db-redis-shared app-b -o json > /tmp/test-local-db-redis-shared-json-b
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-local-db-redis-shared-json-b | base64 -d > /tmp/app-b-cdappconfig-json

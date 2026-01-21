@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..300}; do kubectl get kafka -n test-kafka-strimzi-ephemeral-kafka && kubectl get kafkaconnect -n test-kafka-strimzi-ephemeral-connect && exit 0 || sleep 1; done; echo "Kafka or KafkaConnect not found"; exit 1
+- script: for i in {1..10}; do kubectl get kafka -n test-kafka-strimzi-ephemeral-kafka && kubectl get kafkaconnect -n test-kafka-strimzi-ephemeral-connect && exit 0 || sleep 1; done; echo "Kafka or KafkaConnect not found"; exit 1
 # Wrap commands in 'bash -c' for sh/dash compatibility in Kind/CodeBuild
 # CodeBuild uses sh by default which doesn't support [[ ]] syntax
 # assert that kafka cluster name matches expected

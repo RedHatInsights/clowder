@@ -2,7 +2,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..300}; do kubectl get secret --namespace=test-shared-elasticache-ns2 another-app && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
+- script: for i in {1..10}; do kubectl get secret --namespace=test-shared-elasticache-ns2 another-app && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
 
 - script: kubectl get secret --namespace=test-shared-elasticache-ns2 another-app -o json > /tmp/test-shared-elasticache
 - script: jq -r '.data["cdappconfig.json"]' < /tmp/test-shared-elasticache | base64 -d > /tmp/test-shared-elasticache-json
