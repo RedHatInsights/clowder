@@ -11,6 +11,9 @@
 # Function to collect events from a namespace
 collect_namespace_events() {
     local ns="$1"
+    local base_dir="${ARTIFACTS_DIR:-artifacts}"
+    local artifacts_path="${base_dir}/kuttl/${KUTTL_TEST_NAME}"
+
     echo "Collecting events for namespace: ${ns}" >&2
 
     # Check if namespace exists before trying to get events
@@ -18,9 +21,9 @@ collect_namespace_events() {
         kubectl get events \
             --namespace="${ns}" \
             --sort-by='.metadata.creationTimestamp' \
-            > "artifacts/kuttl/${KUTTL_TEST_NAME}/events-${ns}.txt" 2>&1 || true
+            > "${artifacts_path}/events-${ns}.txt" 2>&1 || true
 
-        echo "Events saved to artifacts/kuttl/${KUTTL_TEST_NAME}/events-${ns}.txt" >&2
+        echo "Events saved to ${artifacts_path}/events-${ns}.txt" >&2
     else
         echo "Namespace ${ns} does not exist (yet), skipping event collection" >&2
     fi
@@ -33,7 +36,8 @@ collect_events_on_failure() {
         echo "Test failed with exit code $exit_code, collecting Kubernetes events..." >&2
 
         # Create artifacts directory if it doesn't exist
-        mkdir -p "artifacts/kuttl/${KUTTL_TEST_NAME}"
+        local base_dir="${ARTIFACTS_DIR:-artifacts}"
+        mkdir -p "${base_dir}/kuttl/${KUTTL_TEST_NAME}"
 
         # Find all namespaces defined in the test's 00-install.yaml
         if [ -f "00-install.yaml" ]; then

@@ -12,9 +12,10 @@
 TEST_NAME="${TEST:-$(basename "$(pwd)")}"
 TEST_DIR="$(pwd)"
 
-# Create artifacts directory
-ARTIFACTS_DIR="artifacts/kuttl/${TEST_NAME}"
-mkdir -p "${ARTIFACTS_DIR}"
+# Determine artifacts base directory
+BASE_DIR="${ARTIFACTS_DIR:-artifacts}"
+ARTIFACTS_PATH="${BASE_DIR}/kuttl/${TEST_NAME}"
+mkdir -p "${ARTIFACTS_PATH}"
 
 # Function to collect events from a namespace
 collect_namespace_events() {
@@ -26,9 +27,9 @@ collect_namespace_events() {
         kubectl get events \
             --namespace="${ns}" \
             --sort-by='.metadata.creationTimestamp' \
-            > "${ARTIFACTS_DIR}/events-${ns}.txt" 2>&1
+            > "${ARTIFACTS_PATH}/events-${ns}.txt" 2>&1
 
-        echo "Events saved to ${ARTIFACTS_DIR}/events-${ns}.txt" >&2
+        echo "Events saved to ${ARTIFACTS_PATH}/events-${ns}.txt" >&2
     else
         echo "Namespace ${ns} does not exist (yet), skipping event collection" >&2
     fi

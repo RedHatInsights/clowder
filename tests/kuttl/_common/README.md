@@ -50,7 +50,25 @@ Event collector script called by KUTTL collectors. Automatically discovers all n
 
 ## Event Collection Locations
 
-All events are saved to:
+### Configuration via ARTIFACTS_DIR Environment Variable
+
+You can control where artifacts are saved by setting the `ARTIFACTS_DIR` environment variable:
+
+- **If `ARTIFACTS_DIR` is set**: Events are saved to `${ARTIFACTS_DIR}/kuttl/<test-name>/events-<namespace>.txt`
+- **If `ARTIFACTS_DIR` is not set**: Events are saved to `./artifacts/kuttl/<test-name>/events-<namespace>.txt` (default)
+
+Example:
+```bash
+# Save artifacts to /tmp/my_artifacts
+export ARTIFACTS_DIR=/tmp/my_artifacts
+make kuttl
+
+# Artifacts will be at: /tmp/my_artifacts/kuttl/<test-name>/events-<namespace>.txt
+```
+
+### Default Location
+
+By default (without `ARTIFACTS_DIR` set), all events are saved to:
 ```
 artifacts/
   kuttl/
