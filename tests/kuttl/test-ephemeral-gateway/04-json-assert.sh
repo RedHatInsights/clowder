@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..5}; do kubectl get secret --namespace=test-ephemeral-gateway puptoo && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..5}; do
+  kubectl get secret --namespace=test-ephemeral-gateway puptoo && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-ephemeral-gateway puptoo > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-ephemeral-gateway puptoo -o json > ${TMP_DIR}/test-ephemeral-gateway-apipaths
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-ephemeral-gateway-apipaths | base64 -d > ${TMP_DIR}/test-ephemeral-gateway-apipaths-json
 jq -r '.endpoints[] | select(.app == "puptoo") | select(.name == "processor") | .apiPath == "/api/puptoo/"' -e < ${TMP_DIR}/test-ephemeral-gateway-apipaths-json

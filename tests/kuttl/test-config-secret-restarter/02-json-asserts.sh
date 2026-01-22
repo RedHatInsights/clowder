@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-config-secret-restarter puptoo && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-config-secret-restarter puptoo && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-config-secret-restarter puptoo > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-config-secret-restarter puptoo -o json > ${TMP_DIR}/test-config-secret-restarter
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-config-secret-restarter | base64 -d > ${TMP_DIR}/test-config-secret-restarter-json
 jq -r '.hashCache == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"' -e < ${TMP_DIR}/test-config-secret-restarter-json

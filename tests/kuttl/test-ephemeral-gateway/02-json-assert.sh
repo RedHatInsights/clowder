@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..5}; do kubectl get secret -n test-ephemeral-gateway test-ephemeral-gateway-test-cert && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..5}; do
+  kubectl get secret -n test-ephemeral-gateway test-ephemeral-gateway-test-cert && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret -n test-ephemeral-gateway test-ephemeral-gateway-test-cert > /dev/null || { echo "Secret not found after retries"; exit 1; }
 rm -fr ${TMP_DIR}/test-ephemeral-gateway
 mkdir -p ${TMP_DIR}/test-ephemeral-gateway/
 kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["ca.crt"] | @base64d' > ${TMP_DIR}/test-ephemeral-gateway/ca.pem

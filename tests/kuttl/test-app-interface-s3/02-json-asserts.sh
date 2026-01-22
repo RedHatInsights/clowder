@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-app-interface-s3 puptoo && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-app-interface-s3 puptoo && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-app-interface-s3 puptoo > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-app-interface-s3 puptoo -o json > ${TMP_DIR}/test-app-interface-s3
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-app-interface-s3 | base64 -d > ${TMP_DIR}/test-app-interface-s3-json
 jq -r '.objectStore.buckets[] | select(.requestedName == "test-app-interface-s3") | .region == "us-east"' -e < ${TMP_DIR}/test-app-interface-s3-json

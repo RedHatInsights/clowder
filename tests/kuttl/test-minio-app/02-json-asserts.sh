@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-minio-app puptoo && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-minio-app puptoo && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-minio-app puptoo > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-minio-app puptoo -o json > ${TMP_DIR}/test-minio-app
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-minio-app | base64 -d > ${TMP_DIR}/test-minio-app-json
 jq -r '.objectStore.buckets[] | select(.requestedName == "first-bucket") | .name == "first-bucket"' -e < ${TMP_DIR}/test-minio-app-json

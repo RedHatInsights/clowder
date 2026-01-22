@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect && kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert && break || sleep 1; done; echo "Expected secrets not found"; exit 1
+# Retry finding the secrets
+for i in {1..10}; do
+  kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect && kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert && break
+  sleep 1
+done
+
+# Verify they exist, fail if not
+kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect > /dev/null && kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert > /dev/null || { echo "Expected secrets not found after retries"; exit 1; }
 kubectl get secret --namespace=test-kafka-msk test-kafka-msk-connect -o json > ${TMP_DIR}/test-kafka-msk-user
 kubectl get secret --namespace=test-kafka-msk test-kafka-msk-cluster-ca-cert -o json > ${TMP_DIR}/test-kafka-msk-cluster-ca-cert
 sh create_json.sh

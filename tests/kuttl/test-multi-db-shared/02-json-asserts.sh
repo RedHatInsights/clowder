@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-multi-db-shared app-c && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-multi-db-shared app-c && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-multi-db-shared app-c > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-multi-db-shared app-c -o json > ${TMP_DIR}/test-multi-db-shared
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-multi-db-shared | base64 -d > ${TMP_DIR}/test-multi-db-shared-json
 jq -r '.database.hostname == "test-multi-db-shared-db-v13.test-multi-db-shared.svc"' -e < ${TMP_DIR}/test-multi-db-shared-json

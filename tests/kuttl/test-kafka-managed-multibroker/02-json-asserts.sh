@@ -13,7 +13,15 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..15}; do kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > ${TMP_DIR}/test-kafka-managed-multibroker && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-managed-multibroker | base64 -d > ${TMP_DIR}/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json && break || sleep 1; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
+# Retry finding the resource and checking kafka topics
+for i in {1..15}; do
+  kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > ${TMP_DIR}/test-kafka-managed-multibroker && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-managed-multibroker | base64 -d > ${TMP_DIR}/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-kafka-managed-multibroker puptoo -o json > ${TMP_DIR}/test-kafka-managed-multibroker && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-managed-multibroker | base64 -d > ${TMP_DIR}/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json && jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json > /dev/null || { echo "Expected kafka topics config not found in cdappconfig.json"; exit 1; }
+
 jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "topicOne"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json
 jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json
 jq -r '.kafka.brokers | length == 3' -e < ${TMP_DIR}/test-kafka-managed-multibroker-json

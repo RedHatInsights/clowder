@@ -13,10 +13,25 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-enabled && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the first secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-enabled && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-enabled > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-enabled -o json > ${TMP_DIR}/test-tls-enabled-secret
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-tls-enabled-secret | base64 -d > ${TMP_DIR}/test-tls-enabled-json
-for i in {1..10}; do kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-disabled && break || sleep 1; done; echo "Secret not found"; exit 1
+
+# Retry finding the second secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-disabled && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-disabled > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-h2c-web-services clowdapp-tls-disabled -o json > ${TMP_DIR}/test-tls-disabled-secret
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-tls-disabled-secret | base64 -d > ${TMP_DIR}/test-tls-disabled-json
 jq -r '.publicPort == 8000' -e < ${TMP_DIR}/test-tls-enabled-json

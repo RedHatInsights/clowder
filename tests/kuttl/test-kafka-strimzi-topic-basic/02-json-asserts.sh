@@ -13,4 +13,11 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..5}; do kubectl get secret --namespace=test-kafka-strimzi-topic puptoo -o json > ${TMP_DIR}/test-kafka-strimzi-topic && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-strimzi-topic | base64 -d > ${TMP_DIR}/test-kafka-strimzi-topic-json && jq -r '.kafka.brokers[0].hostname == "strimzi-topic-basic-kafka-bootstrap.test-kafka-strimzi-topic-kafka.svc"' -e < ${TMP_DIR}/test-kafka-strimzi-topic-json && jq -r '.kafka.brokers[0].port == 9092' -e < ${TMP_DIR}/test-kafka-strimzi-topic-json && break || sleep 1; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1
+# Retry finding the resource and checking kafka config
+for i in {1..5}; do
+  kubectl get secret --namespace=test-kafka-strimzi-topic puptoo -o json > ${TMP_DIR}/test-kafka-strimzi-topic && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-strimzi-topic | base64 -d > ${TMP_DIR}/test-kafka-strimzi-topic-json && jq -r '.kafka.brokers[0].hostname == "strimzi-topic-basic-kafka-bootstrap.test-kafka-strimzi-topic-kafka.svc"' -e < ${TMP_DIR}/test-kafka-strimzi-topic-json && jq -r '.kafka.brokers[0].port == 9092' -e < ${TMP_DIR}/test-kafka-strimzi-topic-json && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-kafka-strimzi-topic puptoo -o json > ${TMP_DIR}/test-kafka-strimzi-topic && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-strimzi-topic | base64 -d > ${TMP_DIR}/test-kafka-strimzi-topic-json && jq -r '.kafka.brokers[0].hostname == "strimzi-topic-basic-kafka-bootstrap.test-kafka-strimzi-topic-kafka.svc"' -e < ${TMP_DIR}/test-kafka-strimzi-topic-json && jq -r '.kafka.brokers[0].port == 9092' -e < ${TMP_DIR}/test-kafka-strimzi-topic-json > /dev/null || { echo "Expected kafka topics config not found in cdappconfig.json"; exit 1; }

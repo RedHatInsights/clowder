@@ -13,7 +13,15 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-local-db-redis-shared app-b && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
+# Retry finding the secret
+for i in {1..30}; do
+  kubectl get secret --namespace=test-local-db-redis-shared app-b && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-local-db-redis-shared app-b > /dev/null || { echo "Secret not found"; exit 1; }
+
 kubectl get secret --namespace=test-local-db-redis-shared app-b -o json > ${TMP_DIR}/test-local-db-redis-shared-json-b
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-local-db-redis-shared-json-b | base64 -d > ${TMP_DIR}/app-b-cdappconfig-json
 jq -r '.inMemoryDb.hostname == "app-a-redis.test-local-db-redis-shared.svc"' -e < ${TMP_DIR}/app-b-cdappconfig-json

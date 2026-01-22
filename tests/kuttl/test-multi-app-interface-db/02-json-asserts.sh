@@ -13,7 +13,15 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca && exit 0 || sleep 1; done; echo "Secret not found"; exit 1'
+# Retry finding the secret
+for i in {1..30}; do
+  kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca > /dev/null || { echo "Secret not found"; exit 1; }
+
 curl https://truststore.pki.rds.amazonaws.com/us-east-1/us-east-1-bundle.pem > ${TMP_DIR}/us-east-1-bundle.pem
 curl https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem > ${TMP_DIR}/default-ca-bundle.pem
 kubectl get secret --namespace=test-multi-app-interface-db-default-ca app-default-ca -o json > ${TMP_DIR}/test-multi-app-interface-db-default-ca

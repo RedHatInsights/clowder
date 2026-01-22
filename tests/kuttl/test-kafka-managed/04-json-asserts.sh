@@ -13,7 +13,15 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-bash -c 'for i in {1..30}; do kubectl get secret --namespace=test-kafka-managed puptoo -o json > ${TMP_DIR}/test-kafka-managed && jq -r '\''.data["cdappconfig.json"]'\'' < ${TMP_DIR}/test-kafka-managed | base64 -d > ${TMP_DIR}/test-kafka-managed-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"'\'' -e < ${TMP_DIR}/test-kafka-managed-json && jq -r '\''.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"'\'' -e < ${TMP_DIR}/test-kafka-managed-json && exit 0 || sleep 2; done; echo "Expected kafka topics config not found in cdappconfig.json"; exit 1'
+# Retry finding the resource and checking kafka topics
+for i in {1..30}; do
+  kubectl get secret --namespace=test-kafka-managed puptoo -o json > ${TMP_DIR}/test-kafka-managed && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-managed | base64 -d > ${TMP_DIR}/test-kafka-managed-json && jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < ${TMP_DIR}/test-kafka-managed-json && jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-json && break
+  sleep 2
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-kafka-managed puptoo -o json > ${TMP_DIR}/test-kafka-managed && jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-kafka-managed | base64 -d > ${TMP_DIR}/test-kafka-managed-json && jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < ${TMP_DIR}/test-kafka-managed-json && jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-json > /dev/null || { echo "Expected kafka topics config not found in cdappconfig.json"; exit 1; }
+
 jq -r '.kafka.topics[] | select(.requestedName == "topicOne") | .name == "test-kafka-topicOne"' -e < ${TMP_DIR}/test-kafka-managed-json
 jq -r '.kafka.topics[] | select(.requestedName == "topicTwo") | .name == "test-kafka-topicTwo"' -e < ${TMP_DIR}/test-kafka-managed-json
 jq -r '.kafka.brokers[].hostname == "kafka-host-name"' -e < ${TMP_DIR}/test-kafka-managed-json

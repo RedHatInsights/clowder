@@ -13,7 +13,14 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-for i in {1..10}; do kubectl get secret --namespace=test-tls-web-services puptoo && break || sleep 1; done; echo "Secret not found"; exit 1
+# Retry finding the secret
+for i in {1..10}; do
+  kubectl get secret --namespace=test-tls-web-services puptoo && break
+  sleep 1
+done
+
+# Verify it exists, fail if not
+kubectl get secret --namespace=test-tls-web-services puptoo > /dev/null || { echo "Secret not found after retries"; exit 1; }
 kubectl get secret --namespace=test-tls-web-services puptoo -o json > ${TMP_DIR}/test-tls-web-services
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-tls-web-services | base64 -d > ${TMP_DIR}/test-tls-web-services-json
 jq -r '.publicPort == 8000' -e < ${TMP_DIR}/test-tls-web-services-json
