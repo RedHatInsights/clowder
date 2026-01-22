@@ -65,8 +65,7 @@ collect_clowdenvironments() {
 
     if [ -n "${yaml_files}" ]; then
         # Extract ClowdEnvironment names from all YAML files
-        local clowdenvs=$(grep -h "kind: ClowdEnvironment" ${yaml_files} 2>/dev/null | \
-            grep -A2 "kind: ClowdEnvironment" ${yaml_files} 2>/dev/null | \
+        local clowdenvs=$(grep -h -A2 "kind: ClowdEnvironment" ${yaml_files} 2>/dev/null | \
             grep "name:" | awk '{print $2}' | sort -u)
 
         if [ -n "${clowdenvs}" ]; then
