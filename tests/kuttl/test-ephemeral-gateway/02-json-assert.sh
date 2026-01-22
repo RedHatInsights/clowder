@@ -21,10 +21,8 @@ done
 
 # Verify it exists, fail if not
 kubectl get secret -n test-ephemeral-gateway test-ephemeral-gateway-test-cert > /dev/null || { echo "Secret not found after retries"; exit 1; }
-rm -fr ${TMP_DIR}/test-ephemeral-gateway
-mkdir -p ${TMP_DIR}/test-ephemeral-gateway/
-kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["ca.crt"] | @base64d' > ${TMP_DIR}/test-ephemeral-gateway/ca.pem
-kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["tls.crt"] | @base64d' > ${TMP_DIR}/test-ephemeral-gateway/tls.crt
-kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["tls.key"] | @base64d' > ${TMP_DIR}/test-ephemeral-gateway/tls.key
+kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["ca.crt"] | @base64d' > ${TMP_DIR}/ca.pem
+kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["tls.crt"] | @base64d' > ${TMP_DIR}/tls.crt
+kubectl get secret -n test-ephemeral-gateway -o json test-ephemeral-gateway-test-cert  | jq -r '.data["tls.key"] | @base64d' > ${TMP_DIR}/tls.key
 kubectl delete configmap  -n test-ephemeral-gateway test-ephemeral-gateway-cert-ca --ignore-not-found=true
-kubectl create configmap --from-file=/tmp/test-ephemeral-gateway/ca.pem -n test-ephemeral-gateway test-ephemeral-gateway-cert-ca
+kubectl create configmap --from-file=${TMP_DIR}/ca.pem -n test-ephemeral-gateway test-ephemeral-gateway-cert-ca
