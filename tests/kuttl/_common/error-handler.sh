@@ -8,61 +8,26 @@
 #   setup_error_handling "test-name"
 #
 
-# Function to collect events from a namespace
-collect_namespace_events() {
-    set +x
-    local ns="$1"
-    local base_dir="${ARTIFACTS_DIR:-artifacts}"
-    local artifacts_path="${base_dir}/kuttl/${KUTTL_TEST_NAME}"
-
-    echo "Collecting events for namespace: ${ns}" >&2
-
-    # Check if namespace exists before trying to get events
-    if kubectl get namespace "${ns}" >/dev/null 2>&1; then
-        kubectl get events \
-            --namespace="${ns}" \
-            --sort-by='.metadata.creationTimestamp' \
-            > "${artifacts_path}/events-${ns}.txt" 2>&1 || true
-
-        echo "Events saved to ${artifacts_path}/events-${ns}.txt" >&2
-    else
-        echo "Namespace ${ns} does not exist (yet), skipping event collection" >&2
-    fi
-}
+# Source the shared collection functions
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/collectors.sh"
 
 # Function to collect events on failure
 collect_events_on_failure() {
     set +x
     exit_code=$?
     if [ $exit_code -ne 0 ]; then
-        echo "Test failed with exit code $exit_code, collecting Kubernetes events..." >&2
+        echo "Test failed with exit code $exit_code, collecting Kubernetes events and resources..." >&2
 
         # Create artifacts directory if it doesn't exist
         local base_dir="${ARTIFACTS_DIR:-artifacts}"
         mkdir -p "${base_dir}/kuttl/${KUTTL_TEST_NAME}"
 
-        # Find all namespaces defined in the test's 00-install.yaml
-        if [ -f "00-install.yaml" ]; then
-            # Extract namespace names from 00-install.yaml
-            NAMESPACES=$(grep -A2 "kind: Namespace" "00-install.yaml" | grep "name:" | awk '{print $2}' | sort -u)
+        # Collect from all namespaces
+        collect_from_all_namespaces "."
 
-            if [ -n "${NAMESPACES}" ]; then
-                # Collect events from each namespace
-                while IFS= read -r ns; do
-                    collect_namespace_events "${ns}"
-                done <<< "${NAMESPACES}"
-            else
-                echo "No namespaces found in 00-install.yaml" >&2
-            fi
-        else
-            # Use NAMESPACE environment variable set by KUTTL
-            echo "00-install.yaml not found, using NAMESPACE environment variable" >&2
-            if [ -n "${NAMESPACE}" ]; then
-                collect_namespace_events "${NAMESPACE}"
-            else
-                echo "NAMESPACE environment variable not set, skipping event collection" >&2
-            fi
-        fi
+        # Collect ClowdEnvironment resources
+        collect_clowdenvironments "."
     fi
     exit $exit_code
 }
