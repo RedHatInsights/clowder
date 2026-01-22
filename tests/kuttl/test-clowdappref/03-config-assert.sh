@@ -7,29 +7,30 @@ source "$(dirname "$0")/../_common/error-handler.sh"
 setup_error_handling "test-clowdappref"
 
 # Create test-specific directory
-mkdir -p /tmp/kuttl/test-clowdappref
+TMP_DIR="/tmp/kuttl/test-clowdappref"
+mkdir -p ${TMP_DIR}
 
 set -x
 
 echo "🔍 Testing consumer-app cdappconfig.json structure and content..."
 
 # Get the consumer-app config
-kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/kuttl/test-clowdappref/consumer-app-config.json
+kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > ${TMP_DIR}/consumer-app-config.json
 
 echo "📋 Consumer app config:"
-cat /tmp/kuttl/test-clowdappref/consumer-app-config.json | jq .
+cat ${TMP_DIR}/consumer-app-config.json | jq .
 
 # Verify JSON is valid
-jq empty /tmp/kuttl/test-clowdappref/consumer-app-config.json || (echo "❌ Invalid JSON structure" && exit 1)
+jq empty ${TMP_DIR}/consumer-app-config.json || (echo "❌ Invalid JSON structure" && exit 1)
 echo "✅ Valid JSON structure"
 
 # Check basic structure exists
-jq -e '.endpoints' /tmp/kuttl/test-clowdappref/consumer-app-config.json > /dev/null || (echo "❌ Missing endpoints section" && exit 1)
+jq -e '.endpoints' ${TMP_DIR}/consumer-app-config.json > /dev/null || (echo "❌ Missing endpoints section" && exit 1)
 echo "✅ Endpoints section exists"
 
 # Check that remote-app-tls endpoints are present with correct structure
-AUTH_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-tls")' /tmp/kuttl/test-clowdappref/consumer-app-config.json)
-PAYMENT_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-tls")' /tmp/kuttl/test-clowdappref/consumer-app-config.json)
+AUTH_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-tls")' ${TMP_DIR}/consumer-app-config.json)
+PAYMENT_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-tls")' ${TMP_DIR}/consumer-app-config.json)
 
 if [ -z "$AUTH_TLS_ENDPOINT" ] || [ "$AUTH_TLS_ENDPOINT" = "null" ]; then
     echo "❌ auth-service endpoint (app: remote-app-tls) not found"
@@ -44,8 +45,8 @@ fi
 echo "✅ payment-service endpoint (app: remote-app-tls) found"
 
 # Check that remote-app-no-tls endpoints are present
-AUTH_NO_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-no-tls")' /tmp/kuttl/test-clowdappref/consumer-app-config.json)
-PAYMENT_NO_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-no-tls")' /tmp/kuttl/test-clowdappref/consumer-app-config.json)
+AUTH_NO_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-no-tls")' ${TMP_DIR}/consumer-app-config.json)
+PAYMENT_NO_TLS_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-no-tls")' ${TMP_DIR}/consumer-app-config.json)
 
 if [ -z "$AUTH_NO_TLS_ENDPOINT" ] || [ "$AUTH_NO_TLS_ENDPOINT" = "null" ]; then
     echo "❌ auth-service endpoint (app: remote-app-no-tls) not found"
@@ -213,7 +214,7 @@ echo "$PAYMENT_NO_TLS_ENDPOINT" | jq -e '.apiPaths[] | select(. == "/api/payment
 echo "✅ payment-service (remote-app-no-tls) API paths are correct"
 
     # Check consumer-app-processor endpoint (self-reference)
-CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "processor" and .app == "consumer-app")' /tmp/kuttl/test-clowdappref/consumer-app-config.json)
+CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "processor" and .app == "consumer-app")' ${TMP_DIR}/consumer-app-config.json)
 if [ -z "$CONSUMER_ENDPOINT" ] || [ "$CONSUMER_ENDPOINT" = "null" ]; then
     echo "❌ processor endpoint (app: consumer-app) not found"
     exit 1
@@ -229,40 +230,40 @@ echo "🎉 Consumer app configuration validation complete!"
 echo "🔍 Testing mixed-deps-app cdappconfig.json structure and content..."
 
 # Get the mixed-deps-app config
-kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json
+kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > ${TMP_DIR}/mixed-deps-app-config.json
 
 echo "📋 Mixed deps app config:"
-cat /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json | jq .
+cat ${TMP_DIR}/mixed-deps-app-config.json | jq .
 
 # Verify JSON is valid
-jq empty /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json || (echo "❌ Invalid JSON structure" && exit 1)
+jq empty ${TMP_DIR}/mixed-deps-app-config.json || (echo "❌ Invalid JSON structure" && exit 1)
 echo "✅ Valid JSON structure"
 
 # Count total endpoints (should have ClowdAppRef + ClowdApp endpoints)
-TOTAL_ENDPOINTS=$(jq '.endpoints | length' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json)
+TOTAL_ENDPOINTS=$(jq '.endpoints | length' ${TMP_DIR}/mixed-deps-app-config.json)
 if [ "$TOTAL_ENDPOINTS" -lt 5 ]; then
     echo "❌ Expected at least 5 endpoints (auth-service from remote-app-tls, payment-service from remote-app-tls, auth-service from remote-app-no-tls, payment-service from remote-app-no-tls, processor from consumer-app), found: $TOTAL_ENDPOINTS"
-    jq '.endpoints[] | {name: .name, app: .app}' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json
+    jq '.endpoints[] | {name: .name, app: .app}' ${TMP_DIR}/mixed-deps-app-config.json
     exit 1
 fi
 echo "✅ Found $TOTAL_ENDPOINTS endpoints as expected"
 
 # Check that remote-app-tls endpoints are present (from ClowdAppRef)
-jq -e '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-tls")' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-tls) missing" && exit 1)
-jq -e '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-tls")' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-tls) missing" && exit 1)
+jq -e '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-tls")' ${TMP_DIR}/mixed-deps-app-config.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-tls) missing" && exit 1)
+jq -e '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-tls")' ${TMP_DIR}/mixed-deps-app-config.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-tls) missing" && exit 1)
 echo "✅ ClowdAppRef remote-app-tls endpoints present"
 
 # Check that remote-app-no-tls endpoints are present (from ClowdAppRef)
-jq -e '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-no-tls")' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-no-tls) missing" && exit 1)
-jq -e '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-no-tls")' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-no-tls) missing" && exit 1)
+jq -e '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-no-tls")' ${TMP_DIR}/mixed-deps-app-config.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-no-tls) missing" && exit 1)
+jq -e '.endpoints[] | select(.name == "payment-service" and .app == "remote-app-no-tls")' ${TMP_DIR}/mixed-deps-app-config.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-no-tls) missing" && exit 1)
 echo "✅ ClowdAppRef remote-app-no-tls endpoints present"
 
 # Check that consumer-app endpoints are present (from ClowdApp dependency)
-CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "processor" and .app == "consumer-app")' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json)
+CONSUMER_ENDPOINT=$(jq -r '.endpoints[] | select(.name == "processor" and .app == "consumer-app")' ${TMP_DIR}/mixed-deps-app-config.json)
 if [ -z "$CONSUMER_ENDPOINT" ] || [ "$CONSUMER_ENDPOINT" = "null" ]; then
     echo "❌ processor endpoint (app: consumer-app) not found"
     echo "Available endpoints:"
-    jq '.endpoints[] | {name: .name, app: .app}' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json
+    jq '.endpoints[] | {name: .name, app: .app}' ${TMP_DIR}/mixed-deps-app-config.json
     exit 1
 fi
 echo "✅ ClowdApp dependency endpoint present"
@@ -276,14 +277,14 @@ fi
 echo "✅ consumer-app endpoint has internal hostname: $CONSUMER_HOSTNAME"
 
 # Verify auth-service still has external hostname (from ClowdAppRef)
-AUTH_TLS_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-tls") | .hostname' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json)
+AUTH_TLS_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-tls") | .hostname' ${TMP_DIR}/mixed-deps-app-config.json)
 if [ "$AUTH_TLS_HOSTNAME" != "auth.remote-cluster.example.com" ]; then
     echo "❌ auth-service (app: remote-app-tls) should have external hostname, got: $AUTH_TLS_HOSTNAME"
     exit 1
 fi
 echo "✅ auth-service (app: remote-app-tls) has external hostname: $AUTH_TLS_HOSTNAME"
 
-AUTH_NO_TLS_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-no-tls") | .hostname' /tmp/kuttl/test-clowdappref/mixed-deps-app-config.json)
+AUTH_NO_TLS_HOSTNAME=$(jq -r '.endpoints[] | select(.name == "auth-service" and .app == "remote-app-no-tls") | .hostname' ${TMP_DIR}/mixed-deps-app-config.json)
 if [ "$AUTH_NO_TLS_HOSTNAME" != "auth.remote-cluster.example.com" ]; then
     echo "❌ auth-service (app: remote-app-no-tls) should have external hostname, got: $AUTH_NO_TLS_HOSTNAME"
     exit 1
@@ -295,10 +296,10 @@ echo "🎉 Mixed deps app configuration validation complete!"
 echo "🔍 Testing endpoint structure and configuration..."
 
 # Check endpoints section in consumer-app
-kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/kuttl/test-clowdappref/consumer-config-deps.json
+kubectl get secret consumer-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > ${TMP_DIR}/consumer-config-deps.json
 
 # Verify endpoints section exists and contains remote-app endpoints
-ENDPOINTS_SECTION=$(jq -r '.endpoints // empty' /tmp/kuttl/test-clowdappref/consumer-config-deps.json)
+ENDPOINTS_SECTION=$(jq -r '.endpoints // empty' ${TMP_DIR}/consumer-config-deps.json)
 if [ -z "$ENDPOINTS_SECTION" ]; then
     echo "❌ Missing endpoints section in consumer-app config"
     exit 1
@@ -306,26 +307,26 @@ fi
 echo "✅ Endpoints section exists"
 
 # Check if remote-app-tls endpoints are present in endpoints array
-jq -e '.endpoints[] | select(.app == "remote-app-tls" and .name == "auth-service")' /tmp/kuttl/test-clowdappref/consumer-config-deps.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-tls) not found in endpoints" && exit 1)
-jq -e '.endpoints[] | select(.app == "remote-app-tls" and .name == "payment-service")' /tmp/kuttl/test-clowdappref/consumer-config-deps.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-tls) not found in endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "remote-app-tls" and .name == "auth-service")' ${TMP_DIR}/consumer-config-deps.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-tls) not found in endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "remote-app-tls" and .name == "payment-service")' ${TMP_DIR}/consumer-config-deps.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-tls) not found in endpoints" && exit 1)
 echo "✅ Both auth-service and payment-service endpoints found for remote-app-tls"
 
 # Check if remote-app-no-tls endpoints are present in endpoints array
-jq -e '.endpoints[] | select(.app == "remote-app-no-tls" and .name == "auth-service")' /tmp/kuttl/test-clowdappref/consumer-config-deps.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-no-tls) not found in endpoints" && exit 1)
-jq -e '.endpoints[] | select(.app == "remote-app-no-tls" and .name == "payment-service")' /tmp/kuttl/test-clowdappref/consumer-config-deps.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-no-tls) not found in endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "remote-app-no-tls" and .name == "auth-service")' ${TMP_DIR}/consumer-config-deps.json > /dev/null || (echo "❌ auth-service endpoint (app: remote-app-no-tls) not found in endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "remote-app-no-tls" and .name == "payment-service")' ${TMP_DIR}/consumer-config-deps.json > /dev/null || (echo "❌ payment-service endpoint (app: remote-app-no-tls) not found in endpoints" && exit 1)
 echo "✅ Both auth-service and payment-service endpoints found for remote-app-no-tls"
 
 # Check if consumer-app processor endpoint is present (self-reference)
-jq -e '.endpoints[] | select(.app == "consumer-app" and .name == "processor")' /tmp/kuttl/test-clowdappref/consumer-config-deps.json > /dev/null || (echo "❌ processor endpoint (app: consumer-app) not found in endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "consumer-app" and .name == "processor")' ${TMP_DIR}/consumer-config-deps.json > /dev/null || (echo "❌ processor endpoint (app: consumer-app) not found in endpoints" && exit 1)
 echo "✅ processor endpoint found for consumer-app"
 
 # Test mixed-deps-app endpoints
-kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > /tmp/kuttl/test-clowdappref/mixed-config-deps.json
+kubectl get secret mixed-deps-app -n test-clowdappref -o jsonpath='{.data.cdappconfig\.json}' | base64 -d > ${TMP_DIR}/mixed-config-deps.json
 
 # Should have both remote-app-tls, remote-app-no-tls, and consumer-app endpoints
-jq -e '.endpoints[] | select(.app == "remote-app-tls")' /tmp/kuttl/test-clowdappref/mixed-config-deps.json > /dev/null || (echo "❌ remote-app-tls endpoints not found in mixed-deps endpoints" && exit 1)
-jq -e '.endpoints[] | select(.app == "remote-app-no-tls")' /tmp/kuttl/test-clowdappref/mixed-config-deps.json > /dev/null || (echo "❌ remote-app-no-tls endpoints not found in mixed-deps endpoints" && exit 1)
-jq -e '.endpoints[] | select(.app == "consumer-app")' /tmp/kuttl/test-clowdappref/mixed-config-deps.json > /dev/null || (echo "❌ consumer-app endpoints not found in mixed-deps endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "remote-app-tls")' ${TMP_DIR}/mixed-config-deps.json > /dev/null || (echo "❌ remote-app-tls endpoints not found in mixed-deps endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "remote-app-no-tls")' ${TMP_DIR}/mixed-config-deps.json > /dev/null || (echo "❌ remote-app-no-tls endpoints not found in mixed-deps endpoints" && exit 1)
+jq -e '.endpoints[] | select(.app == "consumer-app")' ${TMP_DIR}/mixed-config-deps.json > /dev/null || (echo "❌ consumer-app endpoints not found in mixed-deps endpoints" && exit 1)
 echo "✅ remote-app-tls, remote-app-no-tls, and consumer-app endpoints found in mixed-deps"
 
 echo "🎉 Endpoints structure validation complete!"

@@ -7,9 +7,10 @@ if [ $# -ne 1 ]; then
 fi
 
 TIMEOUT=$1
+TMP_DIR="/tmp/kuttl/test-clowdapp-watcher-kafka-msk"
 START_TIME=$(date +%s)
-PREV_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < /tmp/test-clowdapp-watcher-kafka-msk-env-json)
-PREV_USERNAME=$(cat /tmp/test-clowdapp-watcher-kafka-msk-env-json-user)
+PREV_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env-json)
+PREV_USERNAME=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env-json-user)
 USERNAME_MATCH=false
 HASHCACHE_CHANGED=false
 
@@ -26,12 +27,12 @@ while true; do
 
     # Execute commands
     sleep 5
-    kubectl get secret --namespace=test-clowdapp-watcher-kafka-msk-env puptoo -o json > /tmp/test-clowdapp-watcher-kafka-msk-env2
-    jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-msk-env2 | base64 -d > /tmp/test-clowdapp-watcher-kafka-msk-env2-json
+    kubectl get secret --namespace=test-clowdapp-watcher-kafka-msk-env puptoo -o json > ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env2
+    jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env2 | base64 -d > ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env2-json
 
-    CURRENT_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < /tmp/test-clowdapp-watcher-kafka-msk-env2-json)
-    CURRENT_USERNAME=$(jq -r '.kafka.brokers[0].sasl.username' < /tmp/test-clowdapp-watcher-kafka-msk-env2-json)
-    jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-kafka-msk-env2-json > /tmp/test-clowdapp-watcher-kafka-msk-env-hash-cache2
+    CURRENT_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env2-json)
+    CURRENT_USERNAME=$(jq -r '.kafka.brokers[0].sasl.username' < ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env2-json)
+    jq -r '.hashCache' -e < ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env2-json > ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env-hash-cache2
 
     if [ "$CURRENT_HOSTNAME" != "$PREV_HOSTNAME" ]; then
         echo "Kafka broker hostname check: $CURRENT_HOSTNAME"
@@ -48,7 +49,7 @@ while true; do
         PREV_USERNAME=$CURRENT_USERNAME
     fi
 
-    if diff /tmp/test-clowdapp-watcher-kafka-msk-env-hash-cache /tmp/test-clowdapp-watcher-kafka-msk-env-hash-cache2 > /dev/null; then
+    if diff ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env-hash-cache ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-env-hash-cache2 > /dev/null; then
         HASHCACHE_CHANGED=false
     else
         echo "HashCache diff comparison: TRUE"

@@ -1,15 +1,19 @@
 #!/bin/bash
 
+# Create test-specific directory
+TMP_DIR="/tmp/kuttl/test-clowdapp-watcher-kafka-msk"
+mkdir -p ${TMP_DIR}
+
 # Set the file paths
-username=$(cat /tmp/test-clowdapp-watcher-kafka-msk-user | jq -r '.metadata.name')
-password=$(cat /tmp/test-clowdapp-watcher-kafka-msk-user | jq -r '.data.password' | base64 -d)
-cert=$(cat /tmp/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.crt"]' | base64 -d)
+username=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-user | jq -r '.metadata.name')
+password=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-user | jq -r '.data.password' | base64 -d)
+cert=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.crt"]' | base64 -d)
 port=9093
 saslMechanism=SCRAM-SHA-512
 hostname=test-clowdapp-watcher-kafka-msk-kafka-bootstrap.test-clowdapp-watcher-kafka-msk.svc
 
 # Create the Kubernetes Secret YAML
-cat <<EOF > /tmp/watcher-managed-secret.yaml
+cat <<EOF > ${TMP_DIR}/watcher-managed-secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
