@@ -7,7 +7,7 @@ data:
         "images": {
             "objectStoreMinio": "847936104033.dkr.ecr.us-east-1.amazonaws.com/clowder-pr-check/minio:RELEASE.2025-01-20T14-49-07Z",
             "featureFlagsUnleash": "847936104033.dkr.ecr.us-east-1.amazonaws.com/clowder-pr-check/unleash-server:5.6.9",
-            "featureFlagsUnleashEdge": "847936104033.dkr.ecr.us-east-1.amazonaws.com/clowder-pr-check/unleash-edge:v19.6.3",
+            "featureFlagsUnleashEdge": "847936104033.dkr.ecr.us-east-1.amazonaws.com/clowder-pr-check/unleash-edge:v19.6.3"
         },
         "features": {
             "createServiceMonitor": true,
