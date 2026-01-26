@@ -3,7 +3,7 @@ set +e  # Don't fail immediately on test failure
 bash build/run_kuttl.sh --report xml
 TEST_RC=$?
 set -e
-mv kuttl-report.xml "${ARTIFACTS_DIR}/junit-kuttl.xml" || true
+mv "${ARTIFACTS_DIR}/kuttl-report.xml" "${ARTIFACTS_DIR}/junit-kuttl.xml" || true
 
 echo "Collecting logs and metrics..."
 for p in $(kubectl get pod -n clowder-system -o jsonpath='{.items[*].metadata.name}'); do
