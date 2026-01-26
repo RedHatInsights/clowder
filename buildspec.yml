@@ -44,12 +44,4 @@ artifacts:
   discard-paths: no   # Preserve directory structure
   name: clowder-e2e-pr-${GITHUB_PR_NUMBER:-manual}-${GITHUB_SHA:-$CODEBUILD_RESOLVED_SOURCE_VERSION}
 
-# Report test results to CodeBuild and GitHub
-reports:
-  e2e-test-results:
-    files:
-      - 'junit-kuttl.xml'  # JUnit XML report from KUTTL tests
-    file-format: 'JunitXml'  # Format of the test report
-    base-directory: '${ARTIFACTS_DIR}'  # Base directory where report file is located
-
 

@@ -43,3 +43,16 @@ echo "Installing kubectl-kuttl from GitHub releases..."
 curl -fsSL https://github.com/kudobuilder/kuttl/releases/download/v0.19.0/kubectl-kuttl_0.19.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
 chmod +x /usr/local/bin/kubectl-kuttl
 kubectl-kuttl version
+
+# Configure AWS ECR authentication for pulling private images
+echo "Configuring AWS ECR authentication..."
+if command -v aws &> /dev/null; then
+    echo "AWS CLI found, logging into ECR..."
+    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 847936104033.dkr.ecr.us-east-1.amazonaws.com || {
+        echo "WARNING: Failed to authenticate with ECR. Private images may not be accessible."
+        echo "Ensure the CodeBuild role has ECR permissions (ecr:GetAuthorizationToken, ecr:BatchGetImage, etc.)"
+    }
+else
+    echo "WARNING: AWS CLI not found. Skipping ECR authentication."
+    echo "Install AWS CLI if you need to pull images from private ECR repositories."
+fi
