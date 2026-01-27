@@ -2178,7 +2178,7 @@ data:
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "/crc[0-9a-zA-Z]*?-prometheus|eph[0-9a-zA-Z]*?-prometheus/",
+            "regex": "/crc[0-9a-zA-Z]*?-prometheus|eph[0-9a-zA-Z]*?-prometheus|hcc[0-9a-zA-Z]*?-prometheus|pulp[0-9a-zA-Z]*?-prometheus/",
             "skipUrlSync": false,
             "type": "datasource"
           }

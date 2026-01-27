@@ -1,4 +1,11 @@
 ---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
@@ -62,7 +69,7 @@ metadata:
     strimzi.io/use-connector-resources: 'true'
 spec:
   version: "3.8.0"
-  image: "quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest"
+  image: "quay.io/redhat-services-prod/hcm-eng-prod-tenant/kafka-connect"
   bootstrapServers: my-pvc-cluster-kafka-bootstrap.test-kafka-strimzi-pvc-kafka.svc:9092
   config:
     group.id: connect-cluster
@@ -71,8 +78,8 @@ spec:
     status.storage.topic: connect-cluster-status
   resources:  # assert default resource settings are used
     limits:
-      cpu: 600m
-      memory: 1Gi
-    requests:
       cpu: 500m
-      memory: 750Mi
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 2Gi

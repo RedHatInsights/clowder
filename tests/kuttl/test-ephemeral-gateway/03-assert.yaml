@@ -1,4 +1,11 @@
 ---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
@@ -18,7 +25,7 @@ spec:
         clowder/authsidecar-config: caddy-config-puptoo-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
-        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12
+        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46
     spec:
       serviceAccountName: puptoo-processor
 status:
@@ -36,7 +43,7 @@ spec:
         clowder/authsidecar-config: caddy-config-puptoo-2paths-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
-        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12
+        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46
     spec:
       serviceAccountName: puptoo-2paths-processor
 status:

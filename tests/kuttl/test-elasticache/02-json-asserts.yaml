@@ -2,9 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..10}; do kubectl get secret --namespace=test-elasticache puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-- script: kubectl get secret --namespace=test-elasticache puptoo -o json > /tmp/test-elasticache
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-elasticache | base64 -d > /tmp/test-elasticache-json
-
-- script: jq -r '.inMemoryDb.hostname == "lovely"' -e < /tmp/test-elasticache-json
-- script: jq -r '.inMemoryDb.port == 6767' -e < /tmp/test-elasticache-json
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 02-json-asserts.sh

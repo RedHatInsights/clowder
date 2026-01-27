@@ -58,6 +58,9 @@ controllers/cloud.redhat.com/version.txt
 
 tmp/*
 
+# Test artifacts
+tests/kuttl/**/*.pem
+
 deploy.yml.old
 deploy-mutate.yml.old
 deploy-kustomize.yaml

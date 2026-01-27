@@ -24,7 +24,7 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:848bf12"
+var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46"
 var defaultImageCaddyGateway = defaultImageCaddySideCar
 var defaultImageMBOP = "quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212"
 var defaultImageMocktitlements = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:f6b8612"
@@ -35,17 +35,34 @@ var defaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
 var defaultImageDatabasePG14 = "quay.io/cloudservices/postgresql-rds:14-2318dee"
 var defaultImageDatabasePG15 = "quay.io/cloudservices/postgresql-rds:15-2318dee"
-var defaultImageDatabasePG16 = "quay.io/cloudservices/postgresql-rds:16-759c25d"
+var defaultImageDatabasePG16 = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/postgresql-rds:d44b8d1"
+var defaultImageDatabasePG12Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-12-2318dee"
+var defaultImageDatabasePG13Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-13-2318dee"
+var defaultImageDatabasePG14Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-14-2318dee"
+var defaultImageDatabasePG15Cyndi = "quay.io/cloudservices/postgresql-rds:cyndi-15-2318dee"
+var defaultImageDatabasePG16Cyndi = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/postgresql-rds-cyndi:d44b8d1"
 var defaultImageInMemoryDB = "registry.redhat.io/rhel10/valkey-8:10.0"
 
 // GetDefaultDatabaseImage returns the default image for the given PostgreSQL version
-func GetDefaultDatabaseImage(version int32) (string, error) {
-	var defaultImageDatabasePG = map[int32]string{
-		16: defaultImageDatabasePG16,
-		15: defaultImageDatabasePG15,
-		14: defaultImageDatabasePG14,
-		13: defaultImageDatabasePG13,
-		12: defaultImageDatabasePG12,
+func GetDefaultDatabaseImage(version int32, cyndi bool) (string, error) {
+	var defaultImageDatabasePG map[int32]string
+
+	if cyndi {
+		defaultImageDatabasePG = map[int32]string{
+			16: defaultImageDatabasePG16Cyndi,
+			15: defaultImageDatabasePG15Cyndi,
+			14: defaultImageDatabasePG14Cyndi,
+			13: defaultImageDatabasePG13Cyndi,
+			12: defaultImageDatabasePG12Cyndi,
+		}
+	} else {
+		defaultImageDatabasePG = map[int32]string{
+			16: defaultImageDatabasePG16,
+			15: defaultImageDatabasePG15,
+			14: defaultImageDatabasePG14,
+			13: defaultImageDatabasePG13,
+			12: defaultImageDatabasePG12,
+		}
 	}
 
 	image, ok := defaultImageDatabasePG[version]

@@ -2,7 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: kubectl get secret --namespace=test-clowdapp-watcher-pullsecrets puptoo -o json > /tmp/test-clowdapp-watcher-pullsecrets
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-pullsecrets | base64 -d > /tmp/test-clowdapp-watcher-pullsecrets-json
-
-- script: jq -r '.hashCache == "d5bb6253b6957e7360e88da131050c3653a0d9fa1cdeeae5753b269d13006c16e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"' -e < /tmp/test-clowdapp-watcher-pullsecrets-json
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 02-json-asserts.sh

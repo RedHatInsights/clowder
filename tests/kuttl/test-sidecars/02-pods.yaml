@@ -1,4 +1,11 @@
 ---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+# Wait for sidecars to be fully initialized before disabling them
+# This prevents race conditions when updating sidecar configuration
+- script: sleep 10
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:

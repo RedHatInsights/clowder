@@ -1111,7 +1111,7 @@ _Appears in:_
 | `namespace` _string_ | The namespace the kafka connect cluster is expected to reside in (default: the kafka cluster's namespace) |  |  |
 | `replicas` _integer_ | The requested number of replicas for kafka connect. If unset, default is '1' |  | Minimum: 1 <br /> |
 | `version` _string_ | Version. If unset, default is '3.6.0' |  |  |
-| `image` _string_ | Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest' |  |  |
+| `image` _string_ | Image. If unset, default is 'quay.io/redhat-services-prod/hcm-eng-prod-tenant/kafka-connect' |  |  |
 | `resources` _[KafkaConnectSpecResources](#kafkaconnectspecresources)_ | Resource Limits |  |  |
 
 

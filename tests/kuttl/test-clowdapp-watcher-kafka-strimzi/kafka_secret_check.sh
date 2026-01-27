@@ -6,9 +6,10 @@ if [ $# -ne 1 ]; then
 fi
 
 TIMEOUT=$1
+TMP_DIR="/tmp/kuttl/test-clowdapp-watcher-kafka-strimzi"
 START_TIME=$(date +%s)
-PREV_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < /tmp/test-clowdapp-watcher-kafka-strimzi-json)
-PREV_PASSWORD=$(cat /tmp/test-clowdapp-watcher-kafka-strimzi-json-pw)
+PREV_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi-json)
+PREV_PASSWORD=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi-json-pw)
 PASSWORD_CHANGED=false
 HASHCACHE_CHANGED=false
 
@@ -25,12 +26,12 @@ while true; do
 
     # Execute commands
     sleep 5
-    kubectl get secret --namespace=test-clowdapp-watcher-kafka-strimzi puptoo -o json > /tmp/test-clowdapp-watcher-kafka-strimzi2
-    jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-strimzi2 | base64 -d > /tmp/test-clowdapp-watcher-kafka-strimzi2-json
+    kubectl get secret --namespace=test-clowdapp-watcher-kafka-strimzi puptoo -o json > ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi2
+    jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi2 | base64 -d > ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi2-json
 
-    CURRENT_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < /tmp/test-clowdapp-watcher-kafka-strimzi2-json)
-    CURRENT_PASSWORD=$(jq -r '.kafka.brokers[0].sasl.password' < /tmp/test-clowdapp-watcher-kafka-strimzi2-json)
-    jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-kafka-strimzi2-json > /tmp/test-clowdapp-watcher-kafka-strimzi-hash-cache2
+    CURRENT_HOSTNAME=$(jq -r '.kafka.brokers[0].hostname' < ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi2-json)
+    CURRENT_PASSWORD=$(jq -r '.kafka.brokers[0].sasl.password' < ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi2-json)
+    jq -r '.hashCache' -e < ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi2-json > ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi-hash-cache2
 
     if [ "$CURRENT_HOSTNAME" != "$PREV_HOSTNAME" ]; then
         echo "Kafka broker hostname check: $CURRENT_HOSTNAME"
@@ -43,7 +44,7 @@ while true; do
         PREV_PASSWORD=$CURRENT_PASSWORD
     fi
 
-    if diff /tmp/test-clowdapp-watcher-kafka-strimzi-hash-cache /tmp/test-clowdapp-watcher-kafka-strimzi-hash-cache2 > /dev/null; then
+    if diff ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi-hash-cache ${TMP_DIR}/test-clowdapp-watcher-kafka-strimzi-hash-cache2 > /dev/null; then
         HASHCACHE_CHANGED=false
     else
         echo "HashCache diff comparison: TRUE"

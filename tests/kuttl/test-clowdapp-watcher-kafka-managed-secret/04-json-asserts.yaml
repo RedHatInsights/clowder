@@ -2,12 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-managed-secret puptoo -o json > /tmp/test-clowdapp-watcher-kafka-managed-secret2
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-managed-secret2 | base64 -d > /tmp/test-clowdapp-watcher-kafka-managed-secret2-json
-
-- script: jq -r '.kafka.brokers[0].sasl.password == "kafka-new-password"' -e < /tmp/test-clowdapp-watcher-kafka-managed-secret2-json
-
-- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-kafka-managed-secret-json > /tmp/test-clowdapp-watcher-kafka-managed-secret-hash-cache
-- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-kafka-managed-secret2-json > /tmp/test-clowdapp-watcher-kafka-managed-secret-hash-cache2
-
-- script: diff /tmp/test-clowdapp-watcher-kafka-managed-secret-hash-cache /tmp/test-clowdapp-watcher-kafka-managed-secret-hash-cache2 > /dev/null || exit 0 && exit 1
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 04-json-asserts.sh

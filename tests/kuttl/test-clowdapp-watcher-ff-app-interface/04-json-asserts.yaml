@@ -2,12 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: kubectl get secret --namespace=test-clowdapp-watcher-ff-app-interface puptoo -o json > /tmp/test-clowdapp-watcher-ff-app-interface2
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-ff-app-interface2 | base64 -d > /tmp/test-clowdapp-watcher-ff-app-interface2-json
-
-- script: jq -r '.featureFlags.clientAccessToken == "app-a-stage.rds.example.com"' -e < /tmp/test-clowdapp-watcher-ff-app-interface2-json
-
-- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-ff-app-interface-json > /tmp/test-clowdapp-watcher-ff-app-interface-hash-cache
-- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-ff-app-interface2-json > /tmp/test-clowdapp-watcher-ff-app-interface-hash-cache2
-
-- script: diff /tmp/test-clowdapp-watcher-ff-app-interface-hash-cache /tmp/test-clowdapp-watcher-ff-app-interface-hash-cache2 > /dev/null || exit 0 && exit 1
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 04-json-asserts.sh

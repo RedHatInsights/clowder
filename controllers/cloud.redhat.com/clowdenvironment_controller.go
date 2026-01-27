@@ -178,10 +178,10 @@ func (r *ClowdEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	result, resErr := reconciliation.Reconcile()
 	if resErr != nil {
 		if shouldSkipReconciliation(resErr) {
-			log.Info("skipping", "error", resErr.Error(), "skipping", "true", "requeue", result.Requeue)
+			log.Info("skipping", "error", resErr.Error(), "skipping", "true", "requeueAfter", result.RequeueAfter)
 			return result, nil
 		}
-		log.Error(err, "error in reconciliation", "skipping", "false", "requeue", result.Requeue)
+		log.Error(err, "error in reconciliation", "skipping", "false", "requeueAfter", result.RequeueAfter)
 		return result, resErr
 	}
 	managedEnvironments[env.Name] = true

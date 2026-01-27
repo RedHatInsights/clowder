@@ -2,23 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-# TODO: figure out how to wait for proper reconciliations without using 'sleep' here...
-- script: sleep 5
-- script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-host-inventory-db-cyndi -o json > /tmp/host-inventory-db-cyndi-secret
-- script: kubectl get secret -n test-cyndi-strimzi-kafka test-cyndi-strimzi-myapp-db-cyndi -o json > /tmp/myapp-db-cyndi-secret
-- script: kubectl get secret -n test-cyndi-strimzi host-inventory-db -o json > /tmp/host-inventory-db-secret
-- script: kubectl get secret -n test-cyndi-strimzi myapp-db -o json > /tmp/myapp-db-secret
-- script: kubectl get cyndipipeline -n test-cyndi-strimzi -o json > /tmp/cyndipipeline
-- script: jq '.data' /tmp/host-inventory-db-secret > /tmp/host-inventory-db-secret-data
-- script: jq '.data' /tmp/host-inventory-db-cyndi-secret > /tmp/host-inventory-db-cyndi-secret-data
-- script: EXPECTED=$(jq '.data["hostname"]' /tmp/host-inventory-db-secret); jq -e '.data["db.host"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["port"]' /tmp/host-inventory-db-secret); jq -e '.data["db.port"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["name"]' /tmp/host-inventory-db-secret); jq -e '.data["db.name"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["username"]' /tmp/host-inventory-db-secret); jq -e '.data["db.user"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["password"]' /tmp/host-inventory-db-secret); jq -e '.data["db.password"] == '$EXPECTED /tmp/host-inventory-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["hostname"]' /tmp/myapp-db-secret); jq -e '.data["db.host"] == '$EXPECTED /tmp/myapp-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["port"]' /tmp/myapp-db-secret); jq -e '.data["db.port"] == '$EXPECTED /tmp/myapp-db-cyndi-secret
-- script: EXPECTED=$(jq '.data["name"]' /tmp/myapp-db-secret); jq -e '.data["db.name"] == '$EXPECTED /tmp/myapp-db-cyndi-secret
-- script: USER=$(jq -r '.data["db.user"]' /tmp/myapp-db-cyndi-secret | base64 -d); [ "$USER" = "cyndi" ]
-- script: PW=$(jq -r '.data["db.password"]' /tmp/myapp-db-cyndi-secret | base64 -d); [ "$PW" = "cyndi" ]
-- script: EXPECTED=$(jq '."spec".additionalFilters' /tmp/cyndipipeline); jq -e '."spec".additionalFilters == '$EXPECTED /tmp/cyndipipeline
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 02-json-asserts.sh

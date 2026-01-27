@@ -2,7 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: kubectl get secret --namespace=test-clowdapp-watcher-logging-app-interface-clowdwatch puptoo -o json > /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch | base64 -d > /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
-
-- script: jq -r '.logging.cloudwatch.secretAccessKey == "top-secret"' -e < /tmp/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 02-json-asserts.sh

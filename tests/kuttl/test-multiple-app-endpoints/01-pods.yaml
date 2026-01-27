@@ -71,7 +71,7 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: puptoo
+  name: puptoo-a
   namespace: test-multiple-app-endpoints
 spec:
   envName: test-multiple-app-endpoints
@@ -81,22 +81,22 @@ spec:
       image: quay.io/psav/clowder-hello
     web: True
   dependencies:
-    - puptoo-2
+    - puptoo-a-2
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: puptoo-2
+  name: puptoo-a-2
   namespace: test-multiple-app-endpoints
 spec:
   envName: test-multiple-app-endpoints
   deployments:
-  - name: processor-2
+  - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
     web: True
   optionalDependencies:
-    - puptoo
+    - puptoo-a
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
@@ -106,7 +106,7 @@ metadata:
 spec:
   envName: test-multiple-app-endpoints-b
   deployments:
-  - name: processor-b
+  - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
     web: True
@@ -121,7 +121,7 @@ metadata:
 spec:
   envName: test-multiple-app-endpoints-b
   deployments:
-  - name: processor-b-2
+  - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
     web: True

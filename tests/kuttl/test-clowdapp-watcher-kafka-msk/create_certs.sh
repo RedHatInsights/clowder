@@ -1,12 +1,16 @@
 #!/bin/bash
 
+# Create test-specific directory
+TMP_DIR="/tmp/kuttl/test-clowdapp-watcher-kafka-msk"
+mkdir -p ${TMP_DIR}
+
 # Set the file paths
-cacrt=$(cat /tmp/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.crt"]' | base64 -d)
-cap12=$(cat /tmp/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.p12"]' | base64 -d)
-capass=$(cat /tmp/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.password"]' | base64 -d)
+cacrt=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.crt"]' | base64 -d)
+cap12=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.p12"]' | base64 -d)
+capass=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-cluster-ca-cert | jq -r '.data["ca.password"]' | base64 -d)
 
 # Create the Kubernetes Secret YAML
-cat <<EOF > /tmp/test-clowdapp-watcher-kafka-msk-ca-cert.yaml
+cat <<EOF > ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-ca-cert.yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -19,11 +23,11 @@ data:
 EOF
 
 # Set the file paths
-password=$(cat /tmp/test-clowdapp-watcher-kafka-msk-user | jq -r '.data["password"]' | base64 -d)
-jaas=$(cat /tmp/test-clowdapp-watcher-kafka-msk-user | jq -r '.data["sasl.jaas.config"]' | base64 -d)
+password=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-user | jq -r '.data["password"]' | base64 -d)
+jaas=$(cat ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-user | jq -r '.data["sasl.jaas.config"]' | base64 -d)
 
 # Create the Kubernetes Secret YAML
-cat <<EOF > /tmp/test-clowdapp-watcher-kafka-msk-connect-user.yaml
+cat <<EOF > ${TMP_DIR}/test-clowdapp-watcher-kafka-msk-connect-user.yaml
 apiVersion: v1
 kind: Secret
 metadata:

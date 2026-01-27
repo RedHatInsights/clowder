@@ -2,11 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..5}; do kubectl get secret --namespace=test-ff-app-interface puptoo && exit 0 || sleep 1; done; echo "Secret not found"; exit 1
-- script: kubectl get secret --namespace=test-ff-app-interface puptoo -o json > /tmp/test-ff-app-interface
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-ff-app-interface | base64 -d > /tmp/test-ff-app-interface-json
-
-- script: jq -r '.featureFlags.clientAccessToken == "app-b-stage.rds.example.com"' -e < /tmp/test-ff-app-interface-json
-- script: jq -r '.featureFlags.hostname == "test.featureflags.redhat.com"' -e < /tmp/test-ff-app-interface-json
-- script: jq -r '.featureFlags.port == 12345' -e < /tmp/test-ff-app-interface-json
-- script: jq -r '.featureFlags.scheme == "https"' -e < /tmp/test-ff-app-interface-json
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 02-json-asserts.sh

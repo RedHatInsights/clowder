@@ -1,4 +1,11 @@
 ---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
