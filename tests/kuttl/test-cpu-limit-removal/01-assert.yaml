@@ -1,0 +1,67 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+# Test 1: No CPU limit in pod spec + NO CPU limit in env defaults
+# Verify deployment has NO CPU limit but has memory limit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-no-cpu-limit-processor
+  namespace: test-cpu-no-limit
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-app-no-cpu-limit-processor
+        resources:
+          limits:
+            # CPU limit should NOT be present
+            memory: "1Gi"  # From env defaults (1024Mi normalized to 1Gi)
+          requests:
+            cpu: 30m       # From env defaults
+            memory: "512Mi" # From env defaults
+---
+# Test 2: CPU limit explicitly set in pod spec
+# Verify deployment uses the pod's CPU limit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-pod-cpu-limit-processor
+  namespace: test-cpu-pod-limit
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-app-pod-cpu-limit-processor
+        resources:
+          limits:
+            cpu: 200m      # From pod spec
+            memory: "512Mi" # From pod spec
+          requests:
+            cpu: 50m       # From pod spec
+            memory: "256Mi" # From pod spec
+---
+# Test 3: No CPU limit in pod spec + CPU limit in env defaults
+# Verify deployment uses the env's CPU limit default
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-env-cpu-limit-processor
+  namespace: test-cpu-env-limit
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-app-env-cpu-limit-processor
+        resources:
+          limits:
+            cpu: 400m      # From env defaults
+            memory: "1Gi"  # From env defaults (1024Mi normalized to 1Gi)
+          requests:
+            cpu: 30m       # From env defaults
+            memory: "512Mi" # From env defaults

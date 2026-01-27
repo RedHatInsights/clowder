@@ -1,0 +1,34 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  name: test-app-no-cpu-limit
+  namespace: test-cpu-no-limit
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  name: test-app-pod-cpu-limit
+  namespace: test-cpu-pod-limit
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  name: test-app-env-cpu-limit
+  namespace: test-cpu-env-limit
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-cpu-no-limit
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-cpu-pod-limit
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  name: test-cpu-env-limit
+- apiVersion: v1
+  kind: Namespace
+  name: test-cpu-no-limit
+- apiVersion: v1
+  kind: Namespace
+  name: test-cpu-pod-limit
+- apiVersion: v1
+  kind: Namespace
+  name: test-cpu-env-limit
