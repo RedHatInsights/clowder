@@ -2,13 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: sleep 5
-- script: kubectl get secret --namespace=test-clowdapp-watcher-kafka-msk-env puptoo -o json > /tmp/test-clowdapp-watcher-kafka-msk-env
-- script: jq -r '.data["cdappconfig.json"]' < /tmp/test-clowdapp-watcher-kafka-msk-env | base64 -d > /tmp/test-clowdapp-watcher-kafka-msk-env-json
-
-# Load before changes hashCache and username value
-- script: jq -r '.kafka.brokers[0].sasl.username' < /tmp/test-clowdapp-watcher-kafka-msk-env-json > /tmp/test-clowdapp-watcher-kafka-msk-env-json-user
-- script: jq -r '.hashCache' -e < /tmp/test-clowdapp-watcher-kafka-msk-env-json > /tmp/test-clowdapp-watcher-kafka-msk-env-hash-cache
-
-- script: jq -r '.kafka.brokers[0].hostname == "test-clowdapp-watcher-kafka-msk-kafka-bootstrap.test-clowdapp-watcher-kafka-msk.svc"' -e < /tmp/test-clowdapp-watcher-kafka-msk-env-json
-- script: jq -r '.kafka.brokers[0].sasl.username == "test-clowdapp-watcher-kafka-msk-connect"' -e < /tmp/test-clowdapp-watcher-kafka-msk-env-json
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 04-json-asserts.sh

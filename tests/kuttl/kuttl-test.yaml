@@ -3,3 +3,7 @@ kind: TestSuite
 startControlPlane: false
 timeout: 600
 parallel: 12
+ignoreFiles:
+- "*.sh"
+commands:
+- script: "rm -fr /tmp/kuttl/ ${ARTIFACTS_DIR:-artifacts}"

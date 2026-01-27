@@ -1,0 +1,47 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-a-processor
+  namespace: test-multiple-app-endpoints
+status:
+  replicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-a-2-processor
+  namespace: test-multiple-app-endpoints
+status:
+  replicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-b-processor
+  namespace: test-multiple-app-endpoints-b
+status:
+  replicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puptoo-b-2-processor
+  namespace: test-multiple-app-endpoints-b
+status:
+  replicas: 1
+  readyReplicas: 1
+  availableReplicas: 1

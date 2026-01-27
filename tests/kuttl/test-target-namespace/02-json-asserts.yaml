@@ -2,5 +2,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-- script: for i in {1..15}; do kubectl get clowdenvironment test-target-namespace && exit 0 || sleep 1; done; echo "ClowdEnvironment not found"; exit 1
-- script: kubectl get clowdenvironment test-target-namespace -o json | jq -r '.status.targetNamespace != ""' -e
+  # Capture all output (including set -x traces). On success, suppress output. On failure, display output and exit with error code.
+- script: bash ../_common/run-script.sh 02-json-asserts.sh

@@ -195,7 +195,12 @@ function install_cyndi_operator {
     cd "$DOWNLOAD_DIR"
 
     echo "*** Looking up latest release ..."
-    LATEST_MANIFEST=$(curl -sL https://api.github.com/repos/RedHatInsights/cyndi-operator/releases/latest | jq -r '.assets[].browser_download_url')
+    LATEST_MANIFEST=$(curl -sL https://api.github.com/repos/RedHatInsights/cyndi-operator/releases/latest | jq -r '.assets[].browser_download_url' 2>/dev/null || echo "")
+    if [ -z "$LATEST_MANIFEST" ]; then
+        echo "*** ERROR: Failed to get cyndi-operator latest release from GitHub API"
+        echo "*** This may be due to rate limiting or network issues"
+        return 1
+    fi
     echo "*** Downloading $LATEST_MANIFEST ..."
     curl -LsS $LATEST_MANIFEST -o cyndi-operator-manifest.yaml
 
