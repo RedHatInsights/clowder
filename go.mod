@@ -155,7 +155,11 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
+<<<<<<< HEAD
 	github.com/slackhq/nebula v1.10.2 // indirect
+=======
+	github.com/slackhq/nebula v1.9.7 // indirect
+>>>>>>> f5ecefd6 (chore(deps): update module github.com/sirupsen/logrus to v1.9.4)
 	github.com/smallstep/certificates v0.29.0 // indirect
 	github.com/smallstep/cli-utils v0.12.2 // indirect
 	github.com/smallstep/linkedca v0.25.0 // indirect
