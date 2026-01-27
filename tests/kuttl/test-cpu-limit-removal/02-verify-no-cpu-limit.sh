@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Source common error handling
+source "$(dirname "$0")/../_common/error-handler.sh"
+
+# Setup error handling
+setup_error_handling "test-cpu-limit-removal"
+
+# Create test-specific directory
+TMP_DIR="/tmp/kuttl/test-cpu-limit-removal"
+mkdir -p "${TMP_DIR}"
+
+set -x
 # Verify that the deployment for test-app-no-cpu-limit-processor does NOT have a CPU limit
 
 # Get the CPU limit from the deployment (if it exists)
