@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: clowder-e2e
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      serviceAccountName: clowder-e2e-sa
+      restartPolicy: Never
+      containers:
+        - name: e2e
+          image: quay.io/jbarea/clowder-e2e:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            # Namespace to deploy test resources into
+            - name: TEST_NS
+              value: "clowder-e2e"
+
+            # App name used by tests (keep in sync with resources)
+            - name: CLOWDAPP_NAME
+              value: "puptoo"
+
+            # Optional: timeout for waits
+            - name: WAIT_TIMEOUT
+              value: "5m"
+
+          command: ["pytest"]
+          args: ["-vv", "-s", "/opt/app-root/src/tests/"]

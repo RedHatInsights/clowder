@@ -15,5 +15,4 @@ RUN dnf -y install git && dnf clean all && rm -rf /var/cache/dnf
 
 ADD . /opt/app-root/src
 
-RUN pip install --no-cache-dir -r requirements.txt
-
+RUN pip install --no-cache-dir -e .
