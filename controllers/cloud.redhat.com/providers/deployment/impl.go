@@ -434,15 +434,9 @@ func ApplyPodAntiAffinity(t *core.PodTemplateSpec) {
 // ProcessResources takes a pod spec and a clowd environment and returns the resource requirements
 // object.
 func ProcessResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.ResourceRequirements {
-	var lcpu, lmemory, rcpu, rmemory resource.Quantity
+	var lmemory, rcpu, rmemory resource.Quantity
 	nullCPU := resource.Quantity{Format: resource.DecimalSI}
 	nullMemory := resource.Quantity{Format: resource.BinarySI}
-
-	if *pod.Resources.Limits.Cpu() != nullCPU {
-		lcpu = pod.Resources.Limits["cpu"]
-	} else {
-		lcpu = env.Spec.ResourceDefaults.Limits["cpu"]
-	}
 
 	if *pod.Resources.Limits.Memory() != nullMemory {
 		lmemory = pod.Resources.Limits["memory"]
@@ -462,9 +456,8 @@ func ProcessResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.Resource
 		rmemory = env.Spec.ResourceDefaults.Requests["memory"]
 	}
 
-	return core.ResourceRequirements{
+	resourceRequirements := core.ResourceRequirements{
 		Limits: core.ResourceList{
-			"cpu":    lcpu,
 			"memory": lmemory,
 		},
 		Requests: core.ResourceList{
@@ -472,4 +465,13 @@ func ProcessResources(pod *crd.PodSpec, env *crd.ClowdEnvironment) core.Resource
 			"memory": rmemory,
 		},
 	}
+
+	// Only set CPU limit if explicitly defined on pod or in env defaults
+	if *pod.Resources.Limits.Cpu() != nullCPU {
+		resourceRequirements.Limits["cpu"] = pod.Resources.Limits["cpu"]
+	} else if _, ok := env.Spec.ResourceDefaults.Limits["cpu"]; ok {
+		resourceRequirements.Limits["cpu"] = env.Spec.ResourceDefaults.Limits["cpu"]
+	}
+
+	return resourceRequirements
 }
