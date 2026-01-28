@@ -194,7 +194,7 @@ function install_cyndi_operator {
     echo "*** Installing cyndi-operator ..."
     cd "$DOWNLOAD_DIR"
 
-    LATEST_MANIFEST="https://github.com/RedHatInsights/cyndi-operator/releases/download/latest/manifest.yaml"
+    LATEST_MANIFEST="https://github.com/RedHatInsights/cyndi-operator/releases/latest/download/manifest.yaml"
     echo "*** Downloading $LATEST_MANIFEST ..."
     curl -LsS $LATEST_MANIFEST -o cyndi-operator-manifest.yaml
 
