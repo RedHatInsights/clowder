@@ -1,0 +1,26 @@
+# Ignore everything by default
+*
+
+# Allow only what's needed for the e2e tests
+!rh_clowder_ci/
+!rh_clowder_ci/**
+!pyproject.toml
+!README.md
+!requirements.txt
+!deployment/
+
+# Exclude Python cache and build artifacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.egg-info/
+**/.pytest_cache/
+*.egg-info/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Exclude hidden files and directories
+.*
+**/.*/

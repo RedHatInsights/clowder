@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rh-clowder-ci"
+version = "0.1.0"
+description = "Red Hat Clowder E2E test suite"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pytest>=7.0.0",
+    "ocviapy",
+    "crc-bonfire",
+    "wait_for",
+    "PyYAML",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-cov",
+    "ruff",
+]
+
+[tool.setuptools]
+packages = ["rh_clowder_ci", "rh_clowder_ci.tests", "rh_clowder_ci.resources"]
+
+[tool.setuptools.package-data]
+"rh_clowder_ci.resources" = ["*.yaml"]
+
+[tool.ruff]
+# Only check Python files in the rh_clowder_ci package
+include = ["rh_clowder_ci/**/*.py"]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]  # Enable pycodestyle errors, Pyflakes, warnings, and isort
