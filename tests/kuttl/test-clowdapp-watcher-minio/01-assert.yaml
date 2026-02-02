@@ -72,6 +72,16 @@ spec:
             secretKeyRef:
               key: secretKey
               name: test-clowdapp-watcher-minio-minio
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              key: accessKey
+              name: test-clowdapp-watcher-minio-minio
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: secretKey
+              name: test-clowdapp-watcher-minio-minio
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -132,7 +142,7 @@ spec:
     env-app: test-clowdapp-watcher-minio-minio
   sessionAffinity: None
   type: ClusterIP
---- 
+---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
