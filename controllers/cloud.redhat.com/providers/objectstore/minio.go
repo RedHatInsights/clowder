@@ -333,6 +333,8 @@ func makeLocalMinIO(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers
 	envVars = provutils.AppendEnvVarsFromSecret(envVars, nn.Name,
 		provutils.NewSecretEnvVar("MINIO_ACCESS_KEY", "accessKey"),
 		provutils.NewSecretEnvVar("MINIO_SECRET_KEY", "secretKey"),
+		provutils.NewSecretEnvVar("MINIO_ROOT_USER", "accessKey"),
+		provutils.NewSecretEnvVar("MINIO_ROOT_PASSWORD", "secretKey"),
 	)
 
 	ports := []core.ContainerPort{{
