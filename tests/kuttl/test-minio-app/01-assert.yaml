@@ -76,12 +76,12 @@ spec:
           valueFrom:
             secretKeyRef:
               key: accessKey
-              name: test-clowdapp-watcher-minio-minio
+              name: test-minio-app-minio
         - name: MINIO_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               key: secretKey
-              name: test-clowdapp-watcher-minio-minio
+              name: test-minio-app-minio
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

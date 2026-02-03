@@ -14,19 +14,9 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.18.1
 	github.com/lib/pq v1.10.9
-<<<<<<< HEAD
-	github.com/minio/minio-go/v7 v7.0.88
-	github.com/onsi/ginkgo/v2 v2.28.1
-<<<<<<< HEAD
-	github.com/onsi/gomega v1.39.0
-=======
 	github.com/minio/minio-go/v7 v7.0.98
-	github.com/onsi/ginkgo/v2 v2.27.2
-	github.com/onsi/gomega v1.38.2
->>>>>>> 630da976 (fix(deps): update module github.com/minio/minio-go/v7 to v7.0.98)
-=======
+	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
->>>>>>> eea64b04 (Fix dependency conflicts and k8s.io package versions)
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.87.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
@@ -56,11 +46,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
-<<<<<<< HEAD
-	github.com/caddyserver/certmagic v0.25.0 // indirect
-=======
 	github.com/caddyserver/certmagic v0.25.1 // indirect
->>>>>>> 49aeaf68 (chore(deps): update module github.com/caddyserver/certmagic to v0.25.1)
 	github.com/caddyserver/zerossl v0.1.4 // indirect
 	github.com/ccoveille/go-safecast/v2 v2.0.0 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
@@ -112,24 +98,12 @@ require (
 	github.com/google/cel-go v0.27.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-<<<<<<< HEAD
-	github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 // indirect
-=======
 	github.com/google/pprof v0.0.0-20260202012954-cb029daf43ef // indirect
->>>>>>> 696118dd (chore(deps): update github.com/google/pprof digest to cb029da)
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-<<<<<<< HEAD
-	github.com/googleapis/enterprise-certificate-proxy v0.3.7 // indirect
-	github.com/googleapis/gax-go/v2 v2.16.0 // indirect
-<<<<<<< HEAD
-=======
 	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
-	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
->>>>>>> de7de0d7 (chore(deps): update module github.com/googleapis/enterprise-certificate-proxy to v0.3.11)
-=======
+	github.com/googleapis/gax-go/v2 v2.16.0 // indirect
 	github.com/grafana/regexp v0.0.0-20250905093917-f7b3be9d1853 // indirect
->>>>>>> eea64b04 (Fix dependency conflicts and k8s.io package versions)
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -176,15 +150,7 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
-<<<<<<< HEAD
-<<<<<<< HEAD
-	github.com/slackhq/nebula v1.10.2 // indirect
-=======
 	github.com/slackhq/nebula v1.9.7 // indirect
->>>>>>> f5ecefd6 (chore(deps): update module github.com/sirupsen/logrus to v1.9.4)
-=======
-	github.com/slackhq/nebula v1.9.7 // indirect
->>>>>>> eea64b04 (Fix dependency conflicts and k8s.io package versions)
 	github.com/smallstep/certificates v0.29.0 // indirect
 	github.com/smallstep/cli-utils v0.12.2 // indirect
 	github.com/smallstep/linkedca v0.25.0 // indirect
