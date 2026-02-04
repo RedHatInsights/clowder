@@ -1,3 +1,4 @@
+import logging
 import os
 from importlib.resources import files
 from typing import Dict, List
@@ -6,6 +7,8 @@ import pytest
 import yaml
 from bonfire.openshift import wait_for_all_resources
 from ocviapy import apply_config, get_api_resources, oc, process_template
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_NAMESPACE = os.environ.get("TEST_NS", "clowder-e2e-test")
 
@@ -45,7 +48,7 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
     For namespaced resources, deleting the namespace will clean them up.
     For cluster-scoped resources, explicitly delete them.
     """
-    print("Cleaning up resources created by the test")
+    logger.info("Cleaning up resources created by the test")
     namespace = namespace or DEFAULT_NAMESPACE
 
     # Get API resources info to determine which resources are namespaced
@@ -75,18 +78,18 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
     for resource in cluster_scoped_resources:
         kind = resource["kind"]
         name = resource["name"]
-        print(f"Deleting cluster-scoped resource: {kind}/{name}")
+        logger.info("Deleting cluster-scoped resource: %s/%s", kind, name)
         try:
             oc("delete", kind, name, "--ignore-not-found=true")
         except Exception as e:
-            print(f"Failed to delete {kind}/{name}: {e}")
+            logger.info("Failed to delete %s/%s: %s", kind, name, e)
 
     # Delete the namespace (which will clean up all namespaced resources)
-    print(f"Deleting namespace: {namespace}")
+    logger.info("Deleting namespace: %s", namespace)
     try:
         oc("delete", "namespace", namespace, "--wait=true", "--ignore-not-found=true")
     except Exception as e:
-        print(f"Failed to delete namespace {namespace}: {e}")
+        logger.info("Failed to delete namespace %s: %s", namespace, e)
 
 
 @pytest.fixture(scope="module")
@@ -113,7 +116,7 @@ def deploy_test_resources():
             oc("create", "namespace", namespace)
 
         # Process template
-        print(f"Processing template and applying to namespace: {namespace}")
+        logger.info("Processing template and applying to namespace: %s", namespace)
         processed_content = process_template(template_dict, {"NAMESPACE": namespace})
 
         # Parse resources from processed content for cleanup tracking
@@ -124,10 +127,10 @@ def deploy_test_resources():
 
         try:
             # Wait for all resources to be ready
-            print("Waiting for resources to be ready...")
+            logger.info("Waiting for resources to be ready...")
             wait_for_all_resources(namespace, timeout=wait_timeout)
 
-            print("Resources deployed and ready")
+            logger.info("Resources deployed and ready")
 
             # Yield to run tests
             yield
