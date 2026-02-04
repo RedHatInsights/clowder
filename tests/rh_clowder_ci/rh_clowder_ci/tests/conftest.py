@@ -94,11 +94,18 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
 
 @pytest.fixture(scope="module")
 def deploy_test_resources():
-    def _deploy_test_resources(resource_file_name: str, namespace: str = None):
-        namespace = namespace or DEFAULT_NAMESPACE
+    created_resources = []
+    ns = DEFAULT_NAMESPACE
 
-        """Deploy ClowdApp test resources and wait for them to be ready."""
-        wait_timeout = os.environ.get("WAIT_TIMEOUT", "5m")
+    def _deploy_test_resources(
+            resource_file_name: str,
+            namespace: str = None,
+            wait_timeout: int = 600
+        ):
+        """Deploy test resources and wait for them to be ready."""
+        nonlocal created_resources
+        nonlocal ns
+        ns = namespace  # set 'ns' for cleanup use
 
         # Load template from package resources
         # Note: importlib.resources is the modern standard library replacement for pkg_resources
@@ -125,18 +132,14 @@ def deploy_test_resources():
         # Apply resources to namespace
         apply_config(namespace, processed_content)
 
-        try:
-            # Wait for all resources to be ready
-            logger.info("Waiting for resources to be ready...")
-            wait_for_all_resources(namespace, timeout=wait_timeout)
+        # Wait for all resources to be ready
+        logger.info("Waiting for resources to be ready...")
+        wait_for_all_resources(namespace, timeout=wait_timeout)
 
-            logger.info("Resources deployed and ready")
+        logger.info("Resources deployed and ready")
 
-            # Yield to run tests
-            yield
-
-        finally:
-            # Clean up resources intelligently
-            cleanup_resources(created_resources, namespace)
-
-    return _deploy_test_resources
+    try:
+        yield _deploy_test_resources
+    finally:
+        # Clean up resources intelligently
+        cleanup_resources(created_resources, ns)

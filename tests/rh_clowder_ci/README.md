@@ -17,11 +17,10 @@ You must be logged into an OpenShift cluster before running tests:
 
 ```bash
 # Set environment variables (optional)
-export TEST_NS=clowder-e2e
-export WAIT_TIMEOUT=5m
+export TEST_NS=clowder-e2e-test
 
 # Run tests
-pytest tests/
+pytest
 ```
 
 ## Environment Variables

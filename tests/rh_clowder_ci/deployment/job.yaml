@@ -16,14 +16,5 @@ spec:
             # Namespace to deploy test resources into
             - name: TEST_NS
               value: "clowder-e2e"
-
-            # App name used by tests (keep in sync with resources)
-            - name: CLOWDAPP_NAME
-              value: "puptoo"
-
-            # Optional: timeout for waits
-            - name: WAIT_TIMEOUT
-              value: "5m"
-
           command: ["pytest"]
           args: ["-vv", "-s", "/opt/app-root/src/tests/"]
