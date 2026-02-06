@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
+    controller-gen.kubebuilder.io/version: v0.20.0
   name: clowdapps.cloud.redhat.com
 spec:
   group: cloud.redhat.com
@@ -227,8 +227,8 @@ spec:
                                             and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
                                             triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
 
-                                            This is an alpha field and requires enabling the HPAConfigurableTolerance
-                                            feature gate.
+                                            This is an beta field and requires the HPAConfigurableTolerance feature
+                                            gate to be enabled.
                                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                           x-kubernetes-int-or-string: true
                                       type: object
@@ -303,8 +303,8 @@ spec:
                                             and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
                                             triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
 
-                                            This is an alpha field and requires enabling the HPAConfigurableTolerance
-                                            feature gate.
+                                            This is an beta field and requires the HPAConfigurableTolerance feature
+                                            gate to be enabled.
                                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                           x-kubernetes-int-or-string: true
                                       type: object
@@ -2296,7 +2296,7 @@ spec:
                                           resources:
                                             description: |-
                                               resources represents the minimum resources the volume should have.
-                                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                              Users are allowed to specify resource requirements
                                               that are lower than previous value but must still be higher than capacity recorded in the
                                               status field of the claim.
                                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -3187,6 +3187,24 @@ spec:
                                               description: Kubelet's generated CSRs
                                                 will be addressed to this signer.
                                               type: string
+                                            userAnnotations:
+                                              additionalProperties:
+                                                type: string
+                                              description: |-
+                                                userAnnotations allow pod authors to pass additional information to
+                                                the signer implementation.  Kubernetes does not restrict or validate this
+                                                metadata in any way.
+
+                                                These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                                the PodCertificateRequest objects that Kubelet creates.
+
+                                                Entries are subject to the same validation as object metadata annotations,
+                                                with the addition that all keys must be domain-prefixed. No restrictions
+                                                are placed on values, except an overall size limitation on the entire field.
+
+                                                Signers should document the keys and values they support. Signers should
+                                                deny requests that contain keys they do not recognize.
+                                              type: object
                                           required:
                                           - keyType
                                           - signerName
@@ -5561,7 +5579,7 @@ spec:
                                           resources:
                                             description: |-
                                               resources represents the minimum resources the volume should have.
-                                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                              Users are allowed to specify resource requirements
                                               that are lower than previous value but must still be higher than capacity recorded in the
                                               status field of the claim.
                                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -6452,6 +6470,24 @@ spec:
                                               description: Kubelet's generated CSRs
                                                 will be addressed to this signer.
                                               type: string
+                                            userAnnotations:
+                                              additionalProperties:
+                                                type: string
+                                              description: |-
+                                                userAnnotations allow pod authors to pass additional information to
+                                                the signer implementation.  Kubernetes does not restrict or validate this
+                                                metadata in any way.
+
+                                                These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                                the PodCertificateRequest objects that Kubelet creates.
+
+                                                Entries are subject to the same validation as object metadata annotations,
+                                                with the addition that all keys must be domain-prefixed. No restrictions
+                                                are placed on values, except an overall size limitation on the entire field.
+
+                                                Signers should document the keys and values they support. Signers should
+                                                deny requests that contain keys they do not recognize.
+                                              type: object
                                           required:
                                           - keyType
                                           - signerName
@@ -6985,36 +7021,43 @@ spec:
                   properties:
                     lastTransitionTime:
                       description: |-
-                        Last time the condition transitioned from one status to another.
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
                         This should be when the underlying condition changed. If that is not known, then using the time when
                         the API field changed is acceptable.
                       format: date-time
                       type: string
                     message:
                       description: |-
-                        A human readable message indicating details about the transition.
+                        message is a human readable message indicating details about the transition.
                         This field may be empty.
+                      maxLength: 10240
+                      minLength: 1
                       type: string
                     reason:
                       description: |-
-                        The reason for the condition's last transition in CamelCase.
+                        reason is the reason for the condition's last transition in CamelCase.
                         The specific API may choose whether or not this field is considered a guaranteed API.
-                        This field may not be empty.
+                        This field may be empty.
+                      maxLength: 256
+                      minLength: 1
                       type: string
                     severity:
                       description: |-
-                        Severity provides an explicit classification of Reason code, so the users or machines can immediately
+                        severity provides an explicit classification of Reason code, so the users or machines can immediately
                         understand the current situation and act accordingly.
                         The Severity field MUST be set only when Status=False.
+                      maxLength: 32
                       type: string
                     status:
-                      description: Status of the condition, one of True, False, Unknown.
+                      description: status of the condition, one of True, False, Unknown.
                       type: string
                     type:
                       description: |-
-                        Type of condition in CamelCase or in foo.example.com/CamelCase.
+                        type of condition in CamelCase or in foo.example.com/CamelCase.
                         Many .condition.type values are consistent across resources like Available, but because arbitrary conditions
                         can be useful (see .node.status.conditions), the ability to deconflict is important.
+                      maxLength: 256
+                      minLength: 1
                       type: string
                   required:
                   - lastTransitionTime
