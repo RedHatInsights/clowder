@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.25.5
+go 1.25.6
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.7.1
@@ -17,7 +17,6 @@ require (
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
-	github.com/openshift/api v0.0.0-20260206113031-29949968f641
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.89.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
@@ -27,7 +26,7 @@ require (
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/cluster-api v1.12.2
-	sigs.k8s.io/controller-runtime v0.23.1
+	sigs.k8s.io/controller-runtime v0.22.5
 )
 
 require (
