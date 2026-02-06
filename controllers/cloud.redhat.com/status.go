@@ -427,11 +427,17 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		condition := &metav1.Condition{}
 		condition.Type = conditionType
 		condition.Status = metav1.ConditionFalse
+		condition.Reason = "ReconciliationNotComplete"
 
 		if state == conditionType {
 			condition.Status = metav1.ConditionTrue
+			if conditionType == crd.ReconciliationSuccessful {
+				condition.Reason = "ReconciliationSucceeded"
+			} else {
+				condition.Reason = "ReconciliationFailed"
+			}
 			if err != nil {
-				condition.Reason = err.Error()
+				condition.Message = err.Error()
 			}
 		}
 
@@ -447,17 +453,19 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 	condition := &metav1.Condition{}
 
 	condition.Status = metav1.ConditionFalse
+	condition.Reason = "DeploymentsNotReady"
 	condition.Message = fmt.Sprintf("Deployments are not yet ready: %s", msg)
 	if deploymentStatus {
 		condition.Status = metav1.ConditionTrue
+		condition.Reason = "DeploymentsReady"
 		condition.Message = "All managed deployments ready"
+	}
+	if err != nil {
+		condition.Message = err.Error()
 	}
 
 	condition.Type = crd.DeploymentsReady
 	condition.LastTransitionTime = metav1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
 
 	conditions = append(conditions, *condition)
 
@@ -484,11 +492,17 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		condition := &metav1.Condition{}
 		condition.Type = conditionType
 		condition.Status = metav1.ConditionFalse
+		condition.Reason = "ReconciliationNotComplete"
 
 		if state == conditionType {
 			condition.Status = metav1.ConditionTrue
+			if conditionType == crd.ReconciliationSuccessful {
+				condition.Reason = "ReconciliationSucceeded"
+			} else {
+				condition.Reason = "ReconciliationFailed"
+			}
 			if err != nil {
-				condition.Reason = err.Error()
+				condition.Message = err.Error()
 			}
 		}
 
@@ -504,17 +518,19 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	condition := &metav1.Condition{}
 
 	condition.Status = metav1.ConditionFalse
+	condition.Reason = "DeploymentsNotReady"
 	condition.Message = "Deployments are not yet ready"
 	if deploymentStatus {
 		condition.Status = metav1.ConditionTrue
+		condition.Reason = "DeploymentsReady"
 		condition.Message = "All managed deployments ready"
+	}
+	if err != nil {
+		condition.Message = err.Error()
 	}
 
 	condition.Type = crd.DeploymentsReady
 	condition.LastTransitionTime = metav1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
 
 	conditions = append(conditions, *condition)
 
@@ -542,11 +558,17 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 		condition := &metav1.Condition{}
 		condition.Type = conditionType
 		condition.Status = metav1.ConditionFalse
+		condition.Reason = "ReconciliationNotComplete"
 
 		if state == conditionType {
 			condition.Status = metav1.ConditionTrue
+			if conditionType == crd.ReconciliationSuccessful {
+				condition.Reason = "ReconciliationSucceeded"
+			} else {
+				condition.Reason = "ReconciliationFailed"
+			}
 			if err != nil {
-				condition.Reason = err.Error()
+				condition.Message = err.Error()
 			}
 		}
 
@@ -558,10 +580,11 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	condition := &metav1.Condition{}
 	condition.Type = crd.JobInvocationComplete
 	condition.Status = metav1.ConditionFalse
+	condition.Reason = "JobsIncomplete"
 	condition.Message = "Some Jobs are still incomplete"
 	condition.LastTransitionTime = metav1.Now()
 	if err != nil {
-		condition.Reason = err.Error()
+		condition.Message = err.Error()
 	}
 
 	jobs, err := o.GetInvokedJobs(ctx, client)
@@ -572,6 +595,7 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 
 	if jobStatus {
 		condition.Status = metav1.ConditionTrue
+		condition.Reason = "JobsComplete"
 		condition.Message = "All ClowdJob invocations complete"
 	}
 	conditions = append(conditions, *condition)
