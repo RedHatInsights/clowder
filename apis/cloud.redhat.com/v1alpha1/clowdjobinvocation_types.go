@@ -26,7 +26,6 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
@@ -150,7 +149,7 @@ type ClowdJobInvocationStatus struct {
 	Jobs []string `json:"jobs,omitempty"`
 	// JobMap is a map of the job names run by Job invocation and their outcomes
 	JobMap     map[string]JobConditionState `json:"jobMap"`
-	Conditions []clusterv1.Condition        `json:"conditions,omitempty"`
+	Conditions []metav1.Condition           `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -177,12 +176,12 @@ type ClowdJobInvocationList struct {
 }
 
 // GetConditions returns the conditions for this ClowdJobInvocation
-func (i *ClowdJobInvocation) GetConditions() clusterv1.Conditions {
+func (i *ClowdJobInvocation) GetConditions() []metav1.Condition {
 	return i.Status.Conditions
 }
 
 // SetConditions updates the conditions for this ClowdJobInvocation
-func (i *ClowdJobInvocation) SetConditions(conditions clusterv1.Conditions) {
+func (i *ClowdJobInvocation) SetConditions(conditions []metav1.Condition) {
 	i.Status.Conditions = conditions
 }
 
