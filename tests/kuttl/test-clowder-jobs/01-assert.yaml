@@ -211,13 +211,15 @@ spec:
 status:
   completed: false
   conditions:
-  - message: Some Jobs are still incomplete
-    reason: 'Job [hello-cji-disabled] is disabled: '
+  - message: 'Job [hello-cji-disabled] is disabled: '
+    reason: JobsIncomplete
     status: "False"
     type: JobInvocationComplete
-  - reason: 'Job [hello-cji-disabled] is disabled: '
+  - message: 'Job [hello-cji-disabled] is disabled: '
+    reason: ReconciliationFailed
     status: "True"
     type: ReconciliationFailed
-  - status: "False"
+  - reason: ReconciliationNotComplete
+    status: "False"
     type: ReconciliationSuccessful
   jobMap: {}
