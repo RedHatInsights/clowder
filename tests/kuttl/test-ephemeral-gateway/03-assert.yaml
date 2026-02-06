@@ -25,7 +25,7 @@ spec:
         clowder/authsidecar-config: caddy-config-puptoo-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
-        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46
+        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:0768503
     spec:
       serviceAccountName: puptoo-processor
 status:
@@ -43,7 +43,7 @@ spec:
         clowder/authsidecar-config: caddy-config-puptoo-2paths-processor
         clowder/authsidecar-enabled: "true"
         clowder/authsidecar-port: "8000"
-        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:4329b46
+        clowder/authsidecar-image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:0768503
     spec:
       serviceAccountName: puptoo-2paths-processor
 status:
