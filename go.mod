@@ -141,7 +141,7 @@ require (
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
-	github.com/redhatinsights/crcauthlib v0.4.0 // indirect
+	github.com/redhatinsights/crcauthlib v0.5.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
