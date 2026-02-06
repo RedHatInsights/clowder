@@ -90,7 +90,6 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
@@ -230,12 +229,12 @@ tool (
 	sigs.k8s.io/kustomize/kustomize/v5
 )
 
-replace k8s.io/api => k8s.io/api v0.34.3
+replace k8s.io/api => k8s.io/api v0.35.0
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.34.3
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.0
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.3
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.0
 
-replace k8s.io/client-go => k8s.io/client-go v0.34.3
+replace k8s.io/client-go => k8s.io/client-go v0.35.0
 
 replace github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
