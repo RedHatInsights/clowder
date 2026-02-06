@@ -3,7 +3,7 @@ module github.com/RedHatInsights/clowder
 go 1.25.5
 
 require (
-	github.com/RedHatInsights/crc-caddy-plugin v0.6.0
+	github.com/RedHatInsights/crc-caddy-plugin v0.7.1
 	github.com/RedHatInsights/cyndi-operator v0.1.13
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.14.0
@@ -141,7 +141,7 @@ require (
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
-	github.com/redhatinsights/crcauthlib v0.4.0 // indirect
+	github.com/redhatinsights/crcauthlib v0.5.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
 	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
@@ -175,7 +175,7 @@ require (
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
-	go.step.sm/crypto v0.74.0 // indirect
+	go.step.sm/crypto v0.75.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap/exp v0.3.0 // indirect
