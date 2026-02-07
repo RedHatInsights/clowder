@@ -19,7 +19,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // ClowdAppRefDeployment represents a deployment within a ClowdAppRef
@@ -97,7 +96,7 @@ type ClowdAppRefStatus struct {
 	Ready bool `json:"ready"`
 
 	// Conditions represents the latest available observations of the ClowdAppRef's current state
-	Conditions []clusterv1.Condition `json:"conditions,omitempty"`
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 // ClowdAppRef is the Schema for the clowdapprefs API
@@ -128,12 +127,12 @@ func init() {
 }
 
 // GetConditions returns the conditions from the ClowdAppRef status
-func (car *ClowdAppRef) GetConditions() clusterv1.Conditions {
+func (car *ClowdAppRef) GetConditions() []metav1.Condition {
 	return car.Status.Conditions
 }
 
 // SetConditions sets the conditions on the ClowdAppRef status
-func (car *ClowdAppRef) SetConditions(conditions clusterv1.Conditions) {
+func (car *ClowdAppRef) SetConditions(conditions []metav1.Condition) {
 	car.Status.Conditions = conditions
 }
 

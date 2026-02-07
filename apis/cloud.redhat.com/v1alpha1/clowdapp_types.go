@@ -27,7 +27,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -534,13 +533,13 @@ type ClowdAppSpec struct {
 
 const (
 	// DeploymentsReady means all the deployments are ready
-	DeploymentsReady clusterv1.ConditionType = "DeploymentsReady"
+	DeploymentsReady string = "DeploymentsReady"
 	// ReconciliationSuccessful represents status of successful reconciliation
-	ReconciliationSuccessful clusterv1.ConditionType = "ReconciliationSuccessful"
+	ReconciliationSuccessful string = "ReconciliationSuccessful"
 	// ReconciliationFailed means the reconciliation failed
-	ReconciliationFailed clusterv1.ConditionType = "ReconciliationFailed"
+	ReconciliationFailed string = "ReconciliationFailed"
 	// JobInvocationComplete means all the Jobs have finished
-	JobInvocationComplete clusterv1.ConditionType = "JobInvocationComplete"
+	JobInvocationComplete string = "JobInvocationComplete"
 )
 
 // ClowdAppStatus defines the observed state of ClowdApp
@@ -548,9 +547,9 @@ type ClowdAppStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// ClowdEnvironmentStatus defines the observed state of ClowdEnvironment
-	Deployments AppResourceStatus     `json:"deployments,omitempty"`
-	Ready       bool                  `json:"ready"`
-	Conditions  []clusterv1.Condition `json:"conditions,omitempty"`
+	Deployments AppResourceStatus  `json:"deployments,omitempty"`
+	Ready       bool               `json:"ready"`
+	Conditions  []metav1.Condition `json:"conditions,omitempty"`
 }
 
 // AppResourceStatus defines the status of an app resource
@@ -593,12 +592,12 @@ func init() {
 }
 
 // GetConditions returns the conditions for this ClowdApp
-func (i *ClowdApp) GetConditions() clusterv1.Conditions {
+func (i *ClowdApp) GetConditions() []metav1.Condition {
 	return i.Status.Conditions
 }
 
 // SetConditions updates the conditions for this ClowdApp
-func (i *ClowdApp) SetConditions(conditions clusterv1.Conditions) {
+func (i *ClowdApp) SetConditions(conditions []metav1.Condition) {
 	i.Status.Conditions = conditions
 }
 

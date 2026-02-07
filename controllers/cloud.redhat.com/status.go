@@ -10,12 +10,10 @@ import (
 
 	strimzi "github.com/RedHatInsights/strimzi-client-go/apis/kafka.strimzi.io/v1beta2"
 	apps "k8s.io/api/apps/v1"
-	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	cond "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -421,23 +419,29 @@ func GetEnvResourceStatus(ctx context.Context, client client.Client, o *crd.Clow
 }
 
 // SetClowdEnvConditions updates the status conditions for a ClowdEnvironment
-func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state clusterv1.ConditionType, oldStatus *crd.ClowdEnvironmentStatus, err error) error {
-	conditions := []clusterv1.Condition{}
+func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.ClowdEnvironment, state string, oldStatus *crd.ClowdEnvironmentStatus, err error) error {
+	conditions := []metav1.Condition{}
 
-	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
+	loopConditions := []string{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
-		condition := &clusterv1.Condition{}
+		condition := &metav1.Condition{}
 		condition.Type = conditionType
-		condition.Status = core.ConditionFalse
+		condition.Status = metav1.ConditionFalse
+		condition.Reason = "ReconciliationNotComplete"
 
 		if state == conditionType {
-			condition.Status = core.ConditionTrue
+			condition.Status = metav1.ConditionTrue
+			if conditionType == crd.ReconciliationSuccessful {
+				condition.Reason = "ReconciliationSucceeded"
+			} else {
+				condition.Reason = "ReconciliationFailed"
+			}
 			if err != nil {
-				condition.Reason = err.Error()
+				condition.Message = err.Error()
 			}
 		}
 
-		condition.LastTransitionTime = v1.Now()
+		condition.LastTransitionTime = metav1.Now()
 		conditions = append(conditions, *condition)
 	}
 
@@ -446,26 +450,27 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 		return getEnvStatusErr
 	}
 
-	condition := &clusterv1.Condition{}
+	condition := &metav1.Condition{}
 
-	condition.Status = core.ConditionFalse
+	condition.Status = metav1.ConditionFalse
+	condition.Reason = "DeploymentsNotReady"
 	condition.Message = fmt.Sprintf("Deployments are not yet ready: %s", msg)
 	if deploymentStatus {
-		condition.Status = core.ConditionTrue
+		condition.Status = metav1.ConditionTrue
+		condition.Reason = "DeploymentsReady"
 		condition.Message = "All managed deployments ready"
+	}
+	if err != nil {
+		condition.Message = err.Error()
 	}
 
 	condition.Type = crd.DeploymentsReady
-	condition.LastTransitionTime = v1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
+	condition.LastTransitionTime = metav1.Now()
 
 	conditions = append(conditions, *condition)
 
 	for _, condition := range conditions {
-		innerCondition := condition
-		cond.Set(o, &innerCondition)
+		cond.Set(o, condition)
 	}
 
 	o.Status.Ready = deploymentStatus
@@ -479,23 +484,29 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 }
 
 // SetClowdAppConditions updates the status conditions for a ClowdApp
-func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state clusterv1.ConditionType, oldStatus *crd.ClowdAppStatus, err error) error {
-	conditions := []clusterv1.Condition{}
+func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.ClowdApp, state string, oldStatus *crd.ClowdAppStatus, err error) error {
+	conditions := []metav1.Condition{}
 
-	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
+	loopConditions := []string{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
-		condition := &clusterv1.Condition{}
+		condition := &metav1.Condition{}
 		condition.Type = conditionType
-		condition.Status = core.ConditionFalse
+		condition.Status = metav1.ConditionFalse
+		condition.Reason = "ReconciliationNotComplete"
 
 		if state == conditionType {
-			condition.Status = core.ConditionTrue
+			condition.Status = metav1.ConditionTrue
+			if conditionType == crd.ReconciliationSuccessful {
+				condition.Reason = "ReconciliationSucceeded"
+			} else {
+				condition.Reason = "ReconciliationFailed"
+			}
 			if err != nil {
-				condition.Reason = err.Error()
+				condition.Message = err.Error()
 			}
 		}
 
-		condition.LastTransitionTime = v1.Now()
+		condition.LastTransitionTime = metav1.Now()
 		conditions = append(conditions, *condition)
 	}
 
@@ -504,26 +515,27 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 		return getAppStatusErr
 	}
 
-	condition := &clusterv1.Condition{}
+	condition := &metav1.Condition{}
 
-	condition.Status = core.ConditionFalse
+	condition.Status = metav1.ConditionFalse
+	condition.Reason = "DeploymentsNotReady"
 	condition.Message = "Deployments are not yet ready"
 	if deploymentStatus {
-		condition.Status = core.ConditionTrue
+		condition.Status = metav1.ConditionTrue
+		condition.Reason = "DeploymentsReady"
 		condition.Message = "All managed deployments ready"
+	}
+	if err != nil {
+		condition.Message = err.Error()
 	}
 
 	condition.Type = crd.DeploymentsReady
-	condition.LastTransitionTime = v1.Now()
-	if err != nil {
-		condition.Reason = err.Error()
-	}
+	condition.LastTransitionTime = metav1.Now()
 
 	conditions = append(conditions, *condition)
 
 	for _, condition := range conditions {
-		innerCondition := condition
-		cond.Set(o, &innerCondition)
+		cond.Set(o, condition)
 	}
 
 	o.Status.Ready = deploymentStatus
@@ -537,35 +549,42 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 }
 
 // SetClowdJobInvocationConditions updates the status conditions for a ClowdJobInvocation
-func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state clusterv1.ConditionType, err error) error {
+func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, o *crd.ClowdJobInvocation, state string, err error) error {
 	oldStatus := o.Status.DeepCopy()
-	conditions := []clusterv1.Condition{}
+	conditions := []metav1.Condition{}
 
-	loopConditions := []clusterv1.ConditionType{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
+	loopConditions := []string{crd.ReconciliationSuccessful, crd.ReconciliationFailed}
 	for _, conditionType := range loopConditions {
-		condition := &clusterv1.Condition{}
+		condition := &metav1.Condition{}
 		condition.Type = conditionType
-		condition.Status = core.ConditionFalse
+		condition.Status = metav1.ConditionFalse
+		condition.Reason = "ReconciliationNotComplete"
 
 		if state == conditionType {
-			condition.Status = core.ConditionTrue
+			condition.Status = metav1.ConditionTrue
+			if conditionType == crd.ReconciliationSuccessful {
+				condition.Reason = "ReconciliationSucceeded"
+			} else {
+				condition.Reason = "ReconciliationFailed"
+			}
 			if err != nil {
-				condition.Reason = err.Error()
+				condition.Message = err.Error()
 			}
 		}
 
-		condition.LastTransitionTime = v1.Now()
+		condition.LastTransitionTime = metav1.Now()
 		conditions = append(conditions, *condition)
 	}
 
 	// Setup custom status for CJI
-	condition := &clusterv1.Condition{}
+	condition := &metav1.Condition{}
 	condition.Type = crd.JobInvocationComplete
-	condition.Status = core.ConditionFalse
+	condition.Status = metav1.ConditionFalse
+	condition.Reason = "JobsIncomplete"
 	condition.Message = "Some Jobs are still incomplete"
-	condition.LastTransitionTime = v1.Now()
+	condition.LastTransitionTime = metav1.Now()
 	if err != nil {
-		condition.Reason = err.Error()
+		condition.Message = err.Error()
 	}
 
 	jobs, err := o.GetInvokedJobs(ctx, client)
@@ -575,14 +594,14 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	jobStatus := GetJobsStatus(jobs, o)
 
 	if jobStatus {
-		condition.Status = core.ConditionTrue
+		condition.Status = metav1.ConditionTrue
+		condition.Reason = "JobsComplete"
 		condition.Message = "All ClowdJob invocations complete"
 	}
 	conditions = append(conditions, *condition)
 
 	for _, condition := range conditions {
-		innerCondition := condition
-		cond.Set(o, &innerCondition)
+		cond.Set(o, condition)
 	}
 
 	o.Status.Completed = jobStatus
