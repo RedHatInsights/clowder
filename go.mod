@@ -21,9 +21,9 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
-	k8s.io/api v0.35.0
-	k8s.io/apiextensions-apiserver v0.35.0
-	k8s.io/apimachinery v0.35.0
+	k8s.io/api v0.35.1
+	k8s.io/apiextensions-apiserver v0.35.1
+	k8s.io/apimachinery v0.35.1
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/cluster-api v1.12.2
 	sigs.k8s.io/controller-runtime v0.22.5
@@ -204,7 +204,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	howett.net/plist v1.0.1 // indirect
-	k8s.io/code-generator v0.35.0 // indirect
+	k8s.io/code-generator v0.35.1 // indirect
 	k8s.io/gengo/v2 v2.0.0-20251215205346-5ee0d033ba5b // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20260127142750-a19766b6e2d4 // indirect
@@ -229,12 +229,12 @@ tool (
 	sigs.k8s.io/kustomize/kustomize/v5
 )
 
-replace k8s.io/api => k8s.io/api v0.35.0
+replace k8s.io/api => k8s.io/api v0.35.1
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.0
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.1
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.0
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.1
 
-replace k8s.io/client-go => k8s.io/client-go v0.35.0
+replace k8s.io/client-go => k8s.io/client-go v0.35.1
 
 replace github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
