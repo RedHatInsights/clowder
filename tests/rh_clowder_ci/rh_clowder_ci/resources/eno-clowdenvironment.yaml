@@ -1,0 +1,124 @@
+# ClowdEnvironment configuration similar to what the Ephemeral Namespace Operator
+# would use when creating namespaces in the 'default' pool.
+
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: eno-clowdenvironment.yaml
+parameters:
+- name: NAMESPACE
+  description: Target namespace for test resources
+  required: true
+objects:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdEnvironment
+  metadata:
+    name: test-env
+  spec:
+    targetNamespace: ${NAMESPACE}
+    providers:
+      sidecars:
+        otelCollector:
+          enabled: true
+      db:
+        mode: local
+      inMemoryDb:
+        mode: redis
+      deployment:
+        omitPullPolicy: true
+      kafka:
+        mode: operator
+        enableLegacyStrimzi: true
+        cluster:
+          config:
+            offsets.topic.replication.factor: '1'
+            default.replication.factor: '1'
+            transaction.state.log.replication.factor: '1'
+            transaction.state.log.min.isr: '1'
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 600Mi
+          version: 3.8.0
+        connect:
+          version: 3.8.0
+          image: quay.io/cloudservices/xjoin-kafka-connect-strimzi:9ead624
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+      logging:
+        mode: none
+      metrics:
+        port: 9000
+        path: "/metrics"
+        prometheus:
+          deploy: false
+        mode: operator
+      objectStore:
+        mode: minio
+        images:
+          minio: "quay.io/app-sre/minio:RELEASE.2025-01-20T14-49-07Z"
+      web:
+        mode: local
+        ingressClass: openshift-default
+        port: 8000
+        privatePort: 10000
+        tls:
+          enabled: false  # TLS disabled by default in environment
+          port: 8800
+          privatePort: 18000
+      featureFlags:
+        mode: local
+        images:
+          unleash: quay.io/app-sre/unleash-server:5.6.9
+          unleashEdge: quay.io/app-sre/unleash-edge:v19.6.3
+      pullSecrets:
+      - namespace: ephemeral-base
+        name: quay-cloudservices-pull
+      - namespace: ephemeral-base
+        name: konflux-pull
+      # this auth config may have expired ...
+      #- namespace: ephemeral-base
+      #  name: rhcloudperfscale-experiment-toolbox-puller
+      testing:
+        k8sAccessLevel: edit
+        configAccess: environment
+        iqe:
+          ui:
+            selenium:
+              imageBase: quay.io/redhatqe/selenium-standalone
+              defaultImageTag: ff_102.9.0esr_chrome_112.0.5615.121
+              resources:
+                limits:
+                  cpu: '1'
+                  memory: 3Gi
+                requests:
+                  cpu: 500m
+                  memory: 2Gi
+          vaultSecretRef:
+            namespace: ephemeral-base
+            name: iqe-vault
+          imageBase: quay.io/cloudservices/iqe-tests
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 1Gi
+      autoScaler:
+        mode: "enabled"
+    resourceDefaults:
+      limits:
+        cpu: 300m
+        memory: 256Mi
+      requests:
+        cpu: 30m
+        memory: 128Mi
