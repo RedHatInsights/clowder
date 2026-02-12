@@ -95,17 +95,17 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
 @pytest.fixture(scope="module")
 def deploy_test_resources():
     created_resources = []
-    ns = DEFAULT_NAMESPACE
+    _cleanup_ns = None  # stores the namespace we deployed to (for teardown)
 
     def _deploy_test_resources(
             resource_file_name: str,
-            namespace: str = None,
+            namespace: str = DEFAULT_NAMESPACE,
             wait_timeout: int = 600
         ):
         """Deploy test resources and wait for them to be ready."""
         nonlocal created_resources
-        nonlocal ns
-        ns = namespace  # set 'ns' for cleanup use
+        nonlocal _cleanup_ns
+        _cleanup_ns = namespace or DEFAULT_NAMESPACE
 
         # Load template from package resources
         # Note: importlib.resources is the modern standard library replacement for pkg_resources
@@ -142,4 +142,4 @@ def deploy_test_resources():
         yield _deploy_test_resources
     finally:
         # Clean up resources intelligently
-        cleanup_resources(created_resources, ns)
+        cleanup_resources(created_resources, _cleanup_ns)
