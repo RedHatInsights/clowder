@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: e2e
-          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/rh-clowder-ci:latest
+          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e-tests:latest
           imagePullPolicy: Always
           env:
             # Namespace to deploy test resources into
