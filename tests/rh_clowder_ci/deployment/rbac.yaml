@@ -1,7 +1,13 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: clowder-e2e-test
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: clowder-e2e-sa
+  namespace: clowder-e2e
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -22,6 +28,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: clowder-e2e-rb
+  namespace: clowder-e2e
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -31,16 +38,30 @@ subjects:
     name: clowder-e2e-sa
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: clowder-e2e-test-admin-rb
+  namespace: clowder-e2e-test
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+  - kind: ServiceAccount
+    name: clowder-e2e-sa
+    namespace: clowder-e2e
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: clowder-e2e-clusterrole
 rules:
   - apiGroups: [""]
     resources: ["namespaces"]
-    verbs: ["get", "list", "create", "delete"]
+    verbs: ["get", "list", "create", "delete", "watch", "update", "patch"]
   - apiGroups: ["cloud.redhat.com"]
     resources: ["clowdenvironments"]
-    verbs: ["get", "list", "create", "delete"]
+    verbs: ["get", "list", "create", "delete", "watch", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -54,5 +75,3 @@ subjects:
   - kind: ServiceAccount
     name: clowder-e2e-sa
     namespace: clowder-e2e
-
-

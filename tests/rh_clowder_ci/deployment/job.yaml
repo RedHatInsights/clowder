@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: clowder-e2e
+  name: clowder-e2e-test
 spec:
   backoffLimit: 0
   template:
@@ -10,11 +10,11 @@ spec:
       restartPolicy: Never
       containers:
         - name: e2e
-          image: quay.io/jbarea/clowder-e2e:latest
-          imagePullPolicy: IfNotPresent
+          image: quay.io/bsquizza/rh-clowder-ci:latest
+          imagePullPolicy: Always
           env:
             # Namespace to deploy test resources into
             - name: TEST_NS
-              value: "clowder-e2e"
+              value: "clowder-e2e-test"
           command: ["pytest"]
-          args: ["-vv", "-s", "/opt/app-root/src/tests/"]
+          args: ["-vv", "-s"]

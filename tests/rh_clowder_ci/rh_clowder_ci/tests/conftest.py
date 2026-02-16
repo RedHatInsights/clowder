@@ -41,12 +41,13 @@ def _parse_resources(processed_content: dict) -> List[Dict[str, str]]:
     return resources
 
 
-def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
+def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None, delete_namespace: bool = False):
     """
     Intelligently clean up resources based on whether they are namespaced.
 
-    For namespaced resources, deleting the namespace will clean them up.
+    For namespaced resources, explicitly delete them individually.
     For cluster-scoped resources, explicitly delete them.
+    Optionally delete the namespace itself if delete_namespace=True.
     """
     logger.info("Cleaning up resources created by the test")
     namespace = namespace or DEFAULT_NAMESPACE
@@ -63,6 +64,7 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
 
     # Separate resources into namespaced and cluster-scoped
     cluster_scoped_resources = []
+    namespaced_resources = []
 
     for resource in resources:
         kind = resource["kind"]
@@ -71,7 +73,9 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
         # Check if this resource type is namespaced
         is_namespaced = namespaced_map.get(kind.lower(), True)  # Default to True
 
-        if not is_namespaced:
+        if is_namespaced:
+            namespaced_resources.append(resource)
+        else:
             cluster_scoped_resources.append(resource)
 
     # Delete cluster-scoped resources first
@@ -84,12 +88,23 @@ def cleanup_resources(resources: List[Dict[str, str]], namespace: str = None):
         except Exception as e:
             logger.info("Failed to delete %s/%s: %s", kind, name, e)
 
-    # Delete the namespace (which will clean up all namespaced resources)
-    logger.info("Deleting namespace: %s", namespace)
-    try:
-        oc("delete", "namespace", namespace, "--wait=true", "--ignore-not-found=true")
-    except Exception as e:
-        logger.info("Failed to delete namespace %s: %s", namespace, e)
+    # Delete namespaced resources individually
+    for resource in namespaced_resources:
+        kind = resource["kind"]
+        name = resource["name"]
+        logger.info("Deleting namespaced resource: %s/%s in namespace %s", kind, name, namespace)
+        try:
+            oc("delete", kind, name, "-n", namespace, "--ignore-not-found=true")
+        except Exception as e:
+            logger.info("Failed to delete %s/%s: %s", kind, name, e)
+
+    # Only delete the namespace if requested
+    if delete_namespace:
+        logger.info("Deleting namespace: %s", namespace)
+        try:
+            oc("delete", "namespace", namespace, "--wait=true", "--ignore-not-found=true")
+        except Exception as e:
+            logger.info("Failed to delete namespace %s: %s", namespace, e)
 
 
 @pytest.fixture(scope="module")
