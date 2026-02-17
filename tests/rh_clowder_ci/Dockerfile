@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/python-312:9.7-1765181854
+FROM registry.redhat.io/ubi9/python-312:9.7-1770654692
 
 USER 0
 
