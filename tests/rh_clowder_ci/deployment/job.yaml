@@ -1,20 +1,28 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: template.openshift.io/v1
+kind: Template
 metadata:
-  name: clowder-e2e-test
-spec:
-  backoffLimit: 0
-  template:
-    spec:
-      serviceAccountName: clowder-e2e-sa
-      restartPolicy: Never
-      containers:
-        - name: e2e
-          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e-tests:latest
-          imagePullPolicy: Always
-          env:
-            # Namespace to deploy test resources into
-            - name: TEST_NS
-              value: "clowder-e2e-test"
-          command: ["pytest"]
-          args: ["-vv", "-s"]
+  name: clowder
+parameters:
+- name: IMAGE_TAG
+  value: latest
+objects:
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: clowder-e2e-test-${IMAGE_TAG}
+  spec:
+    backoffLimit: 0
+    template:
+      spec:
+        serviceAccountName: clowder-e2e-sa
+        restartPolicy: Never
+        containers:
+          - name: e2e
+            image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e-tests:${IMAGE_TAG}
+            imagePullPolicy: Always
+            env:
+              # Namespace to deploy test resources into
+              - name: TEST_NS
+                value: "clowder-e2e-test"
+            command: ["pytest"]
+            args: ["-vv", "-s"]
