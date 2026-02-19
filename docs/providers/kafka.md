@@ -34,6 +34,15 @@ by the ClowdEnvironment. Depending on the environment you are running you may
 or may not have access to change this mode. More information on provider
 configuration is at the bottom of this page.
 
+### managed
+
+In managed mode, which is the current default for stage and production
+environments the **Kafka Provider** will provide connection information for
+Kafka enabled `ClowdApps` via cdappconfig. As in **app-interface** mode,
+topic information from the `ClowdApp` will be passed through to the client
+config. The topic resources themselves must be created via the [Platform-MQ](https://github.com/RedHatInsights/platform-mq/tree/main/helm#readme)
+resource repository.
+
 ### operator
 
 In operator mode, the **Kafka Provider** will provision KafkaTopic CRs to be
@@ -55,7 +64,7 @@ ClowdEnv Config options available:
 
 In app-interface mode, the Clowder operator does not create any resources and
 simply passes through the topic names from the `ClowdApp` to the client
-config. The topics should be created via the usual app-interface means.
+config. The topics should be created via the [Platform-MQ](https://github.com/RedHatInsights/platform-mq/tree/main/helm#readme) resource repository.
 
 ClowdEnv Config options available:
 
