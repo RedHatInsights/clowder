@@ -57,6 +57,7 @@ func setCloudwatchSecret(ns string, p *providers.Provider, c *config.LoggingConf
 		Region:          string(secret.Data["aws_region"]),
 		LogGroup:        string(secret.Data["log_group_name"]),
 	}
+	c.Type = "cloudwatch"
 
 	return nil
 }

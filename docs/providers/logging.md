@@ -17,7 +17,7 @@ configuration is at the bottom of this page.
 ### app-interface
 
 In `app-interface` mode, the **Logging Provider** will search for a secret called
-`clowdwatch` in the same namespace as the `ClowdApp` and present the
+`cloudwatch` in the same namespace as the `ClowdApp` and present the
 configuration into the `cdappconfig.json`
 
 ## Generated App Configuration

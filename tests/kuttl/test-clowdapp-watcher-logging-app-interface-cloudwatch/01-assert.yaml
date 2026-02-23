@@ -10,7 +10,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: puptoo
-  namespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  namespace: test-clowdapp-watcher-logging-app-interface-cloudwatch
   labels:
     app: puptoo
   ownerReferences:
@@ -19,13 +19,13 @@ metadata:
     name: puptoo
 type: Opaque
 data:
-  cdappconfig.json: eyJoYXNoQ2FjaGUiOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1OGRlMGJhZjAzY2NhOTRhZjBhMzdjZmYwYmFjMzE1NjdkZDI2ODhiZDYzMDZjYjZjMDM5MGVlYjYzMTA2ZjIyYiIsImxvZ2dpbmciOnsiY2xvdWR3YXRjaCI6eyJhY2Nlc3NLZXlJZCI6ImFjY2Vzcy1rZXktaWQiLCJsb2dHcm91cCI6IkxvZ3NfU3RhZ2UiLCJyZWdpb24iOiJldS1jZW50cmFsLTEiLCJzZWNyZXRBY2Nlc3NLZXkiOiJ0b3Atc2VjcmV0In0sInR5cGUiOiIifSwibWV0YWRhdGEiOnsiZGVwbG95bWVudHMiOlt7ImltYWdlIjoicXVheS5pby9wc2F2L2Nsb3dkZXItaGVsbG8iLCJuYW1lIjoicHJvY2Vzc29yIn1dLCJlbnZOYW1lIjoidGVzdC1jbG93ZGFwcC13YXRjaGVyLWxvZ2dpbmctYXBwLWludGVyZmFjZS1jbG93ZHdhdGNoIiwibmFtZSI6InB1cHRvbyJ9LCJtZXRyaWNzUGF0aCI6Ii9tZXRyaWNzIiwibWV0cmljc1BvcnQiOjkwMDAsInByaXZhdGVQb3J0IjoxMDAwMCwicHVibGljUG9ydCI6ODAwMCwid2ViUG9ydCI6ODAwMH0=
+  cdappconfig.json: eyJoYXNoQ2FjaGUiOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1OGRlMGJhZjAzY2NhOTRhZjBhMzdjZmYwYmFjMzE1NjdkZDI2ODhiZDYzMDZjYjZjMDM5MGVlYjYzMTA2ZjIyYiIsImxvZ2dpbmciOnsiY2xvdWR3YXRjaCI6eyJhY2Nlc3NLZXlJZCI6ImFjY2Vzcy1rZXktaWQiLCJsb2dHcm91cCI6IkxvZ3NfU3RhZ2UiLCJyZWdpb24iOiJldS1jZW50cmFsLTEiLCJzZWNyZXRBY2Nlc3NLZXkiOiJ0b3Atc2VjcmV0In0sInR5cGUiOiJjbG91ZHdhdGNoIn0sIm1ldGFkYXRhIjp7ImRlcGxveW1lbnRzIjpbeyJpbWFnZSI6InF1YXkuaW8vcHNhdi9jbG93ZGVyLWhlbGxvIiwibmFtZSI6InByb2Nlc3NvciJ9XSwiZW52TmFtZSI6InRlc3QtY2xvd2RhcHAtd2F0Y2hlci1sb2dnaW5nLWFwcC1pbnRlcmZhY2UtY2xvdWR3YXRjaCIsIm5hbWUiOiJwdXB0b28ifSwibWV0cmljc1BhdGgiOiIvbWV0cmljcyIsIm1ldHJpY3NQb3J0Ijo5MDAwLCJwcml2YXRlUG9ydCI6MTAwMDAsInB1YmxpY1BvcnQiOjgwMDAsIndlYlBvcnQiOjgwMDB9
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: puptoo-processor
-  namespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  namespace: test-clowdapp-watcher-logging-app-interface-cloudwatch
 spec:
   strategy:
     type: RollingUpdate
@@ -42,7 +42,7 @@ spec:
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  name: test-clowdapp-watcher-logging-app-interface-cloudwatch
 status:
   apps:
     - name: puptoo
@@ -52,6 +52,6 @@ status:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  name: test-clowdapp-watcher-logging-app-interface-cloudwatch
   labels:
-    kubernetes.io/metadata.name: test-clowdapp-watcher-logging-app-interface-clowdwatch
+    kubernetes.io/metadata.name: test-clowdapp-watcher-logging-app-interface-cloudwatch
