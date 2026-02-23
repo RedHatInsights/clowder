@@ -18,6 +18,7 @@ jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-clowdapp-watcher-logging-app
 cat ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
 cat ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json
 jq -r '.logging.cloudwatch.secretAccessKey == "strong-top-secret"' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json
+jq -r '.logging.type == "cloudwatch"' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json
 jq -r '.hashCache' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-json > ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache
 jq -r '.hashCache' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch2-json > ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache2
 diff ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-hash-cache2 > /dev/null || exit 0 && exit 1
