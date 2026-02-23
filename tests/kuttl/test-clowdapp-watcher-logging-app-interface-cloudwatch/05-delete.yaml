@@ -4,7 +4,7 @@ kind: TestStep
 delete:
 - apiVersion: v1
   kind: Namespace
-  name: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  name: test-clowdapp-watcher-logging-app-interface-cloudwatch
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdEnvironment
-  name: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  name: test-clowdapp-watcher-logging-app-interface-cloudwatch

@@ -8,5 +8,5 @@ data:
 kind: Secret
 metadata:
   name: cloudwatch
-  namespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  namespace: test-clowdapp-watcher-logging-app-interface-cloudwatch
 type: Opaque

@@ -8,15 +8,15 @@ data:
 kind: Secret
 metadata:
   name: cloudwatch
-  namespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  namespace: test-clowdapp-watcher-logging-app-interface-cloudwatch
 type: Opaque
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  name: test-clowdapp-watcher-logging-app-interface-cloudwatch
 spec:
-  targetNamespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  targetNamespace: test-clowdapp-watcher-logging-app-interface-cloudwatch
   providers:
     web:
       port: 8000
@@ -47,13 +47,13 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
   name: puptoo
-  namespace: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  namespace: test-clowdapp-watcher-logging-app-interface-cloudwatch
 spec:
-  envName: test-clowdapp-watcher-logging-app-interface-clowdwatch
+  envName: test-clowdapp-watcher-logging-app-interface-cloudwatch
   deployments:
   - name: processor
     podSpec:
       image: quay.io/psav/clowder-hello
-      env: 
+      env:
         - name: ENV_VAR_1
           value: env_var_1

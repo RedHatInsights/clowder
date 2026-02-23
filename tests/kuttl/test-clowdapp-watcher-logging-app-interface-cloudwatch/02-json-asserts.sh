@@ -13,7 +13,7 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-kubectl get secret --namespace=test-clowdapp-watcher-logging-app-interface-clowdwatch puptoo -o json > ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch
-jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch | base64 -d > ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
-jq -r '.logging.cloudwatch.secretAccessKey == "top-secret"' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
-jq -r '.logging.type == "cloudwatch"' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-clowdwatch-json
+kubectl get secret --namespace=test-clowdapp-watcher-logging-app-interface-cloudwatch puptoo -o json > ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-cloudwatch
+jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-cloudwatch | base64 -d > ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-cloudwatch-json
+jq -r '.logging.cloudwatch.secretAccessKey == "top-secret"' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-cloudwatch-json
+jq -r '.logging.type == "cloudwatch"' -e < ${TMP_DIR}/test-clowdapp-watcher-logging-app-interface-cloudwatch-json

@@ -478,7 +478,7 @@ func (suite *TestSuite) TestCreateClowdApp() {
 
 	kafkaValidation(suite.T(), env, app, jsonContent)
 
-	clowdWatchValidation(suite.T(), jsonContent, cwData)
+	cloudWatchValidation(suite.T(), jsonContent, cwData)
 
 	scaler := keda.ScaledObject{}
 
@@ -570,7 +570,7 @@ func kafkaValidation(t *testing.T, env *crd.ClowdEnvironment, app *crd.ClowdApp,
 	}
 }
 
-func clowdWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData map[string]string) {
+func cloudWatchValidation(t *testing.T, jsonContent *config.AppConfig, cwData map[string]string) {
 	// Cloudwatch validation
 	cwConfigVals := map[string]string{
 		"aws_access_key_id":     jsonContent.Logging.Cloudwatch.AccessKeyId,
