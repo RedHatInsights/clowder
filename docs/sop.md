@@ -1,13 +1,95 @@
 # Operating Clowder
 
-Two primary aspects of operating Clowder: Operating the apps managed by Clowder and operating
-Clowder itself.
+## Table of Contents
 
-Clowder utilizes a common configuration format that is presented to each application, no matter
-the environment it is running in, enabling a far easier development experience. It governs many
-different aspects of an application's configuration from defining the port it should listen to for
-its main web service, to metrics, kafka and others. When using Clowder, the burden of identifying
-and defining dependency and core service credentials and connection information is removed.
+1. [What is Clowder?](#what-is-clowder)
+2. [Architecture Overview](#architecture-overview)
+3. [Operating Apps Managed by Clowder](#operating-apps-managed-by-clowder)
+
+---
+
+## What is Clowder?
+
+Clowder is a Kubernetes operator designed to simplify application configuration management and infrastructure dependency provisioning for cloud-native applications. Originally developed for Red Hat Insights, Clowder abstracts away the complexity of managing application configurations across different environments and deployment scenarios.
+
+### Key Benefits
+
+**Simplified Configuration Management**: Clowder eliminates the need for applications to manage environment-specific configurations by providing a standardized configuration format (`cdappconfig.json`) that contains all necessary connection details, credentials, and service endpoints.
+
+**Infrastructure Abstraction**: Applications no longer need to know whether they're connecting to a local development database, a managed cloud service, or an operator-managed instance. Clowder handles the complexity of different infrastructure providers through its modular provider system.
+
+**Environment Consistency**: The same application code can run unchanged across development, staging, and production environments. Clowder ensures that applications receive the appropriate configuration for their target environment without code changes.
+
+**Dependency Management**: Clowder automatically manages service dependencies, ensuring that applications have access to required infrastructure services (databases, message queues, object storage) and other application services they depend on.
+
+### How Clowder Works
+
+Clowder utilizes a common configuration format that is presented to each application, no matter the environment it is running in, enabling a far easier development experience. It governs many different aspects of an application's configuration from defining the port it should listen to for its main web service, to metrics, kafka and others. When using Clowder, the burden of identifying and defining dependency and core service credentials and connection information is removed.
+
+The operator watches for changes to `ClowdApp` and `ClowdEnvironment` custom resources and automatically provisions the necessary infrastructure and generates appropriate configurations for each application.
+
+### Operating Clowder
+
+There are two primary aspects of operating Clowder: Operating the apps managed by Clowder and operating Clowder itself.
+
+## Architecture Overview
+
+### High-Level Architecture
+
+Clowder is a Kubernetes operator that manages application configuration and infrastructure dependencies for cloud-native applications. The operator follows the standard Kubernetes controller pattern, continuously reconciling desired state with actual state.
+
+#### Core Components
+
+1. **Clowder Controller Manager**
+   - Main operator process that watches for CRD changes
+   - Reconciles ClowdApp and ClowdEnvironment resources
+   - Manages application lifecycle and configuration generation
+   - Runs as a deployment in the `clowder-system` namespace
+
+2. **Custom Resource Definitions (CRDs)**
+   - `ClowdEnvironment`: Cluster-scoped resource defining infrastructure providers
+   - `ClowdApp`: Namespace-scoped resource defining application specifications
+   - `ClowdJobInvocation`: Resource for managing job executions
+
+3. **Provider System**
+   - Modular architecture supporting different infrastructure modes
+   - Providers: Database, Kafka, Object Storage, Logging, Metrics, Web, etc.
+   - Each provider supports multiple modes (local, operator, app-interface)
+
+4. **Webhooks**
+   - Validation webhooks for ClowdApp resource validation
+   - Mutation webhooks for pod injection and configuration
+
+#### Data Flow
+
+```
+ClowdApp → Controller → Provider Logic → K8s Resources → Application Config
+    ↓           ↓              ↓              ↓              ↓
+ Spec      Reconcile     Infrastructure   Deployments   cdappconfig.json
+```
+
+#### Deployment Architecture
+
+Clowder is deployed as a standard Kubernetes operator with the following components:
+
+- **Controller Manager Deployment**: Main operator workload
+- **Custom Resource Definitions**: API definitions for Clowder resources
+- **RBAC**: Service accounts, cluster roles, and role bindings for operator permissions
+- **Webhooks**: Validation and mutation webhooks with TLS certificates
+- **ConfigMaps**: Operator configuration and feature flags
+- **Services**: Webhook services and metrics endpoints
+
+#### Configuration Management
+
+Clowder generates a standardized configuration format (`cdappconfig.json`) that contains:
+- Database connection information
+- Kafka broker details and topic configurations
+- Object storage bucket credentials
+- Service endpoints for dependencies
+- Logging and metrics configuration
+- Feature flags and environment-specific settings
+
+This configuration is mounted as a secret in each application pod at `/cdappconfig.json`.
 
 ## Operating Apps Managed by Clowder
 
@@ -103,38 +185,14 @@ to configure itself on startup.
 Secrets may also be created for application dependencies such as databases and in-memory db
 services.
 
-## Operating Clowder Itself
 
-### OLM pipeline
 
-Clowder is deployed via OLM, thus the build and deploy pipeline comprises of creating and deploying
-OLM CRs: ``OperatorGroup``, ``CatalogSource``, and ``Subscription``.  To truly understand OLM is
-outside the scope of this document, but it will cover how each resource is managed. 
 
-Despite being deployed via OLM, Clowder follows a very similar build and deployment pipeline as
-other apps in app-interface, specifically all pushes to master are automatically deployed to stage,
-and an MR to app-interface is required to update the ref in production.
 
-``OperatorGroup`` and ``Subscription`` are quite static, but ``CatalogSource`` is what gets updated
-every promotion.  Before it's updated, there are three images that are pushed to Quay:  the Clowder
-application image, the Clowder OLM bundle, and the Clowder catalog image.  All three images use the
-same image tag, based off the commit hash at the tip of master.  The app image is built using
-``build_deploy.sh``, and the bundle and catalog images are built in a separate Jenkins job using
-``build_catalog.sh``.
 
-#### Troubleshooting
+The deployment process involves building and pushing the Clowder application image to Quay. The image uses a tag based off the commit hash at the tip of master. The app image is built using ``build_deploy.sh``.
 
-On occasion, updating the ``CatalogSource`` does not trigger OLM to deploy the latest version of
-Clowder.  If this happens, the simplest approach is to delete the ``ClusterServiceVersion`` and
-``Subscription`` resources with the name ``clowder`` from the ``clowder`` namespace.  Once they are
-removed, you should re-run the saas-deploy job for clowder, which will recreate the
-``Subscription``, which should trigger OLM to recreate the ``ClusterServiceVersion``.
-
-##### Metrics and alerts
-
-##### App-interface modes
-
-##### Promoting clowder to prod
+#### Promoting clowder to prod
 
 As stated above, promoting Clowder to production is done the same as any other app in app-interface,
 but there are additional considerations given how Clowder code changes could cause widespread
