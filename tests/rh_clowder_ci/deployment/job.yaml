@@ -10,11 +10,12 @@ objects:
   kind: Job
   metadata:
     name: clowder-e2e-test-${IMAGE_TAG}
+    namespace: clowder-system
   spec:
     backoffLimit: 0
     template:
       spec:
-        serviceAccountName: clowder-e2e-sa
+        serviceAccountName: clowder-controller-manager
         restartPolicy: Never
         containers:
           - name: e2e
