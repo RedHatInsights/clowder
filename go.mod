@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.25.5
+go 1.25.6
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.7.2
@@ -12,7 +12,7 @@ require (
 	github.com/cert-manager/cert-manager v1.19.1
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
-	github.com/kedacore/keda/v2 v2.18.1
+	github.com/kedacore/keda/v2 v2.19.0
 	github.com/lib/pq v1.11.2
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/onsi/ginkgo/v2 v2.28.1
@@ -21,12 +21,12 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
-	k8s.io/api v0.35.1
-	k8s.io/apiextensions-apiserver v0.35.1
+	k8s.io/api v0.35.0
+	k8s.io/apiextensions-apiserver v0.35.0
 	k8s.io/apimachinery v0.36.0-alpha.1
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/cluster-api v1.12.2
-	sigs.k8s.io/controller-runtime v0.22.5
+	sigs.k8s.io/controller-runtime v0.23.1
 )
 
 require (
@@ -90,6 +90,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
@@ -229,12 +230,16 @@ tool (
 	sigs.k8s.io/kustomize/kustomize/v5
 )
 
-replace k8s.io/api => k8s.io/api v0.35.1
+replace k8s.io/api => k8s.io/api v0.34.3
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.1
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.34.3
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.1
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.3
 
-replace k8s.io/client-go => k8s.io/client-go v0.35.1
+replace k8s.io/client-go => k8s.io/client-go v0.34.3
+
+replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
 
 replace github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
