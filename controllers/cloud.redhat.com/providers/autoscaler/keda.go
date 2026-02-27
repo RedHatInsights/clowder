@@ -3,6 +3,7 @@ package autoscaler
 
 import (
 	"fmt"
+	"strings"
 
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	apps "k8s.io/api/apps/v1"
@@ -83,7 +84,17 @@ func getTriggerRoute(triggerType string, c *config.AppConfig, env *crd.ClowdEnvi
 	result := map[string]string{}
 	switch triggerType {
 	case "kafka":
-		result["bootstrapServers"] = fmt.Sprintf("%s:%d", c.Kafka.Brokers[0].Hostname, *c.Kafka.Brokers[0].Port)
+		var bootstrapServers []string
+		for _, broker := range c.Kafka.Brokers {
+			serverAddr := fmt.Sprintf("%s:%d", broker.Hostname, broker.Port)
+			bootstrapServers = append(bootstrapServers, serverAddr)
+		}
+		result["bootstrapServers"] = strings.Join(bootstrapServers, ",")
+
+		if c.Kafka.Brokers[0].Sasl != nil {
+			result["sasl"] = *c.Kafka.Brokers[0].Sasl.SaslMechanism
+			result["tls"] = "enable"
+		}
 	case "prometheus":
 		result["serverAddress"] = env.Status.Prometheus.ServerAddress
 
