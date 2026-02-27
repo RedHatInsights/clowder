@@ -409,13 +409,23 @@ When there are 15+ open konflux PRs, combine them into a single PR:
    - **Always keep `rhc-osdk-utils` at the version specified in master** (currently v0.14.0)
    - If a merge downgrades this package, manually revert it back
 
-6. **Push and create PR**:
+6. **Validate with go vet** (CRITICAL - see "Validating Combined PRs with go vet" section below):
+   ```bash
+   go mod tidy
+   git add go.mod go.sum
+   git commit -m "Run go mod tidy to fix go.sum entries"
+
+   go vet ./...
+   # If this fails, see the validation section below for how to identify and exclude problematic PRs
+   ```
+
+7. **Push and create PR**:
    ```bash
    git push -u origin combined-konflux-dependency-updates
    gh pr create --title "chore(deps): Combined dependency updates from red-hat-konflux" --body "<detailed summary>"
    ```
 
-7. **Wait for individual PRs to auto-close**:
+8. **Wait for individual PRs to auto-close**:
    - After the combined PR is merged, wait ~1 minute
    - GitHub will automatically close most/all of the individual konflux PRs since their changes are now in master
    - Check if any PRs remain open: `gh pr list --author "app/red-hat-konflux" --state open`
@@ -488,6 +498,97 @@ done
 ```
 
 **Why oldest first?**: Earlier PRs may update dependencies that later PRs also touch. Merging in order minimizes cascading conflicts.
+
+### Validating Combined PRs with go vet
+
+**CRITICAL**: After combining all konflux PRs, you MUST validate the changes with `go vet` before pushing and creating the PR. Some dependency updates may introduce incompatibilities that break the build.
+
+1. **Fix missing go.sum entries**:
+   ```bash
+   go mod tidy
+   git add go.mod go.sum
+   git commit -m "Run go mod tidy to fix go.sum entries"
+   ```
+
+2. **Run go vet to validate**:
+   ```bash
+   go vet ./...
+   ```
+
+3. **If go vet fails**, identify the problematic commit/PR:
+
+   a. **Check recent commits to find the culprit**:
+   ```bash
+   git log --oneline | head -20
+   ```
+
+   b. **The error message will typically indicate which dependency is incompatible**. For example:
+   ```
+   ../../go/pkg/mod/github.com/kedacore/keda/v2@v2.19.0/apis/keda/v1alpha1/scaledjob_webhook.go:35:34:
+   not enough arguments in call to ctrl.NewWebhookManagedBy
+       have (controllerruntime.Manager)
+       want (manager.Manager, T)
+   ```
+   This indicates that `sigs.k8s.io/controller-runtime` was updated to a version incompatible with `keda v2.19.0`.
+
+   c. **Find the commit that introduced the breaking change**:
+   ```bash
+   # Look for the dependency name in commit messages
+   git log --oneline --grep="controller-runtime"
+   ```
+
+4. **Revert or exclude the problematic PR**:
+
+   **Option A: Revert via go.mod edit** (preferred for replace directives):
+   ```bash
+   # If the issue is in a replace directive, manually edit go.mod
+   # Example: Change controller-runtime back to working version
+   # replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.1
+   # to:
+   # replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+
+   vim go.mod  # Make the change
+   go mod tidy
+   git add go.mod go.sum
+   git commit -m "Revert controller-runtime to v0.22.4 due to incompatibility with keda v2.19.0"
+   ```
+
+   **Option B: Revert the merge commit** (for regular dependency updates):
+   ```bash
+   git revert -m 1 <merge-commit-hash> --no-edit
+   # If conflicts occur, resolve them and continue:
+   git add go.mod go.sum
+   git revert --continue
+   ```
+
+5. **Verify the fix**:
+   ```bash
+   go vet ./...
+   ```
+   Should complete without errors.
+
+6. **Document the exclusion on the original PR**:
+   ```bash
+   gh pr comment <pr-number> --body "⚠️ **Cannot merge this PR yet due to incompatibility**
+
+   This PR updates \`<package>\` from vX.Y.Z to vA.B.C, which introduces a breaking change incompatible with \`<conflicting-package>\`.
+
+   **Error when running \`go vet\`:**
+   \`\`\`
+   <paste the error message>
+   \`\`\`
+
+   **Root Cause:**
+   <Brief explanation of why the versions are incompatible>
+
+   **Next Steps:**
+   - Wait for <conflicting-package> to release a version compatible with <package> vA.B.C
+   - Alternatively, update <conflicting-package> if a compatible version is available
+
+   This PR was excluded from the combined dependency update PR #<combined-pr-number>."
+   ```
+
+7. **Update the combined PR description** to note which PRs were excluded and why.
 
 ### Important Considerations
 
