@@ -178,7 +178,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.step.sm/crypto v0.76.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	go.uber.org/mock v0.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap/exp v0.3.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
@@ -240,7 +239,7 @@ replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.3
 
 replace k8s.io/client-go => k8s.io/client-go v0.34.3
 
-replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.1
 
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
 
