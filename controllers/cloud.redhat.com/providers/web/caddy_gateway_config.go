@@ -128,5 +128,5 @@ func GenerateConfig(hostname string, bopAddress string, whitelist []string, appR
 	}
 
 	pretty, _ := json.MarshalIndent(v, "", "  ")
-	return string(pretty), nil
+	return string(pretty) + "\n", nil
 }
