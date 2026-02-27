@@ -744,8 +744,8 @@ knative.dev/pkg v0.0.0-20260225113719-b239e967f175 h1:xqlcqilSLcKK7FgKiKxSQir4FQ
 knative.dev/pkg v0.0.0-20260225113719-b239e967f175/go.mod h1:M6o085LfZ+8XgJkNI5NI8jwEfYSUfjUWb6bJ5E1MD4A=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0 h1:hSfpvjjTQXQY2Fol2CS0QHMNs/WI1MOSGzCm1KhM5ec=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0/go.mod h1:Ve9uj1L+deCXFrPOk1LpFXqTg7LCFzFso6PA48q/XZw=
-sigs.k8s.io/cluster-api v1.12.2 h1:+b+M2IygfvFZJq7bsaloNakimMEVNf81zkGR1IiuxXs=
-sigs.k8s.io/cluster-api v1.12.2/go.mod h1:2XuF/dmN3c/1VITb6DB44N5+Ecvsvd5KOWqrY9Q53nU=
+sigs.k8s.io/cluster-api v1.12.3 h1:cuOl3fWXhlXFuQcyIH4C8i3ns8rLhtcnK+x00MVdKBs=
+sigs.k8s.io/cluster-api v1.12.3/go.mod h1:EAiTJtf/8M5eBetPwumi6t8DJJ55Ln6Fkvh2OAa7PD4=
 sigs.k8s.io/controller-runtime v0.22.4 h1:GEjV7KV3TY8e+tJ2LCTxUTanW4z/FmNB7l327UfMq9A=
 sigs.k8s.io/controller-runtime v0.22.4/go.mod h1:+QX1XUpTXN4mLoblf4tqr5CQcyHPAki2HLXqQMY6vh8=
 sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260216173200-e4c1c38bcbdb h1:idmKgblo0x0z4OGzrva4fg+z02b5FnU/gr5MS21/Kuo=
