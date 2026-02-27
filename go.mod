@@ -238,7 +238,7 @@ replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.2
 
 replace k8s.io/client-go => k8s.io/client-go v0.35.2
 
-replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.1
 
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260225113719-b239e967f175
 
