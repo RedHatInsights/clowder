@@ -210,7 +210,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20260127142750-a19766b6e2d4 // indirect
 	k8s.io/utils v0.0.0-20260108192941-914a6e750570 // indirect
-	knative.dev/pkg v0.0.0-20260225113719-b239e967f175 // indirect
+	knative.dev/pkg v0.0.0-20260304131155-a902bbfa38de // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260216173200-e4c1c38bcbdb // indirect
 	sigs.k8s.io/controller-tools v0.20.1 // indirect
 	sigs.k8s.io/gateway-api v1.4.1 // indirect
@@ -240,6 +240,6 @@ replace k8s.io/client-go => k8s.io/client-go v0.35.2
 
 replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
 
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260225113719-b239e967f175
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260304131155-a902bbfa38de
 
 replace github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
