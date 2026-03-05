@@ -26,7 +26,7 @@ require (
 	k8s.io/apimachinery v0.36.0-alpha.2
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/cluster-api v1.12.3
-	sigs.k8s.io/controller-runtime v0.23.1
+	sigs.k8s.io/controller-runtime v0.23.3
 )
 
 require (
@@ -238,7 +238,7 @@ replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.2
 
 replace k8s.io/client-go => k8s.io/client-go v0.35.2
 
-replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.3
 
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260225113719-b239e967f175
 
