@@ -10,6 +10,7 @@
     ":disableMajorUpdates",
     "github>konflux-ci/mintmaker-presets:group-python-requirements",
     "github>konflux-ci/mintmaker-presets:cve-automerge-all",
-    "github>konflux-ci/mintmaker-presets:disable-minor-updates"
+    "github>konflux-ci/mintmaker-presets:disable-minor-updates",
+    "group:all",
   ]
 }
