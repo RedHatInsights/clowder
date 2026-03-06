@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "dockerfile": {
+    "fileMatch": [
+        "Dockerfile",
+        "tests/rh_clowder_ci/Dockerfile"
+    ]
+  },
+  "extends": [
+    ":disableMajorUpdates",
+    "github>konflux-ci/mintmaker-presets:group-python-requirements",
+    "github>konflux-ci/mintmaker-presets:cve-automerge-all",
+    "github>konflux-ci/mintmaker-presets:disable-minor-updates",
+    "group:all",
+  ]
+}
