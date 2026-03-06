@@ -8,7 +8,7 @@ require (
 	github.com/RedHatInsights/go-difflib v1.0.0
 	github.com/RedHatInsights/rhc-osdk-utils v0.14.0
 	github.com/RedHatInsights/strimzi-client-go v0.38.0
-	github.com/caddyserver/caddy/v2 v2.11.1
+	github.com/caddyserver/caddy/v2 v2.11.2
 	github.com/cert-manager/cert-manager v1.19.4
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
