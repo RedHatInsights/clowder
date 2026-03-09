@@ -144,6 +144,27 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{Requeue: true}, appErr
 	}
 
+	// Ensure the ClowdApp has been reconciled with its current spec before
+	// creating jobs. Without this check, a CJI created concurrently with a
+	// ClowdApp update may read a stale job spec (old image) from the
+	// informer cache before the ClowdApp controller has reconciled.
+	if app.Generation != app.Status.Generation {
+		r.Log.Info("App not yet reconciled with current generation, requeue",
+			"jobinvocation", cji.Spec.AppName,
+			"namespace", app.Namespace,
+			"appGeneration", app.Generation,
+			"statusGeneration", app.Status.Generation,
+		)
+		reconcileErr := errors.NewClowderError(fmt.Sprintf(
+			"ClowdApp [%s] has not been reconciled with the current generation (spec: %d, status: %d)",
+			cji.Spec.AppName, app.Generation, app.Status.Generation,
+		))
+		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, reconcileErr); condErr != nil {
+			return ctrl.Result{}, condErr
+		}
+		return ctrl.Result{Requeue: true}, reconcileErr
+	}
+
 	// Determine if the ClowdApp containing the Job is ready
 	notReadyError := r.HandleNotReady(ctx, app, cji)
 	if notReadyError != nil {

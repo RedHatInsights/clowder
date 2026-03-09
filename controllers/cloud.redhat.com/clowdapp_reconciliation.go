@@ -400,6 +400,8 @@ func (r *ClowdAppReconciliation) setReconciliationSuccessful() (ctrl.Result, err
 		r.log.Info("Dependency reporting error", "err", err)
 	}
 
+	r.app.Status.Generation = r.app.Generation
+
 	if setClowdStatusErr := SetClowdAppConditions(r.ctx, r.client, r.app, crd.ReconciliationSuccessful, r.oldStatus, nil); setClowdStatusErr != nil {
 		r.log.Info("Set status error", "err", setClowdStatusErr)
 		return ctrl.Result{Requeue: true}, setClowdStatusErr
