@@ -27,6 +27,10 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ "master", "security-compliance" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   PlatSec-Security-Workflow:
     uses: RedHatInsights/platform-security-gh-workflow/.github/workflows/platsec-security-scan-reusable-workflow.yml@master
