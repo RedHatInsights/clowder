@@ -1,0 +1,33 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+# ClowdApp should still not be ready (deployment image doesn't exist)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-runonnotready-jobs
+status:
+  ready: false
+---
+# A new Job should be created with the updated image
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: test-runonnotready-jobs
+  labels:
+    job: puptoo-hello-cji
+spec:
+  template:
+    spec:
+      containers:
+        - image: busybox:1.37
+          args:
+          - /bin/sh
+          - -c
+          - echo "Hello v2!"

@@ -1,0 +1,35 @@
+---
+# Update the ClowdApp job image and create a new CJI to verify
+# that the generation check ensures the CJI uses the updated image.
+# Without the generation check, the CJI could read a stale ClowdApp
+# from the informer cache and create a job with the old image.
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: puptoo
+  namespace: test-runonnotready-jobs
+spec:
+  envName: test-runonnotready-jobs
+  deployments:
+    - name: processor
+      podSpec:
+        image: quay.io/psav/clowder-hellou
+  jobs:
+    - name: hello-cji
+      podSpec:
+        image: busybox:1.37
+        args:
+        - /bin/sh
+        - -c
+        - echo "Hello v2!"
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: runner-runonnotready-v2
+  namespace: test-runonnotready-jobs
+spec:
+  appName: puptoo
+  runOnNotReady: true
+  jobs:
+    - hello-cji

@@ -550,6 +550,7 @@ type ClowdAppStatus struct {
 	Deployments AppResourceStatus  `json:"deployments,omitempty"`
 	Ready       bool               `json:"ready"`
 	Conditions  []metav1.Condition `json:"conditions,omitempty"`
+	Generation  int64              `json:"generation,omitempty"`
 }
 
 // AppResourceStatus defines the status of an app resource
