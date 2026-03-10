@@ -148,7 +148,9 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 	// creating jobs. Without this check, a CJI created concurrently with a
 	// ClowdApp update may read a stale job spec (old image) from the
 	// informer cache before the ClowdApp controller has reconciled.
-	if app.Generation != app.Status.Generation {
+	// Skip when Status.Generation is 0 (not yet initialized) for backward
+	// compatibility with ClowdApps reconciled before generation tracking.
+	if app.Status.Generation > 0 && app.Generation != app.Status.Generation {
 		r.Log.Info("App not yet reconciled with current generation, requeue",
 			"jobinvocation", cji.Spec.AppName,
 			"namespace", app.Namespace,
