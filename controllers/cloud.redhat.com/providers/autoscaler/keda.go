@@ -84,17 +84,19 @@ func getTriggerRoute(triggerType string, c *config.AppConfig, env *crd.ClowdEnvi
 	result := map[string]string{}
 	switch triggerType {
 	case "kafka":
-		var bootstrapServers []string
-		for _, broker := range c.Kafka.Brokers {
-			serverAddr := fmt.Sprintf("%s:%d", broker.Hostname, broker.Port)
+		bootstrapServers := make([]string, 0, len(c.Kafka.Brokers))
+		for idx, broker := range c.Kafka.Brokers {
+			serverAddr := broker.Hostname
+			if broker.Port != nil {
+				serverAddr = fmt.Sprintf("%s:%d", serverAddr, *broker.Port)
+			}
 			bootstrapServers = append(bootstrapServers, serverAddr)
+			if idx == 0 && broker.Sasl != nil {
+				result["sasl"] = *broker.Sasl.SaslMechanism
+				result["tls"] = "enable"
+			}
 		}
 		result["bootstrapServers"] = strings.Join(bootstrapServers, ",")
-
-		if c.Kafka.Brokers[0].Sasl != nil {
-			result["sasl"] = *c.Kafka.Brokers[0].Sasl.SaslMechanism
-			result["tls"] = "enable"
-		}
 	case "prometheus":
 		result["serverAddress"] = env.Status.Prometheus.ServerAddress
 
