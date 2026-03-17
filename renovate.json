@@ -1,9 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "dockerfile": {
-    "fileMatch": [
-        "Dockerfile",
-        "tests/rh_clowder_ci/Dockerfile"
+    "managerFilePatterns": [
+      "/Dockerfile/",
+      "/tests/rh_clowder_ci/Dockerfile/"
     ]
   },
   "extends": [
