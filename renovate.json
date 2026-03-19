@@ -15,5 +15,6 @@
   "ignoreDeps": [
     "sigs.k8s.io/controller-runtime",
     "github.com/RedHatInsights/strimzi-client-go"
-  ]
+  ],
+  "postUpdateOptions": ["gomodTidy"]
 }
