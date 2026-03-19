@@ -204,7 +204,7 @@ func acmeCert(p *providers.Provider) *certmanager.CertificateSpec {
 		DNSNames: []string{
 			getCertHostname(p.Env.Status.Hostname),
 		},
-		IssuerRef: v1.ObjectReference{
+		IssuerRef: v1.IssuerReference{
 			Group: "cert-manager.io",
 			Kind:  "Issuer",
 			Name:  p.Env.GetClowdNamespace(),
@@ -219,7 +219,7 @@ func selfSignedCert(p *providers.Provider) *certmanager.CertificateSpec {
 		DNSNames: []string{
 			getCertHostname(p.Env.Status.Hostname),
 		},
-		IssuerRef: v1.ObjectReference{
+		IssuerRef: v1.IssuerReference{
 			Group: "cert-manager.io",
 			Kind:  "Issuer",
 			Name:  p.Env.GetClowdNamespace(),
