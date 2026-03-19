@@ -12,5 +12,8 @@
     "github>konflux-ci/mintmaker-presets:cve-automerge-all",
     "group:all"
   ],
-  "ignoreDeps": ["sigs.k8s.io/controller-runtime"]
+  "ignoreDeps": [
+    "sigs.k8s.io/controller-runtime",
+    "github.com/RedHatInsights/strimzi-client-go"
+  ]
 }
