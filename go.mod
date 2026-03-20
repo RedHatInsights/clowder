@@ -65,7 +65,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/expr-lang/expr v1.17.8 // indirect
-	github.com/fatih/color v1.18.0 // indirect
+	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
@@ -195,8 +195,8 @@ require (
 	golang.org/x/tools v0.43.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/api v0.272.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260319171110-e3a33c96fb44 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319160320-33aa9e5aa6fe // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260319201613-d00831a3d3e7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	google.golang.org/grpc v1.79.3 // indirect
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
@@ -208,9 +208,9 @@ require (
 	k8s.io/code-generator v0.35.3 // indirect
 	k8s.io/gengo/v2 v2.0.0-20251215205346-5ee0d033ba5b // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a // indirect
-	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
-	knative.dev/pkg v0.0.0-20260318013857-98d5a706d4fd // indirect
+	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect
+	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5 // indirect
+	knative.dev/pkg v0.0.0-20260319144801-8c68e18a5cc7 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260318145839-6c9615a2a166 // indirect
 	sigs.k8s.io/controller-tools v0.20.1 // indirect
 	sigs.k8s.io/gateway-api v1.5.1 // indirect
@@ -240,6 +240,6 @@ replace k8s.io/client-go => k8s.io/client-go v0.35.3
 
 replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
 
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260318013857-98d5a706d4fd
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260319144801-8c68e18a5cc7
 
 replace github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
