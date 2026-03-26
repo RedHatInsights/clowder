@@ -17,13 +17,13 @@ require (
 	github.com/minio/minio-go/v7 v7.0.99
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.90.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.90.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
 	k8s.io/api v0.35.3
 	k8s.io/apiextensions-apiserver v0.35.3
-	k8s.io/apimachinery v0.36.0-alpha.2
+	k8s.io/apimachinery v0.36.0-beta.0
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/cluster-api v1.12.4
 	sigs.k8s.io/controller-runtime v0.23.3
@@ -31,7 +31,7 @@ require (
 
 require (
 	cel.dev/expr v0.25.1 // indirect
-	cloud.google.com/go/auth v0.18.2 // indirect
+	cloud.google.com/go/auth v0.19.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	dario.cat/mergo v1.0.2 // indirect
@@ -102,17 +102,17 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.14 // indirect
-	github.com/googleapis/gax-go/v2 v2.19.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.20.0 // indirect
 	github.com/grafana/regexp v0.0.0-20250905093917-f7b3be9d1853 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.8.0 // indirect
+	github.com/jackc/pgx/v5 v5.9.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.1-0.20220621161143-b0104c826a24 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/klauspost/crc32 v1.3.0 // indirect
 	github.com/libdns/libdns v1.1.1 // indirect
@@ -151,7 +151,7 @@ require (
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/slackhq/nebula v1.10.3 // indirect
-	github.com/smallstep/certificates v0.30.1 // indirect
+	github.com/smallstep/certificates v0.30.2 // indirect
 	github.com/smallstep/cli-utils v0.12.2 // indirect
 	github.com/smallstep/linkedca v0.25.0 // indirect
 	github.com/smallstep/nosql v0.8.0 // indirect
@@ -182,7 +182,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
-	golang.org/x/crypto/x509roots/fallback v0.0.0-20260311141749-982eaa62dfb7 // indirect
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20260323153451-8400f4a93807 // indirect
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
 	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/net v0.52.0 // indirect
@@ -194,7 +194,7 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.43.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
-	google.golang.org/api v0.272.0 // indirect
+	google.golang.org/api v0.273.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	google.golang.org/grpc v1.79.3 // indirect
@@ -211,7 +211,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5 // indirect
 	knative.dev/pkg v0.0.0-20260319144801-8c68e18a5cc7 // indirect
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260318145839-6c9615a2a166 // indirect
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260324065417-8c5081a9b6ba // indirect
 	sigs.k8s.io/controller-tools v0.20.1 // indirect
 	sigs.k8s.io/gateway-api v1.5.1 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
