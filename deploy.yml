@@ -10120,6 +10120,9 @@ objects:
                   - managedDeployments
                   - readyDeployments
                   type: object
+                generation:
+                  format: int64
+                  type: integer
                 ready:
                   type: boolean
               required:
