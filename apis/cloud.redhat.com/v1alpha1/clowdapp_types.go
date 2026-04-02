@@ -302,6 +302,9 @@ type Sidecar struct {
 
 	// Memory limit for the sidecar container (e.g., "1024Mi")
 	MemoryLimit string `json:"memoryLimit,omitempty"`
+
+	// Additional volume mounts to be added to the sidecar container
+	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
 // PodspecMetadata defines metadata for applying annotations etc to PodSpec

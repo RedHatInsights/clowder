@@ -233,6 +233,11 @@ func getOtelCollector(appName string, env *crd.ClowdEnvironment, envVars []crd.E
 		Name:      fmt.Sprintf("%s-otel-config", appName),
 		MountPath: "/etc/otelcol/",
 	}}
+
+	if appSidecar != nil && len(appSidecar.VolumeMounts) > 0 {
+		cont.VolumeMounts = append(cont.VolumeMounts, appSidecar.VolumeMounts...)
+	}
+
 	cont.LivenessProbe = &livenessProbe
 	cont.ReadinessProbe = &readinessProbe
 

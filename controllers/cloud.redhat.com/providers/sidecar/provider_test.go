@@ -1,9 +1,11 @@
 package sidecar
 
 import (
+	"fmt"
 	"testing"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
+	core "k8s.io/api/core/v1"
 )
 
 func TestGetOtelCollectorSidecar(t *testing.T) {
@@ -248,4 +250,77 @@ func TestGetTokenRefresherSidecar(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetOtelCollectorVolumeMounts(t *testing.T) {
+	env := &crd.ClowdEnvironment{
+		Spec: crd.ClowdEnvironmentSpec{
+			Providers: crd.ProvidersConfig{
+				Sidecars: crd.Sidecars{
+					OtelCollector: crd.OtelCollectorConfig{
+						Enabled: true,
+					},
+				},
+			},
+		},
+	}
+	appName := "test-app"
+	expectedConfigMount := fmt.Sprintf("%s-otel-config", appName)
+
+	t.Run("no custom volumeMounts", func(t *testing.T) {
+		sidecar := &crd.Sidecar{Name: "otel-collector", Enabled: true}
+		cont := getOtelCollector(appName, env, nil, sidecar)
+		if len(cont.VolumeMounts) != 1 {
+			t.Fatalf("expected 1 volumeMount, got %d", len(cont.VolumeMounts))
+		}
+		if cont.VolumeMounts[0].Name != expectedConfigMount {
+			t.Errorf("expected volumeMount name %s, got %s", expectedConfigMount, cont.VolumeMounts[0].Name)
+		}
+	})
+
+	t.Run("with custom volumeMounts", func(t *testing.T) {
+		sidecar := &crd.Sidecar{
+			Name:    "otel-collector",
+			Enabled: true,
+			VolumeMounts: []core.VolumeMount{
+				{Name: "logs", MountPath: "/logs"},
+				{Name: "data", MountPath: "/data", ReadOnly: true},
+			},
+		}
+		cont := getOtelCollector(appName, env, nil, sidecar)
+		if len(cont.VolumeMounts) != 3 {
+			t.Fatalf("expected 3 volumeMounts, got %d", len(cont.VolumeMounts))
+		}
+		if cont.VolumeMounts[0].Name != expectedConfigMount {
+			t.Errorf("first volumeMount should be config, got %s", cont.VolumeMounts[0].Name)
+		}
+		if cont.VolumeMounts[1].Name != "logs" || cont.VolumeMounts[1].MountPath != "/logs" {
+			t.Errorf("second volumeMount should be logs:/logs, got %s:%s", cont.VolumeMounts[1].Name, cont.VolumeMounts[1].MountPath)
+		}
+		if cont.VolumeMounts[2].Name != "data" || cont.VolumeMounts[2].MountPath != "/data" || !cont.VolumeMounts[2].ReadOnly {
+			t.Errorf("third volumeMount should be data:/data (readOnly), got %s:%s (readOnly=%v)", cont.VolumeMounts[2].Name, cont.VolumeMounts[2].MountPath, cont.VolumeMounts[2].ReadOnly)
+		}
+	})
+
+	t.Run("nil sidecar preserves default mount", func(t *testing.T) {
+		cont := getOtelCollector(appName, env, nil, nil)
+		if len(cont.VolumeMounts) != 1 {
+			t.Fatalf("expected 1 volumeMount, got %d", len(cont.VolumeMounts))
+		}
+		if cont.VolumeMounts[0].Name != expectedConfigMount {
+			t.Errorf("expected volumeMount name %s, got %s", expectedConfigMount, cont.VolumeMounts[0].Name)
+		}
+	})
+
+	t.Run("empty volumeMounts slice", func(t *testing.T) {
+		sidecar := &crd.Sidecar{
+			Name:         "otel-collector",
+			Enabled:      true,
+			VolumeMounts: []core.VolumeMount{},
+		}
+		cont := getOtelCollector(appName, env, nil, sidecar)
+		if len(cont.VolumeMounts) != 1 {
+			t.Fatalf("expected 1 volumeMount, got %d", len(cont.VolumeMounts))
+		}
+	})
 }
