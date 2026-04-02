@@ -1,0 +1,112 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+# Baseline: sidecar only has the default configMap volumeMount
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-no-mounts-api
+  namespace: test-sidecars-volume-mounts
+spec:
+  template:
+    spec:
+      containers:
+      - name: app-no-mounts-api
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: app-no-mounts-otel-config
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: app-no-mounts
+      - configMap:
+          defaultMode: 420
+          name: shared-otel-config
+        name: app-no-mounts-otel-config
+---
+# Single custom volumeMount: sidecar has configMap + /logs
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-logs-api
+  namespace: test-sidecars-volume-mounts
+spec:
+  template:
+    spec:
+      containers:
+      - name: app-with-logs-api
+        volumeMounts:
+        - mountPath: /logs
+          name: logs
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: app-with-logs-otel-config
+        - mountPath: /logs
+          name: logs
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: app-with-logs
+      - name: logs
+        emptyDir: {}
+      - configMap:
+          defaultMode: 420
+          name: shared-otel-config
+        name: app-with-logs-otel-config
+---
+# Multiple custom volumeMounts: sidecar has configMap + /logs + /cache (readOnly)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-multi-mounts-api
+  namespace: test-sidecars-volume-mounts
+spec:
+  template:
+    spec:
+      containers:
+      - name: app-multi-mounts-api
+        volumeMounts:
+        - mountPath: /logs
+          name: logs
+        - mountPath: /cache
+          name: cache
+      initContainers:
+      - name: otel-collector
+        image: ghcr.io/os-observability/redhat-opentelemetry-collector/redhat-opentelemetry-collector:0.107.0
+        restartPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/otelcol/
+          name: app-multi-mounts-otel-config
+        - mountPath: /logs
+          name: logs
+        - mountPath: /cache
+          name: cache
+          readOnly: true
+      volumes:
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: app-multi-mounts
+      - name: logs
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      - configMap:
+          defaultMode: 420
+          name: shared-otel-config
+        name: app-multi-mounts-otel-config

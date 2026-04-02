@@ -1,0 +1,130 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-otel-config
+  namespace: test-sidecars-volume-mounts
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    exporters:
+      logging:
+        loglevel: info
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [logging]
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-sidecars-volume-mounts
+spec:
+  targetNamespace: test-sidecars-volume-mounts
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    sidecars:
+      otelCollector:
+        enabled: true
+        configMap: shared-otel-config
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+# App without custom volumeMounts (baseline)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-no-mounts
+  namespace: test-sidecars-volume-mounts
+spec:
+  envName: test-sidecars-volume-mounts
+  deployments:
+  - name: api
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      sidecars:
+        - name: otel-collector
+          enabled: true
+---
+# App with a single custom volumeMount on the sidecar
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-with-logs
+  namespace: test-sidecars-volume-mounts
+spec:
+  envName: test-sidecars-volume-mounts
+  deployments:
+  - name: api
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      volumes:
+        - name: logs
+          emptyDir: {}
+      volumeMounts:
+        - name: logs
+          mountPath: /logs
+      sidecars:
+        - name: otel-collector
+          enabled: true
+          volumeMounts:
+            - name: logs
+              mountPath: /logs
+---
+# App with multiple custom volumeMounts on the sidecar
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: app-multi-mounts
+  namespace: test-sidecars-volume-mounts
+spec:
+  envName: test-sidecars-volume-mounts
+  deployments:
+  - name: api
+    podSpec:
+      image: quay.io/psav/clowder-hello
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+      volumeMounts:
+        - name: logs
+          mountPath: /logs
+        - name: cache
+          mountPath: /cache
+      sidecars:
+        - name: otel-collector
+          enabled: true
+          volumeMounts:
+            - name: logs
+              mountPath: /logs
+            - name: cache
+              mountPath: /cache
+              readOnly: true
