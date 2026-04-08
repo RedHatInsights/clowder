@@ -164,9 +164,10 @@ func addControllersToManager(mgr manager.Manager) error {
 		return err
 	}
 	if err := (&ClowdJobInvocationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ClowdJobInvocation"),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		APIReader: mgr.GetAPIReader(),
+		Log:       ctrl.Log.WithName("controllers").WithName("ClowdJobInvocation"),
+		Scheme:    mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClowdJobInvocation")
 		return err
