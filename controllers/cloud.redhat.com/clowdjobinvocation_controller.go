@@ -48,9 +48,10 @@ import (
 // ClowdJobInvocationReconciler reconciles a ClowdJobInvocation object
 type ClowdJobInvocationReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	APIReader client.Reader
+	Log       logr.Logger
+	Scheme    *runtime.Scheme
+	Recorder  record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=cloud.redhat.com,resources=clowdjobinvocations,verbs=get;list;watch;create;update;patch;delete
@@ -123,9 +124,12 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
 	}
 
-	// Get the ClowdApp. Used to find definition of job being invoked
+	// Get the ClowdApp directly from the API server, bypassing the informer
+	// cache. When a ClowdApp update and CJI creation are applied together,
+	// the cache may still serve the old ClowdApp spec, causing the job to
+	// use a stale image or env vars.
 	app := crd.ClowdApp{}
-	appErr := r.Get(ctx, types.NamespacedName{
+	appErr := r.APIReader.Get(ctx, types.NamespacedName{
 		Name:      cji.Spec.AppName,
 		Namespace: req.Namespace,
 	}, &app)
