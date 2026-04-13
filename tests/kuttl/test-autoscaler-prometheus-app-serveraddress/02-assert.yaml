@@ -1,0 +1,26 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: puptoo-processor
+  namespace: test-autoscaler-prom-app-sa
+spec:
+  maxReplicaCount: 3
+  minReplicaCount: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: puptoo-processor
+  triggers:
+    - metadata:
+        query: sum(promhttp_metric_handler_requests_total{job="puptoo-processor",code="200"})
+        serverAddress: https://updated.app.prometheus.url:3333
+        threshold: '4'
+      type: prometheus
