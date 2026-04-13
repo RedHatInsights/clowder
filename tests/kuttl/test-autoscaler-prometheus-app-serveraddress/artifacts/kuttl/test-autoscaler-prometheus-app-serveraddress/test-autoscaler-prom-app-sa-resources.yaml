@@ -1,0 +1,295 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBjCCAe6gAwIBAgIBATANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
+      a3ViZUNBMB4XDTIzMDgxNTEyMzkzM1oXDTMzMDgxMzEyMzkzM1owFTETMBEGA1UE
+      AxMKbWluaWt1YmVDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMT3
+      Wmk/hAHH8K3yyuHOBueATxZgmxxBl5GLODVs+khtjFer7CEtbZaXth9ZY5JJCnYv
+      QdLNg5XUGHeSIWustco9n4z+3yNGSzSHJ8NY6RzbgTNiX56Gv6Tu2b8bO7VhJeSu
+      fYwHuIHsvv/v5EbKe2xcyqQ2R/uBUFxiu/zAtipCeFNvKnU0vqVkGqYp0a54dkiv
+      aIhEggC0w8cOP0u/1i8gZiBSwFTjhd36COcc3rylkJgNQ8cqrqfz6aXw8KVd1oHV
+      R6m43giZ9GKgq9jGAXHMYwBD37RuGLRb2T8SQhlq3j6xdDPCK6Wkous1jGH4zrGc
+      /xfC+L4EyzqaY3q0jiUCAwEAAaNhMF8wDgYDVR0PAQH/BAQDAgKkMB0GA1UdJQQW
+      MBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQW
+      BBR6fdlVVNiSZN6YrR8T3o6YyL4nTTANBgkqhkiG9w0BAQsFAAOCAQEAW4SHEDuO
+      pLffjwkW2TPyn1m/OJykUY8rDhZk68ca3SikpHT3Q2zYZ6QOS8ibSyUHKnSZHgm3
+      I9g5a6qzy7SdHx3C80z8luR1ZnlDzQzv3EKwTfhGNzJnXyWPcSyoAoOQwIoSVSfL
+      pMQ9aCScb3Doy7Dw/ELaVv7rfr6XHLLb9fgVKqYpMabHvT2IAP++w1JUQb7yxVem
+      ZxA50BWpydu+cT3NUag1R9k8G0Ps94HF7oHO/xIu+nMCIif7linhjOVN9kIlPe7n
+      Khsgwj867YQ9N6XQMn3UC65doja9kZh3NzlYTAz+fWflJcw/q10zfhINa9pLB7iO
+      HO28Qm0eIPvhyQ==
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    name: kube-root-ca.crt
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741702"
+    uid: 1a10c5bc-bdab-479b-8059-5e629c5eaabb
+kind: List
+metadata:
+  resourceVersion: ""
+apiVersion: v1
+items:
+- apiVersion: v1
+  count: 3
+  eventTime: null
+  firstTimestamp: "2026-04-13T12:50:56Z"
+  involvedObject:
+    apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741708"
+    uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+  kind: Event
+  lastTimestamp: "2026-04-13T12:50:56Z"
+  message: Clowder Environment [test-autoscaler-prom-app-sa] is locked
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    name: puptoo.18a5eb95a72c18c9
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741715"
+    uid: 8cf45154-5994-4501-855b-5a2af81f4574
+  reason: ClowdEnvLocked
+  reportingComponent: app
+  reportingInstance: ""
+  source:
+    component: app
+  type: Warning
+- apiVersion: v1
+  count: 14
+  eventTime: null
+  firstTimestamp: "2026-04-13T12:50:56Z"
+  involvedObject:
+    apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741708"
+    uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+  kind: Event
+  lastTimestamp: "2026-04-13T13:00:49Z"
+  message: Clowdapp requeued [puptoo]
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    name: puptoo.18a5eb95c9742baa
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "750724"
+    uid: 12e6d15a-7cd9-4ee2-b9d9-1b2c71941a89
+  reason: FailedReconciliation
+  reportingComponent: app
+  reportingInstance: ""
+  source:
+    component: app
+  type: Warning
+kind: List
+metadata:
+  resourceVersion: ""
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    name: default
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741703"
+    uid: 75e8030a-eb10-47a0-82bb-fcbc8319d077
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    labels:
+      app: test-autoscaler-prom-app-sa
+    name: iqe-test-autoscaler-prom-app-sa
+    namespace: test-autoscaler-prom-app-sa
+    ownerReferences:
+    - apiVersion: cloud.redhat.com/v1alpha1
+      controller: true
+      kind: ClowdEnvironment
+      name: test-autoscaler-prom-app-sa
+      uid: 380d11ae-d32f-4af6-a706-ab9530d4b415
+    resourceVersion: "741721"
+    uid: d098a880-2aba-4a28-bd0a-dc76fcc42077
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    labels:
+      app: puptoo
+    name: puptoo-app
+    namespace: test-autoscaler-prom-app-sa
+    ownerReferences:
+    - apiVersion: cloud.redhat.com/v1alpha1
+      controller: true
+      kind: ClowdApp
+      name: puptoo
+      uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+    resourceVersion: "741722"
+    uid: 98550b55-ac21-4960-87f2-0388db542073
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    labels:
+      app: puptoo
+    name: puptoo-processor
+    namespace: test-autoscaler-prom-app-sa
+    ownerReferences:
+    - apiVersion: cloud.redhat.com/v1alpha1
+      controller: true
+      kind: ClowdApp
+      name: puptoo
+      uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+    resourceVersion: "741723"
+    uid: 7a5a0ab7-600b-4154-9a84-fee49933471f
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    labels:
+      app: test-autoscaler-prom-app-sa
+    name: test-autoscaler-prom-app-sa-env
+    namespace: test-autoscaler-prom-app-sa
+    ownerReferences:
+    - apiVersion: cloud.redhat.com/v1alpha1
+      controller: true
+      kind: ClowdEnvironment
+      name: test-autoscaler-prom-app-sa
+      uid: 380d11ae-d32f-4af6-a706-ab9530d4b415
+    resourceVersion: "741709"
+    uid: 428dc3a1-8628-458c-b87b-d2fe6e13d6b9
+kind: List
+metadata:
+  resourceVersion: ""
+apiVersion: v1
+items:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    finalizers:
+    - finalizer.app.cloud.redhat.com
+    generation: 2
+    name: puptoo
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741726"
+    uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+  spec:
+    cyndi: {}
+    database: {}
+    deployments:
+    - autoScaler:
+        maxReplicaCount: 3
+        triggers:
+        - metadata:
+            query: sum(promhttp_metric_handler_requests_total{job="puptoo-processor",code="200"})
+            serverAddress: https://app.prometheus.url:2222
+            threshold: "4"
+          type: prometheus
+      metadata: {}
+      name: processor
+      podSpec:
+        image: quay.io/psav/clowder-hello
+        metadata: {}
+        resources: {}
+      webServices:
+        metrics: {}
+        private: {}
+        public: {}
+    envName: test-autoscaler-prom-app-sa
+    testing:
+      iqePlugin: ""
+  status:
+    conditions:
+    - lastTransitionTime: "2026-04-13T12:50:56Z"
+      message: 'error creating resource *v1.ServiceMonitor puptoo-processor: namespaces
+        "openshift-customer-monitoring" not found'
+      observedGeneration: 2
+      reason: DeploymentsReady
+      status: "True"
+      type: DeploymentsReady
+    - lastTransitionTime: "2026-04-13T12:50:56Z"
+      message: 'error creating resource *v1.ServiceMonitor puptoo-processor: namespaces
+        "openshift-customer-monitoring" not found'
+      observedGeneration: 2
+      reason: ReconciliationFailed
+      status: "True"
+      type: ReconciliationFailed
+    - lastTransitionTime: "2026-04-13T12:50:56Z"
+      message: ""
+      observedGeneration: 2
+      reason: ReconciliationNotComplete
+      status: "False"
+      type: ReconciliationSuccessful
+    deployments:
+      managedDeployments: 0
+      readyDeployments: 0
+    ready: true
+kind: List
+metadata:
+  resourceVersion: ""
+apiVersion: v1
+items:
+- apiVersion: events.k8s.io/v1
+  deprecatedCount: 3
+  deprecatedFirstTimestamp: "2026-04-13T12:50:56Z"
+  deprecatedLastTimestamp: "2026-04-13T12:50:56Z"
+  deprecatedSource:
+    component: app
+  eventTime: null
+  kind: Event
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    name: puptoo.18a5eb95a72c18c9
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741715"
+    uid: 8cf45154-5994-4501-855b-5a2af81f4574
+  note: Clowder Environment [test-autoscaler-prom-app-sa] is locked
+  reason: ClowdEnvLocked
+  regarding:
+    apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741708"
+    uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+  reportingController: app
+  type: Warning
+- apiVersion: events.k8s.io/v1
+  deprecatedCount: 14
+  deprecatedFirstTimestamp: "2026-04-13T12:50:56Z"
+  deprecatedLastTimestamp: "2026-04-13T13:00:49Z"
+  deprecatedSource:
+    component: app
+  eventTime: null
+  kind: Event
+  metadata:
+    creationTimestamp: "2026-04-13T12:50:56Z"
+    name: puptoo.18a5eb95c9742baa
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "750724"
+    uid: 12e6d15a-7cd9-4ee2-b9d9-1b2c71941a89
+  note: Clowdapp requeued [puptoo]
+  reason: FailedReconciliation
+  regarding:
+    apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: puptoo
+    namespace: test-autoscaler-prom-app-sa
+    resourceVersion: "741708"
+    uid: 1d42b8e3-7f35-4ecb-9cd1-92f0e967d749
+  reportingController: app
+  type: Warning
+kind: List
+metadata:
+  resourceVersion: ""
