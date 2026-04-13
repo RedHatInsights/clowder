@@ -1,3 +1,0 @@
-LAST SEEN   TYPE      REASON                 OBJECT            MESSAGE
-10m         Warning   ClowdEnvLocked         clowdapp/puptoo   Clowder Environment [test-autoscaler-prom-app-sa] is locked
-7s          Warning   FailedReconciliation   clowdapp/puptoo   Clowdapp requeued [puptoo]
