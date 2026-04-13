@@ -102,6 +102,30 @@ spec:
         enabled: true
         # No TLS field specified - should use environment default (false)
 ---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: clowdapp-h2c-targetport
+  namespace: test-h2c-web-services
+spec:
+  envName: test-h2c-web-services
+  deployments:
+  - name: processor
+    podSpec:
+      image: quay.io/psav/clowder-hello:ubi8
+      env:
+        - name: ENV_VAR_1
+          value: env_var_1
+    webServices:
+      private:
+        enabled: true
+        h2cEnabled: true
+        h2cTargetPort: 19000  # Override: container listens on 19000, service port stays 10800
+      public:
+        enabled: true
+        h2cEnabled: true
+        h2cTargetPort: 9000  # Override: container listens on 9000, service port stays 9800
+---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:

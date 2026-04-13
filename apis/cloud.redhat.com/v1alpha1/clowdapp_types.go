@@ -154,6 +154,11 @@ type PublicWebService struct {
 	// configuration in the cdappconfig.
 	H2CEnabled bool `json:"h2cEnabled,omitempty"`
 
+	// H2CTargetPort optionally overrides the container port for the public H2C service.
+	// When set, the Kubernetes Service port remains the environment's h2cPort,
+	// but targetPort and the container port use this value instead.
+	H2CTargetPort *int32 `json:"h2cTargetPort,omitempty"`
+
 	// Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting)
 	TLS *bool `json:"tls,omitempty"`
 
@@ -180,6 +185,11 @@ type PrivateWebService struct {
 	// H2CEnabled describes if Clowder should enable the private H2C service and provide the
 	// configuration in the cdappconfig.
 	H2CEnabled bool `json:"h2cEnabled,omitempty"`
+
+	// H2CTargetPort optionally overrides the container port for the private H2C service.
+	// When set, the Kubernetes Service port remains the environment's h2cPrivatePort,
+	// but targetPort and the container port use this value instead.
+	H2CTargetPort *int32 `json:"h2cTargetPort,omitempty"`
 
 	// Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting)
 	TLS *bool `json:"tls,omitempty"`

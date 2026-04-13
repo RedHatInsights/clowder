@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.0
+    controller-gen.kubebuilder.io/version: v0.20.1
   name: clowdapps.cloud.redhat.com
 spec:
   group: cloud.redhat.com
@@ -227,8 +227,8 @@ spec:
                                             and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
                                             triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
 
-                                            This is an alpha field and requires enabling the HPAConfigurableTolerance
-                                            feature gate.
+                                            This is an beta field and requires the HPAConfigurableTolerance feature
+                                            gate to be enabled.
                                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                           x-kubernetes-int-or-string: true
                                       type: object
@@ -303,8 +303,8 @@ spec:
                                             and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
                                             triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
 
-                                            This is an alpha field and requires enabling the HPAConfigurableTolerance
-                                            feature gate.
+                                            This is an beta field and requires the HPAConfigurableTolerance feature
+                                            gate to be enabled.
                                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                           x-kubernetes-int-or-string: true
                                       type: object
@@ -2296,7 +2296,7 @@ spec:
                                           resources:
                                             description: |-
                                               resources represents the minimum resources the volume should have.
-                                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                              Users are allowed to specify resource requirements
                                               that are lower than previous value but must still be higher than capacity recorded in the
                                               status field of the claim.
                                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -3187,6 +3187,24 @@ spec:
                                               description: Kubelet's generated CSRs
                                                 will be addressed to this signer.
                                               type: string
+                                            userAnnotations:
+                                              additionalProperties:
+                                                type: string
+                                              description: |-
+                                                userAnnotations allow pod authors to pass additional information to
+                                                the signer implementation.  Kubernetes does not restrict or validate this
+                                                metadata in any way.
+
+                                                These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                                the PodCertificateRequest objects that Kubelet creates.
+
+                                                Entries are subject to the same validation as object metadata annotations,
+                                                with the addition that all keys must be domain-prefixed. No restrictions
+                                                are placed on values, except an overall size limitation on the entire field.
+
+                                                Signers should document the keys and values they support. Signers should
+                                                deny requests that contain keys they do not recognize.
+                                              type: object
                                           required:
                                           - keyType
                                           - signerName
@@ -3648,6 +3666,13 @@ spec:
                                 H2CEnabled describes if Clowder should enable the private H2C service and provide the
                                 configuration in the cdappconfig.
                               type: boolean
+                            h2cTargetPort:
+                              description: |-
+                                H2CTargetPort optionally overrides the container port for the private H2C service.
+                                When set, the Kubernetes Service port remains the environment's h2cPrivatePort,
+                                but targetPort and the container port use this value instead.
+                              format: int32
+                              type: integer
                             tls:
                               description: Determines whether TLS is enabled for the
                                 private web service (if defined, overrides ClowdEnvironment
@@ -3685,6 +3710,13 @@ spec:
                                 H2CEnabled describes if Clowder should enable the public H2C service and provide the
                                 configuration in the cdappconfig.
                               type: boolean
+                            h2cTargetPort:
+                              description: |-
+                                H2CTargetPort optionally overrides the container port for the public H2C service.
+                                When set, the Kubernetes Service port remains the environment's h2cPort,
+                                but targetPort and the container port use this value instead.
+                              format: int32
+                              type: integer
                             sessionAffinity:
                               description: Set SessionAffinity to true to enable sticky
                                 sessions
@@ -5561,7 +5593,7 @@ spec:
                                           resources:
                                             description: |-
                                               resources represents the minimum resources the volume should have.
-                                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                              Users are allowed to specify resource requirements
                                               that are lower than previous value but must still be higher than capacity recorded in the
                                               status field of the claim.
                                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -6452,6 +6484,24 @@ spec:
                                               description: Kubelet's generated CSRs
                                                 will be addressed to this signer.
                                               type: string
+                                            userAnnotations:
+                                              additionalProperties:
+                                                type: string
+                                              description: |-
+                                                userAnnotations allow pod authors to pass additional information to
+                                                the signer implementation.  Kubernetes does not restrict or validate this
+                                                metadata in any way.
+
+                                                These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                                the PodCertificateRequest objects that Kubelet creates.
+
+                                                Entries are subject to the same validation as object metadata annotations,
+                                                with the addition that all keys must be domain-prefixed. No restrictions
+                                                are placed on values, except an overall size limitation on the entire field.
+
+                                                Signers should document the keys and values they support. Signers should
+                                                deny requests that contain keys they do not recognize.
+                                              type: object
                                           required:
                                           - keyType
                                           - signerName

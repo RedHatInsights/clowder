@@ -71,7 +71,7 @@ func generateServer(port int32, appPort int32, tlsConnPolicy []*caddytls.Connect
 	return server
 }
 
-func generateCaddyConfig(pub bool, priv bool, pubPort int32, privPort int32, pubH2C bool, privH2C bool, pubH2CPort int32, privH2CPort int32, env *crd.ClowdEnvironment) (string, error) {
+func generateCaddyConfig(pub bool, priv bool, pubPort int32, privPort int32, pubH2C bool, privH2C bool, pubH2CPort int32, privH2CPort int32, env *crd.ClowdEnvironment, appH2CTargetPort int32, appH2CPrivateTargetPort int32) (string, error) {
 	var warnings []caddyconfig.Warning
 
 	var httpServers map[string]*caddyhttp.Server
@@ -80,8 +80,8 @@ func generateCaddyConfig(pub bool, priv bool, pubPort int32, privPort int32, pub
 
 	appPubPort := env.Spec.Providers.Web.Port
 	appPrivPort := env.Spec.Providers.Web.PrivatePort
-	appH2CPubPort := env.Spec.Providers.Web.H2CPort
-	appH2CPrivPort := env.Spec.Providers.Web.H2CPrivatePort
+	appH2CPubPort := appH2CTargetPort
+	appH2CPrivPort := appH2CPrivateTargetPort
 
 	// Generate HTTP servers
 	httpServers, err = generateServers(pub, priv, pubPort, privPort, appPubPort, appPrivPort, "http")

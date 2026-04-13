@@ -29,7 +29,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	nn := app.GetDeploymentNamespacedName(deployment)
 
 	appProtocol := "http"
-	h2cAppProtocol := "h2c"
+	h2cAppProtocol := "kubernetes.io/h2c"
 
 	if err := cache.Create(CoreService, nn, s); err != nil {
 		return err
@@ -89,12 +89,16 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	// Add H2C public port if enabled
 	if deployment.WebServices.Public.H2CEnabled && env.Spec.Providers.Web.H2CPort != 0 {
+		h2cTargetPort := env.Spec.Providers.Web.H2CPort
+		if deployment.WebServices.Public.H2CTargetPort != nil {
+			h2cTargetPort = *deployment.WebServices.Public.H2CTargetPort
+		}
 		h2cPort := core.ServicePort{
 			Name:        "h2c",
 			Port:        env.Spec.Providers.Web.H2CPort,
 			Protocol:    "TCP",
 			AppProtocol: &h2cAppProtocol,
-			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.H2CPort)),
+			TargetPort:  intstr.FromInt(int(h2cTargetPort)),
 		}
 		servicePorts = append(servicePorts, h2cPort)
 
@@ -102,7 +106,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		containerPorts = append(containerPorts,
 			core.ContainerPort{
 				Name:          "h2c",
-				ContainerPort: env.Spec.Providers.Web.H2CPort,
+				ContainerPort: h2cTargetPort,
 				Protocol:      core.ProtocolTCP,
 			},
 		)
@@ -136,12 +140,16 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 
 	// Add H2C private port if enabled
 	if deployment.WebServices.Private.H2CEnabled && env.Spec.Providers.Web.H2CPrivatePort != 0 {
+		h2cPrivateTargetPort := env.Spec.Providers.Web.H2CPrivatePort
+		if deployment.WebServices.Private.H2CTargetPort != nil {
+			h2cPrivateTargetPort = *deployment.WebServices.Private.H2CTargetPort
+		}
 		h2cPrivatePort := core.ServicePort{
 			Name:        "h2c-private",
 			Port:        env.Spec.Providers.Web.H2CPrivatePort,
 			Protocol:    "TCP",
 			AppProtocol: &h2cAppProtocol,
-			TargetPort:  intstr.FromInt(int(env.Spec.Providers.Web.H2CPrivatePort)),
+			TargetPort:  intstr.FromInt(int(h2cPrivateTargetPort)),
 		}
 		servicePorts = append(servicePorts, h2cPrivatePort)
 
@@ -149,7 +157,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 		containerPorts = append(containerPorts,
 			core.ContainerPort{
 				Name:          "h2c-private",
-				ContainerPort: env.Spec.Providers.Web.H2CPrivatePort,
+				ContainerPort: h2cPrivateTargetPort,
 				Protocol:      core.ProtocolTCP,
 			},
 		)
@@ -213,7 +221,15 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	}
 
 	if privTLS || pubTLS || pubH2CTLS || privH2CTLS {
-		if err := generateCaddyConfigMap(cache, nn, app, pubTLS, privTLS, pubPort, privPort, pubH2CTLS, privH2CTLS, pubH2CPort, privH2CPort, env); err != nil {
+		appH2CTargetPort := env.Spec.Providers.Web.H2CPort
+		if deployment.WebServices.Public.H2CTargetPort != nil {
+			appH2CTargetPort = *deployment.WebServices.Public.H2CTargetPort
+		}
+		appH2CPrivateTargetPort := env.Spec.Providers.Web.H2CPrivatePort
+		if deployment.WebServices.Private.H2CTargetPort != nil {
+			appH2CPrivateTargetPort = *deployment.WebServices.Private.H2CTargetPort
+		}
+		if err := generateCaddyConfigMap(cache, nn, app, pubTLS, privTLS, pubPort, privPort, pubH2CTLS, privH2CTLS, pubH2CPort, privH2CPort, env, appH2CTargetPort, appH2CPrivateTargetPort); err != nil {
 			return err
 		}
 		populateSideCar(d, nn.Name, env.Spec.Providers.Web.TLS.Port, env.Spec.Providers.Web.TLS.PrivatePort, env.Spec.Providers.Web.TLS.H2CPort, env.Spec.Providers.Web.TLS.H2CPrivatePort, pubTLS, privTLS, pubH2CTLS, privH2CTLS, env)
@@ -231,7 +247,7 @@ func makeService(cache *rc.ObjectCache, deployment *crd.Deployment, app *crd.Clo
 	return cache.Update(deployProvider.CoreDeployment, d)
 }
 
-func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort int32, privPort int32, pubH2C bool, privH2C bool, pubH2CPort int32, privH2CPort int32, env *crd.ClowdEnvironment) error {
+func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app *crd.ClowdApp, pub bool, priv bool, pubPort int32, privPort int32, pubH2C bool, privH2C bool, pubH2CPort int32, privH2CPort int32, env *crd.ClowdEnvironment, appH2CTargetPort int32, appH2CPrivateTargetPort int32) error {
 
 	cm := &core.ConfigMap{}
 	snn := types.NamespacedName{
@@ -247,7 +263,7 @@ func generateCaddyConfigMap(cache *rc.ObjectCache, nn types.NamespacedName, app 
 	cm.Namespace = snn.Namespace
 	cm.OwnerReferences = []metav1.OwnerReference{app.MakeOwnerReference()}
 
-	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort, pubH2C, privH2C, pubH2CPort, privH2CPort, env)
+	cmData, err := generateCaddyConfig(pub, priv, pubPort, privPort, pubH2C, privH2C, pubH2CPort, privH2CPort, env, appH2CTargetPort, appH2CPrivateTargetPort)
 	if err != nil {
 		return err
 	}

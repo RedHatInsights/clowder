@@ -95,7 +95,7 @@ spec:
     targetPort: 9800
     name: h2c
     protocol: TCP
-    appProtocol: h2c
+    appProtocol: kubernetes.io/h2c
   - port: 10000
     targetPort: 10000
     name: private
@@ -105,7 +105,7 @@ spec:
     targetPort: 10800
     name: h2c-private
     protocol: TCP
-    appProtocol: h2c
+    appProtocol: kubernetes.io/h2c
   - port: 8800
     targetPort: 8800
     name: tls
@@ -120,12 +120,12 @@ spec:
     targetPort: 19800
     name: h2c-tls
     protocol: TCP
-    appProtocol: h2c
+    appProtocol: kubernetes.io/h2c
   - port: 11800
     targetPort: 11800
     name: h2c-tls-private
     protocol: TCP
-    appProtocol: h2c
+    appProtocol: kubernetes.io/h2c
   - port: 9000
     targetPort: 9000
     name: metrics
@@ -185,7 +185,7 @@ spec:
     targetPort: 10800
     name: h2c-private
     protocol: TCP
-    appProtocol: h2c
+    appProtocol: kubernetes.io/h2c
   - port: 9000
     targetPort: 9000
     name: metrics
@@ -193,7 +193,70 @@ spec:
     appProtocol: http
   # Should NOT have tls, tls-private, h2c, h2c-tls, or h2c-tls-private ports
 ---
-# Assert that secrets are created for both apps
+# Assert that clowdapp-h2c-targetport has h2c ports with different targetPort than port
+apiVersion: v1
+kind: Service
+metadata:
+  name: clowdapp-h2c-targetport-processor
+  namespace: test-h2c-web-services
+spec:
+  selector:
+    pod: clowdapp-h2c-targetport-processor
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: public
+    protocol: TCP
+    appProtocol: http
+  - port: 9800
+    targetPort: 9000
+    name: h2c
+    protocol: TCP
+    appProtocol: kubernetes.io/h2c
+  - port: 10000
+    targetPort: 10000
+    name: private
+    protocol: TCP
+    appProtocol: http
+  - port: 10800
+    targetPort: 19000
+    name: h2c-private
+    protocol: TCP
+    appProtocol: kubernetes.io/h2c
+  - port: 9000
+    targetPort: 9000
+    name: metrics
+    protocol: TCP
+    appProtocol: http
+---
+# Assert that clowdapp-h2c-targetport has container ports matching the h2cTargetPort values
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clowdapp-h2c-targetport-processor
+  namespace: test-h2c-web-services
+spec:
+  template:
+    spec:
+      containers:
+      - ports:
+        - containerPort: 8000
+          name: web
+          protocol: TCP
+        - containerPort: 9000
+          name: h2c
+          protocol: TCP
+        - containerPort: 10000
+          name: private
+          protocol: TCP
+        - containerPort: 19000
+          name: h2c-private
+          protocol: TCP
+        - containerPort: 9000
+          name: metrics
+          protocol: TCP
+---
+# Assert that secrets are created for all apps
 apiVersion: v1
 kind: Secret
 metadata:
@@ -218,4 +281,17 @@ metadata:
   - apiVersion: cloud.redhat.com/v1alpha1
     kind: ClowdApp
     name: clowdapp-tls-disabled
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: clowdapp-h2c-targetport
+  namespace: test-h2c-web-services
+  labels:
+    app: clowdapp-h2c-targetport
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: clowdapp-h2c-targetport
 type: Opaque

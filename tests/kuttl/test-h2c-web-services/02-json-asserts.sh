@@ -80,16 +80,44 @@ jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-tls-enab
 jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-tls-enabled") | .tlsCAPath == "/cdapp/certs/service-ca.crt"' -e < ${TMP_DIR}/test-tls-disabled-json
 jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-tls-enabled") | .hostname == "clowdapp-tls-enabled-processor.test-h2c-web-services.svc"' -e < ${TMP_DIR}/test-tls-disabled-json
 jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-tls-enabled") | .hostname == "clowdapp-tls-enabled-processor.test-h2c-web-services.svc"' -e < ${TMP_DIR}/test-tls-disabled-json
+# Retrieve and decode h2c-targetport app config
+for i in {1..10}; do
+  kubectl get secret --namespace=test-h2c-web-services clowdapp-h2c-targetport && break
+  sleep 1
+done
+
+kubectl get secret --namespace=test-h2c-web-services clowdapp-h2c-targetport > /dev/null || { echo "Secret not found after retries"; exit 1; }
+kubectl get secret --namespace=test-h2c-web-services clowdapp-h2c-targetport -o json > ${TMP_DIR}/test-h2c-targetport-secret
+jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-h2c-targetport-secret | base64 -d > ${TMP_DIR}/test-h2c-targetport-json
+
+# h2c-targetport app config: h2c ports in cdappconfig reflect the environment service ports (not the targetPort)
+jq -r '.publicPort == 8000' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.privatePort == 10000' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.metricsPort == 9000' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.h2cPublicPort == 9800' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.h2cPrivatePort == 10800' -e < ${TMP_DIR}/test-h2c-targetport-json
+
+# h2c-targetport endpoint ports should still be the environment-level service ports
+jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-h2c-targetport") | .port == 8000' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.endpoints[] | select(.name == "processor" and .app == "clowdapp-h2c-targetport") | .h2cPort == 9800' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-h2c-targetport") | .port == 10000' -e < ${TMP_DIR}/test-h2c-targetport-json
+jq -r '.privateEndpoints[] | select(.name == "processor" and .app == "clowdapp-h2c-targetport") | .h2cPort == 10800' -e < ${TMP_DIR}/test-h2c-targetport-json
+
 kubectl get clowdenvironment test-h2c-web-services -o json > ${TMP_DIR}/test-env-status
-jq -r '.status.apps | length == 2' -e < ${TMP_DIR}/test-env-status
+jq -r '.status.apps | length == 3' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-enabled") | .name' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-disabled") | .name' -e < ${TMP_DIR}/test-env-status
+jq -r '.status.apps[] | select(.name == "clowdapp-h2c-targetport") | .name' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-enabled") | .deployments[0].hostname == "clowdapp-tls-enabled-processor.test-h2c-web-services.svc"' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-enabled") | .deployments[0].name == "clowdapp-tls-enabled-processor"' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-enabled") | .deployments[0].port == 8000' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-disabled") | .deployments[0].hostname == "clowdapp-tls-disabled-processor.test-h2c-web-services.svc"' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-disabled") | .deployments[0].name == "clowdapp-tls-disabled-processor"' -e < ${TMP_DIR}/test-env-status
 jq -r '.status.apps[] | select(.name == "clowdapp-tls-disabled") | .deployments[0].port == 8000' -e < ${TMP_DIR}/test-env-status
+jq -r '.status.apps[] | select(.name == "clowdapp-h2c-targetport") | .deployments[0].hostname == "clowdapp-h2c-targetport-processor.test-h2c-web-services.svc"' -e < ${TMP_DIR}/test-env-status
+jq -r '.status.apps[] | select(.name == "clowdapp-h2c-targetport") | .deployments[0].name == "clowdapp-h2c-targetport-processor"' -e < ${TMP_DIR}/test-env-status
+jq -r '.status.apps[] | select(.name == "clowdapp-h2c-targetport") | .deployments[0].port == 8000' -e < ${TMP_DIR}/test-env-status
 echo "=== clowdapp-tls-enabled config ===" && cat ${TMP_DIR}/test-tls-enabled-json
 echo "=== clowdapp-tls-disabled config ===" && cat ${TMP_DIR}/test-tls-disabled-json
+echo "=== clowdapp-h2c-targetport config ===" && cat ${TMP_DIR}/test-h2c-targetport-json
 echo "=== ClowdEnvironment status ===" && cat ${TMP_DIR}/test-env-status
