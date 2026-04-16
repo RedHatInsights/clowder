@@ -81,13 +81,13 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `pollingInterval` _integer_ | PollingInterval is the interval (in seconds) to check each trigger on.<br />Default is 30 seconds. |  |  |
-| `cooldownPeriod` _integer_ | CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before<br />scaling the deployment down. Default is 5 minutes (300 seconds). |  |  |
-| `maxReplicaCount` _integer_ | MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to.<br />Default is 10. |  |  |
+| `pollingInterval` _integer_ | PollingInterval is the interval (in seconds) to check each trigger on.<br />Default is 30 seconds. |  | Optional: \{\} <br /> |
+| `cooldownPeriod` _integer_ | CooldownPeriod is the interval (in seconds) to wait after the last trigger reported active before<br />scaling the deployment down. Default is 5 minutes (300 seconds). |  | Optional: \{\} <br /> |
+| `maxReplicaCount` _integer_ | MaxReplicaCount is the maximum number of replicas the scaler will scale the deployment to.<br />Default is 10. |  | Optional: \{\} <br /> |
 | `minReplicaCount` _integer_ | MinReplicaCount is the minimum number of replicas the scaler will scale the deployment to. |  |  |
-| `advanced` _[AdvancedConfig](#advancedconfig)_ |  |  |  |
-| `triggers` _ScaleTriggers array_ |  |  |  |
-| `fallback` _[Fallback](#fallback)_ |  |  |  |
+| `advanced` _[AdvancedConfig](#advancedconfig)_ |  |  | Optional: \{\} <br /> |
+| `triggers` _ScaleTriggers array_ |  |  | Optional: \{\} <br /> |
+| `fallback` _[Fallback](#fallback)_ |  |  | Optional: \{\} <br /> |
 | `externalHPA` _boolean_ | ExternalHPA allows replicas on deployments to be controlled by another resource, but will<br />not be allowed to fall under the minReplicas as set in the ClowdApp. |  |  |
 
 
@@ -472,7 +472,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | The key to select. |  |  |
-| `optional` _boolean_ | Specify whether the ConfigMap or its key must be defined |  |  |
+| `optional` _boolean_ | Specify whether the ConfigMap or its key must be defined |  | Optional: \{\} <br /> |
 
 
 #### CyndiSpec
@@ -675,8 +675,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _string_ | Name of the environment variable. Must be a C_IDENTIFIER. |  |  |
-| `value` _string_ | Variable references $(VAR_NAME) are expanded using the previous defined<br />environment variables in the container and any service environment variables.<br />If a variable cannot be resolved, the reference in the input string will be<br />unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).<br />Escaped references will never be expanded, regardless of whether the variable<br />exists or not. |  |  |
-| `valueFrom` _[EnvVarSource](#envvarsource)_ | Source for the environment variable's value. Cannot be used if value is not empty. |  |  |
+| `value` _string_ | Variable references $(VAR_NAME) are expanded using the previous defined<br />environment variables in the container and any service environment variables.<br />If a variable cannot be resolved, the reference in the input string will be<br />unchanged. The $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).<br />Escaped references will never be expanded, regardless of whether the variable<br />exists or not. |  | Optional: \{\} <br /> |
+| `valueFrom` _[EnvVarSource](#envvarsource)_ | Source for the environment variable's value. Cannot be used if value is not empty. |  | Optional: \{\} <br /> |
 
 
 #### EnvVarSource
@@ -692,9 +692,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `configMapKeyRef` _[ConfigMapKeySelector](#configmapkeyselector)_ | Selects a key of a ConfigMap. |  |  |
-| `secretKeyRef` _[SecretKeySelector](#secretkeyselector)_ | Selects a key of a secret in the pod's namespace |  |  |
-| `fieldRef` _[ObjectFieldSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectfieldselector-v1-core)_ | Selects a field of the pod: supports metadata.name, metadata.namespace,<br />metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,<br />spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs. |  |  |
+| `configMapKeyRef` _[ConfigMapKeySelector](#configmapkeyselector)_ | Selects a key of a ConfigMap. |  | Optional: \{\} <br /> |
+| `secretKeyRef` _[SecretKeySelector](#secretkeyselector)_ | Selects a key of a secret in the pod's namespace |  | Optional: \{\} <br /> |
+| `fieldRef` _[ObjectFieldSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectfieldselector-v1-core)_ | Selects a field of the pod: supports metadata.name, metadata.namespace,<br />metadata.labels['<KEY>'], metadata.annotations['<KEY>'], spec.nodeName,<br />spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs. |  | Optional: \{\} <br /> |
 
 
 #### FeatureFlagsConfig
@@ -1142,9 +1142,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `config` _object (keys:string, values:string)_ | A key/value pair describing the configuration of a particular topic. |  |  |
-| `partitions` _integer_ | The requested number of partitions for this topic. If unset, default is '3' |  | Maximum: 200000 <br />Minimum: 1 <br /> |
-| `replicas` _integer_ | The requested number of replicas for this topic. If unset, default is '3' |  | Maximum: 32767 <br />Minimum: 1 <br /> |
+| `config` _object (keys:string, values:string)_ | A key/value pair describing the configuration of a particular topic. |  | Optional: \{\} <br /> |
+| `partitions` _integer_ | The requested number of partitions for this topic. If unset, default is '3' |  | Maximum: 200000 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `replicas` _integer_ | The requested number of replicas for this topic. If unset, default is '3' |  | Maximum: 32767 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 | `topicName` _string_ | The requested name for this topic. |  | MaxLength: 249 <br />MinLength: 1 <br />Pattern: `[a-zA-Z0-9\._\-]` <br /> |
 
 
@@ -1401,6 +1401,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled describes if Clowder should enable the private service and provide the<br />configuration in the cdappconfig. |  |  |
 | `h2cEnabled` _boolean_ | H2CEnabled describes if Clowder should enable the private H2C service and provide the<br />configuration in the cdappconfig. |  |  |
+| `h2cTargetPort` _integer_ | H2CTargetPort optionally overrides the container port for the private H2C service.<br />When set, the Kubernetes Service port remains the environment's h2cPrivatePort,<br />but targetPort and the container port use this value instead. |  |  |
 | `tls` _boolean_ | Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting) |  |  |
 
 
@@ -1499,6 +1500,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | Enabled describes if Clowder should enable the public service and provide the<br />configuration in the cdappconfig. |  |  |
 | `h2cEnabled` _boolean_ | H2CEnabled describes if Clowder should enable the public H2C service and provide the<br />configuration in the cdappconfig. |  |  |
+| `h2cTargetPort` _integer_ | H2CTargetPort optionally overrides the container port for the public H2C service.<br />When set, the Kubernetes Service port remains the environment's h2cPort,<br />but targetPort and the container port use this value instead. |  |  |
 | `tls` _boolean_ | Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting) |  |  |
 | `apiPath` _string_ | (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from. |  |  |
 | `apiPaths` _[APIPath](#apipath) array_ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from. |  | Pattern: `^\/api\/[a-zA-Z0-9-]+\/$` <br /> |
@@ -1520,7 +1522,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | The key of the secret to select from.  Must be a valid secret key. |  |  |
-| `optional` _boolean_ | Specify whether the Secret or its key must be defined |  |  |
+| `optional` _boolean_ | Specify whether the Secret or its key must be defined |  | Optional: \{\} <br /> |
 
 
 #### ServiceConfig

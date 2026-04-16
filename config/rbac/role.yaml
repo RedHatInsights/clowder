@@ -102,12 +102,29 @@ rules:
   - update
   - watch
 - apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - clusters
+  - machinepools
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - config.openshift.io
   resources:
   - ingresses
   verbs:
   - get
   - list
+- apiGroups:
+  - controlplane.cluster.x-k8s.io
+  resources:
+  - rosacontrolplanes
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - cyndi.cloud.redhat.com
   resources:
@@ -119,6 +136,14 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - rosamachinepools
+  verbs:
+  - get
+  - list
   - watch
 - apiGroups:
   - kafka.strimzi.io

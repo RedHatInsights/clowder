@@ -13,7 +13,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.16.4
+      controller-gen.kubebuilder.io/version: v0.20.1
     name: clowdapprefs.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -120,6 +120,17 @@ objects:
 
                                   configuration in the cdappconfig.'
                                 type: boolean
+                              h2cTargetPort:
+                                description: 'H2CTargetPort optionally overrides the
+                                  container port for the private H2C service.
+
+                                  When set, the Kubernetes Service port remains the
+                                  environment''s h2cPrivatePort,
+
+                                  but targetPort and the container port use this value
+                                  instead.'
+                                format: int32
+                                type: integer
                               tls:
                                 description: Determines whether TLS is enabled for
                                   the private web service (if defined, overrides ClowdEnvironment
@@ -160,6 +171,17 @@ objects:
 
                                   configuration in the cdappconfig.'
                                 type: boolean
+                              h2cTargetPort:
+                                description: 'H2CTargetPort optionally overrides the
+                                  container port for the public H2C service.
+
+                                  When set, the Kubernetes Service port remains the
+                                  environment''s h2cPort,
+
+                                  but targetPort and the container port use this value
+                                  instead.'
+                                format: int32
+                                type: integer
                               sessionAffinity:
                                 description: Set SessionAffinity to true to enable
                                   sticky sessions
@@ -275,57 +297,70 @@ objects:
                   description: Conditions represents the latest available observations
                     of the ClowdAppRef's current state
                   items:
-                    description: Condition defines an observation of a Cluster API
-                      resource operational state.
+                    description: Condition contains details for one aspect of the
+                      current state of this API Resource.
                     properties:
                       lastTransitionTime:
-                        description: 'Last time the condition transitioned from one
-                          status to another.
+                        description: 'lastTransitionTime is the last time the condition
+                          transitioned from one status to another.
 
-                          This should be when the underlying condition changed. If
-                          that is not known, then using the time when
-
-                          the API field changed is acceptable.'
+                          This should be when the underlying condition changed.  If
+                          that is not known, then using the time when the API field
+                          changed is acceptable.'
                         format: date-time
                         type: string
                       message:
-                        description: 'A human readable message indicating details
-                          about the transition.
+                        description: 'message is a human readable message indicating
+                          details about the transition.
 
-                          This field may be empty.'
+                          This may be an empty string.'
+                        maxLength: 32768
                         type: string
-                      reason:
-                        description: 'The reason for the condition''s last transition
-                          in CamelCase.
+                      observedGeneration:
+                        description: 'observedGeneration represents the .metadata.generation
+                          that the condition was set based upon.
 
-                          The specific API may choose whether or not this field is
-                          considered a guaranteed API.
+                          For instance, if .metadata.generation is currently 12, but
+                          the .status.conditions[x].observedGeneration is 9, the condition
+                          is out of date
+
+                          with respect to the current state of the instance.'
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: 'reason contains a programmatic identifier indicating
+                          the reason for the condition''s last transition.
+
+                          Producers of specific condition types may define expected
+                          values and meanings for this field,
+
+                          and whether the values are considered a guaranteed API.
+
+                          The value should be a CamelCase string.
 
                           This field may not be empty.'
-                        type: string
-                      severity:
-                        description: 'Severity provides an explicit classification
-                          of Reason code, so the users or machines can immediately
-
-                          understand the current situation and act accordingly.
-
-                          The Severity field MUST be set only when Status=False.'
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
                         type: string
                       status:
-                        description: Status of the condition, one of True, False,
+                        description: status of the condition, one of True, False,
                           Unknown.
+                        enum:
+                        - 'True'
+                        - 'False'
+                        - Unknown
                         type: string
                       type:
-                        description: 'Type of condition in CamelCase or in foo.example.com/CamelCase.
-
-                          Many .condition.type values are consistent across resources
-                          like Available, but because arbitrary conditions
-
-                          can be useful (see .node.status.conditions), the ability
-                          to deconflict is important.'
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                         type: string
                     required:
                     - lastTransitionTime
+                    - message
+                    - reason
                     - status
                     - type
                     type: object
@@ -345,7 +380,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.16.4
+      controller-gen.kubebuilder.io/version: v0.20.1
     name: clowdapps.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -552,9 +587,14 @@ objects:
                                               scaling polices which can be used during
                                               scaling.
 
-                                              At least one policy must be specified,
-                                              otherwise the HPAScalingRules will be
-                                              discarded as invalid'
+                                              If not set, use the default values:
+
+                                              - For scale up: allow doubling the number
+                                              of pods, or an absolute change of 4
+                                              pods in a 15s window.
+
+                                              - For scale down: allow all pods to
+                                              be removed in a 15s window.'
                                             items:
                                               description: HPAScalingPolicy is a single
                                                 policy which must hold true for a
@@ -593,8 +633,8 @@ objects:
                                             description: 'selectPolicy is used to
                                               specify which policy should be used.
 
-                                              If not set, the default value MaxPolicySelect
-                                              is used.'
+                                              If not set, the default value Max is
+                                              used.'
                                             type: string
                                           stabilizationWindowSeconds:
                                             description: 'stabilizationWindowSeconds
@@ -617,6 +657,42 @@ objects:
                                               window is 300 seconds long).'
                                             format: int32
                                             type: integer
+                                          tolerance:
+                                            anyOf:
+                                            - type: integer
+                                            - type: string
+                                            description: 'tolerance is the tolerance
+                                              on the ratio between the current and
+                                              desired
+
+                                              metric value under which no updates
+                                              are made to the desired number of
+
+                                              replicas (e.g. 0.01 for 1%). Must be
+                                              greater than or equal to zero. If not
+
+                                              set, the default cluster-wide tolerance
+                                              is applied (by default 10%).
+
+
+                                              For example, if autoscaling is configured
+                                              with a memory consumption target of
+                                              100Mi,
+
+                                              and scale-down and scale-up tolerances
+                                              of 5% and 1% respectively, scaling will
+                                              be
+
+                                              triggered when the actual consumption
+                                              falls below 95Mi or exceeds 101Mi.
+
+
+                                              This is an beta field and requires the
+                                              HPAConfigurableTolerance feature
+
+                                              gate to be enabled.'
+                                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                            x-kubernetes-int-or-string: true
                                         type: object
                                       scaleUp:
                                         description: "scaleUp is scaling policy for\
@@ -631,9 +707,14 @@ objects:
                                               scaling polices which can be used during
                                               scaling.
 
-                                              At least one policy must be specified,
-                                              otherwise the HPAScalingRules will be
-                                              discarded as invalid'
+                                              If not set, use the default values:
+
+                                              - For scale up: allow doubling the number
+                                              of pods, or an absolute change of 4
+                                              pods in a 15s window.
+
+                                              - For scale down: allow all pods to
+                                              be removed in a 15s window.'
                                             items:
                                               description: HPAScalingPolicy is a single
                                                 policy which must hold true for a
@@ -672,8 +753,8 @@ objects:
                                             description: 'selectPolicy is used to
                                               specify which policy should be used.
 
-                                              If not set, the default value MaxPolicySelect
-                                              is used.'
+                                              If not set, the default value Max is
+                                              used.'
                                             type: string
                                           stabilizationWindowSeconds:
                                             description: 'stabilizationWindowSeconds
@@ -696,6 +777,42 @@ objects:
                                               window is 300 seconds long).'
                                             format: int32
                                             type: integer
+                                          tolerance:
+                                            anyOf:
+                                            - type: integer
+                                            - type: string
+                                            description: 'tolerance is the tolerance
+                                              on the ratio between the current and
+                                              desired
+
+                                              metric value under which no updates
+                                              are made to the desired number of
+
+                                              replicas (e.g. 0.01 for 1%). Must be
+                                              greater than or equal to zero. If not
+
+                                              set, the default cluster-wide tolerance
+                                              is applied (by default 10%).
+
+
+                                              For example, if autoscaling is configured
+                                              with a memory consumption target of
+                                              100Mi,
+
+                                              and scale-down and scale-up tolerances
+                                              of 5% and 1% respectively, scaling will
+                                              be
+
+                                              triggered when the actual consumption
+                                              falls below 95Mi or exceeds 101Mi.
+
+
+                                              This is an beta field and requires the
+                                              HPAConfigurableTolerance feature
+
+                                              gate to be enabled.'
+                                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                            x-kubernetes-int-or-string: true
                                         type: object
                                     type: object
                                   name:
@@ -703,6 +820,26 @@ objects:
                                 type: object
                               restoreToOriginalReplicaCount:
                                 type: boolean
+                              scalingModifiers:
+                                description: ScalingModifiers describes advanced scaling
+                                  logic options like formula
+                                properties:
+                                  activationTarget:
+                                    type: string
+                                  formula:
+                                    type: string
+                                  metricType:
+                                    description: 'MetricTargetType specifies the type
+                                      of metric being targeted, and should be either
+
+                                      "Value", "AverageValue", or "Utilization"'
+                                    enum:
+                                    - AverageValue
+                                    - Value
+                                    type: string
+                                  target:
+                                    type: string
+                                type: object
                             type: object
                           cooldownPeriod:
                             description: 'CooldownPeriod is the interval (in seconds)
@@ -722,6 +859,14 @@ objects:
                           fallback:
                             description: Fallback is the spec for fallback options
                             properties:
+                              behavior:
+                                default: static
+                                enum:
+                                - static
+                                - currentReplicas
+                                - currentReplicasIfHigher
+                                - currentReplicasIfLower
+                                type: string
                               failureThreshold:
                                 format: int32
                                 type: integer
@@ -757,9 +902,8 @@ objects:
                                 will be used
                               properties:
                                 authenticationRef:
-                                  description: 'ScaledObjectAuthRef points to the
-                                    TriggerAuthentication or ClusterTriggerAuthentication
-                                    object that
+                                  description: 'AuthenticationRef points to the TriggerAuthentication
+                                    or ClusterTriggerAuthentication object that
 
                                     is used to authenticate the scaler with the environment'
                                   properties:
@@ -786,6 +930,8 @@ objects:
                                   type: string
                                 type:
                                   type: string
+                                useCachedMetrics:
+                                  type: boolean
                               required:
                               - metadata
                               - type
@@ -3303,9 +3449,8 @@ objects:
                                                 minimum resources the volume should
                                                 have.
 
-                                                If RecoverVolumeExpansionFailure feature
-                                                is enabled users are allowed to specify
-                                                resource requirements
+                                                Users are allowed to specify resource
+                                                requirements
 
                                                 that are lower than previous value
                                                 but must still be higher than capacity
@@ -4710,6 +4855,45 @@ objects:
                                                 description: Kubelet's generated CSRs
                                                   will be addressed to this signer.
                                                 type: string
+                                              userAnnotations:
+                                                additionalProperties:
+                                                  type: string
+                                                description: 'userAnnotations allow
+                                                  pod authors to pass additional information
+                                                  to
+
+                                                  the signer implementation.  Kubernetes
+                                                  does not restrict or validate this
+
+                                                  metadata in any way.
+
+
+                                                  These values are copied verbatim
+                                                  into the `spec.unverifiedUserAnnotations`
+                                                  field of
+
+                                                  the PodCertificateRequest objects
+                                                  that Kubelet creates.
+
+
+                                                  Entries are subject to the same
+                                                  validation as object metadata annotations,
+
+                                                  with the addition that all keys
+                                                  must be domain-prefixed. No restrictions
+
+                                                  are placed on values, except an
+                                                  overall size limitation on the entire
+                                                  field.
+
+
+                                                  Signers should document the keys
+                                                  and values they support. Signers
+                                                  should
+
+                                                  deny requests that contain keys
+                                                  they do not recognize.'
+                                                type: object
                                             required:
                                             - keyType
                                             - signerName
@@ -5365,6 +5549,17 @@ objects:
 
                                   configuration in the cdappconfig.'
                                 type: boolean
+                              h2cTargetPort:
+                                description: 'H2CTargetPort optionally overrides the
+                                  container port for the private H2C service.
+
+                                  When set, the Kubernetes Service port remains the
+                                  environment''s h2cPrivatePort,
+
+                                  but targetPort and the container port use this value
+                                  instead.'
+                                format: int32
+                                type: integer
                               tls:
                                 description: Determines whether TLS is enabled for
                                   the private web service (if defined, overrides ClowdEnvironment
@@ -5405,6 +5600,17 @@ objects:
 
                                   configuration in the cdappconfig.'
                                 type: boolean
+                              h2cTargetPort:
+                                description: 'H2CTargetPort optionally overrides the
+                                  container port for the public H2C service.
+
+                                  When set, the Kubernetes Service port remains the
+                                  environment''s h2cPort,
+
+                                  but targetPort and the container port use this value
+                                  instead.'
+                                format: int32
+                                type: integer
                               sessionAffinity:
                                 description: Set SessionAffinity to true to enable
                                   sticky sessions
@@ -7917,9 +8123,8 @@ objects:
                                                 minimum resources the volume should
                                                 have.
 
-                                                If RecoverVolumeExpansionFailure feature
-                                                is enabled users are allowed to specify
-                                                resource requirements
+                                                Users are allowed to specify resource
+                                                requirements
 
                                                 that are lower than previous value
                                                 but must still be higher than capacity
@@ -9324,6 +9529,45 @@ objects:
                                                 description: Kubelet's generated CSRs
                                                   will be addressed to this signer.
                                                 type: string
+                                              userAnnotations:
+                                                additionalProperties:
+                                                  type: string
+                                                description: 'userAnnotations allow
+                                                  pod authors to pass additional information
+                                                  to
+
+                                                  the signer implementation.  Kubernetes
+                                                  does not restrict or validate this
+
+                                                  metadata in any way.
+
+
+                                                  These values are copied verbatim
+                                                  into the `spec.unverifiedUserAnnotations`
+                                                  field of
+
+                                                  the PodCertificateRequest objects
+                                                  that Kubelet creates.
+
+
+                                                  Entries are subject to the same
+                                                  validation as object metadata annotations,
+
+                                                  with the addition that all keys
+                                                  must be domain-prefixed. No restrictions
+
+                                                  are placed on values, except an
+                                                  overall size limitation on the entire
+                                                  field.
+
+
+                                                  Signers should document the keys
+                                                  and values they support. Signers
+                                                  should
+
+                                                  deny requests that contain keys
+                                                  they do not recognize.'
+                                                type: object
                                             required:
                                             - keyType
                                             - signerName
@@ -10046,57 +10290,70 @@ objects:
               properties:
                 conditions:
                   items:
-                    description: Condition defines an observation of a Cluster API
-                      resource operational state.
+                    description: Condition contains details for one aspect of the
+                      current state of this API Resource.
                     properties:
                       lastTransitionTime:
-                        description: 'Last time the condition transitioned from one
-                          status to another.
+                        description: 'lastTransitionTime is the last time the condition
+                          transitioned from one status to another.
 
-                          This should be when the underlying condition changed. If
-                          that is not known, then using the time when
-
-                          the API field changed is acceptable.'
+                          This should be when the underlying condition changed.  If
+                          that is not known, then using the time when the API field
+                          changed is acceptable.'
                         format: date-time
                         type: string
                       message:
-                        description: 'A human readable message indicating details
-                          about the transition.
+                        description: 'message is a human readable message indicating
+                          details about the transition.
 
-                          This field may be empty.'
+                          This may be an empty string.'
+                        maxLength: 32768
                         type: string
-                      reason:
-                        description: 'The reason for the condition''s last transition
-                          in CamelCase.
+                      observedGeneration:
+                        description: 'observedGeneration represents the .metadata.generation
+                          that the condition was set based upon.
 
-                          The specific API may choose whether or not this field is
-                          considered a guaranteed API.
+                          For instance, if .metadata.generation is currently 12, but
+                          the .status.conditions[x].observedGeneration is 9, the condition
+                          is out of date
+
+                          with respect to the current state of the instance.'
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: 'reason contains a programmatic identifier indicating
+                          the reason for the condition''s last transition.
+
+                          Producers of specific condition types may define expected
+                          values and meanings for this field,
+
+                          and whether the values are considered a guaranteed API.
+
+                          The value should be a CamelCase string.
 
                           This field may not be empty.'
-                        type: string
-                      severity:
-                        description: 'Severity provides an explicit classification
-                          of Reason code, so the users or machines can immediately
-
-                          understand the current situation and act accordingly.
-
-                          The Severity field MUST be set only when Status=False.'
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
                         type: string
                       status:
-                        description: Status of the condition, one of True, False,
+                        description: status of the condition, one of True, False,
                           Unknown.
+                        enum:
+                        - 'True'
+                        - 'False'
+                        - Unknown
                         type: string
                       type:
-                        description: 'Type of condition in CamelCase or in foo.example.com/CamelCase.
-
-                          Many .condition.type values are consistent across resources
-                          like Available, but because arbitrary conditions
-
-                          can be useful (see .node.status.conditions), the ability
-                          to deconflict is important.'
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                         type: string
                     required:
                     - lastTransitionTime
+                    - message
+                    - reason
                     - status
                     - type
                     type: object
@@ -10137,7 +10394,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.16.4
+      controller-gen.kubebuilder.io/version: v0.20.1
     name: clowdenvironments.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -10469,7 +10726,7 @@ objects:
                             mode.
                           properties:
                             image:
-                              description: Image. If unset, default is 'quay.io/redhat-user-workloads/hcm-eng-prod-tenant/kafka-connect/kafka-connect:latest'
+                              description: Image. If unset, default is 'quay.io/redhat-services-prod/hcm-eng-prod-tenant/kafka-connect'
                               type: string
                             name:
                               description: 'Defines the kafka connect cluster name
@@ -11420,57 +11677,70 @@ objects:
                     Important: Run "make" to regenerate code after modifying this
                     file'
                   items:
-                    description: Condition defines an observation of a Cluster API
-                      resource operational state.
+                    description: Condition contains details for one aspect of the
+                      current state of this API Resource.
                     properties:
                       lastTransitionTime:
-                        description: 'Last time the condition transitioned from one
-                          status to another.
+                        description: 'lastTransitionTime is the last time the condition
+                          transitioned from one status to another.
 
-                          This should be when the underlying condition changed. If
-                          that is not known, then using the time when
-
-                          the API field changed is acceptable.'
+                          This should be when the underlying condition changed.  If
+                          that is not known, then using the time when the API field
+                          changed is acceptable.'
                         format: date-time
                         type: string
                       message:
-                        description: 'A human readable message indicating details
-                          about the transition.
+                        description: 'message is a human readable message indicating
+                          details about the transition.
 
-                          This field may be empty.'
+                          This may be an empty string.'
+                        maxLength: 32768
                         type: string
-                      reason:
-                        description: 'The reason for the condition''s last transition
-                          in CamelCase.
+                      observedGeneration:
+                        description: 'observedGeneration represents the .metadata.generation
+                          that the condition was set based upon.
 
-                          The specific API may choose whether or not this field is
-                          considered a guaranteed API.
+                          For instance, if .metadata.generation is currently 12, but
+                          the .status.conditions[x].observedGeneration is 9, the condition
+                          is out of date
+
+                          with respect to the current state of the instance.'
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: 'reason contains a programmatic identifier indicating
+                          the reason for the condition''s last transition.
+
+                          Producers of specific condition types may define expected
+                          values and meanings for this field,
+
+                          and whether the values are considered a guaranteed API.
+
+                          The value should be a CamelCase string.
 
                           This field may not be empty.'
-                        type: string
-                      severity:
-                        description: 'Severity provides an explicit classification
-                          of Reason code, so the users or machines can immediately
-
-                          understand the current situation and act accordingly.
-
-                          The Severity field MUST be set only when Status=False.'
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
                         type: string
                       status:
-                        description: Status of the condition, one of True, False,
+                        description: status of the condition, one of True, False,
                           Unknown.
+                        enum:
+                        - 'True'
+                        - 'False'
+                        - Unknown
                         type: string
                       type:
-                        description: 'Type of condition in CamelCase or in foo.example.com/CamelCase.
-
-                          Many .condition.type values are consistent across resources
-                          like Available, but because arbitrary conditions
-
-                          can be useful (see .node.status.conditions), the ability
-                          to deconflict is important.'
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                         type: string
                     required:
                     - lastTransitionTime
+                    - message
+                    - reason
                     - status
                     - type
                     type: object
@@ -11525,7 +11795,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.16.4
+      controller-gen.kubebuilder.io/version: v0.20.1
     name: clowdjobinvocations.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -11926,57 +12196,70 @@ objects:
                   type: boolean
                 conditions:
                   items:
-                    description: Condition defines an observation of a Cluster API
-                      resource operational state.
+                    description: Condition contains details for one aspect of the
+                      current state of this API Resource.
                     properties:
                       lastTransitionTime:
-                        description: 'Last time the condition transitioned from one
-                          status to another.
+                        description: 'lastTransitionTime is the last time the condition
+                          transitioned from one status to another.
 
-                          This should be when the underlying condition changed. If
-                          that is not known, then using the time when
-
-                          the API field changed is acceptable.'
+                          This should be when the underlying condition changed.  If
+                          that is not known, then using the time when the API field
+                          changed is acceptable.'
                         format: date-time
                         type: string
                       message:
-                        description: 'A human readable message indicating details
-                          about the transition.
+                        description: 'message is a human readable message indicating
+                          details about the transition.
 
-                          This field may be empty.'
+                          This may be an empty string.'
+                        maxLength: 32768
                         type: string
-                      reason:
-                        description: 'The reason for the condition''s last transition
-                          in CamelCase.
+                      observedGeneration:
+                        description: 'observedGeneration represents the .metadata.generation
+                          that the condition was set based upon.
 
-                          The specific API may choose whether or not this field is
-                          considered a guaranteed API.
+                          For instance, if .metadata.generation is currently 12, but
+                          the .status.conditions[x].observedGeneration is 9, the condition
+                          is out of date
+
+                          with respect to the current state of the instance.'
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: 'reason contains a programmatic identifier indicating
+                          the reason for the condition''s last transition.
+
+                          Producers of specific condition types may define expected
+                          values and meanings for this field,
+
+                          and whether the values are considered a guaranteed API.
+
+                          The value should be a CamelCase string.
 
                           This field may not be empty.'
-                        type: string
-                      severity:
-                        description: 'Severity provides an explicit classification
-                          of Reason code, so the users or machines can immediately
-
-                          understand the current situation and act accordingly.
-
-                          The Severity field MUST be set only when Status=False.'
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
                         type: string
                       status:
-                        description: Status of the condition, one of True, False,
+                        description: status of the condition, one of True, False,
                           Unknown.
+                        enum:
+                        - 'True'
+                        - 'False'
+                        - Unknown
                         type: string
                       type:
-                        description: 'Type of condition in CamelCase or in foo.example.com/CamelCase.
-
-                          Many .condition.type values are consistent across resources
-                          like Available, but because arbitrary conditions
-
-                          can be useful (see .node.status.conditions), the ability
-                          to deconflict is important.'
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                         type: string
                     required:
                     - lastTransitionTime
+                    - message
+                    - reason
                     - status
                     - type
                     type: object
@@ -12289,12 +12572,29 @@ objects:
     - update
     - watch
   - apiGroups:
+    - cluster.x-k8s.io
+    resources:
+    - clusters
+    - machinepools
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
     - config.openshift.io
     resources:
     - ingresses
     verbs:
     - get
     - list
+  - apiGroups:
+    - controlplane.cluster.x-k8s.io
+    resources:
+    - rosacontrolplanes
+    verbs:
+    - get
+    - list
+    - watch
   - apiGroups:
     - cyndi.cloud.redhat.com
     resources:
@@ -12306,6 +12606,14 @@ objects:
     - list
     - patch
     - update
+    - watch
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    resources:
+    - rosamachinepools
+    verbs:
+    - get
+    - list
     - watch
   - apiGroups:
     - kafka.strimzi.io

@@ -121,6 +121,9 @@ func (rm *ReconciliationMetrics) stop() {
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses;networkpolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=config.openshift.io,resources=ingresses,verbs=get;list
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates;issuers,verbs=get;list;create;update;patch;delete
+// +kubebuilder:rbac:groups=cluster.x-k8s.io,resources=clusters;machinepools,verbs=get;list;watch
+// +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=rosacontrolplanes,verbs=get;list;watch
+// +kubebuilder:rbac:groups=infrastructure.cluster.x-k8s.io,resources=rosamachinepools,verbs=get;list;watch
 
 // ClowdAppReconciler reconciles a ClowdApp object
 type ClowdAppReconciler struct {
