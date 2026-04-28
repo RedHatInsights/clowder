@@ -92,6 +92,11 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 
 	dep.Config.Endpoints = depConfig
 	dep.Config.PrivateEndpoints = privDepConfig
+
+	// Populate V2 endpoint structures
+	dep.makeV2DependencyEndpoints()
+	dep.makeV2PrivateDependencyEndpoints()
+
 	return nil
 }
 
@@ -302,4 +307,121 @@ func processAppAndAppRefEndpoints(
 	}
 
 	return missingDeps
+}
+
+// constructEndpointURI builds a complete URI from protocol, hostname, and port
+func constructEndpointURI(protocol string, hostname string, port int) string {
+	return fmt.Sprintf("%s://%s:%d", protocol, hostname, port)
+}
+
+// buildV2EndpointMap transforms V1 endpoint data into V2 format
+// Returns map[appName]map[serviceName]DependencyEndpointV2
+func buildV2EndpointMap(endpoints []config.DependencyEndpoint) map[string]map[string]config.DependencyEndpointV2 {
+	if len(endpoints) == 0 {
+		return nil
+	}
+
+	v2Map := make(map[string]map[string]config.DependencyEndpointV2)
+
+	for _, ep := range endpoints {
+		// Initialize app map if it doesn't exist
+		if _, exists := v2Map[ep.App]; !exists {
+			v2Map[ep.App] = make(map[string]config.DependencyEndpointV2)
+		}
+
+		// Add base port endpoint (http)
+		if ep.Port > 0 {
+			v2Map[ep.App][ep.Name] = config.DependencyEndpointV2{
+				Uri: constructEndpointURI("http", ep.Hostname, ep.Port),
+			}
+		}
+
+		// Add TLS port endpoint (https)
+		if ep.TlsPort != nil && *ep.TlsPort > 0 {
+			endpoint := config.DependencyEndpointV2{
+				Uri: constructEndpointURI("https", ep.Hostname, *ep.TlsPort),
+			}
+			if ep.TlsCAPath != nil {
+				endpoint.CaCertificate = ep.TlsCAPath
+			}
+			v2Map[ep.App][ep.Name+"_tls"] = endpoint
+		}
+
+		// Add H2C port endpoint (http)
+		if ep.H2CPort != nil && *ep.H2CPort > 0 {
+			v2Map[ep.App][ep.Name+"_h2c"] = config.DependencyEndpointV2{
+				Uri: constructEndpointURI("http", ep.Hostname, *ep.H2CPort),
+			}
+		}
+
+		// Add H2C TLS port endpoint (https)
+		if ep.H2CTLSPort != nil && *ep.H2CTLSPort > 0 {
+			endpoint := config.DependencyEndpointV2{
+				Uri: constructEndpointURI("https", ep.Hostname, *ep.H2CTLSPort),
+			}
+			if ep.TlsCAPath != nil {
+				endpoint.CaCertificate = ep.TlsCAPath
+			}
+			v2Map[ep.App][ep.Name+"_h2c_tls"] = endpoint
+		}
+	}
+
+	return v2Map
+}
+
+// makeV2DependencyEndpoints populates the V2 public dependency endpoints
+func (dep *dependenciesProvider) makeV2DependencyEndpoints() {
+	if len(dep.Config.Endpoints) == 0 {
+		return
+	}
+
+	v2Map := buildV2EndpointMap(dep.Config.Endpoints)
+
+	if len(v2Map) > 0 {
+		// Convert to map[string]interface{} for the generated type
+		v2Interface := make(config.AppConfigDependencyEndpointsV2)
+		for appName, services := range v2Map {
+			v2Interface[appName] = services
+		}
+
+		dep.Config.DependencyEndpoints = &config.AppConfigDependencyEndpoints{
+			V2: v2Interface,
+		}
+	}
+}
+
+// makeV2PrivateDependencyEndpoints populates the V2 private dependency endpoints
+func (dep *dependenciesProvider) makeV2PrivateDependencyEndpoints() {
+	if len(dep.Config.PrivateEndpoints) == 0 {
+		return
+	}
+
+	// Convert PrivateDependencyEndpoint to DependencyEndpoint format for transformation
+	publicFormat := make([]config.DependencyEndpoint, len(dep.Config.PrivateEndpoints))
+	for i, privEp := range dep.Config.PrivateEndpoints {
+		publicFormat[i] = config.DependencyEndpoint{
+			Name:       privEp.Name,
+			Hostname:   privEp.Hostname,
+			Port:       privEp.Port,
+			App:        privEp.App,
+			TlsPort:    privEp.TlsPort,
+			H2CPort:    privEp.H2CPort,
+			H2CTLSPort: privEp.H2CTLSPort,
+			TlsCAPath:  privEp.TlsCAPath,
+		}
+	}
+
+	v2Map := buildV2EndpointMap(publicFormat)
+
+	if len(v2Map) > 0 {
+		// Convert to map[string]interface{} for the generated type
+		v2Interface := make(config.AppConfigPrivateDependencyEndpointsV2)
+		for appName, services := range v2Map {
+			v2Interface[appName] = services
+		}
+
+		dep.Config.PrivateDependencyEndpoints = &config.AppConfigPrivateDependencyEndpoints{
+			V2: v2Interface,
+		}
+	}
 }
