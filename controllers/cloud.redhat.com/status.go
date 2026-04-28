@@ -469,8 +469,8 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	conditions = append(conditions, *condition)
 
-	for _, condition := range conditions {
-		cond.Set(o, condition)
+	for i := range conditions {
+		cond.Set(o, conditions[i])
 	}
 
 	o.Status.Ready = deploymentStatus
@@ -534,8 +534,8 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	conditions = append(conditions, *condition)
 
-	for _, condition := range conditions {
-		cond.Set(o, condition)
+	for i := range conditions {
+		cond.Set(o, conditions[i])
 	}
 
 	o.Status.Ready = deploymentStatus
@@ -600,8 +600,8 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 	}
 	conditions = append(conditions, *condition)
 
-	for _, condition := range conditions {
-		cond.Set(o, condition)
+	for i := range conditions {
+		cond.Set(o, conditions[i])
 	}
 
 	o.Status.Completed = jobStatus
