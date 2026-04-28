@@ -23,6 +23,16 @@ func anyNotZero(ints ...int) bool {
 	return false
 }
 
+// isInServesList checks if an app name is in the serves list
+func isInServesList(appName string, serves []string) bool {
+	for _, name := range serves {
+		if name == appName {
+			return true
+		}
+	}
+	return false
+}
+
 func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 
 	if dep.Env.Spec.Providers.Web.PrivatePort == 0 {
@@ -43,6 +53,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		&dep.Env.Spec.Providers.Web,
+		app.Name,
 	)
 
 	// Return if no deps
@@ -135,8 +146,8 @@ func makeDepConfig(
 		appRefMap[iappRef.Name] = *iappRef
 	}
 
-	missingDeps = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.Dependencies, depConfig, privDepConfig, envWebConfig)
-	_ = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, envWebConfig)
+	missingDeps = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.Dependencies, depConfig, privDepConfig, envWebConfig, app.Name)
+	_ = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, envWebConfig, app.Name)
 
 	return missingDeps
 }
@@ -283,27 +294,42 @@ func processAppAndAppRefEndpoints(
 	depConfig *[]config.DependencyEndpoint,
 	privDepConfig *[]config.PrivateDependencyEndpoint,
 	envWebConfig *crd.WebConfig,
+	consumerAppName string,
 ) (missingDeps []string) {
 
 	missingDeps = []string{}
 
 	for _, dep := range depList {
-		if depApp, exists := appMap[dep]; exists {
-			// If dependency exists in ClowdApp, configure endpoints for each deployment
-			for i := range depApp.Spec.Deployments {
-				// avoid implicit memory aliasing by using indexing
-				innerDeployment := &depApp.Spec.Deployments[i]
-				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, envWebConfig)
-			}
-		} else if depAppRef, exists := appRefMap[dep]; exists {
-			// If dependency exists in ClowdAppRef, configure endpoints for each deployment
+		depApp, hasApp := appMap[dep]
+		depAppRef, hasAppRef := appRefMap[dep]
+
+		useAppRef := false
+
+		if hasApp && hasAppRef {
+			// Both ClowdApp and ClowdAppRef exist - check serves field
+			useAppRef = isInServesList(consumerAppName, depAppRef.Spec.Serves)
+		} else if hasAppRef {
+			// Only ClowdAppRef exists
+			useAppRef = true
+		}
+		// else: only ClowdApp exists or neither exists
+
+		if useAppRef && hasAppRef {
+			// Use ClowdAppRef endpoints
 			for i := range depAppRef.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depAppRef.Spec.Deployments[i]
 				configureAppRefDependencyEndpoints(innerDeployment, depAppRef, depConfig, privDepConfig, envWebConfig)
 			}
+		} else if hasApp {
+			// Use ClowdApp endpoints
+			for i := range depApp.Spec.Deployments {
+				// avoid implicit memory aliasing by using indexing
+				innerDeployment := &depApp.Spec.Deployments[i]
+				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, envWebConfig)
+			}
 		} else {
-			// If dependency is not found in ClowdApp or ClowdAppRef, mark as missing
+			// Neither ClowdApp nor ClowdAppRef exists
 			missingDeps = append(missingDeps, dep)
 		}
 	}

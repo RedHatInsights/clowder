@@ -290,6 +290,7 @@ _Appears in:_
 | `deployments` _[ClowdAppRefDeployment](#clowdapprefdeployment) array_ | Deployments defines a list of deployments associated with the ClowdApp in the remote cluster |  |  |
 | `remoteCluster` _[ClowdAppRefRemoteCluster](#clowdapprefremotecluster)_ | RemoteCluster defines information about the remote cluster where the services are located |  |  |
 | `disabled` _boolean_ | Disabled turns off this ClowdAppRef |  |  |
+| `serves` _string array_ | Serves defines a list of ClowdApp names that should prefer this ClowdAppRef<br />over a local ClowdApp with the same name when both exist in the environment.<br />If empty or not specified, the ClowdAppRef will only be used when no local<br />ClowdApp with the same name exists. |  | Optional: \{\} <br /> |
 
 
 
