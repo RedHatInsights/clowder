@@ -89,6 +89,50 @@
                 },
                 "prometheusGateway": {
                     "$ref": "#/definitions/PrometheusGatewayConfig"
+                },
+                "dependencyEndpoints": {
+                    "id": "dependencyEndpoints",
+                    "type": "object",
+                    "description": "V2 public dependency endpoints with simplified URI-based structure",
+                    "properties": {
+                        "v2": {
+                            "type": "object",
+                            "description": "Version 2 public dependency endpoint format with URI-based endpoints",
+                            "patternProperties": {
+                                ".*": {
+                                    "type": "object",
+                                    "description": "App-level endpoint grouping",
+                                    "patternProperties": {
+                                        ".*": {
+                                            "$ref": "#/definitions/DependencyEndpointV2"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "privateDependencyEndpoints": {
+                    "id": "privateDependencyEndpoints",
+                    "type": "object",
+                    "description": "V2 private dependency endpoints with simplified URI-based structure",
+                    "properties": {
+                        "v2": {
+                            "type": "object",
+                            "description": "Version 2 private dependency endpoint format with URI-based endpoints",
+                            "patternProperties": {
+                                ".*": {
+                                    "type": "object",
+                                    "description": "App-level endpoint grouping",
+                                    "patternProperties": {
+                                        ".*": {
+                                            "$ref": "#/definitions/DependencyEndpointV2"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             },
             "required": [
@@ -597,6 +641,24 @@
             "required": [
                 "hostname",
                 "port"
+            ]
+        },
+        "DependencyEndpointV2": {
+            "id": "dependencyEndpointV2",
+            "type": "object",
+            "description": "V2 dependency endpoint with complete URI",
+            "properties": {
+                "uri": {
+                    "description": "Complete URI including protocol, hostname, and port (e.g., 'http://service.ns.svc:8000', 'https://service:8443')",
+                    "type": "string"
+                },
+                "ca_certificate": {
+                    "description": "Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "uri"
             ]
         }
     }
