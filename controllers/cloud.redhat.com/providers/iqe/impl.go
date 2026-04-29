@@ -50,15 +50,18 @@ func joinNullableSlice(s *[]string) string {
 
 func updateEnvVars(existingEnvVars []core.EnvVar, newEnvVars []core.EnvVar) []core.EnvVar {
 	for _, newEnvVar := range newEnvVars {
-		if newEnvVar.Value == "" {
-			// do not update value of an env var if the new value is empty
+		if newEnvVar.Value == "" && newEnvVar.ValueFrom == nil {
+			// do not update value of an env var if the new value is empty and no valueFrom is set
 			continue
 		}
 		replaced := false
 		for idx, existingEnvVar := range existingEnvVars {
 			if existingEnvVar.Name == newEnvVar.Name {
 				p := &existingEnvVars[idx]
+				// Assign both fields and clear the other so the result satisfies the
+				// Kubernetes constraint that Value and ValueFrom are mutually exclusive.
 				p.Value = newEnvVar.Value
+				p.ValueFrom = newEnvVar.ValueFrom
 				replaced = true
 			}
 		}
