@@ -252,6 +252,46 @@ func TestGetTokenRefresherSidecar(t *testing.T) {
 	}
 }
 
+func TestGetTokenRefresherVolumeMounts(t *testing.T) {
+	appName := "test-app"
+
+	t.Run("no volumeMounts", func(t *testing.T) {
+		sidecar := &crd.Sidecar{Name: "token-refresher", Enabled: true}
+		cont := getTokenRefresher(appName, sidecar)
+		if len(cont.VolumeMounts) != 0 {
+			t.Fatalf("expected 0 volumeMounts, got %d", len(cont.VolumeMounts))
+		}
+	})
+
+	t.Run("with custom volumeMounts", func(t *testing.T) {
+		sidecar := &crd.Sidecar{
+			Name:    "token-refresher",
+			Enabled: true,
+			VolumeMounts: []core.VolumeMount{
+				{Name: "certs", MountPath: "/certs"},
+				{Name: "data", MountPath: "/data", ReadOnly: true},
+			},
+		}
+		cont := getTokenRefresher(appName, sidecar)
+		if len(cont.VolumeMounts) != 2 {
+			t.Fatalf("expected 2 volumeMounts, got %d", len(cont.VolumeMounts))
+		}
+		if cont.VolumeMounts[0].Name != "certs" || cont.VolumeMounts[0].MountPath != "/certs" {
+			t.Errorf("first volumeMount should be certs:/certs, got %s:%s", cont.VolumeMounts[0].Name, cont.VolumeMounts[0].MountPath)
+		}
+		if cont.VolumeMounts[1].Name != "data" || cont.VolumeMounts[1].MountPath != "/data" || !cont.VolumeMounts[1].ReadOnly {
+			t.Errorf("second volumeMount should be data:/data (readOnly), got %s:%s (readOnly=%v)", cont.VolumeMounts[1].Name, cont.VolumeMounts[1].MountPath, cont.VolumeMounts[1].ReadOnly)
+		}
+	})
+
+	t.Run("nil sidecar produces no volumeMounts", func(t *testing.T) {
+		cont := getTokenRefresher(appName, nil)
+		if len(cont.VolumeMounts) != 0 {
+			t.Fatalf("expected 0 volumeMounts, got %d", len(cont.VolumeMounts))
+		}
+	})
+}
+
 func TestGetOtelCollectorVolumeMounts(t *testing.T) {
 	env := &crd.ClowdEnvironment{
 		Spec: crd.ClowdEnvironmentSpec{

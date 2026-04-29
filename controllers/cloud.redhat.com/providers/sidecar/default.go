@@ -45,7 +45,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			switch sidecar.Name {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
-					cont := getTokenRefresher(app.Name)
+					cont := getTokenRefresher(app.Name, &sidecar)
 					if cont != nil {
 						d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, *cont)
 					}
@@ -97,7 +97,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 			switch sidecar.Name {
 			case "token-refresher":
 				if sidecar.Enabled && sc.Env.Spec.Providers.Sidecars.TokenRefresher.Enabled {
-					cont := getTokenRefresher(app.Name)
+					cont := getTokenRefresher(app.Name, &sidecar)
 					if cont != nil {
 						cj.Spec.JobTemplate.Spec.Template.Spec.Containers = append(cj.Spec.JobTemplate.Spec.Template.Spec.Containers, *cont)
 					}
@@ -137,7 +137,7 @@ func (sc *sidecarProvider) Provide(app *crd.ClowdApp) error {
 	return nil
 }
 
-func getTokenRefresher(appName string) *core.Container {
+func getTokenRefresher(appName string, appSidecar *crd.Sidecar) *core.Container {
 	cont := core.Container{}
 
 	cont.Name = "token-refresher"
@@ -176,6 +176,10 @@ func getTokenRefresher(appName string) *core.Container {
 	)
 
 	cont.Env = envVars
+
+	if appSidecar != nil && len(appSidecar.VolumeMounts) > 0 {
+		cont.VolumeMounts = append(cont.VolumeMounts, appSidecar.VolumeMounts...)
+	}
 
 	return &cont
 }
