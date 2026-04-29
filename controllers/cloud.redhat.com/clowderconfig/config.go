@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 // ClowderConfig is the struct for the Clowder config.
@@ -72,7 +73,7 @@ func getConfig() ClowderConfig {
 
 	fmt.Printf("Loading config from: %s\n", configPath)
 
-	jsonData, err := os.ReadFile(configPath)
+	jsonData, err := os.ReadFile(filepath.Clean(configPath))
 
 	if err != nil {
 		fmt.Printf("Config file not found\n")

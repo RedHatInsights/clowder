@@ -1,31 +1,31 @@
 module github.com/RedHatInsights/clowder
 
-go 1.25.7
+go 1.25.9
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.7.2
 	github.com/RedHatInsights/cyndi-operator v0.1.13
 	github.com/RedHatInsights/go-difflib v1.0.0
-	github.com/RedHatInsights/rhc-osdk-utils v0.14.0
-	github.com/RedHatInsights/strimzi-client-go v0.38.0
+	github.com/RedHatInsights/rhc-osdk-utils v0.15.1
+	github.com/RedHatInsights/strimzi-client-go v0.40.0
 	github.com/caddyserver/caddy/v2 v2.11.2
-	github.com/cert-manager/cert-manager v1.20.0
+	github.com/cert-manager/cert-manager v1.20.1
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.19.0
-	github.com/lib/pq v1.12.0
-	github.com/minio/minio-go/v7 v7.0.99
+	github.com/lib/pq v1.12.3
+	github.com/minio/minio-go/v7 v7.0.100
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.90.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.90.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
 	k8s.io/api v0.35.3
 	k8s.io/apiextensions-apiserver v0.35.3
 	k8s.io/apimachinery v0.36.0-alpha.2
-	k8s.io/client-go v11.0.0+incompatible
-	sigs.k8s.io/cluster-api v1.12.4
+	k8s.io/client-go v1.5.2
+	sigs.k8s.io/cluster-api v1.12.5
 	sigs.k8s.io/controller-runtime v0.23.3
 )
 
@@ -71,8 +71,8 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-ini/ini v1.67.1 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.5 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.22.5 // indirect
 	github.com/go-openapi/jsonreference v0.21.5 // indirect
@@ -108,7 +108,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.8.0 // indirect
+	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.1-0.20220621161143-b0104c826a24 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -142,8 +142,7 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
 	github.com/redhatinsights/crcauthlib v0.6.0 // indirect
-	github.com/redhatinsights/platform-go-middlewares v0.20.0 // indirect
-	github.com/redhatinsights/platform-go-middlewares/v2 v2.0.0 // indirect
+	github.com/redhatinsights/platform-go-middlewares/v2 v2.1.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
@@ -151,7 +150,7 @@ require (
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/slackhq/nebula v1.10.3 // indirect
-	github.com/smallstep/certificates v0.30.1 // indirect
+	github.com/smallstep/certificates v0.30.2 // indirect
 	github.com/smallstep/cli-utils v0.12.2 // indirect
 	github.com/smallstep/linkedca v0.25.0 // indirect
 	github.com/smallstep/nosql v0.8.0 // indirect
@@ -230,16 +229,8 @@ tool (
 	sigs.k8s.io/kustomize/kustomize/v5
 )
 
-replace k8s.io/api => k8s.io/api v0.35.3
-
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.35.3
-
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.3
-
-replace k8s.io/client-go => k8s.io/client-go v0.35.3
-
-replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
-
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20260319144801-8c68e18a5cc7
-
-replace github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
+replace (
+	github.com/go-ini/ini => gopkg.in/ini.v1 v1.67.1
+	k8s.io/client-go => k8s.io/client-go v0.35.3
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+)
