@@ -2,6 +2,8 @@ package dependencies
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -311,7 +313,11 @@ func processAppAndAppRefEndpoints(
 
 // constructEndpointURI builds a complete URI from protocol, hostname, and port
 func constructEndpointURI(protocol string, hostname string, port int) string {
-	return fmt.Sprintf("%s://%s:%d", protocol, hostname, port)
+	u := &url.URL{
+		Scheme: protocol,
+		Host:   net.JoinHostPort(hostname, fmt.Sprintf("%d", port)),
+	}
+	return u.String()
 }
 
 // buildV2EndpointMap transforms V1 endpoint data into V2 format
