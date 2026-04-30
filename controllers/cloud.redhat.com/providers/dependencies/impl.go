@@ -314,21 +314,22 @@ func processAppAndAppRefEndpoints(
 		}
 		// else: only ClowdApp exists or neither exists
 
-		if useAppRef && hasAppRef {
+		switch {
+		case useAppRef && hasAppRef:
 			// Use ClowdAppRef endpoints
 			for i := range depAppRef.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depAppRef.Spec.Deployments[i]
 				configureAppRefDependencyEndpoints(innerDeployment, depAppRef, depConfig, privDepConfig, envWebConfig)
 			}
-		} else if hasApp {
+		case hasApp:
 			// Use ClowdApp endpoints
 			for i := range depApp.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depApp.Spec.Deployments[i]
 				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, envWebConfig)
 			}
-		} else {
+		default:
 			// Neither ClowdApp nor ClowdAppRef exists
 			missingDeps = append(missingDeps, dep)
 		}
