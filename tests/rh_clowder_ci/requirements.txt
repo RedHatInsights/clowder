@@ -1,4 +1,4 @@
 pytest
 crc-bonfire
 wait_for
-ocviapy
+ocviapy>=v1.7.0
