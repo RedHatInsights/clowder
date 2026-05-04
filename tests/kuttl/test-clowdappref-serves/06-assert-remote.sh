@@ -1,6 +1,6 @@
 #!/bin/bash
 # Verify inventory NOW uses remote rbac ClowdAppRef
-CONFIG=$(kubectl get secret inventory-config -n test-serves -o jsonpath='{.data.cdappconfig\.json}' | base64 -d)
+CONFIG=$(kubectl get secret inventory -n test-serves -o jsonpath='{.data.cdappconfig\.json}' | base64 -d)
 HOSTNAME=$(echo "$CONFIG" | jq -r '.endpoints[] | select(.app=="rbac") | .hostname')
 
 # Should now use remote hostname
