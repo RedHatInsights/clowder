@@ -469,6 +469,12 @@ func SetClowdEnvConditions(ctx context.Context, client client.Client, o *crd.Clo
 
 	conditions = append(conditions, *condition)
 
+	// FIXME: Delete after this condition has been completely removed
+	// Remove obsolete condition from pre-Nov 2021 Clowder versions.
+	// This condition was removed in commit 3939bbba4 but persists in resources created before that time.
+	// Kubernetes now rejects empty reason fields, causing status updates to fail.
+	cond.Delete(o, "ReconciliationPartiallySuccessful")
+
 	for i := range conditions {
 		cond.Set(o, conditions[i])
 	}
@@ -533,6 +539,12 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	condition.LastTransitionTime = metav1.Now()
 
 	conditions = append(conditions, *condition)
+
+	// FIXME: Delete after this condition has been completely removed
+	// Remove obsolete condition from pre-Nov 2021 Clowder versions.
+	// This condition was removed in commit 3939bbba4 but persists in resources created before that time.
+	// Kubernetes now rejects empty reason fields, causing status updates to fail.
+	cond.Delete(o, "ReconciliationPartiallySuccessful")
 
 	for i := range conditions {
 		cond.Set(o, conditions[i])
@@ -599,6 +611,12 @@ func SetClowdJobInvocationConditions(ctx context.Context, client client.Client, 
 		condition.Message = "All ClowdJob invocations complete"
 	}
 	conditions = append(conditions, *condition)
+
+	// FIXME: Delete after this condition has been completely removed
+	// Remove obsolete condition from pre-Nov 2021 Clowder versions.
+	// This condition was removed in commit 3939bbba4 but persists in resources created before that time.
+	// Kubernetes now rejects empty reason fields, causing status updates to fail.
+	cond.Delete(o, "ReconciliationPartiallySuccessful")
 
 	for i := range conditions {
 		cond.Set(o, conditions[i])
