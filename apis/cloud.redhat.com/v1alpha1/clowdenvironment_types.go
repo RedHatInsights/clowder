@@ -394,6 +394,37 @@ type ObjectStoreConfig struct {
 	Images ObjectStoreImages `json:"images,omitempty"`
 }
 
+// ReverseProxyImages defines the container images used for the reverse proxy
+type ReverseProxyImages struct {
+	Proxy string `json:"proxy,omitempty"`
+}
+
+// ReverseProxyMode details the mode of operation of the Clowder ReverseProxy
+// Provider
+// +kubebuilder:validation:Enum=ephemeral;none
+type ReverseProxyMode string
+
+// ReverseProxyConfig configures the Clowder provider controlling the creation of
+// a reverse proxy instance for frontend asset serving.
+type ReverseProxyConfig struct {
+	// The mode of operation of the Clowder ReverseProxy Provider. Valid options are:
+	// (*_ephemeral_*) where a reverse proxy instance will be created for ephemeral
+	// environments, and (*_none_*) where no reverse proxy will be deployed.
+	Mode ReverseProxyMode `json:"mode,omitempty"`
+
+	// Override the reverse proxy images
+	Images ReverseProxyImages `json:"images,omitempty"`
+
+	// The S3 bucket path prefix used by the reverse proxy.
+	BucketPathPrefix string `json:"bucketPathPrefix,omitempty"`
+
+	// The path to the SPA entrypoint file served by the reverse proxy.
+	SpaEntrypointPath string `json:"spaEntrypointPath,omitempty"`
+
+	// The AWS region used by the reverse proxy for S3 access.
+	AwsRegion string `json:"awsRegion,omitempty"`
+}
+
 // FeatureFlagsImages defines the container images used for feature flags
 type FeatureFlagsImages struct {
 	Unleash     string `json:"unleash,omitempty"`
@@ -689,6 +720,9 @@ type ProvidersConfig struct {
 
 	// Defines the Deployment provider options
 	Deployment DeploymentConfig `json:"deployment,omitempty"`
+
+	// Defines the Configuration for the Clowder ReverseProxy Provider.
+	ReverseProxy ReverseProxyConfig `json:"reverseProxy,omitempty"`
 }
 
 // MinioStatus defines the status of a minio instance in local mode.
