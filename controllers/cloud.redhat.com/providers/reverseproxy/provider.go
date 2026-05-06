@@ -11,7 +11,7 @@ import (
 )
 
 // DefaultImageReverseProxy defines the default reverse proxy image.
-var DefaultImageReverseProxy = "quay.io/redhat-services-prod/hcc-platex-services-tenant/frontend-asset-proxy:latest"
+var DefaultImageReverseProxy = "quay.io/redhat-services-prod/hcc-platex-services-tenant/frontend-asset-proxy:662ccb9"
 
 // GetReverseProxyImage returns the reverse proxy image for the environment.
 func GetReverseProxyImage(env *crd.ClowdEnvironment) string {
@@ -42,5 +42,5 @@ func GetReverseProxy(c *providers.Provider) (providers.ClowderProvider, error) {
 }
 
 func init() {
-	providers.ProvidersRegistration.Register(GetReverseProxy, 6, ProvName)
+	providers.ProvidersRegistration.Register(GetReverseProxy, 7, ProvName)
 }

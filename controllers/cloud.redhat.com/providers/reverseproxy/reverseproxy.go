@@ -5,6 +5,7 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -146,12 +147,22 @@ func makeLocalReverseProxy(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap pr
 	}
 
 	c := core.Container{
-		Name:                     nn.Name,
-		Image:                    GetReverseProxyImage(env),
-		Env:                      envVars,
-		Ports:                    ports,
-		LivenessProbe:            &livenessProbe,
-		ReadinessProbe:           &readinessProbe,
+		Name:           nn.Name,
+		Image:          GetReverseProxyImage(env),
+		Env:            envVars,
+		Ports:          ports,
+		LivenessProbe:  &livenessProbe,
+		ReadinessProbe: &readinessProbe,
+		Resources: core.ResourceRequirements{
+			Limits: core.ResourceList{
+				"memory": resource.MustParse("200Mi"),
+				"cpu":    resource.MustParse("100m"),
+			},
+			Requests: core.ResourceList{
+				"memory": resource.MustParse("100Mi"),
+				"cpu":    resource.MustParse("50m"),
+			},
+		},
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
 		ImagePullPolicy:          core.PullIfNotPresent,
