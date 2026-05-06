@@ -26,7 +26,7 @@ spec:
       configAccess: environment
       iqe:
         # Base image for iqe-tests
-        imageBase: "quay.io/psav/clowder-hello"
+        imageBase: "quay.io/cloudservices/clowder-hello"
         vaultSecretRef:
           name: vault-secret
           namespace: test-iqe-jobs-vault-secret-storage-ns
@@ -76,7 +76,7 @@ spec:
   deployments:
     - name: service
       podSpec:
-        image: quay.io/psav/clowder-hello
+        image: quay.io/cloudservices/clowder-hello
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation

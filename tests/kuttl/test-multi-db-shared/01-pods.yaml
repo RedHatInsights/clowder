@@ -44,7 +44,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   database:
     name: app-a
     version: 12
@@ -60,7 +60,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   database:
     name: app-b
     version: 13
@@ -76,7 +76,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   database:
     sharedDbAppName: app-b
     version: 13

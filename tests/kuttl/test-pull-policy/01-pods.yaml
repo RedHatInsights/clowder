@@ -41,7 +41,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello:latest
+      image: quay.io/cloudservices/clowder-hello:latest
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
@@ -87,4 +87,4 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello:latest
+      image: quay.io/cloudservices/clowder-hello:latest

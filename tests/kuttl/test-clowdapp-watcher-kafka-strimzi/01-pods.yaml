@@ -46,7 +46,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   kafkaTopics:
     - replicas: 7
       partitions: 64

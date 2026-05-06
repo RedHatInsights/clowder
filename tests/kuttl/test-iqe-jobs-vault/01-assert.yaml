@@ -46,7 +46,7 @@ spec:
       containers:
         - args:
           - "clowder"
-          image: quay.io/psav/clowder-hello:latest
+          image: quay.io/cloudservices/clowder-hello:latest
           volumeMounts:
           - mountPath: /cdenv
             name: cdenvconfig

@@ -44,7 +44,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
       env: 
         - name: ENV_VAR_1
           value: env_var_1

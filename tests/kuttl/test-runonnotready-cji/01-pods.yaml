@@ -44,7 +44,7 @@ spec:
     - name: processor
       podSpec:
         # We're trying to pull an image that doesn't exist, so the pod will never actually succeed
-        image: quay.io/psav/clowder-hellou
+        image: quay.io/cloudservices/clowder-hellou
   jobs:
     - name: hello-cji
       podSpec:

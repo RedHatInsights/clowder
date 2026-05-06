@@ -81,7 +81,7 @@ spec:
               value: "true"
             - name: IQE_IBUTSU_SOURCE
               value: "post_stage_deploy"
-          image: quay.io/psav/clowder-hello:latest
+          image: quay.io/cloudservices/clowder-hello:latest
           resources:
             limits:
               cpu: "2"
@@ -96,7 +96,7 @@ spec:
             name: cdenvconfig
           - mountPath: /cdapp
             name: config-secret
-        - image: quay.io/psav/clowder-hello:latest
+        - image: quay.io/cloudservices/clowder-hello:latest
           resources:
             limits:
               cpu: 400m

@@ -114,7 +114,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     web: true
     webServices:
       public:
@@ -135,7 +135,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     web: true
   dependencies:
     - remote-app-tls

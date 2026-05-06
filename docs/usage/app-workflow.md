@@ -36,7 +36,7 @@ apps:
   repo: /path/to/your/git/repo
   path: clowdapp.yml
   parameters:
-    IMAGE: quay.io/psav/clowder-hello
+    IMAGE: quay.io/cloudservices/clowder-hello
 ```
 
 This config instructs bonfire to fetch the template for your application from a git repo located on local disk.
@@ -89,7 +89,7 @@ objects:
 
 parameters:
   - name: IMAGE
-    value: quay.io/psav/clowder-hello
+    value: quay.io/cloudservices/clowder-hello
   - name: IMAGE_TAG
     value: latest
   - name: ENV_NAME

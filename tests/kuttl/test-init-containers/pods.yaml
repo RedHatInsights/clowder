@@ -9,7 +9,7 @@ spec:
   deployments:
   - name: processor-broken
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
       initContainers:
         - env:
           - name: "name"

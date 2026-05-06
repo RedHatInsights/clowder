@@ -45,14 +45,14 @@ spec:
   deployments:
   - name: default
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   - name: edit
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     k8sAccessLevel: edit
   - name: view
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     k8sAccessLevel: view
 ---
 apiVersion: v1

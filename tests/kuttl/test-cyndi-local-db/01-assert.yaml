@@ -11,7 +11,7 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/psav/clowder-hello
+        - image: quay.io/cloudservices/clowder-hello
 ---
 apiVersion: apps/v1
 kind: Deployment

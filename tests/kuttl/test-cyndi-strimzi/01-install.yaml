@@ -49,7 +49,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   database:
     name: myapp-db
     version: 12
@@ -64,7 +64,7 @@ spec:
   deployments:
   - name: fake-inventory-app
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   database:
     name: host-inventory-db
     version: 12

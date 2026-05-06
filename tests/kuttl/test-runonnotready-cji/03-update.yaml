@@ -13,7 +13,7 @@ spec:
   deployments:
     - name: processor
       podSpec:
-        image: quay.io/psav/clowder-hellou
+        image: quay.io/cloudservices/clowder-hellou
   jobs:
     - name: hello-cji
       podSpec:

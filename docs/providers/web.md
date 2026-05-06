@@ -19,7 +19,7 @@ spec:
   deployments:
     name: inventory
     podSpec: 
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     webServices:
       public:
         enabled: true

@@ -50,7 +50,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-standard-cron
-              image: quay.io/psav/clowder-hello
+              image: quay.io/cloudservices/clowder-hello
           restartPolicy: Never
           tolerations:
           - key: "memory"
@@ -82,7 +82,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-suspend-cron
-              image: quay.io/psav/clowder-hello
+              image: quay.io/cloudservices/clowder-hello
           restartPolicy: Never
 ---
 apiVersion: batch/v1
@@ -106,7 +106,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-restart-on-failure
-              image: quay.io/psav/clowder-hello
+              image: quay.io/cloudservices/clowder-hello
           restartPolicy: OnFailure
 ---
 apiVersion: batch/v1

@@ -50,7 +50,7 @@ spec:
   deployments:
   - name: service
     podSpec:
-      image: quay.io/psav/clowder-hello:ubi8
+      image: quay.io/cloudservices/clowder-hello:ubi8
     webServices:
       public:
         enabled: true
@@ -71,7 +71,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello:ubi8
+      image: quay.io/cloudservices/clowder-hello:ubi8
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

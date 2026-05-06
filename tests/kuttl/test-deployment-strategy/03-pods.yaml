@@ -9,19 +9,19 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     webServices:
       public:
         enabled: true
   - name: processor2
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     webServices:
       private:
         enabled: true
   - name: processor3
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
     webServices:
       private:
         enabled: true

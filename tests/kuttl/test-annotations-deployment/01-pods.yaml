@@ -46,7 +46,7 @@ spec:
       annotations:
         TestAnnotationDeploymentLevel: "Pretty Cool again"
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
   - name: processor-no-annotation
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello

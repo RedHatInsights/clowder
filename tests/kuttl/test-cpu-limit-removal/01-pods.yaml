@@ -43,7 +43,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
       # No CPU limit specified in pod spec
 ---
 # Test 2: CPU limit explicitly set in pod spec
@@ -90,7 +90,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
       # Explicit CPU limit in pod spec
       resources:
         limits:
@@ -145,5 +145,5 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello
       # No CPU limit in pod spec - should use env default

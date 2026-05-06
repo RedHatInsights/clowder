@@ -10,4 +10,4 @@ spec:
   - name: processor
     replicas: 0
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/cloudservices/clowder-hello

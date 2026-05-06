@@ -17,7 +17,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-im-disabled
-              image: quay.io/psav/clowder-hello
+              image: quay.io/cloudservices/clowder-hello
 ---
 apiVersion: batch/v1
 kind: Job
