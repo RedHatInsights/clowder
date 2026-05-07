@@ -1,0 +1,129 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: host-inventory
+  namespace: test-iqe-jobs-playwright
+  labels:
+    app: host-inventory
+  ownerReferences:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: host-inventory
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: host-inventory-service
+  namespace: test-iqe-jobs-playwright
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: test-iqe-jobs-playwright
+  labels:
+    job: host-inventory-smoke-iqe
+spec:
+  template:
+    spec:
+      volumes:
+      - name: cdenvconfig
+        secret:
+          defaultMode: 420
+          secretName: host-inventory-smoke-iqe
+      - name: config-secret
+        secret:
+          defaultMode: 420
+          secretName: host-inventory
+      - emptyDir:
+          medium: Memory
+        name: shm
+      containers:
+        - args:
+          - "clowder"
+          env:
+            - name: "ENV_FOR_DYNACONF"
+              value: clowder_smoke
+            - name: "NAMESPACE"
+              value: test-iqe-jobs-playwright
+            - name: CLOWDER_ENABLED
+              value: "true"
+            - name: ACG_CONFIG
+              value: /cdapp/cdappconfig.json
+            - name: IQE_PLUGINS
+              value: "host-inventory"
+            - name: IQE_MARKER_EXPRESSION
+              value: "smoke"
+            - name: IQE_FILTER_EXPRESSION
+              value: "test_plugin_accessible"
+            - name: IQE_LOG_LEVEL
+              value: "info"
+            - name: IQE_REQUIREMENTS
+            - name: IQE_REQUIREMENTS_PRIORITY
+            - name: IQE_TEST_IMPORTANCE
+            - name: IQE_PARALLEL_ENABLED
+            - name: IQE_PARALLEL_WORKER_COUNT
+            - name: IQE_RP_ARGS
+            - name: IQE_IBUTSU_SOURCE
+          image: quay.io/psav/clowder-hello:latest
+          resources:
+            limits:
+              cpu: "2"
+              memory: 600Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+          - mountPath: /cdenv
+            name: cdenvconfig
+          - mountPath: /cdapp
+            name: config-secret
+        - image: quay.io/insights-qe/playwright-vnc:ubi9-chrome-1.58.0
+          env:
+            - name: PW_HEADLESS
+              value: "true"
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 3Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+          - mountPath: /dev/shm
+            name: shm
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: host-inventory-smoke-iqe
+  namespace: test-iqe-jobs-playwright
+type: Opaque
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: iqe-test-iqe-jobs-playwright
+  namespace: test-iqe-jobs-playwright
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: iqe-test-iqe-jobs-playwright
+  namespace: test-iqe-jobs-playwright
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- kind: ServiceAccount
+  name: iqe-test-iqe-jobs-playwright
+  namespace: test-iqe-jobs-playwright

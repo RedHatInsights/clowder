@@ -1,0 +1,88 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-iqe-jobs-playwright
+spec:
+  targetNamespace: test-iqe-jobs-playwright
+  providers:
+    testing:
+      k8sAccessLevel: edit
+      configAccess: environment
+      iqe:
+        imageBase: "quay.io/psav/clowder-hello"
+        resources:
+          limits:
+            cpu: 2
+            memory: 600Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        ui:
+          playwright:
+            imageBase: "quay.io/insights-qe/playwright-vnc"
+            defaultImageTag: "ubi9-chrome-1.58.0"
+            resources:
+              limits:
+                cpu: 1500m
+                memory: 3Gi
+              requests:
+                cpu: 1000m
+                memory: 1Gi
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: host-inventory
+  namespace: test-iqe-jobs-playwright
+spec:
+  testing:
+    iqePlugin: host-inventory
+  envName: test-iqe-jobs-playwright
+  deployments:
+    - name: service
+      podSpec:
+        image: quay.io/psav/clowder-hello
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: host-inventory-smoke
+  namespace: test-iqe-jobs-playwright
+spec:
+  appName: host-inventory
+  testing:
+    iqe:
+      imageTag: latest
+      ui:
+        playwright:
+          deploy: true
+      marker: "smoke"
+      dynaconfEnvName: "clowder_smoke"
+      filter: "test_plugin_accessible"

@@ -155,7 +155,7 @@ docker-push:
 # to Minikube.
 ifeq ($(OS),Darwin)
 docker-push-minikube:
-	docker push ${IMG}
+	$(RUNTIME) push ${IMG}
 else
 docker-push-minikube:
 	$(RUNTIME) push ${IMG} $(shell minikube ip):5000/clowder:$(CLOWDER_BUILD_TAG) --tls-verify=false

@@ -503,6 +503,9 @@ type IqeConfig struct {
 type IqeUIConfig struct {
 	// Defines configurations for selenium containers in this environment
 	Selenium IqeUISeleniumConfig `json:"selenium,omitempty"`
+
+	// Defines configurations for playwright containers in this environment
+	Playwright IqeUIPlaywrightConfig `json:"playwright,omitempty"`
 }
 
 // IqeUISeleniumConfig defines configuration for IQE Selenium-based UI testing
@@ -514,6 +517,18 @@ type IqeUISeleniumConfig struct {
 	DefaultImageTag string `json:"defaultImageTag,omitempty"`
 
 	// Defines the resource requests/limits set on selenium containers
+	Resources core.ResourceRequirements `json:"resources,omitempty"`
+}
+
+// IqeUIPlaywrightConfig defines configuration for IQE Playwright-based UI testing
+type IqeUIPlaywrightConfig struct {
+	// Defines the image used for playwright containers in this environment
+	ImageBase string `json:"imageBase,omitempty"`
+
+	// Defines the default image tag used for playwright containers in this environment
+	DefaultImageTag string `json:"defaultImageTag,omitempty"`
+
+	// Defines the resource requests/limits set on playwright containers
 	Resources core.ResourceRequirements `json:"resources,omitempty"`
 }
 
