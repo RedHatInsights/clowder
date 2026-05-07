@@ -93,8 +93,8 @@ objects:
         iqe:
           ui:
             selenium:
-              imageBase: quay.io/redhatqe/selenium-standalone
-              defaultImageTag: ff_102.9.0esr_chrome_112.0.5615.121
+              imageBase: quay.io/app-sre/selenium-standalone-chrome
+              defaultImageTag: 136.0-20250828
               resources:
                 limits:
                   cpu: '1'
