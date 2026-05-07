@@ -30,7 +30,7 @@ import (
 var DefaultImageIQESelenium = "quay.io/app-sre/selenium-standalone-chrome"
 
 // DefaultImageIQEPlaywright defines the default playwright image for IQE testing
-var DefaultImageIQEPlaywright = "quay.io/insights-qe/playwright-vnc"
+var DefaultImageIQEPlaywright = "quay.io/redhat-services-prod/insights-management-tenant/playwright-images/playwright-vnc-chromium"
 
 // IqeSecret represents the resource identifier for IQE secrets
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
@@ -224,7 +224,7 @@ func createPlaywrightContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env 
 	}
 	tag := env.Spec.Providers.Testing.Iqe.UI.Playwright.DefaultImageTag
 	if tag == "" {
-		tag = "ubi9-chrome-1.58.0"
+		tag = "latest"
 	}
 
 	// check if this CJI has specified a playwright image tag override

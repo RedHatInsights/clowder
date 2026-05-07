@@ -86,7 +86,7 @@ spec:
             name: cdenvconfig
           - mountPath: /cdapp
             name: config-secret
-        - image: quay.io/insights-qe/playwright-vnc:ubi9-chrome-1.58.0
+        - image: quay.io/redhat-services-prod/insights-management-tenant/playwright-images/playwright-vnc-chromium:latest
           env:
             - name: PW_HEADLESS
               value: "true"

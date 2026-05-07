@@ -20,8 +20,8 @@ spec:
             memory: 256Mi
         ui:
           playwright:
-            imageBase: "quay.io/insights-qe/playwright-vnc"
-            defaultImageTag: "ubi9-chrome-1.58.0"
+            imageBase: "quay.io/redhat-services-prod/insights-management-tenant/playwright-images/playwright-vnc-chromium"
+            defaultImageTag: "latest"
             resources:
               limits:
                 cpu: 1500m
