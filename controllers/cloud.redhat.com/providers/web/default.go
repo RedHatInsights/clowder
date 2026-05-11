@@ -1,10 +1,14 @@
 package web
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
@@ -73,6 +77,11 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 			caSecretName, caFileName := web.resolveCAForApp(app)
 			provutils.AddCertVolumeWithCA(&d.Spec.Template.Spec, dnn.Name, caSecretName, caFileName)
 
+			// Add CA secret hash annotation for automatic rollout on CA rotation
+			if err := web.addCAHashAnnotation(d, app, caSecretName); err != nil {
+				return errors.Wrap("adding CA hash annotation", err)
+			}
+
 			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
 				return errors.Wrap("updating core deployment", err)
 			}
@@ -139,4 +148,43 @@ func (web *webProvider) resolveCAForApp(app *crd.ClowdApp) (string, string) {
 	bundleSecretName := fmt.Sprintf("%s-ca-bundle", web.Env.Name)
 	fileName := fmt.Sprintf("%s.crt", caName)
 	return bundleSecretName, fileName
+}
+
+// addCAHashAnnotation adds a hash annotation of the CA secret to trigger rollouts on CA rotation
+func (web *webProvider) addCAHashAnnotation(d *apps.Deployment, app *crd.ClowdApp, caSecretName string) error {
+	// Only add hash for secrets (not ConfigMap and not empty)
+	if caSecretName == "" {
+		return nil
+	}
+
+	// Read the CA secret to calculate hash
+	caSecret := &core.Secret{}
+	err := web.Client.Get(web.Ctx, types.NamespacedName{
+		Name:      caSecretName,
+		Namespace: app.Namespace,
+	}, caSecret)
+	if err != nil {
+		// Secret might not exist yet (will be created by CA provider)
+		// This is not an error - just skip hash annotation
+		return nil
+	}
+
+	// Calculate hash of secret data
+	jsonData, err := json.Marshal(caSecret.Data)
+	if err != nil {
+		return errors.Wrap("Failed to marshal CA secret data", err)
+	}
+
+	h := sha256.New()
+	h.Write(jsonData)
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	// Add annotation to deployment
+	annotations := map[string]string{
+		"clowder/ca-secret-hash": hash,
+	}
+
+	utils.UpdateAnnotations(&d.Spec.Template, annotations)
+
+	return nil
 }
