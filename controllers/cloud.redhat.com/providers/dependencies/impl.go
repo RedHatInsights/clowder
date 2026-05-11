@@ -53,7 +53,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 		&depConfig,
 		&privDepConfig,
 		&dep.Env.Spec.Providers.Web,
-		app.Name,
+		app,
 	)
 
 	// Return if no deps
@@ -146,13 +146,13 @@ func makeDepConfig(
 		appRefMap[iappRef.Name] = *iappRef
 	}
 
-	missingDeps = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.Dependencies, depConfig, privDepConfig, envWebConfig, app.Name)
-	_ = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, envWebConfig, app.Name)
+	missingDeps = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.Dependencies, depConfig, privDepConfig, envWebConfig, app)
+	_ = processAppAndAppRefEndpoints(appMap, appRefMap, app.Spec.OptionalDependencies, depConfig, privDepConfig, envWebConfig, app)
 
 	return missingDeps
 }
 
-func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.WebDeprecated, deploymentWebServices crd.WebServices, hostname string, appName string, envWebConfig *crd.WebConfig, apiPaths []string, depConfig *[]config.DependencyEndpoint) {
+func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.WebDeprecated, deploymentWebServices crd.WebServices, hostname string, appName string, envWebConfig *crd.WebConfig, apiPaths []string, depConfig *[]config.DependencyEndpoint, consumerApp *crd.ClowdApp) {
 	port := int(0)
 	tlsPort := int(0)
 	h2cPort := int(0)
@@ -193,14 +193,14 @@ func appendPublicDependencyEndpoint(deploymentName string, deploymentWeb crd.Web
 		}
 
 		if publicTLSEnabled {
-			dependencyEndpoint.TlsCAPath = provutils.GetServiceCACertPath()
+			dependencyEndpoint.TlsCAPath = provutils.GetCACertPathForApp(consumerApp.Spec.TLSCertificateAuthorityName, consumerApp.Spec.TLSCertificateAuthoritySecretRef)
 		}
 
 		*depConfig = append(*depConfig, dependencyEndpoint)
 	}
 }
 
-func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebServices crd.WebServices, hostname string, appName string, envWebConfig *crd.WebConfig, privDepConfig *[]config.PrivateDependencyEndpoint) {
+func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebServices crd.WebServices, hostname string, appName string, envWebConfig *crd.WebConfig, privDepConfig *[]config.PrivateDependencyEndpoint, consumerApp *crd.ClowdApp) {
 	privatePort := int(0)
 	tlsPrivatePort := int(0)
 	h2cPrivatePort := int(0)
@@ -238,22 +238,22 @@ func appendPrivateDependencyEndpoint(deploymentName string, deploymentWebService
 		}
 
 		if privateTLSEnabled {
-			dependencyEndpoint.TlsCAPath = provutils.GetServiceCACertPath()
+			dependencyEndpoint.TlsCAPath = provutils.GetCACertPathForApp(consumerApp.Spec.TLSCertificateAuthorityName, consumerApp.Spec.TLSCertificateAuthoritySecretRef)
 		}
 
 		*privDepConfig = append(*privDepConfig, dependencyEndpoint)
 	}
 }
 
-func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd.ClowdApp, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig) {
+func configureAppDependencyEndpoints(innerDeployment *crd.Deployment, depApp crd.ClowdApp, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig, consumerApp *crd.ClowdApp) {
 	serviceName := depApp.GetDeploymentNamespacedName(innerDeployment).Name
 	apiPaths := provutils.GetAPIPaths(innerDeployment, serviceName)
 
 	// For ClowdApp, construct the internal Kubernetes service hostname
 	hostname := fmt.Sprintf("%s.%s.svc", serviceName, depApp.Namespace)
 
-	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, hostname, depApp.Name, envWebConfig, apiPaths, depConfig)
-	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, hostname, depApp.Name, envWebConfig, privDepConfig)
+	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, hostname, depApp.Name, envWebConfig, apiPaths, depConfig, consumerApp)
+	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, hostname, depApp.Name, envWebConfig, privDepConfig, consumerApp)
 }
 
 func coalesceInt32(vals ...int32) int32 {
@@ -265,7 +265,7 @@ func coalesceInt32(vals ...int32) int32 {
 	return 0
 }
 
-func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployment, depAppRef crd.ClowdAppRef, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig) {
+func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployment, depAppRef crd.ClowdAppRef, depConfig *[]config.DependencyEndpoint, privDepConfig *[]config.PrivateDependencyEndpoint, envWebConfig *crd.WebConfig, consumerApp *crd.ClowdApp) {
 	serviceName := depAppRef.GetDeploymentNamespacedName(innerDeployment).Name
 	apiPaths := provutils.GetAPIPaths(innerDeployment, serviceName)
 
@@ -283,8 +283,8 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 	}
 
 	// For ClowdAppRef, use the explicit hostname from the deployment spec instead of generating one
-	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, innerDeployment.Hostname, depAppRef.Name, &webConfig, apiPaths, depConfig)
-	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, innerDeployment.Hostname, depAppRef.Name, &webConfig, privDepConfig)
+	appendPublicDependencyEndpoint(innerDeployment.Name, innerDeployment.Web, innerDeployment.WebServices, innerDeployment.Hostname, depAppRef.Name, &webConfig, apiPaths, depConfig, consumerApp)
+	appendPrivateDependencyEndpoint(innerDeployment.Name, innerDeployment.WebServices, innerDeployment.Hostname, depAppRef.Name, &webConfig, privDepConfig, consumerApp)
 }
 
 func processAppAndAppRefEndpoints(
@@ -294,7 +294,7 @@ func processAppAndAppRefEndpoints(
 	depConfig *[]config.DependencyEndpoint,
 	privDepConfig *[]config.PrivateDependencyEndpoint,
 	envWebConfig *crd.WebConfig,
-	consumerAppName string,
+	consumerApp *crd.ClowdApp,
 ) (missingDeps []string) {
 
 	missingDeps = []string{}
@@ -307,7 +307,7 @@ func processAppAndAppRefEndpoints(
 
 		if hasApp && hasAppRef {
 			// Both ClowdApp and ClowdAppRef exist - check serves field
-			useAppRef = isInServesList(consumerAppName, depAppRef.Spec.Serves)
+			useAppRef = isInServesList(consumerApp.Name, depAppRef.Spec.Serves)
 		} else if hasAppRef {
 			// Only ClowdAppRef exists
 			useAppRef = true
@@ -320,14 +320,14 @@ func processAppAndAppRefEndpoints(
 			for i := range depAppRef.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depAppRef.Spec.Deployments[i]
-				configureAppRefDependencyEndpoints(innerDeployment, depAppRef, depConfig, privDepConfig, envWebConfig)
+				configureAppRefDependencyEndpoints(innerDeployment, depAppRef, depConfig, privDepConfig, envWebConfig, consumerApp)
 			}
 		case hasApp:
 			// Use ClowdApp endpoints
 			for i := range depApp.Spec.Deployments {
 				// avoid implicit memory aliasing by using indexing
 				innerDeployment := &depApp.Spec.Deployments[i]
-				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, envWebConfig)
+				configureAppDependencyEndpoints(innerDeployment, depApp, depConfig, privDepConfig, envWebConfig, consumerApp)
 			}
 		default:
 			// Neither ClowdApp nor ClowdAppRef exists

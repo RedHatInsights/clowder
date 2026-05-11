@@ -2,6 +2,7 @@
 package job
 
 import (
+	"fmt"
 	"strings"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -140,11 +141,44 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	})
 
 	if env.Spec.Providers.Web.TLS.Enabled {
-		provutils.AddCertVolume(&j.Spec.Template.Spec, nn.Name)
+		// Get CA info from app spec
+		caSecretName, caFileName := resolveCAForJob(env, app)
+		provutils.AddCertVolumeWithCA(&j.Spec.Template.Spec, nn.Name, caSecretName, caFileName)
 	}
 
 	utils.UpdateAnnotations(&j.Spec.Template, provutils.KubeLinterAnnotations, cji.Annotations)
 	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations, app.Annotations)
 
 	return nil
+}
+
+// resolveCAForJob determines which CA secret to mount based on app's CA configuration
+// Returns (secretName, fileName)
+// - ("", "service-ca.crt") for default (no CA specified)
+// - ("", "") for system-trust-store (skip mounting)
+// - ("{env}-ca-bundle", "{caname}.crt") for CA from environment bundle
+// - ("{override-secret-name}", "ca.crt") for override secret
+func resolveCAForJob(env *crd.ClowdEnvironment, app *crd.ClowdApp) (string, string) {
+	// Case 1: App uses override secret
+	if app.Spec.TLSCertificateAuthoritySecretRef != nil {
+		// Mount the app-managed secret with standard ca.crt key
+		return app.Spec.TLSCertificateAuthoritySecretRef.Name, "ca.crt"
+	}
+
+	// Case 2: No CA specified - use default
+	if app.Spec.TLSCertificateAuthorityName == nil {
+		return "", "service-ca.crt"
+	}
+
+	caName := *app.Spec.TLSCertificateAuthorityName
+
+	// Case 3: System trust store - don't mount any CA
+	if caName == "system-trust-store" {
+		return "", ""
+	}
+
+	// Case 4: CA from environment bundle
+	bundleSecretName := fmt.Sprintf("%s-ca-bundle", env.Name)
+	fileName := fmt.Sprintf("%s.crt", caName)
+	return bundleSecretName, fileName
 }
