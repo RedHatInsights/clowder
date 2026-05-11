@@ -1049,6 +1049,27 @@ spec:
                       tls:
                         description: TLS sidecar enablement
                         properties:
+                          certificateAuthorities:
+                            description: |-
+                              List of available CA certificates that ClowdApps can reference for TLS connections.
+                              ClowdApps can select from this list using the tlsCertificateAuthorityName field.
+                              The reserved name "system-trust-store" cannot be used in this list.
+                            items:
+                              description: NamespacedName type to represent a real
+                                Namespaced Name
+                              properties:
+                                name:
+                                  description: Name defines the Name of a resource.
+                                  type: string
+                                namespace:
+                                  description: Namespace defines the Namespace of
+                                    a resource.
+                                  type: string
+                              required:
+                              - name
+                              - namespace
+                              type: object
+                            type: array
                           enabled:
                             description: Determines whether TLS is enabled for ClowdApp
                               deployments by default

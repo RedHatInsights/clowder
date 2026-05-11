@@ -164,7 +164,8 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
 			// mount CA cert volume on Deployments if TLS is configured in the environment
 			// (whether it is globally enabled or not, we will always mount the volume)
-			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
+			caSecretName, caFileName := web.resolveCAForApp(app)
+			provutils.AddCertVolumeWithCA(&d.Spec.Template.Spec, dnn.Name, caSecretName, caFileName)
 		}
 
 		annotations := map[string]string{
@@ -184,7 +185,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 
 	if envTLSConfig.Enabled {
 		// if TLS is enabled environment-wide, set 'tlsCAPath' in the root level of cdappconfig
-		web.Config.TlsCAPath = provutils.GetServiceCACertPath()
+		web.Config.TlsCAPath = provutils.GetCACertPathForApp(app.Spec.TLSCertificateAuthorityName, app.Spec.TLSCertificateAuthoritySecretRef)
 	}
 
 	return nil
@@ -281,4 +282,35 @@ func getCertHostname(hostname string) string {
 	hostComponents := strings.Split(hostname, ".")
 	hostComponents[0] += "-cert"
 	return strings.Join(hostComponents, ".")
+}
+
+// resolveCAForApp determines which CA secret to mount based on app's CA configuration
+// Returns (secretName, fileName)
+// - ("", "service-ca.crt") for default (no CA specified)
+// - ("", "") for system-trust-store (skip mounting)
+// - ("{env}-ca-bundle", "{caname}.crt") for CA from environment bundle
+// - ("{override-secret-name}", "ca.crt") for override secret
+func (web *localWebProvider) resolveCAForApp(app *crd.ClowdApp) (string, string) {
+	// Case 1: App uses override secret
+	if app.Spec.TLSCertificateAuthoritySecretRef != nil {
+		// Mount the app-managed secret with standard ca.crt key
+		return app.Spec.TLSCertificateAuthoritySecretRef.Name, "ca.crt"
+	}
+
+	// Case 2: No CA specified - use default
+	if app.Spec.TLSCertificateAuthorityName == nil {
+		return "", "service-ca.crt"
+	}
+
+	caName := *app.Spec.TLSCertificateAuthorityName
+
+	// Case 3: System trust store - don't mount any CA
+	if caName == "system-trust-store" {
+		return "", ""
+	}
+
+	// Case 4: CA from environment bundle
+	bundleSecretName := fmt.Sprintf("%s-ca-bundle", web.Env.Name)
+	fileName := fmt.Sprintf("%s.crt", caName)
+	return bundleSecretName, fileName
 }

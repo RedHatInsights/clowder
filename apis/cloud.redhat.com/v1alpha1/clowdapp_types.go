@@ -529,6 +529,22 @@ type ClowdAppSpec struct {
 	// will be added to the configuration when present.
 	OptionalDependencies []string `json:"optionalDependencies,omitempty"`
 
+	// Name of the CA certificate to use for TLS connections to dependencies.
+	// References a name from ClowdEnvironment.spec.providers.web.tls.certificateAuthorities.
+	// If omitted, uses default behavior (openshift-service-ca.crt).
+	// If set to "system-trust-store", uses container's system trust store (no CA mounted by Clowder).
+	// Cannot be used together with tlsCertificateAuthoritySecretRef.
+	// +optional
+	TLSCertificateAuthorityName *string `json:"tlsCertificateAuthorityName,omitempty"`
+
+	// Reference to a Secret containing custom CA certificates for TLS connections to dependencies.
+	// The Secret must exist in the same namespace as the ClowdApp.
+	// This allows apps to manage their own certificate trust list instead of using the
+	// environment's certificate authority bundle.
+	// Cannot be used together with tlsCertificateAuthorityName.
+	// +optional
+	TLSCertificateAuthoritySecretRef *v1.LocalObjectReference `json:"tlsCertificateAuthoritySecretRef,omitempty"`
+
 	// Iqe plugin and other specifics
 	Testing TestingSpec `json:"testing,omitempty"`
 

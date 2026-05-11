@@ -141,6 +141,12 @@ type TLS struct {
 
 	// Sets the private H2C port exposed for ClowdApp deployments' TLS connections. If unset, H2C TLS is disabled in the environment.
 	H2CPrivatePort int32 `json:"h2cPrivatePort,omitempty"`
+
+	// List of available CA certificates that ClowdApps can reference for TLS connections.
+	// ClowdApps can select from this list using the tlsCertificateAuthorityName field.
+	// The reserved name "system-trust-store" cannot be used in this list.
+	// +optional
+	CertificateAuthorities []NamespacedName `json:"certificateAuthorities,omitempty"`
 }
 
 // MetricsMode details the mode of operation of the Clowder Metrics Provider

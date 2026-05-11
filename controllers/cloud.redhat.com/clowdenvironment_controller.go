@@ -42,6 +42,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/hashcache"
 
 	// These blank imports make the providers go wheeeeee
+	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/certificateauthority"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/confighash"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/cronjob"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/database"

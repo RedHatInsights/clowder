@@ -334,18 +334,66 @@ func GetServiceCACertPath() *string {
 	return utils.StringPtr(GetCACertDir() + "/service-ca.crt")
 }
 
-// AddCertVolume adds a TLS certificate volume to the provided PodSpec
-func AddCertVolume(d *core.PodSpec, dnn string) {
-	d.Volumes = append(d.Volumes, core.Volume{
-		Name: "tls-ca",
-		VolumeSource: core.VolumeSource{
+// GetCACertPathForApp returns the CA certificate path based on app's CA configuration
+// Returns nil for "system-trust-store" (use system trust)
+// Returns service-ca path for default/empty
+// Returns custom CA path for selected CA name from environment bundle
+// Returns standard ca.crt path for override secret
+func GetCACertPathForApp(caName *string, overrideSecretRef *core.LocalObjectReference) *string {
+	// Case 1: App uses override secret - standard ca.crt path
+	if overrideSecretRef != nil {
+		return utils.StringPtr(GetCACertDir() + "/ca.crt")
+	}
+
+	// Case 2: No CA specified - use default service CA
+	if caName == nil {
+		return GetServiceCACertPath()
+	}
+
+	// Case 3: System trust store - no CA path
+	if *caName == "" || *caName == "system-trust-store" {
+		return nil
+	}
+
+	// Case 4: CA from environment bundle - named cert file
+	return utils.StringPtr(GetCACertDir() + "/" + *caName + ".crt")
+}
+
+// AddCertVolumeWithCA adds a TLS certificate volume from a specific source
+// If secretName is empty, uses default "openshift-service-ca.crt" ConfigMap
+// If secretName is provided, mounts that secret instead
+// If both secretName and caFileName are empty, no volume is added (system trust store)
+func AddCertVolumeWithCA(d *core.PodSpec, dnn string, secretName string, caFileName string) {
+	// If both are empty, skip mounting (system trust store scenario)
+	if secretName == "" && caFileName == "" {
+		return
+	}
+
+	var volumeSource core.VolumeSource
+
+	if secretName == "" {
+		// Default: ConfigMap
+		volumeSource = core.VolumeSource{
 			ConfigMap: &core.ConfigMapVolumeSource{
 				LocalObjectReference: core.LocalObjectReference{
 					Name: "openshift-service-ca.crt",
 				},
 			},
-		},
+		}
+	} else {
+		// Custom CA: Secret
+		volumeSource = core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: secretName,
+			},
+		}
+	}
+
+	d.Volumes = append(d.Volumes, core.Volume{
+		Name:         "tls-ca",
+		VolumeSource: volumeSource,
 	})
+
 	for i, container := range d.Containers {
 		vms := container.VolumeMounts
 		if container.Name == dnn {
@@ -367,6 +415,12 @@ func AddCertVolume(d *core.PodSpec, dnn string) {
 		})
 		d.InitContainers[i].VolumeMounts = vms
 	}
+}
+
+// AddCertVolume adds a TLS certificate volume to the provided PodSpec
+// Uses default service CA (backward compatibility wrapper)
+func AddCertVolume(d *core.PodSpec, dnn string) {
+	AddCertVolumeWithCA(d, dnn, "", "service-ca.crt")
 }
 
 // DeploymentWithWebServices defines an interface for deployments that have web services configuration

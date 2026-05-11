@@ -7152,6 +7152,33 @@ spec:
                 required:
                 - iqePlugin
                 type: object
+              tlsCertificateAuthorityName:
+                description: |-
+                  Name of the CA certificate to use for TLS connections to dependencies.
+                  References a name from ClowdEnvironment.spec.providers.web.tls.certificateAuthorities.
+                  If omitted, uses default behavior (openshift-service-ca.crt).
+                  If set to "system-trust-store", uses container's system trust store (no CA mounted by Clowder).
+                  Cannot be used together with tlsCertificateAuthoritySecretRef.
+                type: string
+              tlsCertificateAuthoritySecretRef:
+                description: |-
+                  Reference to a Secret containing custom CA certificates for TLS connections to dependencies.
+                  The Secret must exist in the same namespace as the ClowdApp.
+                  This allows apps to manage their own certificate trust list instead of using the
+                  environment's certificate authority bundle.
+                  Cannot be used together with tlsCertificateAuthorityName.
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
             required:
             - envName
             type: object
