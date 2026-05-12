@@ -890,6 +890,23 @@ _Appears in:_
 | `ibutsuSource` _string_ | (DEPRECATED, using 'env' now preferred) sets IQE_IBUTSU_SOURCE env var on the IQE container |  |  |
 
 
+#### IqePlaywrightSpec
+
+
+
+IqePlaywrightSpec defines configuration options for running IQE with a playwright container
+
+
+
+_Appears in:_
+- [IqeUISpec](#iqeuispec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `deploy` _boolean_ | Whether or not a playwright container should be deployed in the IQE pod |  |  |
+| `imageTag` _string_ | Name of playwright image tag to use if not using the environment's default |  |  |
+
+
 #### IqeSeleniumSpec
 
 
@@ -921,6 +938,25 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `selenium` _[IqeUISeleniumConfig](#iqeuiseleniumconfig)_ | Defines configurations for selenium containers in this environment |  |  |
+| `playwright` _[IqeUIPlaywrightConfig](#iqeuiplaywrightconfig)_ | Defines configurations for playwright containers in this environment |  |  |
+
+
+#### IqeUIPlaywrightConfig
+
+
+
+IqeUIPlaywrightConfig defines configuration for IQE Playwright-based UI testing
+
+
+
+_Appears in:_
+- [IqeUIConfig](#iqeuiconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `imageBase` _string_ | Defines the image used for playwright containers in this environment |  |  |
+| `defaultImageTag` _string_ | Defines the default image tag used for playwright containers in this environment |  |  |
+| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core)_ | Defines the resource requests/limits set on playwright containers |  |  |
 
 
 #### IqeUISeleniumConfig
@@ -956,6 +992,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `enabled` _boolean_ | No longer used |  |  |
 | `selenium` _[IqeSeleniumSpec](#iqeseleniumspec)_ | Configuration options for running IQE with a selenium container |  |  |
+| `playwright` _[IqePlaywrightSpec](#iqeplaywrightspec)_ | Configuration options for running IQE with a playwright container |  |  |
 
 
 #### Job
