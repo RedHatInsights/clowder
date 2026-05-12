@@ -1,0 +1,102 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-ca-override
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-team-certs
+  namespace: test-ca-override
+type: Opaque
+stringData:
+  ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIICqDCCAZACCQDW0WaCB9Z5f5TANBgkqhkiG9w0BAQsFADAWMRQwEgYDVQQDDAt0
+    ZWFtLWN1c3RvbTAeFw0yNjAxMDEwMDAwMDBaFw0yNzAxMDEwMDAwMDBaMBYxFDAS
+    BgNVBAMMC3RlYW0tY3VzdG9tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
+    AQEAu1aV2P+Wt+eM1OzGhZzljYC6T6/O4dU3+hYKePo9Im2lpB/k6NeiLxK9/xWS
+    v9JDcjlLY/+MR5joHyULNMyOY4Z9fS5dK4aTCjSh4qUsrCsKWLjHTV/n7l1OMjXk
+    xbnmYWRJE/7i6S2BL4mIbUOlXyLlVHvNhHpPK/hYK5gZJ5UjYVmVNT6Y/U9ZpZad
+    CXdxRDE0I8T/D3y2OmtwxW/P/W+t+fbYcMOJJNT+D4z1OmubyX/Q/W/u+gcZdMPK
+    KOU+E5x3NluczY+R/Y/v+hdaeMQKLPV/F6y4PnudzZ/S/X+v+iebeNRLMQW/F7z5
+    QovezZ/T/Y+w/jfcfNSMMRX/G8wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCXWV6T
+    -----END CERTIFICATE-----
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ca-override
+spec:
+  targetNamespace: test-ca-override
+  providers:
+    web:
+      port: 8000
+      mode: operator
+      tls:
+        enabled: true
+        port: 8443
+        privatePort: 10443
+        certificateAuthorities:
+          - name: custom-ca-1
+            namespace: cert-store
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-override
+  namespace: test-ca-override
+spec:
+  envName: test-ca-override
+  tlsCertificateAuthoritySecretRef:
+    name: my-team-certs
+  deployments:
+  - name: api
+    podSpec:
+      image: quay.io/cloudservices/insights-puptoo:1cde2bd
+    webServices:
+      public:
+        enabled: true
+  dependencies:
+  - test-dep-override
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-dep-override
+  namespace: test-ca-override
+spec:
+  envName: test-ca-override
+  tlsCertificateAuthorityName: custom-ca-1
+  deployments:
+  - name: worker
+    podSpec:
+      image: quay.io/cloudservices/insights-puptoo:1cde2bd
+    webServices:
+      public:
+        enabled: true

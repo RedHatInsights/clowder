@@ -1,0 +1,55 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+# Verify CA bundle secret was created in environment namespace
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-ca-bundle-ca-bundle
+  namespace: test-ca-bundle
+type: Opaque
+---
+# Verify app deployment mounts bundle secret
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-bundle-api
+  namespace: test-ca-bundle
+spec:
+  template:
+    spec:
+      volumes:
+      - name: tls-ca
+        secret:
+          secretName: test-ca-bundle-ca-bundle
+    metadata:
+      annotations:
+        clowder/ca-secret-hash: "?*"
+        configHash: "?*"
+status:
+  readyReplicas: 1
+---
+# Verify dependency deployment mounts bundle secret
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dep-bundle-worker
+  namespace: test-ca-bundle
+spec:
+  template:
+    spec:
+      volumes:
+      - name: tls-ca
+        secret:
+          secretName: test-ca-bundle-ca-bundle
+    metadata:
+      annotations:
+        clowder/ca-secret-hash: "?*"
+        configHash: "?*"
+status:
+  readyReplicas: 1

@@ -1,0 +1,16 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-override-api
+  namespace: test-ca-override
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dep-override-worker
+  namespace: test-ca-override
+status:
+  readyReplicas: 1

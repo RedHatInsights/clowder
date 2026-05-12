@@ -1,0 +1,16 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-default-api
+  namespace: test-ca-default
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dep-default-worker
+  namespace: test-ca-default
+status:
+  readyReplicas: 1

@@ -1,0 +1,17 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-default
+  namespace: test-ca-default
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-dep-default
+  namespace: test-ca-default
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ca-default

@@ -1,0 +1,16 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-system-api
+  namespace: test-ca-system-trust
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dep-system-worker
+  namespace: test-ca-system-trust
+status:
+  readyReplicas: 1
