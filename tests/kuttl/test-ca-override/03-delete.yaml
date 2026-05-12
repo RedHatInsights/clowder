@@ -1,0 +1,23 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-app-override
+  namespace: test-ca-override
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: test-dep-override
+  namespace: test-ca-override
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-ca-override
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-team-certs
+  namespace: test-ca-override

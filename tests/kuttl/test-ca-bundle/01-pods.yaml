@@ -1,0 +1,16 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-bundle-api
+  namespace: test-ca-bundle
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dep-bundle-worker
+  namespace: test-ca-bundle
+status:
+  readyReplicas: 1

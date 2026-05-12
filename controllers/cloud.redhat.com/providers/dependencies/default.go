@@ -4,7 +4,6 @@ package dependencies
 import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
-	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 )
 
 type dependenciesProvider struct {
@@ -22,9 +21,4 @@ func (dep *dependenciesProvider) EnvProvide() error {
 
 func (dep *dependenciesProvider) Provide(app *crd.ClowdApp) error {
 	return dep.makeDependencies(app)
-}
-
-// getCAPathForApp returns the CA certificate path for the current app
-func (dep *dependenciesProvider) getCAPathForApp(app *crd.ClowdApp) *string {
-	return provutils.GetCACertPathForApp(app.Spec.TLSCertificateAuthorityName, app.Spec.TLSCertificateAuthoritySecretRef)
 }
