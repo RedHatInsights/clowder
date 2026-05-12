@@ -104,6 +104,16 @@
 - [21. Property `root > prometheusGateway`](#prometheusGateway)
   - [21.1. Property `root > prometheusGateway > hostname`](#prometheusGateway_hostname)
   - [21.2. Property `root > prometheusGateway > port`](#prometheusGateway_port)
+- [22. Property `root > dependencyEndpoints`](#dependencyEndpoints)
+  - [22.1. Property `root > dependencyEndpoints > v2`](#dependencyEndpoints_v2)
+    - [22.1.1. Pattern Property `root > dependencyEndpoints > v2 > .*`](#dependencyEndpoints_v2_pattern1)
+      - [22.1.1.1. Pattern Property `root > dependencyEndpoints > v2 > .* > DependencyEndpointV2`](#dependencyEndpoints_v2_pattern1_pattern3)
+        - [22.1.1.1.1. Property `root > dependencyEndpoints > v2 > .* > .* > uri`](#dependencyEndpoints_v2_pattern1_pattern3_uri)
+        - [22.1.1.1.2. Property `root > dependencyEndpoints > v2 > .* > .* > ca_certificate`](#dependencyEndpoints_v2_pattern1_pattern3_ca_certificate)
+- [23. Property `root > privateDependencyEndpoints`](#privateDependencyEndpoints)
+  - [23.1. Property `root > privateDependencyEndpoints > v2`](#privateDependencyEndpoints_v2)
+    - [23.1.1. Pattern Property `root > privateDependencyEndpoints > v2 > .*`](#privateDependencyEndpoints_v2_pattern1)
+      - [23.1.1.1. Pattern Property `root > privateDependencyEndpoints > v2 > .* > DependencyEndpointV2`](#privateDependencyEndpoints_v2_pattern1_pattern3)
 
 **Title:** AppConfig
 
@@ -116,29 +126,31 @@
 
 **Description:** ClowdApp deployment configuration for Clowder enabled apps.
 
-| Property                                   | Pattern | Type    | Deprecated | Definition                               | Title/Description                                                                                                                              |
-| ------------------------------------------ | ------- | ------- | ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| - [privatePort](#privatePort )             | No      | integer | No         | -                                        | Defines the private port that the app should be configured to listen on for API traffic.                                                       |
-| - [publicPort](#publicPort )               | No      | integer | No         | -                                        | Defines the public port that the app should be configured to listen on for API traffic.                                                        |
-| - [h2cPrivatePort](#h2cPrivatePort )       | No      | integer | No         | -                                        | Defines the private H2C port that the app should be configured to listen on for H2C traffic.                                                   |
-| - [h2cPublicPort](#h2cPublicPort )         | No      | integer | No         | -                                        | Defines the public H2C port that the app should be configured to listen on for H2C traffic.                                                    |
-| - [webPort](#webPort )                     | No      | integer | No         | -                                        | Deprecated: Use 'publicPort' instead.                                                                                                          |
-| - [tlsCAPath](#tlsCAPath )                 | No      | string  | No         | -                                        | Defines path to default CA certificate for TLS connections to other ClowdApps. Only populated when TLS is enabled for entire ClowdEnvironment. |
-| + [metricsPort](#metricsPort )             | No      | integer | No         | -                                        | Defines the metrics port that the app should be configured to listen on for metric traffic.                                                    |
-| + [metricsPath](#metricsPath )             | No      | string  | No         | -                                        | Defines the path to the metrics server that the app should be configured to listen on for metric traffic.                                      |
-| + [logging](#logging )                     | No      | object  | No         | In #/definitions/LoggingConfig           | LoggingConfig                                                                                                                                  |
-| - [metadata](#metadata )                   | No      | object  | No         | In #/definitions/AppMetadata             | AppMetadata                                                                                                                                    |
-| - [kafka](#kafka )                         | No      | object  | No         | In #/definitions/KafkaConfig             | Kafka Configuration                                                                                                                            |
-| - [database](#database )                   | No      | object  | No         | In #/definitions/DatabaseConfig          | DatabaseConfig                                                                                                                                 |
-| - [objectStore](#objectStore )             | No      | object  | No         | In #/definitions/ObjectStoreConfig       | Object Storage Configuration                                                                                                                   |
-| - [inMemoryDb](#inMemoryDb )               | No      | object  | No         | In #/definitions/InMemoryDBConfig        | In Memory DB Configuration                                                                                                                     |
-| - [featureFlags](#featureFlags )           | No      | object  | No         | In #/definitions/FeatureFlagsConfig      | Feature Flags Configuration                                                                                                                    |
-| - [endpoints](#endpoints )                 | No      | array   | No         | -                                        | -                                                                                                                                              |
-| - [privateEndpoints](#privateEndpoints )   | No      | array   | No         | -                                        | -                                                                                                                                              |
-| - [BOPURL](#BOPURL )                       | No      | string  | No         | -                                        | Defines the path to the BOPURL.                                                                                                                |
-| - [hashCache](#hashCache )                 | No      | string  | No         | -                                        | A set of configMap/secret hashes                                                                                                               |
-| - [hostname](#hostname )                   | No      | string  | No         | -                                        | The external hostname of the deployment, where applicable                                                                                      |
-| - [prometheusGateway](#prometheusGateway ) | No      | object  | No         | In #/definitions/PrometheusGatewayConfig | Prometheus Gateway Configuration                                                                                                               |
+| Property                                                     | Pattern | Type    | Deprecated | Definition                               | Title/Description                                                                                                                              |
+| ------------------------------------------------------------ | ------- | ------- | ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| - [privatePort](#privatePort )                               | No      | integer | No         | -                                        | Defines the private port that the app should be configured to listen on for API traffic.                                                       |
+| - [publicPort](#publicPort )                                 | No      | integer | No         | -                                        | Defines the public port that the app should be configured to listen on for API traffic.                                                        |
+| - [h2cPrivatePort](#h2cPrivatePort )                         | No      | integer | No         | -                                        | Defines the private H2C port that the app should be configured to listen on for H2C traffic.                                                   |
+| - [h2cPublicPort](#h2cPublicPort )                           | No      | integer | No         | -                                        | Defines the public H2C port that the app should be configured to listen on for H2C traffic.                                                    |
+| - [webPort](#webPort )                                       | No      | integer | No         | -                                        | Deprecated: Use 'publicPort' instead.                                                                                                          |
+| - [tlsCAPath](#tlsCAPath )                                   | No      | string  | No         | -                                        | Defines path to default CA certificate for TLS connections to other ClowdApps. Only populated when TLS is enabled for entire ClowdEnvironment. |
+| + [metricsPort](#metricsPort )                               | No      | integer | No         | -                                        | Defines the metrics port that the app should be configured to listen on for metric traffic.                                                    |
+| + [metricsPath](#metricsPath )                               | No      | string  | No         | -                                        | Defines the path to the metrics server that the app should be configured to listen on for metric traffic.                                      |
+| + [logging](#logging )                                       | No      | object  | No         | In #/definitions/LoggingConfig           | LoggingConfig                                                                                                                                  |
+| - [metadata](#metadata )                                     | No      | object  | No         | In #/definitions/AppMetadata             | AppMetadata                                                                                                                                    |
+| - [kafka](#kafka )                                           | No      | object  | No         | In #/definitions/KafkaConfig             | Kafka Configuration                                                                                                                            |
+| - [database](#database )                                     | No      | object  | No         | In #/definitions/DatabaseConfig          | DatabaseConfig                                                                                                                                 |
+| - [objectStore](#objectStore )                               | No      | object  | No         | In #/definitions/ObjectStoreConfig       | Object Storage Configuration                                                                                                                   |
+| - [inMemoryDb](#inMemoryDb )                                 | No      | object  | No         | In #/definitions/InMemoryDBConfig        | In Memory DB Configuration                                                                                                                     |
+| - [featureFlags](#featureFlags )                             | No      | object  | No         | In #/definitions/FeatureFlagsConfig      | Feature Flags Configuration                                                                                                                    |
+| - [endpoints](#endpoints )                                   | No      | array   | No         | -                                        | -                                                                                                                                              |
+| - [privateEndpoints](#privateEndpoints )                     | No      | array   | No         | -                                        | -                                                                                                                                              |
+| - [BOPURL](#BOPURL )                                         | No      | string  | No         | -                                        | Defines the path to the BOPURL.                                                                                                                |
+| - [hashCache](#hashCache )                                   | No      | string  | No         | -                                        | A set of configMap/secret hashes                                                                                                               |
+| - [hostname](#hostname )                                     | No      | string  | No         | -                                        | The external hostname of the deployment, where applicable                                                                                      |
+| - [prometheusGateway](#prometheusGateway )                   | No      | object  | No         | In #/definitions/PrometheusGatewayConfig | Prometheus Gateway Configuration                                                                                                               |
+| - [dependencyEndpoints](#dependencyEndpoints )               | No      | object  | No         | -                                        | V2 public dependency endpoints with simplified URI-based structure                                                                             |
+| - [privateDependencyEndpoints](#privateDependencyEndpoints ) | No      | object  | No         | -                                        | V2 private dependency endpoints with simplified URI-based structure                                                                            |
 
 ## <a name="privatePort"></a>1. Property `root > privatePort`
 
@@ -1322,5 +1334,146 @@ Must be one of:
 | **Required** | Yes       |
 
 **Description:** Defines the port for the Prometheus Gateway server configuration.
+
+## <a name="dependencyEndpoints"></a>22. Property `root > dependencyEndpoints`
+
+|                           |                  |
+| ------------------------- | ---------------- |
+| **Type**                  | `object`         |
+| **Required**              | No               |
+| **Additional properties** | Any type allowed |
+
+**Description:** V2 public dependency endpoints with simplified URI-based structure
+
+| Property                         | Pattern | Type   | Deprecated | Definition | Title/Description                                                    |
+| -------------------------------- | ------- | ------ | ---------- | ---------- | -------------------------------------------------------------------- |
+| - [v2](#dependencyEndpoints_v2 ) | No      | object | No         | -          | Version 2 public dependency endpoint format with URI-based endpoints |
+
+### <a name="dependencyEndpoints_v2"></a>22.1. Property `root > dependencyEndpoints > v2`
+
+|                           |                  |
+| ------------------------- | ---------------- |
+| **Type**                  | `object`         |
+| **Required**              | No               |
+| **Additional properties** | Any type allowed |
+
+**Description:** Version 2 public dependency endpoint format with URI-based endpoints
+
+| Property                                  | Pattern | Type   | Deprecated | Definition | Title/Description           |
+| ----------------------------------------- | ------- | ------ | ---------- | ---------- | --------------------------- |
+| - [.*](#dependencyEndpoints_v2_pattern1 ) | Yes     | object | No         | -          | App-level endpoint grouping |
+
+#### <a name="dependencyEndpoints_v2_pattern1"></a>22.1.1. Pattern Property `root > dependencyEndpoints > v2 > .*`
+> All properties whose name matches the regular expression
+```.*``` ([Test](https://regex101.com/?regex=.%2A))
+must respect the following conditions
+
+|                           |                  |
+| ------------------------- | ---------------- |
+| **Type**                  | `object`         |
+| **Required**              | No               |
+| **Additional properties** | Any type allowed |
+
+**Description:** App-level endpoint grouping
+
+| Property                                           | Pattern | Type   | Deprecated | Definition                            | Title/Description                        |
+| -------------------------------------------------- | ------- | ------ | ---------- | ------------------------------------- | ---------------------------------------- |
+| - [.*](#dependencyEndpoints_v2_pattern1_pattern3 ) | Yes     | object | No         | In #/definitions/DependencyEndpointV2 | V2 dependency endpoint with complete URI |
+
+##### <a name="dependencyEndpoints_v2_pattern1_pattern3"></a>22.1.1.1. Pattern Property `root > dependencyEndpoints > v2 > .* > DependencyEndpointV2`
+> All properties whose name matches the regular expression
+```.*``` ([Test](https://regex101.com/?regex=.%2A))
+must respect the following conditions
+
+|                           |                                    |
+| ------------------------- | ---------------------------------- |
+| **Type**                  | `object`                           |
+| **Required**              | No                                 |
+| **Additional properties** | Any type allowed                   |
+| **Defined in**            | #/definitions/DependencyEndpointV2 |
+
+**Description:** V2 dependency endpoint with complete URI
+
+| Property                                                                      | Pattern | Type   | Deprecated | Definition | Title/Description                                                                                                |
+| ----------------------------------------------------------------------------- | ------- | ------ | ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| + [uri](#dependencyEndpoints_v2_pattern1_pattern3_uri )                       | No      | string | No         | -          | Complete URI including protocol, hostname, and port (e.g., 'http://service.ns.svc:8000', 'https://service:8443') |
+| - [ca_certificate](#dependencyEndpoints_v2_pattern1_pattern3_ca_certificate ) | No      | string | No         | -          | Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.                           |
+
+###### <a name="dependencyEndpoints_v2_pattern1_pattern3_uri"></a>22.1.1.1.1. Property `root > dependencyEndpoints > v2 > .* > .* > uri`
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | Yes      |
+
+**Description:** Complete URI including protocol, hostname, and port (e.g., 'http://service.ns.svc:8000', 'https://service:8443')
+
+###### <a name="dependencyEndpoints_v2_pattern1_pattern3_ca_certificate"></a>22.1.1.1.2. Property `root > dependencyEndpoints > v2 > .* > .* > ca_certificate`
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | No       |
+
+**Description:** Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.
+
+## <a name="privateDependencyEndpoints"></a>23. Property `root > privateDependencyEndpoints`
+
+|                           |                  |
+| ------------------------- | ---------------- |
+| **Type**                  | `object`         |
+| **Required**              | No               |
+| **Additional properties** | Any type allowed |
+
+**Description:** V2 private dependency endpoints with simplified URI-based structure
+
+| Property                                | Pattern | Type   | Deprecated | Definition | Title/Description                                                     |
+| --------------------------------------- | ------- | ------ | ---------- | ---------- | --------------------------------------------------------------------- |
+| - [v2](#privateDependencyEndpoints_v2 ) | No      | object | No         | -          | Version 2 private dependency endpoint format with URI-based endpoints |
+
+### <a name="privateDependencyEndpoints_v2"></a>23.1. Property `root > privateDependencyEndpoints > v2`
+
+|                           |                  |
+| ------------------------- | ---------------- |
+| **Type**                  | `object`         |
+| **Required**              | No               |
+| **Additional properties** | Any type allowed |
+
+**Description:** Version 2 private dependency endpoint format with URI-based endpoints
+
+| Property                                         | Pattern | Type   | Deprecated | Definition | Title/Description           |
+| ------------------------------------------------ | ------- | ------ | ---------- | ---------- | --------------------------- |
+| - [.*](#privateDependencyEndpoints_v2_pattern1 ) | Yes     | object | No         | -          | App-level endpoint grouping |
+
+#### <a name="privateDependencyEndpoints_v2_pattern1"></a>23.1.1. Pattern Property `root > privateDependencyEndpoints > v2 > .*`
+> All properties whose name matches the regular expression
+```.*``` ([Test](https://regex101.com/?regex=.%2A))
+must respect the following conditions
+
+|                           |                  |
+| ------------------------- | ---------------- |
+| **Type**                  | `object`         |
+| **Required**              | No               |
+| **Additional properties** | Any type allowed |
+
+**Description:** App-level endpoint grouping
+
+| Property                                                  | Pattern | Type   | Deprecated | Definition                                                                                     | Title/Description                        |
+| --------------------------------------------------------- | ------- | ------ | ---------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| - [.*](#privateDependencyEndpoints_v2_pattern1_pattern3 ) | Yes     | object | No         | Same as [dependencyEndpoints_v2_pattern1_pattern3](#dependencyEndpoints_v2_pattern1_pattern3 ) | V2 dependency endpoint with complete URI |
+
+##### <a name="privateDependencyEndpoints_v2_pattern1_pattern3"></a>23.1.1.1. Pattern Property `root > privateDependencyEndpoints > v2 > .* > DependencyEndpointV2`
+> All properties whose name matches the regular expression
+```.*``` ([Test](https://regex101.com/?regex=.%2A))
+must respect the following conditions
+
+|                           |                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| **Type**                  | `object`                                                                              |
+| **Required**              | No                                                                                    |
+| **Additional properties** | Any type allowed                                                                      |
+| **Same definition as**    | [dependencyEndpoints_v2_pattern1_pattern3](#dependencyEndpoints_v2_pattern1_pattern3) |
+
+**Description:** V2 dependency endpoint with complete URI
 
 ----------------------------------------------------------------------------------------------------------------------------
