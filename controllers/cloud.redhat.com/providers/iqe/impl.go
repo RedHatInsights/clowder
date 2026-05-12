@@ -27,7 +27,10 @@ import (
 )
 
 // DefaultImageIQESelenium defines the default selenium image for IQE testing
-var DefaultImageIQESelenium = "quay.io/redhatqe/selenium-standalone"
+var DefaultImageIQESelenium = "quay.io/app-sre/selenium-standalone-chrome"
+
+// DefaultImageIQEPlaywright defines the default playwright image for IQE testing
+var DefaultImageIQEPlaywright = "quay.io/redhat-services-prod/insights-management-tenant/playwright-images/playwright-vnc-chromium"
 
 // IqeSecret represents the resource identifier for IQE secrets
 var IqeSecret = rc.NewSingleResourceIdent("cji", "iqe_secret", &core.Secret{})
@@ -162,7 +165,7 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	}
 	tag := env.Spec.Providers.Testing.Iqe.UI.Selenium.DefaultImageTag
 	if tag == "" {
-		tag = "ff_102.9.0esr_chrome_112.0.5615.121"
+		tag = "136.0-20250828"
 	}
 
 	// check if this CJI has specified a selenium image tag override
@@ -208,6 +211,60 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
 		Name:      "sel-downloads",
 		MountPath: "/home/selenium/Downloads",
+	})
+
+	return &c
+}
+
+func createPlaywrightContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment) *core.Container {
+	// set image tag
+	image := env.Spec.Providers.Testing.Iqe.UI.Playwright.ImageBase
+	if image == "" {
+		image = DefaultImageIQEPlaywright
+	}
+	tag := env.Spec.Providers.Testing.Iqe.UI.Playwright.DefaultImageTag
+	if tag == "" {
+		tag = "latest"
+	}
+
+	// check if this CJI has specified a playwright image tag override
+	if cji.Spec.Testing.Iqe.UI.Playwright.ImageTag != "" {
+		tag = cji.Spec.Testing.Iqe.UI.Playwright.ImageTag
+	}
+
+	// create pod container
+	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.UI.Playwright.Resources}
+
+	c := core.Container{
+		Name:                     fmt.Sprintf("%s-%s", j.Name, "pw"),
+		Image:                    fmt.Sprintf("%s:%s", image, tag),
+		Resources:                deployProvider.ProcessResources(&pod, env),
+		ImagePullPolicy:          core.PullIfNotPresent,
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		Env: []core.EnvVar{
+			{Name: "PW_HEADLESS", Value: "true"},
+		},
+	}
+
+	// attach /dev/shm volume - check if it already exists (may be created by selenium)
+	shmVolumeExists := false
+	for _, vol := range j.Spec.Template.Spec.Volumes {
+		if vol.Name == "shm" {
+			shmVolumeExists = true
+			break
+		}
+	}
+	if !shmVolumeExists {
+		j.Spec.Template.Spec.Volumes = append(j.Spec.Template.Spec.Volumes, core.Volume{
+			Name:         "shm",
+			VolumeSource: core.VolumeSource{EmptyDir: &core.EmptyDirVolumeSource{Medium: "Memory"}},
+		})
+	}
+
+	c.VolumeMounts = append(c.VolumeMounts, core.VolumeMount{
+		Name:      "shm",
+		MountPath: "/dev/shm",
 	})
 
 	return &c
@@ -314,6 +371,11 @@ func CreateIqeJobResource(ctx context.Context, cache *rc.ObjectCache, cji *crd.C
 	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
 		selContainer := createSeleniumContainer(j, cji, env)
 		containers = append(containers, *selContainer)
+	}
+
+	if cji.Spec.Testing.Iqe.UI.Playwright.Deploy {
+		pwContainer := createPlaywrightContainer(j, cji, env)
+		containers = append(containers, *pwContainer)
 	}
 
 	j.Spec.Template.Spec.Containers = containers

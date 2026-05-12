@@ -111,6 +111,9 @@ type IqeUISpec struct {
 
 	// Configuration options for running IQE with a selenium container
 	Selenium IqeSeleniumSpec `json:"selenium,omitempty"`
+
+	// Configuration options for running IQE with a playwright container
+	Playwright IqePlaywrightSpec `json:"playwright,omitempty"`
 }
 
 // IqeSeleniumSpec defines configuration options for running IQE with a selenium container
@@ -119,6 +122,15 @@ type IqeSeleniumSpec struct {
 	Deploy bool `json:"deploy,omitempty"`
 
 	// Name of selenium image tag to use if not using the environment's default
+	ImageTag string `json:"imageTag,omitempty"`
+}
+
+// IqePlaywrightSpec defines configuration options for running IQE with a playwright container
+type IqePlaywrightSpec struct {
+	// Whether or not a playwright container should be deployed in the IQE pod
+	Deploy bool `json:"deploy,omitempty"`
+
+	// Name of playwright image tag to use if not using the environment's default
 	ImageTag string `json:"imageTag,omitempty"`
 }
 

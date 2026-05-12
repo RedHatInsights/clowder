@@ -308,6 +308,19 @@ spec:
                           enabled:
                             description: No longer used
                             type: boolean
+                          playwright:
+                            description: Configuration options for running IQE with
+                              a playwright container
+                            properties:
+                              deploy:
+                                description: Whether or not a playwright container
+                                  should be deployed in the IQE pod
+                                type: boolean
+                              imageTag:
+                                description: Name of playwright image tag to use if
+                                  not using the environment's default
+                                type: string
+                            type: object
                           selenium:
                             description: Configuration options for running IQE with
                               a selenium container

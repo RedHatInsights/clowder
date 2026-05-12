@@ -1,0 +1,7 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdJobInvocation
+metadata:
+  name: host-inventory-smoke
+  namespace: test-iqe-jobs-playwright
+$patch: delete

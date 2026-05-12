@@ -60,6 +60,7 @@ tmp/*
 
 # Test artifacts
 tests/kuttl/**/*.pem
+tests/kuttl/**/artifacts/
 
 deploy.yml.old
 deploy-mutate.yml.old
