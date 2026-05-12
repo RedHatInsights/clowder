@@ -1592,6 +1592,7 @@ _Appears in:_
 | `envVars` _[EnvVar](#envvar) array_ | Environment variables to be set in the sidecar container (app-level overrides) |  |  |
 | `memoryRequest` _string_ | Memory request for the sidecar container (e.g., "512Mi") |  |  |
 | `memoryLimit` _string_ | Memory limit for the sidecar container (e.g., "1024Mi") |  |  |
+| `volumeMounts` _[VolumeMount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#volumemount-v1-core) array_ | Additional volume mounts to be added to the sidecar container |  |  |
 
 
 #### Sidecars
