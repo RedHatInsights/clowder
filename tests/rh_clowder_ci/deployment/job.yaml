@@ -17,6 +17,8 @@ objects:
       spec:
         serviceAccountName: clowder-controller-manager
         restartPolicy: Never
+        imagePullSecrets:
+        - name: quay-cloudservices-pull
         containers:
           - name: e2e
             image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e-tests:${IMAGE_TAG}
