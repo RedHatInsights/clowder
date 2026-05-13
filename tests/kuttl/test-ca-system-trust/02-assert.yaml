@@ -19,11 +19,6 @@ spec:
       - name: config-secret
       - name: caddy-config
       - name: caddy-tls
-    metadata:
-      annotations:
-        configHash: "?*"
-status:
-  readyReplicas: 1
 ---
 # Verify dependency deployment has NO tls-ca volume
 apiVersion: apps/v1
@@ -38,8 +33,3 @@ spec:
       - name: config-secret
       - name: caddy-config
       - name: caddy-tls
-    metadata:
-      annotations:
-        configHash: "?*"
-status:
-  readyReplicas: 1

@@ -16,15 +16,12 @@ spec:
   template:
     spec:
       volumes:
+      - name: config-secret
+      - name: caddy-config
+      - name: caddy-tls
       - name: tls-ca
         secret:
           secretName: my-team-certs
-    metadata:
-      annotations:
-        clowder/ca-secret-hash: "?*"
-        configHash: "?*"
-status:
-  readyReplicas: 1
 ---
 # Verify dependency app mounts bundle secret
 apiVersion: apps/v1
@@ -36,12 +33,9 @@ spec:
   template:
     spec:
       volumes:
+      - name: config-secret
+      - name: caddy-config
+      - name: caddy-tls
       - name: tls-ca
         secret:
           secretName: test-ca-override-ca-bundle
-    metadata:
-      annotations:
-        clowder/ca-secret-hash: "?*"
-        configHash: "?*"
-status:
-  readyReplicas: 1

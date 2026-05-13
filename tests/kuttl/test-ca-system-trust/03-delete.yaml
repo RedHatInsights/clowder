@@ -15,3 +15,8 @@ apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
   name: test-ca-system-trust
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-store-system

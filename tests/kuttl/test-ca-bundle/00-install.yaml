@@ -96,6 +96,42 @@ spec:
       cpu: 30m
       memory: 512Mi
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: test-ca-bundle
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-app-bundle-api-cert
+  namespace: test-ca-bundle
+spec:
+  dnsNames:
+  - test-app-bundle-api.test-ca-bundle.svc
+  - test-app-bundle-api.test-ca-bundle.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: test-app-bundle-api-serving-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-dep-bundle-worker-cert
+  namespace: test-ca-bundle
+spec:
+  dnsNames:
+  - test-dep-bundle-worker.test-ca-bundle.svc
+  - test-dep-bundle-worker.test-ca-bundle.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: test-dep-bundle-worker-serving-cert
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
@@ -107,7 +143,7 @@ spec:
   deployments:
   - name: api
     podSpec:
-      image: quay.io/cloudservices/insights-puptoo:1cde2bd
+      image: quay.io/psav/clowder-hello
     webServices:
       public:
         enabled: true
@@ -125,7 +161,7 @@ spec:
   deployments:
   - name: worker
     podSpec:
-      image: quay.io/cloudservices/insights-puptoo:1cde2bd
+      image: quay.io/psav/clowder-hello
     webServices:
       public:
         enabled: true

@@ -21,3 +21,8 @@ kind: Secret
 metadata:
   name: my-team-certs
   namespace: test-ca-override
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-store-override
