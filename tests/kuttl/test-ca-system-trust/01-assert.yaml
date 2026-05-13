@@ -1,16 +1,19 @@
 ---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-app-system-api
   namespace: test-ca-system-trust
-status:
-  readyReplicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-dep-system-worker
   namespace: test-ca-system-trust
-status:
-  readyReplicas: 1

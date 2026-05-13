@@ -8,6 +8,14 @@ spec:
   - kubernetes
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-store-override
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
 kind: Secret
 metadata:
   name: my-team-certs
@@ -27,6 +35,26 @@ stringData:
     QovezZ/T/Y+w/jfcfNSMMRX/G8wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCXWV6T
     -----END CERTIFICATE-----
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: custom-ca-1
+  namespace: cert-store-override
+type: Opaque
+stringData:
+  ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIICpDCCAYwCCQDU9VZB8Z4e4DANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls
+    b2NhbGhvc3QwHhcNMjYwMTAxMDAwMDAwWhcNMjcwMTAxMDAwMDAwWjAUMRIwEAYD
+    VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7
+    VJTUt9Us8cKjMzEfYyjiWA4R4/M2bS1+fWIcPm7Gk0jnA+Im2L+f4LcgJvI7+vUQ
+    t7HBahJW/8KP3h5nGxSJLJwMW2X7dQ3bJ3YRAhQg3pTLqBqIUJHkrFT9j5zMKhVi
+    vZlkWUPHC/5g4R0zJ2kGZTMjVwJjTGtKfGnLJ9fWI3SWhTLT4DdPCZJxBWwQ/S7W
+    nZYaBVbvPBCG7K2CpAGNSZLT8FJxNpBJCDdvPX5p7dYVZKJHLR8C0vGDMLhqLghv
+    HS7oOLNbDLZWLWL7h7MNtWGWdQdJBJqLBWCKbNJLdh4hN2oIWLAXGSQZ+8CgLKmU
+    vEJBAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAAVU4R4CpT1jWJR9WQNp9z7Z8rLl
+    -----END CERTIFICATE-----
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
@@ -43,7 +71,7 @@ spec:
         privatePort: 10443
         certificateAuthorities:
           - name: custom-ca-1
-            namespace: cert-store
+            namespace: cert-store-override
     metrics:
       port: 9000
       mode: operator
@@ -66,6 +94,42 @@ spec:
       cpu: 30m
       memory: 512Mi
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: test-ca-override
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-app-override-api-cert
+  namespace: test-ca-override
+spec:
+  dnsNames:
+  - test-app-override-api.test-ca-override.svc
+  - test-app-override-api.test-ca-override.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: test-app-override-api-serving-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-dep-override-worker-cert
+  namespace: test-ca-override
+spec:
+  dnsNames:
+  - test-dep-override-worker.test-ca-override.svc
+  - test-dep-override-worker.test-ca-override.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: test-dep-override-worker-serving-cert
+---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
@@ -78,7 +142,7 @@ spec:
   deployments:
   - name: api
     podSpec:
-      image: quay.io/cloudservices/insights-puptoo:1cde2bd
+      image: quay.io/psav/clowder-hello
     webServices:
       public:
         enabled: true
@@ -96,7 +160,7 @@ spec:
   deployments:
   - name: worker
     podSpec:
-      image: quay.io/cloudservices/insights-puptoo:1cde2bd
+      image: quay.io/psav/clowder-hello
     webServices:
       public:
         enabled: true
