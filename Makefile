@@ -74,11 +74,7 @@ api-docs:
 	./build/build_api_docs.sh
 	./build/build_config_docs.sh
 
-build-template:
-	@echo "Checking for $(TEMPLATE_KUSTOMIZE)"
-	@if [ ! -f $(TEMPLATE_KUSTOMIZE) ]; then \
-		$(MAKE) build-template-kustomize; \
-	fi
+build-template: build-template-kustomize
 	TEMPLATE_KUSTOMIZE=$(TEMPLATE_KUSTOMIZE) ./build/build_template.sh
 
 build-template-kustomize: manifests kustomize controller-gen
