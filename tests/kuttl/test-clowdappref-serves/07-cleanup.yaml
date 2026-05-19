@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: rbac
+    namespace: test-serves
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdApp
+    name: inventory
+    namespace: test-serves
+  - apiVersion: cloud.redhat.com/v1alpha1
+    kind: ClowdAppRef
+    name: rbac
+    namespace: test-serves

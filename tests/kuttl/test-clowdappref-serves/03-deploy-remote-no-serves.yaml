@@ -1,0 +1,15 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: rbac
+  namespace: test-serves
+spec:
+  envName: test-serves
+  serves: []  # Explicitly empty - should NOT be used by inventory yet
+  deployments:
+  - name: service
+    hostname: rbac.remote.example.com
+    webServices:
+      public:
+        enabled: true

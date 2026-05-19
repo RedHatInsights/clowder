@@ -58,6 +58,13 @@ type ClowdAppRefSpec struct {
 
 	// Disabled turns off this ClowdAppRef
 	Disabled bool `json:"disabled,omitempty"`
+
+	// Serves defines a list of ClowdApp names that should prefer this ClowdAppRef
+	// over a local ClowdApp with the same name when both exist in the environment.
+	// If empty or not specified, the ClowdAppRef will only be used when no local
+	// ClowdApp with the same name exists.
+	// +optional
+	Serves []string `json:"serves,omitempty"`
 }
 
 // ClowdAppRefRemoteEnvironment defines information about the remote ClowdEnvironment

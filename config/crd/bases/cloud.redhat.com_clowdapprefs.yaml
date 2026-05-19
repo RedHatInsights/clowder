@@ -247,6 +247,15 @@ spec:
                         type: integer
                     type: object
                 type: object
+              serves:
+                description: |-
+                  Serves defines a list of ClowdApp names that should prefer this ClowdAppRef
+                  over a local ClowdApp with the same name when both exist in the environment.
+                  If empty or not specified, the ClowdAppRef will only be used when no local
+                  ClowdApp with the same name exists.
+                items:
+                  type: string
+                type: array
             required:
             - envName
             type: object

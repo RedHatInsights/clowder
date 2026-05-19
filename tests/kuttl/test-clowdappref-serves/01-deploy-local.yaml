@@ -1,0 +1,30 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: rbac
+  namespace: test-serves
+spec:
+  envName: test-serves
+  deployments:
+  - name: service
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    webServices:
+      public:
+        enabled: true
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: inventory
+  namespace: test-serves
+spec:
+  envName: test-serves
+  deployments:
+  - name: api
+    podSpec:
+      image: quay.io/psav/clowder-hello
+    web: true
+  dependencies:
+    - rbac

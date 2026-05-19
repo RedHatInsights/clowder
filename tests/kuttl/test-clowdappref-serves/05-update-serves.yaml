@@ -1,0 +1,16 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: rbac
+  namespace: test-serves
+spec:
+  envName: test-serves
+  serves:
+    - inventory  # Now includes inventory - should switch to remote
+  deployments:
+  - name: service
+    hostname: rbac.remote.example.com
+    webServices:
+      public:
+        enabled: true
