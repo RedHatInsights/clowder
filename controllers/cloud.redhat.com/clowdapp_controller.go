@@ -58,6 +58,7 @@ import (
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/namespace"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/objectstore"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/pullsecrets"
+	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/reverseproxy"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/serviceaccount"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/servicemesh"
 	_ "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sidecar"

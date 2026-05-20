@@ -25,6 +25,7 @@ type ClowderConfig struct {
 		OtelCollector           string `json:"otelCollector"`
 		InMemoryDB              string `json:"inMemoryDB"`
 		PrometheusGateway       string `json:"prometheusGateway"`
+		ReverseProxy            string `json:"reverseProxy"`
 	} `json:"images"`
 	DebugOptions struct {
 		Logging struct {
