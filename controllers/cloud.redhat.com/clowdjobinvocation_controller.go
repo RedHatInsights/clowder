@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resourceCache"
@@ -44,6 +45,10 @@ import (
 
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
+
+// ExpectedImageTagAnnotation is the annotation key used on ClowdJobInvocations
+// to specify the expected image tag that the ClowdApp must have before the job runs.
+const ExpectedImageTagAnnotation = "clowder.redhat.com/expected-image-tag"
 
 // ClowdJobInvocationReconciler reconciles a ClowdJobInvocation object
 type ClowdJobInvocationReconciler struct {
@@ -169,6 +174,31 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 			return ctrl.Result{}, condErr
 		}
 		return ctrl.Result{Requeue: true}, reconcileErr
+	}
+
+	// If the CJI carries an expected-image-tag annotation, verify the
+	// ClowdApp's job images contain that tag before proceeding. This
+	// handles the case where the CJI is applied before the ClowdApp has
+	// been updated with the new image by the deployment pipeline.
+	if expectedTag, ok := cji.Annotations[ExpectedImageTagAnnotation]; ok && expectedTag != "" {
+		if !appJobImagesContainTag(&app, cji.Spec.Jobs, expectedTag) {
+			r.Log.Info("ClowdApp job images do not yet contain expected tag, requeue",
+				"jobinvocation", cji.Name,
+				"expectedTag", expectedTag,
+				"appName", cji.Spec.AppName,
+			)
+			r.Recorder.Eventf(&cji, "Warning", "ImageTagMismatch",
+				"ClowdApp [%s] does not yet have expected image tag [%s]; requeueing",
+				cji.Spec.AppName, expectedTag)
+			imageErr := errors.NewClowderError(fmt.Sprintf(
+				"ClowdApp [%s] job images do not contain expected tag [%s]",
+				cji.Spec.AppName, expectedTag,
+			))
+			if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationFailed, imageErr); condErr != nil {
+				return ctrl.Result{}, condErr
+			}
+			return ctrl.Result{Requeue: true}, imageErr
+		}
 	}
 
 	// Determine if the ClowdApp containing the Job is ready
@@ -335,6 +365,23 @@ func getJobFromName(jobName string, app *crd.ClowdApp) (job crd.Job, err error) 
 		}
 	}
 	return crd.Job{}, errors.NewClowderError(fmt.Sprintf("No such job %s", jobName))
+}
+
+// appJobImagesContainTag checks whether the ClowdApp's job images for the
+// requested jobs contain the expected image tag suffix (e.g., ":a634e3a").
+func appJobImagesContainTag(app *crd.ClowdApp, jobNames []string, expectedTag string) bool {
+	suffix := ":" + expectedTag
+	for _, jobName := range jobNames {
+		for _, j := range app.Spec.Jobs {
+			if j.Name == jobName {
+				if !strings.HasSuffix(j.PodSpec.Image, suffix) {
+					return false
+				}
+				break
+			}
+		}
+	}
+	return true
 }
 
 // SetupWithManager registers the CJI with the main manager process

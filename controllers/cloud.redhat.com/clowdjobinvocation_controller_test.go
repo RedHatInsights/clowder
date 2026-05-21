@@ -374,3 +374,222 @@ func TestCJIExistingJobMapSkipsReconciliation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Zero(t, result.RequeueAfter)
 }
+
+func TestCJIExpectedImageTagMismatchRequeues(t *testing.T) {
+	ns := "test-image-tag"
+
+	cji := &crd.ClowdJobInvocation{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "run-db-migrations-newsha",
+			Namespace: ns,
+			Annotations: map[string]string{
+				ExpectedImageTagAnnotation: "newsha",
+			},
+		},
+		Spec: crd.ClowdJobInvocationSpec{
+			AppName:       "test-app",
+			RunOnNotReady: true,
+			Jobs:          []string{"run-db-migrations"},
+		},
+	}
+
+	app := &crd.ClowdApp{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "test-app",
+			Namespace:  ns,
+			Generation: 5,
+		},
+		Spec: crd.ClowdAppSpec{
+			EnvName: "test-env",
+			Jobs: []crd.Job{
+				{
+					Name: "run-db-migrations",
+					PodSpec: crd.PodSpec{
+						Image: "quay.io/myorg/myapp:oldsha",
+					},
+				},
+			},
+		},
+		Status: crd.ClowdAppStatus{
+			Generation: 5,
+		},
+	}
+
+	cachedClient := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(cji).
+		WithStatusSubresource(&crd.ClowdJobInvocation{}).
+		Build()
+
+	apiReader := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(app).
+		Build()
+
+	recorder := record.NewFakeRecorder(100)
+
+	reconciler := &ClowdJobInvocationReconciler{
+		Client:    cachedClient,
+		APIReader: apiReader,
+		Log:       ctrl.Log.WithName("test"),
+		Scheme:    Scheme,
+		Recorder:  recorder,
+	}
+
+	_, err := reconciler.Reconcile(context.Background(), ctrl.Request{
+		NamespacedName: types.NamespacedName{
+			Name:      "run-db-migrations-newsha",
+			Namespace: ns,
+		},
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "do not contain expected tag")
+	assert.Contains(t, err.Error(), "newsha")
+}
+
+func TestCJIExpectedImageTagMatchProceeds(t *testing.T) {
+	ns := "test-image-tag-match"
+
+	cji := &crd.ClowdJobInvocation{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "run-db-migrations-newsha",
+			Namespace: ns,
+			Annotations: map[string]string{
+				ExpectedImageTagAnnotation: "newsha",
+			},
+		},
+		Spec: crd.ClowdJobInvocationSpec{
+			AppName:       "test-app",
+			RunOnNotReady: true,
+			Jobs:          []string{"run-db-migrations"},
+		},
+	}
+
+	app := &crd.ClowdApp{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "test-app",
+			Namespace:  ns,
+			Generation: 5,
+		},
+		Spec: crd.ClowdAppSpec{
+			EnvName: "test-env",
+			Jobs: []crd.Job{
+				{
+					Name: "run-db-migrations",
+					PodSpec: crd.PodSpec{
+						Image: "quay.io/myorg/myapp:newsha",
+					},
+				},
+			},
+		},
+		Status: crd.ClowdAppStatus{
+			Generation: 5,
+		},
+	}
+
+	cachedClient := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(cji).
+		WithStatusSubresource(&crd.ClowdJobInvocation{}).
+		Build()
+
+	apiReader := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(app).
+		Build()
+
+	recorder := record.NewFakeRecorder(100)
+
+	reconciler := &ClowdJobInvocationReconciler{
+		Client:    cachedClient,
+		APIReader: apiReader,
+		Log:       ctrl.Log.WithName("test"),
+		Scheme:    Scheme,
+		Recorder:  recorder,
+	}
+
+	_, err := reconciler.Reconcile(context.Background(), ctrl.Request{
+		NamespacedName: types.NamespacedName{
+			Name:      "run-db-migrations-newsha",
+			Namespace: ns,
+		},
+	})
+
+	// Should pass the image tag check and fail later (missing env, etc.)
+	// but NOT with the "do not contain expected tag" error
+	if err != nil {
+		assert.NotContains(t, err.Error(), "do not contain expected tag")
+	}
+}
+
+func TestCJINoAnnotationSkipsImageCheck(t *testing.T) {
+	ns := "test-no-annotation"
+
+	cji := &crd.ClowdJobInvocation{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "run-db-migrations-oldsha",
+			Namespace: ns,
+		},
+		Spec: crd.ClowdJobInvocationSpec{
+			AppName:       "test-app",
+			RunOnNotReady: true,
+			Jobs:          []string{"run-db-migrations"},
+		},
+	}
+
+	app := &crd.ClowdApp{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "test-app",
+			Namespace:  ns,
+			Generation: 5,
+		},
+		Spec: crd.ClowdAppSpec{
+			EnvName: "test-env",
+			Jobs: []crd.Job{
+				{
+					Name: "run-db-migrations",
+					PodSpec: crd.PodSpec{
+						Image: "quay.io/myorg/myapp:oldsha",
+					},
+				},
+			},
+		},
+		Status: crd.ClowdAppStatus{
+			Generation: 5,
+		},
+	}
+
+	cachedClient := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(cji).
+		WithStatusSubresource(&crd.ClowdJobInvocation{}).
+		Build()
+
+	apiReader := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(app).
+		Build()
+
+	recorder := record.NewFakeRecorder(100)
+
+	reconciler := &ClowdJobInvocationReconciler{
+		Client:    cachedClient,
+		APIReader: apiReader,
+		Log:       ctrl.Log.WithName("test"),
+		Scheme:    Scheme,
+		Recorder:  recorder,
+	}
+
+	_, err := reconciler.Reconcile(context.Background(), ctrl.Request{
+		NamespacedName: types.NamespacedName{
+			Name:      "run-db-migrations-oldsha",
+			Namespace: ns,
+		},
+	})
+
+	// Should NOT hit the image tag check at all
+	if err != nil {
+		assert.NotContains(t, err.Error(), "do not contain expected tag")
+	}
+}
