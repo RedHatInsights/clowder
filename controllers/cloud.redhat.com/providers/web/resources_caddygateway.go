@@ -250,6 +250,30 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 	}
 	bopHostname := fmt.Sprintf("%s-%s.%s.svc:8090", p.Env.GetClowdName(), "mbop", p.Env.GetClowdNamespace())
 
+	upstreamList, whitelistStrings := buildUpstreamAndWhiteLists(bopHostname, appList)
+
+	cmData, err := GenerateConfig(
+		getCertHostname(p.Env.Status.Hostname),
+		fmt.Sprintf("http://%s", bopHostname),
+		whitelistStrings,
+		upstreamList,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	cm.Data = map[string]string{
+		"Caddyfile.json": cmData,
+	}
+
+	h := sha256.New()
+	h.Write([]byte(cmData))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
+}
+
+func buildUpstreamAndWhiteLists(bopHostname string, appList *crd.ClowdAppList) ([]ProxyRoute, []string) {
 	whitelistStrings := []string{}
 	upstreamList := []ProxyRoute{{
 		Upstream: bopHostname,
@@ -280,41 +304,34 @@ func makeWebGatewayConfigMap(p *providers.Provider) (string, error) {
 				continue
 			}
 
-			apiPath := innerDeployment.WebServices.Public.APIPath
-
-			if apiPath == "" {
-				apiPath = innerDeployment.Name
-			}
-
 			name := innerApp.GetDeploymentNamespacedName(&innerDeployment).Name
 			hostname := fmt.Sprintf("%s.%s.svc", name, innerApp.Namespace)
 
-			upstreamList = append(upstreamList, ProxyRoute{
-				Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
-				Path:     fmt.Sprintf("/api/%s/*", apiPath),
-			})
+			if innerDeployment.WebServices.Public.APIPaths != nil {
+				// apiPaths was defined, use it and ignore 'apiPath'
+				for _, apiPath := range innerDeployment.WebServices.Public.APIPaths {
+					upstreamList = append(upstreamList, ProxyRoute{
+						Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
+						Path:     string(apiPath),
+					})
+				}
+			} else {
+				apiPath := innerDeployment.WebServices.Public.APIPath
+
+				if apiPath == "" {
+					apiPath = innerDeployment.Name
+				}
+
+				upstreamList = append(upstreamList, ProxyRoute{
+					Upstream: fmt.Sprintf("%s:%d", hostname, 8000),
+					Path:     fmt.Sprintf("/api/%s/*", apiPath),
+				})
+
+			}
 		}
 	}
 
-	cmData, err := GenerateConfig(
-		getCertHostname(p.Env.Status.Hostname),
-		fmt.Sprintf("http://%s", bopHostname),
-		whitelistStrings,
-		upstreamList,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	cm.Data = map[string]string{
-		"Caddyfile.json": cmData,
-	}
-
-	h := sha256.New()
-	h.Write([]byte(cmData))
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-
-	return hash, p.Cache.Update(CoreCaddyConfigMap, cm)
+	return upstreamList, whitelistStrings
 }
 
 func makeWebGatewayDeployment(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.ObjectMap, _ bool, _ bool) error {
