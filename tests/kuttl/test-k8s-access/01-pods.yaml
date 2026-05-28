@@ -45,14 +45,14 @@ spec:
   deployments:
   - name: default
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
   - name: edit
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
     k8sAccessLevel: edit
   - name: view
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
     k8sAccessLevel: view
 ---
 apiVersion: v1

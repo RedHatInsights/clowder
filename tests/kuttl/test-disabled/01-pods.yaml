@@ -45,4 +45,4 @@ spec:
   - name: deployment
     replicas: 1
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e

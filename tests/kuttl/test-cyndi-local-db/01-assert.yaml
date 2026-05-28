@@ -11,7 +11,7 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/cloudservices/clowder-hello
+        - image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
 ---
 apiVersion: apps/v1
 kind: Deployment

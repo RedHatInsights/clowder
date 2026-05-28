@@ -48,7 +48,7 @@ spec:
   deployments:
     - name: processor
       podSpec:
-        image: quay.io/cloudservices/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
   jobs:
     - name: standard-cron
       schedule: "*/1 * * * *"
@@ -57,7 +57,7 @@ spec:
       failedJobsHistoryLimit: 2
       activeDeadlineSeconds: 6000
       podSpec:
-        image: quay.io/cloudservices/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
         args:
           - ./clowder-hello
           - boo
@@ -68,7 +68,7 @@ spec:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
       podSpec:
-        image: quay.io/cloudservices/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
         args:
           - ./clowder-hello
           - boo
@@ -81,7 +81,7 @@ spec:
       failedJobsHistoryLimit: 2
       activeDeadlineSeconds: 6000
       podSpec:
-        image: quay.io/cloudservices/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
         args:
           - ./clowder-hello
           - boo
@@ -90,7 +90,7 @@ spec:
       schedule: "*/1 * * * *"
       restartPolicy: OnFailure
       podSpec:
-        image: quay.io/cloudservices/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
         args:
           - ./clowder-hello
           - boo
@@ -113,7 +113,7 @@ spec:
       schedule: "*/1 * * * *"
       restartPolicy: OnFailure
       podSpec:
-        image: quay.io/cloudservices/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
         args:
           - ./clowder-hello
           - boo

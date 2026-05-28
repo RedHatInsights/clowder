@@ -9,19 +9,19 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
     webServices:
       public:
         enabled: true
   - name: processor2
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
     webServices:
       private:
         enabled: true
   - name: processor3
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
     webServices:
       private:
         enabled: true

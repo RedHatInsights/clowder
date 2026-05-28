@@ -41,7 +41,7 @@ spec:
       containers:
         - args:
           - "clowder"
-          image: quay.io/cloudservices/clowder-hello:latest
+          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
           env:
             - name: "ENV_FOR_DYNACONF"
               value: clowder_smoke

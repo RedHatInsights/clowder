@@ -67,7 +67,7 @@ spec:
   deployments:
   - name: api
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
       sidecars:
         - name: otel-collector
           enabled: true
@@ -83,7 +83,7 @@ spec:
   deployments:
   - name: api
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
       volumes:
         - name: logs
           emptyDir: {}
@@ -108,7 +108,7 @@ spec:
   deployments:
   - name: api
     podSpec:
-      image: quay.io/cloudservices/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
       volumes:
         - name: logs
           emptyDir: {}
