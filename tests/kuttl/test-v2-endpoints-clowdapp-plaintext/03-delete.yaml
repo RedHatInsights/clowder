@@ -2,21 +2,21 @@
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: test-app-system
-  namespace: test-ca-system-trust
+  name: consumer
+  namespace: test-v2-clowdapp-plaintext
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: test-dep-system
-  namespace: test-ca-system-trust
+  name: rbac
+  namespace: test-v2-clowdapp-plaintext
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-ca-system-trust
+  name: test-v2-clowdapp-plaintext
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: cert-store-system
+  name: test-v2-clowdapp-plaintext

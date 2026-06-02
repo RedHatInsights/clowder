@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: test-ca-default
+  name: test-v2-clowdapp-tls
 spec:
   finalizers:
   - kubernetes
@@ -11,30 +11,25 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: openshift-service-ca.crt
-  namespace: test-ca-default
+  namespace: test-v2-clowdapp-tls
 data:
   service-ca.crt: |
     -----BEGIN CERTIFICATE-----
     MIICpDCCAYwCCQDU9VZB8Z4e4DANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls
     b2NhbGhvc3QwHhcNMjYwMTAxMDAwMDAwWhcNMjcwMTAxMDAwMDAwWjAUMRIwEAYD
     VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7
-    VJTUt9Us8cKjMzEfYyjiWA4R4/M2bS1+fWIcPm7Gk0jnA+Im2L+f4LcgJvI7+vUQ
-    t7HBahJW/8KP3h5nGxSJLJwMW2X7dQ3bJ3YRAhQg3pTLqBqIUJHkrFT9j5zMKhVi
-    vZlkWUPHC/5g4R0zJ2kGZTMjVwJjTGtKfGnLJ9fWI3SWhTLT4DdPCZJxBWwQ/S7W
-    nZYaBVbvPBCG7K2CpAGNSZLT8FJxNpBJCDdvPX5p7dYVZKJHLR8C0vGDMLhqLghv
-    HS7oOLNbDLZWLWL7h7MNtWGWdQdJBJqLBWCKbNJLdh4hN2oIWLAXGSQZ+8CgLKmU
-    vEJBAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAAVU4R4CpT1jWJR9WQNp9z7Z8rLl
     -----END CERTIFICATE-----
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdEnvironment
 metadata:
-  name: test-ca-default
+  name: test-v2-clowdapp-tls
 spec:
-  targetNamespace: test-ca-default
+  targetNamespace: test-v2-clowdapp-tls
   providers:
     web:
       port: 8000
+      privatePort: 10000
       mode: operator
       tls:
         enabled: true
@@ -54,6 +49,8 @@ spec:
       mode: none
     inMemoryDb:
       mode: none
+    featureFlags:
+      mode: none
   resourceDefaults:
     limits:
       cpu: 400m
@@ -66,66 +63,65 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: selfsigned-issuer
-  namespace: test-ca-default
+  namespace: test-v2-clowdapp-tls
 spec:
   selfSigned: {}
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: test-app-default-api-cert
-  namespace: test-ca-default
+  name: consumer-api-cert
+  namespace: test-v2-clowdapp-tls
 spec:
   dnsNames:
-  - test-app-default-api.test-ca-default.svc
-  - test-app-default-api.test-ca-default.svc.cluster.local
+  - consumer-api.test-v2-clowdapp-tls.svc
+  - consumer-api.test-v2-clowdapp-tls.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer
-  secretName: test-app-default-api-serving-cert
+  secretName: consumer-api-serving-cert
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: test-dep-default-worker-cert
-  namespace: test-ca-default
+  name: rbac-service-cert
+  namespace: test-v2-clowdapp-tls
 spec:
   dnsNames:
-  - test-dep-default-worker.test-ca-default.svc
-  - test-dep-default-worker.test-ca-default.svc.cluster.local
+  - rbac-service.test-v2-clowdapp-tls.svc
+  - rbac-service.test-v2-clowdapp-tls.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer
-  secretName: test-dep-default-worker-serving-cert
+  secretName: rbac-service-serving-cert
 ---
+# Dependency app (RBAC)
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdApp
 metadata:
-  name: test-app-default
-  namespace: test-ca-default
+  name: rbac
+  namespace: test-v2-clowdapp-tls
 spec:
-  envName: test-ca-default
+  envName: test-v2-clowdapp-tls
   deployments:
-  - name: api
-    podSpec:
-      image: quay.io/psav/clowder-hello
-    webServices:
-      public:
-        enabled: true
+    - name: service
+      podSpec:
+        image: quay.io/psav/clowder-hello
+      webServices:
+        public:
+          enabled: true
+---
+# Consumer app
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: consumer
+  namespace: test-v2-clowdapp-tls
+spec:
+  envName: test-v2-clowdapp-tls
   dependencies:
-  - test-dep-default
----
-apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdApp
-metadata:
-  name: test-dep-default
-  namespace: test-ca-default
-spec:
-  envName: test-ca-default
+    - rbac
   deployments:
-  - name: worker
-    podSpec:
-      image: quay.io/psav/clowder-hello
-    webServices:
-      public:
-        enabled: true
+    - name: api
+      podSpec:
+        image: quay.io/psav/clowder-hello

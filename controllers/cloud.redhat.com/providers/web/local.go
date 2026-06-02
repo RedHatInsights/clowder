@@ -164,13 +164,7 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		if provutils.IsTLSConfiguredForEnv(envTLSConfig) {
 			// mount CA cert volume on Deployments if TLS is configured in the environment
 			// (whether it is globally enabled or not, we will always mount the volume)
-			caSecretName, caFileName := web.resolveCAForApp(app)
-			provutils.AddCertVolumeWithCA(&d.Spec.Template.Spec, dnn.Name, caSecretName, caFileName)
-
-			// Add CA secret hash annotation for automatic rollout on CA rotation
-			if err := web.addCAHashAnnotation(d, app, caSecretName); err != nil {
-				return errors.Wrap("adding CA hash annotation", err)
-			}
+			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
 		}
 
 		annotations := map[string]string{
@@ -186,11 +180,6 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		if err := web.Cache.Update(WebSecret, sec); err != nil {
 			return err
 		}
-	}
-
-	if envTLSConfig.Enabled {
-		// if TLS is enabled environment-wide, set 'tlsCAPath' in the root level of cdappconfig
-		web.Config.TlsCAPath = provutils.GetCACertPathForApp(app.Spec.TLSCertificateAuthorityName, app.Spec.TLSCertificateAuthoritySecretRef)
 	}
 
 	return nil
@@ -287,74 +276,4 @@ func getCertHostname(hostname string) string {
 	hostComponents := strings.Split(hostname, ".")
 	hostComponents[0] += "-cert"
 	return strings.Join(hostComponents, ".")
-}
-
-// resolveCAForApp determines which CA secret to mount based on app's CA configuration
-// Returns (secretName, fileName)
-// - ("", "service-ca.crt") for default (no CA specified)
-// - ("", "") for system-trust-store (skip mounting)
-// - ("{env}-ca-bundle", "{caname}.crt") for CA from environment bundle
-// - ("{override-secret-name}", "ca.crt") for override secret
-func (web *localWebProvider) resolveCAForApp(app *crd.ClowdApp) (string, string) {
-	// Case 1: App uses override secret
-	if app.Spec.TLSCertificateAuthoritySecretRef != nil {
-		// Mount the app-managed secret with standard ca.crt key
-		return app.Spec.TLSCertificateAuthoritySecretRef.Name, "ca.crt"
-	}
-
-	// Case 2: No CA specified - use default
-	if app.Spec.TLSCertificateAuthorityName == nil {
-		return "", "service-ca.crt"
-	}
-
-	caName := *app.Spec.TLSCertificateAuthorityName
-
-	// Case 3: System trust store - don't mount any CA
-	if caName == "system-trust-store" {
-		return "", ""
-	}
-
-	// Case 4: CA from environment bundle
-	bundleSecretName := fmt.Sprintf("%s-ca-bundle", web.Env.Name)
-	fileName := fmt.Sprintf("%s.crt", caName)
-	return bundleSecretName, fileName
-}
-
-// addCAHashAnnotation adds a hash annotation of the CA secret to trigger rollouts on CA rotation
-func (web *localWebProvider) addCAHashAnnotation(d *apps.Deployment, app *crd.ClowdApp, caSecretName string) error {
-	// Only add hash for secrets (not ConfigMap and not empty)
-	if caSecretName == "" {
-		return nil
-	}
-
-	// Read the CA secret to calculate hash
-	caSecret := &core.Secret{}
-	err := web.Client.Get(web.Ctx, types.NamespacedName{
-		Name:      caSecretName,
-		Namespace: app.Namespace,
-	}, caSecret)
-	if err != nil {
-		// Secret might not exist yet (will be created by CA provider)
-		// This is not an error - just skip hash annotation
-		return nil
-	}
-
-	// Calculate hash of secret data
-	jsonData, err := json.Marshal(caSecret.Data)
-	if err != nil {
-		return errors.Wrap("Failed to marshal CA secret data", err)
-	}
-
-	h := sha256.New()
-	h.Write(jsonData)
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-
-	// Add annotation to deployment
-	annotations := map[string]string{
-		"clowder/ca-secret-hash": hash,
-	}
-
-	utils.UpdateAnnotations(&d.Spec.Template, annotations)
-
-	return nil
 }

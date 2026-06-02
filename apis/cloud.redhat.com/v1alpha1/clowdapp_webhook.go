@@ -57,7 +57,6 @@ func (i *ClowdApp) ValidateCreate(_ context.Context, obj runtime.Object) (admiss
 		validateSidecars,
 		validateInit,
 		validateDeploymentStrategy,
-		validateCertificateAuthority,
 	)
 }
 
@@ -74,7 +73,6 @@ func (i *ClowdApp) ValidateUpdate(_ context.Context, _ runtime.Object, newObj ru
 		validateSidecars,
 		validateInit,
 		validateDeploymentStrategy,
-		validateCertificateAuthority,
 	)
 }
 
@@ -190,17 +188,6 @@ func validateDeploymentStrategy(i *ClowdApp) field.ErrorList {
 				),
 			)
 		}
-	}
-	return allErrs
-}
-
-func validateCertificateAuthority(i *ClowdApp) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if i.Spec.TLSCertificateAuthorityName != nil && i.Spec.TLSCertificateAuthoritySecretRef != nil {
-		allErrs = append(allErrs, field.Forbidden(
-			field.NewPath("spec"),
-			"cannot specify both tlsCertificateAuthorityName and tlsCertificateAuthoritySecretRef, they are mutually exclusive"),
-		)
 	}
 	return allErrs
 }
