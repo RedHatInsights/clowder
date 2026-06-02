@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-v2-clowdappref-plaintext
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-v2-clowdappref-plaintext
+spec:
+  targetNamespace: test-v2-clowdappref-plaintext
+  providers:
+    web:
+      port: 8000
+      privatePort: 10000
+      mode: local
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+# Remote dependency (ClowdAppRef) - plaintext only
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: rbac
+  namespace: test-v2-clowdappref-plaintext
+spec:
+  envName: test-v2-clowdappref-plaintext
+  remoteEnvironment:
+    name: development
+    port: 8000
+  deployments:
+    - name: service
+      hostname: rbac-dev.local
+      webServices:
+        public:
+          enabled: true
+          # tls not specified → uses plaintext
+  serves:
+    - consumer
+---
+# Consumer app
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: consumer
+  namespace: test-v2-clowdappref-plaintext
+spec:
+  envName: test-v2-clowdappref-plaintext
+  dependencies:
+    - rbac
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/psav/clowder-hello

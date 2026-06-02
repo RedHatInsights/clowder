@@ -1,0 +1,16 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-api
+  namespace: test-v2-clowdapp-plaintext
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbac-service
+  namespace: test-v2-clowdapp-plaintext
+status:
+  readyReplicas: 1
