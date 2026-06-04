@@ -20,7 +20,7 @@ spec:
   deployments:
   - name: service
     podSpec:
-      name: quay.io/psav/clowder-hello
+      name: quay.io/cloudservices/clowder-hello
 ```
 
 ## ClowdEnv Configuration

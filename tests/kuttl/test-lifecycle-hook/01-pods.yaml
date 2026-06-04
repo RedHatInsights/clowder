@@ -41,7 +41,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
       lifecycle:
         postStart:
           exec:
@@ -55,7 +55,7 @@ spec:
       terminationGracePeriodSeconds: 500
   - name: processor-no-termination-period
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
       lifecycle:
         preStop:
           httpGet:
@@ -63,5 +63,5 @@ spec:
             path: /healthz
   - name: processor-only-termination-period
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
       terminationGracePeriodSeconds: 29

@@ -13,7 +13,7 @@ spec:
       configAccess: environment
       iqe:
         # Base image for iqe-tests
-        imageBase: "quay.io/psav/clowder-hello"
+        imageBase: "quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e"
         resources:
           limits:
             cpu: 2
@@ -60,7 +60,7 @@ spec:
   deployments:
     - name: service
       podSpec:
-        image: quay.io/psav/clowder-hello
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation

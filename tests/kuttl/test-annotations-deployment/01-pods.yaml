@@ -46,7 +46,7 @@ spec:
       annotations:
         TestAnnotationDeploymentLevel: "Pretty Cool again"
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e
   - name: processor-no-annotation
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e

@@ -70,7 +70,7 @@ def test_cdappconfig_content_exact_match(deploy_test_resources, namespace):
         },
         "metadata": {
             "deployments": [
-                {"image": "quay.io/psav/clowder-hello", "name": "processor"}
+                {"image": "quay.io/cloudservices/clowder-hello", "name": "processor"}
             ],
             "envName": "test-basic-app",
             "name": "puptoo",
