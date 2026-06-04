@@ -70,7 +70,9 @@ func initAutoScaler(env *crd.ClowdEnvironment, app *crd.ClowdApp, d *apps.Deploy
 
 		triggerType := getTriggerRoute(trigger.Type, c, env)
 		for k, v := range triggerType {
-			trigger.Metadata[k] = v
+			if _, exists := trigger.Metadata[k]; !exists {
+				trigger.Metadata[k] = v
+			}
 		}
 		triggers = append(triggers, trigger)
 
