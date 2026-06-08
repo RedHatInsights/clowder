@@ -176,6 +176,7 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 	// create pod container
 	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.UI.Selenium.Resources}
 
+	restartPolicyAlways := core.ContainerRestartPolicyAlways
 	c := core.Container{
 		Name:                     fmt.Sprintf("%s-%s", j.Name, "sel"),
 		Image:                    fmt.Sprintf("%s:%s", image, tag),
@@ -183,6 +184,7 @@ func createSeleniumContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env *c
 		ImagePullPolicy:          core.PullIfNotPresent,
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		RestartPolicy:            &restartPolicyAlways,
 	}
 
 	// attach /dev/shm volume
@@ -235,6 +237,7 @@ func createPlaywrightContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env 
 	// create pod container
 	pod := crd.PodSpec{Resources: env.Spec.Providers.Testing.Iqe.UI.Playwright.Resources}
 
+	restartPolicyAlways := core.ContainerRestartPolicyAlways
 	c := core.Container{
 		Name:                     fmt.Sprintf("%s-%s", j.Name, "pw"),
 		Image:                    fmt.Sprintf("%s:%s", image, tag),
@@ -242,6 +245,7 @@ func createPlaywrightContainer(j *batchv1.Job, cji *crd.ClowdJobInvocation, env 
 		ImagePullPolicy:          core.PullIfNotPresent,
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: core.TerminationMessageReadFile,
+		RestartPolicy:            &restartPolicyAlways,
 		Env: []core.EnvVar{
 			{Name: "PW_HEADLESS", Value: "true"},
 		},
