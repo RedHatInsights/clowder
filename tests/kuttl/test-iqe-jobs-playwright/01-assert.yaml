@@ -46,6 +46,22 @@ spec:
       - emptyDir:
           medium: Memory
         name: shm
+      initContainers:
+        - image: quay.io/redhat-services-prod/insights-management-tenant/playwright-images/playwright-vnc-chromium:latest
+          env:
+            - name: PW_HEADLESS
+              value: "true"
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 3Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+          restartPolicy: Always
+          volumeMounts:
+          - mountPath: /dev/shm
+            name: shm
       containers:
         - args:
           - "clowder"
@@ -86,21 +102,6 @@ spec:
             name: cdenvconfig
           - mountPath: /cdapp
             name: config-secret
-        - image: quay.io/redhat-services-prod/insights-management-tenant/playwright-images/playwright-vnc-chromium:latest
-          env:
-            - name: PW_HEADLESS
-              value: "true"
-          resources:
-            limits:
-              cpu: 1500m
-              memory: 3Gi
-            requests:
-              cpu: "1"
-              memory: 1Gi
-          restartPolicy: Always
-          volumeMounts:
-          - mountPath: /dev/shm
-            name: shm
 ---
 apiVersion: v1
 kind: Secret

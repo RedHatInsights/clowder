@@ -50,6 +50,21 @@ spec:
           medium: Memory
           sizeLimit: 64Mi
         name: sel-downloads
+      initContainers:
+        - image: quay.io/psav/clowder-hello:latest
+          resources:
+            limits:
+              cpu: 400m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 100Mi
+          restartPolicy: Always
+          volumeMounts:
+          - mountPath: /dev/shm
+            name: shm
+          - mountPath: /home/selenium/Downloads
+            name: sel-downloads
       containers:
         - args:
           - "clowder"
@@ -96,20 +111,6 @@ spec:
             name: cdenvconfig
           - mountPath: /cdapp
             name: config-secret
-        - image: quay.io/psav/clowder-hello:latest
-          resources:
-            limits:
-              cpu: 400m
-              memory: 200Mi
-            requests:
-              cpu: 200m
-              memory: 100Mi
-          restartPolicy: Always
-          volumeMounts:
-          - mountPath: /dev/shm
-            name: shm
-          - mountPath: /home/selenium/Downloads
-            name: sel-downloads
 ---
 apiVersion: v1
 kind: Secret
