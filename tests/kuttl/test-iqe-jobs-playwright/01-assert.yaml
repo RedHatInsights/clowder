@@ -97,6 +97,7 @@ spec:
             requests:
               cpu: "1"
               memory: 1Gi
+          restartPolicy: Always
           volumeMounts:
           - mountPath: /dev/shm
             name: shm
