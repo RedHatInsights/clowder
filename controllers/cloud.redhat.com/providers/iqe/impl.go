@@ -370,19 +370,25 @@ func CreateIqeJobResource(ctx context.Context, cache *rc.ObjectCache, cji *crd.C
 		return err
 	}
 
-	containers := []core.Container{*iqeContainer}
+	// Main IQE container goes in containers array
+	j.Spec.Template.Spec.Containers = []core.Container{*iqeContainer}
+
+	// UI sidecars (Selenium/Playwright) go in initContainers with RestartPolicy: Always
+	// This makes them native Kubernetes sidecars (K8s 1.29+) that run concurrently with
+	// the main container and auto-terminate when the main container exits
+	initContainers := []core.Container{}
 
 	if cji.Spec.Testing.Iqe.UI.Selenium.Deploy {
 		selContainer := createSeleniumContainer(j, cji, env)
-		containers = append(containers, *selContainer)
+		initContainers = append(initContainers, *selContainer)
 	}
 
 	if cji.Spec.Testing.Iqe.UI.Playwright.Deploy {
 		pwContainer := createPlaywrightContainer(j, cji, env)
-		containers = append(containers, *pwContainer)
+		initContainers = append(initContainers, *pwContainer)
 	}
 
-	j.Spec.Template.Spec.Containers = containers
+	j.Spec.Template.Spec.InitContainers = initContainers
 
 	utils.UpdateAnnotations(&j.Spec.Template, provutils.KubeLinterAnnotations)
 	utils.UpdateAnnotations(j, provutils.KubeLinterAnnotations)
