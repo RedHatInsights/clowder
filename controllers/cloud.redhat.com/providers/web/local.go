@@ -182,6 +182,11 @@ func (web *localWebProvider) Provide(app *crd.ClowdApp) error {
 		}
 	}
 
+	if envTLSConfig.Enabled {
+		// if TLS is enabled environment-wide, set 'tlsCAPath' in the root level of cdappconfig
+		web.Config.TlsCAPath = provutils.GetServiceCACertPath()
+	}
+
 	return nil
 }
 

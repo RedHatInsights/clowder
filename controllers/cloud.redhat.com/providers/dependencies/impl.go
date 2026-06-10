@@ -295,7 +295,7 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 		H2CPort:        coalesceInt32(depAppRef.Spec.RemoteEnvironment.H2CPort, envWebConfig.H2CPort),
 		H2CPrivatePort: coalesceInt32(depAppRef.Spec.RemoteEnvironment.H2CPrivatePort, envWebConfig.H2CPrivatePort),
 		TLS: crd.TLS{
-			Enabled:        depAppRef.Spec.RemoteEnvironment.TLS.Enabled,
+			Enabled:        depAppRef.Spec.RemoteEnvironment.TLS.Enabled || envWebConfig.TLS.Enabled,
 			Port:           coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port),
 			H2CPort:        coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.H2CPort, envWebConfig.TLS.H2CPort),
 			PrivatePort:    tlsPrivatePort,
