@@ -202,8 +202,8 @@ func (ch *confighashProvider) persistConfig(app *crd.ClowdApp) (string, error) {
 	h.Write([]byte(jsonData))
 	hash := fmt.Sprintf("%x", h.Sum(nil))
 
-	secret.StringData = map[string]string{
-		"cdappconfig.json": string(jsonData),
+	secret.Data = map[string][]byte{
+		"cdappconfig.json": jsonData,
 	}
 
 	app.SetObjectMeta(secret)
