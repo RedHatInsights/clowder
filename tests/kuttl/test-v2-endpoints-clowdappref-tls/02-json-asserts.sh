@@ -29,4 +29,7 @@ jq -r '.data["cdappconfig.json"]' < "${TMP_DIR}/${TEST_NAME}" | base64 -d > "${T
 # Run assertions - verify v2 endpoint structure with TLS (external, no CA)
 jq -r '.dependencyEndpoints.v2.rbac.service.uri == "https://rbac.external-cluster.example.com:8443"' -e < "${TMP_DIR}/${TEST_NAME}-json"
 
+# Verify ca_certificate is NOT present for external ClowdAppRef (uses system trust store)
+jq -r '.dependencyEndpoints.v2.rbac.service | has("ca_certificate") | not' -e < "${TMP_DIR}/${TEST_NAME}-json"
+
 echo "All assertions passed!"
