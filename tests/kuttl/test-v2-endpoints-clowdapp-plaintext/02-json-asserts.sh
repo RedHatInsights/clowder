@@ -29,4 +29,7 @@ jq -r '.data["cdappconfig.json"]' < "${TMP_DIR}/${TEST_NAME}" | base64 -d > "${T
 # Run assertions - verify v2 endpoint structure (plaintext, in-cluster)
 jq -r '.dependencyEndpoints.v2.rbac.service.uri == "http://rbac-service.test-v2-clowdapp-plaintext.svc:8000"' -e < "${TMP_DIR}/${TEST_NAME}-json"
 
+# Verify ca_certificate is NOT present for plaintext connections
+jq -r '.dependencyEndpoints.v2.rbac.service | has("ca_certificate") | not' -e < "${TMP_DIR}/${TEST_NAME}-json"
+
 echo "All assertions passed!"
