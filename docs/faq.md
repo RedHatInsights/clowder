@@ -90,6 +90,46 @@ In this example, the ClowdApp would have the database name set to ``app-d``. To 
 database, bring up the second secret with the annotation applied to it, and remove it from the
 first.
 
+#### Why the annotation is required for restores
+
+Without the annotation, Clowder falls back to matching secrets by hostname using the pattern
+`<name>-<env>`. A restored RDS instance typically has a different identifier (e.g.
+`mydb-restore`) that does not follow this pattern, so the fallback will not find it. The
+`clowder/database` annotation bypasses hostname matching entirely and directly associates the
+secret with the correct ClowdApp.
+
+#### Important details
+
+- The annotation value **must match the ClowdApp's `.metadata.name`**, not the namespace or the
+  RDS identifier. This is typically the `resourceTemplates[].name` value in the service's
+  saas-file. You can verify by checking the deployment template for the `.metadata.name` of the
+  ClowdApp resource.
+- The annotation **must be present before Clowder reconciles the ClowdApp** during the restore.
+  Adding it after the fact does not trigger re-reconciliation.
+- Move the annotation in a single change: remove it from the old resource and add it to the new
+  one so that the next reconciliation picks up the correct secret.
+
+#### Example: Swapping the annotation during a restore
+
+```yaml
+resources:
+  # Original database — remove annotation
+  - provider: rds
+    identifier: mydb
+    defaults: defaults.yml
+
+  # Restored database — add annotation
+  - provider: rds
+    identifier: mydb-restore
+    defaults: defaults.yml
+    annotations:
+      clowder/database: "my-clowdapp-name"
+    overrides:
+      restore_to_point_in_time:
+        restore_time: '<timestamp>'
+        source_db_instance_identifier: mydb
+```
+
 
 ## Web Services
 
