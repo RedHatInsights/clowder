@@ -1,0 +1,22 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: consumer
+  namespace: test-v2-clowdappref-tls
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+metadata:
+  name: rbac
+  namespace: test-v2-clowdappref-tls
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-v2-clowdappref-tls
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-v2-clowdappref-tls
