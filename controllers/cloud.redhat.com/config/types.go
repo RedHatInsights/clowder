@@ -224,6 +224,12 @@ type DependencyEndpoint struct {
 
 // V2 dependency endpoint with complete URI
 type DependencyEndpointV2 struct {
+	// Indicates whether the client should authenticate when connecting to this
+	// endpoint. Always present (explicitly true or false). True for cross-cluster
+	// dependencies (ClowdAppRef) that route through gateways; false for in-cluster
+	// dependencies (ClowdApp) that rely on network isolation.
+	Authenticated bool `json:"authenticated" yaml:"authenticated" mapstructure:"authenticated"`
+
 	// Path to CA certificate file for TLS/HTTPS connections. Only present for
 	// https:// URIs.
 	CaCertificate *string `json:"ca_certificate,omitempty" yaml:"ca_certificate,omitempty" mapstructure:"ca_certificate,omitempty"`
@@ -816,6 +822,9 @@ func (j *DependencyEndpointV2) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
+	}
+	if v, ok := raw["authenticated"]; !ok || v == nil {
+		return fmt.Errorf("field authenticated in DependencyEndpointV2: required")
 	}
 	if v, ok := raw["uri"]; !ok || v == nil {
 		return fmt.Errorf("field uri in DependencyEndpointV2: required")

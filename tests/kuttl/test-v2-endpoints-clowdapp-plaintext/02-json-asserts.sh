@@ -32,4 +32,7 @@ jq -r '.dependencyEndpoints.v2.rbac.service.uri == "http://rbac-service.test-v2-
 # Verify ca_certificate is NOT present for plaintext connections
 jq -r '.dependencyEndpoints.v2.rbac.service | has("ca_certificate") | not' -e < "${TMP_DIR}/${TEST_NAME}-json"
 
+# Verify authenticated is false for ClowdApp (in-cluster) dependencies
+jq -r '.dependencyEndpoints.v2.rbac.service.authenticated == false' -e < "${TMP_DIR}/${TEST_NAME}-json"
+
 echo "All assertions passed!"
