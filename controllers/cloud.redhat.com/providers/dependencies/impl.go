@@ -286,7 +286,7 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 	// For ClowdAppRef TLS, if PrivatePort is not set but Port is, use Port as the default for PrivatePort
 	// This allows ClowdAppRef to specify only one TLS port that serves both public and private endpoints
 	tlsPrivatePort := coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort)
-	if depAppRef.Spec.RemoteEnvironment.TLS.Enabled && tlsPrivatePort == 0 {
+    if (depAppRef.Spec.RemoteEnvironment.TLS.Enabled || envWebConfig.TLS.Enabled) && tlsPrivatePort == 0 {
 		tlsPrivatePort = coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port)
 	}
 
