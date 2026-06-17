@@ -106,9 +106,10 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	dep.Config.Endpoints = depConfig
 	dep.Config.PrivateEndpoints = privDepConfig
 
-	// Populate V2 endpoint structures
-	dep.makeV2DependencyEndpoints()
-	dep.makeV2PrivateDependencyEndpoints()
+	// Populate V2 endpoint structures - build from CRD sources to preserve isClowdAppRef info
+	allDeps := append(deps, odeps...)
+	dep.makeV2DependencyEndpoints(apps, appRefs, allDeps, app.Name)
+	dep.makeV2PrivateDependencyEndpoints(apps, appRefs, allDeps, app.Name)
 
 	return nil
 }
@@ -368,6 +369,161 @@ func constructEndpointURI(protocol string, hostname string, port int) string {
 	return u.String()
 }
 
+// endpointPortInfo holds port configuration for building a V2 endpoint
+type endpointPortInfo struct {
+	port       int
+	tlsPort    int
+	h2cPort    int
+	h2cTLSPort int
+}
+
+// extractPublicPorts extracts public port configuration from WebServices and WebConfig
+func extractPublicPorts(webServices *crd.WebServices, web crd.WebDeprecated, envWebConfig *crd.WebConfig) endpointPortInfo {
+	info := endpointPortInfo{}
+
+	if bool(web) || webServices.Public.Enabled {
+		info.port = int(envWebConfig.Port)
+		if provutils.IsPublicTLSEnabled(webServices, &envWebConfig.TLS) {
+			info.tlsPort = int(envWebConfig.TLS.Port)
+		}
+	}
+
+	if webServices.Public.H2CEnabled {
+		if envWebConfig.H2CPort != 0 {
+			info.h2cPort = int(envWebConfig.H2CPort)
+		}
+		if provutils.IsPublicTLSEnabled(webServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPort != 0 {
+			info.h2cTLSPort = int(envWebConfig.TLS.H2CPort)
+		}
+	}
+
+	return info
+}
+
+// extractPrivatePorts extracts private port configuration from WebServices and WebConfig
+func extractPrivatePorts(webServices *crd.WebServices, envWebConfig *crd.WebConfig) endpointPortInfo {
+	info := endpointPortInfo{}
+
+	if webServices.Private.Enabled {
+		info.port = int(envWebConfig.PrivatePort)
+		if info.port == 0 {
+			info.port = 10000
+		}
+		if provutils.IsPrivateTLSEnabled(webServices, &envWebConfig.TLS) {
+			info.tlsPort = int(envWebConfig.TLS.PrivatePort)
+		}
+	}
+
+	if webServices.Private.H2CEnabled {
+		if envWebConfig.H2CPrivatePort != 0 {
+			info.h2cPort = int(envWebConfig.H2CPrivatePort)
+		}
+		if provutils.IsPrivateTLSEnabled(webServices, &envWebConfig.TLS) && envWebConfig.TLS.H2CPrivatePort != 0 {
+			info.h2cTLSPort = int(envWebConfig.TLS.H2CPrivatePort)
+		}
+	}
+
+	return info
+}
+
+// buildV2EndpointFromPorts constructs a V2 endpoint from port info
+// Returns nil if no valid port is configured
+func buildV2EndpointFromPorts(hostname string, ports endpointPortInfo, authenticated bool, isClowdAppRef bool) *config.DependencyEndpointV2 {
+	var uri string
+	var tlsCAPath *string
+
+	// Priority: TLS > H2C TLS > H2C > plaintext
+	switch {
+	case ports.tlsPort > 0:
+		uri = constructEndpointURI("https", hostname, ports.tlsPort)
+		if !isClowdAppRef {
+			tlsCAPath = provutils.GetServiceCACertPath()
+		}
+	case ports.h2cTLSPort > 0:
+		uri = constructEndpointURI("https", hostname, ports.h2cTLSPort)
+		if !isClowdAppRef {
+			tlsCAPath = provutils.GetServiceCACertPath()
+		}
+	case ports.h2cPort > 0:
+		uri = constructEndpointURI("http", hostname, ports.h2cPort)
+	case ports.port > 0:
+		uri = constructEndpointURI("http", hostname, ports.port)
+	default:
+		return nil // No valid port
+	}
+
+	endpoint := config.DependencyEndpointV2{
+		Uri:           uri,
+		Authenticated: authenticated,
+	}
+
+	if tlsCAPath != nil {
+		endpoint.CaCertificate = tlsCAPath
+	}
+
+	return &endpoint
+}
+
+// buildV2EndpointsForApp creates V2 endpoints for ClowdApp (in-cluster, authenticated: false)
+func buildV2EndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
+	for i := range app.Spec.Deployments {
+		deployment := &app.Spec.Deployments[i]
+
+		ports := extractPublicPorts(&deployment.WebServices, deployment.Web, envWebConfig)
+		hostname := fmt.Sprintf("%s-%s.%s.svc", app.Name, deployment.Name, app.Namespace)
+
+		endpoint := buildV2EndpointFromPorts(hostname, ports, false, false) // authenticated=false, isClowdAppRef=false
+		if endpoint == nil {
+			continue // No valid port configured
+		}
+
+		if _, exists := v2Map[app.Name]; !exists {
+			v2Map[app.Name] = make(map[string]config.DependencyEndpointV2)
+		}
+
+		v2Map[app.Name][deployment.Name] = *endpoint
+	}
+}
+
+// buildV2EndpointsForAppRef creates V2 endpoints for ClowdAppRef (cross-cluster, authenticated: true)
+func buildV2EndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
+	// Build webConfig from ClowdAppRef's remoteEnvironment + env fallback
+	tlsPrivatePort := coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort)
+	if appRef.Spec.RemoteEnvironment.TLS.Enabled && tlsPrivatePort == 0 {
+		tlsPrivatePort = coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port)
+	}
+
+	webConfig := crd.WebConfig{
+		Port:           coalesceInt32(appRef.Spec.RemoteEnvironment.Port, envWebConfig.Port),
+		PrivatePort:    coalesceInt32(appRef.Spec.RemoteEnvironment.PrivatePort, envWebConfig.PrivatePort),
+		H2CPort:        coalesceInt32(appRef.Spec.RemoteEnvironment.H2CPort, envWebConfig.H2CPort),
+		H2CPrivatePort: coalesceInt32(appRef.Spec.RemoteEnvironment.H2CPrivatePort, envWebConfig.H2CPrivatePort),
+		TLS: crd.TLS{
+			Enabled:        appRef.Spec.RemoteEnvironment.TLS.Enabled,
+			Port:           coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port),
+			H2CPort:        coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.H2CPort, envWebConfig.TLS.H2CPort),
+			PrivatePort:    tlsPrivatePort,
+			H2CPrivatePort: coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort, envWebConfig.TLS.H2CPrivatePort),
+		},
+	}
+
+	for i := range appRef.Spec.Deployments {
+		deployment := &appRef.Spec.Deployments[i]
+
+		ports := extractPublicPorts(&deployment.WebServices, deployment.Web, &webConfig)
+		endpoint := buildV2EndpointFromPorts(deployment.Hostname, ports, true, true) // authenticated=true, isClowdAppRef=true
+		if endpoint == nil {
+			continue
+		}
+
+		if _, exists := v2Map[appRef.Name]; !exists {
+			v2Map[appRef.Name] = make(map[string]config.DependencyEndpointV2)
+		}
+
+		v2Map[appRef.Name][deployment.Name] = *endpoint
+	}
+}
+
 // buildV2EndpointMap transforms V1 endpoint data into V2 format
 // Returns map[appName]map[serviceName]DependencyEndpointV2
 func buildV2EndpointMap(endpoints []config.DependencyEndpoint) map[string]map[string]config.DependencyEndpointV2 {
@@ -409,7 +565,8 @@ func buildV2EndpointMap(endpoints []config.DependencyEndpoint) map[string]map[st
 		}
 
 		endpoint := config.DependencyEndpointV2{
-			Uri: uri,
+			Uri:           uri,
+			Authenticated: false, // Default to false - this function doesn't have ClowdApp/ClowdAppRef context
 		}
 
 		// Only include ca_certificate field if TLS is used AND CA is needed
@@ -424,15 +581,50 @@ func buildV2EndpointMap(endpoints []config.DependencyEndpoint) map[string]map[st
 }
 
 // makeV2DependencyEndpoints populates the V2 public dependency endpoints
-func (dep *dependenciesProvider) makeV2DependencyEndpoints() {
-	if len(dep.Config.Endpoints) == 0 {
+// Builds directly from ClowdApp/ClowdAppRef sources to preserve isClowdAppRef information
+func (dep *dependenciesProvider) makeV2DependencyEndpoints(apps *crd.ClowdAppList, appRefs *crd.ClowdAppRefList, depList []string, consumerAppName string) {
+	if len(depList) == 0 {
 		return
 	}
 
-	v2Map := buildV2EndpointMap(dep.Config.Endpoints)
+	v2Map := make(map[string]map[string]config.DependencyEndpointV2)
+	envWebConfig := &dep.Env.Spec.Providers.Web
+
+	// Build maps for lookups
+	appMap := make(map[string]crd.ClowdApp)
+	for i := range apps.Items {
+		iapp := &apps.Items[i]
+		appMap[iapp.Name] = *iapp
+	}
+
+	appRefMap := make(map[string]crd.ClowdAppRef)
+	for i := range appRefs.Items {
+		iappRef := &appRefs.Items[i]
+		appRefMap[iappRef.Name] = *iappRef
+	}
+
+	// Process each dependency
+	for _, depName := range depList {
+		depApp, hasApp := appMap[depName]
+		depAppRef, hasAppRef := appRefMap[depName]
+
+		useAppRef := false
+		if hasApp && hasAppRef {
+			useAppRef = isInServesList(consumerAppName, depAppRef.Spec.Serves)
+		} else if hasAppRef {
+			useAppRef = true
+		}
+
+		if useAppRef && hasAppRef {
+			// ClowdAppRef - authenticated: true
+			buildV2EndpointsForAppRef(&depAppRef, envWebConfig, v2Map)
+		} else if hasApp {
+			// ClowdApp - authenticated: false
+			buildV2EndpointsForApp(&depApp, envWebConfig, v2Map)
+		}
+	}
 
 	if len(v2Map) > 0 {
-		// Convert to map[string]interface{} for the generated type
 		v2Interface := make(config.AppConfigDependencyEndpointsV2)
 		for appName, services := range v2Map {
 			v2Interface[appName] = services
@@ -445,30 +637,50 @@ func (dep *dependenciesProvider) makeV2DependencyEndpoints() {
 }
 
 // makeV2PrivateDependencyEndpoints populates the V2 private dependency endpoints
-func (dep *dependenciesProvider) makeV2PrivateDependencyEndpoints() {
-	if len(dep.Config.PrivateEndpoints) == 0 {
+// Builds directly from ClowdApp/ClowdAppRef sources to preserve isClowdAppRef information
+func (dep *dependenciesProvider) makeV2PrivateDependencyEndpoints(apps *crd.ClowdAppList, appRefs *crd.ClowdAppRefList, depList []string, consumerAppName string) {
+	if len(depList) == 0 {
 		return
 	}
 
-	// Convert PrivateDependencyEndpoint to DependencyEndpoint format for transformation
-	publicFormat := make([]config.DependencyEndpoint, len(dep.Config.PrivateEndpoints))
-	for i, privEp := range dep.Config.PrivateEndpoints {
-		publicFormat[i] = config.DependencyEndpoint{
-			Name:       privEp.Name,
-			Hostname:   privEp.Hostname,
-			Port:       privEp.Port,
-			App:        privEp.App,
-			TlsPort:    privEp.TlsPort,
-			H2CPort:    privEp.H2CPort,
-			H2CTLSPort: privEp.H2CTLSPort,
-			TlsCAPath:  privEp.TlsCAPath,
+	v2Map := make(map[string]map[string]config.DependencyEndpointV2)
+	envWebConfig := &dep.Env.Spec.Providers.Web
+
+	// Build maps for lookups
+	appMap := make(map[string]crd.ClowdApp)
+	for i := range apps.Items {
+		iapp := &apps.Items[i]
+		appMap[iapp.Name] = *iapp
+	}
+
+	appRefMap := make(map[string]crd.ClowdAppRef)
+	for i := range appRefs.Items {
+		iappRef := &appRefs.Items[i]
+		appRefMap[iappRef.Name] = *iappRef
+	}
+
+	// Process each dependency
+	for _, depName := range depList {
+		depApp, hasApp := appMap[depName]
+		depAppRef, hasAppRef := appRefMap[depName]
+
+		useAppRef := false
+		if hasApp && hasAppRef {
+			useAppRef = isInServesList(consumerAppName, depAppRef.Spec.Serves)
+		} else if hasAppRef {
+			useAppRef = true
+		}
+
+		if useAppRef && hasAppRef {
+			// ClowdAppRef - authenticated: true
+			buildV2PrivateEndpointsForAppRef(&depAppRef, envWebConfig, v2Map)
+		} else if hasApp {
+			// ClowdApp - authenticated: false
+			buildV2PrivateEndpointsForApp(&depApp, envWebConfig, v2Map)
 		}
 	}
 
-	v2Map := buildV2EndpointMap(publicFormat)
-
 	if len(v2Map) > 0 {
-		// Convert to map[string]interface{} for the generated type
 		v2Interface := make(config.AppConfigPrivateDependencyEndpointsV2)
 		for appName, services := range v2Map {
 			v2Interface[appName] = services
@@ -477,5 +689,65 @@ func (dep *dependenciesProvider) makeV2PrivateDependencyEndpoints() {
 		dep.Config.PrivateDependencyEndpoints = &config.AppConfigPrivateDependencyEndpoints{
 			V2: v2Interface,
 		}
+	}
+}
+
+// buildV2PrivateEndpointsForApp creates V2 private endpoints for ClowdApp (in-cluster, authenticated: false)
+func buildV2PrivateEndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
+	for i := range app.Spec.Deployments {
+		deployment := &app.Spec.Deployments[i]
+
+		ports := extractPrivatePorts(&deployment.WebServices, envWebConfig)
+		hostname := fmt.Sprintf("%s-%s.%s.svc", app.Name, deployment.Name, app.Namespace)
+
+		endpoint := buildV2EndpointFromPorts(hostname, ports, false, false) // authenticated=false, isClowdAppRef=false
+		if endpoint == nil {
+			continue
+		}
+
+		if _, exists := v2Map[app.Name]; !exists {
+			v2Map[app.Name] = make(map[string]config.DependencyEndpointV2)
+		}
+
+		v2Map[app.Name][deployment.Name] = *endpoint
+	}
+}
+
+// buildV2PrivateEndpointsForAppRef creates V2 private endpoints for ClowdAppRef (cross-cluster, authenticated: true)
+func buildV2PrivateEndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
+	// Build webConfig from ClowdAppRef's remoteEnvironment + env fallback
+	tlsPrivatePort := coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort)
+	if appRef.Spec.RemoteEnvironment.TLS.Enabled && tlsPrivatePort == 0 {
+		tlsPrivatePort = coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port)
+	}
+
+	webConfig := crd.WebConfig{
+		Port:           coalesceInt32(appRef.Spec.RemoteEnvironment.Port, envWebConfig.Port),
+		PrivatePort:    coalesceInt32(appRef.Spec.RemoteEnvironment.PrivatePort, envWebConfig.PrivatePort),
+		H2CPort:        coalesceInt32(appRef.Spec.RemoteEnvironment.H2CPort, envWebConfig.H2CPort),
+		H2CPrivatePort: coalesceInt32(appRef.Spec.RemoteEnvironment.H2CPrivatePort, envWebConfig.H2CPrivatePort),
+		TLS: crd.TLS{
+			Enabled:        appRef.Spec.RemoteEnvironment.TLS.Enabled,
+			Port:           coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port),
+			H2CPort:        coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.H2CPort, envWebConfig.TLS.H2CPort),
+			PrivatePort:    tlsPrivatePort,
+			H2CPrivatePort: coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.H2CPrivatePort, envWebConfig.TLS.H2CPrivatePort),
+		},
+	}
+
+	for i := range appRef.Spec.Deployments {
+		deployment := &appRef.Spec.Deployments[i]
+
+		ports := extractPrivatePorts(&deployment.WebServices, &webConfig)
+		endpoint := buildV2EndpointFromPorts(deployment.Hostname, ports, true, true) // authenticated=true, isClowdAppRef=true
+		if endpoint == nil {
+			continue
+		}
+
+		if _, exists := v2Map[appRef.Name]; !exists {
+			v2Map[appRef.Name] = make(map[string]config.DependencyEndpointV2)
+		}
+
+		v2Map[appRef.Name][deployment.Name] = *endpoint
 	}
 }

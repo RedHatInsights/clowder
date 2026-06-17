@@ -30,6 +30,9 @@ jq -r '.data["cdappconfig.json"]' < "${TMP_DIR}/${TEST_NAME}" | base64 -d > "${T
 jq -r '.dependencyEndpoints.v2.rbac.service.uri == "https://rbac-service.test-v2-clowdapp-tls.svc:8443"' -e < "${TMP_DIR}/${TEST_NAME}-json"
 jq -r '.dependencyEndpoints.v2.rbac.service.ca_certificate == "/cdapp/certs/service-ca.crt"' -e < "${TMP_DIR}/${TEST_NAME}-json"
 
+# Verify authenticated is false for ClowdApp (in-cluster) dependencies
+jq -r '.dependencyEndpoints.v2.rbac.service.authenticated == false' -e < "${TMP_DIR}/${TEST_NAME}-json"
+
 # Verify CA volume is mounted in consumer deployment
 kubectl get deployment --namespace="${NAMESPACE}" consumer-api -o json > "${TMP_DIR}/${TEST_NAME}-deployment"
 jq -r '.spec.template.spec.volumes[] | select(.name == "tls-ca") | .configMap.name == "openshift-service-ca.crt"' -e < "${TMP_DIR}/${TEST_NAME}-deployment"
