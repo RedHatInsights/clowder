@@ -105,12 +105,12 @@ func configureKeycloakDB(web *localWebProvider) error {
 
 	res := core.ResourceRequirements{
 		Limits: core.ResourceList{
-			"memory": resource.MustParse("200Mi"),
-			"cpu":    resource.MustParse("100m"),
+			"memory": resource.MustParse("128Mi"),
+			"cpu":    resource.MustParse("65m"),
 		},
 		Requests: core.ResourceList{
-			"memory": resource.MustParse("100Mi"),
-			"cpu":    resource.MustParse("50m"),
+			"memory": resource.MustParse("128Mi"),
+			"cpu":    resource.MustParse("33m"),
 		},
 	}
 
