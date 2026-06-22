@@ -53,7 +53,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
       sidecars:
         - name: token-refresher
           enabled: true

@@ -19,7 +19,7 @@ spec:
   - name: inventory
     schedule: "* * * * */5"
     podSpec:
-    image: quay.io/psav/clowder-hello
+    image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
 ```
 
 ## ClowdEnv Configuration

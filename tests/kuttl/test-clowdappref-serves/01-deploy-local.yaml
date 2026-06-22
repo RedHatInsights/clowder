@@ -9,7 +9,7 @@ spec:
   deployments:
   - name: service
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
     webServices:
       public:
         enabled: true
@@ -24,7 +24,7 @@ spec:
   deployments:
   - name: api
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
     web: true
   dependencies:
     - rbac

@@ -17,7 +17,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-im-disabled
-              image: quay.io/psav/clowder-hello
+              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
 ---
 apiVersion: batch/v1
 kind: Job

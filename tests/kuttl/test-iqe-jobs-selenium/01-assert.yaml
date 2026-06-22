@@ -51,7 +51,7 @@ spec:
           sizeLimit: 64Mi
         name: sel-downloads
       initContainers:
-        - image: quay.io/psav/clowder-hello:latest
+        - image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
           resources:
             limits:
               cpu: 400m
@@ -96,7 +96,7 @@ spec:
               value: "true"
             - name: IQE_IBUTSU_SOURCE
               value: "post_stage_deploy"
-          image: quay.io/psav/clowder-hello:latest
+          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
           resources:
             limits:
               cpu: "2"
