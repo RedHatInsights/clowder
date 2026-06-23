@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Check user permissions
         id: check-permissions
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const username = context.payload.comment.user.login;
@@ -63,7 +63,7 @@ jobs:
 
       - name: React to comment
         if: steps.check-permissions.outputs.allowed == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -75,7 +75,7 @@ jobs:
 
       - name: Get PR details
         id: pr
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -89,7 +89,7 @@ jobs:
 
       - name: Check if PR has buildspec.yml
         id: check-buildspec
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             try {
@@ -116,7 +116,7 @@ jobs:
 
       - name: Fail if buildspec.yml is missing
         if: steps.check-buildspec.outputs.has-buildspec == 'false'
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const sha = '${{ steps.pr.outputs.sha }}';
@@ -134,7 +134,7 @@ jobs:
 
       - name: Create pending status check
         if: steps.check-permissions.outputs.allowed == 'true' && steps.check-buildspec.outputs.has-buildspec == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const projectUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
@@ -151,7 +151,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: steps.check-buildspec.outputs.has-buildspec == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_CODEBUILD_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
@@ -159,7 +159,7 @@ jobs:
       - name: Run CodeBuild
         if: steps.check-buildspec.outputs.has-buildspec == 'true'
         id: codebuild
-        uses: aws-actions/aws-codebuild-run-build@v1
+        uses: aws-actions/aws-codebuild-run-build@7e46c3fa1c1f217e26a73712796b1f78938b534b v1.0.19
         with:
           hide-cloudwatch-logs: true
           project-name: clowder-pr-check
@@ -179,7 +179,7 @@ jobs:
 
       - name: Update status check on success
         if: success() && steps.codebuild.outputs.aws-build-id
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const buildId = '${{ steps.codebuild.outputs.aws-build-id }}'.split(':')[1];
@@ -197,7 +197,7 @@ jobs:
 
       - name: Update status check on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
