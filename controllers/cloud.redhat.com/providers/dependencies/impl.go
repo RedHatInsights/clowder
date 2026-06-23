@@ -283,7 +283,7 @@ func configureAppRefDependencyEndpoints(innerDeployment *crd.ClowdAppRefDeployme
 	// For ClowdAppRef TLS, if PrivatePort is not set but Port is, use Port as the default for PrivatePort
 	// This allows ClowdAppRef to specify only one TLS port that serves both public and private endpoints
 	tlsPrivatePort := coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort)
-    if (depAppRef.Spec.RemoteEnvironment.TLS.Enabled || envWebConfig.TLS.Enabled) && tlsPrivatePort == 0 {
+	if (depAppRef.Spec.RemoteEnvironment.TLS.Enabled || envWebConfig.TLS.Enabled) && tlsPrivatePort == 0 {
 		tlsPrivatePort = coalesceInt32(depAppRef.Spec.RemoteEnvironment.TLS.Port, envWebConfig.TLS.Port)
 	}
 
@@ -511,62 +511,6 @@ func buildV2EndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd.WebCon
 
 		v2Map[appRef.Name][deployment.Name] = *endpoint
 	}
-}
-
-// buildV2EndpointMap transforms V1 endpoint data into V2 format
-// Returns map[appName]map[serviceName]DependencyEndpointV2
-func buildV2EndpointMap(endpoints []config.DependencyEndpoint) map[string]map[string]config.DependencyEndpointV2 {
-	if len(endpoints) == 0 {
-		return nil
-	}
-
-	v2Map := make(map[string]map[string]config.DependencyEndpointV2)
-
-	for _, ep := range endpoints {
-		// Initialize app map if it doesn't exist
-		if _, exists := v2Map[ep.App]; !exists {
-			v2Map[ep.App] = make(map[string]config.DependencyEndpointV2)
-		}
-
-		// Determine the single correct endpoint to expose
-		// Priority: TLS > H2C TLS > H2C > plaintext
-		var uri string
-		var tlsCAPath *string
-
-		switch {
-		case ep.TlsPort != nil && *ep.TlsPort > 0:
-			// Use HTTPS
-			uri = constructEndpointURI("https", ep.Hostname, *ep.TlsPort)
-			tlsCAPath = ep.TlsCAPath
-		case ep.H2CTLSPort != nil && *ep.H2CTLSPort > 0:
-			// Use H2C with TLS
-			uri = constructEndpointURI("https", ep.Hostname, *ep.H2CTLSPort)
-			tlsCAPath = ep.TlsCAPath
-		case ep.H2CPort != nil && *ep.H2CPort > 0:
-			// Use H2C plaintext
-			uri = constructEndpointURI("http", ep.Hostname, *ep.H2CPort)
-		case ep.Port > 0:
-			// Use HTTP plaintext
-			uri = constructEndpointURI("http", ep.Hostname, ep.Port)
-		default:
-			// No valid port configured, skip
-			continue
-		}
-
-		endpoint := config.DependencyEndpointV2{
-			Uri:           uri,
-			Authenticated: false, // Default to false - this function doesn't have ClowdApp/ClowdAppRef context
-		}
-
-		// Only include ca_certificate field if TLS is used AND CA is needed
-		if tlsCAPath != nil {
-			endpoint.CaCertificate = tlsCAPath
-		}
-
-		v2Map[ep.App][ep.Name] = endpoint
-	}
-
-	return v2Map
 }
 
 // makeV2DependencyEndpoints populates the V2 public dependency endpoints
