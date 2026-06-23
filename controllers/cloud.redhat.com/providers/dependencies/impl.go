@@ -34,7 +34,6 @@ func isInServesList(appName string, serves []string) bool {
 }
 
 func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
-
 	if dep.Env.Spec.Providers.Web.PrivatePort == 0 {
 		dep.Env.Spec.Providers.Web.PrivatePort = 10000
 	}
@@ -69,7 +68,6 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	// Get all ClowdApps
 
 	apps, err := dep.Env.GetAppsInEnv(dep.Ctx, dep.Client)
-
 	if err != nil {
 		return errors.Wrap("Failed to list apps", err)
 	}
@@ -77,7 +75,6 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	// Get all ClowdAppRefs
 
 	appRefs, err := dep.getAppRefsInEnv()
-
 	if err != nil {
 		return errors.Wrap("Failed to list app refs", err)
 	}
@@ -107,6 +104,7 @@ func (dep *dependenciesProvider) makeDependencies(app *crd.ClowdApp) error {
 	dep.Config.PrivateEndpoints = privDepConfig
 
 	// Populate V2 endpoint structures - build from CRD sources to preserve isClowdAppRef info
+	//nolint:gocritic // Creating new slice combining deps and odeps
 	allDeps := append(deps, odeps...)
 	dep.makeV2DependencyEndpoints(apps, appRefs, allDeps, app.Name)
 	dep.makeV2PrivateDependencyEndpoints(apps, appRefs, allDeps, app.Name)
@@ -133,7 +131,6 @@ func makeDepConfig(
 	apps *crd.ClowdAppList,
 	appRefs *crd.ClowdAppRefList,
 ) (missingDeps []string) {
-
 	appMap := map[string]crd.ClowdApp{}
 	appRefMap := map[string]crd.ClowdAppRef{}
 
@@ -318,7 +315,6 @@ func processAppAndAppRefEndpoints(
 	envWebConfig *crd.WebConfig,
 	consumerAppName string,
 ) (missingDeps []string) {
-
 	missingDeps = []string{}
 
 	for _, dep := range depList {
@@ -432,20 +428,13 @@ func buildV2EndpointFromPorts(hostname string, ports endpointPortInfo, authentic
 	var uri string
 	var tlsCAPath *string
 
-	// Priority: TLS > H2C TLS > H2C > plaintext
+	// Priority: TLS > plaintext
 	switch {
 	case ports.tlsPort > 0:
 		uri = constructEndpointURI("https", hostname, ports.tlsPort)
 		if !isClowdAppRef {
 			tlsCAPath = provutils.GetServiceCACertPath()
 		}
-	case ports.h2cTLSPort > 0:
-		uri = constructEndpointURI("https", hostname, ports.h2cTLSPort)
-		if !isClowdAppRef {
-			tlsCAPath = provutils.GetServiceCACertPath()
-		}
-	case ports.h2cPort > 0:
-		uri = constructEndpointURI("http", hostname, ports.h2cPort)
 	case ports.port > 0:
 		uri = constructEndpointURI("http", hostname, ports.port)
 	default:
