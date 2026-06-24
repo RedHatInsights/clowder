@@ -11212,6 +11212,42 @@ objects:
                         - namespace
                         type: object
                       type: array
+                    reverseProxy:
+                      description: Defines the Configuration for the Clowder ReverseProxy
+                        Provider.
+                      properties:
+                        awsRegion:
+                          description: The AWS region used by the reverse proxy for
+                            S3 access.
+                          type: string
+                        bucketPathPrefix:
+                          description: The S3 bucket path prefix used by the reverse
+                            proxy.
+                          type: string
+                        images:
+                          description: Override the reverse proxy images
+                          properties:
+                            proxy:
+                              type: string
+                          type: object
+                        mode:
+                          description: 'The mode of operation of the Clowder ReverseProxy
+                            Provider. Valid options are:
+
+                            (*_ephemeral_*) where a reverse proxy instance will be
+                            created for ephemeral
+
+                            environments, and (*_none_*) where no reverse proxy will
+                            be deployed.'
+                          enum:
+                          - ephemeral
+                          - none
+                          type: string
+                        spaEntrypointPath:
+                          description: The path to the SPA entrypoint file served
+                            by the reverse proxy.
+                          type: string
+                      type: object
                     serviceMesh:
                       description: Defines the Configuration for the Clowder ServiceMesh
                         Provider.
