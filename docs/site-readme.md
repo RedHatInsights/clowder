@@ -1,21 +1,21 @@
-![Clowder - Clowd Platform Operator][clowder-logo]
+![Clowder - Clowd Platform Operator](docs/img/clowder.svg)
 
-![Build Passing][build-badge]
-![Downloads][downloads-badge]
-![Release][release-badge]
-![Go Report Card][goreport-badge]
+![Build Passing](https://img.shields.io/github/actions/workflow/status/RedHatInsights/clowder/package.yml?branch=master)
+![Downloads](https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg)
+![Release](https://img.shields.io/github/v/release/RedHatInsights/clowder)
+![Go Report Card](https://goreportcard.com/badge/github.com/RedHatInsights/clowder)
 
 ## What is Clowder?
 
-Clowder is a Kubernetes operator designed to make it easy to deploy applications
+Clowder is a kubernetes operator designed to make it easy to deploy applications
 running on the cloud.redhat.com platform in production, testing and local
 development environments.
 
-Learn more about Clowder in the [extended overview][learn-more].
+Learn more about Clowder [here](docs/learn-more.md)
 
 ## See Clowder in Action
 
-![Animated GIF terminal example][terminal-example]
+![Animated GIF terminal example](docs/img/terminal-example.gif)
 
 ## Why use Clowder?
 
@@ -33,51 +33,55 @@ provides a number of other benefits:
   implicitly understand the deployment of any other app utilizing Clowder.
 - **Deploy a full environment locally** Gone are the days of hacking together
   scripts that just about get you mocked or partially working dependant services.
-  With Clowder, you can deploy an instance of the cloud.redhat.com platform on your
+  With  Clowder, you can deploy an instance of the cloud.redhat.com platform on your
   local laptop, or in a dev cluster to use as you wish.
 
-Clowder provisions resources depending on the mode chosen for each provider and
-returns a consistently formatted JSON configuration document (`cdappconfig.json`)
-for each app to consume. The Clowder config client currently supports Python,
-Go, JavaScript, and Ruby.
+Clowder will provision resources depending on the mode choosen for each provider,
+and will return a consistently formatted JSON configuration document for each app
+to consume, leaving teams to focus more on writing code than differences between
+environments. The Clowder config client can assist with this and currently has support
+for Python, Go, Javascript and Ruby.
 
-![Configuration model][config-model]
+![Configuration model](docs/img/config.svg)
 
 ## Feature List
 
-Clowder currently supports:
+Clowder currently supports the following features:
 
-- Kafka topics
-- Object storage
-- PostgreSQL database
-- In-memory DB (Redis)
-- Feature flags (development only)
+- Kafka Topics
+- Object Storage
+- PostgreSQL Database
+- In-Memory DB
+- Feature Flags (development only)
 - CronJob support
-- Job support
+- Jobs Support
 
-## Prerequisites
+## Updating E2E Test Golang Deps
 
-- Go 1.25
-- `kubectl` configured against a target cluster or Minikube
-- `make`
-- Podman or Docker (for container image builds)
+Clowder's build tools (controller-gen, kustomize, setup-envtest) are now managed via Go 1.24's tools directive in the main `go.mod` file. To update tool dependencies, run:
+```
+make update-deps
+```
 
 ## Getting Clowder
 
 **Clowder is already running in pre-prod/prod environments.**
 
-To run Clowder locally in Minikube, obtain and install [Minikube][minikube].
+To run Clowder locally in Minikube, obtain and install
+[Minikube](https://minikube.sigs.k8s.io/docs/start/).
 
 Clowder is developed on Fedora and the kvm driver has been found to work best
-with the following options:
+initiated with the following options:
 
 ```shell
-minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 \
-  --addons registry --addons ingress --addons=metrics-server \
-  --disable-optimizations
+minikube start --cpus 4 --disk-size 36GB --memory 16000MB --driver=kvm2 --addons registry --addons ingress  --addons=metrics-server --disable-optimizations
 ```
 
-To persist these settings for every Minikube invocation:
+NOTE:
+Mac OS is also supported with the `virtualbox` and `hyperkit` drivers. A full
+guide [can be found here](docs/macos.md)
+
+To persist these changes for every minikube invocation, run the following:
 
 ```shell
 minikube config set cpus 4
@@ -86,165 +90,57 @@ minikube config set disk-size 36GB
 minikube config set driver kvm2
 ```
 
-Then run the cluster setup script:
+If you encounter any kvm issues, please take a look
+[at the troubleshooting guide](docs/developer-guide.md)
+
+The ``kube_setup.sh`` script then needs to be run by invoking
 
 ```shell
 ./build/kube_setup.sh
 ```
 
-Install the latest Clowder release:
+Clowder can then be installed by running:
 
 ```shell
-minikube kubectl -- apply -f \
-  $(curl https://api.github.com/repos/RedHatInsights/clowder/releases/latest \
-    | jq '.assets[0].browser_download_url' -r) \
-  --validate=false
+# Be sure to get the latest release in the link above!
+minikube kubectl -- apply -f $(curl https://api.github.com/repos/RedHatInsights/clowder/releases/latest | jq '.assets[0].browser_download_url' -r) --validate=false
 ```
-
-macOS is also supported. See the [macOS guide][macos-guide].
-
-If you encounter kvm issues, see the [developer guide][developer-guide].
 
 ## Usage
 
-To deploy an application with Clowder, a `ClowdEnvironment` resource must be
-present to define the environment. Once deployed, author a `ClowdApp` resource
-for the app:
+To use Clowder to deploy an application a ``ClowdEnvironment`` resource must be
+present to define an environment. Once this has been deployed, a ``ClowdApp``
+resource is authored for the app and deployed alongside the ``ClowdEnvironment``.
 
-```shell
-kubectl apply -f clowdenv.yaml
-kubectl apply -f clowdapp.yaml
-```
+Example app developer workflow:
 
-Example manifests are in `docs/examples/`. Full instructions are in the
-[Getting Started guide][getting-started].
+* Install Clowder on a minikube environment.
+* Use ``kubectl apply -f clowdenv.yaml`` to apply a ``ClowdEnvironment`` resource
+  to the cluster.
+* Use ``kubectl apply -f clowdapp.yaml`` to apply a ``ClowdApp`` resource to the
+  cluster.
 
-See the [API reference][api-reference] for all resource fields.
+More details on how to do this are present in the [Getting Started](docs/usage/getting-started.md) section
+of the documentation.
+
+[API Reference](https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html)
 
 ## Building Clowder
 
-Build the manager binary:
-
-```shell
-make build
-```
-
-Build the container image:
-
-```shell
-make docker-build
-```
-
-## Development Setup
-
-Install build tool dependencies (controller-gen, kustomize, setup-envtest) via
-the Go tools directive:
-
-```shell
-make update-deps
-```
-
-### Code generation
-
-Run these commands after modifying the corresponding source:
-
-| Change | Command |
-| --------------------------------- | -------------------- |
-| CRD types in `apis/` | `make generate && make manifests` |
-| JSON schema in `schema/` | `make genconfig` |
-| RBAC markers in controllers | `make manifests` |
-
-### Running tests
-
-Unit tests (requires envtest):
-
-```shell
-make test
-```
-
-End-to-end KUTTL tests (requires a running cluster):
-
-```shell
-make deploy-minikube-quick   # deploy latest build first
-make kuttl
-```
-
-Run a single KUTTL test:
-
-```shell
-make kuttl KUTTL_TEST="--test=test-basic-app"
-```
-
-### Code quality
-
-```shell
-make fmt      # format with gofmt
-make vet      # run go vet
-make lint     # run golangci-lint
-make pre-push # run all pre-commit checks
-```
-
-### Local development
-
-```shell
-make install           # install CRDs into cluster
-make run               # run controller locally against kubeconfig cluster
-make deploy-minikube   # build and deploy to minikube
-```
-
-For detailed instructions including debugging with Delve and VS Code, see the
-[developer guide][developer-guide].
-
-## Architecture
-
-Clowder uses a provider-based plugin architecture. Each service type
-(database, Kafka, object storage, etc.) is implemented as a pluggable provider
-that can be swapped per environment via `ClowdEnvironment` configuration.
-
-For internal design decisions, the resource cache, watch/filter system, and
-code generation pipeline, see [ARCHITECTURE.md][architecture].
-
-## Contributing
-
-Contribution guidelines, commit conventions (Conventional Commits), pull request
-flow, and testing patterns are described in [CONTRIBUTING.md][contributing].
+If you want to run a version of Clowder other than the released version there
+are a few prerequisites you will need. To learn about developing Clowder please
+visit the [developing clowder](docs/developer-guide.md) page for more detailed instructions.
 
 ## History
 
-To understand more about the design decisions made while developing Clowder,
-see the [design document][clowder-design].
+To understand more about the design decisions made while developing clowder,
+please visit the [design document](docs/clowder-design.adoc).
 
 ## Connect
 
-Questions? Reach out to the Clowder development team:
+Any questions, please ask one of the Clowder development team
 
-- [@bsquizz][bsquizz]
-- [@bennyturns][bennyturns]
-- [@adamrdrew][adamrdrew]
-- [@maknop][maknop]
-
-## License
-
-Licensed under the [Apache License 2.0][license].
-
-[clowder-logo]: docs/img/clowder.svg
-[build-badge]: https://img.shields.io/github/actions/workflow/status/RedHatInsights/clowder/package.yml?branch=master
-[downloads-badge]: https://img.shields.io/github/downloads/RedHatInsights/clowder/total.svg
-[release-badge]: https://img.shields.io/github/v/release/RedHatInsights/clowder
-[goreport-badge]: https://goreportcard.com/badge/github.com/RedHatInsights/clowder
-[terminal-example]: docs/img/terminal-example.gif
-[config-model]: docs/img/config.svg
-[learn-more]: docs/learn-more.md
-[minikube]: https://minikube.sigs.k8s.io/docs/start/
-[macos-guide]: docs/macos.md
-[developer-guide]: docs/developer-guide.md
-[getting-started]: docs/usage/getting-started.md
-[api-reference]: https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html
-[architecture]: ARCHITECTURE.md
-[contributing]: CONTRIBUTING.md
-[clowder-design]: docs/clowder-design.adoc
-[bsquizz]: https://github.com/bsquizz
-[bennyturns]: https://github.com/bennyturns
-[adamrdrew]: https://github.com/adamrdrew
-[maknop]: https://github.com/maknop
-[license]: LICENSE
+* [@bsquizz](https://github.com/bsquizz)
+* [@bennyturns](https://github.com/bennyturns)
+* [@adamrdrew](https://github.com/adamrdrew)
+* [@maknop](https://github.com/maknop) 
