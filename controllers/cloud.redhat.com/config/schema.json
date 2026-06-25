@@ -655,10 +655,15 @@
                 "ca_certificate": {
                     "description": "Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.",
                     "type": "string"
+                },
+                "authenticated": {
+                    "description": "Indicates whether the client should authenticate when connecting to this endpoint. Always present (explicitly true or false). True for cross-cluster dependencies (ClowdAppRef) that route through gateways; false for in-cluster dependencies (ClowdApp) that rely on network isolation.",
+                    "type": "boolean"
                 }
             },
             "required": [
-                "uri"
+                "uri",
+                "authenticated"
             ]
         }
     }

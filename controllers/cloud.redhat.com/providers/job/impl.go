@@ -140,6 +140,7 @@ func CreateJobResource(cji *crd.ClowdJobInvocation, env *crd.ClowdEnvironment, a
 	})
 
 	if env.Spec.Providers.Web.TLS.Enabled {
+		// Mount OpenShift service CA for in-cluster dependencies
 		provutils.AddCertVolume(&j.Spec.Template.Spec, nn.Name)
 	}
 

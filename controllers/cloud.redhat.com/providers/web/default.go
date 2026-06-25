@@ -67,6 +67,7 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 				return errors.Wrap("getting core deployment", err)
 			}
 
+			// Mount OpenShift service CA for in-cluster dependencies
 			provutils.AddCertVolume(&d.Spec.Template.Spec, dnn.Name)
 
 			if err := web.Cache.Update(provDeploy.CoreDeployment, d); err != nil {
@@ -86,11 +87,11 @@ func (web *webProvider) Provide(app *crd.ClowdApp) error {
 
 		for _, item := range d.Items {
 			innerItem := item
+			// Mount OpenShift service CA for in-cluster dependencies
 			provutils.AddCertVolume(&innerItem.Spec.JobTemplate.Spec.Template.Spec, innerItem.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Name)
 
 			if err := web.Cache.Update(provCronjob.CoreCronJob, &innerItem); err != nil {
 				return err
-
 			}
 		}
 	}
