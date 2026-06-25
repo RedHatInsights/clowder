@@ -13,8 +13,13 @@
     "group:all"
   ],
   "ignoreDeps": [
+    "github.com/kedacore/keda/v2",
+    "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring",
+    "k8s.io/*",
     "sigs.k8s.io/controller-runtime",
-    "github.com/RedHatInsights/strimzi-client-go"
+    "sigs.k8s.io/controller-tools",
+    "sigs.k8s.io/kustomize/kustomize/v5",
+    "sigs.k8s.io/controller-runtime/tools/setup-envtest"
   ],
-  "postUpdateOptions": ["gomodTidy"]
+  "postUpdateOptions": [ "gomodTidy" ]
 }
