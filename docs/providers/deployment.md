@@ -20,7 +20,7 @@ spec:
   deployments:
   - name: service
     podSpec:
-      name: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+      name: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
 ```
 
 ## ClowdEnv Configuration

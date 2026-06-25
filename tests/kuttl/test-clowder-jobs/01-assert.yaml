@@ -56,7 +56,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-standard-cron
-              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
           restartPolicy: Never
           tolerations:
           - key: "memory"
@@ -103,7 +103,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-suspend-cron
-              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
           restartPolicy: Never
 ---
 apiVersion: batch/v1
@@ -131,7 +131,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-parallel-cron
-              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
           restartPolicy: Never
           tolerations:
           - key: "memory"
@@ -158,7 +158,7 @@ spec:
           serviceAccountName: puptoo-app
           containers:
             - name: puptoo-restart-on-failure
-              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+              image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
           restartPolicy: OnFailure
 ---
 apiVersion: batch/v1

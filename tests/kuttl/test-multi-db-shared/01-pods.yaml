@@ -44,7 +44,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
   database:
     name: app-a
     version: 12
@@ -60,7 +60,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
   database:
     name: app-b
     version: 13
@@ -76,7 +76,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
   database:
     sharedDbAppName: app-b
     version: 13

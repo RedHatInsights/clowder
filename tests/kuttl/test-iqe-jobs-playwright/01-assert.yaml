@@ -89,7 +89,7 @@ spec:
             - name: IQE_PARALLEL_WORKER_COUNT
             - name: IQE_RP_ARGS
             - name: IQE_IBUTSU_SOURCE
-          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+          image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
           resources:
             limits:
               cpu: "2"

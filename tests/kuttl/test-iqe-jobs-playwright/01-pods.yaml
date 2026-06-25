@@ -10,7 +10,7 @@ spec:
       k8sAccessLevel: edit
       configAccess: environment
       iqe:
-        imageBase: "quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest"
+        imageBase: "quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b"
         resources:
           limits:
             cpu: 2
@@ -68,7 +68,7 @@ spec:
   deployments:
     - name: service
       podSpec:
-        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:latest
+        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
 ---
 apiVersion: cloud.redhat.com/v1alpha1
 kind: ClowdJobInvocation
