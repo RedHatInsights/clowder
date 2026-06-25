@@ -26,5 +26,5 @@ spec:
   template:
     spec:
       containers:
-        - imagePullPolicy: Always
+        - imagePullPolicy: IfNotPresent
 
