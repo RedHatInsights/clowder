@@ -16,7 +16,7 @@ spec:
         enabled: true
     # Give details about your running pod
     podSpec:
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
 
   # Request kafka topics for your application here
   kafkaTopics:

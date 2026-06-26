@@ -21,7 +21,7 @@ objects:
         - name: quay-cloudservices-pull
         containers:
           - name: e2e
-            image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e-tests:${IMAGE_TAG}
+            image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:${IMAGE_TAG}
             imagePullPolicy: Always
             env:
               # Namespace to deploy test resources into
