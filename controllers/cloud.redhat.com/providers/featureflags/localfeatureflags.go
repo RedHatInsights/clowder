@@ -155,12 +155,12 @@ func (ff *localFeatureFlagsProvider) EnvProvide() error {
 
 	res := core.ResourceRequirements{
 		Limits: core.ResourceList{
-			"memory": resource.MustParse("200Mi"),
-			"cpu":    resource.MustParse("100m"),
+			"memory": resource.MustParse("137Mi"),
+			"cpu":    resource.MustParse("42m"),
 		},
 		Requests: core.ResourceList{
-			"memory": resource.MustParse("100Mi"),
-			"cpu":    resource.MustParse("50m"),
+			"memory": resource.MustParse("59Mi"),
+			"cpu":    resource.MustParse("16m"),
 		},
 	}
 
@@ -483,12 +483,12 @@ func makeLocalFeatureFlagsEdge(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMa
 		ImagePullPolicy: core.PullIfNotPresent,
 		Resources: core.ResourceRequirements{
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("200Mi"),
-				"cpu":    resource.MustParse("100m"),
+				"memory": resource.MustParse("24Mi"),
+				"cpu":    resource.MustParse("7m"),
 			},
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("400Mi"),
-				"cpu":    resource.MustParse("200m"),
+				"memory": resource.MustParse("72Mi"),
+				"cpu":    resource.MustParse("16m"),
 			},
 		},
 	}

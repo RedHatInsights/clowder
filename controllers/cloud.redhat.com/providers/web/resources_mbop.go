@@ -257,12 +257,12 @@ func makeBOP(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.Object
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("200Mi"),
-				"cpu":    resource.MustParse("100m"),
+				"memory": resource.MustParse("55Mi"),
+				"cpu":    resource.MustParse("3m"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("100Mi"),
-				"cpu":    resource.MustParse("50m"),
+				"memory": resource.MustParse("20Mi"),
+				"cpu":    resource.MustParse("1m"),
 			},
 		},
 		TerminationMessagePath:   "/dev/termination-log",
