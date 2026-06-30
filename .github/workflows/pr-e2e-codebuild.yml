@@ -159,7 +159,7 @@ jobs:
       - name: Run CodeBuild
         if: steps.check-buildspec.outputs.has-buildspec == 'true'
         id: codebuild
-        uses: aws-actions/aws-codebuild-run-build@7e46c3fa1c1f217e26a73712796b1f78938b534b v1.0.19
+        uses: aws-actions/aws-codebuild-run-build@7e46c3fa1c1f217e26a73712796b1f78938b534b # v1.0.19
         with:
           hide-cloudwatch-logs: true
           project-name: clowder-pr-check
