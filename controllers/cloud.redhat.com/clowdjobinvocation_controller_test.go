@@ -593,3 +593,65 @@ func TestCJINoAnnotationSkipsImageCheck(t *testing.T) {
 		assert.NotContains(t, err.Error(), "do not contain expected tag")
 	}
 }
+
+func TestCJIDisabledSkipsInvocation(t *testing.T) {
+	ns := "test-cji-disabled"
+
+	cji := &crd.ClowdJobInvocation{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "runner-cji-disabled",
+			Namespace: ns,
+		},
+		Spec: crd.ClowdJobInvocationSpec{
+			AppName:  "puptoo",
+			Disabled: true,
+			Jobs:     []string{"hello-cji"},
+		},
+	}
+
+	client := fake.NewClientBuilder().
+		WithScheme(Scheme).
+		WithObjects(cji).
+		WithStatusSubresource(&crd.ClowdJobInvocation{}).
+		Build()
+
+	reconciler := &ClowdJobInvocationReconciler{
+		Client:    client,
+		APIReader: client,
+		Log:       ctrl.Log.WithName("test"),
+		Scheme:    Scheme,
+		Recorder:  record.NewFakeRecorder(10),
+	}
+
+	_, err := reconciler.Reconcile(context.Background(), ctrl.Request{
+		NamespacedName: types.NamespacedName{
+			Name:      "runner-cji-disabled",
+			Namespace: ns,
+		},
+	})
+	assert.NoError(t, err)
+
+	updated := &crd.ClowdJobInvocation{}
+	assert.NoError(t, client.Get(context.Background(), types.NamespacedName{
+		Name:      "runner-cji-disabled",
+		Namespace: ns,
+	}, updated))
+
+	assert.True(t, updated.Status.Completed)
+	assert.Empty(t, updated.Status.JobMap)
+	assert.True(t, GetJobsStatus(&batchv1.JobList{}, updated))
+
+	jobList := &batchv1.JobList{}
+	assert.NoError(t, client.List(context.Background(), jobList))
+	assert.Empty(t, jobList.Items)
+}
+
+func TestGetJobsStatusWhenDisabled(t *testing.T) {
+	cji := &crd.ClowdJobInvocation{
+		Spec: crd.ClowdJobInvocationSpec{
+			Disabled: true,
+			Jobs:     []string{"hello-cji"},
+		},
+	}
+	assert.True(t, GetJobsStatus(&batchv1.JobList{}, cji))
+}

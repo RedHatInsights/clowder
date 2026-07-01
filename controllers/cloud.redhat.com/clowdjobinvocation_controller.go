@@ -123,11 +123,24 @@ func (r *ClowdJobInvocationReconciler) Reconcile(ctx context.Context, req ctrl.R
 		}
 		return ctrl.Result{}, nil
 	}
-	// This is a fresh CJI and needs to be invoked the first time unless it's disabled
-	if !cji.Spec.Disabled {
-		r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
-		ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
+
+	if cji.Spec.Disabled {
+		r.Log.Info("ClowdJobInvocation is disabled, skipping job invocation",
+			"ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
+		if cji.Status.JobMap == nil {
+			cji.Status.JobMap = map[string]crd.JobConditionState{}
+		}
+		r.Recorder.Eventf(&cji, "Normal", "ClowdJobInvocationDisabled",
+			"ClowdJobInvocation [%s] is disabled; no jobs will run", cji.Name)
+		if condErr := SetClowdJobInvocationConditions(ctx, r.Client, &cji, crd.ReconciliationSuccessful, nil); condErr != nil {
+			return ctrl.Result{}, condErr
+		}
+		return ctrl.Result{}, nil
 	}
+
+	// This is a fresh CJI and needs to be invoked the first time
+	r.Log.Info("Reconciliation started", "ClowdJobInvocation", fmt.Sprintf("%s:%s", cji.Namespace, cji.Name))
+	ctx = context.WithValue(ctx, errors.ClowdKey("obj"), &cji)
 
 	// Get the ClowdApp directly from the API server, bypassing the informer
 	// cache. When a ClowdApp update and CJI creation are applied together,
@@ -423,6 +436,9 @@ func UpdateInvokedJobStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) 
 
 // GetJobsStatus returns true if all jobs in the ClowdJobInvocation have completed successfully
 func GetJobsStatus(jobs *batchv1.JobList, cji *crd.ClowdJobInvocation) bool {
+	if cji.Spec.Disabled {
+		return true
+	}
 
 	jobsRequired := len(cji.Spec.Jobs)
 	var emptyTesting crd.IqeJobSpec
