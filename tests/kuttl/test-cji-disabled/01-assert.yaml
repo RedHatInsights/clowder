@@ -28,6 +28,9 @@ spec:
   disabled: true
   jobs:
   - hello-cji
+status:
+  completed: true
+  jobMap: {}
 ---
 apiVersion: v1
 kind: Secret
