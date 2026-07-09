@@ -1,0 +1,127 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-v2-clowdapp-tls
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openshift-service-ca.crt
+  namespace: test-v2-clowdapp-tls
+data:
+  service-ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIICpDCCAYwCCQDU9VZB8Z4e4DANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls
+    b2NhbGhvc3QwHhcNMjYwMTAxMDAwMDAwWhcNMjcwMTAxMDAwMDAwWjAUMRIwEAYD
+    VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7
+    -----END CERTIFICATE-----
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-v2-clowdapp-tls
+spec:
+  targetNamespace: test-v2-clowdapp-tls
+  providers:
+    web:
+      port: 8000
+      privatePort: 10000
+      mode: operator
+      tls:
+        enabled: true
+        port: 8443
+        privatePort: 10443
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: none
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+    featureFlags:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: test-v2-clowdapp-tls
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: consumer-api-cert
+  namespace: test-v2-clowdapp-tls
+spec:
+  dnsNames:
+  - consumer-api.test-v2-clowdapp-tls.svc
+  - consumer-api.test-v2-clowdapp-tls.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: consumer-api-serving-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rbac-service-cert
+  namespace: test-v2-clowdapp-tls
+spec:
+  dnsNames:
+  - rbac-service.test-v2-clowdapp-tls.svc
+  - rbac-service.test-v2-clowdapp-tls.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: rbac-service-serving-cert
+---
+# Dependency app (RBAC)
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: rbac
+  namespace: test-v2-clowdapp-tls
+spec:
+  envName: test-v2-clowdapp-tls
+  deployments:
+    - name: service
+      podSpec:
+        image: quay.io/psav/clowder-hello
+      webServices:
+        public:
+          enabled: true
+---
+# Consumer app
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: consumer
+  namespace: test-v2-clowdapp-tls
+spec:
+  envName: test-v2-clowdapp-tls
+  dependencies:
+    - rbac
+  deployments:
+    - name: api
+      podSpec:
+        image: quay.io/psav/clowder-hello

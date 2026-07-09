@@ -335,17 +335,21 @@ func GetServiceCACertPath() *string {
 }
 
 // AddCertVolume adds a TLS certificate volume to the provided PodSpec
+// Uses default OpenShift service CA
 func AddCertVolume(d *core.PodSpec, dnn string) {
-	d.Volumes = append(d.Volumes, core.Volume{
-		Name: "tls-ca",
-		VolumeSource: core.VolumeSource{
-			ConfigMap: &core.ConfigMapVolumeSource{
-				LocalObjectReference: core.LocalObjectReference{
-					Name: "openshift-service-ca.crt",
-				},
+	volumeSource := core.VolumeSource{
+		ConfigMap: &core.ConfigMapVolumeSource{
+			LocalObjectReference: core.LocalObjectReference{
+				Name: "openshift-service-ca.crt",
 			},
 		},
+	}
+
+	d.Volumes = append(d.Volumes, core.Volume{
+		Name:         "tls-ca",
+		VolumeSource: volumeSource,
 	})
+
 	for i, container := range d.Containers {
 		vms := container.VolumeMounts
 		if container.Name == dnn {
