@@ -12748,6 +12748,53 @@ objects:
     labels:
       managed.openshift.io/aggregate-to-dedicated-admins: cluster
       rbac.authorization.k8s.io/aggregate-to-edit: 'true'
+    name: clowder-clowdappref-editor-role
+  rules:
+  - apiGroups:
+    - cloud.redhat.com
+    resources:
+    - clowdapprefs
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - cloud.redhat.com
+    resources:
+    - clowdapprefs/status
+    verbs:
+    - get
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  metadata:
+    labels:
+      rbac.authorization.k8s.io/aggregate-to-view: 'true'
+    name: clowder-clowdappref-viewer-role
+  rules:
+  - apiGroups:
+    - cloud.redhat.com
+    resources:
+    - clowdapprefs
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - cloud.redhat.com
+    resources:
+    - clowdapprefs/status
+    verbs:
+    - get
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  metadata:
+    labels:
+      managed.openshift.io/aggregate-to-dedicated-admins: cluster
+      rbac.authorization.k8s.io/aggregate-to-edit: 'true'
     name: clowder-clowdenvironment-editor-role
   rules:
   - apiGroups:
