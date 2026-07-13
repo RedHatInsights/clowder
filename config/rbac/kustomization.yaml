@@ -19,9 +19,11 @@ resources:
 - auth_proxy_role_binding.yaml
 - auth_proxy_client_clusterrole.yaml
 - clowdapp_editor_role.yaml
+- clowdappref_editor_role.yaml
 - clowdenvironment_editor_role.yaml
 - clowdjobinvocation_editor_role.yaml
 - clowdapp_viewer_role.yaml
+- clowdappref_viewer_role.yaml
 - clowdenvironment_viewer_role.yaml
 - clowdjobinvocation_viewer_role.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
