@@ -1,0 +1,27 @@
+# permissions for end users to edit clowdapprefs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    managed.openshift.io/aggregate-to-dedicated-admins: "cluster"
+  name: clowdappref-editor-role
+rules:
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - clowdapprefs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloud.redhat.com
+  resources:
+  - clowdapprefs/status
+  verbs:
+  - get
