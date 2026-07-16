@@ -105,12 +105,12 @@ func configureKeycloakDB(web *localWebProvider) error {
 
 	res := core.ResourceRequirements{
 		Limits: core.ResourceList{
-			"memory": resource.MustParse("258Mi"),
-			"cpu":    resource.MustParse("70m"),
+			"memory": resource.MustParse("257Mi"),
+			"cpu":    resource.MustParse("53m"),
 		},
 		Requests: core.ResourceList{
-			"memory": resource.MustParse("57Mi"),
-			"cpu":    resource.MustParse("23m"),
+			"memory": resource.MustParse("257Mi"),
+			"cpu":    resource.MustParse("26m"),
 		},
 	}
 
@@ -355,12 +355,12 @@ func makeKeycloak(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap providers.O
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("1434Mi"),
-				"cpu":    resource.MustParse("1201m"),
+				"memory": resource.MustParse("1089Mi"),
+				"cpu":    resource.MustParse("1200m"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("728Mi"),
-				"cpu":    resource.MustParse("598m"),
+				"memory": resource.MustParse("1089Mi"),
+				"cpu":    resource.MustParse("600m"),
 			},
 		},
 		TerminationMessagePath:   "/dev/termination-log",

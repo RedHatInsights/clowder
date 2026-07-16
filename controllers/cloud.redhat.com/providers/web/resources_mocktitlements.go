@@ -244,11 +244,11 @@ func makeMocktitlements(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap provi
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("40Mi"),
-				"cpu":    resource.MustParse("3m"),
+				"memory": resource.MustParse("24Mi"),
+				"cpu":    resource.MustParse("2m"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("10Mi"),
+				"memory": resource.MustParse("24Mi"),
 				"cpu":    resource.MustParse("1m"),
 			},
 		},
