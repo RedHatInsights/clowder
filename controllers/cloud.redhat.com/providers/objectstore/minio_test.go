@@ -97,6 +97,29 @@ func getTestProvider(t *testing.T) providers.Provider {
 	}
 }
 
+func getTestProviderWithReverseProxy(t *testing.T, mode crd.ReverseProxyMode, bucketPathPrefix string) providers.Provider {
+	t.Helper()
+	return providers.Provider{
+		Ctx: context.TODO(),
+		Env: &crd.ClowdEnvironment{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test",
+			},
+			Spec: crd.ClowdEnvironmentSpec{
+				Providers: crd.ProvidersConfig{
+					ReverseProxy: crd.ReverseProxyConfig{
+						Mode:             mode,
+						BucketPathPrefix: bucketPathPrefix,
+					},
+				},
+			},
+		},
+		Client:    &FakeClient{},
+		Config:    &config.AppConfig{},
+		HashCache: &hashcache.HashCache{},
+	}
+}
+
 func getTestMinioProvider(t *testing.T) *minioProvider {
 	t.Helper()
 	testMinioProvider := &minioProvider{
@@ -434,5 +457,71 @@ func TestMinio(t *testing.T) {
 		assert.Len(mp.Config.ObjectStore.Buckets, 1)
 		wantBucketConfig := config.ObjectStoreBucket{Name: b1, RequestedName: b1, Endpoint: &mp.Config.ObjectStore.Hostname}
 		assert.Contains(mp.Config.ObjectStore.Buckets, wantBucketConfig)
+	})
+}
+
+func TestReverseProxyBucket(t *testing.T) {
+	assert := assert.New(t)
+
+	t.Run("reverseProxyEphemeralCreatesBucket", func(t *testing.T) {
+		handler := &mockBucketHandler{
+			MockBuckets: []mockBucket{{Name: "frontend-pushcache", Exists: false}},
+		}
+		p := getTestProviderWithReverseProxy(t, "ephemeral", "")
+		mp := &minioProvider{
+			Provider:      p,
+			BucketHandler: handler,
+		}
+
+		err := mp.createReverseProxyBucket()
+		assert.NoError(err)
+		assert.Contains(handler.ExistsCalls, "frontend-pushcache")
+		assert.Contains(handler.MakeCalls, "frontend-pushcache")
+	})
+
+	t.Run("reverseProxyEphemeralCustomPrefix", func(t *testing.T) {
+		handler := &mockBucketHandler{
+			MockBuckets: []mockBucket{{Name: "custom-bucket", Exists: false}},
+		}
+		p := getTestProviderWithReverseProxy(t, "ephemeral", "custom-bucket")
+		mp := &minioProvider{
+			Provider:      p,
+			BucketHandler: handler,
+		}
+
+		err := mp.createReverseProxyBucket()
+		assert.NoError(err)
+		assert.Contains(handler.ExistsCalls, "custom-bucket")
+		assert.Contains(handler.MakeCalls, "custom-bucket")
+	})
+
+	t.Run("reverseProxyEphemeralBucketAlreadyExists", func(t *testing.T) {
+		handler := &mockBucketHandler{
+			MockBuckets: []mockBucket{{Name: "frontend-pushcache", Exists: true}},
+		}
+		p := getTestProviderWithReverseProxy(t, "ephemeral", "")
+		mp := &minioProvider{
+			Provider:      p,
+			BucketHandler: handler,
+		}
+
+		err := mp.createReverseProxyBucket()
+		assert.NoError(err)
+		assert.Contains(handler.ExistsCalls, "frontend-pushcache")
+		assert.Len(handler.MakeCalls, 0)
+	})
+
+	t.Run("reverseProxyNonEphemeralSkipsBucket", func(t *testing.T) {
+		handler := &mockBucketHandler{}
+		p := getTestProviderWithReverseProxy(t, "none", "")
+		mp := &minioProvider{
+			Provider:      p,
+			BucketHandler: handler,
+		}
+
+		err := mp.createReverseProxyBucket()
+		assert.NoError(err)
+		assert.Len(handler.ExistsCalls, 0)
+		assert.Len(handler.MakeCalls, 0)
 	})
 }

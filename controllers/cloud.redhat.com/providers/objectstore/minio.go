@@ -92,7 +92,39 @@ func NewMinIO(p *providers.Provider) (providers.ClowderProvider, error) {
 		return nil, raisedErr
 	}
 
+	if err := mp.createReverseProxyBucket(); err != nil {
+		return nil, err
+	}
+
 	return mp, nil
+}
+
+func (m *minioProvider) createReverseProxyBucket() error {
+	if m.Env.Spec.Providers.ReverseProxy.Mode != "ephemeral" {
+		return nil
+	}
+
+	bucketName := m.Env.Spec.Providers.ReverseProxy.BucketPathPrefix
+	if bucketName == "" {
+		bucketName = "frontend-pushcache"
+	}
+
+	found, err := m.BucketHandler.Exists(m.Ctx, bucketName)
+	if err != nil {
+		raisedErr := errors.Wrap("Couldn't check reverse proxy bucket", err)
+		raisedErr.Requeue = true
+		return raisedErr
+	}
+
+	if !found {
+		if err := m.BucketHandler.Make(m.Ctx, bucketName); err != nil {
+			raisedErr := errors.Wrap("Couldn't create reverse proxy bucket", err)
+			raisedErr.Requeue = true
+			return raisedErr
+		}
+	}
+
+	return nil
 }
 
 func (m *minioProvider) EnvProvide() error {
