@@ -108,6 +108,19 @@ objects:
 
                               one private service managed by Clowder.'
                             properties:
+                              authenticated:
+                                description: 'Determines whether the V2 dependency
+                                  endpoint for this private service should be marked
+
+                                  as requiring authentication. If nil, the default
+                                  is used: true for ClowdAppRef-backed
+
+                                  dependencies (cross-cluster), false for ClowdApp-backed
+                                  dependencies (in-cluster).
+
+                                  Set explicitly to override the default for specific
+                                  deployments.'
+                                type: boolean
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the private service and provide the
@@ -159,6 +172,19 @@ objects:
                                   pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                   type: string
                                 type: array
+                              authenticated:
+                                description: 'Determines whether the V2 dependency
+                                  endpoint for this public service should be marked
+
+                                  as requiring authentication. If nil, the default
+                                  is used: true for ClowdAppRef-backed
+
+                                  dependencies (cross-cluster), false for ClowdApp-backed
+                                  dependencies (in-cluster).
+
+                                  Set explicitly to override the default for specific
+                                  deployments.'
+                                type: boolean
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the public service and provide the
@@ -5655,6 +5681,19 @@ objects:
 
                               one private service managed by Clowder.'
                             properties:
+                              authenticated:
+                                description: 'Determines whether the V2 dependency
+                                  endpoint for this private service should be marked
+
+                                  as requiring authentication. If nil, the default
+                                  is used: true for ClowdAppRef-backed
+
+                                  dependencies (cross-cluster), false for ClowdApp-backed
+                                  dependencies (in-cluster).
+
+                                  Set explicitly to override the default for specific
+                                  deployments.'
+                                type: boolean
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the private service and provide the
@@ -5706,6 +5745,19 @@ objects:
                                   pattern: ^\/api\/[a-zA-Z0-9-]+\/$
                                   type: string
                                 type: array
+                              authenticated:
+                                description: 'Determines whether the V2 dependency
+                                  endpoint for this public service should be marked
+
+                                  as requiring authentication. If nil, the default
+                                  is used: true for ClowdAppRef-backed
+
+                                  dependencies (cross-cluster), false for ClowdApp-backed
+                                  dependencies (in-cluster).
+
+                                  Set explicitly to override the default for specific
+                                  deployments.'
+                                type: boolean
                               enabled:
                                 description: 'Enabled describes if Clowder should
                                   enable the public service and provide the

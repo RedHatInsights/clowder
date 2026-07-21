@@ -191,6 +191,106 @@ func TestMakeV2DependencyEndpoints(t *testing.T) {
 		assert.True(t, appEndpoints["api"].Authenticated, "ClowdAppRef should have authenticated=true")
 		assert.Nil(t, appEndpoints["api"].CaCertificate, "ClowdAppRef should not have ca_certificate")
 	})
+
+	t.Run("Creates V2 endpoint for ClowdApp dependency with authenticated override (true)", func(t *testing.T) {
+		cfg := &config.AppConfig{}
+		env := &crd.ClowdEnvironment{
+			Spec: crd.ClowdEnvironmentSpec{
+				Providers: crd.ProvidersConfig{
+					Web: crd.WebConfig{
+						Port: 8000,
+					},
+				},
+			},
+		}
+		dep := &dependenciesProvider{
+			Provider: providers.Provider{
+				Config: cfg,
+				Env:    env,
+			},
+		}
+
+		authenticatedTrue := true
+		apps := &crd.ClowdAppList{
+			Items: []crd.ClowdApp{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "rbac",
+					Namespace: "test-ns",
+				},
+				Spec: crd.ClowdAppSpec{
+					Deployments: []crd.Deployment{{
+						Name: "service",
+						WebServices: crd.WebServices{
+							Public: crd.PublicWebService{
+								Enabled:       true,
+								Authenticated: &authenticatedTrue,
+							},
+						},
+					}},
+				},
+			}},
+		}
+
+		dep.makeV2DependencyEndpoints(apps, &crd.ClowdAppRefList{}, []string{"rbac"}, "consumer")
+
+		assert.NotNil(t, cfg.DependencyEndpoints)
+		appEndpoints, ok := cfg.DependencyEndpoints.V2["rbac"].(map[string]config.DependencyEndpointV2)
+		assert.True(t, ok)
+		assert.Contains(t, appEndpoints, "service")
+		assert.True(t, appEndpoints["service"].Authenticated, "ClowdApp with authenticated override should have authenticated=true")
+	})
+
+	t.Run("Creates V2 endpoint for ClowdAppRef dependency with authenticated override (false)", func(t *testing.T) {
+		cfg := &config.AppConfig{}
+		env := &crd.ClowdEnvironment{
+			Spec: crd.ClowdEnvironmentSpec{
+				Providers: crd.ProvidersConfig{
+					Web: crd.WebConfig{
+						Port: 8000,
+					},
+				},
+			},
+		}
+		dep := &dependenciesProvider{
+			Provider: providers.Provider{
+				Config: cfg,
+				Env:    env,
+			},
+		}
+
+		authenticatedFalse := false
+		appRefs := &crd.ClowdAppRefList{
+			Items: []crd.ClowdAppRef{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "external-service",
+					Namespace: "test-ns",
+				},
+				Spec: crd.ClowdAppRefSpec{
+					Deployments: []crd.ClowdAppRefDeployment{{
+						Name:     "api",
+						Hostname: "external-api.example.com",
+						WebServices: crd.WebServices{
+							Public: crd.PublicWebService{
+								Enabled:       true,
+								Authenticated: &authenticatedFalse,
+							},
+						},
+					}},
+					RemoteEnvironment: crd.ClowdAppRefRemoteEnvironment{
+						Port: 8000,
+					},
+				},
+			}},
+		}
+
+		dep.makeV2DependencyEndpoints(&crd.ClowdAppList{}, appRefs, []string{"external-service"}, "consumer")
+
+		assert.NotNil(t, cfg.DependencyEndpoints)
+		appEndpoints, ok := cfg.DependencyEndpoints.V2["external-service"].(map[string]config.DependencyEndpointV2)
+		assert.True(t, ok)
+		assert.Contains(t, appEndpoints, "api")
+		assert.False(t, appEndpoints["api"].Authenticated, "ClowdAppRef with authenticated override should have authenticated=false")
+	})
 }
 
 func TestMakeV2PrivateDependencyEndpoints(t *testing.T) {
@@ -330,5 +430,106 @@ func TestMakeV2PrivateDependencyEndpoints(t *testing.T) {
 		assert.Equal(t, "http://external-api.example.com:10000", appEndpoints["api"].Uri)
 		assert.True(t, appEndpoints["api"].Authenticated, "ClowdAppRef should have authenticated=true")
 		assert.Nil(t, appEndpoints["api"].CaCertificate, "ClowdAppRef should not have ca_certificate")
+	})
+
+	t.Run("Creates V2 private endpoint for ClowdApp dependency with authenticated override (true)", func(t *testing.T) {
+		cfg := &config.AppConfig{}
+		env := &crd.ClowdEnvironment{
+			Spec: crd.ClowdEnvironmentSpec{
+				Providers: crd.ProvidersConfig{
+					Web: crd.WebConfig{
+						Port:        8000,
+						PrivatePort: 10000,
+					},
+				},
+			},
+		}
+		dep := &dependenciesProvider{
+			Provider: providers.Provider{
+				Config: cfg,
+				Env:    env,
+			},
+		}
+
+		authenticatedTrue := true
+		apps := &crd.ClowdAppList{
+			Items: []crd.ClowdApp{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "rbac",
+					Namespace: "test-ns",
+				},
+				Spec: crd.ClowdAppSpec{
+					Deployments: []crd.Deployment{{
+						Name: "service",
+						WebServices: crd.WebServices{
+							Private: crd.PrivateWebService{
+								Enabled:       true,
+								Authenticated: &authenticatedTrue,
+							},
+						},
+					}},
+				},
+			}},
+		}
+
+		dep.makeV2PrivateDependencyEndpoints(apps, &crd.ClowdAppRefList{}, []string{"rbac"}, "consumer")
+
+		assert.NotNil(t, cfg.PrivateDependencyEndpoints)
+		appEndpoints, ok := cfg.PrivateDependencyEndpoints.V2["rbac"].(map[string]config.DependencyEndpointV2)
+		assert.True(t, ok)
+		assert.Contains(t, appEndpoints, "service")
+		assert.True(t, appEndpoints["service"].Authenticated, "ClowdApp with private authenticated override should have authenticated=true")
+	})
+
+	t.Run("Creates V2 private endpoint for ClowdAppRef dependency with authenticated override (false)", func(t *testing.T) {
+		cfg := &config.AppConfig{}
+		env := &crd.ClowdEnvironment{
+			Spec: crd.ClowdEnvironmentSpec{
+				Providers: crd.ProvidersConfig{
+					Web: crd.WebConfig{
+						PrivatePort: 10000,
+					},
+				},
+			},
+		}
+		dep := &dependenciesProvider{
+			Provider: providers.Provider{
+				Config: cfg,
+				Env:    env,
+			},
+		}
+
+		authenticatedFalse := false
+		appRefs := &crd.ClowdAppRefList{
+			Items: []crd.ClowdAppRef{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "external-service",
+					Namespace: "test-ns",
+				},
+				Spec: crd.ClowdAppRefSpec{
+					Deployments: []crd.ClowdAppRefDeployment{{
+						Name:     "api",
+						Hostname: "external-api.example.com",
+						WebServices: crd.WebServices{
+							Private: crd.PrivateWebService{
+								Enabled:       true,
+								Authenticated: &authenticatedFalse,
+							},
+						},
+					}},
+					RemoteEnvironment: crd.ClowdAppRefRemoteEnvironment{
+						PrivatePort: 10000,
+					},
+				},
+			}},
+		}
+
+		dep.makeV2PrivateDependencyEndpoints(&crd.ClowdAppList{}, appRefs, []string{"external-service"}, "consumer")
+
+		assert.NotNil(t, cfg.PrivateDependencyEndpoints)
+		appEndpoints, ok := cfg.PrivateDependencyEndpoints.V2["external-service"].(map[string]config.DependencyEndpointV2)
+		assert.True(t, ok)
+		assert.Contains(t, appEndpoints, "api")
+		assert.False(t, appEndpoints["api"].Authenticated, "ClowdAppRef with private authenticated override should have authenticated=false")
 	})
 }

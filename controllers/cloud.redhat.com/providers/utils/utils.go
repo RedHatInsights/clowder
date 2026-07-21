@@ -460,3 +460,25 @@ func IsPrivateTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd
 func IsAnyTLSEnabled(deploymentWebConfig *crd.WebServices, envTLSConfig *crd.TLS) bool {
 	return IsPublicTLSEnabled(deploymentWebConfig, envTLSConfig) || IsPrivateTLSEnabled(deploymentWebConfig, envTLSConfig)
 }
+
+// IsPublicAuthenticated returns whether the public V2 dependency endpoint should be marked
+// as requiring authentication. Returns the explicit per-deployment override if set via
+// webServices.public.authenticated, otherwise returns defaultAuthenticated (true for
+// ClowdAppRef-backed dependencies, false for ClowdApp-backed dependencies).
+func IsPublicAuthenticated(deploymentWebConfig *crd.WebServices, defaultAuthenticated bool) bool {
+	if deploymentWebConfig.Public.Authenticated != nil {
+		return *deploymentWebConfig.Public.Authenticated
+	}
+	return defaultAuthenticated
+}
+
+// IsPrivateAuthenticated returns whether the private V2 dependency endpoint should be marked
+// as requiring authentication. Returns the explicit per-deployment override if set via
+// webServices.private.authenticated, otherwise returns defaultAuthenticated (true for
+// ClowdAppRef-backed dependencies, false for ClowdApp-backed dependencies).
+func IsPrivateAuthenticated(deploymentWebConfig *crd.WebServices, defaultAuthenticated bool) bool {
+	if deploymentWebConfig.Private.Authenticated != nil {
+		return *deploymentWebConfig.Private.Authenticated
+	}
+	return defaultAuthenticated
+}

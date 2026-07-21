@@ -162,6 +162,12 @@ type PublicWebService struct {
 	// Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting)
 	TLS *bool `json:"tls,omitempty"`
 
+	// Determines whether the V2 dependency endpoint for this public service should be marked
+	// as requiring authentication. If nil, the default is used: true for ClowdAppRef-backed
+	// dependencies (cross-cluster), false for ClowdApp-backed dependencies (in-cluster).
+	// Set explicitly to override the default for specific deployments.
+	Authenticated *bool `json:"authenticated,omitempty"`
+
 	// (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from.
 	APIPath string `json:"apiPath,omitempty"`
 
@@ -193,6 +199,12 @@ type PrivateWebService struct {
 
 	// Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting)
 	TLS *bool `json:"tls,omitempty"`
+
+	// Determines whether the V2 dependency endpoint for this private service should be marked
+	// as requiring authentication. If nil, the default is used: true for ClowdAppRef-backed
+	// dependencies (cross-cluster), false for ClowdApp-backed dependencies (in-cluster).
+	// Set explicitly to override the default for specific deployments.
+	Authenticated *bool `json:"authenticated,omitempty"`
 }
 
 // MetricsWebService is the definition of the metrics web service. This is automatically
