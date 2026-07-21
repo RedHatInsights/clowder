@@ -453,7 +453,8 @@ func buildV2EndpointFromPorts(hostname string, ports endpointPortInfo, authentic
 	return &endpoint
 }
 
-// buildV2EndpointsForApp creates V2 endpoints for ClowdApp (in-cluster, authenticated: false)
+// buildV2EndpointsForApp creates V2 endpoints for ClowdApp (in-cluster, default authenticated: false).
+// The authenticated value can be overridden per-deployment via webServices.public.authenticated.
 func buildV2EndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
 	for i := range app.Spec.Deployments {
 		deployment := &app.Spec.Deployments[i]
@@ -461,7 +462,8 @@ func buildV2EndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfig, v2Ma
 		ports := extractPublicPorts(&deployment.WebServices, deployment.Web, envWebConfig)
 		hostname := fmt.Sprintf("%s-%s.%s.svc", app.Name, deployment.Name, app.Namespace)
 
-		endpoint := buildV2EndpointFromPorts(hostname, ports, false, false) // authenticated=false, isClowdAppRef=false
+		authenticated := provutils.IsPublicAuthenticated(&deployment.WebServices, false)
+		endpoint := buildV2EndpointFromPorts(hostname, ports, authenticated, false)
 		if endpoint == nil {
 			continue // No valid port configured
 		}
@@ -474,7 +476,8 @@ func buildV2EndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfig, v2Ma
 	}
 }
 
-// buildV2EndpointsForAppRef creates V2 endpoints for ClowdAppRef (cross-cluster, authenticated: true)
+// buildV2EndpointsForAppRef creates V2 endpoints for ClowdAppRef (cross-cluster, default authenticated: true).
+// The authenticated value can be overridden per-deployment via webServices.public.authenticated.
 func buildV2EndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
 	// Build webConfig from ClowdAppRef's remoteEnvironment + env fallback
 	tlsPrivatePort := coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort)
@@ -500,7 +503,8 @@ func buildV2EndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd.WebCon
 		deployment := &appRef.Spec.Deployments[i]
 
 		ports := extractPublicPorts(&deployment.WebServices, deployment.Web, &webConfig)
-		endpoint := buildV2EndpointFromPorts(deployment.Hostname, ports, true, true) // authenticated=true, isClowdAppRef=true
+		authenticated := provutils.IsPublicAuthenticated(&deployment.WebServices, true)
+		endpoint := buildV2EndpointFromPorts(deployment.Hostname, ports, authenticated, true)
 		if endpoint == nil {
 			continue
 		}
@@ -625,7 +629,8 @@ func (dep *dependenciesProvider) makeV2PrivateDependencyEndpoints(apps *crd.Clow
 	}
 }
 
-// buildV2PrivateEndpointsForApp creates V2 private endpoints for ClowdApp (in-cluster, authenticated: false)
+// buildV2PrivateEndpointsForApp creates V2 private endpoints for ClowdApp (in-cluster, default authenticated: false).
+// The authenticated value can be overridden per-deployment via webServices.private.authenticated.
 func buildV2PrivateEndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
 	for i := range app.Spec.Deployments {
 		deployment := &app.Spec.Deployments[i]
@@ -633,7 +638,8 @@ func buildV2PrivateEndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfi
 		ports := extractPrivatePorts(&deployment.WebServices, envWebConfig)
 		hostname := fmt.Sprintf("%s-%s.%s.svc", app.Name, deployment.Name, app.Namespace)
 
-		endpoint := buildV2EndpointFromPorts(hostname, ports, false, false) // authenticated=false, isClowdAppRef=false
+		authenticated := provutils.IsPrivateAuthenticated(&deployment.WebServices, false)
+		endpoint := buildV2EndpointFromPorts(hostname, ports, authenticated, false)
 		if endpoint == nil {
 			continue
 		}
@@ -646,7 +652,8 @@ func buildV2PrivateEndpointsForApp(app *crd.ClowdApp, envWebConfig *crd.WebConfi
 	}
 }
 
-// buildV2PrivateEndpointsForAppRef creates V2 private endpoints for ClowdAppRef (cross-cluster, authenticated: true)
+// buildV2PrivateEndpointsForAppRef creates V2 private endpoints for ClowdAppRef (cross-cluster, default authenticated: true).
+// The authenticated value can be overridden per-deployment via webServices.private.authenticated.
 func buildV2PrivateEndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd.WebConfig, v2Map map[string]map[string]config.DependencyEndpointV2) {
 	// Build webConfig from ClowdAppRef's remoteEnvironment + env fallback
 	tlsPrivatePort := coalesceInt32(appRef.Spec.RemoteEnvironment.TLS.PrivatePort, envWebConfig.TLS.PrivatePort)
@@ -672,7 +679,8 @@ func buildV2PrivateEndpointsForAppRef(appRef *crd.ClowdAppRef, envWebConfig *crd
 		deployment := &appRef.Spec.Deployments[i]
 
 		ports := extractPrivatePorts(&deployment.WebServices, &webConfig)
-		endpoint := buildV2EndpointFromPorts(deployment.Hostname, ports, true, true) // authenticated=true, isClowdAppRef=true
+		authenticated := provutils.IsPrivateAuthenticated(&deployment.WebServices, true)
+		endpoint := buildV2EndpointFromPorts(deployment.Hostname, ports, authenticated, true)
 		if endpoint == nil {
 			continue
 		}

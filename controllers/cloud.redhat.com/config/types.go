@@ -225,9 +225,11 @@ type DependencyEndpoint struct {
 // V2 dependency endpoint with complete URI
 type DependencyEndpointV2 struct {
 	// Indicates whether the client should authenticate when connecting to this
-	// endpoint. Always present (explicitly true or false). True for cross-cluster
-	// dependencies (ClowdAppRef) that route through gateways; false for in-cluster
-	// dependencies (ClowdApp) that rely on network isolation.
+	// endpoint. Always present (explicitly true or false). By default, true for
+	// cross-cluster dependencies (ClowdAppRef) and false for in-cluster dependencies
+	// (ClowdApp). This default can be overridden per-deployment via
+	// webServices.public.authenticated or webServices.private.authenticated on the
+	// ClowdApp or ClowdAppRef resource.
 	Authenticated bool `json:"authenticated" yaml:"authenticated" mapstructure:"authenticated"`
 
 	// Path to CA certificate file for TLS/HTTPS connections. Only present for
