@@ -421,6 +421,83 @@ individually enable or disable TLS for its public and private services via
 default. Dependent apps receive the CA certificate path for each individual endpoint in
 `cdappconfig.json`, enabling mutual TLS with granular trust boundaries.
 
+### V2 dependency endpoints
+
+In addition to the V1 endpoint format (`hostname`, `port`, `tlsPort`, etc.), Clowder also
+generates V2 dependency endpoints under `dependencyEndpoints.v2` and
+`privateDependencyEndpoints.v2` in the `cdappconfig.json`. V2 endpoints provide a simplified,
+URI-based structure:
+
+```json
+{
+  "dependencyEndpoints": {
+    "v2": {
+      "<app-name>": {
+        "<deployment-name>": {
+          "uri": "http://service.namespace.svc:8000",
+          "authenticated": false,
+          "ca_certificate": "/cdapp/certs/service-ca.crt"
+        }
+      }
+    }
+  }
+}
+```
+
+- `uri` — Complete endpoint URI including protocol, hostname, and port.
+- `authenticated` — Whether the client should authenticate when connecting (see below).
+- `ca_certificate` — Path to the CA certificate for TLS verification (only present for
+  in-cluster TLS endpoints backed by `ClowdApp`; omitted for `ClowdAppRef` endpoints which
+  rely on the system trust store).
+
+### Authenticated flag per V2 endpoint
+
+The `authenticated` field on V2 dependency endpoints signals to clients whether they should
+present credentials when connecting. By default:
+
+- **`ClowdAppRef`** (cross-cluster) endpoints: `authenticated = true`, since these typically
+  route through gateways or load balancers that require authentication.
+- **`ClowdApp`** (in-cluster) endpoints: `authenticated = false`, since in-cluster
+  communication relies on network isolation.
+
+This default can be overridden per-deployment via `webServices.public.authenticated` (for public
+endpoints) and `webServices.private.authenticated` (for private endpoints) on either a
+`ClowdApp` `Deployment` or a `ClowdAppRef` `ClowdAppRefDeployment`. The override uses an
+optional `*bool` pointer, following the same pattern as the `tls` override:
+
+- `nil` (field omitted) — use the type-based default described above.
+- `true` — mark the endpoint as requiring authentication (opt-in for `ClowdApp`).
+- `false` — mark the endpoint as not requiring authentication (opt-out for `ClowdAppRef`).
+
+Example — opting a `ClowdApp` deployment into authentication:
+
+```yaml
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+spec:
+  deployments:
+    - name: service
+      webServices:
+        public:
+          enabled: true
+          authenticated: true   # Override: clients must authenticate
+```
+
+Example — opting a `ClowdAppRef` deployment out of authentication:
+
+```yaml
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdAppRef
+spec:
+  deployments:
+    - name: service
+      hostname: svc.remote.example.com
+      webServices:
+        public:
+          enabled: true
+          authenticated: false  # Override: no authentication needed (e.g., mTLS environment)
+```
+
 ---
 
 ## Web Provider System

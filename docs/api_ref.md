@@ -110,6 +110,7 @@
       - [22.1.1.1. Pattern Property `root > dependencyEndpoints > v2 > .* > DependencyEndpointV2`](#dependencyEndpoints_v2_pattern1_pattern3)
         - [22.1.1.1.1. Property `root > dependencyEndpoints > v2 > .* > .* > uri`](#dependencyEndpoints_v2_pattern1_pattern3_uri)
         - [22.1.1.1.2. Property `root > dependencyEndpoints > v2 > .* > .* > ca_certificate`](#dependencyEndpoints_v2_pattern1_pattern3_ca_certificate)
+        - [22.1.1.1.3. Property `root > dependencyEndpoints > v2 > .* > .* > authenticated`](#dependencyEndpoints_v2_pattern1_pattern3_authenticated)
 - [23. Property `root > privateDependencyEndpoints`](#privateDependencyEndpoints)
   - [23.1. Property `root > privateDependencyEndpoints > v2`](#privateDependencyEndpoints_v2)
     - [23.1.1. Pattern Property `root > privateDependencyEndpoints > v2 > .*`](#privateDependencyEndpoints_v2_pattern1)
@@ -1394,10 +1395,11 @@ must respect the following conditions
 
 **Description:** V2 dependency endpoint with complete URI
 
-| Property                                                                      | Pattern | Type   | Deprecated | Definition | Title/Description                                                                                                |
-| ----------------------------------------------------------------------------- | ------- | ------ | ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| + [uri](#dependencyEndpoints_v2_pattern1_pattern3_uri )                       | No      | string | No         | -          | Complete URI including protocol, hostname, and port (e.g., 'http://service.ns.svc:8000', 'https://service:8443') |
-| - [ca_certificate](#dependencyEndpoints_v2_pattern1_pattern3_ca_certificate ) | No      | string | No         | -          | Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.                           |
+| Property                                                                      | Pattern | Type    | Deprecated | Definition | Title/Description                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------------------------------------------------------------------------- | ------- | ------- | ---------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| + [uri](#dependencyEndpoints_v2_pattern1_pattern3_uri )                       | No      | string  | No         | -          | Complete URI including protocol, hostname, and port (e.g., 'http://service.ns.svc:8000', 'https://service:8443')                                                                                                                                                                                                                                                                                               |
+| - [ca_certificate](#dependencyEndpoints_v2_pattern1_pattern3_ca_certificate ) | No      | string  | No         | -          | Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.                                                                                                                                                                                                                                                                                                                         |
+| + [authenticated](#dependencyEndpoints_v2_pattern1_pattern3_authenticated )   | No      | boolean | No         | -          | Indicates whether the client should authenticate when connecting to this endpoint. Always present (explicitly true or false). By default, true for cross-cluster dependencies (ClowdAppRef) and false for in-cluster dependencies (ClowdApp). This default can be overridden per-deployment via webServices.public.authenticated or webServices.private.authenticated on the ClowdApp or ClowdAppRef resource. |
 
 ###### <a name="dependencyEndpoints_v2_pattern1_pattern3_uri"></a>22.1.1.1.1. Property `root > dependencyEndpoints > v2 > .* > .* > uri`
 
@@ -1416,6 +1418,15 @@ must respect the following conditions
 | **Required** | No       |
 
 **Description:** Path to CA certificate file for TLS/HTTPS connections. Only present for https:// URIs.
+
+###### <a name="dependencyEndpoints_v2_pattern1_pattern3_authenticated"></a>22.1.1.1.3. Property `root > dependencyEndpoints > v2 > .* > .* > authenticated`
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `boolean` |
+| **Required** | Yes       |
+
+**Description:** Indicates whether the client should authenticate when connecting to this endpoint. Always present (explicitly true or false). By default, true for cross-cluster dependencies (ClowdAppRef) and false for in-cluster dependencies (ClowdApp). This default can be overridden per-deployment via webServices.public.authenticated or webServices.private.authenticated on the ClowdApp or ClowdAppRef resource.
 
 ## <a name="privateDependencyEndpoints"></a>23. Property `root > privateDependencyEndpoints`
 

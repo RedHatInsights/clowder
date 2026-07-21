@@ -1441,6 +1441,7 @@ _Appears in:_
 | `h2cEnabled` _boolean_ | H2CEnabled describes if Clowder should enable the private H2C service and provide the<br />configuration in the cdappconfig. |  |  |
 | `h2cTargetPort` _integer_ | H2CTargetPort optionally overrides the container port for the private H2C service.<br />When set, the Kubernetes Service port remains the environment's h2cPrivatePort,<br />but targetPort and the container port use this value instead. |  |  |
 | `tls` _boolean_ | Determines whether TLS is enabled for the private web service (if defined, overrides ClowdEnvironment setting) |  |  |
+| `authenticated` _boolean_ | Determines whether the V2 dependency endpoint for this private service should be marked<br />as requiring authentication. If nil, the default is used: true for ClowdAppRef-backed<br />dependencies (cross-cluster), false for ClowdApp-backed dependencies (in-cluster).<br />Set explicitly to override the default for specific deployments. |  |  |
 
 
 #### PrometheusConfig
@@ -1520,6 +1521,7 @@ _Appears in:_
 | `sidecars` _[Sidecars](#sidecars)_ | Defines the sidecar configuration |  |  |
 | `autoScaler` _[AutoScalerConfig](#autoscalerconfig)_ | Defines the autoscaler configuration |  |  |
 | `deployment` _[DeploymentConfig](#deploymentconfig)_ | Defines the Deployment provider options |  |  |
+| `reverseProxy` _[ReverseProxyConfig](#reverseproxyconfig)_ | Defines the Configuration for the Clowder ReverseProxy Provider. |  |  |
 
 
 #### PublicWebService
@@ -1540,10 +1542,63 @@ _Appears in:_
 | `h2cEnabled` _boolean_ | H2CEnabled describes if Clowder should enable the public H2C service and provide the<br />configuration in the cdappconfig. |  |  |
 | `h2cTargetPort` _integer_ | H2CTargetPort optionally overrides the container port for the public H2C service.<br />When set, the Kubernetes Service port remains the environment's h2cPort,<br />but targetPort and the container port use this value instead. |  |  |
 | `tls` _boolean_ | Determines whether TLS is enabled for the public web service (if defined, overrides ClowdEnvironment setting) |  |  |
+| `authenticated` _boolean_ | Determines whether the V2 dependency endpoint for this public service should be marked<br />as requiring authentication. If nil, the default is used: true for ClowdAppRef-backed<br />dependencies (cross-cluster), false for ClowdApp-backed dependencies (in-cluster).<br />Set explicitly to override the default for specific deployments. |  |  |
 | `apiPath` _string_ | (DEPRECATED, use apiPaths instead) Configures a path named '/api/<apiPath>/' that this app will serve requests from. |  |  |
 | `apiPaths` _[APIPath](#apipath) array_ | Defines a list of API paths (each matching format: "/api/some-path/") that this app will serve requests from. |  | Pattern: `^\/api\/[a-zA-Z0-9-]+\/$` <br /> |
 | `whitelistPaths` _string array_ | WhitelistPaths define the paths that do not require authentication |  |  |
 | `sessionAffinity` _boolean_ | Set SessionAffinity to true to enable sticky sessions |  |  |
+
+
+#### ReverseProxyConfig
+
+
+
+ReverseProxyConfig configures the Clowder provider controlling the creation of
+a reverse proxy instance for frontend asset serving.
+
+
+
+_Appears in:_
+- [ProvidersConfig](#providersconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `mode` _[ReverseProxyMode](#reverseproxymode)_ | The mode of operation of the Clowder ReverseProxy Provider. Valid options are:<br />(*_ephemeral_*) where a reverse proxy instance will be created for ephemeral<br />environments, and (*_none_*) where no reverse proxy will be deployed. |  | Enum: [ephemeral none] <br /> |
+| `images` _[ReverseProxyImages](#reverseproxyimages)_ | Override the reverse proxy images |  |  |
+| `bucketPathPrefix` _string_ | The S3 bucket path prefix used by the reverse proxy. |  |  |
+| `spaEntrypointPath` _string_ | The path to the SPA entrypoint file served by the reverse proxy. |  |  |
+| `awsRegion` _string_ | The AWS region used by the reverse proxy for S3 access. |  |  |
+
+
+#### ReverseProxyImages
+
+
+
+ReverseProxyImages defines the container images used for the reverse proxy
+
+
+
+_Appears in:_
+- [ReverseProxyConfig](#reverseproxyconfig)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `proxy` _string_ |  |  |  |
+
+
+#### ReverseProxyMode
+
+_Underlying type:_ _string_
+
+ReverseProxyMode details the mode of operation of the Clowder ReverseProxy
+Provider
+
+_Validation:_
+- Enum: [ephemeral none]
+
+_Appears in:_
+- [ReverseProxyConfig](#reverseproxyconfig)
+
 
 
 #### SecretKeySelector
