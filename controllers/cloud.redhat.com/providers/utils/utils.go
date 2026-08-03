@@ -24,12 +24,12 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:0768503"
+var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:e3fe6c0"
 var defaultImageCaddyGateway = defaultImageCaddySideCar
 var defaultImageMBOP = "quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212"
 var defaultImageMocktitlements = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:27dadf8"
 var defaultKeyCloakVersion = "23.0.1"
-var defaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:094d8a9"
+var defaultImageCaddyProxy = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:ab3a7e3"
 var defaultImageKeyCloak = fmt.Sprintf("quay.io/keycloak/keycloak:%s", defaultKeyCloakVersion)
 var defaultImageDatabasePG12 = "quay.io/cloudservices/postgresql-rds:12-2318dee"
 var defaultImageDatabasePG13 = "quay.io/cloudservices/postgresql-rds:13-2318dee"
