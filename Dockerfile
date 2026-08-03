@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.25-1778504036 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.25.9-1778675823 AS builder
 USER 0
 ENV GOSUMDB=off
 
@@ -30,7 +30,7 @@ RUN CGO_ENABLED=1 GOOS=linux GO111MODULE=on go build -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.8-1782797275 
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.8-1785339117 
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/manifest.yaml .
