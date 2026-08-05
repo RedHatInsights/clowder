@@ -24,7 +24,7 @@ import (
 	"github.com/RedHatInsights/rhc-osdk-utils/utils"
 )
 
-var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:dd207a6"
+var defaultImageCaddySideCar = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/crc-caddy-plugin:ec15821"
 var defaultImageCaddyGateway = defaultImageCaddySideCar
 var defaultImageMBOP = "quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212"
 var defaultImageMocktitlements = "quay.io/redhat-services-prod/hcm-eng-prod-tenant/mocktitlements-master/mocktitlements-master:27dadf8"
