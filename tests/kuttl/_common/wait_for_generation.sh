@@ -1,18 +1,17 @@
 #!/bin/bash
 
-# Script to wait for a deployment's observedGeneration to reach or exceed the specified value
-# Usage: ./wait_for_generation <deployment_name> <desired_generation>
-# Example: ./wait_for_generation my-app 6
+# Usage: ./wait_for_generation.sh <deployment_name> <desired_generation> <namespace>
+# Example: ./wait_for_generation.sh my-app 6 test-my-feature
 
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <deployment_name> <desired_generation>"
-    echo "Example: $0 my-app 6"
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 <deployment_name> <desired_generation> <namespace>"
+    echo "Example: $0 my-app 6 test-my-feature"
     exit 1
 fi
 
 DEPLOYMENT_NAME="$1"
 DESIRED_GENERATION="$2"
-NAMESPACE="test-config-secret-restarter"
+NAMESPACE="$3"
 MAX_ATTEMPTS=30
 DELAY=2
 
