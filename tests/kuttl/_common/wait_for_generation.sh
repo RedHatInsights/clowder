@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# Usage: ./wait_for_generation.sh <deployment_name> <desired_generation> <namespace>
+# Usage: ./wait_for_generation.sh <deployment_name> <desired_generation> [namespace]
 # Example: ./wait_for_generation.sh my-app 6 test-my-feature
 
-if [ $# -lt 3 ]; then
-    echo "Usage: $0 <deployment_name> <desired_generation> <namespace>"
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 <deployment_name> <desired_generation> [namespace]"
     echo "Example: $0 my-app 6 test-my-feature"
     exit 1
 fi
 
 DEPLOYMENT_NAME="$1"
 DESIRED_GENERATION="$2"
-NAMESPACE="$3"
+NAMESPACE="${3:-default}"
 MAX_ATTEMPTS=30
 DELAY=2
 
