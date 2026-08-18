@@ -13,7 +13,7 @@ mkdir -p "${TMP_DIR}"
 set -x
 
 # Test commands from original yaml file
-sh wait_for_generation.sh puptoo-processor "5"
+sh ../_common/wait_for_generation.sh puptoo-processor "5" test-config-secret-restarter
 kubectl get secret --namespace=test-config-secret-restarter puptoo -o json > ${TMP_DIR}/test-config-secret-restarter
 jq -r '.data["cdappconfig.json"]' < ${TMP_DIR}/test-config-secret-restarter | base64 -d > ${TMP_DIR}/test-config-secret-restarter-json
 jq -r '.hashCache == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"' -e < ${TMP_DIR}/test-config-secret-restarter-json
