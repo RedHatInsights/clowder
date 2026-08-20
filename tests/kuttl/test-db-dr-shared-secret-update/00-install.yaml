@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-db-dr-shared-secret-update
+spec:
+  finalizers:
+  - kubernetes

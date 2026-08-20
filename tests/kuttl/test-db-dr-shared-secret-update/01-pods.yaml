@@ -1,0 +1,80 @@
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: test-db-dr-shared-secret-update
+spec:
+  targetNamespace: test-db-dr-shared-secret-update
+  providers:
+    web:
+      port: 8000
+      mode: operator
+    metrics:
+      port: 9000
+      mode: operator
+      path: "/metrics"
+    kafka:
+      mode: none
+    db:
+      mode: app-interface
+      caBundleURL: https://truststore.pki.rds.amazonaws.com/us-east-1/us-east-1-bundle.pem
+    logging:
+      mode: none
+    objectStore:
+      mode: none
+    inMemoryDb:
+      mode: none
+  resourceDefaults:
+    limits:
+      cpu: 400m
+      memory: 1024Mi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: owner-app-db
+  namespace: test-db-dr-shared-secret-update
+  annotations:
+    clowder/database: owner-app
+type: Opaque
+data:
+  db.host: b3duZXItYXBwLnJkcy5leGFtcGxlLmNvbQ==  # owner-app.rds.example.com
+  db.name: b3duZXItYXBwZGI=  # owner-appdb
+  db.port: NTQzMg==  # 5432
+  db.user: bXlhcHB1c2Vy  # myappuser
+  db.password: aW5pdGlhbC1wYXNzd29yZA==  # initial-password
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: owner-app
+  namespace: test-db-dr-shared-secret-update
+spec:
+  envName: test-db-dr-shared-secret-update
+  deployments:
+  - name: service
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  database:
+    name: owner-app
+    version: 13
+---
+apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: consumer-app
+  namespace: test-db-dr-shared-secret-update
+spec:
+  envName: test-db-dr-shared-secret-update
+  deployments:
+  - name: service
+    podSpec:
+      image: quay.io/psav/clowder-hello
+  database:
+    sharedDbAppName: owner-app
+    version: 13
+  dependencies:
+  - owner-app

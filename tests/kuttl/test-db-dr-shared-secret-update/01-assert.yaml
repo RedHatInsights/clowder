@@ -1,0 +1,29 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- type: command
+  command: bash ../_common/collect-events.sh
+  timeout: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: owner-app-service
+  namespace: test-db-dr-shared-secret-update
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-app-service
+  namespace: test-db-dr-shared-secret-update
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/psav/clowder-hello
