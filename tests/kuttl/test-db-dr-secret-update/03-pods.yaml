@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-db
+  namespace: test-db-dr-secret-update
+  annotations:
+    clowder/database: myapp
+type: Opaque
+data:
+  db.host: bXlhcHAtcmVzdG9yZWQucmRzLmV4YW1wbGUuY29t  # myapp-restored.rds.example.com
+  db.name: bXlhcHBkYg==  # myappdb
+  db.port: NTQzMg==  # 5432
+  db.user: bXlhcHB1c2Vy  # myappuser
+  db.password: cmVzdG9yZWQtcGFzc3dvcmQ=  # restored-password
