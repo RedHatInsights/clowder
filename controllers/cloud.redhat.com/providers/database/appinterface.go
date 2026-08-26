@@ -25,6 +25,7 @@ var rdsCaBundles = make(map[string]string)
 
 const defaultCaBundleURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
 
+// DatabaseAnnotationKey is the annotation used to match secrets to ClowdApps for database configuration.
 const DatabaseAnnotationKey = "clowder/database"
 
 type appInterface struct {
