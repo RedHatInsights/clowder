@@ -9,7 +9,7 @@ require (
 	github.com/RedHatInsights/rhc-osdk-utils v0.15.1
 	github.com/RedHatInsights/strimzi-client-go v0.40.0
 	github.com/caddyserver/caddy/v2 v2.11.4
-	github.com/cert-manager/cert-manager v1.21.0-alpha.0
+	github.com/cert-manager/cert-manager v1.21.1
 	github.com/go-logr/logr v1.4.4
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.19.0
@@ -21,12 +21,12 @@ require (
 	github.com/prometheus/client_golang v1.24.1
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.28.0
-	k8s.io/api v0.35.6
-	k8s.io/apiextensions-apiserver v0.35.6
-	k8s.io/apimachinery v0.35.6
+	k8s.io/api v0.36.3
+	k8s.io/apiextensions-apiserver v0.36.3
+	k8s.io/apimachinery v0.37.0
 	k8s.io/client-go v1.5.2
-	sigs.k8s.io/cluster-api v1.13.5
-	sigs.k8s.io/controller-runtime v0.23.3
+	sigs.k8s.io/cluster-api v1.14.0
+	sigs.k8s.io/controller-runtime v0.24.1
 )
 
 require (
@@ -38,7 +38,7 @@ require (
 	filippo.io/bigmod v0.1.0 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
-	github.com/KimMachineGun/automemlimit v1.0.0 // indirect
+	github.com/KimMachineGun/automemlimit v0.7.5 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
@@ -95,7 +95,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/btree v1.1.3 // indirect
-	github.com/google/cel-go v0.29.0 // indirect
+	github.com/google/cel-go v0.28.1 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
@@ -226,15 +226,16 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	howett.net/plist v1.0.1 // indirect
-	k8s.io/code-generator v0.35.6 // indirect
+	k8s.io/code-generator v0.37.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // indirect
-	knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a // indirect
+	knative.dev/pkg v0.0.0-20260825072334-d2a153acc00c // indirect
+	sigs.k8s.io/cluster-api/api v0.0.0-00010101000000-000000000000 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20260305142021-f9589b9f2b9d // indirect
 	sigs.k8s.io/controller-tools v0.20.1 // indirect
-	sigs.k8s.io/gateway-api v1.5.1 // indirect
+	sigs.k8s.io/gateway-api v1.6.1 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
 	sigs.k8s.io/kustomize/cmd/config v0.21.1 // indirect
@@ -246,8 +247,17 @@ require (
 )
 
 replace (
+	k8s.io/api => k8s.io/api v0.35.6
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.6
+	k8s.io/apimachinery => k8s.io/apimachinery v0.35.6
 	k8s.io/client-go => k8s.io/client-go v0.35.6
+	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.0
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+)
+
+exclude (
+	github.com/KimMachineGun/automemlimit v1.0.0
+	github.com/google/cel-go v0.29.0
 )
 
 tool (
