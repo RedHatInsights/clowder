@@ -28,7 +28,7 @@ RUN make manifests generate fmt vet release
 # Build
 RUN CGO_ENABLED=1 GOOS=linux GO111MODULE=on go build -o manager main.go
 
-FROM registry.access.redhat.com/ubi9-minimal:9.8-1785777232
+FROM registry.access.redhat.com/ubi9-minimal:9.8-1787647261
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/manifest.yaml .
