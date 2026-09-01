@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
+	ctrl "sigs.k8s.io/controller-runtime"
 	cond "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -554,7 +555,12 @@ func SetClowdAppConditions(ctx context.Context, client client.Client, o *crd.Clo
 	o.Status.Ready = deploymentStatus
 
 	if !equality.Semantic.DeepEqual(*oldStatus, o.Status) {
+		attempt := 0
 		return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			if attempt > 0 {
+				ctrl.Log.Info("retrying ClowdApp status update after 409 conflict", "app", o.Name, "namespace", o.Namespace, "attempt", attempt)
+			}
+			attempt++
 			if getErr := client.Get(ctx, types.NamespacedName{Name: o.Name, Namespace: o.Namespace}, o); getErr != nil {
 				return getErr
 			}
