@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: owner-app-db
+  namespace: test-db-dr-shared-secret-update
+  annotations:
+    clowder/database: owner-app
+type: Opaque
+data:
+  db.host: b3duZXItYXBwLXJlc3RvcmVkLnJkcy5leGFtcGxlLmNvbQ==  # owner-app-restored.rds.example.com
+  db.name: b3duZXItYXBwZGI=  # owner-appdb
+  db.port: NTQzMg==  # 5432
+  db.user: bXlhcHB1c2Vy  # myappuser
+  db.password: cmVzdG9yZWQtcGFzc3dvcmQ=  # restored-password
