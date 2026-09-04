@@ -84,6 +84,8 @@ kind: Secret
 metadata:
   name: app-b-readonly-db
   namespace: test-multi-app-interface-db
+  annotations:
+    clowder/database: app-b
 type: Opaque
 data:
   db.host: YXBwLWItc3RhZ2UucmRzLmV4YW1wbGUuY29t  # app-b-stage.rds.example.com
