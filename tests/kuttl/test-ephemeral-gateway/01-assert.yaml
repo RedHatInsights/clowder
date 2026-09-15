@@ -76,7 +76,7 @@ spec:
   template:
     spec:
       containers:
-      - image: quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:fbf8212
+      - image: quay.io/redhat-services-prod/hcc-fr-tenant/mbop/mbop:097d327
 ---
 apiVersion: apps/v1
 kind: Deployment
