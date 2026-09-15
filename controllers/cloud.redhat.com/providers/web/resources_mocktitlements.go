@@ -244,12 +244,12 @@ func makeMocktitlements(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap provi
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
-				"memory": resource.MustParse("200Mi"),
-				"cpu":    resource.MustParse("100m"),
+				"memory": resource.MustParse("24Mi"),
+				"cpu":    resource.MustParse("2m"),
 			},
 			Requests: core.ResourceList{
-				"memory": resource.MustParse("100Mi"),
-				"cpu":    resource.MustParse("50m"),
+				"memory": resource.MustParse("24Mi"),
+				"cpu":    resource.MustParse("1m"),
 			},
 		},
 		TerminationMessagePath:   "/dev/termination-log",
