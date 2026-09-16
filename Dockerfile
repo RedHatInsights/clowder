@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.26.7-1788409979 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.26.7-1789040808 AS builder
 USER 0
 ENV GOSUMDB=off
 
@@ -28,7 +28,7 @@ RUN make manifests generate fmt vet release
 # Build
 RUN CGO_ENABLED=1 GOOS=linux GO111MODULE=on go build -o manager main.go
 
-FROM registry.access.redhat.com/ubi9-minimal:9.8-1787647261
+FROM registry.access.redhat.com/ubi9-minimal:9.8-1789546276
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/manifest.yaml .
