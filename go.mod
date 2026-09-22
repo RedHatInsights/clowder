@@ -259,6 +259,7 @@ replace (
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.35.6
 	k8s.io/client-go => k8s.io/client-go v0.35.6
+	github.com/google/cel-go => github.com/google/cel-go v0.28.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098
 	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.2
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
