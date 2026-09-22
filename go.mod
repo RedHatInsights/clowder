@@ -236,7 +236,7 @@ require (
 	k8s.io/code-generator v0.37.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20260911184034-7970a1e230da // indirect
+	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // indirect
 	knative.dev/pkg v0.0.0-20260918182429-5dc1978f0042 // indirect
 	sigs.k8s.io/cluster-api/api v0.0.0-00010101000000-000000000000 // indirect
@@ -259,6 +259,7 @@ replace (
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.35.6
 	k8s.io/client-go => k8s.io/client-go v0.35.6
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098
 	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.2
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
 )
