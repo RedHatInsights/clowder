@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-logr/logr"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,6 +24,9 @@ import (
 var rdsCaBundles = make(map[string]string)
 
 const defaultCaBundleURL string = "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
+
+// DatabaseAnnotationKey is the annotation used to match secrets to ClowdApps for database configuration.
+const DatabaseAnnotationKey = "clowder/database"
 
 type appInterface struct {
 	providers.Provider
@@ -89,12 +93,10 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 		return errors.NewClowderError("Cannot set dbName & shared db app name")
 	}
 
-	var dbSpec crd.DatabaseSpec
 	var namespace string
 	var searchAppName string
 
 	if app.Spec.Database.Name != "" {
-		dbSpec = app.Spec.Database
 		namespace = app.Namespace
 		searchAppName = app.Name
 	} else if app.Spec.Database.SharedDBAppName != "" {
@@ -109,13 +111,12 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 			return err
 		}
 
-		dbSpec = refApp.Spec.Database
 		namespace = refApp.Namespace
 		searchAppName = refApp.Name
 	}
 
 	rdsCaBundleURL := a.Env.Spec.Providers.Database.CaBundleURL
-	matched, err := GetDbConfig(a.Ctx, a.Client, namespace, searchAppName, dbSpec, rdsCaBundleURL)
+	matched, err := GetDbConfig(a.Ctx, a.Client, a.Log, namespace, searchAppName, rdsCaBundleURL)
 
 	if err != nil {
 		return err
@@ -128,7 +129,7 @@ func (a *appInterface) Provide(app *crd.ClowdApp) error {
 
 // GetDbConfig retrieves database configuration from app-interface
 func GetDbConfig(
-	ctx context.Context, pClient client.Client, namespace, searchAppName string, dbSpec crd.DatabaseSpec, rdsCaBundleURL string,
+	ctx context.Context, pClient client.Client, logger logr.Logger, namespace, searchAppName string, rdsCaBundleURL string,
 ) (*config.DatabaseConfigContainer, error) {
 	secrets := core.SecretList{}
 	err := pClient.List(ctx, &secrets, client.InNamespace(namespace))
@@ -142,6 +143,8 @@ func GetDbConfig(
 		return secrets.Items[i].Name < secrets.Items[j].Name
 	})
 
+	logger.Info("searching for database secret", "namespace", namespace, "app", searchAppName, "secretCount", len(secrets.Items))
+
 	var matched config.DatabaseConfigContainer
 
 	matches, err := searchAnnotationSecret(searchAppName, secrets.Items)
@@ -151,25 +154,24 @@ func GetDbConfig(
 	}
 
 	if len(matches) == 0 {
-
-		dbConfigs, err := genDbConfigs(secrets.Items, false)
-
-		if err != nil {
-			return nil, err
-		}
-
-		matched = resolveDb(dbSpec, dbConfigs)
-
-		if matched == (config.DatabaseConfigContainer{}) {
-			missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
-				Source:  "database",
-				Details: fmt.Sprintf("DB secret matching app '%s' not found in namespace '%s'", searchAppName, namespace),
-			})
-			return nil, &missingDep
-		}
-	} else {
-		matched = matches[0]
+		logger.Info("no secret found with matching annotation",
+			"annotation", DatabaseAnnotationKey,
+			"expectedValue", searchAppName,
+			"namespace", namespace,
+		)
+		missingDep := errors.MakeMissingDependencies(errors.MissingDependency{
+			Source: "database",
+			Details: fmt.Sprintf(
+				"no secret with annotation '%s: %s' found in namespace '%s'; "+
+					"add this annotation to the Kubernetes secret containing database credentials",
+				DatabaseAnnotationKey, searchAppName, namespace,
+			),
+		})
+		return nil, &missingDep
 	}
+
+	matched = matches[0]
+	logger.Info("found database secret via annotation", "secret", matched.Ref.Name, "namespace", matched.Ref.Namespace)
 
 	// The creds given by app-interface have elevated privileges
 	matched.Config.AdminPassword = matched.Config.Password
@@ -181,27 +183,6 @@ func GetDbConfig(
 	matched.Config.RdsCa = &bundle
 
 	return &matched, nil
-}
-
-func resolveDb(spec crd.DatabaseSpec, c []config.DatabaseConfigContainer) config.DatabaseConfigContainer {
-	for _, config := range c {
-		hostname := strings.Split(config.Config.Hostname, ".")[0]
-		nameSegments := strings.Split(hostname, "-")
-		segLen := len(nameSegments)
-		lastSegment := nameSegments[segLen-1]
-
-		if lastSegment == "readonly" {
-			continue
-		}
-
-		dbName := strings.Join(nameSegments[:segLen-1], "-")
-
-		if dbName == spec.Name {
-			return config
-		}
-	}
-
-	return config.DatabaseConfigContainer{}
 }
 
 func genDbConfigs(secrets []core.Secret, verify bool) ([]config.DatabaseConfigContainer, error) {
@@ -248,7 +229,7 @@ func genDbConfigs(secrets []core.Secret, verify bool) ([]config.DatabaseConfigCo
 func searchAnnotationSecret(appName string, secrets []core.Secret) ([]config.DatabaseConfigContainer, error) {
 	for _, secret := range secrets {
 		anno := secret.GetAnnotations()
-		if v, ok := anno["clowder/database"]; ok && v == appName {
+		if v, ok := anno[DatabaseAnnotationKey]; ok && v == appName {
 			configs, err := genDbConfigs([]core.Secret{secret}, true)
 			return configs, err
 		}

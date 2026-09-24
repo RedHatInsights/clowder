@@ -543,7 +543,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _integer_ | Defines the Version of the PostGreSQL database, defaults to 12. |  | Enum: [12 13 14 15 16] <br /> |
-| `name` _string_ | Defines the Name of the database used by this app. This will be used as the<br />name of the logical database created by Clowder when the DB provider is in (*_local_*) mode.<br />In (*_app-interface_*) mode, the name here is used to locate the DB secret as a fallback mechanism<br />in cases where there is no 'clowder/database: <app-name>' annotation set on any secrets by looking<br />for a secret with 'db.host' starting with '<name>-<env>' where env is usually 'stage' or 'prod' |  |  |
+| `name` _string_ | Defines the Name of the database used by this app. This will be used as the<br />name of the logical database created by Clowder when the DB provider is in (*_local_*) mode.<br />In (*_app-interface_*) mode, a secret with the annotation 'clowder/database: <app-name>'<br />must exist in the namespace. Clowder will fail reconciliation if no such annotated secret is found. |  |  |
 | `sharedDbAppName` _string_ | Defines the Name of the app to share a database from |  |  |
 | `dbVolumeSize` _string_ | T-shirt size, one of small, medium, large |  | Enum: [small medium large] <br /> |
 | `dbResourceSize` _string_ | T-shirt size, one of small, medium, large |  | Enum: [small medium large] <br /> |
