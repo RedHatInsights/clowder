@@ -1063,7 +1063,8 @@
         "rhfull",
         "email",
         "api.console",
-        "api.ask_red_hat"
+        "api.ask_red_hat",
+        "api.graphql"
       ],
       "optionalClientScopes": [
         "address",
@@ -1733,6 +1734,18 @@
     {
       "id": "7c9f1b20-8e32-4d7a-b3f1-2a4e6c9d8b1e",
       "name": "api.ask_red_hat",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      }
+    },
+    {
+      "id": "ceac936a-03f6-4e9f-9b19-abc40c393020",
+      "name": "api.graphql",
       "description": "",
       "protocol": "openid-connect",
       "attributes": {
