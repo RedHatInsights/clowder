@@ -29,3 +29,12 @@ jq -r '.metricsPath == "/metrics"' -e < ${TMP_DIR}/test-ff-local-json
 jq -r '.featureFlags.hostname == "test-ff-local-featureflags.test-ff-local.svc"' -e < ${TMP_DIR}/test-ff-local-json
 jq -r '.featureFlags.port == 4242' -e < ${TMP_DIR}/test-ff-local-json
 jq -r '.featureFlags.scheme == "http"' -e < ${TMP_DIR}/test-ff-local-json
+
+# This step was previously commented out due to nondeterministic failures:
+# Unleash would crash-loop waiting for Postgres to accept connections, and
+# occasionally the readiness probe would pass mid-recovery, leaving Unleash
+# in a fragile state when this script ran. The fix is an init container on
+# the Unleash deployment that blocks startup until pg_isready succeeds.
+# If you see this test failing intermittently again, check the featureflags
+# pod restart count — a non-zero value means the init container isn't holding.
+source "$(dirname "$0")/test_feature_flags.sh"
