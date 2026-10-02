@@ -50,7 +50,7 @@ spec:
   deployments:
   - name: service
     podSpec:
-      image: quay.io/psav/clowder-hello:ubi8
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
     webServices:
       public:
         enabled: true
@@ -71,7 +71,7 @@ spec:
   deployments:
   - name: processor
     podSpec:
-      image: quay.io/psav/clowder-hello:ubi8
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
