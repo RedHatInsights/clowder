@@ -365,6 +365,38 @@ func makeLocalFeatureFlags(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap pr
 		return fmt.Errorf("could not get env")
 	}
 
+	dbImage, err := provutils.GetDefaultDatabaseImage(16, false)
+	if err != nil {
+		return fmt.Errorf("could not get db image for init container: %w", err)
+	}
+
+	initEnvVars := provutils.AppendEnvVarsFromSecret([]core.EnvVar{}, "featureflags-db",
+		provutils.NewSecretEnvVar("PGHOST", "hostname"),
+		provutils.NewSecretEnvVar("PGPORT", "port"),
+		provutils.NewSecretEnvVar("PGUSER", "username"),
+	)
+
+	initContainer := core.Container{
+		Name:            "wait-for-db",
+		Image:           dbImage,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Command: []string{
+			"sh", "-c",
+			"until pg_isready; do echo waiting for featureflags-db; sleep 2; done",
+		},
+		Env: initEnvVars,
+		Resources: core.ResourceRequirements{
+			Limits: core.ResourceList{
+				"memory": resource.MustParse("64Mi"),
+				"cpu":    resource.MustParse("50m"),
+			},
+			Requests: core.ResourceList{
+				"memory": resource.MustParse("32Mi"),
+				"cpu":    resource.MustParse("10m"),
+			},
+		},
+	}
+
 	c := core.Container{
 		Name:                     nn.Name,
 		Image:                    GetFeatureFlagsUnleashImage(env),
@@ -387,6 +419,7 @@ func makeLocalFeatureFlags(_ *crd.ClowdEnvironment, o obj.ClowdObject, objMap pr
 		},
 	}
 
+	dd.Spec.Template.Spec.InitContainers = []core.Container{initContainer}
 	dd.Spec.Template.Spec.Containers = []core.Container{c}
 	dd.Spec.Template.SetLabels(labels)
 
