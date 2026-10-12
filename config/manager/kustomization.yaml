@@ -15,7 +15,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: 127.0.0.1:5000/clowder
-  newTag: master
+  newName: quay.io/redhat-user-workloads/hcm-eng-prod-tenant/clowder/clowder
+  newTag: 7b543aad5ff949f6afab7e639a9f3f6e4eb5b547
 patches:
 - path: deployment_label.yaml
