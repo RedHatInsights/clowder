@@ -1,8 +1,6 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.26.7-1789040808 AS builder
-USER 0
-ENV GOSUMDB=off
+FROM registry.access.redhat.com/hi/go:1.26.8-1791559214 AS builder
 
-WORKDIR /workspace
+WORKDIR /app
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
@@ -14,7 +12,6 @@ COPY go.sum go.sum
 RUN go mod download
 
 COPY Makefile Makefile
-
 COPY hack/boilerplate.go.txt hack/boilerplate.go.txt
 
 # Copy the go source
@@ -23,16 +20,14 @@ COPY config/ config/
 COPY apis/ apis/
 COPY controllers/ controllers/
 
-RUN make manifests generate fmt vet release
+RUN make manifests generate fmt vet
 
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GO111MODULE=on go build -o manager main.go
+RUN go build -o manager main.go
 
-FROM registry.access.redhat.com/ubi9-minimal:9.8-1790074235
-WORKDIR /
-COPY --from=builder /workspace/manager .
-COPY --from=builder /workspace/manifest.yaml .
+FROM registry.access.redhat.com/hi/core-runtime:2.43-1791559214
+
+COPY --from=builder /app/manager /manager
 COPY jsons ./jsons/
-USER 65534:65534
 
 ENTRYPOINT ["/manager"]
