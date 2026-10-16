@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/hi/go:1.26.8-1791559214 AS builder
+FROM registry.access.redhat.com/hi/go:1.26.9-1792028384 AS builder
 
 WORKDIR /app
 
