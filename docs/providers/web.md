@@ -19,7 +19,7 @@ spec:
   deployments:
     name: inventory
     podSpec: 
-      image: quay.io/psav/clowder-hello
+      image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/clowder-e2e:c4e7d1b
     webServices:
       public:
         enabled: true
