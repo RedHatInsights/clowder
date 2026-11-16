@@ -226,6 +226,10 @@ func (fc *FakeStatus) Update(_ context.Context, _ client.Object, _ ...client.Sub
 	return nil
 }
 
+func (fc *FakeStatus) Apply(_ context.Context, _ runtime.ApplyConfiguration, _ ...client.SubResourceApplyOption) error {
+	return nil
+}
+
 func TestMinio(t *testing.T) {
 	assert := assert.New(t)
 

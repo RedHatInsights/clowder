@@ -233,19 +233,20 @@ function install_elasticsearch_operator {
 }
 
 function install_keda_operator {
+    KEDA_VERSION=2.21.0
     OPERATOR_NS=keda
     DEPLOYMENT=keda-operator
 
     if [ $REINSTALL -ne 1 ]; then
         OPERATOR_DEPLOYMENT=$(${KUBECTL_CMD} get deployment $DEPLOYMENT -n $OPERATOR_NS --ignore-not-found -o jsonpath='{.metadata.name}')
         if [ ! -z "$OPERATOR_DEPLOYMENT" ]; then
-            echo "*** keda-operator deployment found, skipping install ..."
+            echo "*** keda-operator deployment found, skipping install; use --reinstall to apply KEDA ${KEDA_VERSION} ..."
             return 0
         fi
     fi
 
     echo "*** Applying keda-operator manifest ..."
-    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml --server-side
+    ${KUBECTL_CMD} apply -f https://github.com/kedacore/keda/releases/download/v${KEDA_VERSION}/keda-${KEDA_VERSION}.yaml --server-side
 
     echo "*** Will wait for keda-operator to come up in background"
     ${KUBECTL_CMD} rollout status deployment/$DEPLOYMENT -n $OPERATOR_NS | sed "s/^/[keda-operator] /" &
