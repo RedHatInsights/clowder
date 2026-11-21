@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/clowder
 
-go 1.26.7
+go 1.27.0
 
 require (
 	github.com/RedHatInsights/crc-caddy-plugin v0.7.2
@@ -9,23 +9,23 @@ require (
 	github.com/RedHatInsights/rhc-osdk-utils v0.15.1
 	github.com/RedHatInsights/strimzi-client-go v0.40.0
 	github.com/caddyserver/caddy/v2 v2.11.4
-	github.com/cert-manager/cert-manager v1.21.2
+	github.com/cert-manager/cert-manager v1.21.3
 	github.com/go-logr/logr v1.4.4
 	github.com/go-logr/zapr v1.3.0
 	github.com/kedacore/keda/v2 v2.19.0
 	github.com/lib/pq v1.12.3
-	github.com/minio/minio-go/v7 v7.3.0
-	github.com/onsi/ginkgo/v2 v2.33.1
+	github.com/minio/minio-go/v7 v7.4.1
+	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.91.0
-	github.com/prometheus/client_golang v1.24.1
+	github.com/prometheus/client_golang v1.25.0
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.28.0
 	k8s.io/api v0.36.3
 	k8s.io/apiextensions-apiserver v0.36.3
 	k8s.io/apimachinery v0.37.1
 	k8s.io/client-go v1.5.2
-	sigs.k8s.io/cluster-api v1.14.3
+	sigs.k8s.io/cluster-api v1.14.4
 	sigs.k8s.io/controller-runtime v0.24.1
 )
 
@@ -63,7 +63,6 @@ require (
 	github.com/dgraph-io/ristretto v0.2.0 // indirect
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
-	github.com/emicklei/go-restful/v3 v3.14.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/expr-lang/expr v1.17.8 // indirect
 	github.com/fatih/color v1.19.0 // indirect
@@ -76,18 +75,10 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v1.0.2 // indirect
 	github.com/go-openapi/jsonreference v1.0.3 // indirect
-	github.com/go-openapi/swag v0.29.2 // indirect
-	github.com/go-openapi/swag/cmdutils v0.29.2 // indirect
 	github.com/go-openapi/swag/conv v0.29.2 // indirect
-	github.com/go-openapi/swag/fileutils v0.29.2 // indirect
 	github.com/go-openapi/swag/jsonutils v0.29.2 // indirect
-	github.com/go-openapi/swag/loading v0.29.2 // indirect
-	github.com/go-openapi/swag/mangling v0.29.2 // indirect
-	github.com/go-openapi/swag/netutils v0.29.2 // indirect
 	github.com/go-openapi/swag/pools v0.29.2 // indirect
-	github.com/go-openapi/swag/stringutils v0.29.2 // indirect
 	github.com/go-openapi/swag/typeutils v0.29.2 // indirect
-	github.com/go-openapi/swag/yamlutils v0.29.2 // indirect
 	github.com/go-sql-driver/mysql v1.10.1 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
@@ -243,6 +234,7 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
@@ -252,8 +244,8 @@ replace (
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.35.6
 	k8s.io/client-go => k8s.io/client-go v0.35.6
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098
-	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.3
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20261104182252-5bee61fc5225
+	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.4
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
 )
 
