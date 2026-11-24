@@ -40,8 +40,8 @@ spec:
     kind: Deployment
     name: puptoo-processor
   triggers:
-    - metadata:
-        type: Utilization
+    - metricType: Utilization
+      metadata:
         value: '50'
       type: cpu
     - metadata:
