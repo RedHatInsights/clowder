@@ -38,7 +38,7 @@ func (k *managedKafkaProvider) Provide(app *crd.ClowdApp) error {
 	var secret *core.Secret
 	var brokers []config.BrokerConfig
 
-	secret, err = k.getSecret()
+	secret, err = k.getSecret(app)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (k *managedKafkaProvider) getKafkaConfig(brokers []config.BrokerConfig, app
 
 }
 
-func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
+func (k *managedKafkaProvider) getSecret(app *crd.ClowdApp) (*core.Secret, error) {
 	secretRef, err := k.getSecretRef()
 	if err != nil {
 		return nil, err
@@ -160,7 +160,7 @@ func (k *managedKafkaProvider) getSecret() (*core.Secret, error) {
 		return nil, err
 	}
 
-	if err = k.HashCache.AddClowdObjectToObject(k.Env, secret); err != nil {
+	if err = k.HashCache.AddClowdObjectToObject(app, secret); err != nil {
 		return nil, err
 	}
 
