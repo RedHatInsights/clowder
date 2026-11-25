@@ -42,6 +42,6 @@ artifacts:
   files:
     - ${ARTIFACTS_DIR}/**/*  # All files in artifacts directory (logs, metrics, JUnit reports)
   discard-paths: no   # Preserve directory structure
-  name: clowder-e2e-pr-${GITHUB_PR_NUMBER:-manual}-${GITHUB_SHA:-$CODEBUILD_RESOLVED_SOURCE_VERSION}
+  name: clowder-e2e-pr-${PR_NUMBER:-manual}-${PR_SHA:-$CODEBUILD_RESOLVED_SOURCE_VERSION}
 
 
