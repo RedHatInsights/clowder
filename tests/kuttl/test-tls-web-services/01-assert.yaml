@@ -48,7 +48,7 @@ spec:
           - /etc/caddy/caddy.json
         command:
           - /usr/bin/caddy
-        image: quay.io/redhat-services-prod/hcm-eng-prod-tenant/caddy-ubi:dd37f62
+        image: quay.io/cloudservices/caddy-ubi:4be586e@sha256:0786e618745916589bb5b5801b5f2a1937148f4b33a1ca180d5cb641caaebe2b
         name: caddy-tls
         ports:
           - containerPort: 8800

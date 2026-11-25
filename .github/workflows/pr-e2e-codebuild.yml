@@ -4,8 +4,14 @@ on:
   issue_comment:
     types: [created]
 
+# Scope cancellation to a single PR. For issue_comment events github.ref is
+# always the default branch, so keying on it made a /test-e2e on any PR cancel
+# in-flight runs on every other PR. Comments that are not /test-e2e get a
+# unique group (run_id) so an ordinary PR comment never cancels a running E2E.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.event.issue.number }}-${{
+    contains(github.event.comment.body, '/test-e2e') && 'e2e' || github.run_id }}
   cancel-in-progress: true
 
 permissions:
@@ -13,6 +19,12 @@ permissions:
   contents: read
   pull-requests: write  # To post comments back to the PR
   statuses: write  # To create commit status checks
+  checks: write  # To create/update the check run shown in the PR Checks tab
+
+env:
+  # Public CodeBuild project page for clowder-pr-check; build pages are
+  # <this>/build/<uuid>.
+  CODEBUILD_PROJECT_URL: https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D
 
 jobs:
   trigger-codebuild:
@@ -117,9 +129,12 @@ jobs:
       - name: Fail if buildspec.yml is missing
         if: steps.check-buildspec.outputs.has-buildspec == 'false'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_SHA: ${{ steps.pr.outputs.sha }}
         with:
           script: |
-            const sha = '${{ steps.pr.outputs.sha }}';
+            const sha = process.env.PR_SHA;
+            const description = 'PR needs rebase - buildspec.yml missing';
 
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
@@ -127,27 +142,63 @@ jobs:
               sha: sha,
               state: 'failure',
               context: 'CodeBuild / E2E Tests',
-              description: 'PR needs rebase - buildspec.yml missing'
+              description: description
+            });
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'CodeBuild / E2E Tests',
+              head_sha: sha,
+              status: 'completed',
+              conclusion: 'failure',
+              output: {
+                title: description,
+                summary: 'This PR branch does not contain `buildspec.yml`. Rebase onto `master` and comment `/test-e2e` again.'
+              }
             });
 
             core.setFailed('This PR branch does not contain buildspec.yml. Please rebase with master.');
 
-      - name: Create pending status check
+      - name: Create pending status and check run
+        id: check-run
         if: steps.check-permissions.outputs.allowed == 'true' && steps.check-buildspec.outputs.has-buildspec == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+          PROJECT_URL: ${{ env.CODEBUILD_PROJECT_URL }}
         with:
           script: |
-            const projectUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
+            const sha = process.env.PR_SHA;
+            const projectUrl = process.env.PROJECT_URL;
 
+            // Legacy commit status, kept so any branch-protection rule that
+            // requires the "CodeBuild / E2E Tests" status keeps working.
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
+              sha: sha,
               state: 'pending',
               context: 'CodeBuild / E2E Tests',
               description: 'Running E2E tests...',
               target_url: projectUrl
             });
+
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const { data: check } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'CodeBuild / E2E Tests',
+              head_sha: sha,
+              status: 'in_progress',
+              started_at: new Date().toISOString(),
+              details_url: projectUrl,
+              output: {
+                title: 'Running E2E tests...',
+                summary: `Triggered by @${context.actor} via \`/test-e2e\` on #${context.issue.number}.\n\n[GitHub Actions run](${runUrl})`
+              }
+            });
+            core.setOutput('id', String(check.id));
 
       - name: Configure AWS credentials
         if: steps.check-buildspec.outputs.has-buildspec == 'true'
@@ -164,62 +215,110 @@ jobs:
           hide-cloudwatch-logs: true
           project-name: clowder-pr-check
           source-version-override: ${{ steps.pr.outputs.sha }}
+          # GitHub Actions silently ignores attempts to override default
+          # GITHUB_* variables, so PR context is passed under PR_* names.
           env-vars-for-codebuild: |
-            GITHUB_PR_NUMBER,
-            GITHUB_SHA,
-            GITHUB_REF,
-            GITHUB_ACTOR,
-            GITHUB_REPOSITORY
+            PR_NUMBER,
+            PR_SHA,
+            PR_REF,
+            PR_ACTOR,
+            PR_REPOSITORY
         env:
-          GITHUB_PR_NUMBER: ${{ github.event.issue.number }}
-          GITHUB_SHA: ${{ steps.pr.outputs.sha }}
-          GITHUB_REF: ${{ steps.pr.outputs.ref }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+          PR_REF: ${{ steps.pr.outputs.ref }}
+          PR_ACTOR: ${{ github.actor }}
+          PR_REPOSITORY: ${{ github.repository }}
 
-      - name: Update status check on success
-        if: success() && steps.codebuild.outputs.aws-build-id
+      # Runs on success, failure and cancellation so the status/check never
+      # stays pending. Skipped when the run never got as far as posting
+      # pending (permission denied, PR lookup failed, buildspec missing).
+      - name: Report final status
+        if: always() && steps.pr.outputs.sha != '' && steps.check-buildspec.outputs.has-buildspec == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_SHA: ${{ steps.pr.outputs.sha }}
+          PROJECT_URL: ${{ env.CODEBUILD_PROJECT_URL }}
+          BUILD_ID: ${{ steps.codebuild.outputs.aws-build-id }}
+          BUILD_OUTCOME: ${{ steps.codebuild.outcome }}
+          JOB_STATUS: ${{ job.status }}
+          CHECK_RUN_ID: ${{ steps.check-run.outputs.id }}
         with:
           script: |
-            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}'.split(':')[1];
-            const buildUrl = `https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D/build/${buildId}`;
+            const sha = process.env.PR_SHA;
+            const projectUrl = process.env.PROJECT_URL;
+            const buildId = process.env.BUILD_ID || '';
+            const buildOutcome = process.env.BUILD_OUTCOME || '';
+            const jobStatus = process.env.JOB_STATUS || '';
+            const checkRunId = process.env.CHECK_RUN_ID || '';
 
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
-              state: 'success',
-              context: 'CodeBuild / E2E Tests',
-              description: 'E2E tests passed',
-              target_url: buildUrl
-            });
+            // aws-build-id looks like "<project>:<uuid>"; the public build
+            // page is keyed on the uuid.
+            const buildUuid = buildId.includes(':') ? buildId.split(':')[1] : '';
+            const buildUrl = buildUuid ? `${projectUrl}/build/${buildUuid}` : projectUrl;
 
-      - name: Update status check on failure
-        if: failure()
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const buildId = '${{ steps.codebuild.outputs.aws-build-id }}';
-            const baseUrl = 'https://us-east-1.codebuild.aws.amazon.com/project/eyJlbmNyeXB0ZWREYXRhIjoiTHJVaVRGR05mWnExNnVLS3N1OWMrMGtFMEdYQnZ5VmVmMjJ6ZEFsYzdLQUc2WjViWTI2d3RLS21UalVWZHN3c2kwaytBMm1SaHZOVTd6elNGeGJaaEtnc0tKeUp0WTNOOUptOUIyMVBrZXRzIiwiaXZQYXJhbWV0ZXJTcGVjIjoiTS9ZYlZlTDA4M2F1cW1zMSIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ%3D%3D';
-
-            let buildUrl;
-            let description;
-
-            if (buildId) {
-              buildUrl = `${baseUrl}/build/${buildId.split(':')[1]}`;
+            let state, conclusion, description;
+            if (jobStatus === 'cancelled' || buildOutcome === 'cancelled') {
+              state = 'error';
+              conclusion = 'cancelled';
+              description = 'E2E run was cancelled';
+            } else if (buildOutcome === 'success' && jobStatus === 'success') {
+              state = 'success';
+              conclusion = 'success';
+              description = 'E2E tests passed';
+            } else if (buildUuid) {
+              state = 'failure';
+              conclusion = 'failure';
               description = 'E2E tests failed';
             } else {
-              buildUrl = baseUrl;
+              state = 'failure';
+              conclusion = 'failure';
               description = 'Failed to start E2E tests';
             }
+            console.log(`job=${jobStatus} codebuild=${buildOutcome} build=${buildId || '<none>'} -> ${conclusion}`);
 
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: '${{ steps.pr.outputs.sha }}',
-              state: 'failure',
-              context: 'CodeBuild / E2E Tests',
-              description: description,
-              target_url: buildUrl
-            });
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const summary = [
+              `**Result:** ${description}`,
+              '',
+              `- Commit: \`${sha}\``,
+              `- Triggered by: @${context.actor} on #${context.issue.number}`,
+              buildUuid ? `- [CodeBuild build](${buildUrl})` : '- CodeBuild build: not started',
+              `- [GitHub Actions run](${runUrl})`
+            ].join('\n');
+
+            // Report to both APIs independently so one failing doesn't
+            // prevent the other from leaving pending.
+            const results = await Promise.allSettled([
+              github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: sha,
+                state: state,
+                context: 'CodeBuild / E2E Tests',
+                description: description,
+                target_url: buildUrl
+              }),
+              (async () => {
+                const params = {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  status: 'completed',
+                  conclusion: conclusion,
+                  completed_at: new Date().toISOString(),
+                  details_url: buildUrl,
+                  output: { title: description, summary: summary }
+                };
+                if (checkRunId) {
+                  await github.rest.checks.update({ ...params, check_run_id: Number(checkRunId) });
+                } else {
+                  await github.rest.checks.create({ ...params, name: 'CodeBuild / E2E Tests', head_sha: sha });
+                }
+              })()
+            ]);
+
+            const errors = results.filter(r => r.status === 'rejected').map(r => r.reason);
+            if (errors.length) {
+              errors.forEach(e => console.error(e));
+              core.setFailed('Failed to report final E2E status to GitHub');
+            }

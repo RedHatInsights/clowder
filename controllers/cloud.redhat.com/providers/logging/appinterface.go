@@ -26,14 +26,14 @@ func (a *appInterfaceLoggingProvider) EnvProvide() error {
 
 func (a *appInterfaceLoggingProvider) Provide(app *crd.ClowdApp) error {
 	a.Config.Logging = config.LoggingConfig{}
-	return setCloudwatchSecret(app.Namespace, &a.Provider, &a.Config.Logging)
+	return setCloudwatchSecret(app, &a.Provider, &a.Config.Logging)
 }
 
-func setCloudwatchSecret(ns string, p *providers.Provider, c *config.LoggingConfig) error {
+func setCloudwatchSecret(app *crd.ClowdApp, p *providers.Provider, c *config.LoggingConfig) error {
 
 	name := types.NamespacedName{
 		Name:      "cloudwatch",
-		Namespace: ns,
+		Namespace: app.Namespace,
 	}
 
 	secret := core.Secret{}
@@ -47,7 +47,7 @@ func setCloudwatchSecret(ns string, p *providers.Provider, c *config.LoggingConf
 		return err
 	}
 
-	if err := p.HashCache.AddClowdObjectToObject(p.Env, &secret); err != nil {
+	if err := p.HashCache.AddClowdObjectToObject(app, &secret); err != nil {
 		return err
 	}
 

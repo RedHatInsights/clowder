@@ -52,8 +52,8 @@ spec:
       maxReplicaCount: 3
       triggers:
       - type: cpu
+        metricType: Utilization
         metadata:
-          type: Utilization
           value: "50"
       - type: prometheus
         metadata:

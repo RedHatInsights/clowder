@@ -13,7 +13,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.20.1
+      controller-gen.kubebuilder.io/version: v0.21.0
     name: clowdapprefs.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -420,7 +420,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.20.1
+      controller-gen.kubebuilder.io/version: v0.21.0
     name: clowdapps.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -548,14 +548,11 @@ objects:
                         name of the logical database created by Clowder when the DB
                         provider is in (*_local_*) mode.
 
-                        In (*_app-interface_*) mode, the name here is used to locate
-                        the DB secret as a fallback mechanism
+                        In (*_app-interface_*) mode, a secret with the annotation
+                        ''clowder/database: <app-name>''
 
-                        in cases where there is no ''clowder/database: <app-name>''
-                        annotation set on any secrets by looking
-
-                        for a secret with ''db.host'' starting with ''<name>-<env>''
-                        where env is usually ''stage'' or ''prod'''
+                        must exist in the namespace. Clowder will fail reconciliation
+                        if no such annotated secret is found.'
                       type: string
                     sharedDbAppName:
                       description: Defines the Name of the app to share a database
@@ -906,12 +903,15 @@ objects:
                                 - currentReplicas
                                 - currentReplicasIfHigher
                                 - currentReplicasIfLower
+                                - scalingModifiers
                                 type: string
                               failureThreshold:
                                 format: int32
+                                minimum: 0
                                 type: integer
                               replicas:
                                 format: int32
+                                minimum: 0
                                 type: integer
                             required:
                             - failureThreshold
@@ -950,6 +950,9 @@ objects:
                                     kind:
                                       description: Kind of the resource being referred
                                         to. Defaults to TriggerAuthentication.
+                                      enum:
+                                      - TriggerAuthentication
+                                      - ClusterTriggerAuthentication
                                       type: string
                                     name:
                                       type: string
@@ -969,6 +972,7 @@ objects:
                                 name:
                                   type: string
                                 type:
+                                  minLength: 1
                                   type: string
                                 useCachedMetrics:
                                   type: boolean
@@ -4110,8 +4114,7 @@ objects:
                                     merging the manifest layers in the same way as
                                     for container images.
 
-                                    The volume will be mounted read-only (ro) and
-                                    non-executable files (noexec).
+                                    The volume will be mounted read-only (ro).
 
                                     Sub path mounts for containers are not supported
                                     (spec.containers[*].volumeMounts.subpath) before
@@ -4360,10 +4363,7 @@ objects:
                                     Deprecated: PortworxVolume is deprecated. All
                                     operations for the in-tree portworxVolume type
 
-                                    are redirected to the pxd.portworx.com CSI driver
-                                    when the CSIMigrationPortworx feature-gate
-
-                                    is on.'
+                                    are redirected to the pxd.portworx.com CSI driver.'
                                   properties:
                                     fsType:
                                       description: 'fSType represents the filesystem
@@ -8914,8 +8914,7 @@ objects:
                                     merging the manifest layers in the same way as
                                     for container images.
 
-                                    The volume will be mounted read-only (ro) and
-                                    non-executable files (noexec).
+                                    The volume will be mounted read-only (ro).
 
                                     Sub path mounts for containers are not supported
                                     (spec.containers[*].volumeMounts.subpath) before
@@ -9164,10 +9163,7 @@ objects:
                                     Deprecated: PortworxVolume is deprecated. All
                                     operations for the in-tree portworxVolume type
 
-                                    are redirected to the pxd.portworx.com CSI driver
-                                    when the CSIMigrationPortworx feature-gate
-
-                                    is on.'
+                                    are redirected to the pxd.portworx.com CSI driver.'
                                   properties:
                                     fsType:
                                       description: 'fSType represents the filesystem
@@ -10668,7 +10664,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.20.1
+      controller-gen.kubebuilder.io/version: v0.21.0
     name: clowdenvironments.cloud.redhat.com
   spec:
     group: cloud.redhat.com
@@ -12201,7 +12197,7 @@ objects:
   kind: CustomResourceDefinition
   metadata:
     annotations:
-      controller-gen.kubebuilder.io/version: v0.20.1
+      controller-gen.kubebuilder.io/version: v0.21.0
     name: clowdjobinvocations.cloud.redhat.com
   spec:
     group: cloud.redhat.com

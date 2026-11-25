@@ -2,13 +2,13 @@
 set -e
 
 # Log PR context if triggered from GitHub Actions
-if [ -n "${GITHUB_PR_NUMBER}" ]; then
+if [ -n "${PR_NUMBER}" ]; then
     echo "=========================================="
-    echo "Running E2E tests for PR #${GITHUB_PR_NUMBER}"
-    echo "Commit: ${GITHUB_SHA}"
-    echo "Branch: ${GITHUB_REF}"
-    echo "Triggered by: ${GITHUB_ACTOR}"
-    echo "Repository: ${GITHUB_REPOSITORY}"
+    echo "Running E2E tests for PR #${PR_NUMBER}"
+    echo "Commit: ${PR_SHA:-${CODEBUILD_RESOLVED_SOURCE_VERSION:-unknown}}"
+    echo "Branch: ${PR_REF}"
+    echo "Triggered by: ${PR_ACTOR}"
+    echo "Repository: ${PR_REPOSITORY}"
     echo "=========================================="
 fi
 
