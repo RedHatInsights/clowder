@@ -76,14 +76,52 @@ ClowdEnv Config options available:
 #### app-interface
 
 In app-interface mode, the Clowder operator does not create any resources and
-simply passes through configuration from a secret to the client config. First
-the provider will search for any secrets that have the annotation of
-``clowder/database: <app-name>`` where the app-name matches the ClowdApp name.
-If this cannot be found then the provider will search all secrets in the same
-namespace looking for a hostname which is of the form
-`<name>-<env>.*********` where `name` is the name defined in the
-`ClowdApp` `database` stanza, and `env` is usually one of either
-`stage` or `prod`.
+simply passes through configuration from a secret to the client config.
+
+##### Secret Lookup Order
+
+Clowder uses a two-tier lookup to find the database secret for each ClowdApp:
+
+1. **Annotation match (preferred):** Clowder searches all secrets in the
+   namespace for one with the annotation `clowder/database: <app-name>`, where
+   `<app-name>` matches the ClowdApp's `.metadata.name`. If a matching
+   annotated secret is found, it is used immediately and the fallback is
+   skipped.
+
+2. **Hostname fallback:** If no annotated secret is found, Clowder falls back
+   to searching all secrets in the namespace for one whose hostname matches the
+   pattern `<name>-<env>.*`, where `name` is the value of the `database.name`
+   field in the ClowdApp spec and `env` is usually `stage` or `prod`. The
+   hostname is extracted from the secret data and split on `-` to derive the
+   database name.
+
+If neither method finds a matching secret, Clowder reports a missing
+dependency and the ClowdApp will not become ready.
+
+##### Why the Annotation Matters
+
+The hostname fallback relies on the RDS instance identifier following the
+`<name>-<env>` naming convention. This breaks in scenarios where the actual
+hostname does not match, such as:
+
+- **Database snapshot restores** where the restored instance has a different
+  identifier (e.g. `mydb-restore` instead of `mydb`).
+- **Database migrations** where a new RDS instance is provisioned alongside the
+  original.
+
+In these cases the `clowder/database` annotation is the only reliable way to
+associate the correct secret with the ClowdApp.
+
+##### Key Details
+
+- The annotation value **must match the ClowdApp's `.metadata.name`** (e.g.
+  `export-service`), not the namespace, RDS identifier, or database name.
+- The annotation **must be present on the secret before Clowder reconciles the
+  ClowdApp**. Adding it after the initial reconciliation does not trigger a new
+  reconciliation automatically.
+- When migrating databases, **remove the annotation from the old secret and add
+  it to the new one** in a single change so that the next reconciliation picks
+  up the correct secret.
 
 ## Generated App Configuration
 
